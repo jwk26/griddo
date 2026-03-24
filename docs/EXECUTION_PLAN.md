@@ -13,7 +13,7 @@
 ## Phase 1: Foundation
 
 ### Task 1: Scaffold Next.js Project
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `package.json`, `tsconfig.json`, `next.config.ts`, `src/app/layout.tsx`, `src/app/page.tsx`
 - **Actions:**
   - `pnpm create next-app@latest` with TypeScript strict, Tailwind 4.x, App Router, `src/` directory
@@ -25,7 +25,7 @@
 - **Commit:** `feat: scaffold Next.js 16 project with dependencies`
 
 ### Task 2: Initialize shadcn/ui
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `components.json`, `src/lib/utils.ts`, `src/components/ui/button.tsx`
 - **Actions:**
   - `pnpm dlx shadcn@latest init -t next` — configure: style `new-york`, base color `zinc`, Tailwind CSS config blank (leave empty for v4), Tailwind CSS path `src/app/globals.css`, CSS variables `yes`, icon library `lucide`
@@ -36,7 +36,7 @@
 - **Commit:** `feat: initialize shadcn/ui with base components`
 
 ### Task 3: Configure Tailwind v4 Token Bridge + Fonts
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/app/globals.css`, `src/app/layout.tsx`
 - **Dependencies:** Task 2 (shadcn init must complete first)
 - **Actions:**
@@ -54,7 +54,7 @@
 - **Commit:** `feat: configure Tailwind v4 token bridge, design tokens, and Geist fonts`
 
 ### Task 4: Zod Schemas + TypeScript Types
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/lib/db/schema.ts`, `src/types/index.ts`
 - **Dependencies:** Task 1
 - **Actions:**
@@ -65,7 +65,7 @@
 - **Commit:** `feat: add Zod validation schemas and TypeScript types`
 
 ### Task 5: DataStore Abstraction + IndexedDB Implementation
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, `src/lib/constants.ts`
 - **Dependencies:** Task 4
 - **Actions:**
@@ -75,6 +75,18 @@
   - **Critical PRD constraint:** No component imports `dexie` or `DataStore` directly. Components use custom hooks (`src/hooks/`) for reads. Hooks are the only files that import `useLiveQuery`; DataStore write methods are called from hooks and event handlers only
 - **Acceptance:** DataStore interface exports cleanly. IndexedDB implementation opens database and creates stores with correct indexes. Constants importable via `@/lib/constants`. `pnpm tsc --noEmit` passes
 - **Commit:** `feat: add DataStore interface, IndexedDB implementation, and constants`
+
+#### Phase 1 Notes
+
+> **Scaffold non-empty dirs:** `create-next-app` refuses non-empty directories. Scaffold into a sibling temp dir (`../scaffold-tmp`), rsync over, delete temp.
+
+> **shadcn init automation:** CLI flags don't cover style/base-color. Create `components.json` manually — the format is stable. Also manually install `class-variance-authority` after `shadcn add`.
+
+> **Spec ambiguities break delegation:** Codex follows formulas literally. The `promoteBitToNode` level bug came from an ambiguous spec formula. Resolve contradictions in docs before delegating.
+
+> **Stub correct algorithm shapes:** Even when deferring a utility (BFS), implement the same algorithm shape in the stub. A linear scan from (0,0) is not equivalent to BFS from the original position.
+
+> **Full issue log:** `docs/issues/Issues_Phase_1.md`
 
 ---
 
