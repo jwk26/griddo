@@ -41,7 +41,7 @@ export function Breadcrumbs({ nodeId }: { nodeId: string }) {
       aria-label="Breadcrumb"
       className="flex h-breadcrumb flex-col justify-center gap-0.5 border-b border-border px-4"
     >
-      <div className="flex items-center gap-1.5 overflow-x-auto text-sm">
+      <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden text-sm">
         <button
           className="text-muted-foreground transition-colors hover:text-foreground"
           onClick={() => router.push("/")}

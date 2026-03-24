@@ -79,12 +79,14 @@ export function GridView({
                     onClick={() => router.push(`/grid/${item.id}`)}
                   />
                 ) : (
-                  <BitCard
-                    bit={item}
-                    chunkStats={{ completed: 0, total: 0 }}
-                    onClick={() => router.push(`${pathname}?bit=${item.id}`)}
-                    parentColor={parentColor}
-                  />
+                  <div className="flex h-full items-center">
+                    <BitCard
+                      bit={item}
+                      chunkStats={{ completed: 0, total: 0 }}
+                      onClick={() => router.push(`${pathname}?bit=${item.id}`)}
+                      parentColor={parentColor}
+                    />
+                  </div>
                 )}
               </GridCell>
             );

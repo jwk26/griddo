@@ -141,6 +141,7 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
         onAddClick={!isLeafLevel ? handleSidebarAdd : undefined}
       />
       <main className="relative ml-[14rem] flex flex-1 flex-col overflow-hidden">
+        <h1 className="sr-only">{node?.title ?? "Grid"}</h1>
         <Breadcrumbs nodeId={nodeId} />
         <div className="relative flex-1 overflow-auto p-4">
           <GridView
