@@ -15,6 +15,7 @@ import {
   type CreateNode,
   type Node,
 } from "@/lib/db/schema";
+import { findNearestEmptyCell } from "@/lib/utils/bfs";
 
 type MutableNodeInput = Omit<Node, "id" | "createdAt" | "deletedAt" | "mtime">;
 type MutableBitInput = Omit<Bit, "id" | "createdAt" | "deletedAt" | "mtime">;
@@ -965,41 +966,6 @@ function buildNodeTitlePath(
 
 function isDefined<T>(value: T | null | undefined): value is T {
   return value !== undefined && value !== null;
-}
-
-function findNearestEmptyCell(
-  occupied: Set<string>,
-  startX: number,
-  startY: number,
-): { x: number; y: number } | null {
-  const visited = new Set<string>();
-  const queue: Array<{ x: number; y: number }> = [{ x: startX, y: startY }];
-  const directions = [
-    [0, -1], [1, 0], [0, 1], [-1, 0],
-    [-1, -1], [1, -1], [1, 1], [-1, 1],
-  ];
-
-  while (queue.length > 0) {
-    const cell = queue.shift()!;
-    const key = gridKey(cell.x, cell.y);
-
-    if (visited.has(key)) continue;
-    visited.add(key);
-
-    if (!occupied.has(key)) {
-      return cell;
-    }
-
-    for (const [dx, dy] of directions) {
-      const nx = cell.x + dx;
-      const ny = cell.y + dy;
-      if (nx >= 0 && nx < GRID_COLS && ny >= 0 && ny < GRID_ROWS && !visited.has(gridKey(nx, ny))) {
-        queue.push({ x: nx, y: ny });
-      }
-    }
-  }
-
-  return null;
 }
 
 function findFirstAvailableCell(

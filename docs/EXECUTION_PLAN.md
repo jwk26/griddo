@@ -93,7 +93,7 @@
 ## Phase 2: Core Logic
 
 ### Task 6: Pure Utility Functions
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/lib/utils/bfs.ts`, `src/lib/utils/aging.ts`, `src/lib/utils/urgency.ts`, `src/lib/utils/completion.ts`
 - **Dependencies:** Task 4 (types), Task 5 (constants)
 - **Actions:**
@@ -109,7 +109,7 @@
 - **Commit:** `feat: add pure utility functions for BFS, aging, urgency, and completion`
 
 ### Task 7: Zustand Stores
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/stores/sidebar-store.ts`, `src/stores/edit-mode-store.ts`, `src/stores/search-store.ts`, `src/stores/calendar-store.ts`
 - **Dependencies:** Task 1
 - **Actions:**
@@ -122,7 +122,7 @@
 - **Commit:** `feat: add Zustand stores for sidebar, edit mode, search, and calendar`
 
 ### Task 8: Animation Variant Definitions
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/lib/animations/grid.ts`, `src/lib/animations/calendar.ts`, `src/lib/animations/layout.ts`
 - **Dependencies:** Task 1
 - **Actions:**
@@ -133,7 +133,7 @@
 - **Commit:** `feat: add Motion animation variants for grid, calendar, and layout`
 
 ### Task 9: Data Hooks — Grid + Bit Detail
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/hooks/use-grid-data.ts`, `src/hooks/use-bit-detail.ts`
 - **Dependencies:** Task 5 (DataStore)
 - **Actions:**
@@ -144,7 +144,7 @@
 - **Commit:** `feat: add reactive data hooks for grid and bit detail`
 
 ### Task 10: Data Hooks — Calendar, Search + DnD
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/hooks/use-calendar-data.ts`, `src/hooks/use-search.ts`, `src/hooks/use-dnd.ts`
 - **Dependencies:** Task 5 (DataStore), Task 7 (stores)
 - **Actions:**
@@ -153,6 +153,16 @@
   - `use-dnd.ts`: Export `useDnd()`. Coordinates @dnd-kit sensors + collision detection. Returns `{ sensors, handleDragStart, handleDragEnd, handleDragOver, activeItem }`. Handles: grid reposition, drag-into-Node, calendar scheduling, chunk timeline reorder, drag-to-breadcrumb
 - **Acceptance:** Calendar data groups items by day/date. Search filters in real-time. DnD hook provides unified drag coordination across all contexts
 - **Commit:** `feat: add hooks for calendar data, search, and drag-and-drop`
+
+#### Phase 2 Notes
+
+> **Dexie v4 reactive pattern:** `useLiveQuery` does not exist in Dexie v4. Use `liveQuery` from `dexie` with `useState` + `useEffect` subscribe/unsubscribe. The SPEC and plan references to `useLiveQuery` are v3 conventions — ignore them. `dexie-react-hooks` is not installed and should not be added.
+
+> **URL query param removal:** When removing a specific param (e.g., `?bit=`), use `URLSearchParams.delete(key)` and reconstruct the URL. Never use bare `router.replace(pathname)` — it silently wipes all other params.
+
+> **DnD hook is infrastructure, not behavior:** `useDnd()` in Phase 2 provides sensors, `activeItem` tracking, and handler signatures only. Drag dispatch logic (grid reposition, drag-into-Node, calendar scheduling, chunk reorder, breadcrumb drop) requires UI drop zone components built in Phases 3–5. TODO comments in `handleDragEnd` map each behavior to its owning phase.
+
+> **Full issue log:** `docs/issues/Issues_Phase_2.md`
 
 ---
 
