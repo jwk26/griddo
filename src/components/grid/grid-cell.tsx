@@ -38,7 +38,7 @@ export function GridCell({
       style={isEditMode ? undefined : borderStyle}
     >
       {children}
-      {isEmpty && isEditMode ? (
+      {isEmpty && isEditMode && onAddClick ? (
         <button
           type="button"
           aria-label="Add item"
