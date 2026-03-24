@@ -1,0 +1,35 @@
+import type { Node, CreateNode, Bit, CreateBit, Chunk, CreateChunk } from "@/lib/db/schema";
+
+export interface DataStore {
+  // --- Nodes ---
+  getNode(id: string): Promise<Node | undefined>;
+  getNodes(parentId: string | null): Promise<Node[]>;
+  createNode(data: CreateNode): Promise<Node>;
+  updateNode(id: string, data: Partial<Node>): Promise<void>;
+  softDeleteNode(id: string): Promise<void>;
+  restoreNode(id: string): Promise<void>;
+  hardDeleteNode(id: string): Promise<void>;
+
+  // --- Bits ---
+  getBit(id: string): Promise<Bit | undefined>;
+  getBits(parentId: string): Promise<Bit[]>;
+  createBit(data: CreateBit): Promise<Bit>;
+  updateBit(id: string, data: Partial<Bit>): Promise<void>;
+  softDeleteBit(id: string): Promise<void>;
+  restoreBit(id: string): Promise<void>;
+  hardDeleteBit(id: string): Promise<void>;
+
+  // --- Chunks ---
+  getChunks(bitId: string): Promise<Chunk[]>;
+  createChunk(data: CreateChunk): Promise<Chunk>;
+  updateChunk(id: string, data: Partial<Chunk>): Promise<void>;
+  deleteChunk(id: string): Promise<void>;
+
+  // --- Queries ---
+  getActiveGridContents(parentId: string | null): Promise<{ nodes: Node[]; bits: Bit[] }>;
+  getCalendarItems(): Promise<{ bits: Bit[]; chunks: Chunk[] }>;
+  getTrashedItems(): Promise<{ nodes: Node[]; bits: Bit[] }>;
+  searchAll(query: string): Promise<Array<{ type: "node" | "bit" | "chunk"; item: Node | Bit | Chunk; parentPath: string[] }>>;
+  getGridOccupancy(parentId: string | null): Promise<Set<string>>;
+  promoteBitToNode(bitId: string): Promise<Node>;
+}

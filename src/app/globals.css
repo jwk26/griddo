@@ -1,0 +1,229 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  /* ── Colors (shadcn core) — generates bg-*, text-*, border-* utilities ── */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* ── Colors (GridDO priority) ── */
+  --color-priority-high: hsl(var(--priority-high));
+  --color-priority-high-bg: hsl(var(--priority-high-bg));
+  --color-priority-mid: hsl(var(--priority-mid));
+  --color-priority-mid-bg: hsl(var(--priority-mid-bg));
+  --color-priority-low: hsl(var(--priority-low));
+  --color-priority-low-bg: hsl(var(--priority-low-bg));
+
+  /* ── Colors (GridDO urgency) ── */
+  --color-urgency-1: hsl(var(--urgency-1));
+  --color-urgency-2: hsl(var(--urgency-2));
+  --color-urgency-3: hsl(var(--urgency-3));
+  --color-urgency-badge: hsl(var(--urgency-badge));
+
+  /* ── Fonts — generates font-sans, font-mono utilities ── */
+  --font-sans: var(--font-geist-sans), -apple-system, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+
+  /* ── Spacing — generates w-*, p-*, m-*, gap-* utilities ── */
+  --spacing-sidebar: var(--sidebar-width);
+  --spacing-sidebar-collapsed: var(--sidebar-width-collapsed);
+  --spacing-breadcrumb: var(--breadcrumb-height);
+
+  /* ── Container — generates max-w-* utilities ── */
+  --container-bit-detail: var(--bit-detail-max-width);
+  --container-search-overlay: var(--search-overlay-width);
+  --container-calendar-pool: var(--calendar-pool-width);
+
+  /* ── Border Radius — generates rounded-* utilities ── */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  /* ── GridDO Custom Animations ── */
+  --animate-jiggle: jiggle 0.3s ease-in-out infinite;
+  --animate-urgency-blink-1: urgency-blink 3s ease-in-out infinite;
+  --animate-urgency-blink-2: urgency-blink 2s ease-in-out infinite;
+  --animate-urgency-blink-3: urgency-blink 1s ease-in-out infinite;
+  --animate-float: float 4s ease-in-out infinite;
+
+  @keyframes jiggle {
+    0%, 100% { transform: rotate(-1.5deg); }
+    50% { transform: rotate(1.5deg); }
+  }
+  @keyframes urgency-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+}
+
+:root {
+    /* ── Shadcn Core Tokens (Light Mode) ── */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 6% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.625rem;
+
+    /* ── GridDO Extension Tokens ── */
+
+    /* Priority Colors */
+    --priority-high: 0 84% 60%;
+    --priority-high-bg: 0 84% 97%;
+    --priority-mid: 45 93% 47%;
+    --priority-mid-bg: 45 93% 97%;
+    --priority-low: 217 91% 60%;
+    --priority-low-bg: 217 91% 97%;
+
+    /* Urgency Colors */
+    --urgency-1: 0 72% 70%;
+    --urgency-2: 0 84% 60%;
+    --urgency-3: 0 72% 45%;
+    --urgency-badge: 0 84% 60%;
+
+    /* Aging System */
+    --aging-fresh-saturation: 1;
+    --aging-stagnant-saturation: 0.5;
+    --aging-neglected-saturation: 0.2;
+    --aging-dust-opacity: 0.3;
+
+    /* Grid Layout */
+    --grid-cols: 12;
+    --grid-rows: 8;
+    --grid-gap: 0.5rem;
+    --grid-cell-min: 5rem;
+    --grid-line-color: 240 6% 90%;
+    --grid-line-opacity-l0: 0.15;
+    --grid-line-opacity-l1: 0.12;
+    --grid-line-opacity-l2: 0.08;
+    --grid-line-opacity-l3: 0.05;
+
+    /* Vignette */
+    --vignette-intensity-l0: 0;
+    --vignette-intensity-l1: 0.15;
+    --vignette-intensity-l2: 0.3;
+    --vignette-intensity-l3: 0.45;
+
+    /* Layout Dimensions */
+    --sidebar-width: 14rem;
+    --sidebar-width-collapsed: 0rem;
+    --breadcrumb-height: 3rem;
+    --bit-detail-max-width: 40rem;
+    --bit-detail-max-height: 85vh;
+    --search-overlay-width: 36rem;
+
+    /* Calendar Layout */
+    --calendar-pool-width: 18rem;
+    --calendar-node-pool-ratio: 0.6;
+    --calendar-day-min-width: 8rem;
+}
+
+.dark {
+    /* ── Shadcn Core Tokens (Dark Mode) ── */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 217 91% 60%;
+
+    /* ── GridDO Extension Overrides (Dark Mode) ── */
+
+    --priority-high-bg: 0 84% 10%;
+    --priority-mid-bg: 45 93% 10%;
+    --priority-low-bg: 217 91% 10%;
+
+    --grid-line-color: 240 5% 65%;
+
+    --vignette-intensity-l1: 0.2;
+    --vignette-intensity-l2: 0.4;
+    --vignette-intensity-l3: 0.55;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
