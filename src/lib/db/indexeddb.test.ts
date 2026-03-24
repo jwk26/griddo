@@ -164,7 +164,7 @@ describe("IndexedDBDataStore", () => {
     expect(deletedGrandchildBit?.deletedAt).toBe(deletedChild?.deletedAt);
   });
 
-  it("restores parent chains and relocates conflicted restores with fallback scanning", async () => {
+  it("restores parent chains and relocates conflicted restores with BFS nearest-cell", async () => {
     const activeOccupant = createNode({ title: "Occupant", x: 0, y: 0 });
     const trashedParent = createNode({
       title: "Trashed parent",
@@ -259,7 +259,7 @@ describe("IndexedDBDataStore", () => {
     expect(promotedNode.icon).toBe("rocket");
     expect(promotedNode.deadline).toBe(1_700_000_100_000);
     expect(promotedNode.parentId).toBe(parent.id);
-    expect(promotedNode.level).toBe(parent.level);
+    expect(promotedNode.level).toBe(parent.level + 1);
     expect(promotedNode.x).toBe(4);
     expect(promotedNode.y).toBe(2);
     expect(childBits).toHaveLength(2);

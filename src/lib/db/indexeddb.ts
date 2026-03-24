@@ -563,6 +563,11 @@ export class IndexedDBDataStore implements DataStore {
       excludedBitIds: new Set([bit.id]),
     });
 
+    const promotedLevel = parent.level + 1;
+    if (promotedLevel > 2) {
+      throw new Error("Cannot promote Bit to Node at level 3 — Nodes only exist at levels 0-2");
+    }
+
     const timestamp = Date.now();
     const newNode = nodeSchema.parse({
       id: crypto.randomUUID(),
@@ -575,7 +580,7 @@ export class IndexedDBDataStore implements DataStore {
       mtime: timestamp,
       createdAt: timestamp,
       parentId: bit.parentId,
-      level: parent.level,
+      level: promotedLevel,
       x: bit.x,
       y: bit.y,
       deletedAt: null,
@@ -862,7 +867,7 @@ function placeRestoredGridItem<T extends { parentId: string | null; x: number; y
   let nextY = item.y;
 
   if (occupied.has(gridKey(item.x, item.y))) {
-    const fallback = findFirstAvailableCell(occupied);
+    const fallback = findNearestEmptyCell(occupied, item.x, item.y);
 
     if (!fallback) {
       throw new Error("No grid cells available while restoring item");
@@ -962,10 +967,44 @@ function isDefined<T>(value: T | null | undefined): value is T {
   return value !== undefined && value !== null;
 }
 
+function findNearestEmptyCell(
+  occupied: Set<string>,
+  startX: number,
+  startY: number,
+): { x: number; y: number } | null {
+  const visited = new Set<string>();
+  const queue: Array<{ x: number; y: number }> = [{ x: startX, y: startY }];
+  const directions = [
+    [0, -1], [1, 0], [0, 1], [-1, 0],
+    [-1, -1], [1, -1], [1, 1], [-1, 1],
+  ];
+
+  while (queue.length > 0) {
+    const cell = queue.shift()!;
+    const key = gridKey(cell.x, cell.y);
+
+    if (visited.has(key)) continue;
+    visited.add(key);
+
+    if (!occupied.has(key)) {
+      return cell;
+    }
+
+    for (const [dx, dy] of directions) {
+      const nx = cell.x + dx;
+      const ny = cell.y + dy;
+      if (nx >= 0 && nx < GRID_COLS && ny >= 0 && ny < GRID_ROWS && !visited.has(gridKey(nx, ny))) {
+        queue.push({ x: nx, y: ny });
+      }
+    }
+  }
+
+  return null;
+}
+
 function findFirstAvailableCell(
   occupied: Set<string>,
 ): { x: number; y: number } | null {
-  // TODO: Replace with BFS from @/lib/utils/bfs when available.
   for (let y = 0; y < GRID_ROWS; y += 1) {
     for (let x = 0; x < GRID_COLS; x += 1) {
       if (!occupied.has(gridKey(x, y))) {
