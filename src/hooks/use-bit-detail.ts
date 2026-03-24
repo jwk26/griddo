@@ -58,7 +58,10 @@ export function useBitDetail(): {
   }, [bitId]);
 
   const close = () => {
-    router.replace(pathname);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("bit");
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname);
   };
 
   if (!bitId || state.bitId !== bitId) {
