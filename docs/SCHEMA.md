@@ -310,7 +310,7 @@ Before inserting or moving a Node/Bit to `(parentId, x, y)`:
 ### 9. Bit-to-Node Promotion
 
 When a Bit is promoted to a Node:
-1. Create a new Node with the Bit's `title`, `icon`, `deadline`, `description`. Assign default `color`. Set `level = parentNode.level` (same level as the Bit's grid position).
+1. Create a new Node with the Bit's `title`, `icon`, `deadline`, `description`. Assign default `color`. Set `level = parentNode.level + 1` (same level as the Bit's grid position).
 2. For each Chunk in the Bit: create a new Bit inside the new Node. Map `chunk.title` → `bit.title`, `chunk.time` → `bit.deadline`, `chunk.timeAllDay` → `bit.deadlineAllDay`. Auto-place via BFS.
 3. Delete the original Bit and its Chunks.
 
