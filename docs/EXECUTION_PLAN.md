@@ -169,7 +169,7 @@
 ## Phase 3: Layout Shell + Level 0 Grid
 
 ### Task 11: Client Providers Wrapper
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/app/providers.tsx`, `src/app/layout.tsx`
 - **Dependencies:** Task 3 (tokens), Task 5 (DataStore)
 - **Actions:**
@@ -179,7 +179,7 @@
 - **Commit:** `feat: add client providers and root layout with font loading`
 
 ### Task 12: Sidebar + Theme Toggle
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/layout/sidebar.tsx`, `src/components/layout/theme-toggle.tsx`
 - **Dependencies:** Task 7 (sidebar-store), Task 2 (shadcn)
 - **Actions:**
@@ -190,7 +190,7 @@
 - **Commit:** `feat: add foldable sidebar with theme toggle and urgency indicator`
 
 ### Task 13: Grid View + Grid Cell
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/grid-view.tsx`, `src/components/grid/grid-cell.tsx`
 - **Dependencies:** Task 9 (use-grid-data), Task 7 (edit-mode-store)
 - **Actions:**
@@ -200,7 +200,7 @@
 - **Commit:** `feat: add grid view and grid cell components`
 
 ### Task 14: Node Card
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/node-card.tsx`
 - **Dependencies:** Task 4 (types), Task 6 (aging, urgency)
 - **Actions:**
@@ -216,14 +216,39 @@
 - **Commit:** `feat: add node card with aging and urgency indicators`
 
 ### Task 15: Level 0 Page + Onboarding
-- **Status:** `[ ]`
-- **Files:** `src/app/page.tsx`, `src/components/grid/onboarding-hints.tsx`
+- **Status:** `[x]`
+- **Files:** `src/app/page.tsx`, `src/components/grid/onboarding-hints.tsx`, `src/components/layout/level-0-shell.tsx`, `src/components/grid/create-node-dialog.tsx`, `src/lib/constants/node-icons.ts`
 - **Dependencies:** Task 11, Task 12, Task 13, Task 14
 - **Actions:**
-  - `page.tsx`: Server component shell. Renders client `GridView` with `parentId={null}` and `level={0}`. Layout: sidebar on left, grid fills remaining space. No breadcrumbs at Level 0. No vignette at Level 0
-  - `onboarding-hints.tsx`: `"use client"`. Shown when no nodes exist (first visit). Ghost placeholders per DESIGN_TOKENS: `border-2 border-dashed border-muted-foreground/30 rounded-xl flex flex-col items-center justify-center gap-2 p-4`. Labels: `text-sm text-muted-foreground/50` ("Try: Work", "Personal", "Hobbies"). Disappear after first node creation (reactive via `useGridData` hook)
-- **Acceptance:** `/` renders Level 0 grid with sidebar. First visit shows ghost hints. Creating first node removes hints. No vignette
-- **Commit:** `feat: add Level 0 grid page with onboarding ghost hints`
+  - `page.tsx`: Thin server component shell — delegates to `Level0Shell`
+  - `level-0-shell.tsx`: `"use client"`. Owns creation state (dialog open/close, placement context, error). Renders Sidebar, GridView, OnboardingHints, CreateNodeDialog. Wires both creation entry points to the shared dialog.
+  - `create-node-dialog.tsx`: shadcn Dialog. Fields: title (required), icon picker (25 Lucide icons, `role="radiogroup"`), color (native `input type=color`). Defaults: Folder / #308ce8. Placement resolved in shell via BFS before `createNode()` call.
+  - `onboarding-hints.tsx`: `"use client"`. Ghost placeholders. Disappear after first node creation (reactive via `useGridData` hook).
+  - `node-icons.ts`: Shared icon constants (`NODE_ICON_MAP`, `NODE_ICON_NAMES`, `DEFAULT_ICON`, `DEFAULT_COLOR_HEX`) used by both NodeCard and CreateNodeDialog.
+- **Creation flow clarification:**
+  - Level 0 `+` uses a **Create Node dialog** (not instant creation — user selects title, icon, color)
+  - Sidebar `+` and empty-cell `+` share the same dialog; placement context differs only in BFS origin
+  - Sidebar placement: BFS from `(0, 0)`
+  - Empty-cell placement: BFS from `(clickedX, clickedY)` — returns clicked cell if empty, nearest fallback if occupied
+  - Level 1–2 Node/Bit menu and Level 3 direct Bit creation remain out of scope for this phase
+- **Acceptance:** `/` renders Level 0 grid with sidebar. First visit shows ghost hints. Creating first node (via sidebar `+` or cell `+`) opens dialog, places node, and removes hints. No vignette.
+- **Commit:** `feat: wire Level 0 node creation — dialog, shell, shared icon constants`
+
+#### Phase 3 Notes
+
+> **Plan status vs. implementation:** Tasks 11–14 were committed in a single phase commit before statuses were updated. The `EXECUTION_PLAN.md` showed `[ ]` even though the code existed. Always update task statuses in the same session that produces the commit — don't let them drift.
+
+> **Level 0 creation was a Phase 3 omission:** The sidebar `+` and empty-cell `+` were wired to `noop`. The execution plan acceptance criteria said "creating first node removes hints" but never specified the creation UI. Treat any acceptance criterion that implies user action as requiring a complete UI path — not just a data layer.
+
+> **`typecheck` script does not exist:** There is no separate `pnpm typecheck` command. TypeScript checking runs as part of `pnpm build` (`next build`). The pre-PR gate is `pnpm lint && pnpm build`.
+
+> **Lint has 2 pre-existing warnings:** `src/hooks/use-dnd.ts` lines 46 and 55 have `_event is defined but never used`. These are not errors and are not introduced by Phase 3. Lint exits 0. Correct phrasing: "lint passes with 2 pre-existing warnings."
+
+> **Radiogroup keyboard navigation deferred:** The icon picker uses `role="radiogroup"` + `role="radio"` semantics but individual tab stops rather than the ARIA-standard single-tab-stop + arrow-key navigation. Full keyboard implementation requires either custom `onKeyDown` arrow handlers or adopting the Radix `RadioGroup` primitive. Deferred to a future a11y pass.
+
+> **DataStore context exists but hooks use direct imports:** `providers.tsx` exports `useDataStore()` with a full context implementation. However, all existing hooks (`use-grid-data`, `use-search`, `use-bit-detail`) import `indexedDBStore` directly. New write paths (e.g., `level-0-shell.tsx`) should follow the existing direct-import pattern for consistency until a deliberate migration is planned.
+
+> **Full issue log:** `docs/issues/Issues_Phase_3.md`
 
 ---
 
