@@ -1,65 +1,10 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
-import {
-  Bell,
-  Book,
-  Box,
-  Briefcase,
-  Camera,
-  Car,
-  Code,
-  Coffee,
-  Dumbbell,
-  FileText,
-  Folder,
-  Gamepad2,
-  Globe,
-  Heart,
-  Home,
-  Lock,
-  Music,
-  Palette,
-  Plane,
-  Settings,
-  ShoppingCart,
-  Star,
-  Target,
-  Users,
-  X,
-  Zap,
-} from "lucide-react";
+import { X } from "lucide-react";
+import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import { getAgingSaturation, getAgingState } from "@/lib/utils/aging";
 import { cn } from "@/lib/utils";
 import type { Node } from "@/types";
-
-const iconMap: Record<string, LucideIcon> = {
-  Bell,
-  Book,
-  Box,
-  Briefcase,
-  Camera,
-  Car,
-  Code,
-  Coffee,
-  Dumbbell,
-  FileText,
-  Folder,
-  Gamepad2,
-  Globe,
-  Heart,
-  Home,
-  Lock,
-  Music,
-  Palette,
-  Plane,
-  Settings,
-  ShoppingCart,
-  Star,
-  Target,
-  Users,
-  Zap,
-};
 
 export function NodeCard({
   node,
@@ -70,7 +15,7 @@ export function NodeCard({
   onClick: () => void;
   isEditMode?: boolean;
 }) {
-  const Icon = iconMap[node.icon] ?? Box;
+  const Icon = NODE_ICON_MAP[node.icon] ?? NODE_ICON_MAP.Box;
   const saturation = getAgingSaturation(getAgingState(node.mtime));
 
   return (

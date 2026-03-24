@@ -48,7 +48,13 @@ function SidebarIconButton({
 
 const noop = () => {};
 
-export function Sidebar({ level = 0 }: { level?: number }) {
+export function Sidebar({
+  level = 0,
+  onAddClick,
+}: {
+  level?: number;
+  onAddClick?: () => void;
+}) {
   const isOpen = useSidebarStore((state) => state.isOpen);
   const toggleSidebar = useSidebarStore((state) => state.toggle);
   const isEditMode = useEditModeStore((state) => state.isEditMode);
@@ -75,7 +81,7 @@ export function Sidebar({ level = 0 }: { level?: number }) {
             isOpen ? "opacity-100" : "pointer-events-none opacity-0",
           )}
         >
-          <SidebarIconButton icon={Plus} label="Add item" onClick={noop} />
+          <SidebarIconButton icon={Plus} label="Add item" onClick={onAddClick ?? noop} />
           <SidebarIconButton
             icon={Pencil}
             label="Toggle edit mode"

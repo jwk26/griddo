@@ -25,9 +25,11 @@ function isNodeItem(item: GridItem): item is Node {
 export function GridView({
   parentId,
   level,
+  onAddAtCell,
 }: {
   parentId: string | null;
   level: number;
+  onAddAtCell?: (x: number, y: number) => void;
 }) {
   const router = useRouter();
   const { nodes, bits } = useGridData(parentId);
@@ -63,6 +65,7 @@ export function GridView({
                 isEditMode={isEditMode}
                 isEmpty={item === undefined}
                 borderOpacity={borderOpacity}
+                onAddClick={onAddAtCell ? () => onAddAtCell(x, y) : undefined}
               >
                 {item === undefined ? null : isNodeItem(item) ? (
                   <NodeCard
