@@ -2,6 +2,8 @@
 
 12×8 Grid | Node(L0) → Bit(L1) → Chunk(L2) hierarchy.
 
+**Always check docs/EXECUTION_PLAN.md first to see the current task before starting work.**
+
 ## Documentation (Priority: SCHEMA > SPEC > DESIGN > PLAN)
 
 - `docs/SCHEMA.md`: Data model, Object stores, Zod (Authoritative)
