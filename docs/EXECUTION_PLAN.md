@@ -255,7 +255,7 @@
 ## Phase 4: Grid Navigation + Bit Cards
 
 ### Task 16: Breadcrumbs
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/layout/breadcrumbs.tsx`
 - **Dependencies:** Task 5 (DataStore)
 - **Actions:**
@@ -272,7 +272,7 @@
 - **Commit:** `feat: add breadcrumbs with navigation and drag-to-breadcrumb drop zone`
 
 ### Task 17: Bit Card
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/bit-card.tsx`
 - **Dependencies:** Task 4 (types), Task 6 (aging, urgency)
 - **Actions:**
@@ -290,7 +290,7 @@
 - **Commit:** `feat: add bit card with priority, progress, urgency, and past-deadline overlay`
 
 ### Task 18: Level 1-3 Grid Page
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/app/grid/[nodeId]/page.tsx`
 - **Dependencies:** Task 13, Task 16, Task 17
 - **Actions:**
@@ -303,7 +303,7 @@
 - **Commit:** `feat: add Level 1-3 grid page with breadcrumbs and level constraints`
 
 ### Task 19: Vignette + Depth Effects
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/grid-view.tsx` (update), `src/lib/animations/grid.ts` (update)
 - **Dependencies:** Task 13, Task 8
 - **Actions:**
@@ -314,7 +314,7 @@
 - **Commit:** `feat: add vignette and grid depth effects per hierarchy level`
 
 ### Task 20: Edit Mode Overlay
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/edit-mode-overlay.tsx`
 - **Dependencies:** Task 7 (edit-mode-store), Task 13
 - **Actions:**
@@ -328,6 +328,18 @@
   - Exit on navigation or ESC key
 - **Acceptance:** Pencil toggles edit mode. Cards jiggle. Delete buttons appear. Items repositionable by drag. ESC exits
 - **Commit:** `feat: add edit mode with jiggle animation, delete buttons, and drag reposition`
+
+#### Phase 4 Notes
+
+> **Always add a visually-hidden h1 per page:** `node-grid-shell.tsx` was missing a page heading for screen readers. Every major page shell needs `<h1 className="sr-only">{title}</h1>` even when the visual design omits a visible heading.
+
+> **BitCard in GridCell requires a flex wrapper:** BitCard placed directly inside GridCell is not vertically centered. Wrap with `<div className="flex h-full items-center">` to fill the cell and center the card.
+
+> **Hide overflow scrollbars with Tailwind arbitrary values:** Long breadcrumb paths show a native browser scrollbar. Suppress with `[scrollbar-width:none] [&::-webkit-scrollbar]:hidden` on the overflow-x-auto container — covers both Firefox and WebKit.
+
+> **execute-next-phase skill had a bug during this phase:** The skill was updated post-execution. If planning or task scoping felt off during this phase, that's the likely cause. Verify the skill is current before starting the next phase.
+
+> **Full issue log:** `docs/issues/Issues_Phase_4.md`
 
 ---
 
