@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CreateBitDialog } from "@/components/grid/create-bit-dialog";
 import { CreateNodeDialog } from "@/components/grid/create-node-dialog";
 import { EditModeOverlay } from "@/components/grid/edit-mode-overlay";
 import { GridView } from "@/components/grid/grid-view";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Sidebar } from "@/components/layout/sidebar";
 import { indexedDBStore } from "@/lib/db/indexeddb";
+import type { CreateBit } from "@/types";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import type { Node } from "@/types";
 
@@ -94,11 +96,6 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
       return;
     }
 
-    if (isLeafLevel) {
-      setError("No empty cells available at this level.");
-      return;
-    }
-
     try {
       const occupied = await indexedDBStore.getGridOccupancy(nodeId);
       const cell = findNearestEmptyCell(
@@ -134,11 +131,56 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
     }
   }
 
+  async function handleBitSubmit({
+    title,
+    icon,
+  }: Pick<CreateBit, "title" | "icon">) {
+    setError(undefined);
+
+    if (!node) {
+      setError("Unable to find parent node.");
+      return;
+    }
+
+    try {
+      const occupied = await indexedDBStore.getGridOccupancy(nodeId);
+      const cell = findNearestEmptyCell(
+        occupied,
+        placementContext.mode === "auto" ? 0 : placementContext.x,
+        placementContext.mode === "auto" ? 0 : placementContext.y,
+      );
+
+      if (cell === null) {
+        setError("No empty cells available.");
+        return;
+      }
+
+      await indexedDBStore.createBit({
+        title: title.trim(),
+        description: "",
+        icon,
+        deadline: null,
+        deadlineAllDay: false,
+        priority: null,
+        parentId: nodeId,
+        x: cell.x,
+        y: cell.y,
+      });
+      setDialogOpen(false);
+    } catch (submissionError) {
+      setError(
+        submissionError instanceof Error
+          ? submissionError.message
+          : "Unable to create bit.",
+      );
+    }
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar
         level={node?.level ?? 0}
-        onAddClick={!isLeafLevel ? handleSidebarAdd : undefined}
+        onAddClick={handleSidebarAdd}
       />
       <main className="relative ml-[14rem] flex flex-1 flex-col overflow-hidden">
         <h1 className="sr-only">{node?.title ?? "Grid"}</h1>
@@ -146,20 +188,27 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
         <div className="relative flex-1 overflow-auto p-4">
           <GridView
             level={displayLevel}
-            onAddAtCell={!isLeafLevel ? handleCellAdd : undefined}
+            onAddAtCell={handleCellAdd}
             parentColor={node?.color}
             parentId={nodeId}
           />
         </div>
         <EditModeOverlay />
-        {!isLeafLevel ? (
+        {isLeafLevel ? (
+          <CreateBitDialog
+            error={error}
+            onOpenChange={handleOpenChange}
+            onSubmit={handleBitSubmit}
+            open={dialogOpen}
+          />
+        ) : (
           <CreateNodeDialog
             error={error}
             onOpenChange={handleOpenChange}
             onSubmit={handleSubmit}
             open={dialogOpen}
           />
-        ) : null}
+        )}
       </main>
     </div>
   );

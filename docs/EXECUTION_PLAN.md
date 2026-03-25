@@ -267,8 +267,8 @@
     - Segment: `text-muted-foreground hover:text-foreground transition-colors`. Last segment: `text-foreground font-medium`
     - Description subtitle: `text-xs text-muted-foreground truncate pl-0.5` (when node has description)
   - Click segment → navigate to `/grid/[nodeId]` or `/` for Home
-  - Drop zone for drag-to-breadcrumb (move items to ancestor grids)
-- **Acceptance:** Breadcrumbs show full path. Click navigates. Last segment bold. Description subtitle when present. Drop zone highlighted during drag
+  - Drop zone structure present; active drag highlighting deferred to Task 34 (DnD Grid Interactions)
+- **Acceptance:** Breadcrumbs show full path. Click navigates. Last segment bold. Description subtitle when present.
 - **Commit:** `feat: add breadcrumbs with navigation and drag-to-breadcrumb drop zone`
 
 ### Task 17: Bit Card
@@ -323,11 +323,11 @@
     - Grid cells get `border-2 border-dashed border-muted-foreground/30`
     - Empty cells show `+` button for item creation
     - Each item gets delete button overlay (top-right corner, `bg-destructive text-destructive-foreground` rounded)
-    - Drag-to-reposition enabled via @dnd-kit within the grid
+    - Drag-to-reposition deferred to Task 34 (DnD Grid Interactions)
   - Toggle via sidebar Pencil button or keyboard shortcut
   - Exit on navigation or ESC key
-- **Acceptance:** Pencil toggles edit mode. Cards jiggle. Delete buttons appear. Items repositionable by drag. ESC exits
-- **Commit:** `feat: add edit mode with jiggle animation, delete buttons, and drag reposition`
+- **Acceptance:** Pencil toggles edit mode. Cards jiggle. Delete overlays appear on all item types. Dashed cell borders visible. ESC exits. Drag reposition owned by Task 34.
+- **Commit:** `feat: add edit mode with jiggle animation and delete overlays`
 
 #### Phase 4 Notes
 

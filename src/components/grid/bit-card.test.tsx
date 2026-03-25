@@ -68,8 +68,7 @@ describe("BitCard", () => {
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
-  it("shows overdue styling and edit mode affordances for past-deadline bits", () => {
-    useEditModeStore.setState({ isEditMode: true });
+  it("shows overdue overlay with check and dismiss buttons on past-deadline bits", () => {
     const bit = createBit({
       title: "Overdue bit",
       deadline: new Date("2026-03-24T00:00:00.000Z").getTime(),
@@ -83,11 +82,28 @@ describe("BitCard", () => {
       />,
     );
 
-    const card = screen.getByText("Overdue bit").closest('[role="button"]');
+    expect(screen.getByText("Overdue bit")).toHaveClass("line-through");
+    expect(screen.getByText("Done?")).toBeInTheDocument();
+    expect(screen.getByLabelText("Mark as done")).toBeInTheDocument();
+    expect(screen.getByLabelText("Dismiss")).toBeInTheDocument();
+  });
+
+  it("shows delete overlay in edit mode", () => {
+    useEditModeStore.setState({ isEditMode: true });
+    const bit = createBit({ title: "Active bit" });
+    render(
+      <BitCard
+        bit={bit}
+        chunkStats={{ completed: 0, total: 0 }}
+        onClick={vi.fn()}
+        parentColor="hsl(221, 83%, 53%)"
+      />,
+    );
+
+    const card = screen.getByText("Active bit").closest('[role="button"]');
 
     expect(card).not.toBeNull();
     expect(card).toHaveClass("motion-safe:animate-jiggle");
-    expect(screen.getByText("Overdue bit")).toHaveClass("line-through");
-    expect(screen.getByText("Done?")).toBeInTheDocument();
+    expect(screen.getByLabelText("Delete Active bit")).toBeInTheDocument();
   });
 });

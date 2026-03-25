@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { indexedDBStore } from "@/lib/db/indexeddb";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
-import type { Node } from "@/types";
+import type { Bit, Node } from "@/types";
 import { NodeGridShell } from "./node-grid-shell";
 
 vi.mock("@/components/layout/sidebar", () => ({
@@ -55,6 +55,25 @@ vi.mock("@/components/grid/grid-view", () => ({
   ),
 }));
 
+vi.mock("@/components/grid/create-bit-dialog", () => ({
+  CreateBitDialog: ({
+    open,
+    onSubmit,
+  }: {
+    open: boolean;
+    onSubmit: (values: { title: string; icon: string }) => Promise<void>;
+  }) =>
+    open ? (
+      <button
+        aria-label="bit-dialog-submit"
+        onClick={() => void onSubmit({ title: "New bit", icon: "Box" })}
+        type="button"
+      >
+        Submit
+      </button>
+    ) : null,
+}));
+
 vi.mock("@/components/grid/create-node-dialog", () => ({
   CreateNodeDialog: ({
     open,
@@ -83,12 +102,32 @@ vi.mock("@/lib/db/indexeddb", () => ({
     getGridOccupancy: vi.fn(),
     getNode: vi.fn(),
     createNode: vi.fn(),
+    createBit: vi.fn(),
   },
 }));
 
 vi.mock("@/lib/utils/bfs", () => ({
   findNearestEmptyCell: vi.fn(),
 }));
+
+function createBit(overrides: Partial<Bit> = {}): Bit {
+  return {
+    id: overrides.id ?? crypto.randomUUID(),
+    title: overrides.title ?? "Bit",
+    description: overrides.description ?? "",
+    icon: overrides.icon ?? "Box",
+    deadline: overrides.deadline ?? null,
+    deadlineAllDay: overrides.deadlineAllDay ?? false,
+    priority: overrides.priority ?? null,
+    status: overrides.status ?? "active",
+    mtime: overrides.mtime ?? 1,
+    createdAt: overrides.createdAt ?? 1,
+    parentId: overrides.parentId ?? "parent-node",
+    x: overrides.x ?? 0,
+    y: overrides.y ?? 0,
+    deletedAt: overrides.deletedAt ?? null,
+  };
+}
 
 function createNode(overrides: Partial<Node>): Node {
   return {
@@ -169,13 +208,9 @@ describe("NodeGridShell", () => {
     expect(findNearestEmptyCellMock).toHaveBeenCalledWith(new Set(["0,0"]), 5, 6);
   });
 
-  it("blocks node creation controls at the leaf level", async () => {
+  it("shows bit creation controls at leaf level, not node creation", async () => {
     vi.mocked(indexedDBStore.getNode).mockResolvedValue(
-      createNode({
-        id: "leaf-node",
-        level: 2,
-        color: "hsl(32, 90%, 60%)",
-      }),
+      createNode({ id: "leaf-node", level: 2 }),
     );
 
     render(<NodeGridShell nodeId="leaf-node" />);
@@ -184,7 +219,40 @@ describe("NodeGridShell", () => {
       expect(screen.getByTestId("grid-view")).toHaveAttribute("data-level", "3");
     });
 
-    expect(screen.queryByLabelText("sidebar-add")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("grid-add")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("sidebar-add")).toBeInTheDocument();
+    expect(screen.getByLabelText("grid-add")).toBeInTheDocument();
+    expect(screen.queryByLabelText("dialog-submit")).not.toBeInTheDocument();
+  });
+
+  it("creates a bit with explicit payload at leaf level", async () => {
+    const node = createNode({ id: "leaf-node", level: 2 });
+    vi.mocked(indexedDBStore.getNode).mockResolvedValue(node);
+    vi.mocked(indexedDBStore.getGridOccupancy).mockResolvedValue(new Set(["0,0"]));
+    vi.mocked(indexedDBStore.createBit).mockResolvedValue(createBit({ parentId: node.id }));
+    vi.mocked(findNearestEmptyCell).mockReturnValue({ x: 3, y: 4 });
+
+    render(<NodeGridShell nodeId={node.id} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("grid-view")).toHaveAttribute("data-level", "3");
+    });
+
+    fireEvent.click(screen.getByLabelText("grid-add"));
+    fireEvent.click(await screen.findByLabelText("bit-dialog-submit"));
+
+    await waitFor(() => {
+      expect(vi.mocked(indexedDBStore.createBit)).toHaveBeenCalledWith({
+        title: "New bit",
+        description: "",
+        icon: "Box",
+        deadline: null,
+        deadlineAllDay: false,
+        priority: null,
+        parentId: node.id,
+        x: 3,
+        y: 4,
+      });
+    });
+    expect(vi.mocked(findNearestEmptyCell)).toHaveBeenCalledWith(new Set(["0,0"]), 5, 6);
   });
 });

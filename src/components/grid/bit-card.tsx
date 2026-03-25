@@ -1,6 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
+import { Check, X } from "lucide-react";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import { cn } from "@/lib/utils";
 import { getAgingSaturation, getAgingState } from "@/lib/utils/aging";
@@ -90,9 +91,41 @@ export function BitCard({ bit, parentColor, chunkStats, onClick }: BitCardProps)
         </div>
       ) : null}
       {pastDeadline ? (
-        <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/60 backdrop-blur-[2px]">
+        <div className="absolute inset-0 flex items-center justify-center gap-2 rounded-lg bg-background/60 backdrop-blur-[2px]">
           <span className="text-xs font-medium text-muted-foreground">Done?</span>
+          <button
+            type="button"
+            aria-label="Mark as done"
+            className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <Check className="h-3 w-3" />
+          </button>
+          <button
+            type="button"
+            aria-label="Dismiss"
+            className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-muted-foreground"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <X className="h-3 w-3" />
+          </button>
         </div>
+      ) : null}
+      {isEditMode ? (
+        <button
+          type="button"
+          aria-label={`Delete ${bit.title}`}
+          className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
+          onClick={(event) => {
+            event.stopPropagation();
+          }}
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
       ) : null}
     </div>
   );
