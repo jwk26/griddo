@@ -357,7 +357,7 @@
 
 ### Task A: Foundation Token Alignment
 
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/app/globals.css`, `src/lib/utils/aging.ts`, `src/components/grid/bit-card.tsx`, `src/components/grid/node-card.tsx`, `src/lib/utils/aging.test.ts`, `src/components/grid/bit-card.test.tsx`
 - **Actions:**
   - `globals.css` — `:root`:
@@ -389,7 +389,7 @@
 
 ### Task B: BitCard Design Alignment
 
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/bit-card.tsx`, `src/components/grid/bit-card.test.tsx`
 - **Dependencies:** Task A
 - **Actions:**

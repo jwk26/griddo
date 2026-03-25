@@ -17,13 +17,13 @@ export function getAgingState(mtime: number): AgingState {
   return "neglected";
 }
 
-export function getAgingSaturation(state: AgingState): number {
+export function getAgingFilter(state: AgingState): string {
   switch (state) {
     case "fresh":
-      return 1;
+      return "saturate(1)";
     case "stagnant":
-      return 0.5;
+      return "saturate(0.5) brightness(0.9)";
     case "neglected":
-      return 0.2;
+      return "saturate(0.2) brightness(0.75)";
   }
 }
