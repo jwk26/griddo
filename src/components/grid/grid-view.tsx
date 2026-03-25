@@ -1,11 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
+import { usePathname, useRouter } from "next/navigation";
+import { BitCard } from "@/components/grid/bit-card";
 import { GridCell } from "@/components/grid/grid-cell";
 import { NodeCard } from "@/components/grid/node-card";
 import { useGridData } from "@/hooks/use-grid-data";
+import { vignetteVariants } from "@/lib/animations/grid";
 import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
-import { cn } from "@/lib/utils";
 import { useEditModeStore } from "@/stores/edit-mode-store";
 import type { Bit, Node } from "@/types";
 
@@ -25,12 +27,15 @@ function isNodeItem(item: GridItem): item is Node {
 export function GridView({
   parentId,
   level,
+  parentColor = "hsl(221, 83%, 53%)",
   onAddAtCell,
 }: {
   parentId: string | null;
   level: number;
+  parentColor?: string;
   onAddAtCell?: (x: number, y: number) => void;
 }) {
+  const pathname = usePathname();
   const router = useRouter();
   const { nodes, bits } = useGridData(parentId);
   const isEditMode = useEditModeStore((state) => state.isEditMode);
@@ -74,13 +79,13 @@ export function GridView({
                     onClick={() => router.push(`/grid/${item.id}`)}
                   />
                 ) : (
-                  <div
-                    className={cn(
-                      "flex h-full min-h-[5rem] items-center justify-center rounded-xl border border-border bg-card p-3 text-center text-sm text-foreground shadow-sm",
-                      isEditMode && "motion-safe:animate-jiggle",
-                    )}
-                  >
-                    <span className="line-clamp-3">{item.title}</span>
+                  <div className="flex h-full items-center">
+                    <BitCard
+                      bit={item}
+                      chunkStats={{ completed: 0, total: 0 }}
+                      onClick={() => router.push(`${pathname}?bit=${item.id}`)}
+                      parentColor={parentColor}
+                    />
                   </div>
                 )}
               </GridCell>
@@ -88,6 +93,13 @@ export function GridView({
           }),
         )}
       </div>
+      <motion.div
+        animate={`l${level}`}
+        className="pointer-events-none absolute inset-0"
+        initial={false}
+        style={{ boxShadow: "inset 0 0 120px rgba(0,0,0,1)" }}
+        variants={vignetteVariants}
+      />
     </div>
   );
 }

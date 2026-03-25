@@ -2,6 +2,18 @@
 
 > **Scope:** Exact visual values — colors, typography, spacing, animations. Architecture lives in SPEC.md.
 > **All values are exact (HSL, px, rem). No prose descriptions.**
+> **Reference:** `docs/design-system-preview.html` | **Audit:** `docs/design-archaeology/DESIGN_AUDIT.md`
+
+---
+
+## Intentional Departures
+
+Values that differ from `docs/design-system-preview.html` **on purpose**:
+
+| # | Token / Component | HTML reference | This file | Reason |
+|---|-------------------|---------------|-----------|--------|
+| 1 | Font family | Inter (Google Fonts) | Geist Sans | Explicit project decision — Geist is the chosen system font |
+| 2 | Sidebar collapsed width | `52px` icon strip | `0rem` (hidden) | GridDO sidebar folds off-screen completely; icon strip is a different interaction model |
 
 ---
 
@@ -72,9 +84,9 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
     --urgency-badge: 0 84% 60%;           /* #ef4444 — badge on Nodes */
 
     /* Aging System (filter values, not colors) */
-    --aging-fresh-saturation: 1;
-    --aging-stagnant-saturation: 0.5;
-    --aging-neglected-saturation: 0.2;
+    --aging-fresh-filter: saturate(1);
+    --aging-stagnant-filter: saturate(0.5) brightness(0.9);
+    --aging-neglected-filter: saturate(0.2) brightness(0.75);
     --aging-dust-opacity: 0.3;
 
     /* Grid Layout */
@@ -102,6 +114,9 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
     --bit-detail-max-height: 85vh;
     --search-overlay-width: 36rem;         /* 576px — search modal */
 
+    /* Page Background (distinct from --background card surface) */
+    --page-bg: hsl(38 28% 91%);            /* warm beige — body background in light mode */
+
     /* Calendar Layout */
     --calendar-pool-width: 18rem;          /* 288px — left panel (Node + Items pool) */
     --calendar-node-pool-ratio: 0.6;       /* 60% of left panel for Node pool */
@@ -113,10 +128,10 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
     --background: 240 10% 3.9%;            /* #09090b */
     --foreground: 0 0% 98%;               /* #fafafa */
 
-    --card: 240 10% 3.9%;
+    --card: 240 6% 8%;                     /* elevated surface — distinct from background */
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 10% 3.9%;
+    --popover: 240 6% 8%;                  /* same elevation as card */
     --popover-foreground: 0 0% 98%;
 
     --primary: 217 91% 60%;               /* #3b82f6 — brighter blue on dark */
@@ -148,6 +163,9 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
     /* Grid lines lighten on dark background */
     --grid-line-color: 240 5% 65%;
 
+    /* Page background — dark mode */
+    --page-bg: hsl(240 10% 6%);            /* near-black, slightly lighter than --background */
+
     /* Vignette uses darker shadow on dark mode */
     --vignette-intensity-l1: 0.2;
     --vignette-intensity-l2: 0.4;
@@ -160,7 +178,8 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    background: var(--page-bg);
+    @apply text-foreground antialiased;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -209,6 +228,7 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
+  --color-page-bg: var(--page-bg);         /* body background surface */
 
   /* ── Colors (GridDO priority) ── */
   --color-priority-high: hsl(var(--priority-high));
@@ -271,7 +291,7 @@ The following CSS variables are consumed via `var()` in component styles or Java
 
 | Variable group | Reason |
 |---|---|
-| `--aging-*-saturation`, `--aging-dust-opacity` | Applied as CSS filter values |
+| `--aging-fresh-filter`, `--aging-stagnant-filter`, `--aging-neglected-filter`, `--aging-dust-opacity` | Applied as `filter:` values — stagnant includes `brightness(0.9)`, neglected `brightness(0.75)` |
 | `--grid-cols`, `--grid-rows`, `--grid-gap`, `--grid-cell-min` | Consumed by CSS Grid template or inline styles |
 | `--grid-line-color`, `--grid-line-opacity-l*` | Per-level logic via inline styles |
 | `--vignette-intensity-l*` | Consumed by Motion animation values |
@@ -350,13 +370,13 @@ All classes reference CSS variables + Tailwind config above. No hardcoded hex or
 <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl cursor-pointer transition-transform hover:scale-105">
   {/* Icon container — color from Node.color */}
   <div
-    className="flex items-center justify-center w-14 h-14 rounded-2xl"
+    className="flex items-center justify-center w-[52px] h-[52px] rounded-[14px]"
     style={{ backgroundColor: nodeColor }}
   >
-    <Icon className="w-7 h-7 text-white" />
+    <Icon className="w-[26px] h-[26px] text-white" />
   </div>
   {/* Title */}
-  <span className="text-xs font-medium text-foreground truncate max-w-[5rem]">
+  <span className="text-[11px] font-medium text-foreground truncate max-w-[5rem]">
     {title}
   </span>
 </div>
@@ -364,40 +384,51 @@ All classes reference CSS variables + Tailwind config above. No hardcoded hex or
 
 ### Bit Card (Grid View)
 
+Two-row layout: top row has content, bottom row has progress (only when chunks exist).
+
 ```tsx
-{/* Bit — horizontal rectangle. Color propagation: parent Node color at low saturation */}
-<div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-card shadow-sm border border-border">
-  {/* Color accent — light mode: bg tint; dark mode: left border */}
-  <div className="w-1 self-stretch rounded-full dark:block hidden" style={{ backgroundColor: parentColor }} />
-  {/* Icon */}
-  <div className="flex-shrink-0">
-    <Icon className="w-5 h-5 text-muted-foreground" />
-  </div>
-  {/* Content */}
-  <div className="flex-1 min-w-0">
-    <p className="text-sm font-medium text-foreground truncate">{title}</p>
-    {deadline && (
-      <p className="text-xs text-muted-foreground mt-0.5">{formattedDeadline}</p>
+{/* Bit — two-row rectangle. padding: 10px 14px 10px 12px */}
+<div className="flex flex-col rounded-[var(--radius)] bg-card shadow-sm border border-border overflow-hidden
+                pt-[10px] pr-[14px] pb-[10px] pl-3">
+  {/* ── Top row ── */}
+  <div className="flex items-center gap-[10px]">
+    {/* Color bar */}
+    <div className="w-[3px] self-stretch rounded-[2px] flex-shrink-0"
+         style={{ backgroundColor: parentColor }} />
+    {/* Icon */}
+    <Icon className="w-[18px] h-[18px] text-muted-foreground flex-shrink-0" />
+    {/* Content */}
+    <div className="flex-1 min-w-0">
+      <p className="text-[13px] font-medium text-foreground truncate">{title}</p>
+      {deadline && (
+        <p className="text-[11px] text-muted-foreground mt-px">{formattedDeadline}</p>
+      )}
+    </div>
+    {/* Priority badge */}
+    {priority && (
+      <span className={cn(
+        "inline-flex items-center py-[2px] px-[7px] rounded-full flex-shrink-0",
+        "text-[10px] font-semibold uppercase tracking-[0.05em]",
+        priority === "high" && "bg-priority-high-bg text-priority-high",
+        priority === "mid" && "bg-priority-mid-bg text-priority-mid",
+        priority === "low" && "bg-priority-low-bg text-priority-low",
+      )}>
+        {priority}
+      </span>
     )}
   </div>
-  {/* Priority badge */}
-  {priority && (
-    <span className={cn(
-      "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
-      priority === "high" && "bg-priority-high-bg text-priority-high",
-      priority === "mid" && "bg-priority-mid-bg text-priority-mid",
-      priority === "low" && "bg-priority-low-bg text-priority-low",
-    )}>
-      {priority}
-    </span>
-  )}
-  {/* Progress bar — hidden when zero chunks */}
+  {/* ── Bottom row — only when chunks exist ── */}
   {totalChunks > 0 && (
-    <div className="w-16 h-1.5 rounded-full bg-secondary overflow-hidden">
-      <div
-        className="h-full rounded-full bg-primary transition-all"
-        style={{ width: `${(completedChunks / totalChunks) * 100}%` }}
-      />
+    <div className="flex items-center gap-2 mt-2 pl-[3px]">
+      <div className="flex-[0_0_80%] h-[5px] rounded-full bg-secondary overflow-hidden">
+        <div
+          className="h-full rounded-full bg-primary transition-all"
+          style={{ width: `${(completedChunks / totalChunks) * 100}%` }}
+        />
+      </div>
+      <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+        {completedChunks} / {totalChunks}
+      </span>
     </div>
   )}
 </div>
@@ -526,21 +557,24 @@ All classes reference CSS variables + Tailwind config above. No hardcoded hex or
 
 ### Blur + Overlay Pattern (Past Deadline / Conflict)
 
+Blur is applied **to the card content** (`filter: blur(3px)`), not via `backdrop-filter`.
+Buttons are `28×28px` (w-7 h-7). "Done?" text is foreground (not muted), semibold.
+
 ```tsx
 {/* Blur + overlay — consistent "needs attention" pattern */}
 <div className="relative">
-  {/* Blurred item */}
-  <div className="blur-sm pointer-events-none">
+  {/* Blurred item — filter on the content, not backdrop */}
+  <div className="[filter:blur(3px)] pointer-events-none">
     <BitCard {...bitProps} />
   </div>
   {/* Overlay */}
-  <div className="absolute inset-0 flex items-center justify-center gap-3 bg-background/40 rounded-lg">
-    <span className="text-sm font-medium text-foreground">{overlayText}</span>
-    <button className="p-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
-      <Check className="w-4 h-4" />
+  <div className="absolute inset-0 flex items-center justify-center gap-[10px] bg-background/50 rounded-[var(--radius)]">
+    <span className="text-[13px] font-semibold text-foreground">{overlayText}</span>
+    <button className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground">
+      <Check className="w-3.5 h-3.5" />
     </button>
-    <button className="p-1.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80">
-      <X className="w-4 h-4" />
+    <button className="flex items-center justify-center w-7 h-7 rounded-full bg-secondary text-secondary-foreground">
+      <X className="w-3.5 h-3.5" />
     </button>
   </div>
 </div>

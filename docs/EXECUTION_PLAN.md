@@ -255,7 +255,7 @@
 ## Phase 4: Grid Navigation + Bit Cards
 
 ### Task 16: Breadcrumbs
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/layout/breadcrumbs.tsx`
 - **Dependencies:** Task 5 (DataStore)
 - **Actions:**
@@ -267,12 +267,12 @@
     - Segment: `text-muted-foreground hover:text-foreground transition-colors`. Last segment: `text-foreground font-medium`
     - Description subtitle: `text-xs text-muted-foreground truncate pl-0.5` (when node has description)
   - Click segment → navigate to `/grid/[nodeId]` or `/` for Home
-  - Drop zone for drag-to-breadcrumb (move items to ancestor grids)
-- **Acceptance:** Breadcrumbs show full path. Click navigates. Last segment bold. Description subtitle when present. Drop zone highlighted during drag
+  - Drop zone structure present; active drag highlighting deferred to Task 34 (DnD Grid Interactions)
+- **Acceptance:** Breadcrumbs show full path. Click navigates. Last segment bold. Description subtitle when present.
 - **Commit:** `feat: add breadcrumbs with navigation and drag-to-breadcrumb drop zone`
 
 ### Task 17: Bit Card
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/bit-card.tsx`
 - **Dependencies:** Task 4 (types), Task 6 (aging, urgency)
 - **Actions:**
@@ -290,7 +290,7 @@
 - **Commit:** `feat: add bit card with priority, progress, urgency, and past-deadline overlay`
 
 ### Task 18: Level 1-3 Grid Page
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/app/grid/[nodeId]/page.tsx`
 - **Dependencies:** Task 13, Task 16, Task 17
 - **Actions:**
@@ -303,7 +303,7 @@
 - **Commit:** `feat: add Level 1-3 grid page with breadcrumbs and level constraints`
 
 ### Task 19: Vignette + Depth Effects
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/grid-view.tsx` (update), `src/lib/animations/grid.ts` (update)
 - **Dependencies:** Task 13, Task 8
 - **Actions:**
@@ -314,7 +314,7 @@
 - **Commit:** `feat: add vignette and grid depth effects per hierarchy level`
 
 ### Task 20: Edit Mode Overlay
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/edit-mode-overlay.tsx`
 - **Dependencies:** Task 7 (edit-mode-store), Task 13
 - **Actions:**
@@ -323,11 +323,105 @@
     - Grid cells get `border-2 border-dashed border-muted-foreground/30`
     - Empty cells show `+` button for item creation
     - Each item gets delete button overlay (top-right corner, `bg-destructive text-destructive-foreground` rounded)
-    - Drag-to-reposition enabled via @dnd-kit within the grid
+    - Drag-to-reposition deferred to Task 34 (DnD Grid Interactions)
   - Toggle via sidebar Pencil button or keyboard shortcut
   - Exit on navigation or ESC key
-- **Acceptance:** Pencil toggles edit mode. Cards jiggle. Delete buttons appear. Items repositionable by drag. ESC exits
-- **Commit:** `feat: add edit mode with jiggle animation, delete buttons, and drag reposition`
+- **Acceptance:** Pencil toggles edit mode. Cards jiggle. Delete overlays appear on all item types. Dashed cell borders visible. ESC exits. Drag reposition owned by Task 34.
+- **Commit:** `feat: add edit mode with jiggle animation and delete overlays`
+
+#### Phase 4 Notes
+
+> **Always add a visually-hidden h1 per page:** `node-grid-shell.tsx` was missing a page heading for screen readers. Every major page shell needs `<h1 className="sr-only">{title}</h1>` even when the visual design omits a visible heading.
+
+> **BitCard in GridCell requires a flex wrapper:** BitCard placed directly inside GridCell is not vertically centered. Wrap with `<div className="flex h-full items-center">` to fill the cell and center the card.
+
+> **Hide overflow scrollbars with Tailwind arbitrary values:** Long breadcrumb paths show a native browser scrollbar. Suppress with `[scrollbar-width:none] [&::-webkit-scrollbar]:hidden` on the overflow-x-auto container — covers both Firefox and WebKit.
+
+> **execute-next-phase skill had a bug during this phase:** The skill was updated post-execution. If planning or task scoping felt off during this phase, that's the likely cause. Verify the skill is current before starting the next phase.
+
+> **At leaf level, switch creation type — never block it:** The `isLeafLevel` guard was applied too broadly, hiding all creation affordances instead of routing `+` to `CreateBitDialog`. Any leaf-level guard on a creation entry point should substitute Bit creation, not remove the affordance entirely.
+
+> **Verify acceptance criteria against running code, not code existence:** Tasks 17, 18, and 20 were marked complete with code committed, but several acceptance items were undelivered (missing overlay buttons, missing delete overlay on BitCard, leaf-level creation blocked). Code existing ≠ acceptance criteria met. Check each acceptance line against the live behavior before closing.
+
+> **Separate edit-mode affordances from DnD interactions across phases:** Task 20 = visual affordances (jiggle, dashed cells, delete overlays). Task 34 = DnD interaction logic (drag reposition, drag-into-Node, drag-to-breadcrumb). Never let acceptance criteria from one bleed into the other. Resolve ownership before closing any task that touches shared behavior.
+
+> **Full issue log:** `docs/issues/Issues_Phase_4.md`
+
+---
+
+## Phase 4.5: Design Alignment
+
+> **Context:** Design archaeology against `docs/design-system-preview.html` revealed accumulated drift between the canonical design reference and runtime code. This phase closes that drift before Phase 5 builds on top of it.
+> **Branch:** `phase-4/grid-navigation-bit-cards` (same branch, separate tracking unit)
+> **Audit source:** `docs/design-archaeology/DESIGN_AUDIT.md`
+
+### Task A: Foundation Token Alignment
+
+- **Status:** `[ ]`
+- **Files:** `src/app/globals.css`, `src/lib/utils/aging.ts`, `src/components/grid/bit-card.tsx`, `src/components/grid/node-card.tsx`, `src/lib/utils/aging.test.ts`, `src/components/grid/bit-card.test.tsx`
+- **Actions:**
+  - `globals.css` — `:root`:
+    - Add `--page-bg: hsl(38 28% 91%)` (warm beige body background)
+  - `globals.css` — `@theme inline`:
+    - Add `--color-page-bg: hsl(var(--page-bg))` so `bg-page-bg` utility is available
+  - `globals.css` — `@layer base`:
+    - Change `body` from `@apply bg-background` to `background: hsl(var(--page-bg))` in light mode. Dark mode body background stays `--background`; add a `.dark body` override to keep dark background
+  - `globals.css` — `.dark`:
+    - Change `--card: 240 6% 8%` (elevated surface, distinct from `--background`)
+    - Change `--popover: 240 6% 8%` (same elevation as card)
+    - Update aging token names: rename `--aging-fresh-saturation` → `--aging-fresh-filter`, etc. with compound values: fresh = `saturate(1)`, stagnant = `saturate(0.5) brightness(0.9)`, neglected = `saturate(0.2) brightness(0.75)`
+  - `aging.ts`:
+    - Rename `getAgingSaturation(state)` → `getAgingFilter(state): string`
+    - Return full CSS filter strings: `"saturate(1)"`, `"saturate(0.5) brightness(0.9)"`, `"saturate(0.2) brightness(0.75)"`
+    - Export old name as deprecated alias if needed for test migration, or update all callsites directly
+  - `bit-card.tsx` + `node-card.tsx`:
+    - Update import: `getAgingFilter` instead of `getAgingSaturation`
+    - Change `style={{ filter: \`saturate(${saturation})\` }}` → `style={{ filter: getAgingFilter(getAgingState(...)) }}`
+  - `aging.test.ts` + `bit-card.test.tsx`:
+    - Update assertions to expect full filter strings (e.g. `"saturate(0.5) brightness(0.9)"` not `"saturate(0.5)"`)
+- **Acceptance:**
+  - `pnpm test` passes — aging tests assert full filter strings; bit-card aging test matches new signature
+  - `pnpm build` passes — no TypeScript errors from renamed export
+  - Dark mode: BitCard and NodeCard backgrounds are visibly elevated against page background
+  - Light mode: body background is warm beige (`hsl(38 28% 91%)`), not pure white
+  - Stagnant/neglected items visibly darker (brightness applied), not just desaturated
+- **Commit:** `fix: foundation token alignment — page-bg, dark card elevation, aging filter`
+
+### Task B: BitCard Design Alignment
+
+- **Status:** `[ ]`
+- **Files:** `src/components/grid/bit-card.tsx`, `src/components/grid/bit-card.test.tsx`
+- **Dependencies:** Task A
+- **Actions:**
+  - **Restructure to two-row layout** per `docs/design-archaeology/DESIGN_AUDIT.md` section 5:
+    - Row 1 (top): color accent bar + icon + title + meta/deadline + priority badge
+    - Row 2 (bottom, conditional on `chunkStats.total > 0`): progress bar (`flex: 0 0 80%`, not `w-16`) + chunk count label
+    - Card padding: `py-[10px] pr-[14px] pl-[12px]` to match `10px 14px 10px 12px` spec
+    - Card border-radius: `rounded-[10px]` (spec is `var(--radius)` = 10px; `rounded-lg` = 8px, off by 2px)
+  - **Priority badge** per audit section 6:
+    - Font size: `text-[10px]` (not `text-xs` = 12px)
+    - Font weight: `font-semibold` (600, not `font-medium` = 500)
+    - Text transform: `uppercase`
+    - Letter spacing: `tracking-[0.05em]`
+    - Padding: `px-[7px] py-[2px]`
+  - **Past-deadline overlay** per audit section 8:
+    - "Done?" text: `text-[13px] font-semibold text-foreground` (not `text-xs font-medium text-muted-foreground`)
+    - Action buttons: `w-7 h-7 rounded-full` (28px, not `h-5 w-5` = 20px)
+    - Cancel button: `bg-secondary text-secondary-foreground` (not `bg-muted text-muted-foreground`)
+- **Acceptance:**
+  - BitCard visually matches the two-row layout in `docs/design-archaeology/screenshot-light.png`
+  - Priority badge is uppercase with correct size and weight
+  - Past-deadline overlay buttons are 28px circles with correct tokens
+  - `pnpm build` passes
+- **Commit:** `fix: BitCard design alignment — two-row layout, badge typography, overlay`
+
+#### Phase 4.5 Notes
+
+> **Aging tokens in globals.css were dead code:** `--aging-fresh-saturation` etc. were never consumed by components. Aging was hardcoded in `aging.ts`. Updating only the CSS tokens would have had zero visual effect. Always trace the full call path before categorising a change as "token-only."
+
+> **Explicitly deferred (known remaining gaps):** NodeCard icon container size (52px vs 56px) and Sidebar button/icon sizing are minor visual discrepancies. Deferred to Phase 7 Polish — not structural, "visually subtle" per audit verdict.
+
+> **Full audit:** `docs/design-archaeology/DESIGN_AUDIT.md`
 
 ---
 

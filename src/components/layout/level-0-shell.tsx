@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CreateNodeDialog } from "@/components/grid/create-node-dialog";
+import { EditModeOverlay } from "@/components/grid/edit-mode-overlay";
 import { GridView } from "@/components/grid/grid-view";
 import { OnboardingHints } from "@/components/grid/onboarding-hints";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -117,7 +118,6 @@ export function Level0Shell() {
         level: 0,
         x: cell.x,
         y: cell.y,
-        deletedAt: null,
       };
 
       await indexedDBStore.createNode(payload);
@@ -138,6 +138,7 @@ export function Level0Shell() {
         <h1 className="sr-only">GridDO</h1>
         <GridView level={0} onAddAtCell={handleCellAdd} parentId={null} />
         <OnboardingHints />
+        <EditModeOverlay />
         <CreateNodeDialog
           error={error}
           onOpenChange={handleOpenChange}
