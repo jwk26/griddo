@@ -58,7 +58,7 @@ describe("BitCard", () => {
     const card = screen.getByText("Ship Phase 4").closest('[role="button"]');
 
     expect(card).not.toBeNull();
-    expect(card).toHaveStyle({ filter: "saturate(0.5)" });
+    expect(card).toHaveStyle({ filter: "saturate(0.5) brightness(0.9)" });
     expect(screen.getByText("Mar 27")).toBeInTheDocument();
     expect(screen.getByText("high")).toBeInTheDocument();
     expect(container.querySelector('[style*="width: 25%"]')).not.toBeNull();

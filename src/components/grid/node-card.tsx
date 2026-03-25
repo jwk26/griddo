@@ -2,7 +2,7 @@
 
 import { X } from "lucide-react";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
-import { getAgingSaturation, getAgingState } from "@/lib/utils/aging";
+import { getAgingFilter, getAgingState } from "@/lib/utils/aging";
 import { cn } from "@/lib/utils";
 import type { Node } from "@/types";
 
@@ -16,7 +16,7 @@ export function NodeCard({
   isEditMode?: boolean;
 }) {
   const Icon = NODE_ICON_MAP[node.icon] ?? NODE_ICON_MAP.Box;
-  const saturation = getAgingSaturation(getAgingState(node.mtime));
+  const agingFilter = getAgingFilter(getAgingState(node.mtime));
 
   return (
     <div className="relative flex h-full items-center justify-center">
@@ -27,7 +27,7 @@ export function NodeCard({
           isEditMode && "motion-safe:animate-jiggle",
         )}
         onClick={onClick}
-        style={{ filter: `saturate(${saturation})` }}
+        style={{ filter: agingFilter }}
       >
         <div
           className="flex h-14 w-14 items-center justify-center rounded-2xl"

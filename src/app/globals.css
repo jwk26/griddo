@@ -25,6 +25,9 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
+  /* ── Page background (distinct from card surface) ── */
+  --color-page-bg: hsl(var(--page-bg));
+
   /* ── Colors (GridDO priority) ── */
   --color-priority-high: hsl(var(--priority-high));
   --color-priority-high-bg: hsl(var(--priority-high-bg));
@@ -128,9 +131,9 @@
     --urgency-badge: 0 84% 60%;
 
     /* Aging System */
-    --aging-fresh-saturation: 1;
-    --aging-stagnant-saturation: 0.5;
-    --aging-neglected-saturation: 0.2;
+    --aging-fresh-filter: saturate(1);
+    --aging-stagnant-filter: saturate(0.5) brightness(0.9);
+    --aging-neglected-filter: saturate(0.2) brightness(0.75);
     --aging-dust-opacity: 0.3;
 
     /* Grid Layout */
@@ -158,6 +161,9 @@
     --bit-detail-max-height: 85vh;
     --search-overlay-width: 36rem;
 
+    /* Page Background (distinct from --background card surface) */
+    --page-bg: hsl(38 28% 91%);            /* warm beige — body background in light mode */
+
     /* Calendar Layout */
     --calendar-pool-width: 18rem;
     --calendar-node-pool-ratio: 0.6;
@@ -169,10 +175,10 @@
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
 
-    --card: 240 10% 3.9%;
+    --card: 240 6% 8%;                     /* elevated surface — distinct from background */
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 10% 3.9%;
+    --popover: 240 6% 8%;                  /* same elevation as card */
     --popover-foreground: 0 0% 98%;
 
     --primary: 217 91% 60%;
@@ -213,7 +219,12 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    background: var(--page-bg);
+    @apply text-foreground antialiased;
+  }
+
+  .dark body {
+    @apply bg-background;
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getAgingSaturation, getAgingState } from "@/lib/utils/aging";
+import { getAgingFilter, getAgingState } from "@/lib/utils/aging";
 
 describe("aging utilities", () => {
   const now = 1_700_000_000_000;
@@ -18,9 +18,9 @@ describe("aging utilities", () => {
     expect(getAgingState(now - 12 * 86_400_000)).toBe("neglected");
   });
 
-  it("maps aging states to the expected saturation values", () => {
-    expect(getAgingSaturation("fresh")).toBe(1);
-    expect(getAgingSaturation("stagnant")).toBe(0.5);
-    expect(getAgingSaturation("neglected")).toBe(0.2);
+  it("maps aging states to the expected filter strings", () => {
+    expect(getAgingFilter("fresh")).toBe("saturate(1)");
+    expect(getAgingFilter("stagnant")).toBe("saturate(0.5) brightness(0.9)");
+    expect(getAgingFilter("neglected")).toBe("saturate(0.2) brightness(0.75)");
   });
 });

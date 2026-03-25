@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { Check, X } from "lucide-react";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import { cn } from "@/lib/utils";
-import { getAgingSaturation, getAgingState } from "@/lib/utils/aging";
+import { getAgingFilter, getAgingState } from "@/lib/utils/aging";
 import { getUrgencyLevel, isPastDeadline } from "@/lib/utils/urgency";
 import { useEditModeStore } from "@/stores/edit-mode-store";
 import type { Bit } from "@/types";
@@ -17,7 +17,7 @@ type BitCardProps = {
 };
 
 export function BitCard({ bit, parentColor, chunkStats, onClick }: BitCardProps) {
-  const saturation = getAgingSaturation(getAgingState(bit.mtime));
+  const agingFilter = getAgingFilter(getAgingState(bit.mtime));
   const urgencyLevel = getUrgencyLevel(bit.deadline);
   const pastDeadline = isPastDeadline(bit.deadline);
   const isEditMode = useEditModeStore((state) => state.isEditMode);
@@ -42,7 +42,7 @@ export function BitCard({ bit, parentColor, chunkStats, onClick }: BitCardProps)
         }
       }}
       role="button"
-      style={{ filter: `saturate(${saturation})` }}
+      style={{ filter: agingFilter }}
       tabIndex={0}
     >
       <div
