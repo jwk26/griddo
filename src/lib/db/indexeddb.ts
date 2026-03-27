@@ -592,7 +592,7 @@ export class IndexedDBDataStore implements DataStore {
 
     const promotedLevel = parent.level + 1;
     if (promotedLevel > 2) {
-      throw new Error("Cannot promote Bit to Node at level 3 — Nodes only exist at levels 0-2");
+      throw new Error("Cannot promote Bit to Node — maximum nesting depth reached");
     }
 
     const timestamp = Date.now();

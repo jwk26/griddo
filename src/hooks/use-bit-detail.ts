@@ -4,23 +4,26 @@ import { liveQuery } from "dexie";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { indexedDBStore } from "@/lib/db/indexeddb";
-import type { Bit, Chunk } from "@/types";
+import type { Bit, Chunk, Node } from "@/types";
 
 type BitDetailState = {
   bitId: string | null;
   bit: Bit | null;
   chunks: Chunk[];
+  parentNode: Node | null;
 };
 
 const INITIAL_BIT_DETAIL: BitDetailState = {
   bitId: null,
   bit: null,
   chunks: [],
+  parentNode: null,
 };
 
 export function useBitDetail(): {
   bit: Bit | null;
   chunks: Chunk[];
+  parentNode: Node | null;
   isOpen: boolean;
   close: () => void;
 } {
@@ -36,17 +39,20 @@ export function useBitDetail(): {
       return;
     }
 
-    const subscription = liveQuery(() =>
-      Promise.all([
+    const subscription = liveQuery(async () => {
+      const [bit, chunks] = await Promise.all([
         indexedDBStore.getBit(bitId),
         indexedDBStore.getChunks(bitId),
-      ]),
-    ).subscribe({
-      next: ([bit, chunks]) => {
+      ]);
+      const parentNode = bit ? await indexedDBStore.getNode(bit.parentId) : undefined;
+      return [bit, chunks, parentNode] as const;
+    }).subscribe({
+      next: ([bit, chunks, parentNode]) => {
         setState({
           bitId,
           bit: bit ?? null,
           chunks,
+          parentNode: parentNode ?? null,
         });
       },
       error: (error) => {
@@ -68,6 +74,7 @@ export function useBitDetail(): {
     return {
       bit: null,
       chunks: [],
+      parentNode: null,
       isOpen,
       close,
     };
@@ -76,6 +83,7 @@ export function useBitDetail(): {
   return {
     bit: state.bit,
     chunks: state.chunks,
+    parentNode: state.parentNode,
     isOpen,
     close,
   };
