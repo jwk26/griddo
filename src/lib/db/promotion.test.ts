@@ -40,7 +40,7 @@ function makeStore(nodes: Node[], bits: Bit[], chunks: Chunk[] = []): { store: I
     bits: new FakeTable(bits),
     chunks: new FakeTable(chunks),
   };
-  const store = new IndexedDBDataStore({ nodes: tables.nodes as any, bits: tables.bits as any, chunks: tables.chunks as any });
+  const store = new IndexedDBDataStore({ nodes: tables.nodes, bits: tables.bits, chunks: tables.chunks });
   return { store, tables };
 }
 

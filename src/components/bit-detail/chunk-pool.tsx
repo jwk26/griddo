@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type KeyboardEvent } from "react";
 import {
   closestCenter,
   DndContext,
@@ -36,29 +36,50 @@ export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const isSubmittingRef = useRef(false);
+  const isComposingRef = useRef(false);
 
   const poolChunks = chunks
     .filter((c) => c.time === null)
     .sort((a, b) => a.order - b.order);
 
   async function handleAdd() {
+    if (isSubmittingRef.current) return;
     const trimmed = newTitle.trim();
     if (!trimmed) {
       setIsAdding(false);
       setNewTitle("");
       return;
     }
-    await indexedDBStore.createChunk({
-      title: trimmed,
-      description: "",
-      time: null,
-      timeAllDay: false,
-      order: chunks.length,
-      parentId: bitId,
-    });
-    setNewTitle("");
-    setIsAdding(false);
-    onAddStep?.();
+    isSubmittingRef.current = true;
+    try {
+      await indexedDBStore.createChunk({
+        title: trimmed,
+        description: "",
+        time: null,
+        timeAllDay: false,
+        order: chunks.length,
+        parentId: bitId,
+      });
+      setNewTitle("");
+      setIsAdding(false);
+      onAddStep?.();
+    } finally {
+      isSubmittingRef.current = false;
+    }
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      if (isComposingRef.current || event.nativeEvent.isComposing) return;
+      void handleAdd();
+      return;
+    }
+
+    if (event.key === "Escape") {
+      setNewTitle("");
+      setIsAdding(false);
+    }
   }
 
   async function handleToggle(chunk: Chunk) {
@@ -127,13 +148,13 @@ export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
             maxLength={200}
             onBlur={handleAdd}
             onChange={(e) => setNewTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") void handleAdd();
-              if (e.key === "Escape") {
-                setNewTitle("");
-                setIsAdding(false);
-              }
+            onCompositionEnd={() => {
+              isComposingRef.current = false;
             }}
+            onCompositionStart={() => {
+              isComposingRef.current = true;
+            }}
+            onKeyDown={handleKeyDown}
             placeholder="Step name..."
             type="text"
             value={newTitle}

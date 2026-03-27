@@ -49,11 +49,12 @@ export function BitDetailPopup() {
   const [localDescription, setLocalDescription] = useState("");
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
 
-  // Sync local fields when bit identity changes
+  // Sync local fields when bit identity changes (derived state reset on id change)
   useEffect(() => {
     if (!bit) return;
     setLocalTitle(bit.title);
     setLocalDescription(bit.description);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bit?.id]);
 
   // ESC closes popup; if icon picker is open, let Radix close it first

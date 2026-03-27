@@ -45,12 +45,12 @@ export function DeadlineConflictModal({
         <DialogHeader>
           <DialogTitle>Deadline conflict</DialogTitle>
           <DialogDescription>
-            This deadline exceeds the parent's deadline of{" "}
+            This deadline exceeds the parent&apos;s deadline of{" "}
             <strong>{parentLabel}</strong>.
           </DialogDescription>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">
-          Would you like to extend the parent's deadline to accommodate this change?
+          Would you like to extend the parent&apos;s deadline to accommodate this change?
         </p>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onKeepChild}>
