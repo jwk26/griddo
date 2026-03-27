@@ -519,12 +519,14 @@
 - **Dependencies:** Task 24
 - **Actions:**
   - Implement Hook 9 from SCHEMA.md as `promoteBitToNode(bitId)` on DataStore:
+    - **Max-depth guard:** Before promotion, check `parentNode.level >= 3` (Nodes only exist at levels 0–3; a Bit inside a Level 3 Node cannot be promoted because the resulting Node would be Level 4, which is invalid). If guard triggers: return an error, show a toast "Cannot promote — maximum nesting depth reached.", and abort. Hide the "Promote to Node" dropdown action entirely when the Bit's parent Node is at Level 3.
     1. Create new Node: copy Bit's `title`, `icon`, `deadline`, `description`. Assign default `color`. Set `level = parentNode.level + 1` (SCHEMA.md is authoritative: Node level = parent level + 1)
     2. For each Chunk: create new Bit inside new Node. Map `chunk.title → bit.title`, `chunk.time → bit.deadline`, `chunk.timeAllDay → bit.deadlineAllDay`. Auto-place via BFS
     3. Delete original Bit and all its Chunks
   - Surface in UI: "Promote to Node" action in the Bit Detail Popup header dropdown menu (Task 21). Action is only visible when the Bit has 1+ Chunks.
 - **Acceptance:** Unit tests pass:
   - `promotion.test.ts`: Bit with 3 chunks → new Node created with 3 child Bits; original Bit+Chunks deleted; child Bit deadlines match chunk times; BFS places children on grid
+  - `promotion.test.ts`: Bit inside Level-3 Node → promotion blocked with error; "Promote to Node" action hidden at max depth
 - **Commit:** `feat: implement bit-to-node promotion with chunk-to-bit conversion`
 
 ### Task 25a: Bit Status Toggle + Completion UI
@@ -538,6 +540,7 @@
   - **Undo-complete:** Toggle back to active. If Bit was auto-completed (all Chunks done), uncompleting the Bit sets `status = "active"` but does not change Chunk statuses
   - **Remove-to-trash:** "Move to trash" action in Bit Detail Popup header dropdown. Calls `DataStore.softDeleteBit(bitId)`
   - **BitCard visual:** Completed Bits show strikethrough title + gray treatment + `opacity-50`. In edit mode, completed Bits still jiggle and show delete overlay
+  - **Sinking animation:** Deferred to Task 35 (Phase 7 Motion Animations). Task 35 owns `bitCompleteVariant` — a `translateY(8px) scale(0.95) opacity(0.5)` AnimatePresence exit animation on BitCard status change. Task 25a only handles the static visual state (strikethrough, gray, opacity-50).
   - **Calendar consistency:** Completed Bits in Calendar day columns (Task 27/28) render with the same gray/strikethrough treatment
 - **Acceptance:**
   - Bit Detail Popup has a completion toggle button. Click completes/uncompletes
