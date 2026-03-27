@@ -428,6 +428,18 @@
 
 > **Full audit:** `docs/design-archaeology/DESIGN_AUDIT.md`
 
+#### Phase 4.5 Bootstrap Notes (Pre-Phase-5 Prep)
+
+> **Audit docs without close-out steps become debt:** `OMISSION_AUDIT.md` was written but never applied. Treat audit action items as plan tasks — status + owner before the session ends.
+
+> **Conformance deviations compound across phases:** 5 Tier 5 architectural deviations (non-reactive fetches, DataStore facade bypass, dead context, unused variant) accumulated across Phases 1–4 with no conformance gate. `PLANNING_STANDARD.md §6` checklist now runs at every phase close.
+
+> **DataStore API gap exposed by Fix 1:** `getNodes(null)` returns only L0 nodes. The calendar hook's original `db.nodes.toArray()` returned all levels. Facade is now clean; the functional gap (L1/L2 nodes missing from calendar) is a pre-existing DataStore design issue for Phase 6.
+
+> **3 open decisions before Phase 5 starts:** (1) Inline edit save strategy (blur vs. debounce) — affects Tasks 21/22/23/25c. (2) Hook 3 force-complete reversal rule — affects Task 24. (3) Edit-mode / chooser integration ownership — affects Tasks 20 & 25b.
+
+> **Full bootstrap issue log:** `docs/issues/Issues_Phase_4_Bootstrap.md`
+
 ---
 
 ## Phase 5: Bit Detail + Application Hooks
