@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { formatDistanceToNow, format } from "date-fns";
-import { ArrowUpCircle, Calendar, MoreHorizontal, Trash2 } from "lucide-react";
+import { ArrowUpCircle, Calendar, CheckCircle2, Circle, MoreHorizontal, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -122,6 +122,11 @@ export function BitDetailPopup() {
     close();
   }
 
+  async function handleStatusToggle() {
+    if (!bit) return;
+    await indexedDBStore.updateBit(bit.id, { status: bit.status === "complete" ? "active" : "complete" });
+  }
+
   async function handlePromoteToNode() {
     if (!bit) return;
     await indexedDBStore.promoteBitToNode(bit.id);
@@ -226,6 +231,25 @@ export function BitDetailPopup() {
                     )}
                   >
                     {bit.priority ? PRIORITY_LABELS[bit.priority] : "—"}
+                  </button>
+
+                  {/* Status toggle */}
+                  <button
+                    type="button"
+                    aria-label={bit.status === "complete" ? "Mark as active" : "Mark as complete"}
+                    onClick={handleStatusToggle}
+                    className={cn(
+                      "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md transition-colors",
+                      bit.status === "complete"
+                        ? "text-primary hover:bg-accent"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                    )}
+                  >
+                    {bit.status === "complete" ? (
+                      <CheckCircle2 className="h-4 w-4" />
+                    ) : (
+                      <Circle className="h-4 w-4" />
+                    )}
                   </button>
 
                   {/* More menu */}
