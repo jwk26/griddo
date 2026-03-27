@@ -2,7 +2,7 @@
 
 import { liveQuery } from "dexie";
 import { useEffect, useState } from "react";
-import { db } from "@/lib/db/indexeddb";
+import { indexedDBStore } from "@/lib/db/indexeddb";
 import { getUrgencyLevel } from "@/lib/utils/urgency";
 import type { UrgencyLevel } from "@/types";
 
@@ -16,9 +16,7 @@ export function useNodeUrgency(nodeId: string): UrgencyLevel {
   const [urgency, setUrgency] = useState<UrgencyLevel>(null);
 
   useEffect(() => {
-    const subscription = liveQuery(() =>
-      db.bits.where("parentId").equals(nodeId).toArray(),
-    ).subscribe({
+    const subscription = liveQuery(() => indexedDBStore.getBitsForNode(nodeId)).subscribe({
       next: (bits) => {
         const activeBits = bits.filter((b) => b.deletedAt === null && b.deadline !== null);
         let max: UrgencyLevel = null;
