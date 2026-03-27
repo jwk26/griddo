@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "typecheck": "tsc --noEmit",
     "test:watch": "vitest"
   },
   "dependencies": {

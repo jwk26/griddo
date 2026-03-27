@@ -37,6 +37,7 @@
 - **Start:** `/execute-next-phase` (via EXECUTION_PLAN.md)
 - **Finish:** `/closing-phase`
 - **Branch:** `phase-N/<desc>` → `main` via PR
+- **Gates:** Branch verification + build + test enforced by skills. See skill definitions.
 
 ## Planning Gate
 
