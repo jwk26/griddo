@@ -1,5 +1,6 @@
 "use client";
 
+import { liveQuery } from "dexie";
 import { useEffect, useState } from "react";
 import { CreateBitDialog } from "@/components/grid/create-bit-dialog";
 import { CreateNodeDialog } from "@/components/grid/create-node-dialog";
@@ -44,17 +45,12 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
   const [error, setError] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    let isCancelled = false;
-
-    void indexedDBStore.getNode(nodeId).then((value) => {
-      if (!isCancelled) {
-        setNode(value ?? null);
-      }
+    const subscription = liveQuery(() => indexedDBStore.getNode(nodeId)).subscribe({
+      next: (value) => setNode(value ?? null),
+      error: (err) => console.error(err),
     });
 
-    return () => {
-      isCancelled = true;
-    };
+    return () => subscription.unsubscribe();
   }, [nodeId]);
 
   const displayLevel = (node?.level ?? 0) + 1;

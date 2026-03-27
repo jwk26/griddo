@@ -3,7 +3,7 @@
 import { liveQuery } from "dexie";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-import { db } from "@/lib/db/indexeddb";
+import { indexedDBStore } from "@/lib/db/indexeddb";
 import type { Bit, Chunk, Node } from "@/types";
 
 type CalendarItem = Node | Bit | Chunk;
@@ -98,9 +98,13 @@ export function useCalendarData(): {
   const [state, setState] = useState<CalendarDataState>(INITIAL_CALENDAR_DATA);
 
   useEffect(() => {
-    const subscription = liveQuery(() =>
-      Promise.all([db.nodes.toArray(), db.bits.toArray(), db.chunks.toArray()]),
-    ).subscribe({
+    const subscription = liveQuery(async () => {
+      const [nodes, { bits, chunks }] = await Promise.all([
+        indexedDBStore.getNodes(null),
+        indexedDBStore.getCalendarItems(),
+      ]);
+      return [nodes, bits, chunks] as const;
+    }).subscribe({
       next: ([nodes, bits, chunks]) => {
         setState({
           nodes,

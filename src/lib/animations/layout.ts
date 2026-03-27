@@ -1,16 +1,5 @@
 import type { Variants } from "motion/react";
 
-export const sidebarVariants: Variants = {
-  open: {
-    width: "var(--sidebar-width)",
-    transition: { duration: 0.2, ease: "easeInOut" },
-  },
-  closed: {
-    width: "var(--sidebar-width-collapsed)",
-    transition: { duration: 0.2, ease: "easeInOut" },
-  },
-};
-
 export const searchOverlayVariants: Variants = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: {
