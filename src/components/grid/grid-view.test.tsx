@@ -70,7 +70,7 @@ describe("GridView", () => {
         createBit({
           id: "bit-1",
           title: "Ship Phase 4",
-          deadline: new Date("2026-03-27T00:00:00.000Z").getTime(),
+          deadline: new Date("2027-01-01T00:00:00.000Z").getTime(),
         }),
       ],
       isLoading: false,

@@ -11,6 +11,18 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }));
 
+vi.mock("dexie", () => ({
+  liveQuery: (fn: () => unknown) => ({
+    subscribe: (observer: { next: (v: unknown) => void; error?: (e: unknown) => void }) => {
+      (async () => {
+        try { observer.next(await (fn as () => Promise<unknown>)()); }
+        catch (err) { observer.error?.(err); }
+      })();
+      return { unsubscribe: vi.fn() };
+    },
+  }),
+}));
+
 vi.mock("@/lib/db/indexeddb", () => ({
   indexedDBStore: {
     getNode: vi.fn(),
