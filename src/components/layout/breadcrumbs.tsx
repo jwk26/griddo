@@ -1,5 +1,6 @@
 "use client";
 
+import { liveQuery } from "dexie";
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -13,9 +14,7 @@ export function Breadcrumbs({ nodeId }: { nodeId: string }) {
   const ancestors = currentNode ? segments.slice(0, -1) : [];
 
   useEffect(() => {
-    let isCancelled = false;
-
-    async function loadSegments() {
+    const subscription = liveQuery(async () => {
       const chain: Node[] = [];
       let current = await indexedDBStore.getNode(nodeId);
 
@@ -24,16 +23,13 @@ export function Breadcrumbs({ nodeId }: { nodeId: string }) {
         current = current.parentId ? await indexedDBStore.getNode(current.parentId) : undefined;
       }
 
-      if (!isCancelled) {
-        setSegments(chain);
-      }
-    }
+      return chain;
+    }).subscribe({
+      next: (chain) => setSegments(chain),
+      error: (err) => console.error(err),
+    });
 
-    void loadSegments();
-
-    return () => {
-      isCancelled = true;
-    };
+    return () => subscription.unsubscribe();
   }, [nodeId]);
 
   return (
