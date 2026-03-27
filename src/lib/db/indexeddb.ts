@@ -260,6 +260,16 @@ export class IndexedDBDataStore implements DataStore {
     return sortGridItems(bits.filter((bit) => bit.parentId === parentId && bit.deletedAt === null));
   }
 
+  async getBitsForNode(nodeId: string): Promise<Bit[]> {
+    const bits = await this.database.bits.toArray();
+    return bits.filter((b) => b.parentId === nodeId && b.deletedAt === null);
+  }
+
+  async getAllActiveBits(): Promise<Bit[]> {
+    const bits = await this.database.bits.toArray();
+    return bits.filter((b) => b.deletedAt === null);
+  }
+
   async createBit(data: CreateBit): Promise<Bit> {
     const parsed = createBitSchema.parse(data);
 

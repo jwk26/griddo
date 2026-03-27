@@ -27,7 +27,7 @@ function makeChunk(id: string, parentId: string, overrides: Partial<Chunk> = {})
   return { id, title: "Chunk", description: "", time: null, timeAllDay: false, status: "incomplete", order: 0, parentId, ...overrides } as Chunk;
 }
 function makeStore(nodes: Node[], bits: Bit[], chunks: Chunk[]) {
-  return new IndexedDBDataStore({ nodes: new FakeTable(nodes) as any, bits: new FakeTable(bits) as any, chunks: new FakeTable(chunks) as any });
+  return new IndexedDBDataStore({ nodes: new FakeTable(nodes), bits: new FakeTable(bits), chunks: new FakeTable(chunks) });
 }
 
 describe("Hook 1 — mtime cascade", () => {

@@ -24,7 +24,7 @@ function makeBit(id: string, parentId: string, overrides: Partial<Bit> = {}): Bi
   return { id, title: "Bit", description: "", icon: "Box", deadline: null, deadlineAllDay: false, priority: null, status: "active", mtime: BASE_TS, createdAt: BASE_TS, parentId, x: 0, y: 0, deletedAt: null, ...overrides } as Bit;
 }
 function makeStore(nodes: Node[], bits: Bit[]) {
-  return new IndexedDBDataStore({ nodes: new FakeTable(nodes) as any, bits: new FakeTable(bits) as any, chunks: new FakeTable([]) as any });
+  return new IndexedDBDataStore({ nodes: new FakeTable(nodes), bits: new FakeTable(bits), chunks: new FakeTable([]) });
 }
 
 describe("Hook 8 — grid cell uniqueness", () => {

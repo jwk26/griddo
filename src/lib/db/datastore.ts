@@ -13,6 +13,8 @@ export interface DataStore {
   // --- Bits ---
   getBit(id: string): Promise<Bit | undefined>;
   getBits(parentId: string): Promise<Bit[]>;
+  getBitsForNode(nodeId: string): Promise<Bit[]>;
+  getAllActiveBits(): Promise<Bit[]>;
   createBit(data: CreateBit): Promise<Bit>;
   updateBit(id: string, data: Partial<Bit>): Promise<void>;
   softDeleteBit(id: string): Promise<void>;
