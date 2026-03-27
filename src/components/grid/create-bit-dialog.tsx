@@ -2,6 +2,7 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useId, useState } from "react";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,11 +19,24 @@ import {
   NODE_ICON_NAMES,
 } from "@/lib/constants/node-icons";
 import { cn } from "@/lib/utils";
+import type { Bit } from "@/types";
+
+type Priority = Bit["priority"];
+const PRIORITY_OPTIONS: Priority[] = ["high", "mid", "low", null];
+const PRIORITY_LABELS: Record<string, string> = { high: "High", mid: "Mid", low: "Low" };
+
+type CreateBitDialogValues = {
+  title: string;
+  icon: string;
+  deadline: number | null;
+  deadlineAllDay: boolean;
+  priority: Priority;
+};
 
 type CreateBitDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: { title: string; icon: string }) => Promise<void>;
+  onSubmit: (values: CreateBitDialogValues) => Promise<void>;
   error?: string;
 };
 
@@ -37,37 +51,43 @@ export function CreateBitDialog({
   const iconId = useId();
   const [title, setTitle] = useState("");
   const [icon, setIcon] = useState(DEFAULT_ICON);
+  const [dateStr, setDateStr] = useState("");
+  const [timeStr, setTimeStr] = useState("");
+  const [allDay, setAllDay] = useState(false);
+  const [priority, setPriority] = useState<Priority>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [titleError, setTitleError] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      return;
-    }
-
+    if (open) return;
     setTitle("");
     setIcon(DEFAULT_ICON);
+    setDateStr("");
+    setTimeStr("");
+    setAllDay(false);
+    setPriority(null);
     setIsSubmitting(false);
     setTitleError(false);
   }, [open]);
 
+  function buildDeadline(): { deadline: number | null; deadlineAllDay: boolean } {
+    if (!dateStr) return { deadline: null, deadlineAllDay: false };
+    const time = allDay ? "00:00" : (timeStr || "00:00");
+    return {
+      deadline: new Date(`${dateStr}T${time}`).getTime(),
+      deadlineAllDay: allDay,
+    };
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
-    if (title.trim().length === 0) {
-      setTitleError(true);
-      return;
-    }
-
-    if (isSubmitting) {
-      return;
-    }
-
+    if (title.trim().length === 0) { setTitleError(true); return; }
+    if (isSubmitting) return;
     setTitleError(false);
     setIsSubmitting(true);
-
     try {
-      await onSubmit({ title, icon });
+      const { deadline, deadlineAllDay } = buildDeadline();
+      await onSubmit({ title, icon, deadline, deadlineAllDay, priority });
     } finally {
       setIsSubmitting(false);
     }
@@ -84,6 +104,7 @@ export function CreateBitDialog({
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
+          {/* Title */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground" htmlFor={titleId}>
               Title
@@ -94,10 +115,7 @@ export function CreateBitDialog({
               aria-invalid={titleError}
               id={titleId}
               maxLength={100}
-              onChange={(event) => {
-                setTitle(event.target.value);
-                setTitleError(false);
-              }}
+              onChange={(e) => { setTitle(e.target.value); setTitleError(false); }}
               type="text"
               value={title}
             />
@@ -106,6 +124,7 @@ export function CreateBitDialog({
             </p>
           </div>
 
+          {/* Icon */}
           <div className="space-y-2">
             <div className="text-sm font-medium text-foreground" id={iconId}>
               Icon
@@ -118,7 +137,6 @@ export function CreateBitDialog({
               {NODE_ICON_NAMES.map((iconName) => {
                 const Icon = NODE_ICON_MAP[iconName];
                 const isSelected = iconName === icon;
-
                 return (
                   <button
                     key={iconName}
@@ -139,6 +157,63 @@ export function CreateBitDialog({
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Priority */}
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">Priority</div>
+            <div className="flex gap-2">
+              {PRIORITY_OPTIONS.map((p) => (
+                <button
+                  key={String(p)}
+                  type="button"
+                  onClick={() => setPriority(p)}
+                  className={cn(
+                    "inline-flex items-center rounded-full px-[10px] py-[3px] text-[11px] font-semibold uppercase tracking-[0.05em] transition-colors",
+                    p === "high" && priority === "high" && "bg-priority-high-bg text-priority-high ring-2 ring-priority-high",
+                    p === "high" && priority !== "high" && "bg-priority-high-bg/40 text-priority-high/70 hover:bg-priority-high-bg",
+                    p === "mid" && priority === "mid" && "bg-priority-mid-bg text-priority-mid ring-2 ring-priority-mid",
+                    p === "mid" && priority !== "mid" && "bg-priority-mid-bg/40 text-priority-mid/70 hover:bg-priority-mid-bg",
+                    p === "low" && priority === "low" && "bg-priority-low-bg text-priority-low ring-2 ring-priority-low",
+                    p === "low" && priority !== "low" && "bg-priority-low-bg/40 text-priority-low/70 hover:bg-priority-low-bg",
+                    p === null && priority === null && "bg-secondary text-foreground ring-2 ring-ring",
+                    p === null && priority !== null && "bg-secondary/60 text-muted-foreground hover:bg-secondary",
+                  )}
+                >
+                  {p ? PRIORITY_LABELS[p] : "None"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Deadline */}
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-foreground">Deadline</div>
+            <div className="flex items-center gap-2">
+              <Input
+                className="w-[150px]"
+                type="date"
+                value={dateStr}
+                onChange={(e) => setDateStr(e.target.value)}
+              />
+              {!allDay && (
+                <Input
+                  className="w-[110px]"
+                  type="time"
+                  value={timeStr}
+                  onChange={(e) => setTimeStr(e.target.value)}
+                />
+              )}
+              <label className="flex cursor-pointer items-center gap-1.5 text-sm text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={allDay}
+                  onChange={(e) => setAllDay(e.target.checked)}
+                  className="h-4 w-4 accent-primary"
+                />
+                All day
+              </label>
             </div>
           </div>
 
