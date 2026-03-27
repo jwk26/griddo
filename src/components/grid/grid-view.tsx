@@ -29,11 +29,13 @@ export function GridView({
   level,
   parentColor = "hsl(221, 83%, 53%)",
   onAddAtCell,
+  onNodeEditClick,
 }: {
   parentId: string | null;
   level: number;
   parentColor?: string;
   onAddAtCell?: (x: number, y: number) => void;
+  onNodeEditClick?: (node: Node) => void;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -76,7 +78,11 @@ export function GridView({
                   <NodeCard
                     node={item}
                     isEditMode={isEditMode}
-                    onClick={() => router.push(`/grid/${item.id}`)}
+                    onClick={
+                      isEditMode && onNodeEditClick
+                        ? () => onNodeEditClick(item)
+                        : () => router.push(`/grid/${item.id}`)
+                    }
                   />
                 ) : (
                   <div className="flex h-full items-center">

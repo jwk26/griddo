@@ -2,18 +2,22 @@
 
 import { liveQuery } from "dexie";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { CreateBitDialog } from "@/components/grid/create-bit-dialog";
+import { CreateItemChooser } from "@/components/grid/create-item-chooser";
 import { CreateNodeDialog } from "@/components/grid/create-node-dialog";
 import { EditModeOverlay } from "@/components/grid/edit-mode-overlay";
+import { EditNodeDialog } from "@/components/grid/edit-node-dialog";
 import { GridView } from "@/components/grid/grid-view";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Sidebar } from "@/components/layout/sidebar";
 import { indexedDBStore } from "@/lib/db/indexeddb";
-import type { CreateBit } from "@/types";
+import { GRID_COLS } from "@/lib/constants";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import type { Node } from "@/types";
 
 type PlacementContext = { mode: "auto" } | { mode: "cell"; x: number; y: number };
+type OpenDialogType = "node" | "bit" | null;
 
 function hexToHsl(hex: string): string {
   const normalized = hex.trim().replace("#", "");
@@ -40,7 +44,9 @@ function hexToHsl(hex: string): string {
 
 export function NodeGridShell({ nodeId }: { nodeId: string }) {
   const [node, setNode] = useState<Node | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [chooserOpen, setChooserOpen] = useState(false);
+  const [openDialogType, setOpenDialogType] = useState<OpenDialogType>(null);
+  const [editingNode, setEditingNode] = useState<Node | null>(null);
   const [placementContext, setPlacementContext] = useState<PlacementContext>({ mode: "auto" });
   const [error, setError] = useState<string | undefined>(undefined);
 
@@ -49,34 +55,38 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
       next: (value) => setNode(value ?? null),
       error: (err) => console.error(err),
     });
-
     return () => subscription.unsubscribe();
   }, [nodeId]);
 
   const displayLevel = (node?.level ?? 0) + 1;
   const isLeafLevel = displayLevel >= 3;
 
-  function handleSidebarAdd() {
-    setPlacementContext({ mode: "auto" });
+  function openAdd(context: PlacementContext) {
+    setPlacementContext(context);
     setError(undefined);
-    setDialogOpen(true);
+    if (isLeafLevel) {
+      setOpenDialogType("bit");
+    } else {
+      setChooserOpen(true);
+    }
+  }
+
+  function handleSidebarAdd() {
+    openAdd({ mode: "auto" });
   }
 
   function handleCellAdd(x: number, y: number) {
-    setPlacementContext({ mode: "cell", x, y });
-    setError(undefined);
-    setDialogOpen(true);
+    openAdd({ mode: "cell", x, y });
   }
 
-  function handleOpenChange(open: boolean) {
+  function handleDialogOpenChange(open: boolean) {
     if (!open) {
       setError(undefined);
+      setOpenDialogType(null);
     }
-
-    setDialogOpen(open);
   }
 
-  async function handleSubmit({
+  async function handleNodeSubmit({
     title,
     icon,
     colorHex,
@@ -86,22 +96,17 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
     colorHex: string;
   }) {
     setError(undefined);
-
-    if (!node) {
-      setError("Unable to find parent node.");
-      return;
-    }
+    if (!node) { setError("Unable to find parent node."); return; }
 
     try {
       const occupied = await indexedDBStore.getGridOccupancy(nodeId);
-      const cell = findNearestEmptyCell(
-        occupied,
-        placementContext.mode === "auto" ? 0 : placementContext.x,
-        placementContext.mode === "auto" ? 0 : placementContext.y,
-      );
+      const originX = placementContext.mode === "auto" ? 0 : placementContext.x;
+      const originY = placementContext.mode === "auto" ? 0 : placementContext.y;
+      const cell = findNearestEmptyCell(occupied, originX, originY);
 
       if (cell === null) {
-        setError("No empty cells available at this level.");
+        setOpenDialogType(null);
+        toast.error("Grid is full. Reorganize or move items to make space.");
         return;
       }
 
@@ -117,37 +122,38 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
         x: cell.x,
         y: cell.y,
       });
-      setDialogOpen(false);
-    } catch (submissionError) {
-      setError(
-        submissionError instanceof Error
-          ? submissionError.message
-          : "Unable to create node.",
-      );
+      setOpenDialogType(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to create node.");
     }
   }
 
   async function handleBitSubmit({
     title,
     icon,
-  }: Pick<CreateBit, "title" | "icon">) {
+    deadline,
+    deadlineAllDay,
+    priority,
+  }: {
+    title: string;
+    icon: string;
+    deadline: number | null;
+    deadlineAllDay: boolean;
+    priority: "high" | "mid" | "low" | null;
+  }) {
     setError(undefined);
-
-    if (!node) {
-      setError("Unable to find parent node.");
-      return;
-    }
+    if (!node) { setError("Unable to find parent node."); return; }
 
     try {
       const occupied = await indexedDBStore.getGridOccupancy(nodeId);
-      const cell = findNearestEmptyCell(
-        occupied,
-        placementContext.mode === "auto" ? 0 : placementContext.x,
-        placementContext.mode === "auto" ? 0 : placementContext.y,
-      );
+      // Bits auto-place from top-right; cell-click uses clicked position
+      const originX = placementContext.mode === "auto" ? GRID_COLS - 1 : placementContext.x;
+      const originY = placementContext.mode === "auto" ? 0 : placementContext.y;
+      const cell = findNearestEmptyCell(occupied, originX, originY);
 
       if (cell === null) {
-        setError("No empty cells available.");
+        setOpenDialogType(null);
+        toast.error("Grid is full. Reorganize or move items to make space.");
         return;
       }
 
@@ -155,20 +161,16 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
         title: title.trim(),
         description: "",
         icon,
-        deadline: null,
-        deadlineAllDay: false,
-        priority: null,
+        deadline,
+        deadlineAllDay,
+        priority,
         parentId: nodeId,
         x: cell.x,
         y: cell.y,
       });
-      setDialogOpen(false);
-    } catch (submissionError) {
-      setError(
-        submissionError instanceof Error
-          ? submissionError.message
-          : "Unable to create bit.",
-      );
+      setOpenDialogType(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to create bit.");
     }
   }
 
@@ -185,26 +187,39 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
           <GridView
             level={displayLevel}
             onAddAtCell={handleCellAdd}
+            onNodeEditClick={setEditingNode}
             parentColor={node?.color}
             parentId={nodeId}
           />
         </div>
         <EditModeOverlay />
-        {isLeafLevel ? (
-          <CreateBitDialog
-            error={error}
-            onOpenChange={handleOpenChange}
-            onSubmit={handleBitSubmit}
-            open={dialogOpen}
-          />
-        ) : (
-          <CreateNodeDialog
-            error={error}
-            onOpenChange={handleOpenChange}
-            onSubmit={handleSubmit}
-            open={dialogOpen}
-          />
-        )}
+
+        <CreateItemChooser
+          open={chooserOpen}
+          onOpenChange={setChooserOpen}
+          onChooseNode={() => setOpenDialogType("node")}
+          onChooseBit={() => setOpenDialogType("bit")}
+        />
+
+        <CreateNodeDialog
+          error={openDialogType === "node" ? error : undefined}
+          onOpenChange={handleDialogOpenChange}
+          onSubmit={handleNodeSubmit}
+          open={openDialogType === "node"}
+        />
+
+        <CreateBitDialog
+          error={openDialogType === "bit" ? error : undefined}
+          onOpenChange={handleDialogOpenChange}
+          onSubmit={handleBitSubmit}
+          open={openDialogType === "bit"}
+        />
+
+        <EditNodeDialog
+          node={editingNode}
+          open={editingNode !== null}
+          onOpenChange={(open) => { if (!open) setEditingNode(null); }}
+        />
       </main>
     </div>
   );

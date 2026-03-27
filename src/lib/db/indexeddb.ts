@@ -40,6 +40,22 @@ type DatabaseLike = {
 const ROOT_PARENT_KEY = "__root__";
 const DEFAULT_PROMOTED_NODE_COLOR = "hsl(221, 83%, 53%)";
 
+/**
+ * Thrown when a deadline write would violate the parent–child deadline constraint.
+ * Consumers can catch this and surface DeadlineConflictModal or DeadlineConflictOverlay.
+ */
+export class DeadlineConflictError extends Error {
+  constructor(
+    /** "child_exceeds_parent" — bit/chunk deadline > parent deadline */
+    public readonly conflictType: "child_exceeds_parent",
+    /** IDs of the conflicting items */
+    public readonly conflictingIds: string[],
+  ) {
+    super("Deadline conflict");
+    this.name = "DeadlineConflictError";
+  }
+}
+
 const nodeUpdateSchema = nodeSchema
   .omit({ id: true, createdAt: true, deletedAt: true, mtime: true })
   .partial();
@@ -286,13 +302,15 @@ export class IndexedDBDataStore implements DataStore {
       });
     }
 
-    await this.assertBitDeadlineFitsParent(next.parentId, next.deadline);
+    await this.assertBitDeadlineFitsParent(next.parentId, next.deadline, existing.id);
 
     const timestamp = Date.now();
     const statusChanged = parsed.status !== undefined && parsed.status !== existing.status;
     if (touchesBitMtime(parsed)) {
       next.mtime = timestamp;
     }
+
+    const mtimeTouched = touchesBitMtime(parsed);
 
     await this.write(async () => {
       await this.database.bits.put(bitSchema.parse(next));
@@ -303,7 +321,7 @@ export class IndexedDBDataStore implements DataStore {
         parentIds.add(existing.parentId);
         parentIds.add(next.parentId);
       }
-      if (statusChanged) {
+      if (statusChanged || mtimeTouched) {
         parentIds.add(next.parentId);
       }
 
@@ -405,18 +423,19 @@ export class IndexedDBDataStore implements DataStore {
     const existing = await this.getRequiredChunk(id);
     const parsed = chunkUpdateSchema.parse(data);
     const bit = await this.getRequiredBit(existing.parentId);
-    const next = {
-      ...existing,
-      ...parsed,
-    };
+    const next = { ...existing, ...parsed };
 
     await this.assertChunkTimeFitsBit(bit, next.time);
 
     const timestamp = Date.now();
+    // Detect uncheck: complete → incomplete triggers sticky force-complete rule
+    const isUnchecking = existing.status === "complete" && next.status === "incomplete";
 
     await this.write(async () => {
       await this.database.chunks.put(chunkSchema.parse(next));
-      await this.updateBitCompletionAndCascade(bit.id, timestamp);
+      await this.updateBitCompletionAndCascade(bit.id, timestamp, {
+        stickyIfForceCompleted: isUnchecking,
+      });
     });
   }
 
@@ -548,6 +567,13 @@ export class IndexedDBDataStore implements DataStore {
     return occupancy;
   }
 
+  async getChildDeadlineConflicts(nodeId: string, deadline: number): Promise<Bit[]> {
+    const bits = await this.database.bits.toArray();
+    return bits.filter(
+      (bit) => bit.parentId === nodeId && bit.deletedAt === null && bit.deadline !== null && bit.deadline > deadline,
+    );
+  }
+
   async promoteBitToNode(bitId: string): Promise<Node> {
     const [bit, parentNode, chunks] = await Promise.all([
       this.getRequiredBit(bitId),
@@ -566,7 +592,7 @@ export class IndexedDBDataStore implements DataStore {
 
     const promotedLevel = parent.level + 1;
     if (promotedLevel > 2) {
-      throw new Error("Cannot promote Bit to Node at level 3 — Nodes only exist at levels 0-2");
+      throw new Error("Cannot promote Bit to Node — maximum nesting depth reached");
     }
 
     const timestamp = Date.now();
@@ -702,14 +728,11 @@ export class IndexedDBDataStore implements DataStore {
   private async assertBitDeadlineFitsParent(
     parentId: string,
     deadline: number | null,
+    bitId?: string,
   ): Promise<void> {
     const parent = await this.getRequiredNode(parentId);
-    if (
-      deadline !== null &&
-      parent.deadline !== null &&
-      deadline > parent.deadline
-    ) {
-      throw new Error("Bit deadline cannot exceed parent node deadline");
+    if (deadline !== null && parent.deadline !== null && deadline > parent.deadline) {
+      throw new DeadlineConflictError("child_exceeds_parent", bitId ? [bitId] : []);
     }
   }
 
@@ -787,21 +810,36 @@ export class IndexedDBDataStore implements DataStore {
   private async updateBitCompletionAndCascade(
     bitId: string,
     timestamp: number,
+    options?: {
+      /**
+       * When true, applies the sticky force-complete rule:
+       * only revert a complete Bit to active if it was auto-completed
+       * (i.e. exactly one chunk is now incomplete — the one just unchecked).
+       * If 2+ chunks are incomplete, the Bit was force-completed → keep complete.
+       */
+      stickyIfForceCompleted?: boolean;
+    },
   ): Promise<void> {
     const [bit, chunks] = await Promise.all([
       this.getRequiredBit(bitId),
       this.getChunks(bitId),
     ]);
-    const nextStatus =
-      chunks.length > 0 && chunks.every((chunk) => chunk.status === "complete")
-        ? "complete"
-        : "active";
 
-    await this.database.bits.put({
-      ...bit,
-      status: nextStatus,
-      mtime: timestamp,
-    });
+    const allComplete = chunks.length > 0 && chunks.every((c) => c.status === "complete");
+    let nextStatus: "active" | "complete";
+
+    if (allComplete) {
+      nextStatus = "complete";
+    } else if (options?.stickyIfForceCompleted && bit.status === "complete") {
+      // Sticky rule: if only 1 chunk is now incomplete, the bit was auto-completed → revert.
+      // If 2+ incomplete, the bit was force-completed → remain complete.
+      const incompleteCount = chunks.filter((c) => c.status === "incomplete").length;
+      nextStatus = incompleteCount <= 1 ? "active" : "complete";
+    } else {
+      nextStatus = "active";
+    }
+
+    await this.database.bits.put({ ...bit, status: nextStatus, mtime: timestamp });
     await this.touchNodeIds([bit.parentId], timestamp);
   }
 }

@@ -20,6 +20,7 @@ export function BitCard({ bit, parentColor, chunkStats, onClick }: BitCardProps)
   const agingFilter = getAgingFilter(getAgingState(bit.mtime));
   const urgencyLevel = getUrgencyLevel(bit.deadline);
   const pastDeadline = isPastDeadline(bit.deadline);
+  const isComplete = bit.status === "complete";
   const isEditMode = useEditModeStore((state) => state.isEditMode);
   const Icon = NODE_ICON_MAP[bit.icon] ?? NODE_ICON_MAP.Box;
   const formattedDeadline = bit.deadline ? format(new Date(bit.deadline), "MMM d") : null;
@@ -33,6 +34,7 @@ export function BitCard({ bit, parentColor, chunkStats, onClick }: BitCardProps)
         urgencyLevel === 2 && "animate-urgency-blink-2",
         urgencyLevel === 3 && "animate-urgency-blink-3",
         isEditMode && "motion-safe:animate-jiggle",
+        isComplete && "opacity-50",
       )}
       onClick={onClick}
       onKeyDown={(event) => {
@@ -61,7 +63,7 @@ export function BitCard({ bit, parentColor, chunkStats, onClick }: BitCardProps)
             <p
               className={cn(
                 "truncate text-[13px] font-medium text-foreground",
-                pastDeadline && "line-through text-muted-foreground",
+                (pastDeadline || isComplete) && "line-through text-muted-foreground",
               )}
             >
               {bit.title}

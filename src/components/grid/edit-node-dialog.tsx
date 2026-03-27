@@ -18,76 +18,131 @@ import {
   NODE_ICON_MAP,
   NODE_ICON_NAMES,
 } from "@/lib/constants/node-icons";
+import { indexedDBStore } from "@/lib/db/indexeddb";
 import { cn } from "@/lib/utils";
-import type { Bit } from "@/types";
+import type { Node } from "@/types";
 
-type Priority = Bit["priority"];
-const PRIORITY_OPTIONS: Priority[] = ["high", "mid", "low", null];
-const PRIORITY_LABELS: Record<string, string> = { high: "High", mid: "Mid", low: "Low" };
+function hue2rgb(p: number, q: number, t: number): number {
+  let tt = t;
+  if (tt < 0) tt += 1;
+  if (tt > 1) tt -= 1;
+  if (tt < 1 / 6) return p + (q - p) * 6 * tt;
+  if (tt < 1 / 2) return q;
+  if (tt < 2 / 3) return p + (q - p) * (2 / 3 - tt) * 6;
+  return p;
+}
 
-type CreateBitDialogValues = {
-  title: string;
-  icon: string;
-  deadline: number | null;
-  deadlineAllDay: boolean;
-  priority: Priority;
-};
+function hslToHex(hslStr: string): string {
+  const match = hslStr.match(/hsl\(\s*([\d.]+),\s*([\d.]+)%,\s*([\d.]+)%\s*\)/);
+  if (!match) return "#3b82f6";
+  const h = parseFloat(match[1]) / 360;
+  const s = parseFloat(match[2]) / 100;
+  const l = parseFloat(match[3]) / 100;
+  if (s === 0) {
+    const val = Math.round(l * 255);
+    return `#${val.toString(16).padStart(2, "0").repeat(3)}`;
+  }
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const r = Math.round(hue2rgb(p, q, h + 1 / 3) * 255);
+  const g = Math.round(hue2rgb(p, q, h) * 255);
+  const b = Math.round(hue2rgb(p, q, h - 1 / 3) * 255);
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
 
-type CreateBitDialogProps = {
+function hexToHsl(hex: string): string {
+  const normalized = hex.trim().replace("#", "");
+  const expandedHex = normalized.length === 3
+    ? normalized.split("").map((c) => `${c}${c}`).join("")
+    : normalized;
+  if (!/^[0-9a-f]{6}$/i.test(expandedHex)) throw new Error("Invalid color value.");
+  const r = parseInt(expandedHex.slice(0, 2), 16) / 255;
+  const g = parseInt(expandedHex.slice(2, 4), 16) / 255;
+  const b = parseInt(expandedHex.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), delta = max - min;
+  const l = (max + min) / 2;
+  let h = 0, s = 0;
+  if (delta !== 0) {
+    s = delta / (1 - Math.abs(2 * l - 1));
+    if (max === r) h = ((g - b) / delta) % 6;
+    else if (max === g) h = (b - r) / delta + 2;
+    else h = (r - g) / delta + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  return `hsl(${Math.round(h)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
+}
+
+function toDateStr(ts: number | null): string {
+  return ts ? format(new Date(ts), "yyyy-MM-dd") : "";
+}
+
+function toTimeStr(ts: number | null): string {
+  return ts ? format(new Date(ts), "HH:mm") : "";
+}
+
+type EditNodeDialogProps = {
+  node: Node | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: CreateBitDialogValues) => Promise<void>;
-  error?: string;
 };
 
-export function CreateBitDialog({
-  open,
-  onOpenChange,
-  onSubmit,
-  error,
-}: CreateBitDialogProps) {
+export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps) {
   const titleId = useId();
   const titleErrorId = useId();
   const iconId = useId();
   const [title, setTitle] = useState("");
   const [icon, setIcon] = useState(DEFAULT_ICON);
+  const [colorHex, setColorHex] = useState("#3b82f6");
+  const [description, setDescription] = useState("");
   const [dateStr, setDateStr] = useState("");
   const [timeStr, setTimeStr] = useState("");
   const [allDay, setAllDay] = useState(false);
-  const [priority, setPriority] = useState<Priority>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [titleError, setTitleError] = useState(false);
+  const [error, setError] = useState<string | undefined>(undefined);
 
+  // Pre-populate when node changes or dialog opens
   useEffect(() => {
-    if (open) return;
-    setTitle("");
-    setIcon(DEFAULT_ICON);
-    setDateStr("");
-    setTimeStr("");
-    setAllDay(false);
-    setPriority(null);
-    setIsSubmitting(false);
+    if (!open || !node) return;
+    setTitle(node.title);
+    setIcon(node.icon);
+    setColorHex(hslToHex(node.color));
+    setDescription(node.description);
+    setDateStr(toDateStr(node.deadline));
+    setTimeStr(toTimeStr(node.deadline));
+    setAllDay(node.deadlineAllDay);
     setTitleError(false);
-  }, [open]);
+    setError(undefined);
+  }, [open, node?.id]);
 
   function buildDeadline(): { deadline: number | null; deadlineAllDay: boolean } {
     if (!dateStr) return { deadline: null, deadlineAllDay: false };
     const time = allDay ? "00:00" : (timeStr || "00:00");
-    return {
-      deadline: new Date(`${dateStr}T${time}`).getTime(),
-      deadlineAllDay: allDay,
-    };
+    return { deadline: new Date(`${dateStr}T${time}`).getTime(), deadlineAllDay: allDay };
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!node) return;
     if (title.trim().length === 0) { setTitleError(true); return; }
     if (isSubmitting) return;
     setTitleError(false);
+    setError(undefined);
     setIsSubmitting(true);
     try {
       const { deadline, deadlineAllDay } = buildDeadline();
-      await onSubmit({ title, icon, deadline, deadlineAllDay, priority });
+      await indexedDBStore.updateNode(node.id, {
+        title: title.trim(),
+        icon,
+        color: hexToHsl(colorHex),
+        description,
+        deadline,
+        deadlineAllDay,
+      });
+      onOpenChange(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to save changes.");
     } finally {
       setIsSubmitting(false);
     }
@@ -97,10 +152,8 @@ export function CreateBitDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Bit</DialogTitle>
-          <DialogDescription>
-            Add a new bit and place it in the nearest available cell.
-          </DialogDescription>
+          <DialogTitle>Edit Node</DialogTitle>
+          <DialogDescription>Update properties for this node.</DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
@@ -160,31 +213,28 @@ export function CreateBitDialog({
             </div>
           </div>
 
-          {/* Priority */}
+          {/* Color */}
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">Priority</div>
-            <div className="flex gap-2">
-              {PRIORITY_OPTIONS.map((p) => (
-                <button
-                  key={String(p)}
-                  type="button"
-                  onClick={() => setPriority(p)}
-                  className={cn(
-                    "inline-flex items-center rounded-full px-[10px] py-[3px] text-[11px] font-semibold uppercase tracking-[0.05em] transition-colors",
-                    p === "high" && priority === "high" && "bg-priority-high-bg text-priority-high ring-2 ring-priority-high",
-                    p === "high" && priority !== "high" && "bg-priority-high-bg/40 text-priority-high/70 hover:bg-priority-high-bg",
-                    p === "mid" && priority === "mid" && "bg-priority-mid-bg text-priority-mid ring-2 ring-priority-mid",
-                    p === "mid" && priority !== "mid" && "bg-priority-mid-bg/40 text-priority-mid/70 hover:bg-priority-mid-bg",
-                    p === "low" && priority === "low" && "bg-priority-low-bg text-priority-low ring-2 ring-priority-low",
-                    p === "low" && priority !== "low" && "bg-priority-low-bg/40 text-priority-low/70 hover:bg-priority-low-bg",
-                    p === null && priority === null && "bg-secondary text-foreground ring-2 ring-ring",
-                    p === null && priority !== null && "bg-secondary/60 text-muted-foreground hover:bg-secondary",
-                  )}
-                >
-                  {p ? PRIORITY_LABELS[p] : "None"}
-                </button>
-              ))}
-            </div>
+            <label className="text-sm font-medium text-foreground">Color</label>
+            <Input
+              className="h-10 cursor-pointer p-1"
+              onChange={(e) => setColorHex(e.target.value)}
+              type="color"
+              value={colorHex}
+            />
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Description</label>
+            <textarea
+              className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              maxLength={1000}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Optional description…"
+              rows={3}
+              value={description}
+            />
           </div>
 
           {/* Deadline */}
@@ -231,7 +281,7 @@ export function CreateBitDialog({
               Cancel
             </Button>
             <Button disabled={isSubmitting} type="submit">
-              Create Bit
+              Save
             </Button>
           </DialogFooter>
         </form>

@@ -185,6 +185,8 @@ Important Note:
 
 User-visible verification is not a standalone process. It happens close to implementation time and is confirmed (not duplicated) during closing.
 
+> Branch verification, checkpoint format, and build gates are enforced by the `/execute-next-phase` and `/closing-phase` skills.
+
 ### 7. Closing (per phase)
 
 Deliverables:

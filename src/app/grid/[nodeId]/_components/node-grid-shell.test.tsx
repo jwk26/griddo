@@ -6,6 +6,18 @@ import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import type { Bit, Node } from "@/types";
 import { NodeGridShell } from "./node-grid-shell";
 
+vi.mock("dexie", () => ({
+  liveQuery: (fn: () => unknown) => ({
+    subscribe: (observer: { next: (v: unknown) => void; error?: (e: unknown) => void }) => {
+      (async () => {
+        try { observer.next(await (fn as () => Promise<unknown>)()); }
+        catch (err) { observer.error?.(err); }
+      })();
+      return { unsubscribe: vi.fn() };
+    },
+  }),
+}));
+
 vi.mock("@/components/layout/sidebar", () => ({
   Sidebar: ({
     level,
@@ -55,18 +67,35 @@ vi.mock("@/components/grid/grid-view", () => ({
   ),
 }));
 
+vi.mock("@/components/grid/create-item-chooser", () => ({
+  CreateItemChooser: ({
+    open,
+    onChooseNode,
+  }: {
+    open: boolean;
+    onChooseNode?: () => void;
+    onChooseBit?: () => void;
+    onOpenChange?: (open: boolean) => void;
+  }) =>
+    open ? (
+      <button aria-label="choose-node" onClick={onChooseNode} type="button">
+        Create Node
+      </button>
+    ) : null,
+}));
+
 vi.mock("@/components/grid/create-bit-dialog", () => ({
   CreateBitDialog: ({
     open,
     onSubmit,
   }: {
     open: boolean;
-    onSubmit: (values: { title: string; icon: string }) => Promise<void>;
+    onSubmit: (values: { title: string; icon: string; deadline: number | null; deadlineAllDay: boolean; priority: "high" | "mid" | "low" | null }) => Promise<void>;
   }) =>
     open ? (
       <button
         aria-label="bit-dialog-submit"
-        onClick={() => void onSubmit({ title: "New bit", icon: "Box" })}
+        onClick={() => void onSubmit({ title: "New bit", icon: "Box", deadline: null, deadlineAllDay: false, priority: null })}
         type="button"
       >
         Submit
@@ -188,6 +217,7 @@ describe("NodeGridShell", () => {
     expect(screen.getByLabelText("sidebar-add")).toBeInTheDocument();
 
     fireEvent.click(screen.getByLabelText("grid-add"));
+    fireEvent.click(await screen.findByLabelText("choose-node"));
     fireEvent.click(await screen.findByLabelText("dialog-submit"));
 
     await waitFor(() => {
