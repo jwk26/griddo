@@ -7,6 +7,7 @@ import { CreateBitDialog } from "@/components/grid/create-bit-dialog";
 import { CreateItemChooser } from "@/components/grid/create-item-chooser";
 import { CreateNodeDialog } from "@/components/grid/create-node-dialog";
 import { EditModeOverlay } from "@/components/grid/edit-mode-overlay";
+import { EditNodeDialog } from "@/components/grid/edit-node-dialog";
 import { GridView } from "@/components/grid/grid-view";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -45,6 +46,7 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
   const [node, setNode] = useState<Node | null>(null);
   const [chooserOpen, setChooserOpen] = useState(false);
   const [openDialogType, setOpenDialogType] = useState<OpenDialogType>(null);
+  const [editingNode, setEditingNode] = useState<Node | null>(null);
   const [placementContext, setPlacementContext] = useState<PlacementContext>({ mode: "auto" });
   const [error, setError] = useState<string | undefined>(undefined);
 
@@ -185,6 +187,7 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
           <GridView
             level={displayLevel}
             onAddAtCell={handleCellAdd}
+            onNodeEditClick={setEditingNode}
             parentColor={node?.color}
             parentId={nodeId}
           />
@@ -210,6 +213,12 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
           onOpenChange={handleDialogOpenChange}
           onSubmit={handleBitSubmit}
           open={openDialogType === "bit"}
+        />
+
+        <EditNodeDialog
+          node={editingNode}
+          open={editingNode !== null}
+          onOpenChange={(open) => { if (!open) setEditingNode(null); }}
         />
       </main>
     </div>
