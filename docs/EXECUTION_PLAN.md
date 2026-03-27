@@ -445,7 +445,7 @@
 ## Phase 5: Bit Detail + Application Hooks
 
 ### Task 21: Bit Detail Popup
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/bit-detail/bit-detail-popup.tsx`
 - **Dependencies:** Task 9 (use-bit-detail), Task 2 (shadcn dialog)
 - **Actions:**
@@ -466,7 +466,7 @@
 - **Commit:** `feat: add bit detail popup with editable fields and priority toggle`
 
 ### Task 22: Chunk Timeline + Chunk Item
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/bit-detail/chunk-timeline.tsx`, `src/components/bit-detail/chunk-item.tsx`
 - **Dependencies:** Task 21, Task 4 (types)
 - **Actions:**
@@ -487,7 +487,7 @@
 - **Commit:** `feat: add chunk timeline with reorderable items, deadline marker, and progress ring`
 
 ### Task 23: Chunk Pool
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/bit-detail/chunk-pool.tsx`
 - **Dependencies:** Task 22, Task 5 (DataStore)
 - **Actions:**
@@ -502,7 +502,7 @@
 - **Commit:** `feat: add chunk pool with inline create, edit, delete, and drag-to-timeline`
 
 ### Task 24: Core Application Hooks
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/lib/db/indexeddb.ts` (update), `src/hooks/use-global-urgency.ts` (new), `src/hooks/use-node-urgency.ts` (new), `src/components/shared/deadline-conflict-overlay.tsx` (new), `src/components/shared/deadline-conflict-modal.tsx` (new)
 - **Dependencies:** Task 5 (DataStore), Task 6 (utilities)
 - **Actions:**
@@ -526,7 +526,7 @@
 - **Commit:** `feat: implement mtime cascade, deadline hierarchy, auto-completion, and grid uniqueness hooks`
 
 ### Task 25: Bit-to-Node Promotion
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/lib/db/indexeddb.ts` (update)
 - **Dependencies:** Task 24
 - **Actions:**
@@ -542,7 +542,7 @@
 - **Commit:** `feat: implement bit-to-node promotion with chunk-to-bit conversion`
 
 ### Task 25a: Bit Status Toggle + Completion UI
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/bit-detail/bit-detail-popup.tsx` (update), `src/components/grid/bit-card.tsx` (update)
 - **Dependencies:** Task 21 (Bit Detail Popup), Task 24 (Hook 3 — auto-completion)
 - **Actions:**
@@ -564,7 +564,7 @@
 - **Commit:** `feat: add bit status toggle, force-complete, undo, and remove-to-trash`
 
 ### Task 25b: Level 1-2 Creation Chooser + Bit Creation Dialog
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/create-item-chooser.tsx` (new), `src/components/grid/create-bit-dialog.tsx` (new or update), `src/app/grid/[nodeId]/_components/node-grid-shell.tsx` (update)
 - **Dependencies:** Task 18 (Level 1-3 Grid Page), Task 5 (DataStore)
 - **Actions:**
@@ -583,7 +583,7 @@
 - **Commit:** `feat: add Level 1-2 creation chooser, Bit creation dialog, and grid-full feedback`
 
 ### Task 25c: Node Property Edit Dialog
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/edit-node-dialog.tsx` (new), `src/components/grid/node-card.tsx` (update), `src/components/grid/edit-mode-overlay.tsx` (update)
 - **Dependencies:** Task 14 (NodeCard), Task 20 (Edit Mode Overlay)
 - **Actions:**
@@ -597,6 +597,44 @@
   - In normal mode, clicking a Node still navigates (unchanged)
   - Edit-mode click on a Bit still opens the Bit Detail Popup (unchanged)
 - **Commit:** `feat: add node property edit dialog with edit-mode click routing`
+
+#### Phase 5 Notes
+
+> **Branch verification:** Always verify branch base before writing any code. `git log --oneline origin/main..HEAD` must be empty at phase start. A branch repair was needed this phase — the `execute-next-phase` skill now enforces this check explicitly.
+
+> **Cherry-pick repairs:** After any cherry-pick repair, verify the full expected file set against the execution plan. Tests and build passing is not sufficient — missing files may not cause immediate failures.
+
+> **Test fakes and type casts:** When writing test fakes, verify the fake already satisfies the target interface before adding `as any`. Redundant casts become lint errors.
+
+> **Urgency hooks — DataStore facade:** `use-node-urgency` and `use-global-urgency` were implemented with direct `{ db }` access inside `liveQuery`. The correct pattern is `liveQuery(() => indexedDBStore.method())`. Deferred to Phase 5.5.
+
+> **Full issue log:** `docs/issues/Issues_Phase_5.md`
+
+---
+
+## Phase 5.5: DataStore Facade Cleanup
+
+> **Origin:** Architecture Conformance Review — Phase 5 close-out (2026-03-28).
+> `use-node-urgency.ts` and `use-global-urgency.ts` bypass the DataStore facade by importing `{ db }` directly and calling Dexie table methods inside `liveQuery`. The established pattern (confirmed in `use-grid-data.ts`) is `liveQuery(() => indexedDBStore.someMethod())`. The facade must be consistent across all reactive hooks.
+
+### Task 25.5: DataStore Read Methods + Urgency Hook Refactor
+- **Status:** `[ ]`
+- **Files:** `src/lib/db/datastore.ts` (update), `src/lib/db/indexeddb.ts` (update), `src/hooks/use-node-urgency.ts` (update), `src/hooks/use-global-urgency.ts` (update)
+- **Dependencies:** Task 24 (use-node-urgency, use-global-urgency)
+- **Actions:**
+  - `datastore.ts`: Add two read methods to the `DataStore` interface:
+    - `getBitsForNode(nodeId: string): Promise<Bit[]>` — returns all non-deleted Bits with `parentId === nodeId`
+    - `getAllActiveBits(): Promise<Bit[]>` — returns all non-deleted Bits across the project
+  - `indexeddb.ts`: Implement both methods in `IndexedDBDataStore`
+  - `use-node-urgency.ts`: Replace `db.bits.where("parentId").equals(nodeId).toArray()` with `indexedDBStore.getBitsForNode(nodeId)` inside `liveQuery`. Remove `import { db }` — use `indexedDBStore` only
+  - `use-global-urgency.ts`: Replace direct db query with `indexedDBStore.getAllActiveBits()` inside `liveQuery`. Remove `import { db }`
+  - Grep for any remaining `import { db }` in hooks or components — fix any found
+- **Acceptance:**
+  - No hook or component imports `{ db }` from `indexeddb.ts`
+  - `liveQuery` in all hooks calls `indexedDBStore` methods, not raw Dexie table methods
+  - Architecture Conformance — Blocking (DataStore facade) passes cleanly
+  - `pnpm test && pnpm build` pass
+- **Commit:** `refactor: DataStore facade — add read methods, remove direct db access from urgency hooks`
 
 ---
 
