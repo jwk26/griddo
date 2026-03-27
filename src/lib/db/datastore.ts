@@ -32,4 +32,7 @@ export interface DataStore {
   searchAll(query: string): Promise<Array<{ type: "node" | "bit" | "chunk"; item: Node | Bit | Chunk; parentPath: string[] }>>;
   getGridOccupancy(parentId: string | null): Promise<Set<string>>;
   promoteBitToNode(bitId: string): Promise<Node>;
+
+  /** Returns child Bits whose deadlines exceed the given deadline. Used before/after updateNode to detect conflicts. */
+  getChildDeadlineConflicts(nodeId: string, deadline: number): Promise<Bit[]>;
 }
