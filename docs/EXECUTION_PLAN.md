@@ -187,7 +187,7 @@
   - `theme-toggle.tsx`: `"use client"`. Uses `useTheme()` from `next-themes` with `resolvedTheme` for correct icon. Toggles between `Sun`/`Moon` Lucide icons
   - Urgency notification dot on Calendar: `absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full` with `bg-urgency-{1,2,3}` based on global urgency query
 - **Acceptance:** Sidebar folds/unfolds. Theme toggle switches light/dark. Urgency dot appears on Calendar button. Width matches `--sidebar-width` tokens
-- **Re-opened note:** Urgency dot on Calendar button was not delivered. The global urgency hook (`useGlobalUrgency`) does not exist yet — it is being added in Task 24. Task 12 is re-opened and will be completed alongside Task 24.
+- **Re-opened note:** Urgency dot rendering on Calendar button deferred to Task 26 (Phase 6). `useGlobalUrgency` hook was delivered in Task 24 (Phase 5). Task 26 wires the dot to the sidebar and Task 30 extends the hook to also scan Nodes with deadlines.
 - **Commit:** `feat: add foldable sidebar with theme toggle and urgency indicator`
 
 ### Task 13: Grid View + Grid Cell
@@ -650,8 +650,8 @@
 
 ### Task 26: Calendar Layout + Node Pool
 - **Status:** `[ ]`
-- **Files:** `src/app/calendar/layout.tsx`, `src/components/calendar/node-pool.tsx`
-- **Dependencies:** Task 5, Task 7 (calendar-store)
+- **Files:** `src/app/calendar/layout.tsx`, `src/components/calendar/node-pool.tsx`, `src/components/layout/sidebar.tsx` (update)
+- **Dependencies:** Task 5, Task 7 (calendar-store), Task 24 (use-global-urgency)
 - **Actions:**
   - `layout.tsx`: Shared layout for `/calendar/weekly` and `/calendar/monthly`. Two-panel: left panel `w-calendar-pool` (288px, `--calendar-pool-width`) + right content area (`{children}`). Left panel split: Node pool top (60%, `--calendar-node-pool-ratio`) + Items pool bottom (40%)
     - View toggle in layout header: switches between `/calendar/weekly` and `/calendar/monthly` routes
@@ -659,11 +659,15 @@
     - Level 0 Nodes: icon only (tooltip on hover for title)
     - Click Node → drill down: show sub-Nodes (with `>` chevron) + Bits inside
     - Back arrow `<` to navigate up drill-down stack (`popDrillDown()`)
-    - Search input within pool to filter items
+    - Search input within pool to filter items (case-insensitive substring match)
     - Nodes and Bits draggable to the schedule (DnD source)
+    - Empty states: no L0 Nodes → "No nodes yet" placeholder. Drill-down into Node with no children → "No items" message
+  - `sidebar.tsx` (update): Wire Calendar button `onClick` → `router.push("/calendar/weekly")`. Render urgency dot on Calendar icon using `useGlobalUrgency()` — small colored circle (top-right of icon, matching `--urgency-1/2/3`). Active state styling when on any `/calendar/*` route
 - **Acceptance:** Calendar layout renders two-panel at correct widths. Node pool shows Level 0 icons. Drill-down navigates into Nodes. Search filters pool
-- Calendar sidebar button navigates to `/calendar/weekly`
+- Calendar sidebar button navigates to `/calendar/weekly` and shows active state on calendar routes
+- Urgency dot renders on Calendar button when any active item has deadline within 3 days
 - Layout header includes a Weekly/Monthly view toggle
+- Empty Node pool shows placeholder. Drill-down into empty Node shows "No items"
 - **Commit:** `feat: add calendar layout with node pool and drill-down navigation`
 
 ### Task 27: Calendar:Weekly Page + Day Columns
@@ -675,14 +679,15 @@
   - `day-column.tsx`: Single vertical day column. Props: `date: Date`, `items: (Node | Bit | Chunk)[]`
     - Min width: `--calendar-day-min-width` (128px). Tall and scrollable
     - Empty: "Drop items here" placeholder
-    - 1 item: standard Bit card (or Node icon for Nodes with deadlines)
+    - 1 item: Bit → standard Bit card. Node → Node icon with title tooltip. Chunk → compact item (same as 2+ view, since Chunks have no "standard card" design)
     - 2+ items: compact list (Task 28)
     - No-time items at top. Timed items below, sorted earliest → latest
     - Drop zone by item type: Bit → `DataStore.updateBit({ deadline: date })`, Node → `DataStore.updateNode({ deadline: date })`, Chunk → `DataStore.updateChunk({ time: date })`
     - Bit items are clickable: click appends `?bit=[bitId]` to the current URL to open Bit Detail Popup
+    - Node items are clickable: click navigates to `/grid/[nodeId]`
     - Completed Bits render with strikethrough title + gray/opacity treatment (consistent with grid BitCard)
-    - Overflow `+N more`: click → column expands vertically with Motion layout animation + vignette, hiding adjacent columns
-    - Collapse: ESC or click non-item area
+    - Overflow `+N more`: click → column expands vertically with Motion layout animation + vignette, hiding adjacent columns. Only one column can be expanded at a time — expanding one auto-collapses any other
+    - Collapse: ESC or click non-item area. ESC priority: calendar column collapse is lower than Bit Detail Popup (if popup is open, ESC closes popup first)
 - **Acceptance:** 7 day columns render. Items on correct days. Drop sets deadline. Overflow expands/collapses. Week navigation works
 - Clicking a Bit in a day column opens Bit Detail Popup via `?bit=[bitId]`
 - Completed items render with strikethrough + gray treatment
@@ -695,10 +700,11 @@
 - **Actions:**
   - `compact-bit-item.tsx`: Compact design for 2+ items in a day column. Per DESIGN_TOKENS:
     - `flex items-center gap-2 px-3 py-1.5 border-l-4 text-sm` with `style={{ borderLeftColor: parentColor }}`
+    - `parentColor` resolution: Bit → parent Node's `color`. Chunk → grandparent Node's `color` (resolve via parent Bit's `parentId` → Node lookup)
     - Title: `flex-1 truncate text-foreground`
     - Time: `text-xs text-muted-foreground flex-shrink-0`
     - Date badge in corner when applicable
-    - Clickable: click appends `?bit=[bitId]` to URL. Completed state: strikethrough + gray treatment
+    - Clickable: Bit → click appends `?bit=[bitId]` to URL. Chunk → click appends `?bit=[chunk.parentId]` (opens parent Bit's popup). Completed state (Bit `status === "complete"` or Chunk `status === "complete"`): strikethrough + gray treatment
   - `items-pool.tsx`: `"use client"`. Bottom section of calendar left panel. Merged pool of Bits + Chunks only (Nodes are in the separate Node Pool above)
     - Sort: deadline items first (by priority rank → time), no-deadline below
     - Scrollable with search input
@@ -718,20 +724,27 @@
   - `month-grid.tsx`: Standard 7-column (Mon–Sun) × weeks grid. Left/right arrows for month navigation. Month label. Uses `useCalendarStore` for `currentMonth`
     - Date cells: color indicators for scheduled items (highlight color from parent Node)
     - Drag from pools to date cells → sets deadline to that date
-  - `date-cell-popover.tsx`: Click date cell → shadcn `Popover` with all items for that day in list view. Items clickable → navigate by type: Node → `/grid/[nodeId]`, Bit → `/grid/[parentId]?bit=[bitId]`, Chunk → `/grid/[grandparentId]?bit=[parentBitId]`
+  - `date-cell-popover.tsx`: Click date cell → shadcn `Popover` with all items for that day in list view. Items clickable → navigate by type: Node → `/grid/[nodeId]`, Bit → `/grid/[parentId]?bit=[bitId]`, Chunk → `/grid/[grandparentId]?bit=[parentBitId]` (resolve `grandparentId` by looking up `chunk.parentId` → `Bit.parentId`)
 - **Acceptance:** Month grid renders with correct day layout. Items as color indicators. Click date shows popover. Month navigation works. Drag to date sets deadline
 - **Commit:** `feat: add monthly calendar page with date grid and item popovers`
 
 ### Task 30: Calendar Data Integration
 - **Status:** `[ ]`
-- **Files:** `src/hooks/use-calendar-data.ts` (update), `src/stores/calendar-store.ts` (update)
+- **Files:** `src/hooks/use-calendar-data.ts` (update), `src/stores/calendar-store.ts` (update), `src/hooks/use-dnd.ts` (update), `src/hooks/use-global-urgency.ts` (update), `src/app/calendar/layout.tsx` (update)
 - **Dependencies:** Task 27, Task 28, Task 29
 - **Actions:**
+  - **DataStore facade cleanup:** Refactor `use-calendar-data.ts` and `use-global-urgency.ts` to use DataStore interface instead of direct `indexedDBStore` imports (same pattern as Phase 5.5 cleanup)
+  - **Global urgency Node scanning:** Extend `useGlobalUrgency` to also scan Nodes with deadlines (SCHEMA.md "Global urgency" query specifies `bits, nodes`). Currently only scans Bits
   - Finalize `use-calendar-data.ts`: Ensure `weeklyItems` and `monthlyItems` filter active items only (`deletedAt === null`). Verify pool sort order matches SPEC (deadline first by priority rank, then no-deadline)
   - Finalize `calendar-store.ts`: Wire `navigateWeek` / `navigateMonth` to update `currentWeekStart` / `currentMonth` using `date-fns` (`addWeeks`, `addMonths`)
-  - Wire DnD by item type: Bit drop → `DataStore.updateBit({ deadline: targetTimestamp })`, Node drop → `DataStore.updateNode({ deadline: targetTimestamp })`, Chunk drop → `DataStore.updateChunk({ time: targetTimestamp })`. Unschedule reverses: Bit/Node → clear `deadline`, Chunk → clear `time`
+  - **DnD calendar scheduling** (`use-dnd.ts`): Implement calendar scheduling in `handleDragEnd` — detect drop target as day column or date cell. Bit drop → `DataStore.updateBit({ deadline: targetTimestamp, mtime: Date.now() })`, Node drop → `DataStore.updateNode({ deadline: targetTimestamp, mtime: Date.now() })`, Chunk drop → `DataStore.updateChunk({ time: targetTimestamp })` (Chunk mtime cascades to parent Bit via Hook 1). Unschedule reverses: Bit/Node → clear `deadline`, Chunk → clear `time`. Implement `handleDragOver` for drop-target visual feedback
+  - **Deadline conflict on DnD** (`layout.tsx` update): When `handleDragEnd` detects a Chunk drop exceeding parent Bit's deadline, set conflict state. Calendar layout mounts `DeadlineConflictModal` controlled by this state. "Update parent" → extend parent Bit's deadline to the drop date; "Cancel" → abort the drop. Conflict check via `DataStore.getBit(chunk.parentId)` to compare deadlines
   - Verify multi-view consistency (PRD Section 23): changes from calendar reflect on grid via reactive hooks
 - **Acceptance:** Calendar data groups correctly. Navigation updates view. Scheduling persists to IndexedDB. Changes sync across calendar and grid views automatically
+- No direct `indexedDBStore` imports remain in `use-calendar-data.ts` or `use-global-urgency.ts`
+- `useGlobalUrgency` returns urgency from both Bits and Nodes with deadlines
+- Dropping a Chunk past parent Bit's deadline shows `DeadlineConflictModal` in calendar layout
+- DnD scheduling updates mtime (aging resets on schedule action)
 - **Commit:** `feat: integrate calendar data hooks with navigation and multi-view sync`
 
 ---
@@ -857,3 +870,4 @@ These apply across all phases:
 > - "Neglected" dust/noise texture (PRD Section 10, line 306) — Phase 7 if time permits or defer to Section 26
 > - NodeCard icon container minor size discrepancy (52px vs 56px spec) — Phase 7 Polish
 > - Sidebar button/icon sizing discrepancies — Phase 7 Polish
+> - DeadlineConflictOverlay integration in calendar compact items — overlay exists and works in grid views; calendar items update reactively but don't show the in-context "Modify timeline" prompt. Phase 7 if time permits.
