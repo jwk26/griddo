@@ -179,7 +179,7 @@
 - **Commit:** `feat: add client providers and root layout with font loading`
 
 ### Task 12: Sidebar + Theme Toggle
-- **Status:** `[x]`
+- **Status:** `[ ]`
 - **Files:** `src/components/layout/sidebar.tsx`, `src/components/layout/theme-toggle.tsx`
 - **Dependencies:** Task 7 (sidebar-store), Task 2 (shadcn)
 - **Actions:**
@@ -187,6 +187,7 @@
   - `theme-toggle.tsx`: `"use client"`. Uses `useTheme()` from `next-themes` with `resolvedTheme` for correct icon. Toggles between `Sun`/`Moon` Lucide icons
   - Urgency notification dot on Calendar: `absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full` with `bg-urgency-{1,2,3}` based on global urgency query
 - **Acceptance:** Sidebar folds/unfolds. Theme toggle switches light/dark. Urgency dot appears on Calendar button. Width matches `--sidebar-width` tokens
+- **Re-opened note:** Urgency dot on Calendar button was not delivered. The global urgency hook (`useGlobalUrgency`) does not exist yet — it is being added in Task 24. Task 12 is re-opened and will be completed alongside Task 24.
 - **Commit:** `feat: add foldable sidebar with theme toggle and urgency indicator`
 
 ### Task 13: Grid View + Grid Cell
@@ -211,8 +212,10 @@
     - Title: `text-xs font-medium text-foreground truncate max-w-[5rem]`
   - Aging: apply `filter: saturate(...)` from `getAgingSaturation(getAgingState(node.mtime))`
   - Urgency badge on icon corner when child Bits have approaching deadlines
+  - Completion indicator: when `isNodeComplete(childBits)` returns `true`, show a visual indicator on the icon (e.g., small checkmark badge or faint ring). Use `completion.ts` utility.
   - Edit mode: add `animate-jiggle` class + delete button overlay
 - **Acceptance:** Node renders as icon + label. Color from `node.color`. Aging desaturates. Click navigates to `/grid/[nodeId]`
+- Node completion indicator visible when all child Bits are complete
 - **Commit:** `feat: add node card with aging and urgency indicators`
 
 ### Task 15: Level 0 Page + Onboarding
@@ -285,8 +288,10 @@
     - Progress bar (chunks > 0): track `w-16 h-1.5 rounded-full bg-secondary overflow-hidden`, fill `h-full rounded-full bg-primary transition-all`
   - Aging saturation filter. Urgency blink: `animate-urgency-blink-{1,2,3}`
   - Past deadline: blur + overlay pattern per DESIGN_TOKENS ("Done?" with check/x buttons)
+  - Dismiss persistence: clicking ✗ on past-deadline overlay sets `bit.pastDeadlineDismissed = true` via `DataStore.updateBit()`. When `pastDeadlineDismissed === true`, overlay does not render. User can still manually complete via Bit Detail Popup.
   - Click → appends `?bit=[bitId]` to URL
 - **Acceptance:** Bit renders as horizontal card. Priority badge correct color. Progress reflects chunks. Urgency blinks near deadline. Past-deadline shows blur+overlay
+- Past-deadline overlay dismissed with ✗ → `pastDeadlineDismissed` persisted. Overlay does not re-appear on remount
 - **Commit:** `feat: add bit card with priority, progress, urgency, and past-deadline overlay`
 
 ### Task 18: Level 1-3 Grid Page
@@ -435,7 +440,8 @@
   - `bit-detail-popup.tsx`: `"use client"`. Uses `useBitDetail()`. Centered modal over blurred background. Motion entry via `bitDetailPopupVariants`
     - Backdrop: `fixed inset-0 bg-background/80 backdrop-blur-sm z-50`
     - Container: `max-w-bit-detail` (640px), `max-h-[85vh]` (from `--bit-detail-max-height`), scrollable
-    - Header: editable title input, icon selector (Lucide icon picker), deadline date picker, priority toggle (cycles high→mid→low→null on click)
+    - Header: editable title input, icon selector (Lucide icon picker), deadline date picker with **"All day" toggle**: when enabled, sets `deadlineAllDay: true` and hides the time picker, priority toggle (cycles high→mid→low→null on click)
+    - Header dropdown menu: "Promote to Node" action (visible only when Bit has 1+ Chunks). Calls `DataStore.promoteBitToNode(bitId)` (Task 25). "Move to trash" action: calls `DataStore.softDeleteBit(bitId)`
     - Description: editable textarea
     - mtime label: `text-xs text-muted-foreground` — "Last updated: X days ago" via `date-fns formatDistanceToNow`
     - Chunk pool section (Task 23)
@@ -443,6 +449,8 @@
   - Empty state: timeline structure visible (vertical line, dot placeholder) + "Add a step" CTA button
   - Close: click backdrop, ESC key, or browser back (removes `?bit` param)
 - **Acceptance:** `?bit=[bitId]` opens popup with fade+slide. Title/description editable inline. Priority cycles. Close via backdrop/ESC/back. mtime shows relative time
+- Deadline picker has "All day" toggle that hides the time component when enabled
+- Header dropdown shows "Promote to Node" action when Bit has 1+ Chunks
 - **Commit:** `feat: add bit detail popup with editable fields and priority toggle`
 
 ### Task 22: Chunk Timeline + Chunk Item
@@ -483,7 +491,7 @@
 
 ### Task 24: Core Application Hooks
 - **Status:** `[ ]`
-- **Files:** `src/lib/db/indexeddb.ts` (update)
+- **Files:** `src/lib/db/indexeddb.ts` (update), `src/hooks/use-global-urgency.ts` (new), `src/hooks/use-node-urgency.ts` (new), `src/components/shared/deadline-conflict-overlay.tsx` (new), `src/components/shared/deadline-conflict-modal.tsx` (new)
 - **Dependencies:** Task 5 (DataStore), Task 6 (utilities)
 - **Actions:**
   - Implement inside DataStore write methods (enforced at data layer, not in components):
@@ -491,11 +499,18 @@
   - **Hook 2 — Deadline hierarchy:** `child.deadline <= parent.deadline`. Block violation and return conflict info for UI modal ("Child cannot exceed parent's deadline. Update parent too?"). When parent deadline shortened: find conflicting children, return list for blur+overlay
   - **Hook 3 — Bit auto-completion:** On chunk status → `"complete"`, check all sibling chunks. All complete → `bit.status = "complete"`. Reverse: chunk uncompleted + bit was complete → `bit.status = "active"`. Both directions cascade mtime
   - **Hook 8 — Grid cell uniqueness:** Before insert/move, query active items at `(parentId, x, y)`. If occupied → reject or trigger BFS auto-placement
+  - **`useGlobalUrgency()` hook:** New hook in `src/hooks/use-global-urgency.ts`. Reactive query across all active Bits project-wide. Returns `UrgencyLevel` (1|2|3|null) — the most urgent level of any active Bit with an approaching deadline. Consumed by Task 12 (sidebar Calendar button urgency dot).
+  - **`useNodeUrgency(nodeId: string)` hook:** New hook in `src/hooks/use-node-urgency.ts`. Reactive query for child Bits of a specific Node. Returns `UrgencyLevel` of the most urgent child. Consumed by Task 14 (NodeCard urgency badge).
+  - **`DeadlineConflictOverlay` component:** `src/components/shared/deadline-conflict-overlay.tsx`. Renders "Modify timeline" overlay on child items whose deadlines exceed a newly-shortened parent deadline. Consumed by Tasks 21 (Bit Detail), 25c (Node Edit Dialog), and Calendar tasks.
+  - **`DeadlineConflictModal` component:** `src/components/shared/deadline-conflict-modal.tsx`. "Update parent's deadline too?" modal surfaced when a child deadline would exceed the parent. Consumed by Tasks 21 and 25c.
+  - **Grid-full feedback:** When BFS returns `null` in any creation flow, surface a toast: "Grid is full. Reorganize or move items to make space." Do not open any creation dialog.
 - **Acceptance:** Unit tests pass:
   - `mtime-cascade.test.ts`: chunk complete → parent Bit mtime updated → parent Node mtime updated; grid reposition does NOT update mtime
   - `deadline-hierarchy.test.ts`: child deadline past parent → blocked with conflict info; parent shortened → conflicting children identified
   - `auto-completion.test.ts`: last chunk completed → bit status flips to "complete"; chunk uncompleted → bit reverts to "active"
   - `grid-uniqueness.test.ts`: insert at occupied cell → rejected; BFS fallback finds nearest empty
+  - `use-global-urgency.test.ts`: returns correct max urgency level across all active Bits
+  - `use-node-urgency.test.ts`: returns correct urgency for child Bits of a given Node
 - **Commit:** `feat: implement mtime cascade, deadline hierarchy, auto-completion, and grid uniqueness hooks`
 
 ### Task 25: Bit-to-Node Promotion
@@ -504,13 +519,69 @@
 - **Dependencies:** Task 24
 - **Actions:**
   - Implement Hook 9 from SCHEMA.md as `promoteBitToNode(bitId)` on DataStore:
-    1. Create new Node: copy Bit's `title`, `icon`, `deadline`, `description`. Assign default `color`. Set `level = parentNode.level` (same grid level)
+    1. Create new Node: copy Bit's `title`, `icon`, `deadline`, `description`. Assign default `color`. Set `level = parentNode.level + 1` (SCHEMA.md is authoritative: Node level = parent level + 1)
     2. For each Chunk: create new Bit inside new Node. Map `chunk.title → bit.title`, `chunk.time → bit.deadline`, `chunk.timeAllDay → bit.deadlineAllDay`. Auto-place via BFS
     3. Delete original Bit and all its Chunks
-  - Surface in UI: context menu or edit mode action on Bit cards
+  - Surface in UI: "Promote to Node" action in the Bit Detail Popup header dropdown menu (Task 21). Action is only visible when the Bit has 1+ Chunks.
 - **Acceptance:** Unit tests pass:
   - `promotion.test.ts`: Bit with 3 chunks → new Node created with 3 child Bits; original Bit+Chunks deleted; child Bit deadlines match chunk times; BFS places children on grid
 - **Commit:** `feat: implement bit-to-node promotion with chunk-to-bit conversion`
+
+### Task 25a: Bit Status Toggle + Completion UI
+- **Status:** `[ ]`
+- **Files:** `src/components/bit-detail/bit-detail-popup.tsx` (update), `src/components/grid/bit-card.tsx` (update)
+- **Dependencies:** Task 21 (Bit Detail Popup), Task 24 (Hook 3 — auto-completion)
+- **Actions:**
+  - **Bit Detail Popup header:** Add a status toggle button (checkmark icon). Click cycles: active → complete → active. When completing: apply Hook 3 mtime cascade. When undoing: revert Bit status to `"active"`, cascade mtime
+  - **Zero-Chunk Bits:** Status toggle is the only completion mechanism (no auto-completion possible). Same checkmark button
+  - **Force-complete:** Toggle to complete even with incomplete Chunks. All Chunk statuses remain unchanged — only the Bit flips
+  - **Undo-complete:** Toggle back to active. If Bit was auto-completed (all Chunks done), uncompleting the Bit sets `status = "active"` but does not change Chunk statuses
+  - **Remove-to-trash:** "Move to trash" action in Bit Detail Popup header dropdown. Calls `DataStore.softDeleteBit(bitId)`
+  - **BitCard visual:** Completed Bits show strikethrough title + gray treatment + `opacity-50`. In edit mode, completed Bits still jiggle and show delete overlay
+  - **Calendar consistency:** Completed Bits in Calendar day columns (Task 27/28) render with the same gray/strikethrough treatment
+- **Acceptance:**
+  - Bit Detail Popup has a completion toggle button. Click completes/uncompletes
+  - Zero-Chunk Bits can be completed via toggle
+  - Force-complete works with incomplete Chunks (Chunk statuses unchanged)
+  - Undo-complete reverts Bit to active
+  - "Move to trash" action works from popup header dropdown
+  - Completed BitCard shows strikethrough + gray + `opacity-50`
+- **Commit:** `feat: add bit status toggle, force-complete, undo, and remove-to-trash`
+
+### Task 25b: Level 1-2 Creation Chooser + Bit Creation Dialog
+- **Status:** `[ ]`
+- **Files:** `src/components/grid/create-item-chooser.tsx` (new), `src/components/grid/create-bit-dialog.tsx` (new or update), `src/app/grid/[nodeId]/_components/node-grid-shell.tsx` (update)
+- **Dependencies:** Task 18 (Level 1-3 Grid Page), Task 5 (DataStore)
+- **Actions:**
+  - `create-item-chooser.tsx`: `"use client"`. Small popover triggered by `+` button at Level 1-2. Two options: "Node" (folder icon) and "Bit" (check-square icon). Selecting "Node" opens existing `CreateNodeDialog`. Selecting "Bit" opens `CreateBitDialog`
+  - `create-bit-dialog.tsx`: shadcn Dialog. Fields: title (required), icon picker (reuse `NODE_ICON_MAP`), deadline (optional date picker with "All day" toggle), priority (optional: high/mid/low/none toggle). No color field — Bit inherits parent Node color. No description — added later via Bit Detail Popup
+  - `node-grid-shell.tsx` update: At Level 1-2, both sidebar `+` and empty-cell `+` open the chooser. At Level 3, `+` opens `CreateBitDialog` directly (existing behavior). At Level 0, `+` opens `CreateNodeDialog` directly (unchanged)
+  - **BFS origin rule:** Node placement: BFS from `(0, 0)` (top-left). Bit placement: BFS from `(GRID_COLS-1, 0)` (top-right). Empty-cell `+` click: BFS from `(clickedX, clickedY)` regardless of type
+  - **Grid-full feedback:** When BFS returns `null`, show toast: "Grid is full. Reorganize or move items to make space." Do not open the creation dialog
+- **Acceptance:**
+  - Level 1-2 `+` (sidebar and empty-cell) opens Node/Bit chooser popover with two options
+  - Selecting "Node" → `CreateNodeDialog` → places Node via BFS from top-left
+  - Selecting "Bit" → `CreateBitDialog` → places Bit via BFS from top-right
+  - Level 3 `+` opens `CreateBitDialog` directly (unchanged)
+  - Level 0 `+` opens `CreateNodeDialog` directly (unchanged)
+  - Grid-full condition shows toast instead of opening dialog
+- **Commit:** `feat: add Level 1-2 creation chooser, Bit creation dialog, and grid-full feedback`
+
+### Task 25c: Node Property Edit Dialog
+- **Status:** `[ ]`
+- **Files:** `src/components/grid/edit-node-dialog.tsx` (new), `src/components/grid/node-card.tsx` (update), `src/components/grid/edit-mode-overlay.tsx` (update)
+- **Dependencies:** Task 14 (NodeCard), Task 20 (Edit Mode Overlay)
+- **Actions:**
+  - `edit-node-dialog.tsx`: `"use client"`. shadcn Dialog. Pre-populated with existing Node data. Editable fields: title, icon (icon picker), color (color input), description (textarea), deadline (date picker with "All day" toggle). Save calls `DataStore.updateNode(nodeId, changes)`
+  - `node-card.tsx` update: Accept an `isEditMode` prop. When `isEditMode === true`, click opens `EditNodeDialog` instead of navigating to `/grid/[nodeId]`
+  - `edit-mode-overlay.tsx` update: Pass `isEditMode={true}` to NodeCard when edit mode is active
+  - **Click precedence rule:** Normal mode: click Node → navigate to `/grid/[nodeId]`. Edit mode: click Node → open `EditNodeDialog`. Bit click behavior is unchanged in both modes (popup opens regardless)
+- **Acceptance:**
+  - In edit mode, clicking a Node opens `EditNodeDialog` with pre-populated title, icon, color, description, deadline
+  - Save persists changes via DataStore
+  - In normal mode, clicking a Node still navigates (unchanged)
+  - Edit-mode click on a Bit still opens the Bit Detail Popup (unchanged)
+- **Commit:** `feat: add node property edit dialog with edit-mode click routing`
 
 ---
 
@@ -522,6 +593,7 @@
 - **Dependencies:** Task 5, Task 7 (calendar-store)
 - **Actions:**
   - `layout.tsx`: Shared layout for `/calendar/weekly` and `/calendar/monthly`. Two-panel: left panel `w-calendar-pool` (288px, `--calendar-pool-width`) + right content area (`{children}`). Left panel split: Node pool top (60%, `--calendar-node-pool-ratio`) + Items pool bottom (40%)
+    - View toggle in layout header: switches between `/calendar/weekly` and `/calendar/monthly` routes
   - `node-pool.tsx`: `"use client"`. Top section of left panel. Uses `useCalendarStore` for drill-down
     - Level 0 Nodes: icon only (tooltip on hover for title)
     - Click Node → drill down: show sub-Nodes (with `>` chevron) + Bits inside
@@ -529,6 +601,8 @@
     - Search input within pool to filter items
     - Nodes and Bits draggable to the schedule (DnD source)
 - **Acceptance:** Calendar layout renders two-panel at correct widths. Node pool shows Level 0 icons. Drill-down navigates into Nodes. Search filters pool
+- Calendar sidebar button navigates to `/calendar/weekly`
+- Layout header includes a Weekly/Monthly view toggle
 - **Commit:** `feat: add calendar layout with node pool and drill-down navigation`
 
 ### Task 27: Calendar:Weekly Page + Day Columns
@@ -544,9 +618,13 @@
     - 2+ items: compact list (Task 28)
     - No-time items at top. Timed items below, sorted earliest → latest
     - Drop zone by item type: Bit → `DataStore.updateBit({ deadline: date })`, Node → `DataStore.updateNode({ deadline: date })`, Chunk → `DataStore.updateChunk({ time: date })`
+    - Bit items are clickable: click appends `?bit=[bitId]` to the current URL to open Bit Detail Popup
+    - Completed Bits render with strikethrough title + gray/opacity treatment (consistent with grid BitCard)
     - Overflow `+N more`: click → column expands vertically with Motion layout animation + vignette, hiding adjacent columns
     - Collapse: ESC or click non-item area
 - **Acceptance:** 7 day columns render. Items on correct days. Drop sets deadline. Overflow expands/collapses. Week navigation works
+- Clicking a Bit in a day column opens Bit Detail Popup via `?bit=[bitId]`
+- Completed items render with strikethrough + gray treatment
 - **Commit:** `feat: add weekly calendar page with day columns and drag scheduling`
 
 ### Task 28: Compact Bit + Items Pool
@@ -559,12 +637,15 @@
     - Title: `flex-1 truncate text-foreground`
     - Time: `text-xs text-muted-foreground flex-shrink-0`
     - Date badge in corner when applicable
+    - Clickable: click appends `?bit=[bitId]` to URL. Completed state: strikethrough + gray treatment
   - `items-pool.tsx`: `"use client"`. Bottom section of calendar left panel. Merged pool of Bits + Chunks only (Nodes are in the separate Node Pool above)
     - Sort: deadline items first (by priority rank → time), no-deadline below
     - Scrollable with search input
     - Items draggable to schedule
     - Unschedule: drag back to pool or ✗ button → Bit: `DataStore.updateBit({ deadline: null })`, Chunk: `DataStore.updateChunk({ time: null })`
 - **Acceptance:** Compact items: colored left border + title + time. Pool sorts correctly. Drag to schedule works. Unschedule clears deadline
+- Compact items clickable → opens Bit Detail Popup
+- Completed items render with strikethrough + gray treatment
 - **Commit:** `feat: add compact bit items and calendar items pool with scheduling`
 
 ### Task 29: Calendar:Monthly Page
@@ -601,6 +682,7 @@
 - **Files:** `src/app/trash/page.tsx`, `src/components/trash/trash-list.tsx`, `src/components/trash/trash-group.tsx`
 - **Dependencies:** Task 5 (DataStore)
 - **Actions:**
+  - Wire Trash sidebar button in `sidebar.tsx` → navigates to `/trash`
   - `trash/page.tsx`: `"use client"`. List view with sidebar (no grid). Uses a dedicated `useTrashData` hook (reactive, internally `useLiveQuery`) for trashed items
   - `trash-list.tsx`: Renders all trashed items. Global "Empty trash" button → permanently deletes all trashed items
   - `trash-group.tsx`: Deleted Node shows as single entry with child count indicator ("Work — 3 Nodes, 8 Bits"). Click to expand children
@@ -608,17 +690,19 @@
     - Retention label: `text-xs text-muted-foreground` — "X days until permanent deletion" from `deletedAt + 30 days - Date.now()`
   - Restore behavior: returns to original parent grid. BFS nearest-empty-cell if position occupied. Auto-restores parent chain if parent also trashed
 - **Acceptance:** `/trash` shows trashed items grouped by parent. Expand reveals children. Restore returns to grid with BFS fallback. Permanent delete removes completely. Retention countdown shows
+- Trash sidebar button navigates to `/trash`
 - **Commit:** `feat: add trash page with grouped view, restore, and permanent delete`
 
 ### Task 32: Cascade Delete/Restore/Cleanup Hooks
 - **Status:** `[ ]`
-- **Files:** `src/lib/db/indexeddb.ts` (update)
+- **Files:** `src/lib/db/indexeddb.ts` (update), `src/hooks/use-trash-auto-cleanup.ts` (new)
 - **Dependencies:** Task 24, Task 6 (BFS)
 - **Actions:**
   - **Hook 4 — Cascade soft-delete:** Node trashed → recursively find all descendant Nodes + their Bits, set `deletedAt = Date.now()` on all. Bit trashed → trash Bit only (Chunks implicitly inaccessible via trashed parent)
   - **Hook 5 — Cascade restore:** Node restored → if parent trashed, auto-restore parent chain first (no orphans). Restore all descendants trashed in same cascade. Each restored item: BFS if original `(x, y)` occupied. Bit restored → auto-restore parent Node chain if needed
   - **Hook 6 — Cascade hard-delete:** Node permanently deleted → delete Node + all descendant Nodes + all descendant Bits + all Chunks of those Bits. Bit deleted → delete Bit + all Chunks
   - **Hook 7 — Trash auto-cleanup:** On app startup and periodically (e.g., every hour): query `deletedAt < Date.now() - 30 * 86400000`. Apply Hook 6 to each match
+  - **Auto-cleanup trigger:** Add `useTrashAutoCleanup` hook in `src/hooks/use-trash-auto-cleanup.ts`. Hook runs Hook 7 cleanup once on mount, then on a `setInterval` every 60 minutes. Hook is called from `providers.tsx`.
 - **Acceptance:** Unit tests pass:
   - `cascade-delete.test.ts`: trash Node → all descendant Nodes + Bits get `deletedAt`; trash Bit → only that Bit trashed, Chunks untouched
   - `cascade-restore.test.ts`: restore Node with trashed parent → parent chain auto-restored; restored item at occupied cell → BFS fallback
@@ -637,9 +721,16 @@
     - Input: `flex items-center gap-3 px-4 py-3 border-b border-border`. Search icon `w-5 h-5 text-muted-foreground`. Input field `flex-1 bg-transparent text-foreground placeholder:text-muted-foreground outline-none text-base` with `autoFocus`
     - Results: `max-h-[50vh] overflow-y-auto py-2`. Each: `flex items-center gap-3 px-4 py-2.5 hover:bg-accent cursor-pointer transition-colors`. Type icon `w-4 h-4 text-muted-foreground`, title `text-sm font-medium text-foreground truncate`, path `text-xs text-muted-foreground truncate`, deadline
   - Trigger: sidebar Search button or `Cmd/Ctrl+K` shortcut
-  - Click result → navigate to item's grid location. Overlay closes
+  - Click result → navigate to item's grid location and close overlay:
+    - Node result: navigate to `/grid/[nodeId]`
+    - Bit result: navigate to `/grid/[parentNodeId]?bit=[bitId]`
+    - Chunk result: navigate to `/grid/[grandparentNodeId]?bit=[parentBitId]`
+  - Update `SearchResult` type to include `parentBitId?: string` and `grandparentNodeId?: string` fields for Chunk results
+  - ESC closes the search overlay (highest priority — closes before any other ESC handler)
   - Scope: case-insensitive substring across active nodes, bits, chunks titles
 - **Acceptance:** Search opens via sidebar button or Cmd+K. Real-time filtering. Results show type + parent path. Click navigates and closes. ESC/backdrop closes
+- ESC closes overlay (highest priority — before bit detail popup, calendar expand, edit mode)
+- Chunk results navigate to correct grandparent grid with bit popup open
 - **Commit:** `feat: add search overlay with real-time filtering and keyboard shortcut`
 
 ### Task 34: DnD Grid Interactions
@@ -654,6 +745,7 @@
   - Visual feedback: dragged item opacity 0.5, valid drop zones get highlight border
   - @dnd-kit pointer sensor with 5px activation distance (prevents click interference)
 - **Acceptance:** Items repositionable in edit mode with snap animation. Drag-into-Node moves to child grid. Drag-to-breadcrumb moves to ancestor. Visual feedback during drag
+- **Deferred:** "Move to..." tree browser menu (PRD Section 20.3) — explicitly deferred to v1.1 / PRD Section 26 scope. Not part of this task.
 - **Commit:** `feat: implement grid drag interactions with magnet snap and node drop`
 
 ### Task 35: Motion Animations
@@ -690,5 +782,17 @@ These apply across all phases:
 - **Grid cell uniqueness (Hook 8):** Always check `(parentId, x, y)` occupancy before insert or move. BFS auto-placement as fallback when position is occupied.
 - **Testing:** Vitest for unit tests. Pure utility functions (T6) and application hooks (T24, T25, T32) require passing unit tests as acceptance criteria. Test files co-located with source: `src/lib/utils/*.test.ts`, `src/lib/db/*.test.ts`.
 - **Accessibility:** `prefers-reduced-motion` disables all animations. Focus management on modals (search overlay, bit detail, dialogs). `aria-labels` on icon-only sidebar buttons. Keyboard navigation for search results.
+- **ESC key priority (innermost-first):** Search overlay > Bit detail popup > Calendar column expand > Edit mode. Each handler checks its own open state before consuming the event.
+- **BFS origin rule:** Node creation: BFS from `(0, 0)` (top-left corner). Bit creation: BFS from `(GRID_COLS-1, 0)` (top-right corner). Empty-cell `+` click: BFS from `(clickedX, clickedY)` regardless of type — returns the clicked cell if empty, nearest fallback if occupied.
 - **Non-features (PRD Section 26):** Do NOT implement: Mascot System, Labs, AI-Powered Search, Responsive Design, Onboarding Enhancement. These are explicitly deferred.
 - **Doc authority:** SCHEMA.md = data model source of truth. SPEC.md = architecture/routes/components. DESIGN_TOKENS.md = visual values. This file = execution order. PRD = historical context, non-authoritative for implementation.
+
+#### Phase 7 Defer Notes
+
+> **Explicitly deferred polish items (not in Phase 7 scope):**
+> - Folded sidebar red highlight + scale animation (PRD Section 16, line 494-495) — Phase 7 if time permits
+> - Breadcrumb subtitle expand option (PRD Section 6, line 197) — Phase 7 if time permits
+> - Floating animation ON/OFF toggle settings (PRD Section 25, line 2130) — settings UI is out of scope for v1
+> - "Neglected" dust/noise texture (PRD Section 10, line 306) — Phase 7 if time permits or defer to Section 26
+> - NodeCard icon container minor size discrepancy (52px vs 56px spec) — Phase 7 Polish
+> - Sidebar button/icon sizing discrepancies — Phase 7 Polish
