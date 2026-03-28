@@ -20,7 +20,7 @@ export function useGlobalUrgency(): UrgencyLevel {
       const dataStore = await getDataStore();
       const [bits, nodes] = await Promise.all([
         dataStore.getAllActiveBits(),
-        dataStore.getNodes(null),
+        dataStore.getAllActiveNodes(),
       ]);
       return { bits, nodes };
     }).subscribe({

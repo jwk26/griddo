@@ -10,6 +10,8 @@ export interface DataStore {
   restoreNode(id: string): Promise<void>;
   hardDeleteNode(id: string): Promise<void>;
 
+  getAllActiveNodes(): Promise<Node[]>;
+
   // --- Bits ---
   getBit(id: string): Promise<Bit | undefined>;
   getBits(parentId: string): Promise<Bit[]>;
