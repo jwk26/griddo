@@ -649,7 +649,7 @@
 ## Phase 6: Calendar Views
 
 ### Task 26: Calendar Layout + Node Pool
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/app/calendar/layout.tsx`, `src/components/calendar/node-pool.tsx`, `src/components/layout/sidebar.tsx` (update)
 - **Dependencies:** Task 5, Task 7 (calendar-store), Task 24 (use-global-urgency)
 - **Actions:**
@@ -671,7 +671,7 @@
 - **Commit:** `feat: add calendar layout with node pool and drill-down navigation`
 
 ### Task 27: Calendar:Weekly Page + Day Columns
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/app/calendar/weekly/page.tsx`, `src/components/calendar/day-column.tsx`
 - **Dependencies:** Task 26, Task 10 (use-calendar-data)
 - **Actions:**
@@ -694,7 +694,7 @@
 - **Commit:** `feat: add weekly calendar page with day columns and drag scheduling`
 
 ### Task 28: Compact Bit + Items Pool
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/calendar/compact-bit-item.tsx`, `src/components/calendar/items-pool.tsx`
 - **Dependencies:** Task 27, Task 10 (use-calendar-data)
 - **Actions:**
@@ -716,7 +716,7 @@
 - **Commit:** `feat: add compact bit items and calendar items pool with scheduling`
 
 ### Task 29: Calendar:Monthly Page
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/app/calendar/monthly/page.tsx`, `src/app/calendar/monthly/_components/month-grid.tsx`, `src/app/calendar/monthly/_components/date-cell-popover.tsx`
 - **Dependencies:** Task 26, Task 10
 - **Actions:**
@@ -729,7 +729,7 @@
 - **Commit:** `feat: add monthly calendar page with date grid and item popovers`
 
 ### Task 30: Calendar Data Integration
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/hooks/use-calendar-data.ts` (update), `src/stores/calendar-store.ts` (update), `src/hooks/use-dnd.ts` (update), `src/hooks/use-global-urgency.ts` (update), `src/app/calendar/layout.tsx` (update)
 - **Dependencies:** Task 27, Task 28, Task 29
 - **Actions:**
@@ -746,6 +746,37 @@
 - Dropping a Chunk past parent Bit's deadline shows `DeadlineConflictModal` in calendar layout
 - DnD scheduling updates mtime (aging resets on schedule action)
 - **Commit:** `feat: integrate calendar data hooks with navigation and multi-view sync`
+
+#### Phase 6 Notes
+
+> **Codex prompt length vs Gemini file reader:** The Gemini post-code review prompt (1950 lines of inlined file contents) triggered `ENAMETOOLONG` errors in Gemini's file reader tools. For future phases with many files, split the prompt into smaller chunks or use file references instead of inline content.
+
+> **Component→DataStore boundary:** Codex wrote unschedule mutations directly in UI components (items-pool.tsx, day-column.tsx). Caught during conformance review and extracted into `useCalendarActions` hook. Watch for this pattern — Codex defaults to the simplest call site, not the architectural boundary.
+
+> **Chunk color resolution:** Codex's colorMap only mapped Node and Bit IDs. Chunks (which need grandparent Node color) were falling back to the border color. Added explicit chunk→parentBit→grandparentNode resolution in use-calendar-data.ts.
+
+> **Sidebar Trash button:** Pre-existing noop visible on calendar routes (and all L0 routes). Not a Phase 6 regression — wiring is Phase 7 Task 31.
+
+> **Full issue log:** `docs/issues/Issues_Phase_6.md`
+
+---
+
+## Phase 6.5: DataStore Facade Migration
+
+> **Purpose:** Eliminate all remaining direct `indexedDBStore` imports outside `src/lib/db/indexeddb.ts`. Phase 6 enforced the facade for all new code; this phase retrofits the 11 pre-existing files from earlier phases.
+
+### Task 30.5: Migrate Pre-Existing Files to DataStore Facade
+- **Status:** `[ ]`
+- **Files (hooks — read path):** `src/hooks/use-bit-detail.ts`, `src/hooks/use-grid-data.ts`, `src/hooks/use-search.ts`, `src/hooks/use-node-urgency.ts`
+- **Files (components — write path):** `src/components/grid/edit-node-dialog.tsx`, `src/components/layout/breadcrumbs.tsx`, `src/components/layout/level-0-shell.tsx`, `src/components/bit-detail/chunk-timeline.tsx`, `src/components/bit-detail/bit-detail-popup.tsx`, `src/components/bit-detail/chunk-pool.tsx`, `src/app/grid/[nodeId]/_components/node-grid-shell.tsx`
+- **Dependencies:** Phase 6 (established `getDataStore()` pattern and `useCalendarActions` hook pattern)
+- **Actions:**
+  - **Hooks (read path):** Replace `indexedDBStore` imports with `getDataStore()` inside `liveQuery` callbacks. Pattern established in `use-calendar-data.ts` and `use-global-urgency.ts`
+  - **Components (write path):** Extract mutation calls into dedicated hooks (e.g., `useGridActions`, `useBitDetailActions`) following the `useCalendarActions` pattern. Components import hooks only, not DataStore
+  - **Test files:** Update mocks from `indexedDBStore` to the new hook/facade pattern. Affected: `breadcrumbs.test.tsx`, `node-grid-shell.test.tsx`, `chunk-pool.test.tsx`
+  - **Verification:** `grep -r "indexedDBStore" src/ --include="*.ts" --include="*.tsx"` should return only `src/lib/db/indexeddb.ts` (the implementation) and `src/lib/db/datastore.ts` (the lazy loader)
+- **Acceptance:** Zero `indexedDBStore` imports outside `indexeddb.ts` and `datastore.ts`. All architecture conformance blocking checks pass. Build + test green
+- **Commit:** `refactor: complete DataStore facade migration — remove all direct indexedDBStore imports`
 
 ---
 
