@@ -1,7 +1,6 @@
 "use client";
 
-import { liveQuery } from "dexie";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { CreateBitDialog } from "@/components/grid/create-bit-dialog";
 import { CreateItemChooser } from "@/components/grid/create-item-chooser";
@@ -11,7 +10,8 @@ import { EditNodeDialog } from "@/components/grid/edit-node-dialog";
 import { GridView } from "@/components/grid/grid-view";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Sidebar } from "@/components/layout/sidebar";
-import { indexedDBStore } from "@/lib/db/indexeddb";
+import { useGridActions } from "@/hooks/use-grid-actions";
+import { useNode } from "@/hooks/use-node";
 import { GRID_COLS } from "@/lib/constants";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import type { Node } from "@/types";
@@ -43,20 +43,13 @@ function hexToHsl(hex: string): string {
 }
 
 export function NodeGridShell({ nodeId }: { nodeId: string }) {
-  const [node, setNode] = useState<Node | null>(null);
+  const { getGridOccupancy, createNode, createBit } = useGridActions();
+  const node = useNode(nodeId);
   const [chooserOpen, setChooserOpen] = useState(false);
   const [openDialogType, setOpenDialogType] = useState<OpenDialogType>(null);
   const [editingNode, setEditingNode] = useState<Node | null>(null);
   const [placementContext, setPlacementContext] = useState<PlacementContext>({ mode: "auto" });
   const [error, setError] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    const subscription = liveQuery(() => indexedDBStore.getNode(nodeId)).subscribe({
-      next: (value) => setNode(value ?? null),
-      error: (err) => console.error(err),
-    });
-    return () => subscription.unsubscribe();
-  }, [nodeId]);
 
   const displayLevel = (node?.level ?? 0) + 1;
   const isLeafLevel = displayLevel >= 3;
@@ -99,7 +92,7 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
     if (!node) { setError("Unable to find parent node."); return; }
 
     try {
-      const occupied = await indexedDBStore.getGridOccupancy(nodeId);
+      const occupied = await getGridOccupancy(nodeId);
       const originX = placementContext.mode === "auto" ? 0 : placementContext.x;
       const originY = placementContext.mode === "auto" ? 0 : placementContext.y;
       const cell = findNearestEmptyCell(occupied, originX, originY);
@@ -110,7 +103,7 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
         return;
       }
 
-      await indexedDBStore.createNode({
+      await createNode({
         title: title.trim(),
         description: "",
         color: hexToHsl(colorHex),
@@ -145,7 +138,7 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
     if (!node) { setError("Unable to find parent node."); return; }
 
     try {
-      const occupied = await indexedDBStore.getGridOccupancy(nodeId);
+      const occupied = await getGridOccupancy(nodeId);
       // Bits auto-place from top-right; cell-click uses clicked position
       const originX = placementContext.mode === "auto" ? GRID_COLS - 1 : placementContext.x;
       const originY = placementContext.mode === "auto" ? 0 : placementContext.y;
@@ -157,7 +150,7 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
         return;
       }
 
-      await indexedDBStore.createBit({
+      await createBit({
         title: title.trim(),
         description: "",
         icon,

@@ -18,7 +18,7 @@ import {
   NODE_ICON_MAP,
   NODE_ICON_NAMES,
 } from "@/lib/constants/node-icons";
-import { indexedDBStore } from "@/lib/db/indexeddb";
+import { useNodeActions } from "@/hooks/use-node-actions";
 import { cn } from "@/lib/utils";
 import type { Node } from "@/types";
 
@@ -88,6 +88,7 @@ type EditNodeDialogProps = {
 };
 
 export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps) {
+  const { updateNode } = useNodeActions();
   const titleId = useId();
   const titleErrorId = useId();
   const iconId = useId();
@@ -132,7 +133,7 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
     setIsSubmitting(true);
     try {
       const { deadline, deadlineAllDay } = buildDeadline();
-      await indexedDBStore.updateNode(node.id, {
+      await updateNode(node.id, {
         title: title.trim(),
         icon,
         color: hexToHsl(colorHex),

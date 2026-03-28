@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Plus } from "lucide-react";
-import { indexedDBStore } from "@/lib/db/indexeddb";
+import { useChunkActions } from "@/hooks/use-chunk-actions";
 import { ChunkItem } from "./chunk-item";
 import type { Chunk } from "@/types";
 
@@ -28,6 +28,7 @@ type ChunkPoolProps = {
 };
 
 export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
+  const { createChunk, updateChunk, deleteChunk } = useChunkActions();
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -53,7 +54,7 @@ export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
     }
     isSubmittingRef.current = true;
     try {
-      await indexedDBStore.createChunk({
+      await createChunk({
         title: trimmed,
         description: "",
         time: null,
@@ -83,17 +84,17 @@ export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
   }
 
   async function handleToggle(chunk: Chunk) {
-    await indexedDBStore.updateChunk(chunk.id, {
+    await updateChunk(chunk.id, {
       status: chunk.status === "complete" ? "incomplete" : "complete",
     });
   }
 
   async function handleEdit(chunkId: string, title: string) {
-    await indexedDBStore.updateChunk(chunkId, { title });
+    await updateChunk(chunkId, { title });
   }
 
   async function handleDelete(chunkId: string) {
-    await indexedDBStore.deleteChunk(chunkId);
+    await deleteChunk(chunkId);
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -106,7 +107,7 @@ export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
     if (oldIndex === -1 || newIndex === -1) return;
 
     const reordered = arrayMove(poolChunks, oldIndex, newIndex);
-    await Promise.all(reordered.map((c, i) => indexedDBStore.updateChunk(c.id, { order: i })));
+    await Promise.all(reordered.map((c, i) => updateChunk(c.id, { order: i })));
   }
 
   return (

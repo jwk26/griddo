@@ -1,32 +1,18 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { indexedDBStore } from "@/lib/db/indexeddb";
 import type { Node } from "@/types";
 import { Breadcrumbs } from "./breadcrumbs";
 
+const useBreadcrumbChainMock = vi.hoisted(() => vi.fn());
 const push = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }));
 
-vi.mock("dexie", () => ({
-  liveQuery: (fn: () => unknown) => ({
-    subscribe: (observer: { next: (v: unknown) => void; error?: (e: unknown) => void }) => {
-      (async () => {
-        try { observer.next(await (fn as () => Promise<unknown>)()); }
-        catch (err) { observer.error?.(err); }
-      })();
-      return { unsubscribe: vi.fn() };
-    },
-  }),
-}));
-
-vi.mock("@/lib/db/indexeddb", () => ({
-  indexedDBStore: {
-    getNode: vi.fn(),
-  },
+vi.mock("@/hooks/use-breadcrumb-chain", () => ({
+  useBreadcrumbChain: useBreadcrumbChainMock,
 }));
 
 function createNode(overrides: Partial<Node>): Node {
@@ -54,7 +40,7 @@ afterEach(() => {
 });
 
 describe("Breadcrumbs", () => {
-  it("loads the ancestor chain and routes each segment", async () => {
+  it("renders the ancestor chain and routes each segment", () => {
     const root = createNode({ id: "root-node", title: "Projects" });
     const child = createNode({
       id: "child-node",
@@ -69,18 +55,11 @@ describe("Breadcrumbs", () => {
       parentId: child.id,
       level: 2,
     });
-    const getNodeMock = vi.mocked(indexedDBStore.getNode);
-
-    getNodeMock
-      .mockResolvedValueOnce(current)
-      .mockResolvedValueOnce(child)
-      .mockResolvedValueOnce(root);
+    useBreadcrumbChainMock.mockReturnValue([root, child, current]);
 
     render(<Breadcrumbs nodeId={current.id} />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Roadmap")).toBeInTheDocument();
-    });
+    expect(screen.getByText("Roadmap")).toBeInTheDocument();
 
     const homeButton = screen.getByRole("button", { name: "Home" });
     const rootButton = screen.getByRole("button", { name: "Projects" });
@@ -99,8 +78,6 @@ describe("Breadcrumbs", () => {
     expect(push).toHaveBeenNthCalledWith(1, "/");
     expect(push).toHaveBeenNthCalledWith(2, `/grid/${root.id}`);
     expect(push).toHaveBeenNthCalledWith(3, `/grid/${child.id}`);
-    expect(getNodeMock).toHaveBeenNthCalledWith(1, current.id);
-    expect(getNodeMock).toHaveBeenNthCalledWith(2, child.id);
-    expect(getNodeMock).toHaveBeenNthCalledWith(3, root.id);
+    expect(useBreadcrumbChainMock).toHaveBeenCalledWith(current.id);
   });
 });

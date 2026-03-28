@@ -5,12 +5,12 @@ import { ChunkPool } from "./chunk-pool";
 
 const createChunkMock = vi.hoisted(() => vi.fn(async () => undefined));
 
-vi.mock("@/lib/db/indexeddb", () => ({
-  indexedDBStore: {
+vi.mock("@/hooks/use-chunk-actions", () => ({
+  useChunkActions: () => ({
     createChunk: createChunkMock,
     updateChunk: vi.fn(),
     deleteChunk: vi.fn(),
-  },
+  }),
 }));
 
 afterEach(() => {

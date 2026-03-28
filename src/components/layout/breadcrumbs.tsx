@@ -1,36 +1,14 @@
 "use client";
 
-import { liveQuery } from "dexie";
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { indexedDBStore } from "@/lib/db/indexeddb";
-import type { Node } from "@/types";
+import { useBreadcrumbChain } from "@/hooks/use-breadcrumb-chain";
 
 export function Breadcrumbs({ nodeId }: { nodeId: string }) {
   const router = useRouter();
-  const [segments, setSegments] = useState<Node[]>([]);
+  const segments = useBreadcrumbChain(nodeId);
   const currentNode = segments.at(-1) ?? null;
   const ancestors = currentNode ? segments.slice(0, -1) : [];
-
-  useEffect(() => {
-    const subscription = liveQuery(async () => {
-      const chain: Node[] = [];
-      let current = await indexedDBStore.getNode(nodeId);
-
-      while (current) {
-        chain.unshift(current);
-        current = current.parentId ? await indexedDBStore.getNode(current.parentId) : undefined;
-      }
-
-      return chain;
-    }).subscribe({
-      next: (chain) => setSegments(chain),
-      error: (err) => console.error(err),
-    });
-
-    return () => subscription.unsubscribe();
-  }, [nodeId]);
 
   return (
     <nav
