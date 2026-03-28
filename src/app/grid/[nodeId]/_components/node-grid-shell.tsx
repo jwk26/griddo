@@ -1,7 +1,6 @@
 "use client";
 
-import { liveQuery } from "dexie";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { CreateBitDialog } from "@/components/grid/create-bit-dialog";
 import { CreateItemChooser } from "@/components/grid/create-item-chooser";
@@ -12,8 +11,8 @@ import { GridView } from "@/components/grid/grid-view";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Sidebar } from "@/components/layout/sidebar";
 import { useGridActions } from "@/hooks/use-grid-actions";
+import { useNode } from "@/hooks/use-node";
 import { GRID_COLS } from "@/lib/constants";
-import { getDataStore } from "@/lib/db/datastore";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import type { Node } from "@/types";
 
@@ -45,23 +44,12 @@ function hexToHsl(hex: string): string {
 
 export function NodeGridShell({ nodeId }: { nodeId: string }) {
   const { getGridOccupancy, createNode, createBit } = useGridActions();
-  const [node, setNode] = useState<Node | null>(null);
+  const node = useNode(nodeId);
   const [chooserOpen, setChooserOpen] = useState(false);
   const [openDialogType, setOpenDialogType] = useState<OpenDialogType>(null);
   const [editingNode, setEditingNode] = useState<Node | null>(null);
   const [placementContext, setPlacementContext] = useState<PlacementContext>({ mode: "auto" });
   const [error, setError] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    const subscription = liveQuery(async () => {
-      const dataStore = await getDataStore();
-      return dataStore.getNode(nodeId);
-    }).subscribe({
-      next: (value) => setNode(value ?? null),
-      error: (err) => console.error(err),
-    });
-    return () => subscription.unsubscribe();
-  }, [nodeId]);
 
   const displayLevel = (node?.level ?? 0) + 1;
   const isLeafLevel = displayLevel >= 3;

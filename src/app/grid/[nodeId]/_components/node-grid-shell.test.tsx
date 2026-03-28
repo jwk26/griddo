@@ -5,22 +5,10 @@ import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import type { Bit, Node } from "@/types";
 import { NodeGridShell } from "./node-grid-shell";
 
-const getNodeMock = vi.hoisted(() => vi.fn());
+const useNodeMock = vi.hoisted(() => vi.fn());
 const getGridOccupancyMock = vi.hoisted(() => vi.fn());
 const createNodeMock = vi.hoisted(() => vi.fn());
 const createBitMock = vi.hoisted(() => vi.fn());
-
-vi.mock("dexie", () => ({
-  liveQuery: (fn: () => unknown) => ({
-    subscribe: (observer: { next: (v: unknown) => void; error?: (e: unknown) => void }) => {
-      (async () => {
-        try { observer.next(await (fn as () => Promise<unknown>)()); }
-        catch (err) { observer.error?.(err); }
-      })();
-      return { unsubscribe: vi.fn() };
-    },
-  }),
-}));
 
 vi.mock("@/components/layout/sidebar", () => ({
   Sidebar: ({
@@ -130,8 +118,8 @@ vi.mock("@/components/grid/edit-mode-overlay", () => ({
   EditModeOverlay: () => <div data-testid="edit-mode-overlay" />,
 }));
 
-vi.mock("@/lib/db/datastore", () => ({
-  getDataStore: vi.fn().mockResolvedValue({ getNode: getNodeMock }),
+vi.mock("@/hooks/use-node", () => ({
+  useNode: useNodeMock,
 }));
 
 vi.mock("@/hooks/use-grid-actions", () => ({
@@ -198,7 +186,7 @@ describe("NodeGridShell", () => {
     });
     const findNearestEmptyCellMock = vi.mocked(findNearestEmptyCell);
 
-    getNodeMock.mockResolvedValue(node);
+    useNodeMock.mockReturnValue(node);
     getGridOccupancyMock.mockResolvedValue(new Set(["0,0"]));
     createNodeMock.mockResolvedValue(
       createNode({
@@ -243,7 +231,7 @@ describe("NodeGridShell", () => {
   });
 
   it("shows bit creation controls at leaf level, not node creation", async () => {
-    getNodeMock.mockResolvedValue(
+    useNodeMock.mockReturnValue(
       createNode({ id: "leaf-node", level: 2 }),
     );
 
@@ -260,7 +248,7 @@ describe("NodeGridShell", () => {
 
   it("creates a bit with explicit payload at leaf level", async () => {
     const node = createNode({ id: "leaf-node", level: 2 });
-    getNodeMock.mockResolvedValue(node);
+    useNodeMock.mockReturnValue(node);
     getGridOccupancyMock.mockResolvedValue(new Set(["0,0"]));
     createBitMock.mockResolvedValue(createBit({ parentId: node.id }));
     vi.mocked(findNearestEmptyCell).mockReturnValue({ x: 3, y: 4 });
