@@ -7,8 +7,8 @@ import { Clock, MoreHorizontal, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import { dayColumnExpandVariants } from "@/lib/animations/calendar";
+import { useCalendarActions } from "@/hooks/use-calendar-actions";
 import { getCalendarDateDropId } from "@/lib/calendar-dnd";
-import { getDataStore } from "@/lib/db/datastore";
 import { cn } from "@/lib/utils";
 import { CompactBitItem } from "./compact-bit-item";
 import type { Bit, Chunk, Node } from "@/types";
@@ -113,6 +113,7 @@ export function DayColumn({
   parentColorMap: Map<string, string>;
 }) {
   const router = useRouter();
+  const { unscheduleNode, unscheduleBit, unscheduleChunk } = useCalendarActions();
   const dateKey = format(date, "yyyy-MM-dd");
   const { isOver, setNodeRef } = useDroppable({
     id: getCalendarDateDropId(dateKey),
@@ -156,10 +157,7 @@ export function DayColumn({
               type="button"
               aria-label={`Unschedule ${item.title}`}
               className="text-muted-foreground transition-colors hover:text-foreground"
-              onClick={async () => {
-                const ds = await getDataStore();
-                await ds.updateNode(item.id, { deadline: null, deadlineAllDay: false });
-              }}
+              onClick={() => unscheduleNode(item.id)}
             >
               <X className="h-4 w-4" />
             </button>
@@ -202,10 +200,7 @@ export function DayColumn({
                   type="button"
                   aria-label={`Unschedule ${item.title}`}
                   className="text-muted-foreground transition-colors hover:text-foreground"
-                  onClick={async () => {
-                    const ds = await getDataStore();
-                    await ds.updateBit(item.id, { deadline: null, deadlineAllDay: false });
-                  }}
+                  onClick={() => unscheduleBit(item.id)}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -229,10 +224,7 @@ export function DayColumn({
       <CompactBitItem
         item={item}
         onClick={() => openBit(item.parentId)}
-        onUnschedule={async () => {
-          const ds = await getDataStore();
-          await ds.updateChunk(item.id, { time: null });
-        }}
+        onUnschedule={() => unscheduleChunk(item.id)}
         parentColor={resolveItemColor(item, parentColorMap)}
       />
     );
@@ -279,10 +271,7 @@ export function DayColumn({
                   <CompactNodeItem
                     node={item}
                     onClick={() => router.push(`/grid/${item.id}`)}
-                    onUnschedule={async () => {
-                      const ds = await getDataStore();
-                      await ds.updateNode(item.id, { deadline: null, deadlineAllDay: false });
-                    }}
+                    onUnschedule={() => unscheduleNode(item.id)}
                   />
                 ) : (
                   renderSingleItem(item)

@@ -4,14 +4,15 @@ import { useDroppable } from "@dnd-kit/core";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
+import { useCalendarActions } from "@/hooks/use-calendar-actions";
 import { useCalendarData } from "@/hooks/use-calendar-data";
-import { getDataStore } from "@/lib/db/datastore";
 import { cn } from "@/lib/utils";
 import { CompactBitItem } from "./compact-bit-item";
 
 export function ItemsPool() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const { unscheduleBit, unscheduleChunk } = useCalendarActions();
   const { poolItems, colorMap, isLoading } = useCalendarData();
   const { isOver, setNodeRef } = useDroppable({
     id: "calendar-unschedule:items",
@@ -58,14 +59,8 @@ export function ItemsPool() {
             }}
             onUnschedule={
               "deadline" in item
-                ? async () => {
-                    const ds = await getDataStore();
-                    await ds.updateBit(item.id, { deadline: null, deadlineAllDay: false });
-                  }
-                : async () => {
-                    const ds = await getDataStore();
-                    await ds.updateChunk(item.id, { time: null });
-                  }
+                ? () => unscheduleBit(item.id)
+                : () => unscheduleChunk(item.id)
             }
             parentColor={colorMap.get(item.id) ?? "hsl(var(--border))"}
           />
