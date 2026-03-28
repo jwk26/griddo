@@ -38,3 +38,15 @@ export interface DataStore {
   /** Returns child Bits whose deadlines exceed the given deadline. Used before/after updateNode to detect conflicts. */
   getChildDeadlineConflicts(nodeId: string, deadline: number): Promise<Bit[]>;
 }
+
+let cachedDataStore: DataStore | null = null;
+
+export async function getDataStore(): Promise<DataStore> {
+  if (cachedDataStore) {
+    return cachedDataStore;
+  }
+
+  const dataStoreModule = await import("@/lib/db/indexeddb");
+  cachedDataStore = dataStoreModule.indexedDBStore;
+  return cachedDataStore;
+}
