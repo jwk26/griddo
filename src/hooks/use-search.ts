@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { indexedDBStore } from "@/lib/db/indexeddb";
+import { getDataStore } from "@/lib/db/datastore";
 import { useSearchStore } from "@/stores/search-store";
 
 export type SearchResult = {
@@ -35,7 +35,7 @@ export function useSearch(): {
 
     let isCancelled = false;
 
-    void indexedDBStore.searchAll(normalizedQuery).then((value) => {
+    void getDataStore().then((dataStore) => dataStore.searchAll(normalizedQuery)).then((value) => {
       if (isCancelled) {
         return;
       }

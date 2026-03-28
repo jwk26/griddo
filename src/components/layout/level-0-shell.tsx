@@ -6,7 +6,7 @@ import { EditModeOverlay } from "@/components/grid/edit-mode-overlay";
 import { GridView } from "@/components/grid/grid-view";
 import { OnboardingHints } from "@/components/grid/onboarding-hints";
 import { Sidebar } from "@/components/layout/sidebar";
-import { indexedDBStore } from "@/lib/db/indexeddb";
+import { useGridActions } from "@/hooks/use-grid-actions";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 
 type PlacementContext = { mode: "auto" } | { mode: "cell"; x: number; y: number };
@@ -57,6 +57,7 @@ function hexToHsl(hex: string): string {
 }
 
 export function Level0Shell() {
+  const { getGridOccupancy, createNode } = useGridActions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [placementContext, setPlacementContext] = useState<PlacementContext>({
     mode: "auto",
@@ -95,7 +96,7 @@ export function Level0Shell() {
     setError(undefined);
 
     try {
-      const occupied = await indexedDBStore.getGridOccupancy(null);
+      const occupied = await getGridOccupancy(null);
       const cell = findNearestEmptyCell(
         occupied,
         placementContext.mode === "auto" ? 0 : placementContext.x,
@@ -120,7 +121,7 @@ export function Level0Shell() {
         y: cell.y,
       };
 
-      await indexedDBStore.createNode(payload);
+      await createNode(payload);
       setDialogOpen(false);
     } catch (submissionError) {
       setError(

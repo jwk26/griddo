@@ -1,10 +1,14 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { indexedDBStore } from "@/lib/db/indexeddb";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import type { Bit, Node } from "@/types";
 import { NodeGridShell } from "./node-grid-shell";
+
+const getNodeMock = vi.hoisted(() => vi.fn());
+const getGridOccupancyMock = vi.hoisted(() => vi.fn());
+const createNodeMock = vi.hoisted(() => vi.fn());
+const createBitMock = vi.hoisted(() => vi.fn());
 
 vi.mock("dexie", () => ({
   liveQuery: (fn: () => unknown) => ({
@@ -126,13 +130,16 @@ vi.mock("@/components/grid/edit-mode-overlay", () => ({
   EditModeOverlay: () => <div data-testid="edit-mode-overlay" />,
 }));
 
-vi.mock("@/lib/db/indexeddb", () => ({
-  indexedDBStore: {
-    getGridOccupancy: vi.fn(),
-    getNode: vi.fn(),
-    createNode: vi.fn(),
-    createBit: vi.fn(),
-  },
+vi.mock("@/lib/db/datastore", () => ({
+  getDataStore: vi.fn().mockResolvedValue({ getNode: getNodeMock }),
+}));
+
+vi.mock("@/hooks/use-grid-actions", () => ({
+  useGridActions: () => ({
+    getGridOccupancy: getGridOccupancyMock,
+    createNode: createNodeMock,
+    createBit: createBitMock,
+  }),
 }));
 
 vi.mock("@/lib/utils/bfs", () => ({
@@ -189,9 +196,6 @@ describe("NodeGridShell", () => {
       level: 0,
       color: "hsl(140, 70%, 45%)",
     });
-    const getNodeMock = vi.mocked(indexedDBStore.getNode);
-    const getGridOccupancyMock = vi.mocked(indexedDBStore.getGridOccupancy);
-    const createNodeMock = vi.mocked(indexedDBStore.createNode);
     const findNearestEmptyCellMock = vi.mocked(findNearestEmptyCell);
 
     getNodeMock.mockResolvedValue(node);
@@ -239,7 +243,7 @@ describe("NodeGridShell", () => {
   });
 
   it("shows bit creation controls at leaf level, not node creation", async () => {
-    vi.mocked(indexedDBStore.getNode).mockResolvedValue(
+    getNodeMock.mockResolvedValue(
       createNode({ id: "leaf-node", level: 2 }),
     );
 
@@ -256,9 +260,9 @@ describe("NodeGridShell", () => {
 
   it("creates a bit with explicit payload at leaf level", async () => {
     const node = createNode({ id: "leaf-node", level: 2 });
-    vi.mocked(indexedDBStore.getNode).mockResolvedValue(node);
-    vi.mocked(indexedDBStore.getGridOccupancy).mockResolvedValue(new Set(["0,0"]));
-    vi.mocked(indexedDBStore.createBit).mockResolvedValue(createBit({ parentId: node.id }));
+    getNodeMock.mockResolvedValue(node);
+    getGridOccupancyMock.mockResolvedValue(new Set(["0,0"]));
+    createBitMock.mockResolvedValue(createBit({ parentId: node.id }));
     vi.mocked(findNearestEmptyCell).mockReturnValue({ x: 3, y: 4 });
 
     render(<NodeGridShell nodeId={node.id} />);
@@ -271,7 +275,7 @@ describe("NodeGridShell", () => {
     fireEvent.click(await screen.findByLabelText("bit-dialog-submit"));
 
     await waitFor(() => {
-      expect(vi.mocked(indexedDBStore.createBit)).toHaveBeenCalledWith({
+      expect(createBitMock).toHaveBeenCalledWith({
         title: "New bit",
         description: "",
         icon: "Box",

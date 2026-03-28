@@ -4,7 +4,7 @@ import { liveQuery } from "dexie";
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { indexedDBStore } from "@/lib/db/indexeddb";
+import { getDataStore } from "@/lib/db/datastore";
 import type { Node } from "@/types";
 
 export function Breadcrumbs({ nodeId }: { nodeId: string }) {
@@ -15,12 +15,13 @@ export function Breadcrumbs({ nodeId }: { nodeId: string }) {
 
   useEffect(() => {
     const subscription = liveQuery(async () => {
+      const dataStore = await getDataStore();
       const chain: Node[] = [];
-      let current = await indexedDBStore.getNode(nodeId);
+      let current = await dataStore.getNode(nodeId);
 
       while (current) {
         chain.unshift(current);
-        current = current.parentId ? await indexedDBStore.getNode(current.parentId) : undefined;
+        current = current.parentId ? await dataStore.getNode(current.parentId) : undefined;
       }
 
       return chain;

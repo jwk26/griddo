@@ -2,7 +2,7 @@
 
 import { liveQuery } from "dexie";
 import { useEffect, useState } from "react";
-import { indexedDBStore } from "@/lib/db/indexeddb";
+import { getDataStore } from "@/lib/db/datastore";
 import type { Bit, Node } from "@/types";
 
 type GridDataSnapshot = {
@@ -25,7 +25,10 @@ export function useGridData(parentId: string | null): {
   });
 
   useEffect(() => {
-    const subscription = liveQuery(() => indexedDBStore.getActiveGridContents(parentId)).subscribe({
+    const subscription = liveQuery(async () => {
+      const dataStore = await getDataStore();
+      return dataStore.getActiveGridContents(parentId);
+    }).subscribe({
       next: (value) => {
         setState({
           parentId,

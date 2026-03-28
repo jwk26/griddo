@@ -17,7 +17,7 @@ import {
 } from "@dnd-kit/sortable";
 import { format } from "date-fns";
 import { Clock } from "lucide-react";
-import { indexedDBStore } from "@/lib/db/indexeddb";
+import { useChunkActions } from "@/hooks/use-chunk-actions";
 import { ChunkItem } from "./chunk-item";
 import type { Chunk } from "@/types";
 
@@ -31,6 +31,7 @@ type ChunkTimelineProps = {
 };
 
 export function ChunkTimeline({ chunks, bitDeadline, bitDeadlineAllDay }: ChunkTimelineProps) {
+  const { updateChunk, deleteChunk } = useChunkActions();
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -54,17 +55,17 @@ export function ChunkTimeline({ chunks, bitDeadline, bitDeadlineAllDay }: ChunkT
     : null;
 
   async function handleToggle(chunk: Chunk) {
-    await indexedDBStore.updateChunk(chunk.id, {
+    await updateChunk(chunk.id, {
       status: chunk.status === "complete" ? "incomplete" : "complete",
     });
   }
 
   async function handleEdit(chunkId: string, title: string) {
-    await indexedDBStore.updateChunk(chunkId, { title });
+    await updateChunk(chunkId, { title });
   }
 
   async function handleDelete(chunkId: string) {
-    await indexedDBStore.deleteChunk(chunkId);
+    await deleteChunk(chunkId);
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -77,7 +78,7 @@ export function ChunkTimeline({ chunks, bitDeadline, bitDeadlineAllDay }: ChunkT
     if (oldIndex === -1 || newIndex === -1) return;
 
     const reordered = arrayMove(orderedChunks, oldIndex, newIndex);
-    await Promise.all(reordered.map((c, i) => indexedDBStore.updateChunk(c.id, { order: i })));
+    await Promise.all(reordered.map((c, i) => updateChunk(c.id, { order: i })));
   }
 
   if (totalCount === 0) return null;

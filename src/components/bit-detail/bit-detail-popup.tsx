@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { NODE_ICON_MAP, NODE_ICON_NAMES } from "@/lib/constants/node-icons";
-import { indexedDBStore } from "@/lib/db/indexeddb";
+import { useBitDetailActions } from "@/hooks/use-bit-detail-actions";
 import { useBitDetail } from "@/hooks/use-bit-detail";
+import { NODE_ICON_MAP, NODE_ICON_NAMES } from "@/lib/constants/node-icons";
 import { bitDetailPopupVariants } from "@/lib/animations/grid";
 import { cn } from "@/lib/utils";
 import { ChunkPool } from "./chunk-pool";
@@ -44,6 +44,7 @@ function toTimeStr(ts: number | null): string {
 }
 
 export function BitDetailPopup() {
+  const { updateBit, softDeleteBit, promoteBitToNode } = useBitDetailActions();
   const { bit, chunks, parentNode, isOpen, close } = useBitDetail();
   const [localTitle, setLocalTitle] = useState("");
   const [localDescription, setLocalDescription] = useState("");
@@ -75,62 +76,62 @@ export function BitDetailPopup() {
     if (!bit) return;
     const trimmed = localTitle.trim();
     if (!trimmed) { setLocalTitle(bit.title); return; }
-    if (trimmed !== bit.title) await indexedDBStore.updateBit(bit.id, { title: trimmed });
+    if (trimmed !== bit.title) await updateBit(bit.id, { title: trimmed });
   }
 
   async function handleDescriptionBlur() {
     if (!bit) return;
     if (localDescription !== bit.description) {
-      await indexedDBStore.updateBit(bit.id, { description: localDescription });
+      await updateBit(bit.id, { description: localDescription });
     }
   }
 
   async function handlePriorityToggle() {
     if (!bit) return;
-    await indexedDBStore.updateBit(bit.id, { priority: nextPriority(bit.priority) });
+    await updateBit(bit.id, { priority: nextPriority(bit.priority) });
   }
 
   async function handleIconSelect(iconName: string) {
     if (!bit) return;
     setIconPickerOpen(false);
-    if (iconName !== bit.icon) await indexedDBStore.updateBit(bit.id, { icon: iconName });
+    if (iconName !== bit.icon) await updateBit(bit.id, { icon: iconName });
   }
 
   async function handleDateChange(dateStr: string) {
     if (!bit) return;
     if (!dateStr) {
-      await indexedDBStore.updateBit(bit.id, { deadline: null, deadlineAllDay: false });
+      await updateBit(bit.id, { deadline: null, deadlineAllDay: false });
       return;
     }
     const timeStr = bit.deadlineAllDay ? "00:00" : (toTimeStr(bit.deadline) || "00:00");
-    await indexedDBStore.updateBit(bit.id, { deadline: new Date(`${dateStr}T${timeStr}`).getTime() });
+    await updateBit(bit.id, { deadline: new Date(`${dateStr}T${timeStr}`).getTime() });
   }
 
   async function handleTimeChange(timeStr: string) {
     if (!bit) return;
     const dateStr = toDateStr(bit.deadline) || format(new Date(), "yyyy-MM-dd");
-    await indexedDBStore.updateBit(bit.id, { deadline: new Date(`${dateStr}T${timeStr}`).getTime() });
+    await updateBit(bit.id, { deadline: new Date(`${dateStr}T${timeStr}`).getTime() });
   }
 
   async function handleAllDayToggle() {
     if (!bit) return;
-    await indexedDBStore.updateBit(bit.id, { deadlineAllDay: !bit.deadlineAllDay });
+    await updateBit(bit.id, { deadlineAllDay: !bit.deadlineAllDay });
   }
 
   async function handleMoveToTrash() {
     if (!bit) return;
-    await indexedDBStore.softDeleteBit(bit.id);
+    await softDeleteBit(bit.id);
     close();
   }
 
   async function handleStatusToggle() {
     if (!bit) return;
-    await indexedDBStore.updateBit(bit.id, { status: bit.status === "complete" ? "active" : "complete" });
+    await updateBit(bit.id, { status: bit.status === "complete" ? "active" : "complete" });
   }
 
   async function handlePromoteToNode() {
     if (!bit) return;
-    await indexedDBStore.promoteBitToNode(bit.id);
+    await promoteBitToNode(bit.id);
     close();
   }
 

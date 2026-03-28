@@ -3,7 +3,7 @@
 import { liveQuery } from "dexie";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { indexedDBStore } from "@/lib/db/indexeddb";
+import { getDataStore } from "@/lib/db/datastore";
 import type { Bit, Chunk, Node } from "@/types";
 
 type BitDetailState = {
@@ -40,11 +40,12 @@ export function useBitDetail(): {
     }
 
     const subscription = liveQuery(async () => {
+      const dataStore = await getDataStore();
       const [bit, chunks] = await Promise.all([
-        indexedDBStore.getBit(bitId),
-        indexedDBStore.getChunks(bitId),
+        dataStore.getBit(bitId),
+        dataStore.getChunks(bitId),
       ]);
-      const parentNode = bit ? await indexedDBStore.getNode(bit.parentId) : undefined;
+      const parentNode = bit ? await dataStore.getNode(bit.parentId) : undefined;
       return [bit, chunks, parentNode] as const;
     }).subscribe({
       next: ([bit, chunks, parentNode]) => {

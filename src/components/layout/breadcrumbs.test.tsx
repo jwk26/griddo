@@ -1,10 +1,10 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { indexedDBStore } from "@/lib/db/indexeddb";
 import type { Node } from "@/types";
 import { Breadcrumbs } from "./breadcrumbs";
 
+const getNodeMock = vi.hoisted(() => vi.fn());
 const push = vi.fn();
 
 vi.mock("next/navigation", () => ({
@@ -23,10 +23,8 @@ vi.mock("dexie", () => ({
   }),
 }));
 
-vi.mock("@/lib/db/indexeddb", () => ({
-  indexedDBStore: {
-    getNode: vi.fn(),
-  },
+vi.mock("@/lib/db/datastore", () => ({
+  getDataStore: vi.fn().mockResolvedValue({ getNode: getNodeMock }),
 }));
 
 function createNode(overrides: Partial<Node>): Node {
@@ -69,8 +67,6 @@ describe("Breadcrumbs", () => {
       parentId: child.id,
       level: 2,
     });
-    const getNodeMock = vi.mocked(indexedDBStore.getNode);
-
     getNodeMock
       .mockResolvedValueOnce(current)
       .mockResolvedValueOnce(child)
