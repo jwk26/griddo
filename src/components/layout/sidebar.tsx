@@ -10,7 +10,9 @@ import {
   Search,
   Trash,
 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { useGlobalUrgency } from "@/hooks/use-global-urgency";
 import { cn } from "@/lib/utils";
 import { useEditModeStore } from "@/stores/edit-mode-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
@@ -55,10 +57,14 @@ export function Sidebar({
   level?: number;
   onAddClick?: () => void;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const globalUrgency = useGlobalUrgency();
   const isOpen = useSidebarStore((state) => state.isOpen);
   const toggleSidebar = useSidebarStore((state) => state.toggle);
   const isEditMode = useEditModeStore((state) => state.isEditMode);
   const toggleEditMode = useEditModeStore((state) => state.toggle);
+  const isCalendarRoute = pathname.startsWith("/calendar/");
   const foldButton = (
     <SidebarIconButton
       icon={isOpen ? ChevronLeft : ChevronRight}
@@ -91,7 +97,23 @@ export function Sidebar({
           <SidebarIconButton icon={Search} label="Search" onClick={noop} />
           <ThemeToggle />
           <div className="relative">
-            <SidebarIconButton icon={Calendar} label="Calendar" onClick={noop} />
+            <SidebarIconButton
+              icon={Calendar}
+              label="Calendar"
+              onClick={() => router.push("/calendar/weekly")}
+              isActive={isCalendarRoute}
+            />
+            {globalUrgency ? (
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-background",
+                  globalUrgency === 1 && "bg-urgency-1",
+                  globalUrgency === 2 && "bg-urgency-2",
+                  globalUrgency === 3 && "bg-urgency-3",
+                )}
+              />
+            ) : null}
           </div>
           {level === 0 ? (
             <SidebarIconButton icon={Trash} label="Trash" onClick={noop} />

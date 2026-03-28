@@ -265,6 +265,11 @@ export class IndexedDBDataStore implements DataStore {
     return bits.filter((b) => b.parentId === nodeId && b.deletedAt === null);
   }
 
+  async getAllActiveNodes(): Promise<Node[]> {
+    const nodes = await this.database.nodes.toArray();
+    return nodes.filter((n) => n.deletedAt === null);
+  }
+
   async getAllActiveBits(): Promise<Bit[]> {
     const bits = await this.database.bits.toArray();
     return bits.filter((b) => b.deletedAt === null);

@@ -3,7 +3,7 @@
 import { liveQuery } from "dexie";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-import { indexedDBStore } from "@/lib/db/indexeddb";
+import { getDataStore } from "@/lib/db/datastore";
 import type { Bit, Chunk, Node } from "@/types";
 
 type CalendarItem = Node | Bit | Chunk;
@@ -24,6 +24,34 @@ const INITIAL_CALENDAR_DATA: CalendarDataState = {
   chunks: [],
   isLoading: true,
 };
+
+async function loadCalendarSnapshot() {
+  const dataStore = await getDataStore();
+  const rootNodes = await dataStore.getNodes(null);
+  const nodes: Node[] = [...rootNodes];
+  const bits: Bit[] = [];
+  const queue = [...rootNodes];
+
+  for (let index = 0; index < queue.length; index += 1) {
+    const parentNode = queue[index];
+    const [childNodes, childBits] = await Promise.all([
+      dataStore.getNodes(parentNode.id),
+      dataStore.getBits(parentNode.id),
+    ]);
+
+    nodes.push(...childNodes);
+    bits.push(...childBits);
+    queue.push(...childNodes);
+  }
+
+  const chunkGroups = await Promise.all(bits.map((bit) => dataStore.getChunks(bit.id)));
+
+  return {
+    nodes,
+    bits,
+    chunks: chunkGroups.flat(),
+  };
+}
 
 function getCalendarTimestamp(item: CalendarItem): number | null {
   if ("deadline" in item) {
@@ -90,6 +118,12 @@ function groupItemsByDay(
 }
 
 export function useCalendarData(): {
+  nodes: Node[];
+  bits: Bit[];
+  chunks: Chunk[];
+  nodeMap: Map<string, Node>;
+  bitMap: Map<string, Bit>;
+  colorMap: Map<string, string>;
   weeklyItems: (weekStart: Date) => Map<string, (Node | Bit | Chunk)[]>;
   monthlyItems: (month: Date) => Map<string, (Node | Bit | Chunk)[]>;
   poolItems: (Bit | Chunk)[];
@@ -98,14 +132,8 @@ export function useCalendarData(): {
   const [state, setState] = useState<CalendarDataState>(INITIAL_CALENDAR_DATA);
 
   useEffect(() => {
-    const subscription = liveQuery(async () => {
-      const [nodes, { bits, chunks }] = await Promise.all([
-        indexedDBStore.getNodes(null),
-        indexedDBStore.getCalendarItems(),
-      ]);
-      return [nodes, bits, chunks] as const;
-    }).subscribe({
-      next: ([nodes, bits, chunks]) => {
+    const subscription = liveQuery(loadCalendarSnapshot).subscribe({
+      next: ({ bits, chunks, nodes }) => {
         setState({
           nodes,
           bits,
@@ -124,10 +152,37 @@ export function useCalendarData(): {
   const activeNodes = state.nodes.filter((node) => node.deletedAt === null);
   const activeBits = state.bits.filter((bit) => bit.deletedAt === null);
   const activeBitIds = new Set(activeBits.map((bit) => bit.id));
+  const activeChunks = state.chunks.filter((chunk) => activeBitIds.has(chunk.parentId));
+  const nodeMap = new Map(activeNodes.map((node) => [node.id, node]));
+  const bitMap = new Map(activeBits.map((bit) => [bit.id, bit]));
+  const colorMap = new Map<string, string>();
+
+  for (const node of activeNodes) {
+    colorMap.set(node.id, node.color);
+  }
+
+  for (const bit of activeBits) {
+    const parentNode = nodeMap.get(bit.parentId);
+
+    if (parentNode) {
+      colorMap.set(bit.id, parentNode.color);
+    }
+  }
+
+  for (const chunk of activeChunks) {
+    const parentBit = bitMap.get(chunk.parentId);
+    if (parentBit) {
+      const grandparentNode = nodeMap.get(parentBit.parentId);
+      if (grandparentNode) {
+        colorMap.set(chunk.id, grandparentNode.color);
+      }
+    }
+  }
+
   const calendarItems: CalendarItem[] = [
     ...activeNodes.filter((node) => node.deadline !== null),
     ...activeBits.filter((bit) => bit.deadline !== null),
-    ...state.chunks.filter((chunk) => chunk.time !== null && activeBitIds.has(chunk.parentId)),
+    ...activeChunks.filter((chunk) => chunk.time !== null),
   ];
 
   const weeklyItems = (weekStart: Date) => {
@@ -154,7 +209,7 @@ export function useCalendarData(): {
     });
   };
 
-  const poolItems = [...activeBits, ...state.chunks.filter((chunk) => activeBitIds.has(chunk.parentId))].toSorted(
+  const poolItems = [...activeBits, ...activeChunks].toSorted(
     (left, right) => {
       const leftTimestamp = getPoolTimestamp(left);
       const rightTimestamp = getPoolTimestamp(right);
@@ -182,6 +237,12 @@ export function useCalendarData(): {
   );
 
   return {
+    nodes: activeNodes,
+    bits: activeBits,
+    chunks: activeChunks,
+    nodeMap,
+    bitMap,
+    colorMap,
     weeklyItems,
     monthlyItems,
     poolItems,
