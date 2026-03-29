@@ -16,7 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { getDataStore } from "@/lib/db/datastore";
+import { useTrashActions } from "@/hooks/use-trash-actions";
 import { TRASH_RETENTION_DAYS } from "@/lib/constants";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,7 @@ type TrashGroupProps =
   | {
       kind: "node";
       node: Node;
+      childNodes: Node[];
       childBits: Bit[];
     }
   | {
@@ -82,7 +83,9 @@ function TrashGroupFrame({
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-foreground">{title}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <span className={getDaysRemaining(deletedAt) === 0 ? "text-destructive" : undefined}>{getRetentionLabel(deletedAt)}</span>
+            <span className={getDaysRemaining(deletedAt) === 0 ? "text-destructive" : undefined}>
+              {getRetentionLabel(deletedAt)}
+            </span>
             {deletedAt ? (
               <span>Deleted {formatDistanceToNow(new Date(deletedAt), { addSuffix: true })}</span>
             ) : null}
@@ -96,13 +99,29 @@ function TrashGroupFrame({
   );
 }
 
-function NodeTrashGroup({ childBits, node }: { childBits: Bit[]; node: Node }) {
+function NodeTrashGroup({
+  childBits,
+  childNodes,
+  node,
+}: {
+  childBits: Bit[];
+  childNodes: Node[];
+  node: Node;
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { restoreNode, hardDeleteNode } = useTrashActions();
+  const hasChildren = childNodes.length > 0 || childBits.length > 0;
+
+  const childCountLabel = [
+    childNodes.length > 0 && `${childNodes.length} ${childNodes.length === 1 ? "node" : "nodes"}`,
+    childBits.length > 0 && `${childBits.length} ${childBits.length === 1 ? "bit" : "bits"}`,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   async function handleRestore() {
     try {
-      const dataStore = await getDataStore();
-      await dataStore.restoreNode(node.id);
+      await restoreNode(node.id);
       toast.success("Node restored.");
     } catch (error) {
       if (error instanceof Error && error.message === "GRID_FULL") {
@@ -116,8 +135,7 @@ function NodeTrashGroup({ childBits, node }: { childBits: Bit[]; node: Node }) {
 
   async function handlePermanentDelete() {
     try {
-      const dataStore = await getDataStore();
-      await dataStore.hardDeleteNode(node.id);
+      await hardDeleteNode(node.id);
       toast.success("Node permanently deleted.");
     } catch {
       toast.error("Unable to permanently delete node.");
@@ -161,35 +179,52 @@ function NodeTrashGroup({ childBits, node }: { childBits: Bit[]; node: Node }) {
       iconName={node.icon}
       metadata={(
         <>
-          <span className="rounded-full bg-secondary px-2 py-0.5 text-secondary-foreground">
-            {childBits.length} {childBits.length === 1 ? "bit" : "bits"}
-          </span>
-          <button
-            aria-expanded={isExpanded}
-            className={cn(
-              "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors hover:bg-accent hover:text-foreground",
-            )}
-            onClick={() => setIsExpanded((current) => !current)}
-            type="button"
-          >
-            {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-            {isExpanded ? "Hide children" : "Show children"}
-          </button>
+          {childCountLabel ? (
+            <span className="rounded-full bg-secondary px-2 py-0.5 text-secondary-foreground">
+              {childCountLabel}
+            </span>
+          ) : null}
+          {hasChildren ? (
+            <button
+              aria-expanded={isExpanded}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors hover:bg-accent hover:text-foreground",
+              )}
+              onClick={() => setIsExpanded((current) => !current)}
+              type="button"
+            >
+              {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+              {isExpanded ? "Hide children" : "Show children"}
+            </button>
+          ) : null}
         </>
       )}
       title={node.title}
     >
-      {isExpanded && childBits.length > 0 ? (
+      {isExpanded && hasChildren ? (
         <div className="mt-4 space-y-2 border-t border-border pt-4">
+          {childNodes.map((childNode) => {
+            const ChildIcon = NODE_ICON_MAP[childNode.icon] ?? NODE_ICON_MAP.Folder;
+
+            return (
+              <div
+                key={childNode.id}
+                className="flex items-center gap-3 rounded-lg bg-secondary/40 px-3 py-2"
+              >
+                <ChildIcon aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+                <span className="truncate text-sm text-foreground">{childNode.title}</span>
+              </div>
+            );
+          })}
           {childBits.map((bit) => {
-            const Icon = NODE_ICON_MAP[bit.icon] ?? NODE_ICON_MAP.Box;
+            const BitIcon = NODE_ICON_MAP[bit.icon] ?? NODE_ICON_MAP.Box;
 
             return (
               <div
                 key={bit.id}
                 className="flex items-center gap-3 rounded-lg bg-secondary/40 px-3 py-2"
               >
-                <Icon aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+                <BitIcon aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
                 <span className="truncate text-sm text-foreground">{bit.title}</span>
               </div>
             );
@@ -201,10 +236,11 @@ function NodeTrashGroup({ childBits, node }: { childBits: Bit[]; node: Node }) {
 }
 
 function StandaloneBitTrashGroup({ bit }: { bit: Bit }) {
+  const { restoreBit, hardDeleteBit } = useTrashActions();
+
   async function handleRestore() {
     try {
-      const dataStore = await getDataStore();
-      await dataStore.restoreBit(bit.id);
+      await restoreBit(bit.id);
       toast.success("Bit restored.");
     } catch (error) {
       if (error instanceof Error && error.message === "GRID_FULL") {
@@ -218,8 +254,7 @@ function StandaloneBitTrashGroup({ bit }: { bit: Bit }) {
 
   async function handlePermanentDelete() {
     try {
-      const dataStore = await getDataStore();
-      await dataStore.hardDeleteBit(bit.id);
+      await hardDeleteBit(bit.id);
       toast.success("Bit permanently deleted.");
     } catch {
       toast.error("Unable to permanently delete bit.");
@@ -268,7 +303,7 @@ function StandaloneBitTrashGroup({ bit }: { bit: Bit }) {
 
 export function TrashGroup(props: TrashGroupProps) {
   if (props.kind === "node") {
-    return <NodeTrashGroup childBits={props.childBits} node={props.node} />;
+    return <NodeTrashGroup childBits={props.childBits} childNodes={props.childNodes} node={props.node} />;
   }
 
   return <StandaloneBitTrashGroup bit={props.bit} />;

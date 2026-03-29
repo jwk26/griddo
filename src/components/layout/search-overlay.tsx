@@ -31,11 +31,8 @@ export function SearchOverlay() {
   const close = useSearchStore((state) => state.close);
   const { results } = useSearch();
   const normalizedQuery = query.trim();
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-
-  useEffect(() => {
-    setSelectedIndex(-1);
-  }, [normalizedQuery, isOpen]);
+  const [selection, setSelection] = useState({ query: "", index: -1 });
+  const selectedIndex = selection.query === normalizedQuery && isOpen ? selection.index : -1;
 
   const handleGlobalKeyDown = useEffectEvent((event: KeyboardEvent) => {
     if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "k") {
@@ -76,12 +73,12 @@ export function SearchOverlay() {
               }
               if (event.key === "ArrowDown") {
                 event.preventDefault();
-                setSelectedIndex((i) => results.length === 0 ? -1 : (i + 1) % results.length);
+                setSelection({ query: normalizedQuery, index: results.length === 0 ? -1 : (selectedIndex + 1) % results.length });
                 return;
               }
               if (event.key === "ArrowUp") {
                 event.preventDefault();
-                setSelectedIndex((i) => results.length === 0 ? -1 : i <= 0 ? results.length - 1 : i - 1);
+                setSelection({ query: normalizedQuery, index: results.length === 0 ? -1 : selectedIndex <= 0 ? results.length - 1 : selectedIndex - 1 });
                 return;
               }
               if (event.key === "Enter" && selectedIndex >= 0) {

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useBreadcrumbChain } from "@/hooks/use-breadcrumb-chain";
 import { getGridBreadcrumbDropId } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
+import { useEditModeStore } from "@/stores/edit-mode-store";
 
 function BreadcrumbSegmentButton({
   label,
@@ -16,9 +17,11 @@ function BreadcrumbSegmentButton({
   nodeId: string | null;
   onClick: () => void;
 }) {
+  const isEditMode = useEditModeStore((state) => state.isEditMode);
   const { isOver, setNodeRef } = useDroppable({
     id: getGridBreadcrumbDropId(nodeId),
     data: { kind: "grid-breadcrumb-drop", targetNodeId: nodeId },
+    disabled: !isEditMode,
   });
 
   return (

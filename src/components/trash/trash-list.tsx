@@ -13,33 +13,42 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { getDataStore } from "@/lib/db/datastore";
+import { useTrashActions } from "@/hooks/use-trash-actions";
 import { TrashGroup } from "@/components/trash/trash-group";
 import type { Bit, Node } from "@/types";
 
 type TrashItems = { nodes: Node[]; bits: Bit[] };
 
-function isAlreadyDeletedError(error: unknown): boolean {
-  return error instanceof Error && error.message.startsWith("Node not found:");
-}
-
 export function TrashList({ items }: { items: TrashItems }) {
-  const nodeMap = new Map(items.nodes.map((node) => [node.id, node]));
+  const { emptyTrash } = useTrashActions();
+  const deletedNodeIds = new Set(items.nodes.map((node) => node.id));
+
+  const groupedChildNodes = new Map<string, Node[]>();
   const groupedBits = new Map<string, Bit[]>();
+  const topLevelNodes: Node[] = [];
   const standaloneBits: Bit[] = [];
 
+  for (const node of items.nodes) {
+    if (node.parentId !== null && deletedNodeIds.has(node.parentId)) {
+      const siblings = groupedChildNodes.get(node.parentId) ?? [];
+      siblings.push(node);
+      groupedChildNodes.set(node.parentId, siblings);
+    } else {
+      topLevelNodes.push(node);
+    }
+  }
+
   for (const bit of items.bits) {
-    if (nodeMap.has(bit.parentId)) {
+    if (deletedNodeIds.has(bit.parentId)) {
       const nodeBits = groupedBits.get(bit.parentId) ?? [];
       nodeBits.push(bit);
       groupedBits.set(bit.parentId, nodeBits);
-      continue;
+    } else {
+      standaloneBits.push(bit);
     }
-
-    standaloneBits.push(bit);
   }
 
-  const sortedNodes = items.nodes.toSorted(
+  const sortedTopLevelNodes = topLevelNodes.toSorted(
     (left, right) => (right.deletedAt ?? 0) - (left.deletedAt ?? 0),
   );
   const sortedStandaloneBits = standaloneBits.toSorted(
@@ -48,29 +57,14 @@ export function TrashList({ items }: { items: TrashItems }) {
 
   async function handleEmptyTrash() {
     try {
-      const dataStore = await getDataStore();
-
-      for (const node of sortedNodes) {
-        try {
-          await dataStore.hardDeleteNode(node.id);
-        } catch (error) {
-          if (!isAlreadyDeletedError(error)) {
-            throw error;
-          }
-        }
-      }
-
-      for (const bit of sortedStandaloneBits) {
-        await dataStore.hardDeleteBit(bit.id);
-      }
-
+      await emptyTrash(sortedTopLevelNodes, sortedStandaloneBits);
       toast.success("Trash emptied.");
     } catch {
       toast.error("Unable to empty trash.");
     }
   }
 
-  if (sortedNodes.length === 0 && sortedStandaloneBits.length === 0) {
+  if (sortedTopLevelNodes.length === 0 && sortedStandaloneBits.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-border bg-card/50">
         <p className="text-sm text-muted-foreground">Trash is empty</p>
@@ -88,9 +82,7 @@ export function TrashList({ items }: { items: TrashItems }) {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Permanently delete all items?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This cannot be undone.
-              </AlertDialogDescription>
+              <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -103,10 +95,13 @@ export function TrashList({ items }: { items: TrashItems }) {
       </div>
 
       <div className="space-y-3">
-        {sortedNodes.map((node) => (
+        {sortedTopLevelNodes.map((node) => (
           <TrashGroup
             key={node.id}
             childBits={(groupedBits.get(node.id) ?? []).toSorted(
+              (left, right) => (right.deletedAt ?? 0) - (left.deletedAt ?? 0),
+            )}
+            childNodes={(groupedChildNodes.get(node.id) ?? []).toSorted(
               (left, right) => (right.deletedAt ?? 0) - (left.deletedAt ?? 0),
             )}
             kind="node"

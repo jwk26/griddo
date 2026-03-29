@@ -123,10 +123,12 @@ function DraggableNodeCard({
   const { attributes, isDragging, listeners, setNodeRef: setDragNodeRef, transform } = useDraggable({
     id: `draggable-${node.id}`,
     data: { id: node.id, type: "node", parentId: node.parentId ?? undefined },
+    disabled: !isEditMode,
   });
   const { isOver, setNodeRef: setDropNodeRef } = useDroppable({
     id: getGridNodeDropId(node.id),
     data: { kind: "grid-node-drop", targetNodeId: node.id },
+    disabled: !isEditMode,
   });
 
   const setNodeRef = (element: HTMLDivElement | null) => {
@@ -160,9 +162,11 @@ function DraggableBitCard({
   onClick: () => void;
   parentColor: string;
 }) {
+  const isEditMode = useEditModeStore((state) => state.isEditMode);
   const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
     id: `draggable-${bit.id}`,
     data: { id: bit.id, type: "bit", parentId: bit.parentId ?? undefined },
+    disabled: !isEditMode,
   });
 
   return (
