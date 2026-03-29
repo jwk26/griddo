@@ -13,6 +13,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("motion/react", () => ({
+  AnimatePresence: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
   motion: {
     div: ({
       animate,
@@ -84,7 +85,7 @@ describe("GridView", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button"));
+    fireEvent.click(screen.getByText("Ship Phase 4").closest('[role="button"]')!);
 
     expect(push).toHaveBeenCalledWith("/grid/parent-node?bit=bit-1");
     expect(container.querySelector('[data-motion-animate="l2"]')).not.toBeNull();

@@ -1,28 +1,12 @@
 import type { Transition, Variants } from "motion/react";
 
-export const bitDetailPopupVariants: Variants = {
-  hidden: { opacity: 0, y: 8, scale: 0.98 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.2, ease: "easeOut" },
-  },
-  exit: {
-    opacity: 0,
-    y: 8,
-    scale: 0.98,
-    transition: { duration: 0.15, ease: "easeIn" },
-  },
-};
-
 export const sinkingVariants: Variants = {
   visible: { y: 0, scale: 1, opacity: 1 },
   exit: {
     y: 8,
     scale: 0.95,
     opacity: 0.5,
-    transition: { duration: 0.5, ease: "easeOut" },
+    transition: { duration: 0.3, ease: "easeOut" },
   },
 };
 

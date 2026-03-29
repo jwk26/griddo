@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import type { LucideIcon } from "lucide-react";
 import {
   Calendar,
@@ -13,8 +14,10 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { useGlobalUrgency } from "@/hooks/use-global-urgency";
+import { sidebarVariants } from "@/lib/animations/layout";
 import { cn } from "@/lib/utils";
 import { useEditModeStore } from "@/stores/edit-mode-store";
+import { useSearchStore } from "@/stores/search-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
 
 type SidebarIconButtonProps = {
@@ -65,6 +68,7 @@ export function Sidebar({
   const isEditMode = useEditModeStore((state) => state.isEditMode);
   const toggleEditMode = useEditModeStore((state) => state.toggle);
   const isCalendarRoute = pathname.startsWith("/calendar/");
+  const isTrashRoute = pathname === "/trash";
   const foldButton = (
     <SidebarIconButton
       icon={isOpen ? ChevronLeft : ChevronRight}
@@ -75,11 +79,15 @@ export function Sidebar({
 
   return (
     <>
-      <aside
+      <motion.aside
+        animate={isOpen ? "open" : "closed"}
         className={cn(
-          "fixed left-0 top-0 z-40 flex h-full flex-col items-center gap-1 overflow-hidden border-r border-border bg-background py-4 transition-all",
-          isOpen ? "w-sidebar px-2" : "w-sidebar-collapsed px-0",
+          "fixed left-0 top-0 z-40 flex h-full flex-col items-center gap-1 overflow-hidden border-r border-border bg-background py-4",
+          isOpen ? "px-2" : "px-0",
         )}
+        layout
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        variants={sidebarVariants}
       >
         <div
           className={cn(
@@ -94,7 +102,11 @@ export function Sidebar({
             onClick={toggleEditMode}
             isActive={isEditMode}
           />
-          <SidebarIconButton icon={Search} label="Search" onClick={noop} />
+          <SidebarIconButton
+            icon={Search}
+            label="Search"
+            onClick={() => useSearchStore.getState().open()}
+          />
           <ThemeToggle />
           <div className="relative">
             <SidebarIconButton
@@ -116,11 +128,16 @@ export function Sidebar({
             ) : null}
           </div>
           {level === 0 ? (
-            <SidebarIconButton icon={Trash} label="Trash" onClick={noop} />
+            <SidebarIconButton
+              icon={Trash}
+              label="Trash"
+              onClick={() => router.push("/trash")}
+              isActive={isTrashRoute}
+            />
           ) : null}
         </div>
         <div className="mt-auto">{foldButton}</div>
-      </aside>
+      </motion.aside>
 
       {isOpen ? null : (
         <div className="fixed bottom-4 left-2 z-40">{foldButton}</div>

@@ -12,8 +12,11 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { toast } from "sonner";
 import { isCalendarDropData } from "@/lib/calendar-dnd";
 import { getDataStore } from "@/lib/db/datastore";
+import { isGridDropData } from "@/lib/grid-dnd";
+import { findNearestEmptyCell } from "@/lib/utils/bfs";
 
 export type DragActiveItem = {
   id: string;
@@ -77,11 +80,108 @@ export function useDnd(): {
     setOverTargetId(null);
     setActiveItem(null);
 
-    if (!dragItem || !dropData || !isCalendarDropData(dropData)) {
+    if (!dragItem || !dropData) {
       return;
     }
 
     const dataStore = await getDataStore();
+
+    if (isGridDropData(dropData)) {
+      if (dropData.kind === "grid-cell") {
+        if ((dragItem.parentId ?? null) !== dropData.parentId) {
+          return;
+        }
+
+        if (dragItem.type === "node") {
+          await dataStore.updateNode(dragItem.id, {
+            x: dropData.x,
+            y: dropData.y,
+            mtime: Date.now(),
+          });
+        }
+
+        if (dragItem.type === "bit") {
+          await dataStore.updateBit(dragItem.id, {
+            x: dropData.x,
+            y: dropData.y,
+            mtime: Date.now(),
+          });
+        }
+
+        return;
+      }
+
+      if (dropData.kind === "grid-node-drop") {
+        if (dragItem.type === "node" && dragItem.id === dropData.targetNodeId) {
+          return;
+        }
+
+        const occupancy = await dataStore.getGridOccupancy(dropData.targetNodeId);
+        const position = findNearestEmptyCell(occupancy, 0, 0);
+
+        if (!position) {
+          toast.error("Target grid is full.");
+          return;
+        }
+
+        if (dragItem.type === "node") {
+          await dataStore.updateNode(dragItem.id, {
+            parentId: dropData.targetNodeId,
+            x: position.x,
+            y: position.y,
+            mtime: Date.now(),
+          });
+        }
+
+        if (dragItem.type === "bit") {
+          await dataStore.updateBit(dragItem.id, {
+            parentId: dropData.targetNodeId,
+            x: position.x,
+            y: position.y,
+            mtime: Date.now(),
+          });
+        }
+
+        return;
+      }
+
+      const parentId = dropData.targetNodeId;
+      const occupancy = await dataStore.getGridOccupancy(parentId);
+      const position = findNearestEmptyCell(occupancy, 0, 0);
+
+      if (!position) {
+        toast.error("Target grid is full.");
+        return;
+      }
+
+      if (dragItem.type === "node") {
+        await dataStore.updateNode(dragItem.id, {
+          parentId,
+          x: position.x,
+          y: position.y,
+          mtime: Date.now(),
+        });
+      }
+
+      if (dragItem.type === "bit") {
+        if (parentId === null) {
+          return;
+        }
+
+        await dataStore.updateBit(dragItem.id, {
+          parentId,
+          x: position.x,
+          y: position.y,
+          mtime: Date.now(),
+        });
+      }
+
+      return;
+    }
+
+    if (!isCalendarDropData(dropData)) {
+      return;
+    }
 
     if (dropData.kind === "calendar-unschedule") {
       if (dragItem.type === "node") {
