@@ -29,8 +29,8 @@ export function SearchOverlay() {
   const setQuery = useSearchStore((state) => state.setQuery);
   const open = useSearchStore((state) => state.open);
   const close = useSearchStore((state) => state.close);
-  const { results } = useSearch();
   const normalizedQuery = query.trim();
+  const { results } = useSearch(normalizedQuery);
   const [selection, setSelection] = useState({ query: "", index: -1 });
   const selectedIndex = selection.query === normalizedQuery && isOpen ? selection.index : -1;
 

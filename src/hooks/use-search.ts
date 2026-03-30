@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { getDataStore } from "@/lib/db/datastore";
-import { useSearchStore } from "@/stores/search-store";
 
 export type SearchResult = {
   id: string;
@@ -20,7 +19,7 @@ type SearchState = {
   results: SearchResult[];
 };
 
-export function useSearch(): {
+export function useSearch(query: string): {
   results: SearchResult[];
   isLoading: boolean;
 } {
@@ -28,7 +27,6 @@ export function useSearch(): {
     query: "",
     results: [],
   });
-  const query = useSearchStore((state) => state.query);
   const normalizedQuery = query.trim();
 
   useEffect(() => {
