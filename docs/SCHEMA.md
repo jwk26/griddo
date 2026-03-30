@@ -40,6 +40,7 @@ Category/container items displayed as mobile app-style icons on the grid. Nodes 
 | `x` | `number` | NOT NULL, 0–11 | — | Column index on grid |
 | `y` | `number` | NOT NULL, 0–7 | — | Row index on grid |
 | `deletedAt` | `number \| null` | — | `null` | Soft-delete timestamp. `null` = active. Non-null = trashed |
+| `pastDeadlineDismissed` | `boolean` | — | `false` | When `true`, the past-deadline "Done?" overlay is permanently dismissed. Set when user clicks ✗ on the overlay. |
 
 **Indexes:**
 
@@ -76,6 +77,7 @@ Actionable tasks displayed as horizontal rectangles on the grid. Bits contain Ch
 | `x` | `number` | NOT NULL, 0–11 | — | Column index on grid |
 | `y` | `number` | NOT NULL, 0–7 | — | Row index on grid |
 | `deletedAt` | `number \| null` | — | `null` | Soft-delete timestamp. `null` = active |
+| `pastDeadlineDismissed` | `boolean` | — | `false` | When `true`, the past-deadline "Done?" overlay is permanently dismissed. Set when user clicks ✗ on the overlay. |
 
 **Indexes:**
 
@@ -153,6 +155,7 @@ export const nodeSchema = z.object({
   x: z.number().int().min(0).max(11),
   y: z.number().int().min(0).max(7),
   deletedAt: timestampSchema.nullable().default(null),
+  pastDeadlineDismissed: z.boolean().default(false),
 });
 
 export const createNodeSchema = nodeSchema.omit({
@@ -182,6 +185,7 @@ export const bitSchema = z.object({
   x: z.number().int().min(0).max(11),
   y: z.number().int().min(0).max(7),
   deletedAt: timestampSchema.nullable().default(null),
+  pastDeadlineDismissed: z.boolean().default(false),
 });
 
 export const createBitSchema = bitSchema.omit({

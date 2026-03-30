@@ -1,5 +1,5 @@
 import Dexie, { type Table } from "dexie";
-import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
+import { GRID_COLS, GRID_ROWS, TRASH_RETENTION_DAYS } from "@/lib/constants";
 import type { DataStore } from "@/lib/db/datastore";
 import {
   bitSchema,
@@ -15,11 +15,19 @@ import {
   type CreateNode,
   type Node,
 } from "@/lib/db/schema";
+import { findNearestEmptyCell } from "@/lib/utils/bfs";
 
 type MutableNodeInput = Omit<Node, "id" | "createdAt" | "deletedAt" | "mtime">;
 type MutableBitInput = Omit<Bit, "id" | "createdAt" | "deletedAt" | "mtime">;
 
-type SearchResult = { type: "node" | "bit" | "chunk"; item: Node | Bit | Chunk; parentPath: string[] };
+type SearchResult = {
+  type: "node" | "bit" | "chunk";
+  item: Node | Bit | Chunk;
+  parentPath: string[];
+  parentNodeId?: string;
+  parentBitId?: string;
+  grandparentNodeId?: string;
+};
 
 type TableLike<T extends { id: string }> = {
   get(id: string): Promise<T | undefined>;
@@ -38,6 +46,22 @@ type DatabaseLike = {
 
 const ROOT_PARENT_KEY = "__root__";
 const DEFAULT_PROMOTED_NODE_COLOR = "hsl(221, 83%, 53%)";
+
+/**
+ * Thrown when a deadline write would violate the parent–child deadline constraint.
+ * Consumers can catch this and surface DeadlineConflictModal or DeadlineConflictOverlay.
+ */
+export class DeadlineConflictError extends Error {
+  constructor(
+    /** "child_exceeds_parent" — bit/chunk deadline > parent deadline */
+    public readonly conflictType: "child_exceeds_parent",
+    /** IDs of the conflicting items */
+    public readonly conflictingIds: string[],
+  ) {
+    super("Deadline conflict");
+    this.name = "DeadlineConflictError";
+  }
+}
 
 const nodeUpdateSchema = nodeSchema
   .omit({ id: true, createdAt: true, deletedAt: true, mtime: true })
@@ -161,55 +185,74 @@ export class IndexedDBDataStore implements DataStore {
   }
 
   async restoreNode(id: string): Promise<void> {
+    const node = await this.getRequiredNode(id);
+
+    if (node.parentId) {
+      const parentNode = await this.database.nodes.get(node.parentId);
+      if (parentNode && parentNode.deletedAt !== null) {
+        await this.restoreNode(parentNode.id);
+      }
+    }
+
+    const refreshedNode = await this.getRequiredNode(id);
+    if (refreshedNode.deletedAt === null) {
+      return;
+    }
+
     const [allNodes, allBits] = await Promise.all([
       this.database.nodes.toArray(),
       this.database.bits.toArray(),
     ]);
-    const node = allNodes.find((item) => item.id === id);
-
-    if (!node) {
-      throw new Error(`Node not found: ${id}`);
-    }
-
-    const nodesById = new Map(allNodes.map((item) => [item.id, item]));
+    const nodesById = new Map(allNodes.map((candidate) => [candidate.id, candidate]));
+    const restoreAnchor = refreshedNode.deletedAt;
+    const subtreeIds = collectDescendantNodeIds(id, allNodes);
+    const subtreeIdSet = new Set(subtreeIds);
     const occupiedByParent = buildOccupiedByParent(
       allNodes.filter((item) => item.deletedAt === null),
       allBits.filter((item) => item.deletedAt === null),
     );
-    const chainNodes = restoreNodeChain(id, nodesById, occupiedByParent);
-    const subtreeIds = collectDescendantNodeIds(id, allNodes);
-    const subtreeNodes = subtreeIds
-      .map((nodeId) => nodesById.get(nodeId))
-      .filter(isDefined)
-      .filter((item) => item.id !== id);
-    const restoredDescendants: Node[] = [];
+    const restoredNodes: Node[] = [];
+    const restorableNodeIds = new Set<string>();
 
-    for (const descendant of subtreeNodes) {
-      if (descendant.deletedAt === null) {
+    for (const nodeId of subtreeIds) {
+      const current = nodesById.get(nodeId);
+      if (!current) {
+        continue;
+      }
+
+      if (current.deletedAt === null) {
+        restorableNodeIds.add(current.id);
+        continue;
+      }
+
+      if (!isWithinRestoreWindow(current.deletedAt, restoreAnchor)) {
         continue;
       }
 
       const restored = placeRestoredGridItem(
-        { ...descendant, deletedAt: null },
+        { ...current, deletedAt: null },
         occupiedByParent,
       );
-      nodesById.set(restored.id, restored);
-      restoredDescendants.push(restored);
+      restoredNodes.push(restored);
+      restorableNodeIds.add(restored.id);
     }
 
-    const subtreeNodeIdSet = new Set(subtreeIds);
     const restoredBits = sortGridItems(
       allBits.filter(
-        (bit) => subtreeNodeIdSet.has(bit.parentId) && bit.deletedAt !== null,
+        (bit) =>
+          subtreeIdSet.has(bit.parentId) &&
+          bit.deletedAt !== null &&
+          isWithinRestoreWindow(bit.deletedAt, restoreAnchor) &&
+          restorableNodeIds.has(bit.parentId),
       ),
     ).map((bit) => placeRestoredGridItem({ ...bit, deletedAt: null }, occupiedByParent));
 
     await this.write(async () => {
-      await this.saveNodes([...chainNodes, ...restoredDescendants]);
+      await this.saveNodes(restoredNodes);
       await this.saveBits(restoredBits);
 
-      if (node.parentId) {
-        await this.touchNodeIds([node.parentId], Date.now());
+      if (refreshedNode.parentId) {
+        await this.touchNodeIds([refreshedNode.parentId], Date.now());
       }
     });
   }
@@ -234,6 +277,43 @@ export class IndexedDBDataStore implements DataStore {
     });
   }
 
+  async cleanupExpiredTrash(): Promise<void> {
+    const expirationCutoff = Date.now() - TRASH_RETENTION_DAYS * 86_400_000;
+    const [nodes, bits] = await Promise.all([
+      this.database.nodes.toArray(),
+      this.database.bits.toArray(),
+    ]);
+    const expiredNodeIds = nodes
+      .filter((node) => node.deletedAt !== null && node.deletedAt < expirationCutoff)
+      .map((node) => node.id);
+    const expiredBitIds = bits
+      .filter((bit) => bit.deletedAt !== null && bit.deletedAt < expirationCutoff)
+      .map((bit) => bit.id);
+
+    for (const nodeId of expiredNodeIds) {
+      const existingNode = await this.database.nodes.get(nodeId);
+      if (!existingNode) {
+        continue;
+      }
+
+      await this.hardDeleteNode(nodeId);
+    }
+
+    for (const bitId of expiredBitIds) {
+      const existingBit = await this.database.bits.get(bitId);
+      if (!existingBit) {
+        continue;
+      }
+
+      const parentNode = await this.database.nodes.get(existingBit.parentId);
+      if (!parentNode) {
+        continue;
+      }
+
+      await this.hardDeleteBit(bitId);
+    }
+  }
+
   async getBit(id: string): Promise<Bit | undefined> {
     return this.database.bits.get(id);
   }
@@ -241,6 +321,21 @@ export class IndexedDBDataStore implements DataStore {
   async getBits(parentId: string): Promise<Bit[]> {
     const bits = await this.database.bits.toArray();
     return sortGridItems(bits.filter((bit) => bit.parentId === parentId && bit.deletedAt === null));
+  }
+
+  async getBitsForNode(nodeId: string): Promise<Bit[]> {
+    const bits = await this.database.bits.toArray();
+    return bits.filter((b) => b.parentId === nodeId && b.deletedAt === null);
+  }
+
+  async getAllActiveNodes(): Promise<Node[]> {
+    const nodes = await this.database.nodes.toArray();
+    return nodes.filter((n) => n.deletedAt === null);
+  }
+
+  async getAllActiveBits(): Promise<Bit[]> {
+    const bits = await this.database.bits.toArray();
+    return bits.filter((b) => b.deletedAt === null);
   }
 
   async createBit(data: CreateBit): Promise<Bit> {
@@ -285,13 +380,15 @@ export class IndexedDBDataStore implements DataStore {
       });
     }
 
-    await this.assertBitDeadlineFitsParent(next.parentId, next.deadline);
+    await this.assertBitDeadlineFitsParent(next.parentId, next.deadline, existing.id);
 
     const timestamp = Date.now();
     const statusChanged = parsed.status !== undefined && parsed.status !== existing.status;
     if (touchesBitMtime(parsed)) {
       next.mtime = timestamp;
     }
+
+    const mtimeTouched = touchesBitMtime(parsed);
 
     await this.write(async () => {
       await this.database.bits.put(bitSchema.parse(next));
@@ -302,7 +399,7 @@ export class IndexedDBDataStore implements DataStore {
         parentIds.add(existing.parentId);
         parentIds.add(next.parentId);
       }
-      if (statusChanged) {
+      if (statusChanged || mtimeTouched) {
         parentIds.add(next.parentId);
       }
 
@@ -326,29 +423,32 @@ export class IndexedDBDataStore implements DataStore {
   }
 
   async restoreBit(id: string): Promise<void> {
+    const bit = await this.getRequiredBit(id);
+    const parentNode = await this.getRequiredNode(bit.parentId);
+
+    if (parentNode.deletedAt !== null) {
+      await this.restoreNode(parentNode.id);
+    }
+
+    const refreshedBit = await this.getRequiredBit(id);
+    if (refreshedBit.deletedAt === null) {
+      return;
+    }
+
     const [allNodes, allBits] = await Promise.all([
       this.database.nodes.toArray(),
       this.database.bits.toArray(),
     ]);
-    const bit = allBits.find((item) => item.id === id);
-
-    if (!bit) {
-      throw new Error(`Bit not found: ${id}`);
-    }
-
-    const nodesById = new Map(allNodes.map((item) => [item.id, item]));
     const occupiedByParent = buildOccupiedByParent(
       allNodes.filter((item) => item.deletedAt === null),
       allBits.filter((item) => item.deletedAt === null),
     );
-    const chainNodes = restoreNodeChain(bit.parentId, nodesById, occupiedByParent);
-    const restoredBit =
-      bit.deletedAt === null
-        ? bit
-        : placeRestoredGridItem({ ...bit, deletedAt: null }, occupiedByParent);
+    const restoredBit = placeRestoredGridItem(
+      { ...refreshedBit, deletedAt: null },
+      occupiedByParent,
+    );
 
     await this.write(async () => {
-      await this.saveNodes(chainNodes);
       await this.database.bits.put(bitSchema.parse(restoredBit));
       await this.touchNodeIds([restoredBit.parentId], Date.now());
     });
@@ -404,18 +504,19 @@ export class IndexedDBDataStore implements DataStore {
     const existing = await this.getRequiredChunk(id);
     const parsed = chunkUpdateSchema.parse(data);
     const bit = await this.getRequiredBit(existing.parentId);
-    const next = {
-      ...existing,
-      ...parsed,
-    };
+    const next = { ...existing, ...parsed };
 
     await this.assertChunkTimeFitsBit(bit, next.time);
 
     const timestamp = Date.now();
+    // Detect uncheck: complete → incomplete triggers sticky force-complete rule
+    const isUnchecking = existing.status === "complete" && next.status === "incomplete";
 
     await this.write(async () => {
       await this.database.chunks.put(chunkSchema.parse(next));
-      await this.updateBitCompletionAndCascade(bit.id, timestamp);
+      await this.updateBitCompletionAndCascade(bit.id, timestamp, {
+        stickyIfForceCompleted: isUnchecking,
+      });
     });
   }
 
@@ -502,6 +603,7 @@ export class IndexedDBDataStore implements DataStore {
           type: "bit",
           item: bit,
           parentPath: buildNodeTitlePath(bit.parentId, nodesById),
+          parentNodeId: bit.parentId,
         });
       }
     }
@@ -519,6 +621,8 @@ export class IndexedDBDataStore implements DataStore {
         parentPath: parentBit
           ? [...buildNodeTitlePath(parentBit.parentId, nodesById), parentBit.title]
           : [],
+        parentBitId: chunk.parentId,
+        grandparentNodeId: parentBit?.parentId,
       });
     }
 
@@ -547,6 +651,13 @@ export class IndexedDBDataStore implements DataStore {
     return occupancy;
   }
 
+  async getChildDeadlineConflicts(nodeId: string, deadline: number): Promise<Bit[]> {
+    const bits = await this.database.bits.toArray();
+    return bits.filter(
+      (bit) => bit.parentId === nodeId && bit.deletedAt === null && bit.deadline !== null && bit.deadline > deadline,
+    );
+  }
+
   async promoteBitToNode(bitId: string): Promise<Node> {
     const [bit, parentNode, chunks] = await Promise.all([
       this.getRequiredBit(bitId),
@@ -565,7 +676,7 @@ export class IndexedDBDataStore implements DataStore {
 
     const promotedLevel = parent.level + 1;
     if (promotedLevel > 2) {
-      throw new Error("Cannot promote Bit to Node at level 3 — Nodes only exist at levels 0-2");
+      throw new Error("Cannot promote Bit to Node — maximum nesting depth reached");
     }
 
     const timestamp = Date.now();
@@ -701,14 +812,11 @@ export class IndexedDBDataStore implements DataStore {
   private async assertBitDeadlineFitsParent(
     parentId: string,
     deadline: number | null,
+    bitId?: string,
   ): Promise<void> {
     const parent = await this.getRequiredNode(parentId);
-    if (
-      deadline !== null &&
-      parent.deadline !== null &&
-      deadline > parent.deadline
-    ) {
-      throw new Error("Bit deadline cannot exceed parent node deadline");
+    if (deadline !== null && parent.deadline !== null && deadline > parent.deadline) {
+      throw new DeadlineConflictError("child_exceeds_parent", bitId ? [bitId] : []);
     }
   }
 
@@ -786,21 +894,36 @@ export class IndexedDBDataStore implements DataStore {
   private async updateBitCompletionAndCascade(
     bitId: string,
     timestamp: number,
+    options?: {
+      /**
+       * When true, applies the sticky force-complete rule:
+       * only revert a complete Bit to active if it was auto-completed
+       * (i.e. exactly one chunk is now incomplete — the one just unchecked).
+       * If 2+ chunks are incomplete, the Bit was force-completed → keep complete.
+       */
+      stickyIfForceCompleted?: boolean;
+    },
   ): Promise<void> {
     const [bit, chunks] = await Promise.all([
       this.getRequiredBit(bitId),
       this.getChunks(bitId),
     ]);
-    const nextStatus =
-      chunks.length > 0 && chunks.every((chunk) => chunk.status === "complete")
-        ? "complete"
-        : "active";
 
-    await this.database.bits.put({
-      ...bit,
-      status: nextStatus,
-      mtime: timestamp,
-    });
+    const allComplete = chunks.length > 0 && chunks.every((c) => c.status === "complete");
+    let nextStatus: "active" | "complete";
+
+    if (allComplete) {
+      nextStatus = "complete";
+    } else if (options?.stickyIfForceCompleted && bit.status === "complete") {
+      // Sticky rule: if only 1 chunk is now incomplete, the bit was auto-completed → revert.
+      // If 2+ incomplete, the bit was force-completed → remain complete.
+      const incompleteCount = chunks.filter((c) => c.status === "incomplete").length;
+      nextStatus = incompleteCount <= 1 ? "active" : "complete";
+    } else {
+      nextStatus = "active";
+    }
+
+    await this.database.bits.put({ ...bit, status: nextStatus, mtime: timestamp });
     await this.touchNodeIds([bit.parentId], timestamp);
   }
 }
@@ -870,7 +993,7 @@ function placeRestoredGridItem<T extends { parentId: string | null; x: number; y
     const fallback = findNearestEmptyCell(occupied, item.x, item.y);
 
     if (!fallback) {
-      throw new Error("No grid cells available while restoring item");
+      throw new Error("GRID_FULL");
     }
 
     nextX = fallback.x;
@@ -887,34 +1010,6 @@ function placeRestoredGridItem<T extends { parentId: string | null; x: number; y
   };
 }
 
-function restoreNodeChain(
-  nodeId: string,
-  nodesById: Map<string, Node>,
-  occupiedByParent: Map<string, Set<string>>,
-): Node[] {
-  const chain: Node[] = [];
-  let current = nodesById.get(nodeId);
-
-  while (current) {
-    chain.push(current);
-    current = current.parentId ? nodesById.get(current.parentId) : undefined;
-  }
-
-  const restored: Node[] = [];
-
-  for (const node of chain.reverse()) {
-    if (node.deletedAt === null) {
-      continue;
-    }
-
-    const next = placeRestoredGridItem({ ...node, deletedAt: null }, occupiedByParent);
-    nodesById.set(next.id, next);
-    restored.push(next);
-  }
-
-  return restored;
-}
-
 function collectDescendantNodeIds(rootId: string, allNodes: Node[]): string[] {
   const nodesByParent = new Map<string | null, Node[]>();
 
@@ -924,22 +1019,17 @@ function collectDescendantNodeIds(rootId: string, allNodes: Node[]): string[] {
     nodesByParent.set(node.parentId, siblings);
   }
 
-  const queue = [rootId];
-  const result = [rootId];
+  const result: string[] = [];
 
-  while (queue.length > 0) {
-    const currentId = queue.shift();
+  function visit(nodeId: string) {
+    result.push(nodeId);
 
-    if (!currentId) {
-      continue;
-    }
-
-    for (const child of sortGridItems(nodesByParent.get(currentId) ?? [])) {
-      result.push(child.id);
-      queue.push(child.id);
+    for (const child of sortGridItems(nodesByParent.get(nodeId) ?? [])) {
+      visit(child.id);
     }
   }
 
+  visit(rootId);
   return result;
 }
 
@@ -967,39 +1057,11 @@ function isDefined<T>(value: T | null | undefined): value is T {
   return value !== undefined && value !== null;
 }
 
-function findNearestEmptyCell(
-  occupied: Set<string>,
-  startX: number,
-  startY: number,
-): { x: number; y: number } | null {
-  const visited = new Set<string>();
-  const queue: Array<{ x: number; y: number }> = [{ x: startX, y: startY }];
-  const directions = [
-    [0, -1], [1, 0], [0, 1], [-1, 0],
-    [-1, -1], [1, -1], [1, 1], [-1, 1],
-  ];
-
-  while (queue.length > 0) {
-    const cell = queue.shift()!;
-    const key = gridKey(cell.x, cell.y);
-
-    if (visited.has(key)) continue;
-    visited.add(key);
-
-    if (!occupied.has(key)) {
-      return cell;
-    }
-
-    for (const [dx, dy] of directions) {
-      const nx = cell.x + dx;
-      const ny = cell.y + dy;
-      if (nx >= 0 && nx < GRID_COLS && ny >= 0 && ny < GRID_ROWS && !visited.has(gridKey(nx, ny))) {
-        queue.push({ x: nx, y: ny });
-      }
-    }
-  }
-
-  return null;
+function isWithinRestoreWindow(
+  deletedAt: number | null,
+  anchorDeletedAt: number | null,
+): deletedAt is number {
+  return deletedAt !== null && anchorDeletedAt !== null && Math.abs(deletedAt - anchorDeletedAt) <= 5_000;
 }
 
 function findFirstAvailableCell(
