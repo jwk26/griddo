@@ -179,7 +179,7 @@
 - **Commit:** `feat: add client providers and root layout with font loading`
 
 ### Task 12: Sidebar + Theme Toggle
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/layout/sidebar.tsx`, `src/components/layout/theme-toggle.tsx`
 - **Dependencies:** Task 7 (sidebar-store), Task 2 (shadcn)
 - **Actions:**
