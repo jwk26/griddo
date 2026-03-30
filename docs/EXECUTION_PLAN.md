@@ -179,7 +179,7 @@
 - **Commit:** `feat: add client providers and root layout with font loading`
 
 ### Task 12: Sidebar + Theme Toggle
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/layout/sidebar.tsx`, `src/components/layout/theme-toggle.tsx`
 - **Dependencies:** Task 7 (sidebar-store), Task 2 (shadcn)
 - **Actions:**
@@ -895,6 +895,8 @@
 > **Hook parameter vs. store import:** Hooks must not read Zustand stores. Pass data as parameters instead. Flag this in Codex prompts: "hooks accept data as parameters; they do not import stores."
 
 > **liveQuery is allowed in hooks:** The conformance standard was amended to explicitly permit `liveQuery` imports in `src/hooks/*.ts`. This is the intended reactive-layer pattern — only structural Dexie usage (table access, schema) is blocked outside `indexeddb.ts`.
+
+> **liveQuery initialization guard vs. loading UX:** `isLoading` flags used to suppress premature empty-state renders while `liveQuery` hydrates are not optimistic-UI violations. The conformance checklist should distinguish initialization guards (`isLoading ? null : <Component />`) from user-visible loading UX (spinners, skeletons). The former is acceptable; the latter is not.
 
 > **Full issue log:** `docs/issues/Issues_Phase_7.md`
 

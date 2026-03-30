@@ -40,3 +40,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .omc/
+
+# scratch docs
+docs/abc.md
+docs/abc2.md
+docs/design-system-preview2.html
+docs/design-system-preview3.html
+docs/mermaid.md
+docs/workflow_update.md
+docs/user_review.md
+docs/user_review_detailed.md
+chunk_timeline.png

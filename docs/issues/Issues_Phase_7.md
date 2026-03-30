@@ -42,6 +42,13 @@
 - **Solution:** Amended `docs/PLANNING_STANDARD.md` to explicitly allow `liveQuery` imports in `src/hooks/*.ts`: "Only `src/lib/db/indexeddb.ts` imports Dexie — exception: `src/hooks/*.ts` may import `liveQuery` from `dexie` for reactive subscriptions (this is the intended reactive-layer pattern)."
 - **Learning:** Architecture standards should distinguish between "structural imports" (e.g., `new Dexie(...)`) and "reactive primitives" (e.g., `liveQuery`) when the reactive primitive is the intended integration point for a whole layer. Write the exception into the standard at authoring time.
 
+## Issue 7: isLoading used as liveQuery initialization guard (advisory)
+
+- **Problem:** `isLoading` flags appear in 4 components (`onboarding-hints.tsx`, `node-pool.tsx`, `items-pool.tsx`, `trash/page.tsx`), which the conformance checklist flags as a potential optimistic-UI violation.
+- **Root Cause:** `liveQuery` is async — on first mount it hasn't emitted yet, so components need a way to suppress premature empty-state renders (e.g., "No items" flashing before data loads).
+- **Solution:** Acknowledged as advisory — not fixed. These flags are initialization guards, not spinner/skeleton-driven loading UX. The spirit of the optimistic-UI rule (no loading states for local data operations) is not violated.
+- **Learning:** The conformance checklist item for optimistic UI should be refined to distinguish initialization guards (`isLoading ? null : <Component />`) from user-visible loading UX (spinners, skeletons, progress bars). The former is acceptable for `liveQuery` hydration; the latter is not.
+
 ---
 
 ## Summary
@@ -54,3 +61,4 @@
 | 4 | DnD not gated to edit mode | Added `disabled: !isEditMode` to all useDraggable/useDroppable calls |
 | 5 | use-search.ts imported useSearchStore (pre-existing) | Refactored to accept `query: string` parameter |
 | 6 | Conformance standard too strict on liveQuery | Amended PLANNING_STANDARD.md to allow liveQuery in hooks |
+| 7 | isLoading as liveQuery initialization guard (advisory) | Acknowledged; not a spinner/skeleton violation — no fix required |
