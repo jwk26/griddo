@@ -1,11 +1,13 @@
 "use client";
 
+import { DndContext, closestCenter } from "@dnd-kit/core";
 import { useState } from "react";
 import { CreateNodeDialog } from "@/components/grid/create-node-dialog";
 import { EditModeOverlay } from "@/components/grid/edit-mode-overlay";
 import { GridView } from "@/components/grid/grid-view";
 import { OnboardingHints } from "@/components/grid/onboarding-hints";
 import { Sidebar } from "@/components/layout/sidebar";
+import { useDnd } from "@/hooks/use-dnd";
 import { useGridActions } from "@/hooks/use-grid-actions";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 
@@ -57,6 +59,7 @@ function hexToHsl(hex: string): string {
 }
 
 export function Level0Shell() {
+  const { handleDragEnd, handleDragOver, handleDragStart, sensors } = useDnd();
   const { getGridOccupancy, createNode } = useGridActions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [placementContext, setPlacementContext] = useState<PlacementContext>({
@@ -137,7 +140,15 @@ export function Level0Shell() {
       <Sidebar level={0} onAddClick={handleSidebarAdd} />
       <main className="relative ml-[14rem] flex-1 overflow-auto p-4">
         <h1 className="sr-only">GridDO</h1>
-        <GridView level={0} onAddAtCell={handleCellAdd} parentId={null} />
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+          onDragOver={handleDragOver}
+          onDragStart={handleDragStart}
+          sensors={sensors}
+        >
+          <GridView level={0} onAddAtCell={handleCellAdd} parentId={null} />
+        </DndContext>
         <OnboardingHints />
         <EditModeOverlay />
         <CreateNodeDialog

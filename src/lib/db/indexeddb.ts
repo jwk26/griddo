@@ -1,5 +1,5 @@
 import Dexie, { type Table } from "dexie";
-import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
+import { GRID_COLS, GRID_ROWS, TRASH_RETENTION_DAYS } from "@/lib/constants";
 import type { DataStore } from "@/lib/db/datastore";
 import {
   bitSchema,
@@ -20,7 +20,14 @@ import { findNearestEmptyCell } from "@/lib/utils/bfs";
 type MutableNodeInput = Omit<Node, "id" | "createdAt" | "deletedAt" | "mtime">;
 type MutableBitInput = Omit<Bit, "id" | "createdAt" | "deletedAt" | "mtime">;
 
-type SearchResult = { type: "node" | "bit" | "chunk"; item: Node | Bit | Chunk; parentPath: string[] };
+type SearchResult = {
+  type: "node" | "bit" | "chunk";
+  item: Node | Bit | Chunk;
+  parentPath: string[];
+  parentNodeId?: string;
+  parentBitId?: string;
+  grandparentNodeId?: string;
+};
 
 type TableLike<T extends { id: string }> = {
   get(id: string): Promise<T | undefined>;
@@ -178,55 +185,74 @@ export class IndexedDBDataStore implements DataStore {
   }
 
   async restoreNode(id: string): Promise<void> {
+    const node = await this.getRequiredNode(id);
+
+    if (node.parentId) {
+      const parentNode = await this.database.nodes.get(node.parentId);
+      if (parentNode && parentNode.deletedAt !== null) {
+        await this.restoreNode(parentNode.id);
+      }
+    }
+
+    const refreshedNode = await this.getRequiredNode(id);
+    if (refreshedNode.deletedAt === null) {
+      return;
+    }
+
     const [allNodes, allBits] = await Promise.all([
       this.database.nodes.toArray(),
       this.database.bits.toArray(),
     ]);
-    const node = allNodes.find((item) => item.id === id);
-
-    if (!node) {
-      throw new Error(`Node not found: ${id}`);
-    }
-
-    const nodesById = new Map(allNodes.map((item) => [item.id, item]));
+    const nodesById = new Map(allNodes.map((candidate) => [candidate.id, candidate]));
+    const restoreAnchor = refreshedNode.deletedAt;
+    const subtreeIds = collectDescendantNodeIds(id, allNodes);
+    const subtreeIdSet = new Set(subtreeIds);
     const occupiedByParent = buildOccupiedByParent(
       allNodes.filter((item) => item.deletedAt === null),
       allBits.filter((item) => item.deletedAt === null),
     );
-    const chainNodes = restoreNodeChain(id, nodesById, occupiedByParent);
-    const subtreeIds = collectDescendantNodeIds(id, allNodes);
-    const subtreeNodes = subtreeIds
-      .map((nodeId) => nodesById.get(nodeId))
-      .filter(isDefined)
-      .filter((item) => item.id !== id);
-    const restoredDescendants: Node[] = [];
+    const restoredNodes: Node[] = [];
+    const restorableNodeIds = new Set<string>();
 
-    for (const descendant of subtreeNodes) {
-      if (descendant.deletedAt === null) {
+    for (const nodeId of subtreeIds) {
+      const current = nodesById.get(nodeId);
+      if (!current) {
+        continue;
+      }
+
+      if (current.deletedAt === null) {
+        restorableNodeIds.add(current.id);
+        continue;
+      }
+
+      if (!isWithinRestoreWindow(current.deletedAt, restoreAnchor)) {
         continue;
       }
 
       const restored = placeRestoredGridItem(
-        { ...descendant, deletedAt: null },
+        { ...current, deletedAt: null },
         occupiedByParent,
       );
-      nodesById.set(restored.id, restored);
-      restoredDescendants.push(restored);
+      restoredNodes.push(restored);
+      restorableNodeIds.add(restored.id);
     }
 
-    const subtreeNodeIdSet = new Set(subtreeIds);
     const restoredBits = sortGridItems(
       allBits.filter(
-        (bit) => subtreeNodeIdSet.has(bit.parentId) && bit.deletedAt !== null,
+        (bit) =>
+          subtreeIdSet.has(bit.parentId) &&
+          bit.deletedAt !== null &&
+          isWithinRestoreWindow(bit.deletedAt, restoreAnchor) &&
+          restorableNodeIds.has(bit.parentId),
       ),
     ).map((bit) => placeRestoredGridItem({ ...bit, deletedAt: null }, occupiedByParent));
 
     await this.write(async () => {
-      await this.saveNodes([...chainNodes, ...restoredDescendants]);
+      await this.saveNodes(restoredNodes);
       await this.saveBits(restoredBits);
 
-      if (node.parentId) {
-        await this.touchNodeIds([node.parentId], Date.now());
+      if (refreshedNode.parentId) {
+        await this.touchNodeIds([refreshedNode.parentId], Date.now());
       }
     });
   }
@@ -249,6 +275,43 @@ export class IndexedDBDataStore implements DataStore {
         await this.touchNodeIds([node.parentId], timestamp);
       }
     });
+  }
+
+  async cleanupExpiredTrash(): Promise<void> {
+    const expirationCutoff = Date.now() - TRASH_RETENTION_DAYS * 86_400_000;
+    const [nodes, bits] = await Promise.all([
+      this.database.nodes.toArray(),
+      this.database.bits.toArray(),
+    ]);
+    const expiredNodeIds = nodes
+      .filter((node) => node.deletedAt !== null && node.deletedAt < expirationCutoff)
+      .map((node) => node.id);
+    const expiredBitIds = bits
+      .filter((bit) => bit.deletedAt !== null && bit.deletedAt < expirationCutoff)
+      .map((bit) => bit.id);
+
+    for (const nodeId of expiredNodeIds) {
+      const existingNode = await this.database.nodes.get(nodeId);
+      if (!existingNode) {
+        continue;
+      }
+
+      await this.hardDeleteNode(nodeId);
+    }
+
+    for (const bitId of expiredBitIds) {
+      const existingBit = await this.database.bits.get(bitId);
+      if (!existingBit) {
+        continue;
+      }
+
+      const parentNode = await this.database.nodes.get(existingBit.parentId);
+      if (!parentNode) {
+        continue;
+      }
+
+      await this.hardDeleteBit(bitId);
+    }
   }
 
   async getBit(id: string): Promise<Bit | undefined> {
@@ -360,29 +423,32 @@ export class IndexedDBDataStore implements DataStore {
   }
 
   async restoreBit(id: string): Promise<void> {
+    const bit = await this.getRequiredBit(id);
+    const parentNode = await this.getRequiredNode(bit.parentId);
+
+    if (parentNode.deletedAt !== null) {
+      await this.restoreNode(parentNode.id);
+    }
+
+    const refreshedBit = await this.getRequiredBit(id);
+    if (refreshedBit.deletedAt === null) {
+      return;
+    }
+
     const [allNodes, allBits] = await Promise.all([
       this.database.nodes.toArray(),
       this.database.bits.toArray(),
     ]);
-    const bit = allBits.find((item) => item.id === id);
-
-    if (!bit) {
-      throw new Error(`Bit not found: ${id}`);
-    }
-
-    const nodesById = new Map(allNodes.map((item) => [item.id, item]));
     const occupiedByParent = buildOccupiedByParent(
       allNodes.filter((item) => item.deletedAt === null),
       allBits.filter((item) => item.deletedAt === null),
     );
-    const chainNodes = restoreNodeChain(bit.parentId, nodesById, occupiedByParent);
-    const restoredBit =
-      bit.deletedAt === null
-        ? bit
-        : placeRestoredGridItem({ ...bit, deletedAt: null }, occupiedByParent);
+    const restoredBit = placeRestoredGridItem(
+      { ...refreshedBit, deletedAt: null },
+      occupiedByParent,
+    );
 
     await this.write(async () => {
-      await this.saveNodes(chainNodes);
       await this.database.bits.put(bitSchema.parse(restoredBit));
       await this.touchNodeIds([restoredBit.parentId], Date.now());
     });
@@ -537,6 +603,7 @@ export class IndexedDBDataStore implements DataStore {
           type: "bit",
           item: bit,
           parentPath: buildNodeTitlePath(bit.parentId, nodesById),
+          parentNodeId: bit.parentId,
         });
       }
     }
@@ -554,6 +621,8 @@ export class IndexedDBDataStore implements DataStore {
         parentPath: parentBit
           ? [...buildNodeTitlePath(parentBit.parentId, nodesById), parentBit.title]
           : [],
+        parentBitId: chunk.parentId,
+        grandparentNodeId: parentBit?.parentId,
       });
     }
 
@@ -924,7 +993,7 @@ function placeRestoredGridItem<T extends { parentId: string | null; x: number; y
     const fallback = findNearestEmptyCell(occupied, item.x, item.y);
 
     if (!fallback) {
-      throw new Error("No grid cells available while restoring item");
+      throw new Error("GRID_FULL");
     }
 
     nextX = fallback.x;
@@ -941,34 +1010,6 @@ function placeRestoredGridItem<T extends { parentId: string | null; x: number; y
   };
 }
 
-function restoreNodeChain(
-  nodeId: string,
-  nodesById: Map<string, Node>,
-  occupiedByParent: Map<string, Set<string>>,
-): Node[] {
-  const chain: Node[] = [];
-  let current = nodesById.get(nodeId);
-
-  while (current) {
-    chain.push(current);
-    current = current.parentId ? nodesById.get(current.parentId) : undefined;
-  }
-
-  const restored: Node[] = [];
-
-  for (const node of chain.reverse()) {
-    if (node.deletedAt === null) {
-      continue;
-    }
-
-    const next = placeRestoredGridItem({ ...node, deletedAt: null }, occupiedByParent);
-    nodesById.set(next.id, next);
-    restored.push(next);
-  }
-
-  return restored;
-}
-
 function collectDescendantNodeIds(rootId: string, allNodes: Node[]): string[] {
   const nodesByParent = new Map<string | null, Node[]>();
 
@@ -978,22 +1019,17 @@ function collectDescendantNodeIds(rootId: string, allNodes: Node[]): string[] {
     nodesByParent.set(node.parentId, siblings);
   }
 
-  const queue = [rootId];
-  const result = [rootId];
+  const result: string[] = [];
 
-  while (queue.length > 0) {
-    const currentId = queue.shift();
+  function visit(nodeId: string) {
+    result.push(nodeId);
 
-    if (!currentId) {
-      continue;
-    }
-
-    for (const child of sortGridItems(nodesByParent.get(currentId) ?? [])) {
-      result.push(child.id);
-      queue.push(child.id);
+    for (const child of sortGridItems(nodesByParent.get(nodeId) ?? [])) {
+      visit(child.id);
     }
   }
 
+  visit(rootId);
   return result;
 }
 
@@ -1019,6 +1055,13 @@ function buildNodeTitlePath(
 
 function isDefined<T>(value: T | null | undefined): value is T {
   return value !== undefined && value !== null;
+}
+
+function isWithinRestoreWindow(
+  deletedAt: number | null,
+  anchorDeletedAt: number | null,
+): deletedAt is number {
+  return deletedAt !== null && anchorDeletedAt !== null && Math.abs(deletedAt - anchorDeletedAt) <= 5_000;
 }
 
 function findFirstAvailableCell(

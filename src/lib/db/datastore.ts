@@ -9,6 +9,7 @@ export interface DataStore {
   softDeleteNode(id: string): Promise<void>;
   restoreNode(id: string): Promise<void>;
   hardDeleteNode(id: string): Promise<void>;
+  cleanupExpiredTrash(): Promise<void>;
 
   getAllActiveNodes(): Promise<Node[]>;
 
@@ -33,7 +34,14 @@ export interface DataStore {
   getActiveGridContents(parentId: string | null): Promise<{ nodes: Node[]; bits: Bit[] }>;
   getCalendarItems(): Promise<{ bits: Bit[]; chunks: Chunk[] }>;
   getTrashedItems(): Promise<{ nodes: Node[]; bits: Bit[] }>;
-  searchAll(query: string): Promise<Array<{ type: "node" | "bit" | "chunk"; item: Node | Bit | Chunk; parentPath: string[] }>>;
+  searchAll(query: string): Promise<Array<{
+    type: "node" | "bit" | "chunk";
+    item: Node | Bit | Chunk;
+    parentPath: string[];
+    parentNodeId?: string;
+    parentBitId?: string;
+    grandparentNodeId?: string;
+  }>>;
   getGridOccupancy(parentId: string | null): Promise<Set<string>>;
   promoteBitToNode(bitId: string): Promise<Node>;
 

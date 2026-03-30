@@ -1,8 +1,45 @@
 "use client";
 
+import { useDroppable } from "@dnd-kit/core";
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useBreadcrumbChain } from "@/hooks/use-breadcrumb-chain";
+import { getGridBreadcrumbDropId } from "@/lib/grid-dnd";
+import { cn } from "@/lib/utils";
+import { useEditModeStore } from "@/stores/edit-mode-store";
+
+function BreadcrumbSegmentButton({
+  label,
+  nodeId,
+  onClick,
+}: {
+  label: string;
+  nodeId: string | null;
+  onClick: () => void;
+}) {
+  const isEditMode = useEditModeStore((state) => state.isEditMode);
+  const { isOver, setNodeRef } = useDroppable({
+    id: getGridBreadcrumbDropId(nodeId),
+    data: { kind: "grid-breadcrumb-drop", targetNodeId: nodeId },
+    disabled: !isEditMode,
+  });
+
+  return (
+    <button
+      ref={setNodeRef}
+      className={cn(
+        "rounded-md px-1.5 py-0.5 text-muted-foreground transition-colors hover:text-foreground",
+        isOver && "bg-accent text-foreground",
+      )}
+      data-drop-zone={nodeId ? "breadcrumb-node" : "breadcrumb-root"}
+      data-node-id={nodeId ?? undefined}
+      onClick={onClick}
+      type="button"
+    >
+      {label}
+    </button>
+  );
+}
 
 export function Breadcrumbs({ nodeId }: { nodeId: string }) {
   const router = useRouter();
@@ -15,30 +52,22 @@ export function Breadcrumbs({ nodeId }: { nodeId: string }) {
       aria-label="Breadcrumb"
       className="flex h-breadcrumb flex-col justify-center gap-0.5 border-b border-border px-4"
     >
-      <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden text-sm">
-        <button
-          className="text-muted-foreground transition-colors hover:text-foreground"
-          onClick={() => router.push("/")}
-          type="button"
-        >
-          Home
-        </button>
-        {ancestors.map((seg) => (
-          <div key={seg.id} className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 overflow-x-auto text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <BreadcrumbSegmentButton label="Home" nodeId={null} onClick={() => router.push("/")} />
+        {ancestors.map((segment) => (
+          <div key={segment.id} className="flex items-center gap-1.5">
             <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-            <button
-              className="text-muted-foreground transition-colors hover:text-foreground"
-              data-drop-zone="breadcrumb-node"
-              data-node-id={seg.id}
-              onClick={() => router.push(`/grid/${seg.id}`)}
-              type="button"
-            >
-              {seg.title}
-            </button>
+            <BreadcrumbSegmentButton
+              label={segment.title}
+              nodeId={segment.id}
+              onClick={() => router.push(`/grid/${segment.id}`)}
+            />
           </div>
         ))}
         <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-        <span aria-current="page" className="font-medium text-foreground">{currentNode?.title ?? "..."}</span>
+        <span aria-current="page" className="font-medium text-foreground">
+          {currentNode?.title ?? "..."}
+        </span>
       </div>
       {currentNode?.description ? (
         <p className="truncate pl-0.5 text-xs text-muted-foreground">

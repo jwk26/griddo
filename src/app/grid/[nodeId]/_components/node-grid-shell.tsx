@@ -1,5 +1,6 @@
 "use client";
 
+import { DndContext, closestCenter } from "@dnd-kit/core";
 import { useState } from "react";
 import { toast } from "sonner";
 import { CreateBitDialog } from "@/components/grid/create-bit-dialog";
@@ -10,6 +11,7 @@ import { EditNodeDialog } from "@/components/grid/edit-node-dialog";
 import { GridView } from "@/components/grid/grid-view";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Sidebar } from "@/components/layout/sidebar";
+import { useDnd } from "@/hooks/use-dnd";
 import { useGridActions } from "@/hooks/use-grid-actions";
 import { useNode } from "@/hooks/use-node";
 import { GRID_COLS } from "@/lib/constants";
@@ -43,6 +45,7 @@ function hexToHsl(hex: string): string {
 }
 
 export function NodeGridShell({ nodeId }: { nodeId: string }) {
+  const { handleDragEnd, handleDragOver, handleDragStart, sensors } = useDnd();
   const { getGridOccupancy, createNode, createBit } = useGridActions();
   const node = useNode(nodeId);
   const [chooserOpen, setChooserOpen] = useState(false);
@@ -175,16 +178,24 @@ export function NodeGridShell({ nodeId }: { nodeId: string }) {
       />
       <main className="relative ml-[14rem] flex flex-1 flex-col overflow-hidden">
         <h1 className="sr-only">{node?.title ?? "Grid"}</h1>
-        <Breadcrumbs nodeId={nodeId} />
-        <div className="relative flex-1 overflow-auto p-4">
-          <GridView
-            level={displayLevel}
-            onAddAtCell={handleCellAdd}
-            onNodeEditClick={setEditingNode}
-            parentColor={node?.color}
-            parentId={nodeId}
-          />
-        </div>
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+          onDragOver={handleDragOver}
+          onDragStart={handleDragStart}
+          sensors={sensors}
+        >
+          <Breadcrumbs nodeId={nodeId} />
+          <div className="relative flex-1 overflow-auto p-4">
+            <GridView
+              level={displayLevel}
+              onAddAtCell={handleCellAdd}
+              onNodeEditClick={setEditingNode}
+              parentColor={node?.color}
+              parentId={nodeId}
+            />
+          </div>
+        </DndContext>
         <EditModeOverlay />
 
         <CreateItemChooser

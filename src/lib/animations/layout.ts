@@ -27,3 +27,8 @@ export const bitDetailPopupVariants: Variants = {
     transition: { duration: 0.15, ease: "easeIn" },
   },
 };
+
+export const sidebarVariants: Variants = {
+  open: { width: "var(--sidebar-width)" },
+  closed: { width: "var(--sidebar-collapsed-width)" },
+};

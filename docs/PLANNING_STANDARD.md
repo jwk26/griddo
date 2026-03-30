@@ -151,7 +151,7 @@ This checklist is **project-specific**. It is derived from the project's SPEC an
 
 Violations of core architectural invariants. **Must be fixed before close-out / merge**, or the standard itself must be explicitly amended/deferred by the user.
 
-- [ ] **DataStore facade:** No component or hook imports `dexie` directly. All data access goes through `DataStore` interface methods. Only `src/lib/db/indexeddb.ts` imports Dexie.
+- [ ] **DataStore facade:** No component or hook imports `dexie` directly for data access. All data access goes through `DataStore` interface methods. Only `src/lib/db/indexeddb.ts` imports Dexie — exception: `src/hooks/*.ts` may import `liveQuery` from `dexie` for reactive subscriptions (this is the intended reactive-layer pattern).
 - [ ] **Reactive reads:** All data reads that feed UI use `liveQuery` for reactivity. No one-time fetches for data that should be live (parent nodes, breadcrumbs, calendar items).
 - [ ] **URL-driven navigation:** Routes follow canonical pattern: `/` (L0), `/grid/[id]` (L1+), `?bit=[id]` (popup). No programmatic state-based routing that bypasses URL.
 - [ ] **Zod write-boundary:** Zod validation at write boundary only (`createNodeSchema.parse()`, `createBitSchema.parse()`, etc.). No read-path validation.

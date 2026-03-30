@@ -15,8 +15,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useBitDetailActions } from "@/hooks/use-bit-detail-actions";
 import { useBitDetail } from "@/hooks/use-bit-detail";
+import { bitDetailPopupVariants } from "@/lib/animations/layout";
 import { NODE_ICON_MAP, NODE_ICON_NAMES } from "@/lib/constants/node-icons";
-import { bitDetailPopupVariants } from "@/lib/animations/grid";
 import { cn } from "@/lib/utils";
 import { ChunkPool } from "./chunk-pool";
 import { ChunkTimeline } from "./chunk-timeline";

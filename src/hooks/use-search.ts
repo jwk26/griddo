@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { getDataStore } from "@/lib/db/datastore";
-import { useSearchStore } from "@/stores/search-store";
 
 export type SearchResult = {
   id: string;
@@ -10,6 +9,9 @@ export type SearchResult = {
   title: string;
   parentPath: string[];
   deadline: number | null;
+  parentNodeId?: string;
+  parentBitId?: string;
+  grandparentNodeId?: string;
 };
 
 type SearchState = {
@@ -17,7 +19,7 @@ type SearchState = {
   results: SearchResult[];
 };
 
-export function useSearch(): {
+export function useSearch(query: string): {
   results: SearchResult[];
   isLoading: boolean;
 } {
@@ -25,7 +27,6 @@ export function useSearch(): {
     query: "",
     results: [],
   });
-  const query = useSearchStore((state) => state.query);
   const normalizedQuery = query.trim();
 
   useEffect(() => {
@@ -47,6 +48,9 @@ export function useSearch(): {
           type: result.type,
           title: result.item.title,
           parentPath: result.parentPath,
+          parentNodeId: result.parentNodeId,
+          parentBitId: result.parentBitId,
+          grandparentNodeId: result.grandparentNodeId,
           deadline:
             "deadline" in result.item
               ? result.item.deadline
@@ -77,7 +81,7 @@ export function useSearch(): {
   }
 
   if (state.query !== normalizedQuery) {
-    return { results: [], isLoading: true };
+    return { results: state.results, isLoading: true };
   }
 
   return { results: state.results, isLoading: false };
