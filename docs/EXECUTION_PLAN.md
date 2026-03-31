@@ -933,3 +933,114 @@ These apply across all phases:
 > - NodeCard icon container minor size discrepancy (52px vs 56px spec) — Phase 7 Polish
 > - Sidebar button/icon sizing discrepancies — Phase 7 Polish
 > - DeadlineConflictOverlay integration in calendar compact items — overlay exists and works in grid views; calendar items update reactively but don't show the in-context "Modify timeline" prompt. Phase 7 if time permits.
+
+---
+
+## Phase 8: Bit Detail Surface Refinement (Pilot)
+
+> **Purpose:** Redesign the Bit Detail surface toward `./chunk_timeline.png`. Test whether a precise geometric surface recipe improves implementation fidelity.
+> **Recipe:** `docs/DESIGN_TOKENS.md` § Surface Recipes → Bit Detail Surface
+> **Gap review:** `docs/reviews/phase-8-bit-detail-gap-review.md`
+> **Pilot record:** `docs/reviews/phase-8-workflow-pilot-record.md`
+> **Pilot scope:** Bit Detail popup only. No other surfaces.
+> **Pilot question:** Does a recipe-driven approach reduce visual ambiguity and improve layout fidelity compared to previous phases?
+
+### Task 36: Header Restructure + Progress Ring Relocation
+- **Status:** `[ ]`
+- **Files:** `src/components/bit-detail/bit-detail-popup.tsx`
+- **Dependencies:** Phase 7 complete
+- **Recipe:** `docs/DESIGN_TOKENS.md` § Bit Detail Surface → Header Row, Priority + Meta Row, Description (Collapsed by Default)
+- **Actions:**
+  - Restructure header row per recipe:
+    - Left: icon picker (h-9 w-9, existing popover, flex-shrink-0) + title (text-lg font-semibold, flex-1 min-w-0 truncate)
+    - Right: progress ring (40px SVG, moved from chunk timeline) + status toggle (h-7 w-7, flex-shrink-0) + more menu (h-7 w-7, flex-shrink-0)
+    - Header remains single-line at container max-width (640px). Title truncates; right controls do not shrink.
+  - Move priority badge to its own row below header (px-5 pt-1.5)
+  - Replace always-visible deadline date/time inputs with display/edit split:
+    - Display state (default): read-only text ("Mar 28, 2:00 PM") + Calendar icon
+    - Edit state (on click): native date/time inputs + "All day" toggle, dismiss on blur/ESC
+  - Collapse description by default: hidden when empty, "Add description" link to expand, auto-show when `bit.description` is non-empty
+  - Remove always-visible mtime label
+  - Remove progress ring and "X/Y steps" label from chunk timeline component (ring is now in header)
+- **Acceptance:**
+  - Icon picker is visible to the left of the title
+  - Title truncates when header is tight; right-side controls (ring, status, more) do not shrink
+  - Progress ring is right-aligned on the same row as the title
+  - Status toggle is visible in the header row
+  - Priority badge is on a separate row below the header
+  - Deadline shows as read-only text by default; click opens inline date/time inputs; blur/ESC returns to display state
+  - Description is hidden when empty; "Add description" link visible; auto-expands when content exists
+  - mtime is not visible in default view
+  - All existing functionality preserved: edit title, change icon, change priority, toggle status, promote, trash
+  - `pnpm build` passes
+
+### Task 37: Step Item Visual Simplification + Chunk Area Continuity
+- **Status:** `[ ]`
+- **Files:** `src/components/bit-detail/chunk-item.tsx` (update), `src/components/bit-detail/chunk-pool.tsx` (update styling), `src/components/bit-detail/chunk-timeline.tsx` (update styling), `src/components/bit-detail/bit-detail-popup.tsx` (update integration)
+- **Dependencies:** Task 36
+- **Recipe:** `docs/DESIGN_TOKENS.md` § Bit Detail Surface → Chunk Area, Step Item, Deadline Marker, "Add a Step" Button, Empty State
+- **Scope note:** This task changes the visual presentation of steps and the visual continuity across the chunk area. Internal component structure (separate pool and timeline components) is unchanged. Both components adopt the same visual language.
+- **Actions:**
+  - Simplify step items per recipe:
+    - Remove bordered card wrapper (no border, no bg-background, no px-3 py-2)
+    - Render as dot + text + time directly (gap-3, pb-5)
+    - Dot: w-3.5 h-3.5. Complete: bg-primary solid, no border. Incomplete: bg-transparent border-2 border-muted-foreground/40
+    - Title: text-sm. Complete: line-through text-muted-foreground
+    - Click-to-edit: input replaces title text on click
+    - Drag handle + delete button: opacity-0 by default, opacity-100 on parent hover
+  - Update pool component styling to match timeline visual language:
+    - Pool steps render with the same dot + connecting-line pattern as timeline steps
+    - No visual separator between pool and timeline sections
+    - Both read as one continuous step list
+  - Enhance deadline marker per recipe: Clock icon h-5 w-5, text-sm font-semibold text-foreground
+  - Adjust chunk area container: pl-6 internal offset, connecting line at left-[11px]
+  - Retain "Add a step" button at bottom of chunk area
+- **Acceptance:**
+  - Step items have no card wrapper — dot + text + time only
+  - Complete steps show line-through text-muted-foreground
+  - Incomplete dots are hollow outlines; complete dots are solid primary
+  - Drag handles and delete buttons appear only on hover
+  - Pool and timeline sections are visually continuous (same dot, line, spacing pattern, no separator)
+  - Deadline marker uses larger icon (h-5 w-5) and semibold text
+  - Inline editing, drag reorder, toggle complete, and delete all still work
+  - "Add a step" button renders at bottom
+  - Empty state renders correctly (line stub + hollow dot + add button)
+  - `pnpm test && pnpm build` pass
+
+### Task 38: Bit Detail Spacing + Visual Polish
+- **Status:** `[ ]`
+- **Files:** `src/components/bit-detail/bit-detail-popup.tsx`, `src/components/bit-detail/chunk-timeline.tsx`, `src/components/bit-detail/chunk-pool.tsx`, `src/components/bit-detail/chunk-item.tsx`
+- **Dependencies:** Task 37
+- **Recipe:** `docs/DESIGN_TOKENS.md` § Bit Detail Surface (all subsections — final pass)
+- **Actions:**
+  - Audit all padding, gaps, and spacing against recipe values:
+    - Header: px-5 pt-5 pb-0
+    - Priority row: px-5 pt-1.5 pb-0
+    - Chunk area: px-5 pt-3 pb-5, pl-6 internal offset
+    - Step items: pb-5 between items, gap-3 between dot and content
+    - Connecting line: left-[11px] (centered on 14px dot)
+  - Verify dot sizes (w-3.5 h-3.5 = 14px), connecting line position, deadline marker alignment
+  - Verify dark mode: all recipe elements use semantic tokens, no hardcoded values
+  - Optional: test left accent border (border-l-[3px] with priority color) — include only if clearly justified; omit if ambiguous
+  - Run visual comparison against `./chunk_timeline.png` for layout fidelity
+- **Acceptance:**
+  - Padding and spacing match recipe values
+  - Timeline dot centers align with connecting line
+  - Dark mode renders correctly with token-based colors
+  - Overall visual density and hierarchy approximate `./chunk_timeline.png`
+  - `pnpm test && pnpm build` pass
+
+#### Phase 8 Pilot Notes
+
+> **Pilot context:** Phase 8 tests whether adding a precise surface recipe to DESIGN_TOKENS.md improves implementation fidelity for the Bit Detail surface.
+>
+> **What this pilot measures:**
+> - Did the recipe reduce ambiguity during implementation?
+> - Did implementation fidelity improve compared to previous phases?
+> - Was one closing-phase screenshot review sufficient to catch visual deviations?
+>
+> **Verification approach:** No per-task evaluator loop. At closing, screenshot the Bit Detail surface and compare against the recipe and `./chunk_timeline.png`. Fix clear deviations only.
+>
+> **Structural decisions deferred:** Component-level merge of the chunk area is not part of this pilot. If visual continuity reveals that a structural merge is needed, that decision is revisited post-pilot.
+>
+> **Required post-phase output:** Before Phase 8 is considered fully complete, update `docs/reviews/phase-8-workflow-pilot-record.md` with final findings and write a workflow update recommendation based on the evidence gathered during this pilot.

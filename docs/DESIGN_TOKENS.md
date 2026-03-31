@@ -610,3 +610,197 @@ Buttons are `28×28px` (w-7 h-7). "Done?" text is foreground (not muted), semibo
   ))}
 </div>
 ```
+
+---
+
+## Surface Recipes
+
+> Surface recipes specify the compositional structure of visually sensitive surfaces.
+> They combine atomic tokens (from CSS Variables above) with layout rules.
+> All values are geometric — no prose descriptions.
+> Reference for verification: the source image listed in each recipe header.
+>
+> Surface recipes are referenced by execution plan tasks via a `Recipe:` field.
+
+### Bit Detail Surface
+
+> Reference: `./chunk_timeline.png`
+
+#### Overlay
+
+```
+fixed inset-0 z-50
+Backdrop: bg-background/80 backdrop-blur-sm
+Centering: flex items-center justify-center p-4
+```
+
+#### Container
+
+```
+max-w-[var(--bit-detail-max-width)]   /* 640px */
+max-h-[var(--bit-detail-max-height)]  /* 85vh */
+bg-popover rounded-xl border border-border shadow-xl
+overflow-hidden
+
+Optional — left accent border:
+  border-l-[3px] colored by priority
+  Not confirmed by reference. Include only if design review justifies it.
+```
+
+#### Header Row
+
+```
+Layout: flex items-center gap-3
+Padding: px-5 pt-5 pb-0
+Constraint: single-line. Title truncates. Right-side controls do not shrink.
+
+Left group:
+  Icon picker: h-9 w-9 flex-shrink-0, rounded-lg border border-input bg-background
+    Contains: current Lucide icon h-5 w-5
+    Click opens icon grid popover
+
+  Title: flex-1 min-w-0 truncate
+    text-lg font-semibold text-foreground
+    bg-transparent, no visible border
+    Editable inline (blur to save)
+
+Right group: flex items-center gap-1 flex-shrink-0
+  Progress ring: w-10 h-10 flex-shrink-0
+    SVG viewBox="0 0 40 40"
+    Track: stroke hsl(var(--secondary)), strokeWidth 3
+    Fill: stroke hsl(var(--primary)), strokeWidth 3, strokeLinecap round
+    Center label: text-[10px] font-medium text-muted-foreground, "{pct}%"
+    Hidden when totalChunks === 0
+
+  Status toggle: h-7 w-7 flex-shrink-0 rounded-md
+    Active: Circle icon, text-muted-foreground
+    Complete: CheckCircle2 icon, text-primary
+
+  More menu: h-7 w-7 flex-shrink-0 rounded-md, MoreHorizontal icon
+    Contains: Promote to Node (conditional), Move to trash
+```
+
+#### Priority + Meta Row
+
+```
+Layout: flex items-center gap-2
+Padding: px-5 pt-1.5 pb-0
+
+Priority badge (when priority is set):
+  rounded-full px-[7px] py-[2px]
+  text-[10px] font-semibold uppercase tracking-[0.05em]
+  high: bg-priority-high-bg text-priority-high
+  mid:  bg-priority-mid-bg text-priority-mid
+  low:  bg-priority-low-bg text-priority-low
+  Click cycles priority (existing behavior)
+
+  When priority is null:
+  Existing behavior preserved (bg-secondary text-muted-foreground, displays "—").
+  TBD whether this should change in a future pass.
+
+Deadline (when set):
+  Default (display state):
+    Calendar icon h-3.5 w-3.5 text-muted-foreground
+    Read-only text: text-xs text-muted-foreground
+    Format: "Mar 28, 2:00 PM" / "Mar 28" (all-day)
+    Click opens edit state
+
+  Edit state (on click):
+    Native date input + time input (existing controls)
+    "All day" toggle (existing behavior)
+    Dismiss on blur or ESC → returns to display state
+
+Deadline (when null):
+  No deadline indicator rendered. Existing behavior preserved.
+```
+
+#### Description (Collapsed by Default)
+
+```
+Padding: px-5
+Default: not rendered when bit.description is empty
+Auto-expand: rendered when bit.description is non-empty on load
+Trigger (when empty): "Add description" — text-xs text-muted-foreground
+
+When expanded:
+  textarea min-h-[60px] w-full resize-none
+  text-sm text-foreground bg-transparent
+  placeholder: "Add a description…"
+  Collapses when empty on blur
+```
+
+#### Chunk Area
+
+```
+Padding: px-5 pt-3 pb-5
+Layout: relative pl-6
+
+Vertical connecting line:
+  absolute left-[11px] top-2 bottom-2 w-0.5 bg-border
+
+Rendering order:
+  1. Untimed steps sorted by order field
+  2. Timed steps sorted by time ascending
+  Both groups use the same visual pattern (dots, line, spacing).
+  No visual separator between groups.
+
+Implementation note:
+  Internal component structure (separate pool/timeline components)
+  is unchanged in this pilot. Both adopt the same visual language.
+```
+
+#### Step Item
+
+```
+Layout: relative flex items-start gap-3 pb-5
+No wrapping card — no border, no background, no card padding
+
+Dot: relative z-10 mt-1 flex-shrink-0
+  Size: w-3.5 h-3.5 rounded-full
+  Complete:   bg-primary (solid fill, no border)
+  Incomplete: bg-transparent border-2 border-muted-foreground/40
+
+Content: flex-1 min-w-0
+  Title: text-sm
+    Default: text-foreground
+    Complete: line-through text-muted-foreground
+    Click to edit inline (input replaces text)
+  Time (when set): text-xs text-muted-foreground mt-0.5
+    Format: "Mon, 9:00 AM" / "Wed, 2:00 PM"
+
+Hover affordances (opacity-0 → opacity-100 on parent hover):
+  Drag handle: absolute -left-5 top-0.5, GripVertical h-3.5 w-3.5
+  Delete: absolute right-0, Trash2 h-3.5 w-3.5
+```
+
+#### Deadline Marker (Bottom of Chunk Area)
+
+```
+Layout: relative flex items-center gap-3 pt-1
+Aligned with step dots (same left offset)
+
+Icon: Clock, h-5 w-5 text-muted-foreground
+Text: text-sm font-semibold text-foreground
+  Format: "Today, 14:00" / "Tomorrow" / "Mar 28, 2:00 PM"
+
+Hidden when bit.deadline === null
+```
+
+#### "Add a Step" Button
+
+```
+Position: below last step item, aligned with content column
+Layout: flex items-center gap-1.5
+Styling: text-xs font-medium text-muted-foreground
+  hover:bg-accent hover:text-foreground rounded-md px-2 py-1
+Icon: Plus h-3.5 w-3.5
+```
+
+#### Empty State (No Steps)
+
+```
+Centered within chunk area:
+  Vertical line stub: h-8 w-0.5 bg-border
+  Hollow dot: h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/30
+  "Add a step" button below
+```
