@@ -49,13 +49,13 @@ export function ChunkItem({ chunk, isDraggable, onToggle, onEdit, onDelete }: Ch
     <div
       ref={setNodeRef}
       style={style}
-      className="relative flex items-start gap-3 pb-6"
+      className="group relative flex items-start gap-3 pb-5"
     >
       {isDraggable ? (
         <button
           type="button"
           aria-label="Drag to reorder"
-          className="absolute -left-6 top-0.5 flex h-5 w-5 cursor-grab items-center justify-center text-muted-foreground/50 hover:text-muted-foreground active:cursor-grabbing"
+          className="absolute -left-5 top-0.5 flex h-5 w-5 cursor-grab items-center justify-center text-muted-foreground/50 opacity-0 transition-opacity hover:text-muted-foreground active:cursor-grabbing group-hover:opacity-100"
           {...attributes}
           {...listeners}
         >
@@ -65,33 +65,35 @@ export function ChunkItem({ chunk, isDraggable, onToggle, onEdit, onDelete }: Ch
 
       <div
         className={cn(
-          "relative z-10 mt-1.5 h-3 w-3 flex-shrink-0 cursor-pointer rounded-full border-2 border-background transition-colors",
-          isComplete ? "bg-primary" : "bg-muted-foreground/30",
+          "relative z-10 mt-1 h-3.5 w-3.5 flex-shrink-0 cursor-pointer rounded-full transition-colors",
+          isComplete ? "bg-primary" : "border-2 border-muted-foreground/40 bg-transparent",
         )}
         role="checkbox"
         aria-checked={isComplete}
         aria-label={`Mark "${chunk.title}" as ${isComplete ? "incomplete" : "complete"}`}
         tabIndex={0}
         onClick={() => onToggle(chunk)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
             onToggle(chunk);
           }
         }}
       />
 
-      <div className="flex-1 rounded-md border border-border bg-background px-3 py-2">
+      <div className="min-w-0 flex-1">
         {isEditing ? (
           <input
             autoFocus
             className="w-full bg-transparent text-sm text-foreground focus:outline-none"
             maxLength={200}
-            onBlur={handleBlur}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") e.currentTarget.blur();
-              if (e.key === "Escape") {
+            onBlur={() => void handleBlur()}
+            onChange={(event) => setEditValue(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.currentTarget.blur();
+              }
+              if (event.key === "Escape") {
                 setEditValue(chunk.title);
                 setIsEditing(false);
               }
@@ -112,15 +114,13 @@ export function ChunkItem({ chunk, isDraggable, onToggle, onEdit, onDelete }: Ch
             {chunk.title}
           </p>
         )}
-        {timeLabel ? (
-          <p className="mt-0.5 text-xs text-muted-foreground">{timeLabel}</p>
-        ) : null}
+        {timeLabel ? <p className="mt-0.5 text-xs text-muted-foreground">{timeLabel}</p> : null}
       </div>
 
       <button
         type="button"
         aria-label={`Delete "${chunk.title}"`}
-        className="mt-2 flex-shrink-0 text-muted-foreground/50 transition-colors hover:text-destructive"
+        className="absolute top-0.5 right-0 flex h-5 w-5 items-center justify-center text-muted-foreground/50 opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
         onClick={() => onDelete(chunk.id)}
       >
         <Trash2 className="h-3.5 w-3.5" />

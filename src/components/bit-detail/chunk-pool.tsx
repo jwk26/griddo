@@ -17,8 +17,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Plus } from "lucide-react";
+import { ChunkItem } from "@/components/bit-detail/chunk-item";
 import { useChunkActions } from "@/hooks/use-chunk-actions";
-import { ChunkItem } from "./chunk-item";
 import type { Chunk } from "@/types";
 
 type ChunkPoolProps = {
@@ -33,16 +33,13 @@ export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
-
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const isSubmittingRef = useRef(false);
   const isComposingRef = useRef(false);
 
-  const poolChunks = chunks
-    .filter((c) => c.time === null)
-    .sort((a, b) => a.order - b.order);
+  const poolChunks = chunks.filter((chunk) => chunk.time === null).sort((a, b) => a.order - b.order);
 
   async function handleAdd() {
     if (isSubmittingRef.current) return;
@@ -101,13 +98,13 @@ export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const ids = poolChunks.map((c) => c.id);
+    const ids = poolChunks.map((chunk) => chunk.id);
     const oldIndex = ids.indexOf(active.id as string);
     const newIndex = ids.indexOf(over.id as string);
     if (oldIndex === -1 || newIndex === -1) return;
 
     const reordered = arrayMove(poolChunks, oldIndex, newIndex);
-    await Promise.all(reordered.map((c, i) => updateChunk(c.id, { order: i })));
+    await Promise.all(reordered.map((chunk, index) => updateChunk(chunk.id, { order: index })));
   }
 
   return (
@@ -119,36 +116,33 @@ export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={poolChunks.map((c) => c.id)}
+            items={poolChunks.map((chunk) => chunk.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="relative pl-8">
-              <div className="absolute bottom-0 left-3.5 top-0 w-0.5 bg-border" />
-              {poolChunks.map((chunk) => (
-                <ChunkItem
-                  key={chunk.id}
-                  chunk={chunk}
-                  isDraggable={true}
-                  onToggle={handleToggle}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
+            {poolChunks.map((chunk) => (
+              <ChunkItem
+                key={chunk.id}
+                chunk={chunk}
+                isDraggable={true}
+                onToggle={handleToggle}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))}
           </SortableContext>
         </DndContext>
       ) : null}
 
       {isAdding ? (
-        <div className="flex items-center gap-2 pl-8">
-          <div className="relative z-10 h-3 w-3 flex-shrink-0 rounded-full border-2 border-muted-foreground/30 bg-muted" />
+        <div className="flex items-center gap-3 pb-5">
+          <div className="mt-1 h-3.5 w-3.5 flex-shrink-0 rounded-full border-2 border-muted-foreground/30 bg-transparent" />
           <input
             ref={inputRef}
             autoFocus
             className="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             maxLength={200}
-            onBlur={handleAdd}
-            onChange={(e) => setNewTitle(e.target.value)}
+            onBlur={() => void handleAdd()}
+            onChange={(event) => setNewTitle(event.target.value)}
             onCompositionEnd={() => {
               isComposingRef.current = false;
             }}
