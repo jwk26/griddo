@@ -711,7 +711,11 @@ Deadline (when set):
     Dismiss on blur or ESC → returns to display state
 
 Deadline (when null):
-  No deadline indicator rendered. Existing behavior preserved.
+  Button: flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground
+  Icon: Calendar h-3.5 w-3.5 prefix
+  Text: "Add deadline"
+  Click: opens edit state (same date/time inputs as "when set" edit state)
+  Rationale: keeps surface compact while preserving deadline creation affordance.
 ```
 
 #### Description (Collapsed by Default)
