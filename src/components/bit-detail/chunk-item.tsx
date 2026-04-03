@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { format } from "date-fns";
-import { GripVertical, Trash2 } from "lucide-react";
+import { ArrowUpDown, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Chunk } from "@/types";
 
@@ -49,24 +49,13 @@ export function ChunkItem({ chunk, isDraggable, onToggle, onEdit, onDelete }: Ch
     <div
       ref={setNodeRef}
       style={style}
-      className="group relative flex items-start gap-3 pb-5"
+      className="relative flex items-start gap-3 pb-5"
     >
-      {isDraggable ? (
-        <button
-          type="button"
-          aria-label="Drag to reorder"
-          className="absolute -left-5 top-0.5 flex h-5 w-5 cursor-grab items-center justify-center text-muted-foreground/50 opacity-0 transition-opacity hover:text-muted-foreground active:cursor-grabbing group-hover:opacity-100"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="h-3.5 w-3.5" />
-        </button>
-      ) : null}
-
+      {/* Dot — bg-popover on incomplete so the connecting line doesn't bleed through */}
       <div
         className={cn(
           "relative z-10 mt-1 h-3.5 w-3.5 flex-shrink-0 cursor-pointer rounded-full transition-colors",
-          isComplete ? "bg-primary" : "border-2 border-muted-foreground/40 bg-transparent",
+          isComplete ? "bg-primary" : "border-2 border-muted-foreground/40 bg-popover",
         )}
         role="checkbox"
         aria-checked={isComplete}
@@ -117,14 +106,28 @@ export function ChunkItem({ chunk, isDraggable, onToggle, onEdit, onDelete }: Ch
         {timeLabel ? <p className="mt-0.5 text-xs text-muted-foreground">{timeLabel}</p> : null}
       </div>
 
-      <button
-        type="button"
-        aria-label={`Delete "${chunk.title}"`}
-        className="absolute top-0.5 right-0 flex h-5 w-5 items-center justify-center text-muted-foreground/50 opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-        onClick={() => onDelete(chunk.id)}
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-      </button>
+      {/* Right-side actions — always visible */}
+      <div className="flex flex-shrink-0 items-center gap-0.5 mt-0.5">
+        {isDraggable ? (
+          <button
+            type="button"
+            aria-label="Drag to reorder"
+            className="flex h-5 w-5 cursor-grab items-center justify-center rounded text-muted-foreground/50 transition-colors hover:text-muted-foreground active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+          >
+            <ArrowUpDown className="h-3.5 w-3.5" />
+          </button>
+        ) : null}
+        <button
+          type="button"
+          aria-label={`Delete "${chunk.title}"`}
+          className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:text-destructive"
+          onClick={() => onDelete(chunk.id)}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
     </div>
   );
 }

@@ -311,7 +311,7 @@ export function BitDetailPopup() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 px-5 pt-1.5 pb-0">
+                <div className="flex flex-wrap items-center gap-2 px-5 pt-3 pb-0">
                   <button
                     type="button"
                     aria-label={`Priority: ${bit.priority ?? "none"}. Click to cycle.`}
@@ -491,32 +491,38 @@ export function BitDetailPopup() {
                   ) : null}
                 </div>
 
-                <div className="relative px-5 pt-2 pb-5">
-                  <div className="relative pl-6">
+                <div className="px-5 pt-3">
+                  <div className="relative">
                     {chunks.length > 0 ? (
-                      <div className="absolute top-2 bottom-2 left-[31px] w-0.5 bg-border" />
+                      <div
+                        className={cn(
+                          "absolute left-[7px] w-0.5 bg-border",
+                          bit.deadline ? "top-2 bottom-0" : "top-2 bottom-2",
+                        )}
+                      />
                     ) : null}
                     <ChunkPool ref={chunkPoolRef} chunks={chunks} bitId={bit.id} />
                     {chunks.length === 0 ? (
                       <div className="flex flex-col items-start gap-1 py-2">
                         <div className="h-8 w-0.5 bg-border" />
-                        <div className="h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/30" />
+                        <div className="h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/30 bg-popover" />
                       </div>
                     ) : null}
+                    {bit.deadline ? (
+                      <div className="flex items-center gap-3 pb-5 pt-1">
+                        <Clock className="relative z-10 h-4 w-4 flex-shrink-0 bg-popover text-destructive" />
+                        <span className="text-sm text-destructive">
+                          {format(
+                            new Date(bit.deadline),
+                            bit.deadlineAllDay ? "MMM d, yyyy" : "MMM d, yyyy h:mm a",
+                          )}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="pb-5" />
+                    )}
                   </div>
                 </div>
-
-                {bit.deadline ? (
-                  <div className="flex items-center gap-2 px-5 pb-5">
-                    <Clock className="h-4 w-4 flex-shrink-0 text-destructive" />
-                    <span className="text-sm text-destructive">
-                      {format(
-                        new Date(bit.deadline),
-                        bit.deadlineAllDay ? "MMM d, yyyy" : "MMM d, yyyy h:mm a",
-                      )}
-                    </span>
-                  </div>
-                ) : null}
               </div>
             </ScrollArea>
           ) : (
