@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Bit, Chunk } from "@/types";
@@ -116,6 +116,21 @@ afterEach(() => {
 });
 
 describe("BitDetailPopup", () => {
+  it("keeps a stable description shell when entering edit mode", () => {
+    mockBitDetail(createBit({ description: "" }));
+
+    render(<BitDetailPopup />);
+
+    const shell = screen.getByTestId("description-shell");
+    expect(within(shell).getByRole("button", { name: "Add description" })).toBeInTheDocument();
+
+    fireEvent.click(within(shell).getByRole("button", { name: "Add description" }));
+
+    const sameShell = screen.getByTestId("description-shell");
+    expect(sameShell).toBe(shell);
+    expect(within(sameShell).getByLabelText("Description")).toBeInTheDocument();
+  });
+
   it("starts collapsed for an empty description and collapses again on blur", () => {
     mockBitDetail(createBit({ description: "" }));
 

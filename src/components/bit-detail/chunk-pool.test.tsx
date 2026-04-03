@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Chunk } from "@/types";
@@ -34,6 +34,28 @@ function createChunk(overrides: Partial<Chunk> = {}): Chunk {
 }
 
 describe("ChunkPool", () => {
+  it("keeps the step composer row mounted when entering add mode", async () => {
+    render(<ChunkPool chunks={[]} bitId="bit-1" />);
+
+    const composerRow = screen.getByTestId("step-composer-row");
+    const placeholder = within(composerRow).getByText("Add a step...");
+    expect(placeholder).toBeInTheDocument();
+    expect(placeholder).toHaveClass("h-[17px]", "leading-[17px]");
+    expect(within(composerRow).getByTestId("step-composer-actions")).toBeInTheDocument();
+
+    fireEvent.click(composerRow);
+
+    const input = await within(composerRow).findByPlaceholderText("Step name...");
+
+    const sameComposerRow = screen.getByTestId("step-composer-row");
+    expect(sameComposerRow).toBe(composerRow);
+    expect(input).toBeInTheDocument();
+    expect(input).toHaveClass("h-[17px]", "leading-[17px]");
+    expect(
+      within(sameComposerRow).getByTestId("step-composer-actions"),
+    ).toBeInTheDocument();
+  });
+
   it("creates only one chunk when Enter is followed by blur", async () => {
     const ref = createRef<ChunkPoolHandle>();
 
@@ -45,7 +67,7 @@ describe("ChunkPool", () => {
 
     expect(screen.queryByRole("button", { name: "Add a step" })).not.toBeInTheDocument();
 
-    const input = screen.getByPlaceholderText("Step name...");
+    const input = await screen.findByPlaceholderText("Step name...");
     fireEvent.change(input, { target: { value: "한글 단계" } });
     fireEvent.keyDown(input, { key: "Enter" });
     fireEvent.blur(input);

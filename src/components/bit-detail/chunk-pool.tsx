@@ -2,6 +2,7 @@
 
 import {
   forwardRef,
+  useEffect,
   useImperativeHandle,
   useRef,
   useState,
@@ -56,8 +57,31 @@ export const ChunkPool = forwardRef<ChunkPoolHandle, ChunkPoolProps>(
     function startAdding() {
       if (isAdding) return;
       setIsAdding(true);
-      queueMicrotask(() => inputRef.current?.focus());
     }
+
+    useEffect(() => {
+      if (!isAdding) return;
+      inputRef.current?.focus();
+    }, [isAdding]);
+
+    const composerRowProps =
+      allChunks.length === 0 && !isAdding
+        ? {
+            role: "button" as const,
+            tabIndex: 0,
+            className:
+              "flex cursor-pointer items-start gap-3 focus:outline-none",
+            onClick: startAdding,
+            onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                startAdding();
+              }
+            },
+          }
+        : {
+            className: "flex items-start gap-3",
+          };
 
     useImperativeHandle(
       ref,
@@ -138,26 +162,40 @@ export const ChunkPool = forwardRef<ChunkPoolHandle, ChunkPoolProps>(
 
     return (
       <div className="flex flex-col">
-        {allChunks.length === 0 && !isAdding ? (
-          <div
-            role="button"
-            tabIndex={0}
-            className="flex cursor-pointer items-start gap-3"
-            onClick={startAdding}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                startAdding();
-              }
-            }}
-          >
+        {allChunks.length === 0 ? (
+          <div data-testid="step-composer-row" {...composerRowProps}>
             <div className="flex w-4 flex-col items-center">
               <div className="mt-1 h-3.5 w-3.5 flex-shrink-0 rounded-full border-2 border-muted-foreground/40" />
             </div>
             <div className="min-w-0 flex-1 pb-5">
-              <p className="text-sm text-muted-foreground">Add a step...</p>
+              {isAdding ? (
+                <input
+                  ref={inputRef}
+                  className="block h-[17px] w-full appearance-none border-none bg-transparent p-0 m-0 text-[13px] font-medium leading-[17px] text-foreground outline-none ring-0 shadow-none placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:border-none"
+                  maxLength={200}
+                  onBlur={() => void handleAdd()}
+                  onChange={(event) => setNewTitle(event.target.value)}
+                  onCompositionEnd={() => {
+                    isComposingRef.current = false;
+                  }}
+                  onCompositionStart={() => {
+                    isComposingRef.current = true;
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Step name..."
+                  type="text"
+                  value={newTitle}
+                />
+              ) : (
+                <p className="h-[17px] text-[13px] font-medium leading-[17px] text-muted-foreground">
+                  Add a step...
+                </p>
+              )}
             </div>
-            <div className="flex flex-shrink-0 items-start gap-0.5 pt-0.5 pb-5">
+            <div
+              data-testid="step-composer-actions"
+              className="flex flex-shrink-0 items-start gap-0.5 pt-0.5 pb-5"
+            >
               <span
                 aria-hidden="true"
                 className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50"
@@ -198,29 +236,47 @@ export const ChunkPool = forwardRef<ChunkPoolHandle, ChunkPoolProps>(
           </DndContext>
         ) : null}
 
-        {isAdding ? (
+        {isAdding && allChunks.length > 0 ? (
           <div className="flex items-start gap-3 pb-5">
             <div className="flex w-4 flex-col items-center">
               <div className="mt-1 h-3.5 w-3.5 flex-shrink-0 rounded-full border-2 border-muted-foreground/30 bg-transparent" />
             </div>
-            <input
-              ref={inputRef}
-              autoFocus
-              className="flex-1 appearance-none bg-transparent text-sm leading-5 text-foreground placeholder:text-muted-foreground focus:outline-none"
-              maxLength={200}
-              onBlur={() => void handleAdd()}
-              onChange={(event) => setNewTitle(event.target.value)}
-              onCompositionEnd={() => {
-                isComposingRef.current = false;
-              }}
-              onCompositionStart={() => {
-                isComposingRef.current = true;
-              }}
-              onKeyDown={handleKeyDown}
-              placeholder="Step name..."
-              type="text"
-              value={newTitle}
-            />
+            <div className="min-w-0 flex-1 pb-5">
+              <input
+                ref={inputRef}
+                className="block h-[17px] w-full appearance-none border-none bg-transparent p-0 m-0 text-[13px] font-medium leading-[17px] text-foreground outline-none ring-0 shadow-none placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:border-none"
+                maxLength={200}
+                onBlur={() => void handleAdd()}
+                onChange={(event) => setNewTitle(event.target.value)}
+                onCompositionEnd={() => {
+                  isComposingRef.current = false;
+                }}
+                onCompositionStart={() => {
+                  isComposingRef.current = true;
+                }}
+                onKeyDown={handleKeyDown}
+                placeholder="Step name..."
+                type="text"
+                value={newTitle}
+              />
+            </div>
+            <div
+              data-testid="step-composer-actions"
+              className="flex flex-shrink-0 items-start gap-0.5 pt-0.5 pb-5"
+            >
+              <span
+                aria-hidden="true"
+                className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50"
+              >
+                <ArrowUpDown className="h-3.5 w-3.5" />
+              </span>
+              <span
+                aria-hidden="true"
+                className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </span>
+            </div>
           </div>
         ) : null}
       </div>

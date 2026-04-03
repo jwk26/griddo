@@ -76,6 +76,7 @@ export function BitDetailPopup() {
   const [isDeadlineEditing, setIsDeadlineEditing] = useState(false);
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const chunkPoolRef = useRef<ChunkPoolHandle>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (!bit) return;
@@ -460,26 +461,35 @@ export function BitDetailPopup() {
                 </div>
 
                 <div className="px-5 pt-3">
-                  {isDescriptionOpen ? (
-                    <textarea
-                      aria-label="Description"
-                      className="min-h-[60px] w-full resize-none bg-transparent p-0 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-                      onBlur={() => void handleDescriptionBlur()}
-                      onChange={(event) =>
-                        setLocalDescription(event.target.value)
-                      }
-                      placeholder="Add a description"
-                      value={localDescription}
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      className="flex min-h-[60px] w-full cursor-text items-start text-sm text-muted-foreground transition-colors hover:text-foreground"
-                      onClick={() => setIsDescriptionOpen(true)}
-                    >
-                      Add description
-                    </button>
-                  )}
+                  <div
+                    data-testid="description-shell"
+                    className="relative min-h-[60px]"
+                  >
+                    {isDescriptionOpen ? (
+                      <textarea
+                        ref={descriptionRef}
+                        aria-label="Description"
+                        className="absolute inset-0 block min-h-[60px] w-full appearance-none resize-none border-0 bg-transparent p-0 text-sm leading-5 text-foreground placeholder:text-muted-foreground focus:outline-none"
+                        onBlur={() => void handleDescriptionBlur()}
+                        onChange={(event) =>
+                          setLocalDescription(event.target.value)
+                        }
+                        placeholder="Add a description"
+                        value={localDescription}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        className="absolute inset-0 flex min-h-[60px] w-full cursor-text appearance-none items-start border-0 bg-transparent p-0 text-left text-sm leading-5 text-muted-foreground transition-colors hover:text-foreground"
+                        onClick={() => {
+                          setIsDescriptionOpen(true);
+                          queueMicrotask(() => descriptionRef.current?.focus());
+                        }}
+                      >
+                        Add description
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between px-5 pt-3 pb-0">
