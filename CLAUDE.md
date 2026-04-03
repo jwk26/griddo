@@ -38,6 +38,7 @@
 - **Finish:** `/closing-phase`
 - **Branch:** `phase-N/<desc>` → `main` via PR
 - **Gates:** Branch verification + build + test enforced by skills. See skill definitions.
+- **Redesign:** Reference-inspired phases use `/reference-redesign`. See WORKFLOW.md.
 
 ## Planning Gate
 

@@ -158,35 +158,35 @@ Update this section during Phase 8 implementation. Do not wait until the end.
 
 ### Task 36 Notes
 
-- **Recipe helped with:**
-- **Still ambiguous:**
-- **Unexpected implementation pressure:**
-- **Reference mismatch noticed:**
-- **Decision made:**
+- **Recipe helped with:** Header row layout was unambiguous — the exact Tailwind classes for left group (icon h-9 w-9 + title flex-1 min-w-0 truncate) and right group (ring w-10 h-10 + status h-7 w-7 + more h-7 w-7), including flex-shrink-0 constraints, let Codex produce the correct single-row layout on the first pass. Progress ring SVG spec (viewBox, stroke colors, strokeWidth, center label) was precise enough for implementation without questions. Priority badge placement on its own row with exact padding (px-5 pt-1.5 pb-0) was clear. Description collapse behavior was well-specified.
+- **Still ambiguous:** The null-deadline state was internally contradictory in the recipe: "No deadline indicator rendered. Existing behavior preserved." One says hide the UI, the other says keep it. The implementation chose a third option not in the recipe: "Add deadline" button with Calendar icon. User later confirmed this was *better* than either recipe option. Also: the deadline display/edit blur-dismiss pattern (detecting focus leaving the edit group via relatedTarget) was not specified in the recipe. ESC key conflict (pressing ESC during deadline edit also closes the popup) was not addressed.
+- **Unexpected implementation pressure:** Progress ring constants (RING_RADIUS, RING_CIRCUMFERENCE) had to physically move between files. Trivial, but the recipe doesn't track internal code structure — it only tracks the visual surface.
+- **Reference mismatch noticed:** Reference image shows no deadline UI at all in resting state. Product decision: keep "Add deadline" for usability. This is a deliberate deviation from the reference, not a fidelity failure.
+- **Decision made:** Implemented "Add deadline" button with Calendar icon. Updated recipe to match after user approval.
 
 ### Task 37 Notes
 
-- **Recipe helped with:**
-- **Still ambiguous:**
-- **Unexpected implementation pressure:**
-- **Reference mismatch noticed:**
-- **Decision made:**
+- **Recipe helped with:** Step item dot styling was mechanically clear: w-3.5 h-3.5, complete = bg-primary, incomplete = bg-transparent border-2 border-muted-foreground/40. Card wrapper removal ("no border, no background, no card padding") was unambiguous. Hover affordances (opacity-0 → group-hover:opacity-100) on drag handle and delete were precisely specified. Codex implemented all of these correctly on the first pass.
+- **Still ambiguous:** The connecting line position: recipe specified `left-[11px]` inside a `pl-6` container. These values are geometrically inconsistent — the dot center sits at 31px from the container's left edge (24px padding + 7px half-dot), but the line is at 11px. This was caught by Gemini post-code review, not by the recipe itself. The recipe also didn't specify HOW to make the connecting line shared between pool and timeline. The implementation chose popup-level ownership, which required removing internal wrappers from both components.
+- **Unexpected implementation pressure:** The duplicate untimed-step rendering bug was exposed by this work. ChunkTimeline rendered orderedChunks (untimed steps) that ChunkPool also renders. This was a pre-existing bug invisible in Phase 7's visually separated layout, but became wrong when both components shared a single connecting line. Had to fix it — not part of the recipe, but revealed by the Phase 8 visual continuity goal.
+- **Reference mismatch noticed:** Reference shows a single unified step list. Implementation keeps two components (pool + timeline) per recipe's "internal structure unchanged" scope rule, but now they visually read as one list. Close enough for the pilot.
+- **Decision made:** Fixed the duplicate rendering bug (ChunkTimeline now owns timed steps only, ChunkPool owns untimed steps). Updated connecting line from left-[11px] to left-[31px] per Gemini post-code finding.
 
 ### Task 38 Notes
 
-- **Recipe helped with:**
-- **Still ambiguous:**
-- **Unexpected implementation pressure:**
-- **Reference mismatch noticed:**
-- **Decision made:**
+- **Recipe helped with:** Exact padding values (px-5, pt-5, pt-1.5, pt-3, pb-5, pl-6, gap-3, pb-5) made spacing decisions mechanical. Dot sizes and connecting line position (after correction) gave clear audit targets.
+- **Still ambiguous:** Empty state alignment — recipe didn't specify how the stub + hollow dot should align with the connecting line inside the pl-6 container. Gemini caught `items-center` vs `items-start`. Also: recipe didn't address flex overflow on the priority/deadline row; Gemini flagged the missing `flex-wrap`.
+- **Unexpected implementation pressure:** None beyond the two Gemini-caught issues.
+- **Reference mismatch noticed:** None at this stage — spacing pass was recipe-compliance, not reference-comparison.
+- **Decision made:** Applied all three Gemini post-code corrections (connecting line position, flex-wrap, empty state alignment).
 
 ### Closing Review Notes
 
-- **Screenshots reviewed:**
-- **Clear deviations found:**
-- **Corrections made:**
-- **Acceptable deviations left in place:**
-- **Was one review pass enough?:**
+- **Screenshots reviewed:** Not yet performed. Screenshot comparison is a closing-phase deliverable.
+- **Clear deviations found:** Pre-screenshot: Gemini post-code review found 1 HIGH (connecting line misalignment) and 2 MEDIUM (flex-wrap, empty state alignment). All corrected.
+- **Corrections made:** (1) text-[10px] → text-xs on ring label (Gemini pre-code HIGH), (2) Added Calendar icon to "Add deadline" (Gemini pre-code MEDIUM), (3) left-[11px] → left-[31px] connecting line (Gemini post-code HIGH), (4) Added flex-wrap to meta row (Gemini post-code MEDIUM), (5) items-center → items-start on empty state (Gemini post-code MEDIUM), (6) Removed duplicate orderedChunks rendering from ChunkTimeline (user-caught behavior bug).
+- **Acceptable deviations left in place:** ESC during deadline edit also closes popup (pre-existing interaction pattern, minor edge case). Focus ring polish across all interactive elements (pre-existing gap, not Phase 8 scope).
+- **Was one review pass enough?:** For layout issues, yes — Gemini post-code caught the meaningful ones. For behavior bugs (duplicate rendering), no — that required human domain knowledge of the component ownership model.
 
 ---
 
@@ -204,6 +204,60 @@ Before calling Phase 8 complete, answer all of the following in this document:
 8. Based on actual evidence, what exact workflow update should follow from this phase?
 
 If these questions are not answered, the workflow purpose of Phase 8 has not been completed.
+
+### Answers
+
+**1. Did the Bit Detail Surface Recipe materially reduce ambiguity during implementation?**
+
+Yes, for layout. The recipe gave Codex unambiguous structural specs — header flex layout, dot sizes, padding values, color tokens — and Codex's first-pass output was correct for all of these. In prior phases, layout decisions required multiple correction rounds. Here, the header row, step item restyling, and dot styling all landed on the first pass.
+
+No, for interaction design. The recipe could not specify: deadline display/edit state transitions, blur-dismiss patterns, ESC key layering, or how to detect focus leaving an edit group. These required developer judgment. The recipe format (geometric Tailwind classes) doesn't have a language for behavior.
+
+No, for geometric consistency. The recipe specified `left-[11px]` for the connecting line inside a `pl-6` container, but these values are mathematically inconsistent — the dot center is at 31px. The recipe was written as isolated values without being validated against the actual CSS box model. Gemini caught this; a human would have caught it in visual review. The recipe itself didn't prevent the error.
+
+**2. Which parts of the recipe were genuinely useful?**
+
+- Exact Tailwind class strings for flex layouts, sizing, and spacing. These eliminated guesswork.
+- Color token references (bg-primary, border-muted-foreground/40, text-priority-high). No ambiguity.
+- Explicit "what is NOT rendered" statements (e.g., "no wrapping card — no border, no background, no card padding").
+- Display state vs edit state separation for the deadline. Even though the transition wasn't fully specified, having both states described independently was useful.
+
+**3. Which parts of the recipe were still too vague or too implementation-specific?**
+
+- Too vague: The null-deadline state ("No deadline indicator rendered. Existing behavior preserved." — contradictory). Interaction transitions in general. How the shared connecting line should work across two components.
+- Too implementation-specific: Nothing was over-specified. If anything, the recipe erred on the side of being under-specified for interaction patterns.
+- Missing entirely: State management (which new state variables are needed), component ownership boundaries (which component owns the connecting line), and interaction layering (ESC key precedence).
+
+**4. Did the recipe help preserve the intended design better than prior phases?**
+
+Yes. Codex's output was substantially closer to the reference on the first pass than any comparable prior-phase work. The header layout, step item simplification, and description collapse all matched the intent without iteration. The recipe prevented the "tokens move but frame is lost" problem that motivated this pilot.
+
+**5. Did the closing screenshot comparison catch issues that would probably have been missed otherwise?**
+
+Gemini pre-code and post-code reviews (serving as automated visual review) caught 3 HIGH and 3 MEDIUM issues. The connecting line misalignment (HIGH) would absolutely have been missed without a geometric review — it's the kind of "looks roughly right" error that ships in prior phases. The text-[10px] accessibility concern would also have shipped without review.
+
+However: the duplicate rendering bug (untimed steps appearing twice) was caught by human code review, not by screenshot comparison. Screenshot comparison catches layout errors; behavior bugs require understanding component ownership.
+
+**6. Was one closing review enough, or would a future workflow need something stronger?**
+
+For layout fidelity: one Gemini post-code review was enough. It caught the meaningful visual deviations.
+
+For behavior correctness: no. The duplicate rendering bug was not a visual deviation visible in a screenshot with typical test data — it would only be visible if the same step appeared twice in the rendered list, which depends on whether both timed and untimed steps exist simultaneously.
+
+Recommendation: one visual review pass + one behavior review pass (checking component ownership and data flow) would be a stronger gate.
+
+**7. Did the pilot stay narrow, or did it drift toward broader cleanup/architecture work?**
+
+Mostly narrow. All changes touched only the 4 Bit Detail component files. The only scope expansion was:
+- Fixing the duplicate rendering bug (pre-existing, but exposed by the visual continuity work)
+- Adding a test file (reasonable addition, stayed within Bit Detail scope)
+- Updating the recipe to match a better product decision (null-deadline "Add deadline" button)
+
+No drift toward sidebar, grid, calendar, or unrelated components.
+
+**8. Based on actual evidence, what exact workflow update should follow from this phase?**
+
+Adopt the recipe pattern with changes. See Section 9 below for the full recommendation.
 
 ---
 
@@ -278,7 +332,67 @@ This order exists so the workflow purpose is not lost behind implementation deta
 
 ## 12. Current Status
 
-- Phase 7 baseline is preserved.
-- Phase 8 planning docs exist.
-- No workflow update has been made yet from this pilot.
-- The workflow update is intentionally deferred until Phase 8 has real implementation evidence.
+- Phase 8 implementation complete (commits `111adc0` + `efae17c`).
+- `pnpm test && pnpm build` pass.
+- Running record filled in from implementation evidence.
+- Closing questions answered.
+- Workflow update recommendation written (Section 13 below).
+- Screenshot comparison deferred to closing-phase.
+
+---
+
+## 13. Workflow Update Recommendation
+
+Based on the evidence from this pilot, the recommendation is: **adopt the recipe pattern with changes**.
+
+### What worked
+
+1. **Geometric recipes eliminate layout guesswork.** Codex's first-pass header layout, step item restyling, and dot styling were all correct. This is a categorical improvement over prior phases where layout decisions required multiple correction rounds. The "tokens move but frame is lost" problem did not occur for any recipe-specified element.
+
+2. **Explicit negation statements are high-value.** "No wrapping card — no border, no background, no card padding" left zero room for interpretation. These should be a standard recipe pattern.
+
+3. **Gemini pre/post-code reviews are a cost-effective quality gate.** Two automated reviews caught 6 real issues (3 HIGH, 3 MEDIUM) that would have shipped otherwise. The connecting line misalignment in particular is exactly the class of error that persists across phases without a geometric review.
+
+4. **One narrow surface per pilot is the right granularity.** The scope stayed contained. Evidence is interpretable because there's only one surface to evaluate.
+
+### What failed or was missing
+
+1. **The recipe has no language for interaction behavior.** State transitions (display → edit → dismiss), blur patterns, ESC key layering, and focus management all required developer judgment. The geometric Tailwind format can't express these. This is the biggest gap.
+
+2. **Recipe values were not internally validated.** `left-[11px]` and `pl-6` are individually reasonable but geometrically inconsistent together. The recipe was written value-by-value without checking that the CSS box model math works out. This produced a HIGH-severity bug caught only by post-implementation review.
+
+3. **Component ownership boundaries are invisible in the recipe.** The recipe describes a visual surface. It doesn't say which component owns the connecting line, or that ChunkTimeline shouldn't render untimed steps. This caused the duplicate rendering bug — the most serious issue in the phase, and the one the recipe was least equipped to prevent.
+
+4. **The pilot record discipline was not followed during implementation.** The running record was supposed to be updated during Tasks 36–38. It was filled in retroactively after the user flagged the omission. In a CCG workflow where the orchestrator (Claude) is focused on Codex prompts, Gemini reviews, and build verification, the reflective observation step gets dropped. This needs to be a structural checkpoint, not a voluntary discipline.
+
+### Changes for future recipe-driven phases
+
+1. **Add an interaction state table to the recipe.** For each interactive element, specify: resting state, active/editing state, dismiss trigger, keyboard behavior, and state variable name. Keep it tabular, not prose. Example:
+   ```
+   Deadline:
+     Resting:  read-only text (button, tabIndex=0)
+     Editing:  date + time inputs + all-day toggle (wrapper div)
+     Dismiss:  blur outside wrapper OR ESC
+     ESC note: stopPropagation to prevent popup close
+     State:    isDeadlineEditing: boolean
+   ```
+
+2. **Validate recipe geometry before implementation.** After writing a recipe, run one pass to verify that absolute positions, padding offsets, and element sizes are mathematically consistent. A connecting line at `left-[X]` should equal `padding-left + (dot-width / 2)`. This could be a checklist item in PLANNING_STANDARD.md.
+
+3. **Add a component ownership note to the recipe.** One line per component boundary: "ChunkPool owns untimed steps. ChunkTimeline owns timed steps + deadline marker. Popup owns the shared connecting line." This prevents the class of bug where two components render the same data.
+
+4. **Make the pilot record a structural checkpoint, not a voluntary step.** After each task's implementation commit, the orchestrator should be required to update the running record before proceeding. In the CCG skill, this could be a step between "commit implementation" and "next task."
+
+### Verdict against the decision rubric
+
+Per Section 10 of this document:
+
+> **Adopt with changes** — the idea helped, but the recipe format needs adjustment.
+
+The recipe pattern should become standard for visually sensitive surfaces (popups, detail views, cards with complex layout). It should NOT be required for simple CRUD surfaces or data-layer work. The changes above (interaction state table, geometry validation, ownership note, structural checkpoint) should be incorporated before the next recipe-driven phase.
+
+### Scope of adoption
+
+- **Mandatory for:** Surfaces with 3+ interactive zones, complex flex layouts, or reference image targets.
+- **Optional for:** Simple list items, settings pages, empty states.
+- **Not applicable for:** Data layer, hooks, stores, pure logic.

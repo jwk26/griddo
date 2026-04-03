@@ -624,7 +624,7 @@ Buttons are `28×28px` (w-7 h-7). "Done?" text is foreground (not muted), semibo
 
 ### Bit Detail Surface
 
-> Reference: `./chunk_timeline.png`
+> Reference: `references/bitdetail0.png`
 
 #### Overlay
 
@@ -665,57 +665,52 @@ Left group:
     Editable inline (blur to save)
 
 Right group: flex items-center gap-1 flex-shrink-0
-  Progress ring: w-10 h-10 flex-shrink-0
-    SVG viewBox="0 0 40 40"
-    Track: stroke hsl(var(--secondary)), strokeWidth 3
-    Fill: stroke hsl(var(--primary)), strokeWidth 3, strokeLinecap round
-    Center label: text-[10px] font-medium text-muted-foreground, "{pct}%"
-    Hidden when totalChunks === 0
-
   Status toggle: h-7 w-7 flex-shrink-0 rounded-md
     Active: Circle icon, text-muted-foreground
     Complete: CheckCircle2 icon, text-primary
 
   More menu: h-7 w-7 flex-shrink-0 rounded-md, MoreHorizontal icon
     Contains: Promote to Node (conditional), Move to trash
+
+Note: Progress ring is no longer in the header. See Steps Header Row.
 ```
 
 #### Priority + Meta Row
 
 ```
-Layout: flex items-center gap-2
+Layout: flex flex-wrap items-center gap-2
 Padding: px-5 pt-1.5 pb-0
 
-Priority badge (when priority is set):
+Priority badge (leftmost):
   rounded-full px-[7px] py-[2px]
   text-[10px] font-semibold uppercase tracking-[0.05em]
   high: bg-priority-high-bg text-priority-high
   mid:  bg-priority-mid-bg text-priority-mid
   low:  bg-priority-low-bg text-priority-low
+  When null: bg-secondary text-muted-foreground, displays "—"
   Click cycles priority (existing behavior)
 
-  When priority is null:
-  Existing behavior preserved (bg-secondary text-muted-foreground, displays "—").
-  TBD whether this should change in a future pass.
+Deadline chips (when deadline is set):
+  Date chip: Calendar h-3.5 w-3.5 icon + formatted date text + × button
+    × click: clears deadline (sets to null)
+    Date text click: opens edit state
+  Time chip: Clock h-3.5 w-3.5 icon + formatted time text
+    Hidden when deadlineAllDay is true
+    Click: opens edit state
+  ALL pill: rounded px-2 py-0.5 text-xs font-medium
+    Active (all-day on): bg-primary text-primary-foreground
+    Inactive: bg-secondary text-muted-foreground
 
-Deadline (when set):
-  Default (display state):
-    Calendar icon h-3.5 w-3.5 text-muted-foreground
-    Read-only text: text-xs text-muted-foreground
-    Format: "Mar 28, 2:00 PM" / "Mar 28" (all-day)
-    Click opens edit state
-
-  Edit state (on click):
+  Edit state (on chip click):
     Native date input + time input (existing controls)
-    "All day" toggle (existing behavior)
-    Dismiss on blur or ESC → returns to display state
+    ALL toggle (existing behavior)
+    Dismiss on blur or ESC → returns to chip display
 
 Deadline (when null):
   Button: flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground
   Icon: Calendar h-3.5 w-3.5 prefix
-  Text: "Add deadline"
-  Click: opens edit state (same date/time inputs as "when set" edit state)
-  Rationale: keeps surface compact while preserving deadline creation affordance.
+  Text: "Add date"
+  Click: opens edit state (date/time inputs + ALL toggle)
 ```
 
 #### Description (Collapsed by Default)
@@ -733,24 +728,40 @@ When expanded:
   Collapses when empty on blur
 ```
 
+#### Steps Header Row
+
+```
+Layout: flex items-center justify-between
+Padding: px-5 pt-3 pb-0
+
+Left: "Add a step" button
+  flex items-center gap-1.5 rounded-md px-2 py-1
+  text-xs font-medium text-muted-foreground
+  hover:bg-accent hover:text-foreground
+  Icon: Plus h-3.5 w-3.5
+
+Right: Progress ring (moved from header)
+  w-10 h-10 flex-shrink-0
+  SVG viewBox="0 0 40 40"
+  Track: stroke hsl(var(--secondary)), strokeWidth 3
+  Fill: stroke hsl(var(--primary)), strokeWidth 3, strokeLinecap round
+  Center label: text-[10px] font-medium text-muted-foreground, "{pct}%"
+  Hidden when totalChunks === 0
+```
+
 #### Chunk Area
 
 ```
-Padding: px-5 pt-3 pb-5
+Padding: px-5 pt-2 pb-5
 Layout: relative pl-6
 
 Vertical connecting line:
   absolute left-[11px] top-2 bottom-2 w-0.5 bg-border
 
 Rendering order:
-  1. Untimed steps sorted by order field
-  2. Timed steps sorted by time ascending
-  Both groups use the same visual pattern (dots, line, spacing).
-  No visual separator between groups.
-
-Implementation note:
-  Internal component structure (separate pool/timeline components)
-  is unchanged in this pilot. Both adopt the same visual language.
+  Single unified list of all chunks, sorted by chunk.order (manual order).
+  No separate timed-step section. Timed steps render inline with a time
+  sub-label (see Step Item). Drag reordering applies to all steps.
 ```
 
 #### Step Item
@@ -777,27 +788,19 @@ Hover affordances (opacity-0 → opacity-100 on parent hover):
   Delete: absolute right-0, Trash2 h-3.5 w-3.5
 ```
 
-#### Deadline Marker (Bottom of Chunk Area)
+#### Deadline Footer
 
 ```
-Layout: relative flex items-center gap-3 pt-1
-Aligned with step dots (same left offset)
+Position: below chunk area (outside chunk container)
+Padding: px-5 pb-5
+Layout: flex items-center gap-2
 
-Icon: Clock, h-5 w-5 text-muted-foreground
-Text: text-sm font-semibold text-foreground
-  Format: "Today, 14:00" / "Tomorrow" / "Mar 28, 2:00 PM"
+Icon: Clock h-4 w-4 text-destructive flex-shrink-0
+Text: text-sm text-destructive
+  Format: "Apr 16, 2026 12:00 AM" (full datetime)
+         "Apr 16, 2026" (all-day)
 
 Hidden when bit.deadline === null
-```
-
-#### "Add a Step" Button
-
-```
-Position: below last step item, aligned with content column
-Layout: flex items-center gap-1.5
-Styling: text-xs font-medium text-muted-foreground
-  hover:bg-accent hover:text-foreground rounded-md px-2 py-1
-Icon: Plus h-3.5 w-3.5
 ```
 
 #### Empty State (No Steps)

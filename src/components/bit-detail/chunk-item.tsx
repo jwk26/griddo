@@ -10,12 +10,13 @@ import type { Chunk } from "@/types";
 type ChunkItemProps = {
   chunk: Chunk;
   isDraggable: boolean;
+  showConnector: boolean;
   onToggle: (chunk: Chunk) => void;
   onEdit: (chunkId: string, title: string) => Promise<void>;
   onDelete: (chunkId: string) => void;
 };
 
-export function ChunkItem({ chunk, isDraggable, onToggle, onEdit, onDelete }: ChunkItemProps) {
+export function ChunkItem({ chunk, isDraggable, showConnector, onToggle, onEdit, onDelete }: ChunkItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(chunk.title);
 
@@ -46,31 +47,33 @@ export function ChunkItem({ chunk, isDraggable, onToggle, onEdit, onDelete }: Ch
   }
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="relative flex items-start gap-3 pb-5"
-    >
-      {/* Dot — bg-popover on incomplete so the connecting line doesn't bleed through */}
-      <div
-        className={cn(
-          "relative z-10 mt-1 h-3.5 w-3.5 flex-shrink-0 cursor-pointer rounded-full transition-colors",
-          isComplete ? "bg-primary" : "border-2 border-muted-foreground/40 bg-popover",
-        )}
-        role="checkbox"
-        aria-checked={isComplete}
-        aria-label={`Mark "${chunk.title}" as ${isComplete ? "incomplete" : "complete"}`}
-        tabIndex={0}
-        onClick={() => onToggle(chunk)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            onToggle(chunk);
-          }
-        }}
-      />
+    <div ref={setNodeRef} style={style} className="relative flex items-start gap-3">
+      {/* Left rail: circle node + optional connector segment to next node */}
+      <div className="flex w-4 flex-col items-center self-stretch">
+        <div
+          className={cn(
+            "mt-1 h-3.5 w-3.5 flex-shrink-0 cursor-pointer rounded-full transition-colors",
+            isComplete ? "bg-primary" : "border-2 border-muted-foreground/40",
+          )}
+          role="checkbox"
+          aria-checked={isComplete}
+          aria-label={`Mark "${chunk.title}" as ${isComplete ? "incomplete" : "complete"}`}
+          tabIndex={0}
+          onClick={() => onToggle(chunk)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              onToggle(chunk);
+            }
+          }}
+        />
+        {showConnector ? (
+          <div className="mt-1 w-0.5 flex-1 bg-border" />
+        ) : null}
+      </div>
 
-      <div className="min-w-0 flex-1">
+      {/* Content */}
+      <div className="min-w-0 flex-1 pb-5">
         {isEditing ? (
           <input
             autoFocus
@@ -107,7 +110,7 @@ export function ChunkItem({ chunk, isDraggable, onToggle, onEdit, onDelete }: Ch
       </div>
 
       {/* Right-side actions — always visible */}
-      <div className="flex flex-shrink-0 items-center gap-0.5 mt-0.5">
+      <div className="flex flex-shrink-0 items-start gap-0.5 pt-0.5 pb-5">
         {isDraggable ? (
           <button
             type="button"

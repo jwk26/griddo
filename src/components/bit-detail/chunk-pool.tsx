@@ -143,11 +143,12 @@ export const ChunkPool = forwardRef<ChunkPoolHandle, ChunkPoolProps>(function Ch
             items={allChunks.map((chunk) => chunk.id)}
             strategy={verticalListSortingStrategy}
           >
-            {allChunks.map((chunk) => (
+            {allChunks.map((chunk, index) => (
               <ChunkItem
                 key={chunk.id}
                 chunk={chunk}
                 isDraggable={true}
+                showConnector={index < allChunks.length - 1}
                 onToggle={handleToggle}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
