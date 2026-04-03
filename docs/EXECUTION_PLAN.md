@@ -1053,3 +1053,14 @@ These apply across all phases:
 > **Structural decisions deferred:** Component-level merge of the chunk area is not part of this pilot. If visual continuity reveals that a structural merge is needed, that decision is revisited post-pilot.
 >
 > **Required post-phase output:** Before Phase 8 is considered fully complete, update `docs/reviews/phase-8-workflow-pilot-record.md` with final findings and write a workflow update recommendation based on the evidence gathered during this pilot.
+>
+> **Pilot verdict:** Adopt the recipe pattern with changes. Geometric recipes eliminate layout guesswork. Gemini pre/post-code reviews caught 6 real issues (3 HIGH, 3 MEDIUM). Key gaps: no interaction state table, no geometry validation step, no component ownership notes.
+>
+> **Recipe geometry rule:** `left-[X]` inside a `pl-N` container must satisfy `X = padding-left + (dot-width / 2)`. Validate before implementation.
+>
+> **Component ownership:** Put a one-line ownership note in the recipe for each component boundary. Prevents duplicate-render bugs invisible to screenshot review.
+>
+> **Pilot record update discipline:** The running record must be updated after each task commit — not retroactively. Make it a structural CCG checkpoint.
+>
+> **Full issue log:** `docs/issues/Issues_Phase_8.md`
+> **Workflow update recommendation:** `docs/reviews/phase-8-workflow-pilot-record.md` §13

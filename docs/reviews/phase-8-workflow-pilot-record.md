@@ -332,12 +332,15 @@ This order exists so the workflow purpose is not lost behind implementation deta
 
 ## 12. Current Status
 
-- Phase 8 implementation complete (commits `111adc0` + `efae17c`).
-- `pnpm test && pnpm build` pass.
+- Phase 8 implementation complete (10 commits, `7e42ab8`..`0aeefc4`).
+- Post-implementation fixes: shared-rail removal, per-item connector ownership, empty-state interactive affordance, stable-shell description swap, stable-row step composer.
+- `pnpm test` (75 tests pass) and `pnpm build` pass.
 - Running record filled in from implementation evidence.
 - Closing questions answered.
-- Workflow update recommendation written (Section 13 below).
-- Screenshot comparison deferred to closing-phase.
+- Workflow update recommendation written (Section 13).
+- Phase 8 closing summary written (Section 14).
+- Issues documented: `docs/issues/Issues_Phase_8.md` (8 issues).
+- Recipe artifacts: `docs/recipes/bit-detail-recipe.md`, `references/bitdetail0.png`.
 
 ---
 
@@ -396,3 +399,51 @@ The recipe pattern should become standard for visually sensitive surfaces (popup
 - **Mandatory for:** Surfaces with 3+ interactive zones, complex flex layouts, or reference image targets.
 - **Optional for:** Simple list items, settings pages, empty states.
 - **Not applicable for:** Data layer, hooks, stores, pure logic.
+
+---
+
+## 14. Phase 8 Closing Summary
+
+Phase 8 was not just a Bit Detail UI phase. It was a recipe-driven workflow pilot that produced evidence for how reference-driven redesign should work going forward.
+
+### What the phase produced
+
+1. **A narrow, scoped pilot.** Phase 8 was intentionally limited to one surface (Bit Detail) so the workflow experiment would produce interpretable evidence. We documented the gap review and pilot hypotheses before writing code.
+
+2. **The lesson that reference interpretation needs a strict first step.** If code or current implementation structure is read too soon, it biases visual interpretation. This led to the rule: read the image before the code, document only visible facts first. This lesson is already reflected in the `design-archaeology` skill (Phase 0 → 0.25 → 0.5 ordering).
+
+3. **The conclusion that design-archaeology alone was not enough.** Bit Detail was not just extraction — the reference did not include every existing product control (priority, timed chunks, progress ring). Those could not simply be deleted. The real questions were: should this control remain? If so, where does it go? How do we preserve product function without breaking reference fidelity? That was a redesign conversation, not an extraction task.
+
+4. **The `reference-redesign` skill.** This skill was created because the Bit Detail work needed capabilities beyond extraction:
+   - Retain/remove was not enough — reintegration placement decisions were needed.
+   - "Absent from the reference" had multiple meanings (absent entirely vs. restructured).
+   - Recipes that exist only in conversation are too fragile — they need durable docs.
+   - The skill now includes: reference fact extraction first, surface-facing language, new/preserved/restructured/absent-entirely classification, a reintegration proposal step, writing to `docs/recipes/`, promotion into canonical docs, and cascade checking.
+
+5. **A real recipe applied to Bit Detail.** We used `reference-redesign` against `references/bitdetail0.png` and produced `docs/recipes/bit-detail-recipe.md`, an updated `docs/DESIGN_TOKENS.md`, and a rewritten Phase 8 section in `docs/EXECUTION_PLAN.md`. The recipe became a real project input.
+
+6. **Implementation evidence.** The recipe reduced layout and geometry guesswork, gave planning and execution a shared visual target, and improved fidelity to the reference. But interaction behavior was not captured well enough by recipe prose alone, geometry that sounded correct could still be wrong in box-model terms, and component ownership needed more explicit documentation.
+
+7. **Late-stage issues that deepened the evidence.** Connector line geometry, duplicate rendering, null-deadline ambiguity, missing flex-wrap, empty-state handling, and layout jumps in Add description and Add a step. The layout-jump issue in particular produced an important learning: the problem was not mainly focus styling — it was a resting/editing box-structure mismatch that required stable-shell and stable-row solutions.
+
+### What is already institutionalized
+
+- Reference fact extraction (in `design-archaeology`)
+- Recipe → durable docs → canonical docs promotion (in `reference-redesign`)
+- Ownership ambiguity warnings (partially in `execute-next-phase`)
+
+### What is partially reflected
+
+- Documenting interaction behavior
+- Documenting component ownership
+
+### What is still weak or not yet institutionalized
+
+- Geometry validation as a formal planning check
+- Reading `docs/recipes/*` as a first-class input in `execute-next-phase`
+- Recipe-first execution logic
+- Interaction state table checks
+
+### Verdict
+
+Phase 8 is not just "the Bit Detail phase." It is the phase that produced evidence for how the recipe-driven redesign workflow should work going forward. The recipe pattern should be adopted with changes. The system is improved, but not fully closed — the remaining gaps are documented above for future phases to address.
