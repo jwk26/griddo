@@ -179,7 +179,7 @@ Does the code match the plan's per-file specifications?
 Do user-facing acceptance criteria pass when observed in the running app?
 Does the build pass?
 
-Summary: Implementation focuses purely on translating defined tasks into code. No new product decisions are made here.
+Summary: Implementation translates defined tasks into code. No new product decisions are made here — except when a phase involves reference-inspired redesign, which requires structured design decisions with user approval before code is written (see Reference-Inspired Redesign section).
 
 Important Note:
 
@@ -304,6 +304,53 @@ These are not handled by the same mechanism. The distinction is deliberate.
 
 ---
 
+## Reference-Inspired Redesign
+
+When a phase redesigns an existing surface toward a reference image, a structured design sub-process runs before code is written. This applies when:
+
+- A phase targets a reference image or prototype for a specific surface
+- The surface already has working product controls
+- Some existing controls may not appear in the reference
+
+### The Problem
+
+A reference image shows what the target looks like but doesn't show what was intentionally excluded. When an existing product control is absent from the reference, two questions arise:
+
+1. **Should this control be retained?** (product decision)
+2. **Where should it go in the new layout, and why?** (design decision)
+
+Both require user input, but they are different conversations. Skipping question 2 means placement decisions are made without design rationale — the gap identified during the Phase 8 workflow pilot.
+
+### Process
+
+| Step | Action | Who | Output |
+|------|--------|-----|--------|
+| 1. Visual Extraction | Read reference, extract layout, elements, spacing, hierarchy | Agent | Element inventory |
+| 2. Current Surface Analysis | Read the existing component code | Agent | Current surface inventory |
+| 3. Delta Analysis + Retain/Remove Gate | Categorize elements (new / preserved / restructured / absent entirely), user decides what stays | User decides | Retained set |
+| 4. Reintegration Proposal | For each retained element: placement, rationale, visibility, fidelity impact | Agent proposes, User approves | Approved placements |
+| 5. Durable Recipe | Write approved recipe to `docs/recipes/<surface>-recipe.md` | Agent | Durable recipe file |
+| 6. Canonical Promotion | Promote recipe into `docs/DESIGN_TOKENS.md` (Surface Recipes section) and update `docs/EXECUTION_PLAN.md` task specs to reference the recipe | Agent | Updated canonical docs |
+| 7. Cascade Check | Verify no conflicts between recipe and existing tokens, layouts, or component ownership | Agent | Conflict report (if any) |
+
+Step 4 is the critical addition. For each retained control, the agent proposes where it goes, why, how visible it should be, and whether the placement preserves or weakens the reference's design fidelity. The user approves before the recipe is written.
+
+Steps 5–7 were added based on Phase 8 pilot evidence. Writing the recipe durably before canonical promotion prevents conversation-only recipes from being lost across sessions. The cascade check catches conflicts between the new recipe and existing design tokens or component ownership.
+
+### Relationship to Other Stages
+
+- **Stage 3 (Design Extraction)** handles adopt/remove/improve at project inception. Reference-inspired redesign handles similar decisions at phase level for individual surfaces.
+- **Stage 6 (Implementation)** normally makes no new product decisions. Reference-inspired redesign is the exception — structured design decisions with user approval, before code.
+
+### Entry Points
+
+- **Primary:** User invokes `/reference-redesign <image-path>` directly.
+- **Ad-hoc:** User invokes `/reference-redesign` without arguments; the skill asks which reference to use.
+
+> The reintegration process is defined by the `/reference-redesign` skill. See skill definition for enforcement details.
+
+---
+
 ## Document Hierarchy
 
 ### Canonical Documents
@@ -362,6 +409,7 @@ Non-authoritative. Used for visual review, not as source of truth.
 | Skill                 | Stages                       | Trigger                                               |
 | --------------------- | ---------------------------- | ----------------------------------------------------- |
 | `/design-archaeology` | 3. Design Extraction         | Reference exists; "inherit design", "match reference" |
+| `/reference-redesign` | 6. Implementation (pre-code) | "redesign toward", "match this mockup", reference-driven surface redesign |
 | `/writing-documents`  | 4–5. System Rules → Planning | "PRD is ready", "generate docs", "create spec"        |
 | `/execute-next-phase` | 6. Implementation            | "start phase N", "execute phase"                      |
 | `/closing-phase`      | 7. Closing                   | "phase done", "close phase"                           |

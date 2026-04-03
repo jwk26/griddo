@@ -1,9 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { formatDistanceToNow, format } from "date-fns";
-import { ArrowUpCircle, Calendar, CheckCircle2, Circle, MoreHorizontal, Trash2 } from "lucide-react";
+import { format } from "date-fns";
+import {
+  ArrowUpCircle,
+  Calendar,
+  CheckCircle2,
+  Circle,
+  Clock,
+  MoreHorizontal,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
+import {
+  ChunkPool,
+  type ChunkPoolHandle,
+} from "@/components/bit-detail/chunk-pool";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,15 +31,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useBitDetailActions } from "@/hooks/use-bit-detail-actions";
 import { useBitDetail } from "@/hooks/use-bit-detail";
 import { bitDetailPopupVariants } from "@/lib/animations/layout";
 import { NODE_ICON_MAP, NODE_ICON_NAMES } from "@/lib/constants/node-icons";
 import { cn } from "@/lib/utils";
-import { ChunkPool } from "./chunk-pool";
-import { ChunkTimeline } from "./chunk-timeline";
 import type { Bit } from "@/types";
 
 type Priority = Bit["priority"];
@@ -29,6 +51,8 @@ const PRIORITY_LABELS: Record<NonNullable<Priority>, string> = {
   mid: "Mid",
   low: "Low",
 };
+const RING_RADIUS = 16;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 function nextPriority(current: Priority): Priority {
   const idx = PRIORITY_CYCLE.indexOf(current);
@@ -49,20 +73,24 @@ export function BitDetailPopup() {
   const [localTitle, setLocalTitle] = useState("");
   const [localDescription, setLocalDescription] = useState("");
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
+  const [isDeadlineEditing, setIsDeadlineEditing] = useState(false);
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+  const chunkPoolRef = useRef<ChunkPoolHandle>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
-  // Sync local fields when bit identity changes (derived state reset on id change)
   useEffect(() => {
     if (!bit) return;
     setLocalTitle(bit.title);
     setLocalDescription(bit.description);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setIsDescriptionOpen(!!bit.description);
+    setIsDeadlineEditing(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bit?.id]);
 
-  // ESC closes popup; if icon picker is open, let Radix close it first
   useEffect(() => {
     if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !iconPickerOpen) close();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !iconPickerOpen) close();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -70,19 +98,25 @@ export function BitDetailPopup() {
 
   if (!isOpen) return null;
 
-  // --- Save handlers (blur strategy) ---
-
   async function handleTitleBlur() {
     if (!bit) return;
     const trimmed = localTitle.trim();
-    if (!trimmed) { setLocalTitle(bit.title); return; }
-    if (trimmed !== bit.title) await updateBit(bit.id, { title: trimmed });
+    if (!trimmed) {
+      setLocalTitle(bit.title);
+      return;
+    }
+    if (trimmed !== bit.title) {
+      await updateBit(bit.id, { title: trimmed });
+    }
   }
 
   async function handleDescriptionBlur() {
     if (!bit) return;
     if (localDescription !== bit.description) {
       await updateBit(bit.id, { description: localDescription });
+    }
+    if (!localDescription.trim()) {
+      setIsDescriptionOpen(false);
     }
   }
 
@@ -94,7 +128,9 @@ export function BitDetailPopup() {
   async function handleIconSelect(iconName: string) {
     if (!bit) return;
     setIconPickerOpen(false);
-    if (iconName !== bit.icon) await updateBit(bit.id, { icon: iconName });
+    if (iconName !== bit.icon) {
+      await updateBit(bit.id, { icon: iconName });
+    }
   }
 
   async function handleDateChange(dateStr: string) {
@@ -103,14 +139,20 @@ export function BitDetailPopup() {
       await updateBit(bit.id, { deadline: null, deadlineAllDay: false });
       return;
     }
-    const timeStr = bit.deadlineAllDay ? "00:00" : (toTimeStr(bit.deadline) || "00:00");
-    await updateBit(bit.id, { deadline: new Date(`${dateStr}T${timeStr}`).getTime() });
+    const timeStr = bit.deadlineAllDay
+      ? "00:00"
+      : toTimeStr(bit.deadline) || "00:00";
+    await updateBit(bit.id, {
+      deadline: new Date(`${dateStr}T${timeStr}`).getTime(),
+    });
   }
 
   async function handleTimeChange(timeStr: string) {
     if (!bit) return;
     const dateStr = toDateStr(bit.deadline) || format(new Date(), "yyyy-MM-dd");
-    await updateBit(bit.id, { deadline: new Date(`${dateStr}T${timeStr}`).getTime() });
+    await updateBit(bit.id, {
+      deadline: new Date(`${dateStr}T${timeStr}`).getTime(),
+    });
   }
 
   async function handleAllDayToggle() {
@@ -126,7 +168,9 @@ export function BitDetailPopup() {
 
   async function handleStatusToggle() {
     if (!bit) return;
-    await updateBit(bit.id, { status: bit.status === "complete" ? "active" : "complete" });
+    await updateBit(bit.id, {
+      status: bit.status === "complete" ? "active" : "complete",
+    });
   }
 
   async function handlePromoteToNode() {
@@ -135,14 +179,37 @@ export function BitDetailPopup() {
     close();
   }
 
+  function handleDeadlineEditorBlur(event: FocusEvent<HTMLDivElement>) {
+    if (
+      !(event.relatedTarget instanceof Node) ||
+      !event.currentTarget.contains(event.relatedTarget)
+    ) {
+      setIsDeadlineEditing(false);
+    }
+  }
+
+  function handleDeadlineEditorKeyDown(
+    event: ReactKeyboardEvent<HTMLDivElement>,
+  ) {
+    if (event.key !== "Escape") return;
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDeadlineEditing(false);
+  }
+
   const Icon = bit ? (NODE_ICON_MAP[bit.icon] ?? NODE_ICON_MAP.Box) : null;
   const hasChunks = chunks.length > 0;
   const canPromote = hasChunks && (parentNode === null || parentNode.level < 2);
+  const completedCount = chunks.filter(
+    (chunk) => chunk.status === "complete",
+  ).length;
+  const totalCount = chunks.length;
+  const ringRatio = totalCount > 0 ? completedCount / totalCount : 0;
+  const ringOffset = RING_CIRCUMFERENCE * (1 - ringRatio);
 
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        {/* Backdrop */}
         <motion.div
           aria-hidden="true"
           className="absolute inset-0 bg-background/80 backdrop-blur-sm"
@@ -152,8 +219,6 @@ export function BitDetailPopup() {
           transition={{ duration: 0.2 }}
           onClick={close}
         />
-
-        {/* Popup */}
         <motion.div
           role="dialog"
           aria-modal="true"
@@ -167,198 +232,340 @@ export function BitDetailPopup() {
         >
           {bit ? (
             <ScrollArea className="flex-1">
-              <div className="flex flex-col gap-4 p-5">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3 px-5 pt-5 pb-0">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <Popover
+                      open={iconPickerOpen}
+                      onOpenChange={setIconPickerOpen}
+                    >
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label="Change icon"
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-input bg-background text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+                        >
+                          {Icon ? <Icon className="h-5 w-5" /> : null}
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-2" align="start">
+                        <div className="grid grid-cols-5 gap-1.5">
+                          {NODE_ICON_NAMES.map((name) => {
+                            const PickerIcon = NODE_ICON_MAP[name];
+                            return (
+                              <button
+                                key={name}
+                                type="button"
+                                aria-label={name}
+                                title={name}
+                                className={cn(
+                                  "flex h-9 w-9 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground",
+                                  bit.icon === name &&
+                                    "border-transparent ring-2 ring-primary ring-offset-1",
+                                )}
+                                onClick={() => handleIconSelect(name)}
+                              >
+                                <PickerIcon className="h-4 w-4" />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                    <input
+                      aria-label="Bit title"
+                      className="min-w-0 flex-1 truncate bg-transparent text-lg font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none"
+                      maxLength={200}
+                      onBlur={handleTitleBlur}
+                      onChange={(event) => setLocalTitle(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.currentTarget.blur();
+                        }
+                      }}
+                      placeholder="Untitled"
+                      type="text"
+                      value={localTitle}
+                    />
+                  </div>
+                  <div className="flex flex-shrink-0 items-center gap-1">
+                    <button
+                      type="button"
+                      aria-label={
+                        bit.status === "complete"
+                          ? "Mark as active"
+                          : "Mark as complete"
+                      }
+                      onClick={handleStatusToggle}
+                      className={cn(
+                        "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md transition-colors",
+                        bit.status === "complete"
+                          ? "text-primary hover:bg-accent"
+                          : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                      )}
+                    >
+                      {bit.status === "complete" ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <Circle className="h-4 w-4" />
+                      )}
+                    </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label="More options"
+                          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {canPromote ? (
+                          <>
+                            <DropdownMenuItem onClick={handlePromoteToNode}>
+                              <ArrowUpCircle className="mr-2 h-4 w-4" />
+                              Promote to Node
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        ) : null}
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={handleMoveToTrash}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Move to trash
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
 
-                {/* Header row: icon | title | priority | more */}
-                <div className="flex items-start gap-3">
-                  {/* Icon picker */}
-                  <Popover open={iconPickerOpen} onOpenChange={setIconPickerOpen}>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        aria-label="Change icon"
-                        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-input bg-background text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
-                      >
-                        {Icon && <Icon className="h-5 w-5" />}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-2" align="start">
-                      <div className="grid grid-cols-5 gap-1.5">
-                        {NODE_ICON_NAMES.map((name) => {
-                          const I = NODE_ICON_MAP[name];
-                          return (
-                            <button
-                              key={name}
-                              type="button"
-                              aria-label={name}
-                              title={name}
-                              className={cn(
-                                "flex h-9 w-9 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground",
-                                bit.icon === name && "border-transparent ring-2 ring-primary ring-offset-1",
-                              )}
-                              onClick={() => handleIconSelect(name)}
-                            >
-                              <I className="h-4 w-4" />
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-
-                  {/* Title */}
-                  <input
-                    aria-label="Bit title"
-                    className="min-w-0 flex-1 bg-transparent text-base font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none"
-                    maxLength={200}
-                    onBlur={handleTitleBlur}
-                    onChange={(e) => setLocalTitle(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
-                    placeholder="Untitled"
-                    type="text"
-                    value={localTitle}
-                  />
-
-                  {/* Priority toggle */}
+                <div className="flex flex-wrap items-center gap-2 px-5 pt-3 pb-0">
                   <button
                     type="button"
                     aria-label={`Priority: ${bit.priority ?? "none"}. Click to cycle.`}
                     onClick={handlePriorityToggle}
                     className={cn(
-                      "inline-flex flex-shrink-0 items-center rounded-full px-[7px] py-[2px] text-[10px] font-semibold uppercase tracking-[0.05em] transition-colors",
-                      bit.priority === "high" && "bg-priority-high-bg text-priority-high",
-                      bit.priority === "mid" && "bg-priority-mid-bg text-priority-mid",
-                      bit.priority === "low" && "bg-priority-low-bg text-priority-low",
-                      !bit.priority && "bg-secondary text-muted-foreground hover:bg-accent",
+                      "rounded-full px-[7px] py-[2px] text-[10px] font-semibold uppercase tracking-[0.05em] transition-colors",
+                      bit.priority === "high" &&
+                        "bg-priority-high-bg text-priority-high",
+                      bit.priority === "mid" &&
+                        "bg-priority-mid-bg text-priority-mid",
+                      bit.priority === "low" &&
+                        "bg-priority-low-bg text-priority-low",
+                      !bit.priority &&
+                        "bg-secondary text-muted-foreground hover:bg-accent",
                     )}
                   >
                     {bit.priority ? PRIORITY_LABELS[bit.priority] : "—"}
                   </button>
 
-                  {/* Status toggle */}
-                  <button
-                    type="button"
-                    aria-label={bit.status === "complete" ? "Mark as active" : "Mark as complete"}
-                    onClick={handleStatusToggle}
-                    className={cn(
-                      "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md transition-colors",
-                      bit.status === "complete"
-                        ? "text-primary hover:bg-accent"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
-                    )}
-                  >
-                    {bit.status === "complete" ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : (
-                      <Circle className="h-4 w-4" />
-                    )}
-                  </button>
-
-                  {/* More menu */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                  {isDeadlineEditing ? (
+                    <div
+                      className="flex items-center gap-2"
+                      onBlur={handleDeadlineEditorBlur}
+                      onKeyDown={handleDeadlineEditorKeyDown}
+                    >
+                      <Calendar className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                      <input
+                        aria-label="Deadline date"
+                        className="rounded border border-input bg-background px-2 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        onChange={(event) =>
+                          void handleDateChange(event.target.value)
+                        }
+                        type="date"
+                        value={toDateStr(bit.deadline)}
+                      />
+                      {!bit.deadlineAllDay ? (
+                        <input
+                          aria-label="Deadline time"
+                          className="rounded border border-input bg-background px-2 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                          onChange={(event) =>
+                            void handleTimeChange(event.target.value)
+                          }
+                          type="time"
+                          value={toTimeStr(bit.deadline)}
+                        />
+                      ) : null}
                       <button
                         type="button"
-                        aria-label="More options"
-                        className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        onClick={() => void handleAllDayToggle()}
+                        className={cn(
+                          "rounded px-2 py-0.5 text-xs font-medium transition-colors",
+                          bit.deadlineAllDay
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-muted-foreground hover:bg-accent",
+                        )}
                       >
-                        <MoreHorizontal className="h-4 w-4" />
+                        All day
                       </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {canPromote && (
-                        <>
-                          <DropdownMenuItem onClick={handlePromoteToNode}>
-                            <ArrowUpCircle className="mr-2 h-4 w-4" />
-                            Promote to Node
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                        </>
-                      )}
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={handleMoveToTrash}
+                    </div>
+                  ) : bit.deadline ? (
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        aria-label="Edit deadline date"
+                        className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        onClick={() => setIsDeadlineEditing(true)}
                       >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Move to trash
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-
-                {/* Deadline row */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <Calendar className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
-                  <input
-                    aria-label="Deadline date"
-                    className="rounded border border-input bg-background px-2 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                    onChange={(e) => handleDateChange(e.target.value)}
-                    type="date"
-                    value={toDateStr(bit.deadline)}
-                  />
-                  {bit.deadline && !bit.deadlineAllDay ? (
-                    <input
-                      aria-label="Deadline time"
-                      className="rounded border border-input bg-background px-2 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                      onChange={(e) => handleTimeChange(e.target.value)}
-                      type="time"
-                      value={toTimeStr(bit.deadline)}
-                    />
-                  ) : null}
-                  {bit.deadline ? (
+                        <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
+                        {format(new Date(bit.deadline), "MMM d")}
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Clear deadline"
+                        className="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
+                        onClick={() => void handleDateChange("")}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                      {!bit.deadlineAllDay ? (
+                        <button
+                          type="button"
+                          aria-label="Edit deadline time"
+                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                          onClick={() => setIsDeadlineEditing(true)}
+                        >
+                          <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+                          {format(new Date(bit.deadline), "h:mm a")}
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        aria-label={
+                          bit.deadlineAllDay ? "All day on" : "All day off"
+                        }
+                        className={cn(
+                          "rounded px-2 py-0.5 text-xs font-medium transition-colors",
+                          bit.deadlineAllDay
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-muted-foreground hover:bg-accent",
+                        )}
+                        onClick={() => void handleAllDayToggle()}
+                      >
+                        ALL
+                      </button>
+                    </div>
+                  ) : (
                     <button
                       type="button"
-                      onClick={handleAllDayToggle}
-                      className={cn(
-                        "rounded px-2 py-0.5 text-xs font-medium transition-colors",
-                        bit.deadlineAllDay
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-muted-foreground hover:bg-accent",
-                      )}
+                      className="flex items-center gap-1 cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground"
+                      onClick={() => setIsDeadlineEditing(true)}
                     >
-                      All day
+                      <Calendar className="h-3.5 w-3.5" />
+                      Add date
                     </button>
+                  )}
+                </div>
+
+                <div className="px-5 pt-3">
+                  <div
+                    data-testid="description-shell"
+                    className="relative min-h-[60px]"
+                  >
+                    {isDescriptionOpen ? (
+                      <textarea
+                        ref={descriptionRef}
+                        aria-label="Description"
+                        className="absolute inset-0 block min-h-[60px] w-full appearance-none resize-none border-0 bg-transparent p-0 text-sm leading-5 text-foreground placeholder:text-muted-foreground focus:outline-none"
+                        onBlur={() => void handleDescriptionBlur()}
+                        onChange={(event) =>
+                          setLocalDescription(event.target.value)
+                        }
+                        placeholder="Add a description"
+                        value={localDescription}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        className="absolute inset-0 flex min-h-[60px] w-full cursor-text appearance-none items-start border-0 bg-transparent p-0 text-left text-sm leading-5 text-muted-foreground transition-colors hover:text-foreground"
+                        onClick={() => {
+                          setIsDescriptionOpen(true);
+                          queueMicrotask(() => descriptionRef.current?.focus());
+                        }}
+                      >
+                        Add description
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between px-5 pt-3 pb-0">
+                  <button
+                    type="button"
+                    className="flex items-center gap-1.5 rounded-md pl-0 pr-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    onClick={() => chunkPoolRef.current?.startAdding()}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    New
+                  </button>
+                  {totalCount > 0 ? (
+                    <div
+                      aria-label={`${completedCount} of ${totalCount} steps complete`}
+                      className="relative h-10 w-10 flex-shrink-0"
+                      role="img"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        className="-rotate-90 h-full w-full"
+                        viewBox="0 0 40 40"
+                      >
+                        <circle
+                          cx="20"
+                          cy="20"
+                          r={RING_RADIUS}
+                          fill="none"
+                          stroke="hsl(var(--secondary))"
+                          strokeWidth="3"
+                        />
+                        <circle
+                          cx="20"
+                          cy="20"
+                          r={RING_RADIUS}
+                          fill="none"
+                          stroke="hsl(var(--primary))"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeDasharray={RING_CIRCUMFERENCE}
+                          strokeDashoffset={ringOffset}
+                          className="transition-all duration-300"
+                        />
+                      </svg>
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                        <span className="text-[10px] leading-none font-medium text-muted-foreground">
+                          {Math.round(ringRatio * 100)}%
+                        </span>
+                      </div>
+                    </div>
                   ) : null}
                 </div>
 
-                {/* Description */}
-                <textarea
-                  aria-label="Description"
-                  className="min-h-[80px] w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-                  onBlur={handleDescriptionBlur}
-                  onChange={(e) => setLocalDescription(e.target.value)}
-                  placeholder="Add a description…"
-                  rows={3}
-                  value={localDescription}
-                />
-
-                {/* mtime */}
-                <p className="text-xs text-muted-foreground">
-                  Last updated:{" "}
-                  {formatDistanceToNow(new Date(bit.mtime), { addSuffix: true })}
-                </p>
-
-                <div className="border-t border-border" />
-
-                {/* Chunk pool (unscheduled steps) */}
-                <ChunkPool chunks={chunks} bitId={bit.id} />
-
-                {/* Timeline (scheduled / timed steps) */}
-                {chunks.some((c) => c.time !== null) ? (
-                  <ChunkTimeline
-                    chunks={chunks}
-                    bitDeadline={bit.deadline}
-                    bitDeadlineAllDay={bit.deadlineAllDay}
-                  />
-                ) : null}
-
-                {/* Empty state visual — shown when no chunks exist yet */}
-                {!hasChunks ? (
-                  <div className="flex flex-col items-center gap-1 py-2">
-                    <div className="h-8 w-0.5 bg-border" />
-                    <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 bg-muted" />
+                <div className="px-5 pt-3">
+                  <div>
+                    <ChunkPool
+                      ref={chunkPoolRef}
+                      chunks={chunks}
+                      bitId={bit.id}
+                    />
+                    {bit.deadline ? (
+                      <div className="flex items-center gap-3 pb-5 pt-1">
+                        <Clock className="relative z-10 h-4 w-4 flex-shrink-0 bg-popover text-destructive" />
+                        <span className="text-sm text-destructive">
+                          {format(
+                            new Date(bit.deadline),
+                            bit.deadlineAllDay
+                              ? "MMM d, yyyy"
+                              : "MMM d, yyyy h:mm a",
+                          )}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="pb-5" />
+                    )}
                   </div>
-                ) : null}
+                </div>
               </div>
             </ScrollArea>
           ) : (

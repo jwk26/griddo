@@ -171,6 +171,18 @@ When SPEC or CLAUDE.md architecture rules change, update this checklist to match
 
 ---
 
+## Phase 8 Verification Note
+
+Phase 8 is a pilot for surface recipe-based implementation fidelity. At closing:
+- Take screenshot(s) of the Bit Detail surface in light and dark mode
+- Compare against `docs/DESIGN_TOKENS.md` § Surface Recipes → Bit Detail Surface
+- Compare against `references/bitdetail0.png`
+- Fix clear, meaningful deviations only — do not iterate beyond one correction pass
+- Record the implementation/verification findings in `docs/reviews/phase-8-workflow-pilot-record.md`
+- Before considering Phase 8 fully closed, write a workflow update recommendation based on the pilot evidence
+
+---
+
 ## Origin
 
 This standard was developed from a comprehensive omission audit of the GridDO project (2026-03-26). The audit identified 20 items across five tiers, including plan omissions, false completions, and implementation deviations. See `docs/OMISSION_AUDIT.md` for the full remediation record.

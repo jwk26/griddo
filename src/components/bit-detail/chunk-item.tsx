@@ -3,19 +3,20 @@
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { format } from "date-fns";
-import { GripVertical, Trash2 } from "lucide-react";
+import { ArrowUpDown, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Chunk } from "@/types";
 
 type ChunkItemProps = {
   chunk: Chunk;
   isDraggable: boolean;
+  showConnector: boolean;
   onToggle: (chunk: Chunk) => void;
   onEdit: (chunkId: string, title: string) => Promise<void>;
   onDelete: (chunkId: string) => void;
 };
 
-export function ChunkItem({ chunk, isDraggable, onToggle, onEdit, onDelete }: ChunkItemProps) {
+export function ChunkItem({ chunk, isDraggable, showConnector, onToggle, onEdit, onDelete }: ChunkItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(chunk.title);
 
@@ -46,52 +47,45 @@ export function ChunkItem({ chunk, isDraggable, onToggle, onEdit, onDelete }: Ch
   }
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="relative flex items-start gap-3 pb-6"
-    >
-      {isDraggable ? (
-        <button
-          type="button"
-          aria-label="Drag to reorder"
-          className="absolute -left-6 top-0.5 flex h-5 w-5 cursor-grab items-center justify-center text-muted-foreground/50 hover:text-muted-foreground active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="h-3.5 w-3.5" />
-        </button>
-      ) : null}
+    <div ref={setNodeRef} style={style} className="relative flex items-start gap-3">
+      {/* Left rail: circle node + optional connector segment to next node */}
+      <div className="flex w-4 flex-col items-center self-stretch">
+        <div
+          className={cn(
+            "mt-1 h-3.5 w-3.5 flex-shrink-0 cursor-pointer rounded-full transition-colors",
+            isComplete ? "bg-primary" : "border-2 border-muted-foreground/40",
+          )}
+          role="checkbox"
+          aria-checked={isComplete}
+          aria-label={`Mark "${chunk.title}" as ${isComplete ? "incomplete" : "complete"}`}
+          tabIndex={0}
+          onClick={() => onToggle(chunk)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              onToggle(chunk);
+            }
+          }}
+        />
+        {showConnector ? (
+          <div className="mt-1 w-0.5 flex-1 bg-border" />
+        ) : null}
+      </div>
 
-      <div
-        className={cn(
-          "relative z-10 mt-1.5 h-3 w-3 flex-shrink-0 cursor-pointer rounded-full border-2 border-background transition-colors",
-          isComplete ? "bg-primary" : "bg-muted-foreground/30",
-        )}
-        role="checkbox"
-        aria-checked={isComplete}
-        aria-label={`Mark "${chunk.title}" as ${isComplete ? "incomplete" : "complete"}`}
-        tabIndex={0}
-        onClick={() => onToggle(chunk)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onToggle(chunk);
-          }
-        }}
-      />
-
-      <div className="flex-1 rounded-md border border-border bg-background px-3 py-2">
+      {/* Content */}
+      <div className="min-w-0 flex-1 pb-5">
         {isEditing ? (
           <input
             autoFocus
-            className="w-full bg-transparent text-sm text-foreground focus:outline-none"
+            className="w-full appearance-none bg-transparent text-sm leading-5 text-foreground focus:outline-none"
             maxLength={200}
-            onBlur={handleBlur}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") e.currentTarget.blur();
-              if (e.key === "Escape") {
+            onBlur={() => void handleBlur()}
+            onChange={(event) => setEditValue(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.currentTarget.blur();
+              }
+              if (event.key === "Escape") {
                 setEditValue(chunk.title);
                 setIsEditing(false);
               }
@@ -101,7 +95,7 @@ export function ChunkItem({ chunk, isDraggable, onToggle, onEdit, onDelete }: Ch
         ) : (
           <p
             className={cn(
-              "cursor-text text-sm",
+              "cursor-text text-sm leading-5",
               isComplete ? "line-through text-muted-foreground" : "text-foreground",
             )}
             onClick={() => {
@@ -112,19 +106,31 @@ export function ChunkItem({ chunk, isDraggable, onToggle, onEdit, onDelete }: Ch
             {chunk.title}
           </p>
         )}
-        {timeLabel ? (
-          <p className="mt-0.5 text-xs text-muted-foreground">{timeLabel}</p>
-        ) : null}
+        {timeLabel ? <p className="mt-0.5 text-xs text-muted-foreground">{timeLabel}</p> : null}
       </div>
 
-      <button
-        type="button"
-        aria-label={`Delete "${chunk.title}"`}
-        className="mt-2 flex-shrink-0 text-muted-foreground/50 transition-colors hover:text-destructive"
-        onClick={() => onDelete(chunk.id)}
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-      </button>
+      {/* Right-side actions — always visible */}
+      <div className="flex flex-shrink-0 items-start gap-0.5 pt-0.5 pb-5">
+        {isDraggable ? (
+          <button
+            type="button"
+            aria-label="Drag to reorder"
+            className="flex h-5 w-5 cursor-grab items-center justify-center rounded text-muted-foreground/50 transition-colors hover:text-muted-foreground active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+          >
+            <ArrowUpDown className="h-3.5 w-3.5" />
+          </button>
+        ) : null}
+        <button
+          type="button"
+          aria-label={`Delete "${chunk.title}"`}
+          className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:text-destructive"
+          onClick={() => onDelete(chunk.id)}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
     </div>
   );
 }
