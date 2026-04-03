@@ -327,11 +327,15 @@ Both require user input, but they are different conversations. Skipping question
 |------|--------|-----|--------|
 | 1. Visual Extraction | Read reference, extract layout, elements, spacing, hierarchy | Agent | Element inventory |
 | 2. Current Surface Analysis | Read the existing component code | Agent | Current surface inventory |
-| 3. Delta Analysis + Retain/Remove Gate | Categorize elements, user decides what stays | User decides | Retained set |
+| 3. Delta Analysis + Retain/Remove Gate | Categorize elements (new / preserved / restructured / absent entirely), user decides what stays | User decides | Retained set |
 | 4. Reintegration Proposal | For each retained element: placement, rationale, visibility, fidelity impact | Agent proposes, User approves | Approved placements |
-| 5. Output | Combine extraction + approved reintegrations into surface recipe | Agent | Recipe for implementation |
+| 5. Durable Recipe | Write approved recipe to `docs/recipes/<surface>-recipe.md` | Agent | Durable recipe file |
+| 6. Canonical Promotion | Promote recipe into `docs/DESIGN_TOKENS.md` (Surface Recipes section) and update `docs/EXECUTION_PLAN.md` task specs to reference the recipe | Agent | Updated canonical docs |
+| 7. Cascade Check | Verify no conflicts between recipe and existing tokens, layouts, or component ownership | Agent | Conflict report (if any) |
 
 Step 4 is the critical addition. For each retained control, the agent proposes where it goes, why, how visible it should be, and whether the placement preserves or weakens the reference's design fidelity. The user approves before the recipe is written.
+
+Steps 5–7 were added based on Phase 8 pilot evidence. Writing the recipe durably before canonical promotion prevents conversation-only recipes from being lost across sessions. The cascade check catches conflicts between the new recipe and existing design tokens or component ownership.
 
 ### Relationship to Other Stages
 

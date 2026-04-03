@@ -1,6 +1,6 @@
 # Bit Detail Surface — Gap Review
 
-> Reference: `./chunk_timeline.png`
+> Reference: `references/bitdetail0.png`
 > Baseline: Phase 7 (`775ebcc`) — `src/components/bit-detail/`
 > Date: 2026-03-31
 

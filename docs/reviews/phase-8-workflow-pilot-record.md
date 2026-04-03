@@ -3,7 +3,7 @@
 > **Status:** Active
 > **Phase:** 8
 > **Scope:** Bit Detail Surface only
-> **Primary visual reference:** `./chunk_timeline.png`
+> **Primary visual reference:** `references/bitdetail0.png`
 > **Related docs:** `docs/EXECUTION_PLAN.md` Phase 8, `docs/DESIGN_TOKENS.md` → Surface Recipes → Bit Detail Surface, `docs/reviews/phase-8-bit-detail-gap-review.md`, `docs/PLANNING_STANDARD.md` → Phase 8 Verification Note
 
 This document exists to prevent Phase 8 from drifting into "general polish work" or losing its actual purpose during long implementation, session compaction, or handoff between agents/sessions.
@@ -17,7 +17,7 @@ Treat this as the canonical memory document for the Phase 8 pilot.
 Phase 8 has two simultaneous purposes:
 
 1. **Product purpose**
-   - Redesign the Bit Detail surface so it moves materially closer to `./chunk_timeline.png`.
+   - Redesign the Bit Detail surface so it moves materially closer to `references/bitdetail0.png`.
    - Improve visual hierarchy, chunk presentation, header composition, deadline presentation, and overall layout fidelity.
 
 2. **Workflow purpose**
@@ -33,7 +33,7 @@ Phase 8 is **not** a full workflow rewrite and **not** a product-wide polish pha
 If the project gets long, compacted, or handed off, the following points must stay true:
 
 - Phase 8 is **Bit Detail only**.
-- The reference target is **`./chunk_timeline.png`**.
+- The reference target is **`references/bitdetail0.png`**.
 - The workflow experiment is **recipe-driven implementation fidelity**, not generic "better docs".
 - The pilot is testing whether:
   - a geometric surface recipe reduces implementation ambiguity,
@@ -70,7 +70,7 @@ When the Bit Detail surface is described in a geometric recipe inside `docs/DESI
 
 ### H2. Recipe reference improves fidelity
 
-When Phase 8 tasks explicitly reference the Bit Detail Surface Recipe, the implemented UI should land closer to `./chunk_timeline.png` than comparable prior work without such a recipe.
+When Phase 8 tasks explicitly reference the Bit Detail Surface Recipe, the implemented UI should land closer to `references/bitdetail0.png` than comparable prior work without such a recipe.
 
 ### H3. One closing review is enough
 
@@ -97,7 +97,7 @@ The pilot succeeds only if it also produces usable workflow evidence.
 
 ### Product success
 
-- The final Bit Detail surface is visibly closer to `./chunk_timeline.png`.
+- The final Bit Detail surface is visibly closer to `references/bitdetail0.png`.
 - The header, chunk area, and deadline marker show clear improvement in hierarchy and composition.
 - The redesign does not break existing core Bit Detail interactions.
 
