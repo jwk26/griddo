@@ -22,6 +22,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { ArrowUpDown, Trash2 } from "lucide-react";
 import { ChunkItem } from "@/components/bit-detail/chunk-item";
 import { useChunkActions } from "@/hooks/use-chunk-actions";
 import type { Chunk } from "@/types";
@@ -132,7 +133,36 @@ export const ChunkPool = forwardRef<ChunkPoolHandle, ChunkPoolProps>(function Ch
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col">
+      {allChunks.length === 0 && !isAdding ? (
+        <div
+          role="button"
+          tabIndex={0}
+          className="flex cursor-pointer items-start gap-3"
+          onClick={startAdding}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              startAdding();
+            }
+          }}
+        >
+          <div className="flex w-4 flex-col items-center">
+            <div className="mt-1 h-3.5 w-3.5 flex-shrink-0 rounded-full border-2 border-muted-foreground/40" />
+          </div>
+          <div className="min-w-0 flex-1 pb-5">
+            <p className="text-sm text-muted-foreground">Add a step</p>
+          </div>
+          <div className="flex flex-shrink-0 items-start gap-0.5 pt-0.5 pb-5">
+            <span aria-hidden="true" className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50">
+              <ArrowUpDown className="h-3.5 w-3.5" />
+            </span>
+            <span aria-hidden="true" className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50">
+              <Trash2 className="h-3.5 w-3.5" />
+            </span>
+          </div>
+        </div>
+      ) : null}
       {allChunks.length > 0 ? (
         <DndContext
           sensors={sensors}
@@ -159,8 +189,10 @@ export const ChunkPool = forwardRef<ChunkPoolHandle, ChunkPoolProps>(function Ch
       ) : null}
 
       {isAdding ? (
-        <div className="flex items-center gap-3 pb-5">
-          <div className="mt-1 h-3.5 w-3.5 flex-shrink-0 rounded-full border-2 border-muted-foreground/30 bg-transparent" />
+        <div className="flex items-start gap-3 pb-5">
+          <div className="flex w-4 flex-col items-center">
+            <div className="mt-1 h-3.5 w-3.5 flex-shrink-0 rounded-full border-2 border-muted-foreground/30 bg-transparent" />
+          </div>
           <input
             ref={inputRef}
             autoFocus

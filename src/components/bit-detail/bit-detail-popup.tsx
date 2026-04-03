@@ -433,7 +433,7 @@ export function BitDetailPopup() {
                   ) : (
                     <button
                       type="button"
-                      className="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground"
+                      className="flex min-h-[60px] w-full cursor-text items-start text-sm text-muted-foreground transition-colors hover:text-foreground"
                       onClick={() => setIsDescriptionOpen(true)}
                     >
                       Add description
@@ -492,22 +492,8 @@ export function BitDetailPopup() {
                 </div>
 
                 <div className="px-5 pt-3">
-                  <div className="relative">
-                    {chunks.length > 0 ? (
-                      <div
-                        className={cn(
-                          "absolute left-[7px] w-0.5 bg-border",
-                          bit.deadline ? "top-2 bottom-0" : "top-2 bottom-2",
-                        )}
-                      />
-                    ) : null}
+                  <div>
                     <ChunkPool ref={chunkPoolRef} chunks={chunks} bitId={bit.id} />
-                    {chunks.length === 0 ? (
-                      <div className="flex flex-col items-start gap-1 py-2">
-                        <div className="h-8 w-0.5 bg-border" />
-                        <div className="h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/30 bg-popover" />
-                      </div>
-                    ) : null}
                     {bit.deadline ? (
                       <div className="flex items-center gap-3 pb-5 pt-1">
                         <Clock className="relative z-10 h-4 w-4 flex-shrink-0 bg-popover text-destructive" />

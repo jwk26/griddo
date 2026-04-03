@@ -77,7 +77,7 @@ export function ChunkItem({ chunk, isDraggable, showConnector, onToggle, onEdit,
         {isEditing ? (
           <input
             autoFocus
-            className="w-full bg-transparent text-sm text-foreground focus:outline-none"
+            className="w-full appearance-none bg-transparent text-sm leading-5 text-foreground focus:outline-none"
             maxLength={200}
             onBlur={() => void handleBlur()}
             onChange={(event) => setEditValue(event.target.value)}
@@ -95,7 +95,7 @@ export function ChunkItem({ chunk, isDraggable, showConnector, onToggle, onEdit,
         ) : (
           <p
             className={cn(
-              "cursor-text text-sm",
+              "cursor-text text-sm leading-5",
               isComplete ? "line-through text-muted-foreground" : "text-foreground",
             )}
             onClick={() => {
