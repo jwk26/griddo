@@ -132,16 +132,18 @@ describe("BitDetailPopup", () => {
     expect(updateBitMock).not.toHaveBeenCalled();
   });
 
-  it("shows the completion ring in the header instead of the timeline step counter", () => {
+  it("shows the completion ring in the steps header row instead of the timeline step counter", () => {
     mockBitDetail(createBit(), [
       createChunk({
         id: "chunk-1",
+        title: "Timed step",
         status: "complete",
         time: new Date(2026, 3, 10, 9, 0).getTime(),
         order: 0,
       }),
       createChunk({
         id: "chunk-2",
+        title: "Untimed step",
         status: "incomplete",
         time: null,
         order: 1,
@@ -153,6 +155,8 @@ describe("BitDetailPopup", () => {
     expect(screen.getByRole("img", { name: "1 of 2 steps complete" })).toBeInTheDocument();
     expect(screen.getByText("50%")).toBeInTheDocument();
     expect(screen.queryByText("1/2 steps")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Timed step")).toHaveLength(1);
+    expect(screen.getAllByText("Untimed step")).toHaveLength(1);
   });
 
   it("opens deadline editing from the formatted label and escapes without closing the popup", () => {
@@ -160,7 +164,7 @@ describe("BitDetailPopup", () => {
 
     render(<BitDetailPopup />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Apr 10, 9:30 AM" }));
+    fireEvent.click(screen.getByRole("button", { name: "Edit deadline date" }));
 
     const dateInput = screen.getByLabelText("Deadline date");
     expect(dateInput).toBeInTheDocument();
@@ -169,6 +173,6 @@ describe("BitDetailPopup", () => {
 
     expect(closeMock).not.toHaveBeenCalled();
     expect(screen.queryByLabelText("Deadline date")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Apr 10, 9:30 AM" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edit deadline date" })).toBeInTheDocument();
   });
 });

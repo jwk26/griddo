@@ -1,6 +1,12 @@
 "use client";
 
-import { useRef, useState, type KeyboardEvent } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import {
   closestCenter,
   DndContext,
@@ -16,7 +22,6 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus } from "lucide-react";
 import { ChunkItem } from "@/components/bit-detail/chunk-item";
 import { useChunkActions } from "@/hooks/use-chunk-actions";
 import type { Chunk } from "@/types";
@@ -24,10 +29,16 @@ import type { Chunk } from "@/types";
 type ChunkPoolProps = {
   chunks: Chunk[];
   bitId: string;
-  onAddStep?: () => void;
 };
 
-export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
+export type ChunkPoolHandle = {
+  startAdding: () => void;
+};
+
+export const ChunkPool = forwardRef<ChunkPoolHandle, ChunkPoolProps>(function ChunkPool(
+  { chunks, bitId },
+  ref,
+) {
   const { createChunk, updateChunk, deleteChunk } = useChunkActions();
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -39,7 +50,21 @@ export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
   const isSubmittingRef = useRef(false);
   const isComposingRef = useRef(false);
 
-  const poolChunks = chunks.filter((chunk) => chunk.time === null).sort((a, b) => a.order - b.order);
+  const allChunks = chunks.slice().sort((a, b) => a.order - b.order);
+
+  function startAdding() {
+    if (isAdding) return;
+    setIsAdding(true);
+    queueMicrotask(() => inputRef.current?.focus());
+  }
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      startAdding,
+    }),
+    [isAdding],
+  );
 
   async function handleAdd() {
     if (isSubmittingRef.current) return;
@@ -61,7 +86,6 @@ export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
       });
       setNewTitle("");
       setIsAdding(false);
-      onAddStep?.();
     } finally {
       isSubmittingRef.current = false;
     }
@@ -98,28 +122,28 @@ export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const ids = poolChunks.map((chunk) => chunk.id);
+    const ids = allChunks.map((chunk) => chunk.id);
     const oldIndex = ids.indexOf(active.id as string);
     const newIndex = ids.indexOf(over.id as string);
     if (oldIndex === -1 || newIndex === -1) return;
 
-    const reordered = arrayMove(poolChunks, oldIndex, newIndex);
+    const reordered = arrayMove(allChunks, oldIndex, newIndex);
     await Promise.all(reordered.map((chunk, index) => updateChunk(chunk.id, { order: index })));
   }
 
   return (
     <div className="flex flex-col gap-2">
-      {poolChunks.length > 0 ? (
+      {allChunks.length > 0 ? (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={poolChunks.map((chunk) => chunk.id)}
+            items={allChunks.map((chunk) => chunk.id)}
             strategy={verticalListSortingStrategy}
           >
-            {poolChunks.map((chunk) => (
+            {allChunks.map((chunk) => (
               <ChunkItem
                 key={chunk.id}
                 chunk={chunk}
@@ -155,19 +179,9 @@ export function ChunkPool({ chunks, bitId, onAddStep }: ChunkPoolProps) {
             value={newTitle}
           />
         </div>
-      ) : (
-        <button
-          type="button"
-          className="flex items-center gap-1.5 self-start rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          onClick={() => {
-            setIsAdding(true);
-            queueMicrotask(() => inputRef.current?.focus());
-          }}
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Add a step
-        </button>
-      )}
+      ) : null}
     </div>
   );
-}
+});
+
+ChunkPool.displayName = "ChunkPool";

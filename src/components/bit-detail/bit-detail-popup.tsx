@@ -1,11 +1,26 @@
 "use client";
 
-import { useEffect, useState, type FocusEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { format } from "date-fns";
-import { ArrowUpCircle, Calendar, CheckCircle2, Circle, MoreHorizontal, Trash2 } from "lucide-react";
-import { ChunkPool } from "@/components/bit-detail/chunk-pool";
-import { ChunkTimeline } from "@/components/bit-detail/chunk-timeline";
+import {
+  ArrowUpCircle,
+  Calendar,
+  CheckCircle2,
+  Circle,
+  Clock,
+  MoreHorizontal,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
+import { ChunkPool, type ChunkPoolHandle } from "@/components/bit-detail/chunk-pool";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +68,7 @@ export function BitDetailPopup() {
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const [isDeadlineEditing, setIsDeadlineEditing] = useState(false);
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+  const chunkPoolRef = useRef<ChunkPoolHandle>(null);
 
   useEffect(() => {
     if (!bit) return;
@@ -246,45 +262,6 @@ export function BitDetailPopup() {
                     />
                   </div>
                   <div className="flex flex-shrink-0 items-center gap-1">
-                    {totalCount > 0 ? (
-                      <div
-                        aria-label={`${completedCount} of ${totalCount} steps complete`}
-                        className="relative h-10 w-10 flex-shrink-0"
-                        role="img"
-                      >
-                        <svg
-                          aria-hidden="true"
-                          className="-rotate-90 h-full w-full"
-                          viewBox="0 0 40 40"
-                        >
-                          <circle
-                            cx="20"
-                            cy="20"
-                            r={RING_RADIUS}
-                            fill="none"
-                            stroke="hsl(var(--secondary))"
-                            strokeWidth="3"
-                          />
-                          <circle
-                            cx="20"
-                            cy="20"
-                            r={RING_RADIUS}
-                            fill="none"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                            strokeDasharray={RING_CIRCUMFERENCE}
-                            strokeDashoffset={ringOffset}
-                            className="transition-all duration-300"
-                          />
-                        </svg>
-                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                          <span className="text-xs leading-none font-medium text-muted-foreground">
-                            {Math.round(ringRatio * 100)}%
-                          </span>
-                        </div>
-                      </div>
-                    ) : null}
                     <button
                       type="button"
                       aria-label={bit.status === "complete" ? "Mark as active" : "Mark as complete"}
@@ -387,16 +364,49 @@ export function BitDetailPopup() {
                       </button>
                     </div>
                   ) : bit.deadline ? (
-                    <>
-                      <Calendar className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                    <div className="flex items-center gap-1.5">
                       <button
                         type="button"
-                        className="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground"
+                        aria-label="Edit deadline date"
+                        className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                         onClick={() => setIsDeadlineEditing(true)}
                       >
-                        {format(new Date(bit.deadline), bit.deadlineAllDay ? "MMM d" : "MMM d, h:mm a")}
+                        <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
+                        {format(new Date(bit.deadline), "MMM d")}
                       </button>
-                    </>
+                      <button
+                        type="button"
+                        aria-label="Clear deadline"
+                        className="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
+                        onClick={() => void handleDateChange("")}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                      {!bit.deadlineAllDay ? (
+                        <button
+                          type="button"
+                          aria-label="Edit deadline time"
+                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                          onClick={() => setIsDeadlineEditing(true)}
+                        >
+                          <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+                          {format(new Date(bit.deadline), "h:mm a")}
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        aria-label={bit.deadlineAllDay ? "All day on" : "All day off"}
+                        className={cn(
+                          "rounded px-2 py-0.5 text-xs font-medium transition-colors",
+                          bit.deadlineAllDay
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-muted-foreground hover:bg-accent",
+                        )}
+                        onClick={() => void handleAllDayToggle()}
+                      >
+                        ALL
+                      </button>
+                    </div>
                   ) : (
                     <button
                       type="button"
@@ -404,7 +414,7 @@ export function BitDetailPopup() {
                       onClick={() => setIsDeadlineEditing(true)}
                     >
                       <Calendar className="h-3.5 w-3.5" />
-                      Add deadline
+                      Add date
                     </button>
                   )}
                 </div>
@@ -431,17 +441,62 @@ export function BitDetailPopup() {
                   )}
                 </div>
 
-                <div className="relative px-5 pt-3 pb-5">
+                <div className="flex items-center justify-between px-5 pt-3 pb-0">
+                  <button
+                    type="button"
+                    className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    onClick={() => chunkPoolRef.current?.startAdding()}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add a step
+                  </button>
+                  {totalCount > 0 ? (
+                    <div
+                      aria-label={`${completedCount} of ${totalCount} steps complete`}
+                      className="relative h-10 w-10 flex-shrink-0"
+                      role="img"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        className="-rotate-90 h-full w-full"
+                        viewBox="0 0 40 40"
+                      >
+                        <circle
+                          cx="20"
+                          cy="20"
+                          r={RING_RADIUS}
+                          fill="none"
+                          stroke="hsl(var(--secondary))"
+                          strokeWidth="3"
+                        />
+                        <circle
+                          cx="20"
+                          cy="20"
+                          r={RING_RADIUS}
+                          fill="none"
+                          stroke="hsl(var(--primary))"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeDasharray={RING_CIRCUMFERENCE}
+                          strokeDashoffset={ringOffset}
+                          className="transition-all duration-300"
+                        />
+                      </svg>
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                        <span className="text-[10px] leading-none font-medium text-muted-foreground">
+                          {Math.round(ringRatio * 100)}%
+                        </span>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="relative px-5 pt-2 pb-5">
                   <div className="relative pl-6">
-                    <div className="absolute top-2 bottom-2 left-[31px] w-0.5 bg-border" />
-                    <ChunkPool chunks={chunks} bitId={bit.id} />
-                    {chunks.some((chunk) => chunk.time !== null) ? (
-                      <ChunkTimeline
-                        chunks={chunks}
-                        bitDeadline={bit.deadline}
-                        bitDeadlineAllDay={bit.deadlineAllDay}
-                      />
+                    {chunks.length > 0 ? (
+                      <div className="absolute top-2 bottom-2 left-[31px] w-0.5 bg-border" />
                     ) : null}
+                    <ChunkPool ref={chunkPoolRef} chunks={chunks} bitId={bit.id} />
                     {chunks.length === 0 ? (
                       <div className="flex flex-col items-start gap-1 py-2">
                         <div className="h-8 w-0.5 bg-border" />
@@ -450,6 +505,18 @@ export function BitDetailPopup() {
                     ) : null}
                   </div>
                 </div>
+
+                {bit.deadline ? (
+                  <div className="flex items-center gap-2 px-5 pb-5">
+                    <Clock className="h-4 w-4 flex-shrink-0 text-destructive" />
+                    <span className="text-sm text-destructive">
+                      {format(
+                        new Date(bit.deadline),
+                        bit.deadlineAllDay ? "MMM d, yyyy" : "MMM d, yyyy h:mm a",
+                      )}
+                    </span>
+                  </div>
+                ) : null}
               </div>
             </ScrollArea>
           ) : (
