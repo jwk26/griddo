@@ -20,7 +20,10 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { ChunkPool, type ChunkPoolHandle } from "@/components/bit-detail/chunk-pool";
+import {
+  ChunkPool,
+  type ChunkPoolHandle,
+} from "@/components/bit-detail/chunk-pool";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +31,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useBitDetailActions } from "@/hooks/use-bit-detail-actions";
 import { useBitDetail } from "@/hooks/use-bit-detail";
@@ -131,14 +138,20 @@ export function BitDetailPopup() {
       await updateBit(bit.id, { deadline: null, deadlineAllDay: false });
       return;
     }
-    const timeStr = bit.deadlineAllDay ? "00:00" : (toTimeStr(bit.deadline) || "00:00");
-    await updateBit(bit.id, { deadline: new Date(`${dateStr}T${timeStr}`).getTime() });
+    const timeStr = bit.deadlineAllDay
+      ? "00:00"
+      : toTimeStr(bit.deadline) || "00:00";
+    await updateBit(bit.id, {
+      deadline: new Date(`${dateStr}T${timeStr}`).getTime(),
+    });
   }
 
   async function handleTimeChange(timeStr: string) {
     if (!bit) return;
     const dateStr = toDateStr(bit.deadline) || format(new Date(), "yyyy-MM-dd");
-    await updateBit(bit.id, { deadline: new Date(`${dateStr}T${timeStr}`).getTime() });
+    await updateBit(bit.id, {
+      deadline: new Date(`${dateStr}T${timeStr}`).getTime(),
+    });
   }
 
   async function handleAllDayToggle() {
@@ -154,7 +167,9 @@ export function BitDetailPopup() {
 
   async function handleStatusToggle() {
     if (!bit) return;
-    await updateBit(bit.id, { status: bit.status === "complete" ? "active" : "complete" });
+    await updateBit(bit.id, {
+      status: bit.status === "complete" ? "active" : "complete",
+    });
   }
 
   async function handlePromoteToNode() {
@@ -164,12 +179,17 @@ export function BitDetailPopup() {
   }
 
   function handleDeadlineEditorBlur(event: FocusEvent<HTMLDivElement>) {
-    if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) {
+    if (
+      !(event.relatedTarget instanceof Node) ||
+      !event.currentTarget.contains(event.relatedTarget)
+    ) {
       setIsDeadlineEditing(false);
     }
   }
 
-  function handleDeadlineEditorKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+  function handleDeadlineEditorKeyDown(
+    event: ReactKeyboardEvent<HTMLDivElement>,
+  ) {
     if (event.key !== "Escape") return;
     event.preventDefault();
     event.stopPropagation();
@@ -179,7 +199,9 @@ export function BitDetailPopup() {
   const Icon = bit ? (NODE_ICON_MAP[bit.icon] ?? NODE_ICON_MAP.Box) : null;
   const hasChunks = chunks.length > 0;
   const canPromote = hasChunks && (parentNode === null || parentNode.level < 2);
-  const completedCount = chunks.filter((chunk) => chunk.status === "complete").length;
+  const completedCount = chunks.filter(
+    (chunk) => chunk.status === "complete",
+  ).length;
   const totalCount = chunks.length;
   const ringRatio = totalCount > 0 ? completedCount / totalCount : 0;
   const ringOffset = RING_CIRCUMFERENCE * (1 - ringRatio);
@@ -212,7 +234,10 @@ export function BitDetailPopup() {
               <div className="flex flex-col">
                 <div className="flex items-center gap-3 px-5 pt-5 pb-0">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <Popover open={iconPickerOpen} onOpenChange={setIconPickerOpen}>
+                    <Popover
+                      open={iconPickerOpen}
+                      onOpenChange={setIconPickerOpen}
+                    >
                       <PopoverTrigger asChild>
                         <button
                           type="button"
@@ -234,7 +259,8 @@ export function BitDetailPopup() {
                                 title={name}
                                 className={cn(
                                   "flex h-9 w-9 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground",
-                                  bit.icon === name && "border-transparent ring-2 ring-primary ring-offset-1",
+                                  bit.icon === name &&
+                                    "border-transparent ring-2 ring-primary ring-offset-1",
                                 )}
                                 onClick={() => handleIconSelect(name)}
                               >
@@ -264,7 +290,11 @@ export function BitDetailPopup() {
                   <div className="flex flex-shrink-0 items-center gap-1">
                     <button
                       type="button"
-                      aria-label={bit.status === "complete" ? "Mark as active" : "Mark as complete"}
+                      aria-label={
+                        bit.status === "complete"
+                          ? "Mark as active"
+                          : "Mark as complete"
+                      }
                       onClick={handleStatusToggle}
                       className={cn(
                         "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md transition-colors",
@@ -318,10 +348,14 @@ export function BitDetailPopup() {
                     onClick={handlePriorityToggle}
                     className={cn(
                       "rounded-full px-[7px] py-[2px] text-[10px] font-semibold uppercase tracking-[0.05em] transition-colors",
-                      bit.priority === "high" && "bg-priority-high-bg text-priority-high",
-                      bit.priority === "mid" && "bg-priority-mid-bg text-priority-mid",
-                      bit.priority === "low" && "bg-priority-low-bg text-priority-low",
-                      !bit.priority && "bg-secondary text-muted-foreground hover:bg-accent",
+                      bit.priority === "high" &&
+                        "bg-priority-high-bg text-priority-high",
+                      bit.priority === "mid" &&
+                        "bg-priority-mid-bg text-priority-mid",
+                      bit.priority === "low" &&
+                        "bg-priority-low-bg text-priority-low",
+                      !bit.priority &&
+                        "bg-secondary text-muted-foreground hover:bg-accent",
                     )}
                   >
                     {bit.priority ? PRIORITY_LABELS[bit.priority] : "—"}
@@ -337,7 +371,9 @@ export function BitDetailPopup() {
                       <input
                         aria-label="Deadline date"
                         className="rounded border border-input bg-background px-2 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                        onChange={(event) => void handleDateChange(event.target.value)}
+                        onChange={(event) =>
+                          void handleDateChange(event.target.value)
+                        }
                         type="date"
                         value={toDateStr(bit.deadline)}
                       />
@@ -345,7 +381,9 @@ export function BitDetailPopup() {
                         <input
                           aria-label="Deadline time"
                           className="rounded border border-input bg-background px-2 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                          onChange={(event) => void handleTimeChange(event.target.value)}
+                          onChange={(event) =>
+                            void handleTimeChange(event.target.value)
+                          }
                           type="time"
                           value={toTimeStr(bit.deadline)}
                         />
@@ -395,7 +433,9 @@ export function BitDetailPopup() {
                       ) : null}
                       <button
                         type="button"
-                        aria-label={bit.deadlineAllDay ? "All day on" : "All day off"}
+                        aria-label={
+                          bit.deadlineAllDay ? "All day on" : "All day off"
+                        }
                         className={cn(
                           "rounded px-2 py-0.5 text-xs font-medium transition-colors",
                           bit.deadlineAllDay
@@ -423,11 +463,12 @@ export function BitDetailPopup() {
                   {isDescriptionOpen ? (
                     <textarea
                       aria-label="Description"
-                      className="min-h-[60px] w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                      className="min-h-[60px] w-full resize-none bg-transparent p-0 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                       onBlur={() => void handleDescriptionBlur()}
-                      onChange={(event) => setLocalDescription(event.target.value)}
-                      placeholder="Add a description…"
-                      rows={3}
+                      onChange={(event) =>
+                        setLocalDescription(event.target.value)
+                      }
+                      placeholder="Add a description"
                       value={localDescription}
                     />
                   ) : (
@@ -444,11 +485,11 @@ export function BitDetailPopup() {
                 <div className="flex items-center justify-between px-5 pt-3 pb-0">
                   <button
                     type="button"
-                    className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    className="flex items-center gap-1.5 rounded-md pl-0 pr-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                     onClick={() => chunkPoolRef.current?.startAdding()}
                   >
                     <Plus className="h-3.5 w-3.5" />
-                    Add a step
+                    New
                   </button>
                   {totalCount > 0 ? (
                     <div
@@ -493,14 +534,20 @@ export function BitDetailPopup() {
 
                 <div className="px-5 pt-3">
                   <div>
-                    <ChunkPool ref={chunkPoolRef} chunks={chunks} bitId={bit.id} />
+                    <ChunkPool
+                      ref={chunkPoolRef}
+                      chunks={chunks}
+                      bitId={bit.id}
+                    />
                     {bit.deadline ? (
                       <div className="flex items-center gap-3 pb-5 pt-1">
                         <Clock className="relative z-10 h-4 w-4 flex-shrink-0 bg-popover text-destructive" />
                         <span className="text-sm text-destructive">
                           {format(
                             new Date(bit.deadline),
-                            bit.deadlineAllDay ? "MMM d, yyyy" : "MMM d, yyyy h:mm a",
+                            bit.deadlineAllDay
+                              ? "MMM d, yyyy"
+                              : "MMM d, yyyy h:mm a",
                           )}
                         </span>
                       </div>

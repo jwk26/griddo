@@ -36,185 +36,196 @@ export type ChunkPoolHandle = {
   startAdding: () => void;
 };
 
-export const ChunkPool = forwardRef<ChunkPoolHandle, ChunkPoolProps>(function ChunkPool(
-  { chunks, bitId },
-  ref,
-) {
-  const { createChunk, updateChunk, deleteChunk } = useChunkActions();
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
-  const [isAdding, setIsAdding] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-  const isSubmittingRef = useRef(false);
-  const isComposingRef = useRef(false);
+export const ChunkPool = forwardRef<ChunkPoolHandle, ChunkPoolProps>(
+  function ChunkPool({ chunks, bitId }, ref) {
+    const { createChunk, updateChunk, deleteChunk } = useChunkActions();
+    const sensors = useSensors(
+      useSensor(PointerSensor),
+      useSensor(KeyboardSensor, {
+        coordinateGetter: sortableKeyboardCoordinates,
+      }),
+    );
+    const [isAdding, setIsAdding] = useState(false);
+    const [newTitle, setNewTitle] = useState("");
+    const inputRef = useRef<HTMLInputElement>(null);
+    const isSubmittingRef = useRef(false);
+    const isComposingRef = useRef(false);
 
-  const allChunks = chunks.slice().sort((a, b) => a.order - b.order);
+    const allChunks = chunks.slice().sort((a, b) => a.order - b.order);
 
-  function startAdding() {
-    if (isAdding) return;
-    setIsAdding(true);
-    queueMicrotask(() => inputRef.current?.focus());
-  }
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      startAdding,
-    }),
-    [isAdding],
-  );
-
-  async function handleAdd() {
-    if (isSubmittingRef.current) return;
-    const trimmed = newTitle.trim();
-    if (!trimmed) {
-      setIsAdding(false);
-      setNewTitle("");
-      return;
+    function startAdding() {
+      if (isAdding) return;
+      setIsAdding(true);
+      queueMicrotask(() => inputRef.current?.focus());
     }
-    isSubmittingRef.current = true;
-    try {
-      await createChunk({
-        title: trimmed,
-        description: "",
-        time: null,
-        timeAllDay: false,
-        order: chunks.length,
-        parentId: bitId,
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        startAdding,
+      }),
+      [isAdding],
+    );
+
+    async function handleAdd() {
+      if (isSubmittingRef.current) return;
+      const trimmed = newTitle.trim();
+      if (!trimmed) {
+        setIsAdding(false);
+        setNewTitle("");
+        return;
+      }
+      isSubmittingRef.current = true;
+      try {
+        await createChunk({
+          title: trimmed,
+          description: "",
+          time: null,
+          timeAllDay: false,
+          order: chunks.length,
+          parentId: bitId,
+        });
+        setNewTitle("");
+        setIsAdding(false);
+      } finally {
+        isSubmittingRef.current = false;
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+      if (event.key === "Enter") {
+        if (isComposingRef.current || event.nativeEvent.isComposing) return;
+        void handleAdd();
+        return;
+      }
+
+      if (event.key === "Escape") {
+        setNewTitle("");
+        setIsAdding(false);
+      }
+    }
+
+    async function handleToggle(chunk: Chunk) {
+      await updateChunk(chunk.id, {
+        status: chunk.status === "complete" ? "incomplete" : "complete",
       });
-      setNewTitle("");
-      setIsAdding(false);
-    } finally {
-      isSubmittingRef.current = false;
-    }
-  }
-
-  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "Enter") {
-      if (isComposingRef.current || event.nativeEvent.isComposing) return;
-      void handleAdd();
-      return;
     }
 
-    if (event.key === "Escape") {
-      setNewTitle("");
-      setIsAdding(false);
+    async function handleEdit(chunkId: string, title: string) {
+      await updateChunk(chunkId, { title });
     }
-  }
 
-  async function handleToggle(chunk: Chunk) {
-    await updateChunk(chunk.id, {
-      status: chunk.status === "complete" ? "incomplete" : "complete",
-    });
-  }
+    async function handleDelete(chunkId: string) {
+      await deleteChunk(chunkId);
+    }
 
-  async function handleEdit(chunkId: string, title: string) {
-    await updateChunk(chunkId, { title });
-  }
+    async function handleDragEnd(event: DragEndEvent) {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
 
-  async function handleDelete(chunkId: string) {
-    await deleteChunk(chunkId);
-  }
+      const ids = allChunks.map((chunk) => chunk.id);
+      const oldIndex = ids.indexOf(active.id as string);
+      const newIndex = ids.indexOf(over.id as string);
+      if (oldIndex === -1 || newIndex === -1) return;
 
-  async function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
+      const reordered = arrayMove(allChunks, oldIndex, newIndex);
+      await Promise.all(
+        reordered.map((chunk, index) =>
+          updateChunk(chunk.id, { order: index }),
+        ),
+      );
+    }
 
-    const ids = allChunks.map((chunk) => chunk.id);
-    const oldIndex = ids.indexOf(active.id as string);
-    const newIndex = ids.indexOf(over.id as string);
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    const reordered = arrayMove(allChunks, oldIndex, newIndex);
-    await Promise.all(reordered.map((chunk, index) => updateChunk(chunk.id, { order: index })));
-  }
-
-  return (
-    <div className="flex flex-col">
-      {allChunks.length === 0 && !isAdding ? (
-        <div
-          role="button"
-          tabIndex={0}
-          className="flex cursor-pointer items-start gap-3"
-          onClick={startAdding}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              startAdding();
-            }
-          }}
-        >
-          <div className="flex w-4 flex-col items-center">
-            <div className="mt-1 h-3.5 w-3.5 flex-shrink-0 rounded-full border-2 border-muted-foreground/40" />
-          </div>
-          <div className="min-w-0 flex-1 pb-5">
-            <p className="text-sm text-muted-foreground">Add a step</p>
-          </div>
-          <div className="flex flex-shrink-0 items-start gap-0.5 pt-0.5 pb-5">
-            <span aria-hidden="true" className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50">
-              <ArrowUpDown className="h-3.5 w-3.5" />
-            </span>
-            <span aria-hidden="true" className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50">
-              <Trash2 className="h-3.5 w-3.5" />
-            </span>
-          </div>
-        </div>
-      ) : null}
-      {allChunks.length > 0 ? (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={allChunks.map((chunk) => chunk.id)}
-            strategy={verticalListSortingStrategy}
+    return (
+      <div className="flex flex-col">
+        {allChunks.length === 0 && !isAdding ? (
+          <div
+            role="button"
+            tabIndex={0}
+            className="flex cursor-pointer items-start gap-3"
+            onClick={startAdding}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                startAdding();
+              }
+            }}
           >
-            {allChunks.map((chunk, index) => (
-              <ChunkItem
-                key={chunk.id}
-                chunk={chunk}
-                isDraggable={true}
-                showConnector={index < allChunks.length - 1}
-                onToggle={handleToggle}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
-      ) : null}
-
-      {isAdding ? (
-        <div className="flex items-start gap-3 pb-5">
-          <div className="flex w-4 flex-col items-center">
-            <div className="mt-1 h-3.5 w-3.5 flex-shrink-0 rounded-full border-2 border-muted-foreground/30 bg-transparent" />
+            <div className="flex w-4 flex-col items-center">
+              <div className="mt-1 h-3.5 w-3.5 flex-shrink-0 rounded-full border-2 border-muted-foreground/40" />
+            </div>
+            <div className="min-w-0 flex-1 pb-5">
+              <p className="text-sm text-muted-foreground">Add a step...</p>
+            </div>
+            <div className="flex flex-shrink-0 items-start gap-0.5 pt-0.5 pb-5">
+              <span
+                aria-hidden="true"
+                className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50"
+              >
+                <ArrowUpDown className="h-3.5 w-3.5" />
+              </span>
+              <span
+                aria-hidden="true"
+                className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </span>
+            </div>
           </div>
-          <input
-            ref={inputRef}
-            autoFocus
-            className="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-            maxLength={200}
-            onBlur={() => void handleAdd()}
-            onChange={(event) => setNewTitle(event.target.value)}
-            onCompositionEnd={() => {
-              isComposingRef.current = false;
-            }}
-            onCompositionStart={() => {
-              isComposingRef.current = true;
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder="Step name..."
-            type="text"
-            value={newTitle}
-          />
-        </div>
-      ) : null}
-    </div>
-  );
-});
+        ) : null}
+        {allChunks.length > 0 ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={allChunks.map((chunk) => chunk.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {allChunks.map((chunk, index) => (
+                <ChunkItem
+                  key={chunk.id}
+                  chunk={chunk}
+                  isDraggable={true}
+                  showConnector={index < allChunks.length - 1}
+                  onToggle={handleToggle}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+        ) : null}
+
+        {isAdding ? (
+          <div className="flex items-start gap-3 pb-5">
+            <div className="flex w-4 flex-col items-center">
+              <div className="mt-1 h-3.5 w-3.5 flex-shrink-0 rounded-full border-2 border-muted-foreground/30 bg-transparent" />
+            </div>
+            <input
+              ref={inputRef}
+              autoFocus
+              className="flex-1 appearance-none bg-transparent text-sm leading-5 text-foreground placeholder:text-muted-foreground focus:outline-none"
+              maxLength={200}
+              onBlur={() => void handleAdd()}
+              onChange={(event) => setNewTitle(event.target.value)}
+              onCompositionEnd={() => {
+                isComposingRef.current = false;
+              }}
+              onCompositionStart={() => {
+                isComposingRef.current = true;
+              }}
+              onKeyDown={handleKeyDown}
+              placeholder="Step name..."
+              type="text"
+              value={newTitle}
+            />
+          </div>
+        ) : null}
+      </div>
+    );
+  },
+);
 
 ChunkPool.displayName = "ChunkPool";
