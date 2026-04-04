@@ -21,5 +21,21 @@ export function useGridActions() {
     return dataStore.createBit(data);
   }, []);
 
-  return { getGridOccupancy, createNode, createBit };
+  const softDeleteNode = useCallback(async (id: string): Promise<void> => {
+    const dataStore = await getDataStore();
+    return dataStore.softDeleteNode(id);
+  }, []);
+
+  const softDeleteBit = useCallback(async (id: string): Promise<void> => {
+    const dataStore = await getDataStore();
+    return dataStore.softDeleteBit(id);
+  }, []);
+
+  return {
+    getGridOccupancy,
+    createNode,
+    createBit,
+    softDeleteNode,
+    softDeleteBit,
+  };
 }

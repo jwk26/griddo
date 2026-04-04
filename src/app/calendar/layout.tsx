@@ -36,8 +36,8 @@ export default function CalendarLayout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar level={0} />
-      <main className="ml-[14rem] flex min-w-0 flex-1 flex-col overflow-hidden">
+      <Sidebar />
+      <main className="ml-12 flex min-w-0 flex-1 flex-col overflow-hidden">
         <header className="flex items-center justify-between border-b border-border bg-background/80 px-6 py-4 backdrop-blur">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">

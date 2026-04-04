@@ -41,9 +41,27 @@ function BreadcrumbSegmentButton({
   );
 }
 
-export function Breadcrumbs({ nodeId }: { nodeId: string }) {
+export function Breadcrumbs({ nodeId }: { nodeId: string | null }) {
   const router = useRouter();
-  const segments = useBreadcrumbChain(nodeId);
+  const segments = useBreadcrumbChain(nodeId ?? "");
+
+  if (nodeId === null) {
+    return (
+      <nav
+        aria-label="Breadcrumb"
+        className="flex h-breadcrumb flex-col justify-center gap-0.5 border-b border-border px-4"
+      >
+        <div className="flex items-center gap-1.5 overflow-x-auto text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <BreadcrumbSegmentButton
+            label="Home"
+            nodeId={null}
+            onClick={() => router.push("/")}
+          />
+        </div>
+      </nav>
+    );
+  }
+
   const currentNode = segments.at(-1) ?? null;
   const ancestors = currentNode ? segments.slice(0, -1) : [];
 

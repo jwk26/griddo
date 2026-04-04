@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 import { BitCard } from "@/components/grid/bit-card";
 import { GridCell } from "@/components/grid/grid-cell";
 import { NodeCard } from "@/components/grid/node-card";
-import { sinkingVariants, vignetteVariants } from "@/lib/animations/grid";
+import { creationVariants } from "@/lib/animations/grid";
 import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
 import { getGridCellDropId, getGridNodeDropId } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
@@ -36,9 +36,10 @@ function toTranslateStyle(transform: { x: number; y: number } | null | undefined
   return { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` };
 }
 
-function EditableGridDropCell({
+function GridDropCell({
   borderOpacity,
   children,
+  isEditMode,
   isEmpty,
   onAddClick,
   parentId,
@@ -47,6 +48,7 @@ function EditableGridDropCell({
 }: {
   borderOpacity: string;
   children: ReactNode;
+  isEditMode: boolean;
   isEmpty: boolean;
   onAddClick?: () => void;
   parentId: string | null;
@@ -68,7 +70,7 @@ function EditableGridDropCell({
     >
       <GridCell
         borderOpacity={borderOpacity}
-        isEditMode={true}
+        isEditMode={isEditMode}
         isEmpty={isEmpty}
         onAddClick={onAddClick}
         x={x}
@@ -80,55 +82,33 @@ function EditableGridDropCell({
   );
 }
 
-function StaticGridCell({
-  borderOpacity,
-  children,
-  isEditMode,
-  isEmpty,
-  onAddClick,
-  x,
-  y,
-}: {
-  borderOpacity: string;
-  children: ReactNode;
-  isEditMode: boolean;
-  isEmpty: boolean;
-  onAddClick?: () => void;
-  x: number;
-  y: number;
-}) {
-  return (
-    <GridCell
-      borderOpacity={borderOpacity}
-      isEditMode={isEditMode}
-      isEmpty={isEmpty}
-      onAddClick={onAddClick}
-      x={x}
-      y={y}
-    >
-      {children}
-    </GridCell>
-  );
-}
-
 function DraggableNodeCard({
   isEditMode,
   node,
   onClick,
+  onDelete,
 }: {
   isEditMode: boolean;
   node: Node;
   onClick: () => void;
+  onDelete?: () => void;
 }) {
   const { attributes, isDragging, listeners, setNodeRef: setDragNodeRef, transform } = useDraggable({
     id: `draggable-${node.id}`,
-    data: { id: node.id, type: "node", parentId: node.parentId ?? undefined },
-    disabled: !isEditMode,
+    data: {
+      id: node.id,
+      type: "node",
+      parentId: node.parentId ?? undefined,
+      title: node.title,
+    },
   });
   const { isOver, setNodeRef: setDropNodeRef } = useDroppable({
     id: getGridNodeDropId(node.id),
-    data: { kind: "grid-node-drop", targetNodeId: node.id },
-    disabled: !isEditMode,
+    data: {
+      kind: "grid-node-drop",
+      targetNodeId: node.id,
+      targetNodeTitle: node.title,
+    },
   });
 
   const setNodeRef = (element: HTMLDivElement | null) => {
@@ -140,7 +120,7 @@ function DraggableNodeCard({
     <div
       ref={setNodeRef}
       className={cn(
-        "h-full rounded-xl",
+        "h-full cursor-grab rounded-xl active:cursor-grabbing",
         isDragging && "opacity-50",
         isOver && "ring-2 ring-primary/60 ring-offset-2 ring-offset-background",
       )}
@@ -148,7 +128,12 @@ function DraggableNodeCard({
       {...attributes}
       {...listeners}
     >
-      <NodeCard isEditMode={isEditMode} node={node} onClick={onClick} />
+      <NodeCard
+        isEditMode={isEditMode}
+        node={node}
+        onClick={onClick}
+        onDelete={onDelete}
+      />
     </div>
   );
 }
@@ -156,42 +141,40 @@ function DraggableNodeCard({
 function DraggableBitCard({
   bit,
   onClick,
+  onDelete,
   parentColor,
 }: {
   bit: Bit;
   onClick: () => void;
+  onDelete?: () => void;
   parentColor: string;
 }) {
-  const isEditMode = useEditModeStore((state) => state.isEditMode);
   const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
     id: `draggable-${bit.id}`,
-    data: { id: bit.id, type: "bit", parentId: bit.parentId ?? undefined },
-    disabled: !isEditMode,
+    data: {
+      id: bit.id,
+      type: "bit",
+      parentId: bit.parentId ?? undefined,
+      title: bit.title,
+    },
   });
 
   return (
-    <motion.div
-      animate="visible"
-      className={cn("h-full", isDragging && "opacity-50")}
-      exit="exit"
-      initial="visible"
-      variants={sinkingVariants}
+    <div
+      ref={setNodeRef}
+      className={cn("flex h-full cursor-grab items-center active:cursor-grabbing", isDragging && "opacity-50")}
+      style={toTranslateStyle(transform)}
+      {...attributes}
+      {...listeners}
     >
-      <div
-        ref={setNodeRef}
-        className="flex h-full items-center"
-        style={toTranslateStyle(transform)}
-        {...attributes}
-        {...listeners}
-      >
-        <BitCard
-          bit={bit}
-          chunkStats={{ completed: 0, total: 0 }}
-          onClick={onClick}
-          parentColor={parentColor}
-        />
-      </div>
-    </motion.div>
+      <BitCard
+        bit={bit}
+        chunkStats={{ completed: 0, total: 0 }}
+        onClick={onClick}
+        onDelete={onDelete}
+        parentColor={parentColor}
+      />
+    </div>
   );
 }
 
@@ -200,12 +183,14 @@ export function GridView({
   level,
   parentColor = "hsl(221, 83%, 53%)",
   onAddAtCell,
+  onDelete,
   onNodeEditClick,
 }: {
   parentId: string | null;
   level: number;
   parentColor?: string;
   onAddAtCell?: (x: number, y: number) => void;
+  onDelete?: (item: { id: string; type: "node" | "bit"; title: string }) => void;
   onNodeEditClick?: (node: Node) => void;
 }) {
   const pathname = usePathname();
@@ -224,7 +209,10 @@ export function GridView({
   }
 
   return (
-    <div className="relative h-full w-full">
+    <div
+      className="relative h-full w-full"
+      style={{ backgroundColor: `hsl(var(--grid-bg-l${Math.min(level, 3)}))` }}
+    >
       <div
         className="grid h-full w-full grid-cols-12 gap-[var(--grid-gap)]"
         data-level={level}
@@ -235,70 +223,69 @@ export function GridView({
             const positionKey = `${x},${y}`;
             const item = itemsByPosition.get(positionKey);
             const content = (
-              <>
+              <AnimatePresence initial={false}>
                 {item !== undefined && isNodeItem(item) ? (
-                  <DraggableNodeCard
-                    isEditMode={isEditMode}
-                    node={item}
-                    onClick={
-                      isEditMode && onNodeEditClick
-                        ? () => onNodeEditClick(item)
-                        : () => router.push(`/grid/${item.id}`)
-                    }
-                  />
+                  <motion.div
+                    key={item.id}
+                    animate="animate"
+                    className="h-full"
+                    exit="exit"
+                    initial="initial"
+                    variants={creationVariants}
+                  >
+                    <DraggableNodeCard
+                      isEditMode={isEditMode}
+                      node={item}
+                      onClick={
+                        isEditMode && onNodeEditClick
+                          ? () => onNodeEditClick(item)
+                          : () => router.push(`/grid/${item.id}`)
+                      }
+                      onDelete={() =>
+                        onDelete?.({ id: item.id, type: "node", title: item.title })
+                      }
+                    />
+                  </motion.div>
                 ) : null}
-                <AnimatePresence initial={false}>
-                  {item !== undefined && !isNodeItem(item) ? (
+                {item !== undefined && !isNodeItem(item) ? (
+                  <motion.div
+                    key={item.id}
+                    animate="animate"
+                    className="h-full"
+                    exit="exit"
+                    initial="initial"
+                    variants={creationVariants}
+                  >
                     <DraggableBitCard
-                      key={item.id}
                       bit={item}
                       onClick={() => router.push(`${pathname}?bit=${item.id}`)}
+                      onDelete={() =>
+                        onDelete?.({ id: item.id, type: "bit", title: item.title })
+                      }
                       parentColor={parentColor}
                     />
-                  ) : null}
-                </AnimatePresence>
-              </>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
             );
 
-            if (isEditMode) {
-              return (
-                <EditableGridDropCell
-                  key={positionKey}
-                  borderOpacity={borderOpacity}
-                  isEmpty={item === undefined}
-                  onAddClick={onAddAtCell ? () => onAddAtCell(x, y) : undefined}
-                  parentId={parentId}
-                  x={x}
-                  y={y}
-                >
-                  {content}
-                </EditableGridDropCell>
-              );
-            }
-
             return (
-              <StaticGridCell
+              <GridDropCell
                 key={positionKey}
                 borderOpacity={borderOpacity}
-                isEditMode={false}
+                isEditMode={isEditMode}
                 isEmpty={item === undefined}
                 onAddClick={onAddAtCell ? () => onAddAtCell(x, y) : undefined}
+                parentId={parentId}
                 x={x}
                 y={y}
               >
                 {content}
-              </StaticGridCell>
+              </GridDropCell>
             );
           }),
         )}
       </div>
-      <motion.div
-        animate={`l${level}`}
-        className="pointer-events-none absolute inset-0"
-        initial={false}
-        style={{ boxShadow: "inset 0 0 120px rgba(0,0,0,1)" }}
-        variants={vignetteVariants}
-      />
     </div>
   );
 }

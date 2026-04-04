@@ -40,6 +40,16 @@ afterEach(() => {
 });
 
 describe("Breadcrumbs", () => {
+  it("renders Home only when nodeId is null", () => {
+    useBreadcrumbChainMock.mockReturnValue([]);
+
+    render(<Breadcrumbs nodeId={null} />);
+
+    expect(screen.getByRole("button", { name: "Home" })).toBeInTheDocument();
+    expect(screen.queryByText("...")).not.toBeInTheDocument();
+    expect(useBreadcrumbChainMock).toHaveBeenCalledWith("");
+  });
+
   it("renders the ancestor chain and routes each segment", () => {
     const root = createNode({ id: "root-node", title: "Projects" });
     const child = createNode({

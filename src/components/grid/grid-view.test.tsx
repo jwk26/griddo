@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useEditModeStore } from "@/stores/edit-mode-store";
-import type { Bit } from "@/types";
+import type { Bit, Node } from "@/types";
 import { GridView } from "./grid-view";
 
 const push = vi.fn();
@@ -57,6 +57,25 @@ function createBit(overrides: Partial<Bit>): Bit {
   };
 }
 
+function createNode(overrides: Partial<Node>): Node {
+  return {
+    id: overrides.id ?? crypto.randomUUID(),
+    title: overrides.title ?? "Node",
+    description: overrides.description ?? "",
+    color: overrides.color ?? "hsl(221, 83%, 53%)",
+    icon: overrides.icon ?? "Folder",
+    deadline: overrides.deadline ?? null,
+    deadlineAllDay: overrides.deadlineAllDay ?? false,
+    mtime: overrides.mtime ?? Date.now(),
+    createdAt: overrides.createdAt ?? Date.now(),
+    parentId: overrides.parentId ?? null,
+    level: overrides.level ?? 0,
+    x: overrides.x ?? 0,
+    y: overrides.y ?? 0,
+    deletedAt: overrides.deletedAt ?? null,
+  };
+}
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
@@ -64,7 +83,7 @@ afterEach(() => {
 });
 
 describe("GridView", () => {
-  it("renders bits as clickable bit cards and applies the level vignette", () => {
+  it("renders bits as clickable bit cards and applies the level background token", () => {
     vi.mocked(useGridData).mockReturnValue({
       nodes: [],
       bits: [
@@ -88,6 +107,53 @@ describe("GridView", () => {
     fireEvent.click(screen.getByText("Ship Phase 4").closest('[role="button"]')!);
 
     expect(push).toHaveBeenCalledWith("/grid/parent-node?bit=bit-1");
-    expect(container.querySelector('[data-motion-animate="l2"]')).not.toBeNull();
+    expect(container.firstChild).toHaveStyle({
+      backgroundColor: "hsl(var(--grid-bg-l2))",
+    });
+  });
+
+  it("routes delete requests from node and bit cards", () => {
+    useEditModeStore.setState({ isEditMode: true });
+    const handleDelete = vi.fn();
+    const node = createNode({
+      id: "node-1",
+      title: "Roadmap",
+      level: 1,
+    });
+    const bit = createBit({
+      id: "bit-1",
+      title: "Ship Phase 4",
+      x: 1,
+    });
+
+    vi.mocked(useGridData).mockReturnValue({
+      nodes: [node],
+      bits: [bit],
+      isLoading: false,
+    });
+
+    render(
+      <GridView
+        level={1}
+        onAddAtCell={vi.fn()}
+        onDelete={handleDelete}
+        parentColor="hsl(12, 78%, 55%)"
+        parentId="parent-node"
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText("Delete Roadmap"));
+    fireEvent.click(screen.getByLabelText("Delete Ship Phase 4"));
+
+    expect(handleDelete).toHaveBeenNthCalledWith(1, {
+      id: "node-1",
+      type: "node",
+      title: "Roadmap",
+    });
+    expect(handleDelete).toHaveBeenNthCalledWith(2, {
+      id: "bit-1",
+      type: "bit",
+      title: "Ship Phase 4",
+    });
   });
 });

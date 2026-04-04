@@ -9,8 +9,8 @@ export default function TrashPage() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar level={0} />
-      <main className="ml-[14rem] flex flex-1 flex-col overflow-auto p-6">
+      <Sidebar />
+      <main className="ml-12 flex flex-1 flex-col overflow-auto p-6">
         <h1 className="sr-only">Trash</h1>
         {isLoading ? null : <TrashList items={items} />}
       </main>

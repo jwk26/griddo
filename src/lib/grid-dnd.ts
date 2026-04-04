@@ -1,3 +1,5 @@
+import { closestCenter, type CollisionDetection } from "@dnd-kit/core";
+
 export type GridDropData =
   | {
       kind: "grid-cell";
@@ -8,6 +10,7 @@ export type GridDropData =
   | {
       kind: "grid-node-drop";
       targetNodeId: string;
+      targetNodeTitle?: string;
     }
   | {
       kind: "grid-breadcrumb-drop";
@@ -47,3 +50,22 @@ export function getGridNodeDropId(nodeId: string): string {
 export function getGridBreadcrumbDropId(nodeId: string | null): string {
   return `grid-breadcrumb:${nodeId ?? "root"}`;
 }
+
+export const gridCollisionDetection: CollisionDetection = (args) => {
+  const candidates = closestCenter(args);
+  const hasNodeDrop = candidates.some(
+    (candidate) =>
+      typeof candidate.id === "string" &&
+      candidate.id.startsWith("grid-node-drop:"),
+  );
+
+  if (hasNodeDrop) {
+    return candidates.filter(
+      (candidate) =>
+        typeof candidate.id === "string" &&
+        !candidate.id.startsWith("grid-cell:"),
+    );
+  }
+
+  return candidates;
+};

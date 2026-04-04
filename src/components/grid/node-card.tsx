@@ -9,10 +9,12 @@ import type { Node } from "@/types";
 export function NodeCard({
   node,
   onClick,
+  onDelete,
   isEditMode = false,
 }: {
   node: Node;
   onClick: () => void;
+  onDelete?: () => void;
   isEditMode?: boolean;
 }) {
   const Icon = NODE_ICON_MAP[node.icon] ?? NODE_ICON_MAP.Box;
@@ -47,6 +49,7 @@ export function NodeCard({
           className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
           onClick={(event) => {
             event.stopPropagation();
+            onDelete?.();
           }}
         >
           <X className="h-3.5 w-3.5" />

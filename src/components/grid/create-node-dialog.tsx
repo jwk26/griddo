@@ -1,7 +1,7 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,12 +12,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  DEFAULT_COLOR_HEX,
-  DEFAULT_ICON,
-  NODE_ICON_MAP,
-  NODE_ICON_NAMES,
-} from "@/lib/constants/node-icons";
+import { Textarea } from "@/components/ui/textarea";
+import { getRandomColor } from "@/lib/constants/color-palette";
+import { DEFAULT_ICON, NODE_ICON_MAP, NODE_ICON_NAMES } from "@/lib/constants/node-icons";
 import { cn } from "@/lib/utils";
 
 type CreateNodeDialogProps = {
@@ -25,6 +22,7 @@ type CreateNodeDialogProps = {
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: {
     title: string;
+    description: string;
     icon: string;
     colorHex: string;
   }) => Promise<void>;
@@ -39,24 +37,33 @@ export function CreateNodeDialog({
 }: CreateNodeDialogProps) {
   const titleId = useId();
   const titleErrorId = useId();
+  const descriptionId = useId();
   const iconId = useId();
   const colorId = useId();
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [icon, setIcon] = useState(DEFAULT_ICON);
-  const [colorHex, setColorHex] = useState(DEFAULT_COLOR_HEX);
+  const [colorHex, setColorHex] = useState(getRandomColor());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [titleError, setTitleError] = useState(false);
+  const prevOpenRef = useRef(false);
 
   useEffect(() => {
-    if (open) {
-      return;
+    if (open && !prevOpenRef.current) {
+      setTitle("");
+      setDescription("");
+      setIcon(NODE_ICON_NAMES[Math.floor(Math.random() * NODE_ICON_NAMES.length)] ?? DEFAULT_ICON);
+      setColorHex(getRandomColor());
+      setIsSubmitting(false);
+      setTitleError(false);
+    } else if (!open) {
+      setTitle("");
+      setDescription("");
+      setIsSubmitting(false);
+      setTitleError(false);
     }
 
-    setTitle("");
-    setIcon(DEFAULT_ICON);
-    setColorHex(DEFAULT_COLOR_HEX);
-    setIsSubmitting(false);
-    setTitleError(false);
+    prevOpenRef.current = open;
   }, [open]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -75,7 +82,7 @@ export function CreateNodeDialog({
     setIsSubmitting(true);
 
     try {
-      await onSubmit({ title, icon, colorHex });
+      await onSubmit({ title, description, icon, colorHex });
     } finally {
       setIsSubmitting(false);
     }
@@ -87,7 +94,7 @@ export function CreateNodeDialog({
         <DialogHeader>
           <DialogTitle>Create Node</DialogTitle>
           <DialogDescription>
-            Add a new Level 0 node and place it in the nearest available cell.
+            Add a new node and place it in the nearest available cell.
           </DialogDescription>
         </DialogHeader>
 
@@ -112,6 +119,19 @@ export function CreateNodeDialog({
             <p id={titleErrorId} className="min-h-[1rem] text-sm text-destructive">
               {titleError ? "Title is required." : ""}
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground" htmlFor={descriptionId}>
+              Description
+            </label>
+            <Textarea
+              id={descriptionId}
+              maxLength={500}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="Description (optional)"
+              value={description}
+            />
           </div>
 
           <div className="space-y-2">
