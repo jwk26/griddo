@@ -318,7 +318,7 @@ The following CSS variables are consumed via `var()` in component styles or Java
 | Deletion (node/bit remove) | Motion exit shrink+fade (`duration: 0.2, easeIn`) | `src/lib/animations/grid.ts` |
 | Task tossing (drag into Node) | Motion spring transition | `src/lib/animations/grid.ts` |
 | Magnet snap (grid/calendar) | Motion spring with damping | `src/lib/animations/grid.ts` |
-| Day column expand (calendar) | Motion layout animation | `src/lib/animations/calendar.ts` |
+| Day column expand (calendar) | Motion layout animation with vignette effect (column expands vertically, adjacent columns hidden) | `src/lib/animations/calendar.ts` |
 | Search overlay open/close | Motion fade + scale | `src/lib/animations/layout.ts` |
 | Bit detail popup | Motion fade + slide-up | `src/lib/animations/layout.ts` |
 
