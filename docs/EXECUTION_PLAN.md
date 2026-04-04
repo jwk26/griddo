@@ -1064,3 +1064,157 @@ These apply across all phases:
 >
 > **Full issue log:** `docs/issues/Issues_Phase_8.md`
 > **Workflow update recommendation:** `docs/reviews/phase-8-workflow-pilot-record.md` §13
+
+---
+
+## Phase 9: Grid UX Improvements
+
+> **Purpose:** Fix broken delete buttons, restructure grid layout architecture with route-group + GridRuntime, fix DnD collision resolution, enable DnD outside edit mode, improve create dialogs, and add visual polish.
+> **Branch:** `phase-9/grid-ux-improvements`
+> **Canonical refs:** SPEC.md § Phase 9 PRD Departures, § Page Layouts, § Routes; DESIGN_TOKENS.md § Level Depth Backgrounds, § Sidebar
+> **PRD departures:** 4 intentional departures from the PRD documented in SPEC.md § Phase 9 PRD Departures
+
+### Task 39: Delete Buttons + Confirmation Modal
+- **Status:** `[ ]`
+- **Files:** `src/hooks/use-grid-actions.ts` (update), `src/components/grid/delete-confirm-dialog.tsx` (create), `src/components/grid/node-card.tsx` (update), `src/components/grid/bit-card.tsx` (update), `src/components/grid/grid-view.tsx` (update)
+- **Dependencies:** Phase 8 complete
+- **Actions:**
+  - Add `softDeleteNode` and `softDeleteBit` callbacks to `use-grid-actions.ts`, calling through to `DataStore.softDeleteNode` / `DataStore.softDeleteBit`
+  - Create `delete-confirm-dialog.tsx` using shadcn `AlertDialog`. Accepts `pendingDelete: { id: string; type: "node" | "bit"; title: string } | null`, `onConfirm`, `onCancel`. Node delete copy warns about cascade ("and all its child nodes and bits"). Destructive variant on confirm button
+  - Add `onDelete` callback prop to `NodeCard` and `BitCard`. X button calls `onDelete(item)` with `event.stopPropagation()` preserved
+  - In `GridView`: add `pendingDelete` state, `handleDeleteRequest` (stages the pending delete from any grid item), `handleDeleteConfirm` (calls appropriate soft-delete action). Pass `onDelete={handleDeleteRequest}` through `DraggableNodeCard` and `DraggableBitCard` to the card components. Render `DeleteConfirmDialog` at the end of the component
+- **Acceptance:**
+  - In edit mode, clicking X on a node shows confirmation dialog with cascade warning text
+  - In edit mode, clicking X on a bit shows confirmation dialog with simple warning text
+  - Confirming deletes the item (disappears from grid via `useLiveQuery` reactivity)
+  - Cancelling closes the dialog, item stays
+  - Clicking X does not trigger card click/navigation
+  - `pnpm build` passes
+
+### Task 40: Route-Group Grid Layout + GridRuntime
+- **Status:** `[ ]`
+- **Files:** `src/lib/utils/color.ts` (create), `src/components/layout/add-flow-context.tsx` (create), `src/components/layout/grid-runtime.tsx` (create), `src/app/(grid)/layout.tsx` (create), `src/app/(grid)/page.tsx` (create), `src/app/(grid)/grid/[nodeId]/page.tsx` (create), `src/app/page.tsx` (delete), `src/app/grid/[nodeId]/page.tsx` (delete), `src/components/layout/level-0-shell.tsx` (delete), `src/app/grid/[nodeId]/_components/node-grid-shell.tsx` (delete)
+- **Dependencies:** Task 39
+- **Actions:**
+  - Extract `hexToHsl` from `level-0-shell.tsx` (duplicated in `node-grid-shell.tsx`) to `src/lib/utils/color.ts` as a shared utility
+  - Create `add-flow-context.tsx` with minimal context: `AddFlowProvider` and `useAddFlow()` hook exposing `openAddAtCell(x: number, y: number)`
+  - Create `grid-runtime.tsx` — single client component that consolidates logic from both shell components:
+    - Route state: `nodeId = useParams().nodeId ?? null`. Call `useNode(nodeId)` only when non-null. `displayLevel = nodeId === null ? 0 : (node?.level ?? 0) + 1`. `isLeafLevel = displayLevel >= 3`
+    - Renders `Sidebar` (passes `onAddClick` and `level`), `Breadcrumbs` (passes `nodeId`), `AddFlowProvider`, `DndContext` boundary, `EditModeOverlay`, all create dialogs (chooser, node, bit)
+    - Add-flow orchestration: sidebar + calls `openAdd({ mode: "auto" })`. Pages call `openAddAtCell(x, y)` via context. Level-based rules: L0 → node only, L1-2 → chooser, L3 → bit only
+    - BFS origin inset: nodes from `(1, 1)`, bits from `(GRID_COLS - 2, 1)` instead of `(0, 0)` / `(GRID_COLS - 1, 0)`
+    - No `p-4` on content wrapper (padding gap removed per design spec)
+  - Create `src/app/(grid)/layout.tsx` — server layout that renders `GridRuntime`
+  - Create `src/app/(grid)/page.tsx` — thin Level 0 page: renders `GridView` + `OnboardingHints`, calls `useAddFlow().openAddAtCell`
+  - Create `src/app/(grid)/grid/[nodeId]/page.tsx` — thin Node grid page: renders `GridView` + `EditNodeDialog`, calls `useAddFlow().openAddAtCell`
+  - Delete `src/app/page.tsx`, `src/app/grid/[nodeId]/page.tsx`, `src/components/layout/level-0-shell.tsx`, `src/app/grid/[nodeId]/_components/node-grid-shell.tsx` (and `_components/` directory if empty)
+- **Acceptance:**
+  - Routes `/` and `/grid/[nodeId]` resolve correctly under `(grid)` route group
+  - GridRuntime mounts once — no remount flash when navigating between grid levels
+  - Sidebar + button opens correct dialog based on level (L0: node, L1-2: chooser, L3: bit)
+  - Empty cell + button opens correct dialog at the clicked cell position
+  - Grid content fills available space with no padding gap
+  - Old shell files (`level-0-shell.tsx`, `node-grid-shell.tsx`) and old page files deleted, no import errors
+  - `pnpm build` passes
+
+### Task 41: Sidebar Redesign + Breadcrumb Cleanup
+- **Status:** `[ ]`
+- **Files:** `src/components/layout/sidebar.tsx` (update), `src/components/layout/breadcrumbs.tsx` (update), `src/stores/sidebar-store.ts` (delete)
+- **Dependencies:** Task 40
+- **Actions:**
+  - Rewrite `sidebar.tsx` as a fixed icon rail (`w-12` / 48px). Remove all fold/unfold logic, `useSidebarStore` usage, and `motion` expand/collapse animations
+    - Icons top: + (add), Pencil (edit mode toggle), Search, Calendar
+    - Icons bottom (mt-auto): Trash, Theme toggle (moon/sun)
+    - Each button: `w-10 h-10 flex items-center justify-center rounded-lg`
+    - Active state: highlighted when on route (calendar, trash) or mode active (edit)
+    - Trash icon visible on all levels (PRD departure #4)
+    - Accept `onAddClick` prop (from GridRuntime) and `level` prop
+    - Keep `useEditModeStore`, `useSearchStore`, `usePathname`, `globalUrgency` calendar badge
+  - Update `breadcrumbs.tsx` to accept `nodeId: string | null`. When `nodeId === null`, render root-only state showing "Home" with no navigation segments. Guard `useBreadcrumbChain` call — only call when `nodeId` is not null
+  - Delete `src/stores/sidebar-store.ts` (only imported by `sidebar.tsx`, no longer needed)
+  - Update `main` content margin from `ml-[14rem]` to `ml-12` (3rem) wherever the sidebar margin is applied
+- **Acceptance:**
+  - Sidebar renders as narrow icon rail on all pages, identical across all levels
+  - No fold/unfold mechanism exists
+  - Trash icon visible at all grid levels
+  - Breadcrumb shows "Home" at Level 0, full chain at deeper levels
+  - Edit mode toggle, calendar/trash navigation, search all still work from sidebar
+  - No TypeScript errors referencing `sidebar-store.ts` or `useSidebarStore`
+  - `pnpm build` passes
+
+### Task 42: DnD Collision Resolution + Drag-to-Child Confirmation
+- **Status:** `[ ]`
+- **Files:** `src/lib/grid-dnd.ts` (update), `src/components/layout/grid-runtime.tsx` (update), `src/hooks/use-dnd.ts` (update), `src/components/grid/grid-view.tsx` (update)
+- **Dependencies:** Task 40
+- **Actions:**
+  - Add `gridCollisionDetection` to `grid-dnd.ts`: runs `closestCenter`, then if any candidate has `kind === "grid-node-drop"`, filter out all `grid-cell` candidates. Otherwise fall back to `closestCenter` default
+  - Update `grid-runtime.tsx` to use `gridCollisionDetection` as `DndContext` collision detection
+  - Extend `DragActiveItem` type in `use-dnd.ts` to include `title: string`. Set from `event.active.data.current` in `handleDragStart`
+  - Update `useDraggable` data payloads in `DraggableNodeCard` and `DraggableBitCard` (in `grid-view.tsx`) to include `title` in drag data
+  - Add cycle prevention in `use-dnd.ts`: before staging a node-to-node move, walk the target node's ancestor chain via `parentId`. If the dragged node's ID appears, block with `toast.error("Cannot move a node into its own descendant.")`
+  - Add `pendingNodeMove` state to `use-dnd.ts`: `{ itemId, itemType, itemTitle, targetNodeId, targetNodeTitle } | null`. On `grid-node-drop`, stage confirmation instead of executing mutation directly. Add `handleNodeMoveConfirm` (executes existing BFS placement + parentId update logic) and `handleNodeMoveCancel`
+  - Render move confirmation dialog in `grid-runtime.tsx` using the exposed `pendingNodeMove` state. Title: "Move into '{targetNodeTitle}'?", Body: "'{itemTitle}' will be moved into this node.", Actions: Cancel / Move
+- **Acceptance:**
+  - Dragging an item onto a node card reliably triggers the node-drop flow (not the grid-cell flow)
+  - Confirmation dialog appears before executing drag-to-child move
+  - Cycle prevention blocks moving a node into its own descendant with a toast error
+  - Confirming the move places the item in the target node's grid via BFS
+  - Cancelling clears the pending state, item returns to original position
+  - `pnpm build` passes
+
+### Task 43: Enable DnD Outside Edit Mode
+- **Status:** `[ ]`
+- **Files:** `src/components/grid/grid-view.tsx` (update)
+- **Dependencies:** Task 42
+- **Actions:**
+  - Merge `EditableGridDropCell` and `StaticGridCell` into a single `GridDropCell` that is always droppable. Visual edit-mode affordances (dotted borders, jiggle, X buttons, + icon) remain edit-mode-only
+  - Remove `disabled: !isEditMode` from `useDraggable` in both `DraggableNodeCard` and `DraggableBitCard`. Activation constraints already exist (`distance: 8` mouse, `delay: 250` touch)
+  - Remove `disabled: !isEditMode` from `useDroppable` in `DraggableNodeCard` (node-card drop target)
+  - Confirm `breadcrumbs.tsx` still has `disabled: !isEditMode` on its droppable — breadcrumb drops remain edit-mode-only (no change needed)
+  - Delete the `EditableGridDropCell` and `StaticGridCell` function definitions
+- **Acceptance:**
+  - Without edit mode: drag a node/bit to reposition on grid → works
+  - Without edit mode: drag a node/bit onto another node → confirmation dialog appears
+  - Without edit mode: drag onto breadcrumb → does NOT work (edit-mode gate preserved)
+  - In edit mode: jiggle, X buttons, dotted borders, + icons all still render
+  - `pnpm build` passes
+
+### Task 44: Create Dialog Improvements
+- **Status:** `[ ]`
+- **Files:** `src/components/ui/textarea.tsx` (create via shadcn), `src/lib/constants/color-palette.ts` (create), `src/lib/constants/node-icons.ts` (update), `src/components/grid/create-node-dialog.tsx` (update), `src/components/grid/create-bit-dialog.tsx` (update), `src/components/layout/grid-runtime.tsx` (update if types change)
+- **Dependencies:** Task 40
+- **Actions:**
+  - Add shadcn textarea: `pnpm dlx shadcn@latest add textarea`. If command fails, create `textarea.tsx` manually matching shadcn conventions
+  - Create `src/lib/constants/color-palette.ts` with 10 curated hex colors (`COLOR_PALETTE` array) and `getRandomColor()` helper. Colors: blue, red, green, amber, violet, pink, cyan, orange, indigo, teal
+  - Expand `src/lib/constants/node-icons.ts` from ~25 to ~40 curated icons. Add task/project-relevant icons from Lucide: `ClipboardList`, `ListTodo`, `CalendarDays`, `Timer`, `Alarm`, `PenTool`, `Image`, `Video`, `Headphones`, `BookOpen`, `Archive`, `FolderOpen`, `Layers`, `Tag`, `Pin`
+  - Update `create-node-dialog.tsx`: on closed→open transition, randomize icon (`NODE_ICON_NAMES[random]`) and color (`getRandomColor()`). Add `description` state + `<Textarea>` field below title (placeholder "Description (optional)", maxLength 500). Wire `description` through `onSubmit`. Validation errors must not reshuffle selections
+  - Update `create-bit-dialog.tsx`: on closed→open transition, randomize icon. Add `description` state + `<Textarea>` (maxLength 1000). Wire `description` through `onSubmit` (update `CreateBitDialogValues` type to include `description`)
+  - Update `grid-runtime.tsx` submit handlers if types changed — both already accept `description` from Task 40
+- **Acceptance:**
+  - Opening create node dialog shows random icon and random color (different on each open)
+  - Opening create bit dialog shows random icon
+  - Validation error does not reshuffle icon/color
+  - Description field present and optional in both dialogs
+  - Created items have description persisted (visible in edit dialog / bit detail)
+  - Expanded icon grid shows ~40 icons
+  - `pnpm build` passes
+
+### Task 45: Visual Polish
+- **Status:** `[ ]`
+- **Files:** `src/components/grid/bit-card.tsx` (update), `src/app/globals.css` (update), `src/components/grid/grid-view.tsx` (update), `src/lib/animations/grid.ts` (update), `src/components/grid/grid-cell.tsx` (update)
+- **Dependencies:** Task 40
+- **Actions:**
+  - Bit card line-clamp-2: in `bit-card.tsx`, replace `truncate` with `line-clamp-2` on the title `<p>`. Change parent flex from `items-center` to `items-start` so icon and priority badge align to top of multi-line text
+  - Level background colors: add CSS variables `--grid-bg-l0` through `--grid-bg-l3` to `globals.css` `:root` and `.dark` (values per DESIGN_TOKENS.md). In `grid-view.tsx`, apply level-aware `backgroundColor` via inline style using `hsl(var(--grid-bg-lN))`
+  - Remove vignette overlay: delete the vignette `motion.div` from `grid-view.tsx`. Remove `vignetteVariants` import. Delete `vignetteVariants` export from `src/lib/animations/grid.ts`
+  - Creation animation: add `creationVariants` to `grid.ts` — `initial: { scale: 0.85, opacity: 0 }`, `animate: { scale: 1, opacity: 1 }` with spring transition (`stiffness: 400, damping: 25`). Wrap node/bit cards in `AnimatePresence` + `motion.div` with these variants
+  - Deletion animation: add `exit` to `creationVariants` — `{ scale: 0.9, opacity: 0, y: 8 }` with `duration: 0.2, ease: "easeIn"`
+  - Square add-target: in `grid-cell.tsx`, update empty edit-mode cell affordance: wrap + button in `aspect-square w-full max-w-[4rem] m-auto` container within the cell
+- **Acceptance:**
+  - Bit titles wrap to 2 lines before clipping
+  - Grid background color changes subtly with each level (lighter/darker progression)
+  - No vignette overlay renders at any level
+  - New nodes/bits animate in with a spring scale+fade
+  - Deleted items animate out with a shrink+fade
+  - Empty cells in edit mode show a square dotted + target centered within the rectangular cell
+  - `pnpm build` passes

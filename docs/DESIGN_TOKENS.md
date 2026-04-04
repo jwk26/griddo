@@ -13,7 +13,7 @@ Values that differ from `docs/design-system-preview.html` **on purpose**:
 | # | Token / Component | HTML reference | This file | Reason |
 |---|-------------------|---------------|-----------|--------|
 | 1 | Font family | Inter (Google Fonts) | Geist Sans | Explicit project decision — Geist is the chosen system font |
-| 2 | Sidebar collapsed width | `52px` icon strip | `0rem` (hidden) | GridDO sidebar folds off-screen completely; icon strip is a different interaction model |
+| 2 | Sidebar model | `52px` icon strip | `3rem` (48px) fixed icon rail, always visible | Phase 9: sidebar is now a permanent icon rail — no fold/unfold. Closest to the reference's icon strip model |
 
 ---
 
@@ -100,15 +100,14 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
     --grid-line-opacity-l2: 0.08;
     --grid-line-opacity-l3: 0.05;          /* Level 3 — thinnest, densest */
 
-    /* Vignette (inner shadow at screen edges, per depth level) */
-    --vignette-intensity-l0: 0;            /* No vignette at Level 0 */
-    --vignette-intensity-l1: 0.15;
-    --vignette-intensity-l2: 0.3;
-    --vignette-intensity-l3: 0.45;
+    /* Level Depth Backgrounds (replaces vignette — Phase 9) */
+    --grid-bg-l0: 0 0% 100%;              /* white — same as --background */
+    --grid-bg-l1: 220 15% 97%;            /* cool gray tint */
+    --grid-bg-l2: 220 15% 94%;            /* deeper */
+    --grid-bg-l3: 220 15% 91%;            /* deepest */
 
     /* Layout Dimensions */
-    --sidebar-width: 14rem;                /* 224px — expanded sidebar */
-    --sidebar-width-collapsed: 0rem;       /* 0px — fully hidden when folded */
+    --sidebar-width: 3rem;                 /* 48px — fixed icon rail (Phase 9: was 14rem foldable) */
     --breadcrumb-height: 3rem;             /* 48px */
     --bit-detail-max-width: 40rem;         /* 640px — Bit detail popup */
     --bit-detail-max-height: 85vh;
@@ -163,13 +162,14 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
     /* Grid lines lighten on dark background */
     --grid-line-color: 240 5% 65%;
 
+    /* Level Depth Backgrounds — dark mode (progressively darker) */
+    --grid-bg-l0: 240 10% 3.9%;           /* same as --background dark */
+    --grid-bg-l1: 220 15% 6%;
+    --grid-bg-l2: 220 15% 5%;
+    --grid-bg-l3: 220 15% 4%;
+
     /* Page background — dark mode */
     --page-bg: hsl(240 10% 6%);            /* near-black, slightly lighter than --background */
-
-    /* Vignette uses darker shadow on dark mode */
-    --vignette-intensity-l1: 0.2;
-    --vignette-intensity-l2: 0.4;
-    --vignette-intensity-l3: 0.55;
 }
 
 @layer base {
@@ -250,7 +250,6 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
 
   /* ── Spacing — generates w-*, p-*, m-*, gap-* utilities ── */
   --spacing-sidebar: var(--sidebar-width);
-  --spacing-sidebar-collapsed: var(--sidebar-width-collapsed);
   --spacing-breadcrumb: var(--breadcrumb-height);
 
   /* ── Container — generates max-w-* utilities ── */
@@ -294,7 +293,7 @@ The following CSS variables are consumed via `var()` in component styles or Java
 | `--aging-fresh-filter`, `--aging-stagnant-filter`, `--aging-neglected-filter`, `--aging-dust-opacity` | Applied as `filter:` values — stagnant includes `brightness(0.9)`, neglected `brightness(0.75)` |
 | `--grid-cols`, `--grid-rows`, `--grid-gap`, `--grid-cell-min` | Consumed by CSS Grid template or inline styles |
 | `--grid-line-color`, `--grid-line-opacity-l*` | Per-level logic via inline styles |
-| `--vignette-intensity-l*` | Consumed by Motion animation values |
+| `--grid-bg-l0` through `--grid-bg-l3` | Per-level background via inline styles |
 | `--calendar-node-pool-ratio`, `--calendar-day-min-width` | CSS flexbox/grid or inline styles |
 | `--bit-detail-max-height` | Inline style or direct CSS `max-height` |
 
@@ -315,11 +314,11 @@ The following CSS variables are consumed via `var()` in component styles or Java
 | Urgency blink | CSS `animate-urgency-blink-{1,2,3}` | `@theme inline` keyframe |
 | Floating idle | CSS `animate-float` | `@theme inline` keyframe |
 | Sinking (completion) | Motion `AnimatePresence` + exit variant | `src/lib/animations/grid.ts` |
+| Creation (node/bit appear) | Motion spring scale+fade (`stiffness: 400, damping: 25`) | `src/lib/animations/grid.ts` |
+| Deletion (node/bit remove) | Motion exit shrink+fade (`duration: 0.2, easeIn`) | `src/lib/animations/grid.ts` |
 | Task tossing (drag into Node) | Motion spring transition | `src/lib/animations/grid.ts` |
 | Magnet snap (grid/calendar) | Motion spring with damping | `src/lib/animations/grid.ts` |
-| Vignette depth transition | Motion `animate` on opacity | `src/lib/animations/grid.ts` |
-| Day column expand (calendar) | Motion layout animation + vignette | `src/lib/animations/calendar.ts` |
-| Sidebar fold/unfold | Motion layout animation | `src/lib/animations/layout.ts` |
+| Day column expand (calendar) | Motion layout animation | `src/lib/animations/calendar.ts` |
 | Search overlay open/close | Motion fade + scale | `src/lib/animations/layout.ts` |
 | Bit detail popup | Motion fade + slide-up | `src/lib/animations/layout.ts` |
 
@@ -464,20 +463,14 @@ Two-row layout: top row has content, bottom row has progress (only when chunks e
 ### Sidebar
 
 ```tsx
-{/* Sidebar — foldable, fixed left */}
-<aside className={cn(
-  "fixed left-0 top-0 h-full bg-background border-r border-border",
-  "flex flex-col items-center gap-1 py-4 px-2 z-40 transition-all",
-  isOpen ? "w-sidebar" : "w-sidebar-collapsed",
-)}>
-  {/* Sidebar buttons: +, Pencil, Search, Theme, Calendar, Trash, Labs */}
-  <SidebarButton icon={Plus} label="New" />
-  <SidebarButton icon={Pencil} label="Edit" />
+{/* Sidebar — fixed icon rail, always visible (Phase 9: was foldable) */}
+<nav className="fixed left-0 top-0 h-full w-sidebar bg-background border-r border-border flex flex-col items-center gap-1 py-4 px-1 z-40">
+  {/* Top icons */}
+  <SidebarButton icon={Plus} label="New" />        {/* triggers add-flow */}
+  <SidebarButton icon={Pencil} label="Edit" />     {/* edit mode toggle */}
   <SidebarButton icon={Search} label="Search" />
-  <SidebarButton icon={theme === "dark" ? Sun : Moon} label="Theme" />
   <div className="relative">
     <SidebarButton icon={Calendar} label="Calendar" />
-    {/* Urgency notification dot */}
     {urgencyLevel && (
       <span className={cn(
         "absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full",
@@ -487,7 +480,13 @@ Two-row layout: top row has content, bottom row has progress (only when chunks e
       )} />
     )}
   </div>
-</aside>
+
+  {/* Bottom icons — mt-auto pushes to bottom */}
+  <div className="mt-auto flex flex-col items-center gap-1">
+    <SidebarButton icon={Trash2} label="Trash" />  {/* visible on all levels */}
+    <SidebarButton icon={theme === "dark" ? Sun : Moon} label="Theme" />
+  </div>
+</nav>
 ```
 
 ### Search Overlay
