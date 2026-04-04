@@ -42,15 +42,8 @@ vi.mock("@/lib/utils/bfs", () => ({
 }));
 
 vi.mock("@/components/layout/sidebar", () => ({
-  Sidebar: ({
-    level,
-    onAddClick,
-  }: {
-    level?: number;
-    onAddClick?: () => void;
-  }) => (
+  Sidebar: ({ onAddClick }: { onAddClick?: () => void }) => (
     <div>
-      <div data-testid="sidebar-level">{level ?? 0}</div>
       <button aria-label="sidebar-add" onClick={onAddClick} type="button">
         Add
       </button>
@@ -261,8 +254,8 @@ describe("GridRuntime", () => {
       </GridRuntime>,
     );
 
-    expect(screen.getByTestId("sidebar-level")).toHaveTextContent("0");
-    expect(screen.queryByTestId("breadcrumbs")).not.toBeInTheDocument();
+    expect(screen.getByTestId("display-level")).toHaveAttribute("data-level", "0");
+    expect(screen.getByTestId("breadcrumbs")).toHaveTextContent("root");
 
     fireEvent.click(screen.getByLabelText("sidebar-add"));
     fireEvent.click(screen.getByLabelText("submit-node"));
@@ -315,7 +308,7 @@ describe("GridRuntime", () => {
       </GridRuntime>,
     );
 
-    expect(screen.getByTestId("sidebar-level")).toHaveTextContent("1");
+    expect(screen.getByTestId("display-level")).toHaveAttribute("data-level", "1");
     expect(screen.getByTestId("breadcrumbs")).toHaveTextContent(parentNode.id);
 
     fireEvent.click(screen.getByLabelText("add-at-cell"));
@@ -370,7 +363,7 @@ describe("GridRuntime", () => {
       </GridRuntime>,
     );
 
-    expect(screen.getByTestId("sidebar-level")).toHaveTextContent("3");
+    expect(screen.getByTestId("display-level")).toHaveAttribute("data-level", "3");
 
     fireEvent.click(screen.getByLabelText("sidebar-add"));
     fireEvent.click(screen.getByLabelText("submit-bit"));

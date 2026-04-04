@@ -236,8 +236,8 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
     <DeleteFlowContext.Provider value={deleteFlowValue}>
       <div className="flex h-screen overflow-hidden bg-background">
         <Sidebar onAddClick={() => openAdd({ mode: "auto" })} />
-        <main className="relative ml-12 flex flex-1 flex-col overflow-hidden">
-          {nodeId !== null ? <Breadcrumbs nodeId={nodeId} /> : null}
+        <main className="relative ml-12 flex flex-1 flex-col overflow-hidden" data-level={displayLevel} data-testid="display-level">
+          <Breadcrumbs nodeId={nodeId} />
           <AddFlowProvider
             openAddAtCell={(x, y) => openAdd({ mode: "cell", x, y })}
           >
@@ -248,7 +248,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
               onDragStart={handleDragStart}
               sensors={sensors}
             >
-              <div className="relative flex-1 overflow-auto p-2">{children}</div>
+              <div className="relative flex-1 overflow-auto">{children}</div>
             </DndContext>
           </AddFlowProvider>
           <EditModeOverlay />

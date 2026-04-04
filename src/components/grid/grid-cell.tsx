@@ -42,12 +42,10 @@ export function GridCell({
         <button
           type="button"
           aria-label="Add item"
-          className="text-muted-foreground/50 transition-colors hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+          className="m-auto flex aspect-square w-full max-w-[4rem] items-center justify-center text-muted-foreground/50 transition-colors hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           onClick={onAddClick}
         >
-          <div className="m-auto flex aspect-square w-full max-w-[4rem] items-center justify-center">
-            <Plus className="h-5 w-5" />
-          </div>
+          <Plus className="h-5 w-5" />
         </button>
       ) : null}
     </div>
