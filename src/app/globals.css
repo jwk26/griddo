@@ -146,10 +146,10 @@
     --grid-line-opacity-l1: 0.12;
     --grid-line-opacity-l2: 0.08;
     --grid-line-opacity-l3: 0.05;
-    --grid-bg-l0: 0 0% 100%;
-    --grid-bg-l1: 220 15% 97%;
-    --grid-bg-l2: 220 15% 94%;
-    --grid-bg-l3: 220 15% 91%;
+    --grid-bg-l0: 60 10% 97%;
+    --grid-bg-l1: 50 10% 95%;
+    --grid-bg-l2: 45 10% 92%;
+    --grid-bg-l3: 40 10% 89%;
 
     /* Layout Dimensions */
     --sidebar-width: 14rem;
@@ -206,9 +206,9 @@
 
     --grid-line-color: 240 5% 65%;
     --grid-bg-l0: 240 10% 3.9%;
-    --grid-bg-l1: 220 15% 6%;
-    --grid-bg-l2: 220 15% 5%;
-    --grid-bg-l3: 220 15% 4%;
+    --grid-bg-l1: 35 8% 7%;
+    --grid-bg-l2: 35 8% 6%;
+    --grid-bg-l3: 35 8% 5%;
 }
 
 @layer base {

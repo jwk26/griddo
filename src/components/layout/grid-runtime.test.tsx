@@ -256,6 +256,13 @@ describe("GridRuntime", () => {
 
     expect(screen.getByTestId("display-level")).toHaveAttribute("data-level", "0");
     expect(screen.getByTestId("breadcrumbs")).toHaveTextContent("root");
+    expect(screen.getByLabelText("add-at-cell").parentElement?.parentElement).toHaveClass(
+      "relative",
+      "min-w-0",
+      "flex-1",
+      "overflow-y-auto",
+      "overflow-x-hidden",
+    );
 
     fireEvent.click(screen.getByLabelText("sidebar-add"));
     fireEvent.click(screen.getByLabelText("submit-node"));
@@ -275,7 +282,7 @@ describe("GridRuntime", () => {
       });
     });
     expect(getGridOccupancyMock).toHaveBeenCalledWith(null);
-    expect(vi.mocked(findNearestEmptyCell)).toHaveBeenCalledWith(new Set(["0,0"]), 1, 1);
+    expect(vi.mocked(findNearestEmptyCell)).toHaveBeenCalledWith(new Set(["0,0"]), 2, 2);
 
     fireEvent.click(screen.getByLabelText("request-bit-delete"));
     expect(
@@ -332,7 +339,7 @@ describe("GridRuntime", () => {
     expect(vi.mocked(findNearestEmptyCell)).toHaveBeenCalledWith(new Set(["1,1"]), 4, 3);
   });
 
-  it("creates a bit directly on leaf grids and uses the top-right inset origin", async () => {
+  it("creates a bit directly on leaf grids and uses the updated top-right inset origin", async () => {
     const { findNearestEmptyCell } = await import("@/lib/utils/bfs");
     const leafNode = createNode({ id: "leaf-node", level: 2 });
 
@@ -383,8 +390,8 @@ describe("GridRuntime", () => {
     });
     expect(vi.mocked(findNearestEmptyCell)).toHaveBeenCalledWith(
       new Set(["10,1"]),
-      GRID_COLS - 2,
-      1,
+      GRID_COLS - 3,
+      2,
     );
   });
 

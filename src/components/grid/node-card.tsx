@@ -25,19 +25,17 @@ export function NodeCard({
       <button
         type="button"
         className={cn(
-          "flex h-full w-full flex-col items-center justify-center gap-1.5 rounded-xl p-3 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "flex h-full w-full flex-col items-center justify-center gap-1 rounded-2xl p-2 shadow-sm transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           isEditMode && "motion-safe:animate-jiggle",
         )}
         onClick={onClick}
-        style={{ filter: agingFilter }}
+        style={{
+          filter: agingFilter,
+          backgroundColor: node.color.replace("hsl(", "hsla(").replace(")", ", 0.1)"),
+        }}
       >
-        <div
-          className="flex h-14 w-14 items-center justify-center rounded-2xl"
-          style={{ backgroundColor: node.color }}
-        >
-          <Icon className="h-7 w-7 text-white" />
-        </div>
-        <span className="max-w-[5rem] truncate text-xs font-medium text-foreground">
+        <Icon className="h-7 w-7" style={{ color: node.color }} />
+        <span className="max-w-full truncate text-[11px] font-medium text-foreground">
           {node.title}
         </span>
       </button>

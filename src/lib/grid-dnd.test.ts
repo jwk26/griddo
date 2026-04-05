@@ -1,29 +1,73 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { gridCollisionDetection } from "./grid-dnd";
 
 const closestCenterMock = vi.hoisted(() => vi.fn());
+const pointerWithinMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@dnd-kit/core", () => ({
   closestCenter: closestCenterMock,
+  pointerWithin: pointerWithinMock,
 }));
 
 describe("gridCollisionDetection", () => {
-  it("drops grid cells when a node-drop target is present", () => {
+  beforeEach(() => {
+    closestCenterMock.mockReset();
+    pointerWithinMock.mockReset();
+  });
+
+  it("returns node-drop targets when the pointer is inside one", () => {
     const args = { collisionRect: null } as never;
     const nodeTarget = { id: "grid-node-drop:target-node" };
     const cellTarget = { id: "grid-cell:root:1:1" };
 
-    closestCenterMock.mockReturnValue([cellTarget, nodeTarget]);
+    pointerWithinMock.mockReturnValue([cellTarget, nodeTarget]);
 
     expect(gridCollisionDetection(args)).toEqual([nodeTarget]);
+    expect(closestCenterMock).not.toHaveBeenCalled();
   });
 
-  it("keeps cell targets when there is no node-drop target", () => {
+  it("falls back to closestCenter and keeps only grid cells when pointerWithin is empty", () => {
     const args = { collisionRect: null } as never;
     const cellTarget = { id: "grid-cell:root:1:1" };
+    const nodeTarget = { id: "grid-node-drop:adjacent-node" };
 
-    closestCenterMock.mockReturnValue([cellTarget]);
+    pointerWithinMock.mockReturnValue([]);
+    closestCenterMock.mockReturnValue([nodeTarget, cellTarget]);
 
     expect(gridCollisionDetection(args)).toEqual([cellTarget]);
+  });
+
+  it("ignores pointerWithin grid cells and uses the closestCenter fallback", () => {
+    const args = { collisionRect: null } as never;
+    const pointerCellTarget = { id: "grid-cell:root:9:9" };
+    const fallbackCellTarget = { id: "grid-cell:root:2:2" };
+    const fallbackNodeTarget = { id: "grid-node-drop:adjacent-node" };
+
+    pointerWithinMock.mockReturnValue([pointerCellTarget]);
+    closestCenterMock.mockReturnValue([fallbackNodeTarget, fallbackCellTarget]);
+
+    expect(gridCollisionDetection(args)).toEqual([fallbackCellTarget]);
+  });
+
+  it("keeps cell reposition targets in the adjacent-cell scenario", () => {
+    const args = { collisionRect: null } as never;
+    const adjacentNodeTarget = { id: "grid-node-drop:neighbor-node" };
+    const currentCellTarget = { id: "grid-cell:root:4:3" };
+
+    pointerWithinMock.mockReturnValue([]);
+    closestCenterMock.mockReturnValue([adjacentNodeTarget, currentCellTarget]);
+
+    expect(gridCollisionDetection(args)).toEqual([currentCellTarget]);
+  });
+
+  it("returns breadcrumb targets when the pointer is inside one", () => {
+    const args = { collisionRect: null } as never;
+    const breadcrumbTarget = { id: "grid-breadcrumb:parent-node" };
+    const cellTarget = { id: "grid-cell:root:1:1" };
+
+    pointerWithinMock.mockReturnValue([cellTarget, breadcrumbTarget]);
+
+    expect(gridCollisionDetection(args)).toEqual([breadcrumbTarget]);
+    expect(closestCenterMock).not.toHaveBeenCalled();
   });
 });

@@ -183,11 +183,12 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
             <div className="text-sm font-medium text-foreground" id={iconId}>
               Icon
             </div>
-            <div
-              aria-labelledby={iconId}
-              className="grid grid-cols-5 gap-2 sm:grid-cols-6"
-              role="radiogroup"
-            >
+            <div className="max-h-[200px] overflow-y-auto pr-1">
+              <div
+                aria-labelledby={iconId}
+                className="grid grid-cols-7 gap-1.5"
+                role="radiogroup"
+              >
               {NODE_ICON_NAMES.map((iconName) => {
                 const Icon = NODE_ICON_MAP[iconName];
                 const isSelected = iconName === icon;
@@ -198,7 +199,7 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
                     aria-checked={isSelected}
                     aria-label={`${iconName} icon`}
                     className={cn(
-                      "flex size-11 items-center justify-center rounded-md border bg-background text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "flex size-10 items-center justify-center rounded-md border bg-background text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isSelected
                         ? "ring-2 ring-primary ring-offset-2"
                         : "border-input hover:border-primary/50 hover:text-foreground",
@@ -211,6 +212,7 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
                   </button>
                 );
               })}
+              </div>
             </div>
           </div>
 

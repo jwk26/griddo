@@ -119,8 +119,8 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
 
     try {
       const occupied = await getGridOccupancy(nodeId);
-      const originX = placementContext.mode === "auto" ? 1 : placementContext.x;
-      const originY = placementContext.mode === "auto" ? 1 : placementContext.y;
+      const originX = placementContext.mode === "auto" ? 2 : placementContext.x;
+      const originY = placementContext.mode === "auto" ? 2 : placementContext.y;
       const cell = findNearestEmptyCell(occupied, originX, originY);
 
       if (cell === null) {
@@ -180,8 +180,8 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
 
     try {
       const occupied = await getGridOccupancy(nodeId);
-      const originX = placementContext.mode === "auto" ? GRID_COLS - 2 : placementContext.x;
-      const originY = placementContext.mode === "auto" ? 1 : placementContext.y;
+      const originX = placementContext.mode === "auto" ? GRID_COLS - 3 : placementContext.x;
+      const originY = placementContext.mode === "auto" ? 2 : placementContext.y;
       const cell = findNearestEmptyCell(occupied, originX, originY);
 
       if (cell === null) {
@@ -237,20 +237,20 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
       <div className="flex h-screen overflow-hidden bg-background">
         <Sidebar onAddClick={() => openAdd({ mode: "auto" })} />
         <main className="relative ml-12 flex flex-1 flex-col overflow-hidden" data-level={displayLevel} data-testid="display-level">
-          <Breadcrumbs nodeId={nodeId} />
-          <AddFlowProvider
-            openAddAtCell={(x, y) => openAdd({ mode: "cell", x, y })}
+          <DndContext
+            collisionDetection={gridCollisionDetection}
+            onDragEnd={handleDragEnd}
+            onDragOver={handleDragOver}
+            onDragStart={handleDragStart}
+            sensors={sensors}
           >
-            <DndContext
-              collisionDetection={gridCollisionDetection}
-              onDragEnd={handleDragEnd}
-              onDragOver={handleDragOver}
-              onDragStart={handleDragStart}
-              sensors={sensors}
+            <Breadcrumbs nodeId={nodeId} />
+            <AddFlowProvider
+              openAddAtCell={(x, y) => openAdd({ mode: "cell", x, y })}
             >
-              <div className="relative flex-1 overflow-auto">{children}</div>
-            </DndContext>
-          </AddFlowProvider>
+              <div className="relative min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-1">{children}</div>
+            </AddFlowProvider>
+          </DndContext>
           <EditModeOverlay />
           <CreateItemChooser
             onChooseBit={() => setOpenDialogType("bit")}

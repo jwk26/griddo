@@ -1,4 +1,4 @@
-import { closestCenter, type CollisionDetection } from "@dnd-kit/core";
+import { closestCenter, pointerWithin, type CollisionDetection } from "@dnd-kit/core";
 
 export type GridDropData =
   | {
@@ -52,20 +52,20 @@ export function getGridBreadcrumbDropId(nodeId: string | null): string {
 }
 
 export const gridCollisionDetection: CollisionDetection = (args) => {
-  const candidates = closestCenter(args);
-  const hasNodeDrop = candidates.some(
+  const pointerCandidates = pointerWithin(args).filter(
     (candidate) =>
       typeof candidate.id === "string" &&
-      candidate.id.startsWith("grid-node-drop:"),
+      (candidate.id.startsWith("grid-node-drop:") ||
+        candidate.id.startsWith("grid-breadcrumb:")),
   );
 
-  if (hasNodeDrop) {
-    return candidates.filter(
-      (candidate) =>
-        typeof candidate.id === "string" &&
-        !candidate.id.startsWith("grid-cell:"),
-    );
+  if (pointerCandidates.length > 0) {
+    return pointerCandidates;
   }
 
-  return candidates;
+  return closestCenter(args).filter(
+    (candidate) =>
+      typeof candidate.id === "string" &&
+      candidate.id.startsWith("grid-cell:"),
+  );
 };

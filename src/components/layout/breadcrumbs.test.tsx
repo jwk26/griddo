@@ -45,6 +45,7 @@ describe("Breadcrumbs", () => {
 
     render(<Breadcrumbs nodeId={null} />);
 
+    expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toHaveClass("items-center");
     expect(screen.getByRole("button", { name: "Home" })).toBeInTheDocument();
     expect(screen.queryByText("...")).not.toBeInTheDocument();
     expect(useBreadcrumbChainMock).toHaveBeenCalledWith("");
@@ -70,12 +71,13 @@ describe("Breadcrumbs", () => {
     render(<Breadcrumbs nodeId={current.id} />);
 
     expect(screen.getByText("Roadmap")).toBeInTheDocument();
+    expect(screen.queryByText("Current sprint focus")).not.toBeInTheDocument();
 
     const homeButton = screen.getByRole("button", { name: "Home" });
     const rootButton = screen.getByRole("button", { name: "Projects" });
     const childButton = screen.getByRole("button", { name: "Q2" });
 
-    expect(screen.getByText("Current sprint focus")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toHaveClass("items-center");
     expect(rootButton).toHaveAttribute("data-drop-zone", "breadcrumb-node");
     expect(rootButton).toHaveAttribute("data-node-id", root.id);
     expect(childButton).toHaveAttribute("data-drop-zone", "breadcrumb-node");

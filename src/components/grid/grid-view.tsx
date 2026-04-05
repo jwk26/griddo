@@ -70,6 +70,7 @@ function GridDropCell({
     >
       <GridCell
         borderOpacity={borderOpacity}
+        isDragOver={isOver}
         isEditMode={isEditMode}
         isEmpty={isEmpty}
         onAddClick={onAddClick}

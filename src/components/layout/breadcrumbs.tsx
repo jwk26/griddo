@@ -49,7 +49,7 @@ export function Breadcrumbs({ nodeId }: { nodeId: string | null }) {
     return (
       <nav
         aria-label="Breadcrumb"
-        className="flex h-breadcrumb flex-col justify-center gap-0.5 border-b border-border px-4"
+        className="flex h-breadcrumb items-center border-b border-border px-4"
       >
         <div className="flex items-center gap-1.5 overflow-x-auto text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <BreadcrumbSegmentButton
@@ -68,7 +68,7 @@ export function Breadcrumbs({ nodeId }: { nodeId: string | null }) {
   return (
     <nav
       aria-label="Breadcrumb"
-      className="flex h-breadcrumb flex-col justify-center gap-0.5 border-b border-border px-4"
+      className="flex h-breadcrumb items-center border-b border-border px-4"
     >
       <div className="flex items-center gap-1.5 overflow-x-auto text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <BreadcrumbSegmentButton label="Home" nodeId={null} onClick={() => router.push("/")} />
@@ -87,11 +87,6 @@ export function Breadcrumbs({ nodeId }: { nodeId: string | null }) {
           {currentNode?.title ?? "..."}
         </span>
       </div>
-      {currentNode?.description ? (
-        <p className="truncate pl-0.5 text-xs text-muted-foreground">
-          {currentNode.description}
-        </p>
-      ) : null}
     </nav>
   );
 }
