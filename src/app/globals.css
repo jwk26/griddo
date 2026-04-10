@@ -69,146 +69,171 @@
   --animate-float: float 4s ease-in-out infinite;
 
   @keyframes jiggle {
-    0%, 100% { transform: rotate(-1.5deg); }
-    50% { transform: rotate(1.5deg); }
+    0%,
+    100% {
+      transform: rotate(-1.5deg);
+    }
+    50% {
+      transform: rotate(1.5deg);
+    }
   }
   @keyframes urgency-blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
   }
   @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
   }
 }
 
 :root {
-    /* ── Shadcn Core Tokens (Light Mode) ── */
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+  /* ── Shadcn Core Tokens (Light Mode) ── */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
 
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
+  --primary: 221 83% 53%;
+  --primary-foreground: 210 40% 98%;
 
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 6% 10%;
+  --secondary: 240 5% 96%;
+  --secondary-foreground: 240 6% 10%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+  --muted: 240 5% 96%;
+  --muted-foreground: 240 4% 46%;
 
-    --accent: 240 5% 96%;
-    --accent-foreground: 240 6% 10%;
+  --accent: 240 5% 96%;
+  --accent-foreground: 240 6% 10%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 221 83% 53%;
+  --border: 240 6% 90%;
+  --input: 240 6% 90%;
+  --ring: 221 83% 53%;
 
-    --radius: 0.625rem;
+  --radius: 0.625rem;
 
-    /* ── GridDO Extension Tokens ── */
+  /* ── GridDO Extension Tokens ── */
 
-    /* Priority Colors */
-    --priority-high: 0 84% 60%;
-    --priority-high-bg: 0 84% 97%;
-    --priority-mid: 45 93% 47%;
-    --priority-mid-bg: 45 93% 97%;
-    --priority-low: 217 91% 60%;
-    --priority-low-bg: 217 91% 97%;
+  /* Priority Colors */
+  --priority-high: 0 84% 60%;
+  --priority-high-bg: 0 84% 97%;
+  --priority-mid: 45 93% 47%;
+  --priority-mid-bg: 45 93% 97%;
+  --priority-low: 217 91% 60%;
+  --priority-low-bg: 217 91% 97%;
 
-    /* Urgency Colors */
-    --urgency-1: 0 72% 70%;
-    --urgency-2: 0 84% 60%;
-    --urgency-3: 0 72% 45%;
-    --urgency-badge: 0 84% 60%;
+  /* Urgency Colors */
+  --urgency-1: 0 72% 70%;
+  --urgency-2: 0 84% 60%;
+  --urgency-3: 0 72% 45%;
+  --urgency-badge: 0 84% 60%;
 
-    /* Aging System */
-    --aging-fresh-filter: saturate(1);
-    --aging-stagnant-filter: saturate(0.5) brightness(0.9);
-    --aging-neglected-filter: saturate(0.2) brightness(0.75);
-    --aging-dust-opacity: 0.3;
+  /* Aging System */
+  --aging-fresh-filter: saturate(1);
+  --aging-stagnant-filter: saturate(0.5) brightness(0.9);
+  --aging-neglected-filter: saturate(0.2) brightness(0.75);
+  --aging-dust-opacity: 0.3;
 
-    /* Grid Layout */
-    --grid-cols: 12;
-    --grid-rows: 8;
-    --grid-gap: 0.5rem;
-    --grid-cell-min: 5rem;
-    --grid-line-color: 240 6% 90%;
-    --grid-line-opacity-l0: 0.15;
-    --grid-line-opacity-l1: 0.12;
-    --grid-line-opacity-l2: 0.08;
-    --grid-line-opacity-l3: 0.05;
-    --grid-bg-l0: 60 10% 97%;
-    --grid-bg-l1: 50 10% 95%;
-    --grid-bg-l2: 45 10% 92%;
-    --grid-bg-l3: 40 10% 89%;
+  /* Grid Layout */
+  --grid-cols: 18;
+  --grid-rows: 9;
+  --grid-gap: 0.5rem;
+  --grid-cell-min: 5rem;
+  --grid-inset: 0.75rem;
+  --grid-node-max-size: 96px;
+  /* Static fallbacks — overridden by cell-scoped container query rules below */
+  --grid-node-size: 6.15rem;
+  --grid-node-icon-size: 2rem;
+  --grid-node-title-height: 1.4rem;
+  --grid-node-padding-x: 0.7rem;
+  --grid-node-padding-top: 0.7rem;
+  --grid-node-padding-bottom: 0.6rem;
+  --grid-node-icon-lift: 0.65rem;
+  --grid-line-color: 240 6% 90%;
+  --grid-line-opacity-l0: 0.15;
+  --grid-line-opacity-l1: 0.12;
+  --grid-line-opacity-l2: 0.08;
+  --grid-line-opacity-l3: 0.05;
+  --grid-bg-l0: 48 38% 91%;
+  --grid-bg-l1: 48 30% 88%;
+  --grid-bg-l2: 48 22% 85%;
+  --grid-bg-l3: 48 14% 82%;
 
-    /* Layout Dimensions */
-    --sidebar-width: 14rem;
-    --sidebar-collapsed-width: 0rem;
-    --breadcrumb-height: 3rem;
-    --bit-detail-max-width: 40rem;
-    --bit-detail-max-height: 85vh;
-    --search-overlay-width: 36rem;
+  /* Layout Dimensions */
+  --sidebar-width: 14rem;
+  --sidebar-collapsed-width: 0rem;
+  --breadcrumb-height: 3rem;
+  --bit-detail-max-width: 40rem;
+  --bit-detail-max-height: 85vh;
+  --search-overlay-width: 36rem;
 
-    /* Page Background (distinct from --background card surface) */
-    --page-bg: hsl(38 28% 91%);            /* warm beige — body background in light mode */
+  /* Page Background (distinct from --background card surface) */
+  --page-bg: hsl(38 28% 91%); /* warm beige — body background in light mode */
 
-    /* Calendar Layout */
-    --calendar-pool-width: 18rem;
-    --calendar-node-pool-ratio: 0.6;
-    --calendar-day-min-width: 8rem;
+  /* Calendar Layout */
+  --calendar-pool-width: 18rem;
+  --calendar-node-pool-ratio: 0.6;
+  --calendar-day-min-width: 8rem;
 }
 
 .dark {
-    /* ── Shadcn Core Tokens (Dark Mode) ── */
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+  /* ── Shadcn Core Tokens (Dark Mode) ── */
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
 
-    --card: 240 6% 8%;                     /* elevated surface — distinct from background */
-    --card-foreground: 0 0% 98%;
+  --card: 240 6% 8%; /* elevated surface — distinct from background */
+  --card-foreground: 0 0% 98%;
 
-    --popover: 240 6% 8%;                  /* same elevation as card */
-    --popover-foreground: 0 0% 98%;
+  --popover: 240 6% 8%; /* same elevation as card */
+  --popover-foreground: 0 0% 98%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 222 47% 11%;
 
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 0 0% 98%;
+  --secondary: 240 4% 16%;
+  --secondary-foreground: 0 0% 98%;
 
-    --muted: 240 4% 16%;
-    --muted-foreground: 240 5% 65%;
+  --muted: 240 4% 16%;
+  --muted-foreground: 240 5% 65%;
 
-    --accent: 240 4% 16%;
-    --accent-foreground: 0 0% 98%;
+  --accent: 240 4% 16%;
+  --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 98%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 0 0% 98%;
 
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 217 91% 60%;
+  --border: 240 4% 16%;
+  --input: 240 4% 16%;
+  --ring: 217 91% 60%;
 
-    /* ── GridDO Extension Overrides (Dark Mode) ── */
+  /* ── GridDO Extension Overrides (Dark Mode) ── */
 
-    --priority-high-bg: 0 84% 10%;
-    --priority-mid-bg: 45 93% 10%;
-    --priority-low-bg: 217 91% 10%;
+  --priority-high-bg: 0 84% 10%;
+  --priority-mid-bg: 45 93% 10%;
+  --priority-low-bg: 217 91% 10%;
 
-    --grid-line-color: 240 5% 65%;
-    --grid-bg-l0: 240 10% 3.9%;
-    --grid-bg-l1: 35 8% 7%;
-    --grid-bg-l2: 35 8% 6%;
-    --grid-bg-l3: 35 8% 5%;
+  --grid-line-color: 240 5% 65%;
+  --grid-bg-l0: 48 15% 12%;
+  --grid-bg-l1: 48 12% 10%;
+  --grid-bg-l2: 48 9% 8%;
+  --grid-bg-l3: 48 6% 6%;
 }
 
 @layer base {
@@ -235,4 +260,35 @@
       scroll-behavior: auto !important;
     }
   }
+}
+
+/* ── Grid Cell Container Queries ── */
+
+/* The cell wrapper becomes a named size container */
+.grid-cell-container {
+  container-type: size;
+  container-name: grid-cell;
+}
+
+/* Derived tokens set on the CHILD — cqw/cqh resolve against parent container */
+@container grid-cell (min-width: 0px) {
+  .grid-cell-container > * {
+    --grid-node-size: min(
+      calc(min(100cqw, 100cqh) - var(--grid-inset)),
+      var(--grid-node-max-size, 96px)
+    );
+    --grid-node-icon-size:      max(calc(var(--grid-node-size) * 0.325), 1.5rem);
+    --grid-node-title-height:   max(calc(var(--grid-node-size) * 0.23),  1.125rem);
+    --grid-node-padding-x:      max(calc(var(--grid-node-size) * 0.11),  0.5rem);
+    --grid-node-padding-top:    max(calc(var(--grid-node-size) * 0.11),  0.5rem);
+    --grid-node-padding-bottom: max(calc(var(--grid-node-size) * 0.1),   0.4375rem);
+    --grid-node-icon-lift:      max(calc(var(--grid-node-size) * 0.1),   0.375rem);
+  }
+}
+
+/* ── Drag focus hierarchy ── */
+[data-dragging="true"] [data-grid-item]:not([data-drag-active="true"]) {
+  opacity: 0.4;
+  filter: saturate(0.5);
+  transition: opacity 0.15s, filter 0.15s;
 }

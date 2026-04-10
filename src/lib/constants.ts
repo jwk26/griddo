@@ -1,6 +1,6 @@
 // Grid dimensions
-export const GRID_COLS = 12;
-export const GRID_ROWS = 8;
+export const GRID_COLS = 18;
+export const GRID_ROWS = 9;
 
 // Aging thresholds (days since mtime)
 export const AGING_FRESH_DAYS = 5;

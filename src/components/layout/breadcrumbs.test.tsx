@@ -19,7 +19,6 @@ function createNode(overrides: Partial<Node>): Node {
   return {
     id: overrides.id ?? crypto.randomUUID(),
     title: overrides.title ?? "Node",
-    description: overrides.description ?? "",
     color: overrides.color ?? "hsl(221, 83%, 53%)",
     icon: overrides.icon ?? "Folder",
     deadline: overrides.deadline ?? null,
@@ -62,7 +61,6 @@ describe("Breadcrumbs", () => {
     const current = createNode({
       id: "current-node",
       title: "Roadmap",
-      description: "Current sprint focus",
       parentId: child.id,
       level: 2,
     });

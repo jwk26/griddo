@@ -20,6 +20,7 @@ Values that differ from `docs/design-system-preview.html` **on purpose**:
 ## Table of Contents
 
 - [CSS Variables](#css-variables)
+- [Responsive Grid Node Tokens](#responsive-grid-node-tokens)
 - [Tailwind v4 Theme Bridge](#tailwind-v4-theme-bridge)
 - [Font Loading](#font-loading)
 - [Component Usage Quick Reference](#component-usage-quick-reference)
@@ -89,22 +90,32 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
     --aging-neglected-filter: saturate(0.2) brightness(0.75);
     --aging-dust-opacity: 0.3;
 
-    /* Grid Layout */
-    --grid-cols: 12;
-    --grid-rows: 8;
+    /* Grid Layout — input tokens / policy knobs */
+    --grid-cols: 18;                       /* ← 12 (original) → 15 → 18 during Phase 9 density tuning */
+    --grid-rows: 9;
     --grid-gap: 0.5rem;                    /* 8px — gap between cells */
     --grid-cell-min: 5rem;                 /* 80px — minimum cell dimension */
+    --grid-inset: 0.75rem;                 /* 12px — spacing within cell; used in node sizing formula */
+    --grid-node-max-size: 96px;            /* cap — node squares do not exceed this on large displays */
     --grid-line-color: 240 6% 90%;         /* same as --border */
     --grid-line-opacity-l0: 0.15;          /* Level 0 — standard density */
     --grid-line-opacity-l1: 0.12;
     --grid-line-opacity-l2: 0.08;
     --grid-line-opacity-l3: 0.05;          /* Level 3 — thinnest, densest */
+    /* Node sizing — static fallbacks; overridden by cell-scoped container query rules in globals.css */
+    --grid-node-size: 6.15rem;
+    --grid-node-icon-size: 2rem;
+    --grid-node-title-height: 1.4rem;
+    --grid-node-padding-x: 0.7rem;
+    --grid-node-padding-top: 0.7rem;
+    --grid-node-padding-bottom: 0.6rem;
+    --grid-node-icon-lift: 0.65rem;
 
-    /* Level Depth Backgrounds (replaces vignette — Phase 9) */
-    --grid-bg-l0: 0 0% 100%;              /* white — same as --background */
-    --grid-bg-l1: 220 15% 97%;            /* cool gray tint */
-    --grid-bg-l2: 220 15% 94%;            /* deeper */
-    --grid-bg-l3: 220 15% 91%;            /* deepest */
+    /* Level Depth Backgrounds — warm beige scale (Phase 9) */
+    --grid-bg-l0: 48 38% 91%;             /* warm beige — L0 */
+    --grid-bg-l1: 48 30% 88%;             /* slightly deeper */
+    --grid-bg-l2: 48 22% 85%;             /* deeper */
+    --grid-bg-l3: 48 14% 82%;             /* deepest */
 
     /* Layout Dimensions */
     --sidebar-width: 3rem;                 /* 48px — fixed icon rail (Phase 9: was 14rem foldable) */
@@ -162,11 +173,11 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
     /* Grid lines lighten on dark background */
     --grid-line-color: 240 5% 65%;
 
-    /* Level Depth Backgrounds — dark mode (progressively darker) */
-    --grid-bg-l0: 240 10% 3.9%;           /* same as --background dark */
-    --grid-bg-l1: 220 15% 6%;
-    --grid-bg-l2: 220 15% 5%;
-    --grid-bg-l3: 220 15% 4%;
+    /* Level Depth Backgrounds — dark mode, warm tones (Phase 9) */
+    --grid-bg-l0: 48 15% 12%;
+    --grid-bg-l1: 48 12% 10%;
+    --grid-bg-l2: 48 9% 8%;
+    --grid-bg-l3: 48 6% 6%;
 
     /* Page background — dark mode */
     --page-bg: hsl(240 10% 6%);            /* near-black, slightly lighter than --background */
@@ -194,6 +205,74 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
   }
 }
 ```
+
+---
+
+## Responsive Grid Node Tokens
+
+Grid node sizing uses a **three-layer token model** to keep the design-token workflow as the authority while adapting node dimensions to actual cell size at runtime.
+
+### Layer 1 — `:root` input tokens / policy knobs
+
+Defined in `globals.css` `:root` and documented here. Tunable by design.
+
+| Token | Value | Role |
+|-------|-------|------|
+| `--grid-inset` | `0.75rem` | Spacing subtracted from cell dimension to get node size |
+| `--grid-node-max-size` | `96px` | Cap — nodes do not exceed this on large displays |
+| `--grid-cols` | `18` | Grid column count |
+| `--grid-rows` | `9` | Grid row count |
+| `--grid-gap` | `0.5rem` | Gap between cells |
+
+### Layer 2 — Cell-scoped derived tokens
+
+Set on children of each `.grid-cell-container` div via CSS container queries. `cqw`/`cqh` units resolve against the cell container — no JS required.
+
+**Container rule (in `globals.css`):**
+
+```css
+.grid-cell-container {
+  container-type: size;
+  container-name: grid-cell;
+}
+
+@container grid-cell (min-width: 0px) {
+  .grid-cell-container > * {
+    --grid-node-size: min(
+      calc(min(100cqw, 100cqh) - var(--grid-inset)),
+      var(--grid-node-max-size, 96px)
+    );
+    --grid-node-icon-size:      max(calc(var(--grid-node-size) * 0.325), 1.5rem);
+    --grid-node-title-height:   max(calc(var(--grid-node-size) * 0.23),  1.125rem);
+    --grid-node-padding-x:      max(calc(var(--grid-node-size) * 0.11),  0.5rem);
+    --grid-node-padding-top:    max(calc(var(--grid-node-size) * 0.11),  0.5rem);
+    --grid-node-padding-bottom: max(calc(var(--grid-node-size) * 0.1),   0.4375rem);
+    --grid-node-icon-lift:      max(calc(var(--grid-node-size) * 0.1),   0.375rem);
+  }
+}
+```
+
+**Proportional ratios and readability floors:**
+
+| Token | Ratio | Floor |
+|-------|-------|-------|
+| `--grid-node-icon-size` | `nodeSz × 0.325` | `1.5rem` (24px) |
+| `--grid-node-title-height` | `nodeSz × 0.23` | `1.125rem` (18px) |
+| `--grid-node-padding-x` | `nodeSz × 0.11` | `0.5rem` (8px) |
+| `--grid-node-padding-top` | `nodeSz × 0.11` | `0.5rem` (8px) |
+| `--grid-node-padding-bottom` | `nodeSz × 0.10` | `0.4375rem` (7px) |
+| `--grid-node-icon-lift` | `nodeSz × 0.10` | `0.375rem` (6px) |
+
+**CSS scope note:** An element with `container-type: size` cannot use `cqw`/`cqh` to query its own dimensions — those units resolve against the nearest *ancestor* container. The derived token vars are therefore set on `.grid-cell-container > *` (children), not on the container element itself.
+
+### Layer 3 — Component consumers
+
+Components consume `--grid-node-*` vars unchanged. No component edits are needed when tuning Layer 1 policy knobs.
+
+| Component | Tokens consumed |
+|-----------|----------------|
+| `node-card.tsx` | `--grid-node-size`, `--grid-node-icon-size`, `--grid-node-title-height`, `--grid-node-padding-*`, `--grid-node-icon-lift` |
+| `grid-cell.tsx` | `--grid-node-size` (dotted area and drag indicator footprint) |
 
 ---
 
@@ -292,6 +371,8 @@ The following CSS variables are consumed via `var()` in component styles or Java
 |---|---|
 | `--aging-fresh-filter`, `--aging-stagnant-filter`, `--aging-neglected-filter`, `--aging-dust-opacity` | Applied as `filter:` values — stagnant includes `brightness(0.9)`, neglected `brightness(0.75)` |
 | `--grid-cols`, `--grid-rows`, `--grid-gap`, `--grid-cell-min` | Consumed by CSS Grid template or inline styles |
+| `--grid-inset`, `--grid-node-max-size` | Layer 1 policy knobs for cell-scoped node sizing |
+| `--grid-node-size`, `--grid-node-icon-size`, `--grid-node-title-height`, `--grid-node-padding-*`, `--grid-node-icon-lift` | Layer 2 derived sizing tokens — computed via `@container grid-cell` rules; `:root` values are static fallbacks only |
 | `--grid-line-color`, `--grid-line-opacity-l*` | Per-level logic via inline styles |
 | `--grid-bg-l0` through `--grid-bg-l3` | Per-level background via inline styles |
 | `--calendar-node-pool-ratio`, `--calendar-day-min-width` | CSS flexbox/grid or inline styles |
@@ -526,7 +607,7 @@ Two-row layout: top row has content, bottom row has progress (only when chunks e
 ### Breadcrumbs
 
 ```tsx
-{/* Breadcrumb — top of grid, with Node description subtitle */}
+{/* Breadcrumb — top of grid */}
 <nav className="flex flex-col gap-0.5 h-breadcrumb px-4 justify-center">
   <div className="flex items-center gap-1.5 text-sm">
     <button className="text-muted-foreground hover:text-foreground transition-colors">Home</button>
@@ -539,9 +620,6 @@ Two-row layout: top row has content, bottom row has progress (only when chunks e
       </>
     ))}
   </div>
-  {description && (
-    <p className="text-xs text-muted-foreground truncate pl-0.5">{description}</p>
-  )}
 </nav>
 ```
 

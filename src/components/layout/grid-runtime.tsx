@@ -14,7 +14,13 @@ import {
 import { EditModeOverlay } from "@/components/grid/edit-mode-overlay";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Sidebar } from "@/components/layout/sidebar";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useDnd } from "@/hooks/use-dnd";
 import { useGridActions } from "@/hooks/use-grid-actions";
@@ -25,7 +31,9 @@ import { hexToHsl } from "@/lib/utils/color";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import { AddFlowProvider } from "./add-flow-context";
 
-type PlacementContext = { mode: "auto" } | { mode: "cell"; x: number; y: number };
+type PlacementContext =
+  | { mode: "auto" }
+  | { mode: "cell"; x: number; y: number };
 type OpenDialogType = "node" | "bit" | null;
 type DeleteRequest = NonNullable<PendingDelete>;
 
@@ -52,12 +60,16 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
   const displayLevel = nodeId === null ? 0 : (node?.level ?? 0) + 1;
   const isLeafLevel = displayLevel >= 3;
   const {
+    activeItem,
     handleDragEnd,
     handleDragOver,
     handleDragStart,
     handleNodeMoveCancel,
     handleNodeMoveConfirm,
+    handleAncestorMoveConfirm,
+    handleAncestorMoveCancel,
     pendingNodeMove,
+    pendingAncestorMove,
     sensors,
   } = useDnd();
   const {
@@ -67,7 +79,9 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
     softDeleteBit,
     softDeleteNode,
   } = useGridActions();
-  const [placementContext, setPlacementContext] = useState<PlacementContext>({ mode: "auto" });
+  const [placementContext, setPlacementContext] = useState<PlacementContext>({
+    mode: "auto",
+  });
   const [openDialogType, setOpenDialogType] = useState<OpenDialogType>(null);
   const [chooserOpen, setChooserOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null);
@@ -103,12 +117,10 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
     title,
     icon,
     colorHex,
-    description,
   }: {
     title: string;
     icon: string;
     colorHex: string;
-    description: string;
   }) {
     if (nodeId !== null && !node) {
       setError("Unable to find parent node.");
@@ -136,7 +148,6 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
 
       await createNode({
         title: title.trim(),
-        description,
         color: hexToHsl(colorHex),
         icon,
         deadline: null,
@@ -180,7 +191,8 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
 
     try {
       const occupied = await getGridOccupancy(nodeId);
-      const originX = placementContext.mode === "auto" ? GRID_COLS - 3 : placementContext.x;
+      const originX =
+        placementContext.mode === "auto" ? GRID_COLS - 3 : placementContext.x;
       const originY = placementContext.mode === "auto" ? 2 : placementContext.y;
       const cell = findNearestEmptyCell(occupied, originX, originY);
 
@@ -234,23 +246,34 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
 
   return (
     <DeleteFlowContext.Provider value={deleteFlowValue}>
-      <div className="flex h-screen overflow-hidden bg-background">
-        <Sidebar onAddClick={() => openAdd({ mode: "auto" })} />
-        <main className="relative ml-12 flex flex-1 flex-col overflow-hidden" data-level={displayLevel} data-testid="display-level">
-          <DndContext
-            collisionDetection={gridCollisionDetection}
-            onDragEnd={handleDragEnd}
-            onDragOver={handleDragOver}
-            onDragStart={handleDragStart}
-            sensors={sensors}
+      <DndContext
+        collisionDetection={gridCollisionDetection}
+        onDragEnd={async (event) => {
+          const deleteRequest = await handleDragEnd(event);
+          if (deleteRequest) {
+            setPendingDelete(deleteRequest);
+          }
+        }}
+        onDragOver={handleDragOver}
+        onDragStart={handleDragStart}
+        sensors={sensors}
+        autoScroll={false}
+      >
+        <div className="flex h-screen overflow-hidden bg-background">
+          <Sidebar onAddClick={() => openAdd({ mode: "auto" })} dragActiveItem={activeItem} />
+          <main
+            className="relative ml-12 flex flex-1 flex-col overflow-hidden"
+            data-level={displayLevel}
+            data-testid="display-level"
           >
-            <Breadcrumbs nodeId={nodeId} />
+            <Breadcrumbs nodeId={nodeId} dragActiveItem={activeItem} />
             <AddFlowProvider
               openAddAtCell={(x, y) => openAdd({ mode: "cell", x, y })}
             >
-              <div className="relative min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-1">{children}</div>
+              <div className="relative min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+                {children}
+              </div>
             </AddFlowProvider>
-          </DndContext>
           <EditModeOverlay />
           <CreateItemChooser
             onChooseBit={() => setOpenDialogType("bit")}
@@ -303,10 +326,55 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
                   : ""}
               </p>
               <DialogFooter>
-                <Button onClick={handleNodeMoveCancel} type="button" variant="outline">
+                <Button
+                  onClick={handleNodeMoveCancel}
+                  type="button"
+                  variant="outline"
+                >
                   Cancel
                 </Button>
-                <Button onClick={() => void handleNodeMoveConfirm()} type="button">
+                <Button
+                  onClick={() => void handleNodeMoveConfirm()}
+                  type="button"
+                >
+                  Move
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Dialog
+            open={pendingAncestorMove !== null}
+            onOpenChange={(open) => {
+              if (!open) {
+                handleAncestorMoveCancel();
+              }
+            }}
+          >
+            <DialogContent showCloseButton={false}>
+              <DialogHeader>
+                <DialogTitle>
+                  {pendingAncestorMove
+                    ? `Move to '${pendingAncestorMove.targetNodeTitle}'?`
+                    : "Move item?"}
+                </DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">
+                {pendingAncestorMove
+                  ? `'${pendingAncestorMove.itemTitle}' will be moved to this location.`
+                  : ""}
+              </p>
+              <DialogFooter>
+                <Button
+                  onClick={handleAncestorMoveCancel}
+                  type="button"
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => void handleAncestorMoveConfirm()}
+                  type="button"
+                >
                   Move
                 </Button>
               </DialogFooter>
@@ -314,6 +382,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
           </Dialog>
         </main>
       </div>
+      </DndContext>
     </DeleteFlowContext.Provider>
   );
 }

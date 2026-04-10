@@ -129,7 +129,7 @@
 
 ### Route: `/` (Level 0 Grid)
 
-- **Structure:** Full-width 12x8 grid occupying the main content area. Fixed icon-rail sidebar (always visible, `w-12`). Breadcrumb shows "Home" root-only state.
+- **Structure:** Full-width 18x9 grid occupying the main content area. Fixed icon-rail sidebar (always visible, `w-12`). Breadcrumb shows "Home" root-only state.
 - **Content:** Nodes only. No Bits at Level 0.
 - **Sidebar:** Permanent narrow icon rail, always visible, identical across all levels. Icons: + (add), Pencil (edit toggle), Search, Calendar (top); Trash, Theme toggle (bottom). No fold/unfold mechanism.
 - **Onboarding:** On first visit (no Nodes exist), show ghost placeholder Nodes with dashed outlines and hint labels ("Try: Work, Personal, Hobbies"). Disappear after first Node creation.
@@ -138,7 +138,7 @@
 
 ### Route: `/grid/[nodeId]` (Level 1-3 Grid)
 
-- **Structure:** 12x8 grid with breadcrumb bar at top. Node description subtitle below breadcrumb (if description exists). Fixed icon-rail sidebar (same as Level 0, no remount on navigation).
+- **Structure:** 18x9 grid with breadcrumb bar at top. Fixed icon-rail sidebar (same as Level 0, no remount on navigation).
 - **Level 1-2 content:** Nodes (left zone, ~5-6 columns) + Bits (right zone, ~6-7 columns). 2-way split is a soft guide — items can be placed anywhere.
 - **Level 3 content:** Bits only, full-width grid. No Node creation allowed.
 - **Onboarding (Level 1, first visit):** Ghost hints for 2-way split ("Nodes here" on left, "Bits here" on right). Disappear after first item creation.
@@ -246,7 +246,7 @@ Infrastructure files that don't follow the File Organization Conventions above.
 | `src/lib/db/datastore.ts` | `DataStore` interface — the abstraction boundary between app code and storage |
 | `src/lib/db/indexeddb.ts` | Dexie.js IndexedDB implementation of `DataStore` — v1 storage backend |
 | `src/lib/db/schema.ts` | Zod validation schemas and TypeScript types (from SCHEMA.md) |
-| `src/lib/constants.ts` | Grid dimensions (12×8), aging thresholds (5/11 days), urgency thresholds (3/2/1 days), trash retention (30 days) |
+| `src/lib/constants.ts` | Grid dimensions (18×9), aging thresholds (5/11 days), urgency thresholds (3/2/1 days), trash retention (30 days) |
 | `src/lib/utils/bfs.ts` | BFS auto-placement algorithm — finds nearest empty cell from a starting position |
 | `src/lib/utils/aging.ts` | Aging state computation — Fresh/Stagnant/Neglected from mtime |
 | `src/lib/utils/urgency.ts` | Deadline urgency level computation — Level 1/2/3/Past from deadline |

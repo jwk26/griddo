@@ -95,7 +95,6 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
   const [title, setTitle] = useState("");
   const [icon, setIcon] = useState(DEFAULT_ICON);
   const [colorHex, setColorHex] = useState("#3b82f6");
-  const [description, setDescription] = useState("");
   const [dateStr, setDateStr] = useState("");
   const [timeStr, setTimeStr] = useState("");
   const [allDay, setAllDay] = useState(false);
@@ -109,7 +108,6 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
     setTitle(node.title);
     setIcon(node.icon);
     setColorHex(hslToHex(node.color));
-    setDescription(node.description);
     setDateStr(toDateStr(node.deadline));
     setTimeStr(toTimeStr(node.deadline));
     setAllDay(node.deadlineAllDay);
@@ -137,7 +135,6 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
         title: title.trim(),
         icon,
         color: hexToHsl(colorHex),
-        description,
         deadline,
         deadlineAllDay,
       });
@@ -224,19 +221,6 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
               onChange={(e) => setColorHex(e.target.value)}
               type="color"
               value={colorHex}
-            />
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Description</label>
-            <textarea
-              className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              maxLength={1000}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description…"
-              rows={3}
-              value={description}
             />
           </div>
 

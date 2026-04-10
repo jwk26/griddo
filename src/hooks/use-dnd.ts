@@ -33,6 +33,14 @@ type PendingNodeMove = {
   targetNodeTitle: string;
 } | null;
 
+type PendingAncestorMove = {
+  itemId: string;
+  itemType: "node" | "bit";
+  itemTitle: string;
+  targetNodeId: string | null;
+  targetNodeTitle: string;
+} | null;
+
 type ConflictState = {
   open: boolean;
   parentBitId: string | null;
@@ -54,21 +62,25 @@ const CLOSED_CONFLICT_STATE: ConflictState = {
 export function useDnd(): {
   sensors: ReturnType<typeof useSensors>;
   handleDragStart: (event: DragStartEvent) => void;
-  handleDragEnd: (event: DragEndEvent) => void;
+  handleDragEnd: (event: DragEndEvent) => Promise<{ id: string; type: "node" | "bit"; title: string } | undefined>;
   handleDragOver: (event: DragOverEvent) => void;
   handleConflictUpdateParent: () => Promise<void>;
   handleConflictKeepChild: () => void;
   handleNodeMoveConfirm: () => Promise<void>;
   handleNodeMoveCancel: () => void;
+  handleAncestorMoveConfirm: () => Promise<void>;
+  handleAncestorMoveCancel: () => void;
   activeItem: DragActiveItem;
   overTargetId: string | null;
   conflictState: ConflictState;
   pendingNodeMove: PendingNodeMove;
+  pendingAncestorMove: PendingAncestorMove;
 } {
   const [activeItem, setActiveItem] = useState<DragActiveItem>(null);
   const [overTargetId, setOverTargetId] = useState<string | null>(null);
   const [conflictState, setConflictState] = useState<ConflictState>(CLOSED_CONFLICT_STATE);
   const [pendingNodeMove, setPendingNodeMove] = useState<PendingNodeMove>(null);
+  const [pendingAncestorMove, setPendingAncestorMove] = useState<PendingAncestorMove>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -221,6 +233,27 @@ export function useDnd(): {
         return;
       }
 
+      if (dropData.kind === "grid-delete-drop") {
+        if (!dragItem) return undefined;
+        if (dragItem.type === "node" || dragItem.type === "bit") {
+          return { id: dragItem.id, type: dragItem.type, title: dragItem.title };
+        }
+        return undefined;
+      }
+
+      if (dropData.kind === "grid-breadcrumb-drop") {
+        if (dragItem.type !== "node" && dragItem.type !== "bit") return;
+        setPendingAncestorMove({
+          itemId: dragItem.id,
+          itemType: dragItem.type,
+          itemTitle: dragItem.title,
+          targetNodeId: dropData.targetNodeId,
+          targetNodeTitle:
+            dropData.targetNodeTitle ?? (dropData.targetNodeId === null ? "Home" : ""),
+        });
+        return;
+      }
+
       await moveGridItemToParent(dragItem, dropData.targetNodeId, 0, 0);
 
       return;
@@ -346,6 +379,24 @@ export function useDnd(): {
     setPendingNodeMove(null);
   };
 
+  const handleAncestorMoveConfirm = async () => {
+    if (!pendingAncestorMove) return;
+    const item: NonNullable<DragActiveItem> = {
+      id: pendingAncestorMove.itemId,
+      type: pendingAncestorMove.itemType,
+      title: pendingAncestorMove.itemTitle,
+    };
+    try {
+      await moveGridItemToParent(item, pendingAncestorMove.targetNodeId, 0, 0);
+    } finally {
+      setPendingAncestorMove(null);
+    }
+  };
+
+  const handleAncestorMoveCancel = () => {
+    setPendingAncestorMove(null);
+  };
+
   const handleDragOver = (event: DragOverEvent) => {
     setOverTargetId(event.over?.id ? String(event.over.id) : null);
   };
@@ -359,9 +410,12 @@ export function useDnd(): {
     handleConflictKeepChild,
     handleNodeMoveConfirm,
     handleNodeMoveCancel,
+    handleAncestorMoveConfirm,
+    handleAncestorMoveCancel,
     activeItem,
     overTargetId,
     conflictState,
     pendingNodeMove,
+    pendingAncestorMove,
   };
 }

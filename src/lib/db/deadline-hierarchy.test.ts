@@ -21,7 +21,7 @@ const CHILD_DEADLINE_OK = BASE_TS + 5 * 86_400_000;
 const CHILD_DEADLINE_OVER = BASE_TS + 10 * 86_400_000;
 
 function makeNode(id: string, overrides: Partial<Node> = {}): Node {
-  return { id, title: "Node", description: "", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null, ...overrides };
+  return { id, title: "Node", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null, ...overrides };
 }
 function makeBit(id: string, parentId: string, overrides: Partial<Bit> = {}): Bit {
   return { id, title: "Bit", description: "", icon: "Box", deadline: null, deadlineAllDay: false, priority: null, status: "active", mtime: BASE_TS, createdAt: BASE_TS, parentId, x: 0, y: 0, deletedAt: null, ...overrides } as Bit;

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
 import {
   createBitSchema,
   createChunkSchema,
@@ -20,7 +21,6 @@ describe("schema", () => {
 
     expect(parsed).toEqual({
       title: "Inbox",
-      description: "",
       color: "hsl(210, 80%, 55%)",
       icon: "inbox",
       deadline: null,
@@ -49,7 +49,6 @@ describe("schema", () => {
       nodeSchema.parse({
         id: crypto.randomUUID(),
         title: "Inbox",
-        description: "",
         color: "hsl(210, 80%, 55%)",
         icon: "inbox",
         deadline: null,
@@ -58,7 +57,7 @@ describe("schema", () => {
         createdAt: Date.now(),
         parentId: null,
         level: 0,
-        x: 12,
+        x: GRID_COLS,
         y: 0,
         deletedAt: null,
       }),
@@ -99,5 +98,31 @@ describe("schema", () => {
       order: 0,
       parentId: expect.any(String),
     });
+  });
+
+  it("accepts node and bit coordinates up to the configured grid bounds", () => {
+    const parentId = crypto.randomUUID();
+
+    expect(() =>
+      createNodeSchema.parse({
+        title: "Inbox",
+        color: "hsl(210, 80%, 55%)",
+        icon: "inbox",
+        parentId: null,
+        level: 0,
+        x: GRID_COLS - 1,
+        y: GRID_ROWS - 1,
+      }),
+    ).not.toThrow();
+
+    expect(() =>
+      createBitSchema.parse({
+        title: "Write tests",
+        icon: "pen",
+        parentId,
+        x: GRID_COLS - 1,
+        y: GRID_ROWS - 1,
+      }),
+    ).not.toThrow();
   });
 });

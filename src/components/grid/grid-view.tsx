@@ -1,6 +1,6 @@
 "use client";
 
-import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { useDndContext, useDraggable, useDroppable } from "@dnd-kit/core";
 import { AnimatePresence, motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -63,10 +63,7 @@ function GridDropCell({
   return (
     <div
       ref={setNodeRef}
-      className={cn(
-        "h-full rounded-md",
-        isOver && "ring-2 ring-primary/60 ring-offset-2 ring-offset-background",
-      )}
+      className="grid-cell-container h-full rounded-md"
     >
       <GridCell
         borderOpacity={borderOpacity}
@@ -103,7 +100,7 @@ function DraggableNodeCard({
       title: node.title,
     },
   });
-  const { isOver, setNodeRef: setDropNodeRef } = useDroppable({
+  const { setNodeRef: setDropNodeRef } = useDroppable({
     id: getGridNodeDropId(node.id),
     data: {
       kind: "grid-node-drop",
@@ -122,15 +119,16 @@ function DraggableNodeCard({
       ref={setNodeRef}
       className={cn(
         "h-full cursor-grab rounded-xl active:cursor-grabbing",
-        isDragging && "opacity-50",
-        isOver && "ring-2 ring-primary/60 ring-offset-2 ring-offset-background",
       )}
+      data-grid-item="true"
+      data-drag-active={isDragging ? "true" : undefined}
       style={toTranslateStyle(transform)}
       {...attributes}
       {...listeners}
     >
       <NodeCard
         isEditMode={isEditMode}
+        isDragging={isDragging}
         node={node}
         onClick={onClick}
         onDelete={onDelete}
@@ -163,7 +161,9 @@ function DraggableBitCard({
   return (
     <div
       ref={setNodeRef}
-      className={cn("flex h-full cursor-grab items-center active:cursor-grabbing", isDragging && "opacity-50")}
+      className={cn("flex h-full cursor-grab items-center active:cursor-grabbing")}
+      data-grid-item="true"
+      data-drag-active={isDragging ? "true" : undefined}
       style={toTranslateStyle(transform)}
       {...attributes}
       {...listeners}
@@ -198,6 +198,7 @@ export function GridView({
   const router = useRouter();
   const { nodes, bits } = useGridData(parentId);
   const isEditMode = useEditModeStore((state) => state.isEditMode);
+  const { active } = useDndContext();
   const itemsByPosition = new Map<string, GridItem>();
   const borderOpacity = levelOpacityMap[level] ?? levelOpacityMap[3];
 
@@ -212,12 +213,16 @@ export function GridView({
   return (
     <div
       className="relative h-full w-full"
+      data-dragging={active ? "true" : undefined}
       style={{ backgroundColor: `hsl(var(--grid-bg-l${Math.min(level, 3)}))` }}
     >
       <div
-        className="grid h-full w-full grid-cols-12 gap-[var(--grid-gap)]"
+        className="grid h-full w-full gap-[var(--grid-gap)]"
         data-level={level}
-        style={{ gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))` }}
+        style={{
+          gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))`,
+          gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))`,
+        }}
       >
         {Array.from({ length: GRID_ROWS }, (_, y) =>
           Array.from({ length: GRID_COLS }, (_, x) => {

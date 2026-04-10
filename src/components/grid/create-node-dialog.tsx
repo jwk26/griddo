@@ -12,7 +12,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { getRandomColor } from "@/lib/constants/color-palette";
 import { DEFAULT_ICON, NODE_ICON_MAP, NODE_ICON_NAMES } from "@/lib/constants/node-icons";
 import { cn } from "@/lib/utils";
@@ -22,7 +21,6 @@ type CreateNodeDialogProps = {
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: {
     title: string;
-    description: string;
     icon: string;
     colorHex: string;
   }) => Promise<void>;
@@ -37,11 +35,9 @@ export function CreateNodeDialog({
 }: CreateNodeDialogProps) {
   const titleId = useId();
   const titleErrorId = useId();
-  const descriptionId = useId();
   const iconId = useId();
   const colorId = useId();
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
   const [icon, setIcon] = useState(DEFAULT_ICON);
   const [colorHex, setColorHex] = useState(getRandomColor());
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,14 +47,12 @@ export function CreateNodeDialog({
   useEffect(() => {
     if (open && !prevOpenRef.current) {
       setTitle("");
-      setDescription("");
       setIcon(NODE_ICON_NAMES[Math.floor(Math.random() * NODE_ICON_NAMES.length)] ?? DEFAULT_ICON);
       setColorHex(getRandomColor());
       setIsSubmitting(false);
       setTitleError(false);
     } else if (!open) {
       setTitle("");
-      setDescription("");
       setIsSubmitting(false);
       setTitleError(false);
     }
@@ -82,7 +76,7 @@ export function CreateNodeDialog({
     setIsSubmitting(true);
 
     try {
-      await onSubmit({ title, description, icon, colorHex });
+      await onSubmit({ title, icon, colorHex });
     } finally {
       setIsSubmitting(false);
     }
@@ -119,19 +113,6 @@ export function CreateNodeDialog({
             <p id={titleErrorId} className="min-h-[1rem] text-sm text-destructive">
               {titleError ? "Title is required." : ""}
             </p>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground" htmlFor={descriptionId}>
-              Description
-            </label>
-            <Textarea
-              id={descriptionId}
-              maxLength={500}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="Description (optional)"
-              value={description}
-            />
           </div>
 
           <div className="space-y-2">

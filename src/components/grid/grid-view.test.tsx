@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
 import { useEditModeStore } from "@/stores/edit-mode-store";
 import type { Bit, Node } from "@/types";
 import { GridView } from "./grid-view";
@@ -61,7 +62,6 @@ function createNode(overrides: Partial<Node>): Node {
   return {
     id: overrides.id ?? crypto.randomUUID(),
     title: overrides.title ?? "Node",
-    description: overrides.description ?? "",
     color: overrides.color ?? "hsl(221, 83%, 53%)",
     icon: overrides.icon ?? "Folder",
     deadline: overrides.deadline ?? null,
@@ -155,5 +155,24 @@ describe("GridView", () => {
       type: "bit",
       title: "Ship Phase 4",
     });
+  });
+
+  it("renders grid-cell-container class on every cell wrapper", () => {
+    vi.mocked(useGridData).mockReturnValue({
+      nodes: [],
+      bits: [],
+      isLoading: false,
+    });
+
+    const { container } = render(
+      <GridView
+        level={0}
+        onAddAtCell={vi.fn()}
+        parentId={null}
+      />,
+    );
+
+    const cellWrappers = container.querySelectorAll(".grid-cell-container");
+    expect(cellWrappers).toHaveLength(GRID_COLS * GRID_ROWS);
   });
 });

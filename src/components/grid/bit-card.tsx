@@ -62,7 +62,7 @@ export function BitCard({ bit, parentColor, chunkStats, onClick, onDelete }: Bit
           <div className="min-w-0 flex-1">
             <p
               className={cn(
-                "line-clamp-2 text-[13px] font-medium text-foreground",
+                "truncate text-[13px] font-medium text-foreground",
                 (pastDeadline || isComplete) && "line-through text-muted-foreground",
               )}
             >

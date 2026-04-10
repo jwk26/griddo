@@ -24,6 +24,28 @@ describe("GridCell", () => {
     expect(container.querySelector("svg")).not.toBeNull();
   });
 
+  it("uses the shared node footprint for the drag-over affordance", () => {
+    const { container } = render(
+      <GridCell
+        borderOpacity="0.15"
+        isDragOver={true}
+        isEditMode={false}
+        isEmpty={true}
+        x={0}
+        y={0}
+      />,
+    );
+
+    const affordance = container.querySelector("svg")?.parentElement;
+
+    expect(affordance).toHaveClass(
+      "h-[var(--grid-node-size)]",
+      "w-[var(--grid-node-size)]",
+      "max-h-full",
+      "max-w-full",
+    );
+  });
+
   it("keeps the edit-mode add button behavior unchanged", () => {
     const onAddClick = vi.fn();
     const { getByRole } = render(

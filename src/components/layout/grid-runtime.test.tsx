@@ -89,7 +89,6 @@ vi.mock("@/components/grid/create-node-dialog", () => ({
       title: string;
       icon: string;
       colorHex: string;
-      description: string;
     }) => Promise<void>;
   }) =>
     open ? (
@@ -100,7 +99,6 @@ vi.mock("@/components/grid/create-node-dialog", () => ({
             title: "  New node  ",
             icon: "Folder",
             colorHex: "#ff0000",
-            description: "Nested description",
           })
         }
         type="button"
@@ -163,7 +161,6 @@ function createNode(overrides: Partial<Node>): Node {
   return {
     id: overrides.id ?? crypto.randomUUID(),
     title: overrides.title ?? "Node",
-    description: overrides.description ?? "",
     color: overrides.color ?? "hsl(221, 83%, 53%)",
     icon: overrides.icon ?? "Folder",
     deadline: overrides.deadline ?? null,
@@ -220,6 +217,8 @@ describe("GridRuntime", () => {
       handleConflictKeepChild: vi.fn(),
       handleNodeMoveConfirm: vi.fn(),
       handleNodeMoveCancel: vi.fn(),
+      handleAncestorMoveConfirm: vi.fn(),
+      handleAncestorMoveCancel: vi.fn(),
       activeItem: null,
       overTargetId: null,
       conflictState: {
@@ -231,6 +230,7 @@ describe("GridRuntime", () => {
         pendingTimestamp: null,
       },
       pendingNodeMove: null,
+      pendingAncestorMove: null,
     });
   });
 
@@ -270,7 +270,6 @@ describe("GridRuntime", () => {
     await waitFor(() => {
       expect(createNodeMock).toHaveBeenCalledWith({
         title: "New node",
-        description: "Nested description",
         color: "hsl(0, 100%, 50%)",
         icon: "Folder",
         deadline: null,
@@ -325,7 +324,6 @@ describe("GridRuntime", () => {
     await waitFor(() => {
       expect(createNodeMock).toHaveBeenCalledWith({
         title: "New node",
-        description: "Nested description",
         color: "hsl(0, 100%, 50%)",
         icon: "Folder",
         deadline: null,
@@ -411,6 +409,8 @@ describe("GridRuntime", () => {
       handleConflictKeepChild: vi.fn(),
       handleNodeMoveConfirm,
       handleNodeMoveCancel,
+      handleAncestorMoveConfirm: vi.fn(),
+      handleAncestorMoveCancel: vi.fn(),
       activeItem: null,
       overTargetId: null,
       conflictState: {
@@ -428,6 +428,7 @@ describe("GridRuntime", () => {
         targetNodeId: "node-2",
         targetNodeTitle: "Q2",
       },
+      pendingAncestorMove: null,
     });
 
     render(

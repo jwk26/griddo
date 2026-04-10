@@ -683,7 +683,6 @@ export class IndexedDBDataStore implements DataStore {
     const newNode = nodeSchema.parse({
       id: crypto.randomUUID(),
       title: bit.title,
-      description: bit.description,
       color: DEFAULT_PROMOTED_NODE_COLOR,
       icon: bit.icon,
       deadline: bit.deadline,

@@ -50,7 +50,6 @@ function createNode(overrides: Partial<Node> = {}): Node {
   return {
     id: overrides.id ?? crypto.randomUUID(),
     title: overrides.title ?? "Node",
-    description: overrides.description ?? "",
     color: overrides.color ?? "hsl(210, 80%, 55%)",
     icon: overrides.icon ?? "folder",
     deadline: overrides.deadline ?? null,
@@ -118,7 +117,6 @@ describe("IndexedDBDataStore", () => {
 
     const node = await store.createNode({
       title: "Inbox",
-      description: "",
       color: "hsl(210, 80%, 55%)",
       icon: "inbox",
       deadline: null,
@@ -255,7 +253,6 @@ describe("IndexedDBDataStore", () => {
     const childBits = await store.getBits(promotedNode.id);
 
     expect(promotedNode.title).toBe("Ship release");
-    expect(promotedNode.description).toBe("Wrap the launch checklist");
     expect(promotedNode.icon).toBe("rocket");
     expect(promotedNode.deadline).toBe(1_700_000_100_000);
     expect(promotedNode.parentId).toBe(parent.id);

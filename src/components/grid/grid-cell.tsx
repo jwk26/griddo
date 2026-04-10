@@ -26,21 +26,18 @@ export function GridCell({
   const borderStyle: CSSProperties = {
     borderColor: `hsl(var(--border) / ${borderOpacity})`,
   };
-  const showEditModeAddButton = isEmpty && isEditMode && onAddClick;
-  const showDragOverIndicator = isEmpty && isDragOver && !isEditMode;
+  const showEditModeAddButton = isEmpty && isEditMode && !!onAddClick && !isDragOver;
+  const showDragOverIndicator = isEmpty && isDragOver;
   const showEmptyAffordance = showEditModeAddButton || showDragOverIndicator;
 
   return (
     <div
       className={cn(
-        "relative rounded-md transition-all",
-        isEditMode
-          ? "border-2 border-dashed border-muted-foreground/30"
-          : "border border-dashed",
-        showEmptyAffordance && "flex h-full min-h-[5rem] items-center justify-center",
+        "relative h-full rounded-md transition-all border border-dashed",
+        showEmptyAffordance && "flex min-h-[5rem] items-center justify-center",
       )}
       data-position={`${x},${y}`}
-      style={isEditMode ? undefined : borderStyle}
+      style={borderStyle}
     >
       {children}
       {showEditModeAddButton ? (
@@ -50,14 +47,14 @@ export function GridCell({
           className="group flex h-full w-full items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           onClick={onAddClick}
         >
-          <span className="flex aspect-square w-full max-w-[4rem] items-center justify-center text-muted-foreground/50 transition-colors group-hover:text-muted-foreground">
+          <span className="flex h-[var(--grid-node-size)] w-[var(--grid-node-size)] max-h-full max-w-full items-center justify-center rounded-2xl text-transparent transition-colors group-hover:text-muted-foreground/60">
             <Plus className="h-5 w-5" />
           </span>
         </button>
       ) : null}
       {showDragOverIndicator ? (
-        <div aria-hidden={true} className="pointer-events-none flex h-full w-full items-center justify-center rounded-md bg-primary/5">
-          <div className="flex aspect-square w-full max-w-[4rem] items-center justify-center text-muted-foreground/50">
+        <div aria-hidden={true} className="pointer-events-none flex h-full w-full items-center justify-center rounded-md">
+          <div className="animate-in fade-in-0 zoom-in-95 flex h-[var(--grid-node-size)] w-[var(--grid-node-size)] max-h-full max-w-full items-center justify-center rounded-2xl border-2 border-dashed border-primary/60 bg-primary/5 text-primary/60 duration-150">
             <Plus className="h-5 w-5" />
           </div>
         </div>

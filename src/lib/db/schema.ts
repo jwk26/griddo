@@ -1,16 +1,18 @@
 import { z } from "zod";
+import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
 
 // --- Shared ---
 
 const idSchema = z.string().uuid();
 const timestampSchema = z.number().int().positive();
+const gridXSchema = z.number().int().min(0).max(GRID_COLS - 1);
+const gridYSchema = z.number().int().min(0).max(GRID_ROWS - 1);
 
 // --- Node ---
 
 export const nodeSchema = z.object({
   id: idSchema,
   title: z.string().min(1).max(100),
-  description: z.string().max(500).default(""),
   color: z.string().regex(/^hsl\(\d{1,3},\s*\d{1,3}%,\s*\d{1,3}%\)$/),
   icon: z.string().min(1),
   deadline: timestampSchema.nullable().default(null),
@@ -19,8 +21,8 @@ export const nodeSchema = z.object({
   createdAt: timestampSchema,
   parentId: idSchema.nullable().default(null),
   level: z.number().int().min(0).max(2),
-  x: z.number().int().min(0).max(11),
-  y: z.number().int().min(0).max(7),
+  x: gridXSchema,
+  y: gridYSchema,
   deletedAt: timestampSchema.nullable().default(null),
 });
 
@@ -48,8 +50,8 @@ export const bitSchema = z.object({
   mtime: timestampSchema,
   createdAt: timestampSchema,
   parentId: idSchema,
-  x: z.number().int().min(0).max(11),
-  y: z.number().int().min(0).max(7),
+  x: gridXSchema,
+  y: gridYSchema,
   deletedAt: timestampSchema.nullable().default(null),
 });
 

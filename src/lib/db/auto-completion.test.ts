@@ -18,7 +18,7 @@ class FakeTable<T extends StoredRecord> {
 const BASE_TS = 1_700_000_000_000;
 
 function makeNode(id: string): Node {
-  return { id, title: "Node", description: "", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null };
+  return { id, title: "Node", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null };
 }
 function makeBit(id: string, parentId: string, overrides: Partial<Bit> = {}): Bit {
   return { id, title: "Bit", description: "", icon: "Box", deadline: null, deadlineAllDay: false, priority: null, status: "active", mtime: BASE_TS, createdAt: BASE_TS, parentId, x: 0, y: 0, deletedAt: null, ...overrides } as Bit;

@@ -1,10 +1,13 @@
 "use client";
 
+import { useDroppable } from "@dnd-kit/core";
 import type { LucideIcon } from "lucide-react";
-import { Calendar, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Calendar, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { useGlobalUrgency } from "@/hooks/use-global-urgency";
+import type { DragActiveItem } from "@/hooks/use-dnd";
+import { getGridDeleteDropId } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
 import { useEditModeStore } from "@/stores/edit-mode-store";
 import { useSearchStore } from "@/stores/search-store";
@@ -40,12 +43,34 @@ function SidebarIconButton({
   );
 }
 
+function DeleteDropTarget() {
+  const { isOver, setNodeRef } = useDroppable({
+    id: getGridDeleteDropId(),
+    data: { kind: "grid-delete-drop" },
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      aria-label="Drop here to delete"
+      className={cn(
+        "flex h-10 w-10 items-center justify-center rounded-lg text-destructive motion-safe:animate-jiggle",
+        isOver && "bg-destructive/10",
+      )}
+    >
+      <X className="h-5 w-5" />
+    </div>
+  );
+}
+
 const noop = () => {};
 
 export function Sidebar({
   onAddClick,
+  dragActiveItem,
 }: {
   onAddClick?: () => void;
+  dragActiveItem?: DragActiveItem;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -66,38 +91,50 @@ export function Sidebar({
         onClick={toggleEditMode}
         isActive={isEditMode}
       />
-      <SidebarIconButton
-        icon={Search}
-        label="Search"
-        onClick={() => useSearchStore.getState().open()}
-      />
-      <div className="relative">
-        <SidebarIconButton
-          icon={Calendar}
-          label="Calendar"
-          onClick={() => router.push("/calendar/weekly")}
-          isActive={isCalendarRoute}
-        />
-        {globalUrgency ? (
-          <span
-            aria-hidden="true"
-            className={cn(
-              "absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-background",
-              globalUrgency === 1 && "bg-urgency-1",
-              globalUrgency === 2 && "bg-urgency-2",
-              globalUrgency === 3 && "bg-urgency-3",
-            )}
-          />
-        ) : null}
-      </div>
+      {dragActiveItem?.type === "node" || dragActiveItem?.type === "bit" ? (
+        <DeleteDropTarget />
+      ) : (
+        <>
+          <div className={cn(dragActiveItem && "opacity-40 saturate-50 transition-all duration-150")}>
+            <SidebarIconButton
+              icon={Search}
+              label="Search"
+              onClick={() => useSearchStore.getState().open()}
+            />
+          </div>
+          <div className={cn("relative", dragActiveItem && "opacity-40 saturate-50 transition-all duration-150")}>
+            <SidebarIconButton
+              icon={Calendar}
+              label="Calendar"
+              onClick={() => router.push("/calendar/weekly")}
+              isActive={isCalendarRoute}
+            />
+            {globalUrgency ? (
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-background",
+                  globalUrgency === 1 && "bg-urgency-1",
+                  globalUrgency === 2 && "bg-urgency-2",
+                  globalUrgency === 3 && "bg-urgency-3",
+                )}
+              />
+            ) : null}
+          </div>
+        </>
+      )}
       <div className="mt-auto flex flex-col items-center gap-1">
-        <SidebarIconButton
-          icon={Trash2}
-          label="Trash"
-          onClick={() => router.push("/trash")}
-          isActive={isTrashRoute}
-        />
-        <ThemeToggle className="hover:bg-accent hover:text-foreground" />
+        <div className={cn(dragActiveItem && "opacity-40 saturate-50 transition-all duration-150")}>
+          <SidebarIconButton
+            icon={Trash2}
+            label="Trash"
+            onClick={() => router.push("/trash")}
+            isActive={isTrashRoute}
+          />
+        </div>
+        <div className={cn(dragActiveItem && "opacity-40 saturate-50 transition-all duration-150")}>
+          <ThemeToggle className="hover:bg-accent hover:text-foreground" />
+        </div>
       </div>
     </aside>
   );
