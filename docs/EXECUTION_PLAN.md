@@ -239,7 +239,7 @@
 
 #### Phase 3 Notes
 
-> **Plan status vs. implementation:** Tasks 11–14 were committed in a single phase commit before statuses were updated. The `EXECUTION_PLAN.md` showed `[ ]` even though the code existed. Always update task statuses in the same session that produces the commit — don't let them drift.
+> **Plan status vs. implementation:** Tasks 11–14 were committed in a single phase commit before statuses were updated. ~~Always update task statuses in the same session that produces the commit.~~ **Superseded:** Task status `[x]` now requires explicit user approval at the checkpoint — see WORKFLOW.md §Task Completion Gate.
 
 > **Level 0 creation was a Phase 3 omission:** The sidebar `+` and empty-cell `+` were wired to `noop`. The execution plan acceptance criteria said "creating first node removes hints" but never specified the creation UI. Treat any acceptance criterion that implies user action as requiring a complete UI path — not just a data layer.
 
@@ -1069,13 +1069,13 @@ These apply across all phases:
 
 ## Phase 9: Grid UX Improvements
 
-> **Purpose:** Fix broken delete buttons, restructure grid layout architecture with route-group + GridRuntime, fix DnD collision resolution, enable DnD outside edit mode, improve create dialogs, and add visual polish.
+> **Purpose:** Fix broken delete buttons, restructure grid layout architecture with route-group + GridRuntime, fix DnD collision resolution, enable DnD outside edit mode, improve create dialogs, add visual polish, close-out DnD reliability + visual polish refinements, and amend grid interaction/visual policy per the consolidated UX proposal (Tasks 48–53).
 > **Branch:** `phase-9/grid-ux-improvements`
 > **Canonical refs:** SPEC.md § Phase 9 PRD Departures, § Page Layouts, § Routes; DESIGN_TOKENS.md § Level Depth Backgrounds, § Sidebar
 > **PRD departures:** 4 intentional departures from the PRD documented in SPEC.md § Phase 9 PRD Departures
 
 ### Task 39: Delete Buttons + Confirmation Modal
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/hooks/use-grid-actions.ts` (update), `src/components/grid/delete-confirm-dialog.tsx` (create), `src/components/grid/node-card.tsx` (update), `src/components/grid/bit-card.tsx` (update), `src/components/grid/grid-view.tsx` (update)
 - **Dependencies:** Phase 8 complete
 - **Actions:**
@@ -1092,7 +1092,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 40: Route-Group Grid Layout + GridRuntime
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/lib/utils/color.ts` (create), `src/components/layout/add-flow-context.tsx` (create), `src/components/layout/grid-runtime.tsx` (create), `src/app/(grid)/layout.tsx` (create), `src/app/(grid)/page.tsx` (create), `src/app/(grid)/grid/[nodeId]/page.tsx` (create), `src/app/page.tsx` (delete), `src/app/grid/[nodeId]/page.tsx` (delete), `src/components/layout/level-0-shell.tsx` (delete), `src/app/grid/[nodeId]/_components/node-grid-shell.tsx` (delete)
 - **Dependencies:** Task 39
 - **Actions:**
@@ -1118,7 +1118,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 41: Sidebar Redesign + Breadcrumb Cleanup
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/layout/sidebar.tsx` (update), `src/components/layout/breadcrumbs.tsx` (update), `src/stores/sidebar-store.ts` (delete)
 - **Dependencies:** Task 40
 - **Actions:**
@@ -1143,7 +1143,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 42: DnD Collision Resolution + Drag-to-Child Confirmation
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/lib/grid-dnd.ts` (update), `src/components/layout/grid-runtime.tsx` (update), `src/hooks/use-dnd.ts` (update), `src/components/grid/grid-view.tsx` (update)
 - **Dependencies:** Task 40
 - **Actions:**
@@ -1163,7 +1163,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 43: Enable DnD Outside Edit Mode
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/grid-view.tsx` (update)
 - **Dependencies:** Task 42
 - **Actions:**
@@ -1180,7 +1180,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 44: Create Dialog Improvements
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/ui/textarea.tsx` (create via shadcn), `src/lib/constants/color-palette.ts` (create), `src/lib/constants/node-icons.ts` (update), `src/components/grid/create-node-dialog.tsx` (update), `src/components/grid/create-bit-dialog.tsx` (update), `src/components/layout/grid-runtime.tsx` (update if types change)
 - **Dependencies:** Task 40
 - **Actions:**
@@ -1200,7 +1200,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 45: Visual Polish
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/bit-card.tsx` (update), `src/app/globals.css` (update), `src/components/grid/grid-view.tsx` (update), `src/lib/animations/grid.ts` (update), `src/components/grid/grid-cell.tsx` (update)
 - **Dependencies:** Task 40
 - **Actions:**
@@ -1218,3 +1218,584 @@ These apply across all phases:
   - Deleted items animate out with a shrink+fade
   - Empty cells in edit mode show a square dotted + target centered within the rectangular cell
   - `pnpm build` passes
+
+### Task 46: DnD Close-out
+- **Status:** `[x]`
+- **Files:** `src/lib/grid-dnd.ts` (modify), `src/hooks/use-dnd.ts` (modify), `src/components/grid/grid-view.tsx` (modify), `src/components/grid/grid-cell.tsx` (modify), `src/components/layout/grid-runtime.tsx` (modify), `src/lib/grid-dnd.test.ts` (test), `src/components/grid/grid-view.test.tsx` (test)
+- **Dependencies:** Task 42, Task 43, Task 45
+- **Actions:**
+  - Replace collision detection strategy in `grid-dnd.ts`: use `pointerWithin` for `grid-node-drop` targets (pointer must be inside the node rect) and `closestCenter` for `grid-cell` targets. The current `closestCenter`-only approach over-aggressively prefers node-drop candidates from adjacent cells — this is an algorithm swap, not a threshold tuning exercise
+  - Fix non-edit-mode reposition so dropping onto a valid grid cell actually moves the dragged node/bit (currently broken because collision detection routes most drops to `grid-node-drop` instead of `grid-cell`)
+  - Make node-drop hover/outline appear only when the pointer is meaningfully inside the target node area
+  - Preserve correct move-into confirmation when the pointer is truly over a node
+  - Prevent drag interaction from expanding grid width or producing horizontal overflow during drag near the viewport edge. Start with the smallest fix: apply `overflow-x-hidden` and `min-w-0` on the grid scroll/container path. If needed, force `overflow-hidden` while a drag is active. Do not use `DragOverlay` unless container overflow clipping cannot solve the horizontal scrollbar issue without breaking drag UX
+  - Show square add-target hover affordance during non-edit drag over valid empty cells
+  - Add regression tests for: reposition to empty cell, move-into-node confirmation, adjacent false-positive node hover, no horizontal overflow side effects during drag where testable
+- **Acceptance:**
+  - Outside edit mode, dragging a node/bit to an empty cell repositions it successfully
+  - Dragging near a node does not trigger node-drop outline unless the pointer is actually over the node target area
+  - Dragging onto a node still opens the correct "Move into …?" confirmation
+  - Dragging near the right edge does not create horizontal scroll or expand the grid container
+  - Empty-cell drag hover shows the approved square add-target affordance outside edit mode
+  - `pnpm test` and `pnpm build` pass
+
+### Task 47: Visual Polish Close-out
+- **Status:** `[x]`
+- **Files:** `src/components/grid/grid-cell.tsx` (modify), `src/components/layout/breadcrumbs.tsx` (modify), `src/components/layout/grid-runtime.tsx` (modify if needed), `src/components/grid/node-card.tsx` (modify), `src/components/grid/create-node-dialog.tsx` (modify), `src/components/grid/create-bit-dialog.tsx` (modify), `src/lib/constants/node-icons.ts` (modify), `src/app/globals.css` (modify), `src/lib/utils/bfs.ts` (modify)
+- **Dependencies:** Task 41, Task 44, Task 45, Task 46
+- **Actions:**
+  - Adjust BFS auto-placement origins: nodes from `(1, 1)` → `(2, 2)`; bits from `(GRID_COLS - 2, 1)` → `(GRID_COLS - 3, 2)`
+  - Update grid background color to newly approved values/direction in `globals.css`
+  - Remove breadcrumb subtitle rendering for node description in `breadcrumbs.tsx`. Keep node description in schema and persistence paths — this is display-only removal, not schema removal
+  - Expand icon picker set to 64 curated icons in `node-icons.ts`. Keep create dialog picker layouts usable with the larger set
+  - Apply visual-only node card redesign per `references/editmode.png` direction. Replace the current "colored icon box + external label" feel with a contained tile card: white/card-surface tile, softer radius and shadow, icon rendered in node color instead of inside a large solid color block, title placed inside the tile under the icon, compact single-line label treatment. Keep one-cell footprint and all existing interactions unchanged. No structural, behavioral, routing, or sizing changes
+  - Refine square add-target visuals to match approved direction cleanly
+  - Do not change bit long-text behavior in this task
+- **Acceptance:**
+  - Auto-created nodes appear at `(2, 2)` origin; bits at `(GRID_COLS - 3, 2)` origin
+  - Breadcrumbs show navigation only; no node description subtitle is rendered
+  - Node description still persists in data and remains editable where already supported
+  - Grid background reflects the newly approved visual tuning
+  - Node cards render as contained tile cards (card-surface bg, softer radius/shadow, colored icon without solid block, title inside tile) per `references/editmode.png` direction, with no changes to structure, interactions, or sizing
+  - Both create dialogs expose a 64-icon picker
+  - No bit long-text behavior changes
+  - `pnpm test` and `pnpm build` pass
+
+### Phase 9 Amendment: Grid Interaction + Visual Policy
+
+> **Scope amendment:** The following tasks extend Phase 9 with grid interaction policy changes, visual language updates, and a schema-level Node description removal. These tasks continue on the existing `phase-9/grid-ux-improvements` branch and were agreed as part of the consolidated UX proposal.
+>
+> **Execution issues:** Work that went beyond planned task scope during Phase 9 execution is tracked in [`docs/issues/Issues_Phase_9.md`](issues/Issues_Phase_9.md). That document is the live phase execution record — root causes, changes, active architecture issues (e.g., design-token workflow vs. JS runtime sizing authority), and user-reported issues.
+>
+> **Explicit policies:**
+> - Per-card `X` button = edit mode only (already the case after Tasks 39–47)
+> - Breadcrumb ancestor move = always-on + confirmation (policy change from edit-mode-only)
+> - Drag-to-delete = left sidebar center `X` target + confirmation (secondary path, does not replace Task 39)
+> - Persistent edit-mode dotted overlays = removed; empty-cell creation affordance = hover-only faint plus
+> - Dotted target = drag-hover only, redesigned per `references/dotted2`
+> - Keep `autoScroll={false}` (confirmed direct fix for drag-right overflow)
+> - Node `description` = remove from schema, forms, and persistence model (data-destructive — orphaned fields persist in IndexedDB but become inaccessible)
+> - Bit card text = single-line `truncate` only; no `line-clamp-2`; text overlap not solved in this phase
+
+### Task 48: Drag-to-Delete Target + Motion
+- **Status:** `[x]`
+- **Files:** `src/components/layout/sidebar.tsx` (update), `src/hooks/use-dnd.ts` (update), `src/components/layout/grid-runtime.tsx` (update), `src/lib/grid-dnd.ts` (update)
+- **Dependencies:** Task 39, Task 42
+- **Actions:**
+  - Add `getGridDeleteDropId` helper to `grid-dnd.ts` returning a stable droppable ID string (e.g., `"grid-delete-drop"`)
+  - Extend `grid-runtime.tsx` to pass `dragActiveItem` (from `useDnd`) to `Sidebar` as a new prop
+  - In `sidebar.tsx`: accept optional `dragActiveItem` prop. When non-null, render a contextual `X` delete target centered vertically between the top icon group (add, pencil) and the bottom icon group (trash, theme). The target replaces/overlays the middle icons (search, calendar) during drag
+    - Target sizing: same as other sidebar buttons (`flex h-10 w-10 items-center justify-center rounded-lg`)
+    - Target styling: `text-destructive` with `motion-safe:animate-jiggle` (reuses existing edit-mode wiggle animation)
+    - Icon: `X` from lucide-react (not `Trash2` — matches the card X delete affordance)
+    - Make the target a `@dnd-kit` `useDroppable` with `id: getGridDeleteDropId()` and `data: { kind: "grid-delete-drop" }`
+  - In `use-dnd.ts` `handleDragEnd`: detect `grid-delete-drop` kind. Extract `{ id, type, title }` from `event.active.data.current`. Do **not** delete directly — instead, return the pending delete data so `grid-runtime.tsx` can stage it into the existing `DeleteConfirmDialog` via `requestDelete`
+  - In `grid-runtime.tsx`: when `handleDragEnd` returns a delete request from drag-to-delete, call `requestDelete({ id, type, title })` to open the existing `DeleteConfirmDialog`. No new dialog needed
+- **Acceptance:**
+  - While dragging a Node/Bit, sidebar shows a wiggling `X` target in the middle zone
+  - `X` target does not appear when no drag is active
+  - Dropping on the `X` target opens the existing delete confirmation dialog (cascade warning for Nodes, simple warning for Bits)
+  - Confirming deletes the item; cancelling returns it to its original position
+  - Sidebar does not widen during drag — target stays within the `w-12` rail
+  - `pnpm test` and `pnpm build` pass
+
+### Task 49: Ancestor Move Policy Change
+- **Status:** `[x]`
+- **Files:** `src/components/layout/breadcrumbs.tsx` (update), `src/hooks/use-dnd.ts` (update), `src/components/layout/grid-runtime.tsx` (update)
+- **Dependencies:** Task 43, Task 48
+- **Actions:**
+  - In `breadcrumbs.tsx`: remove `disabled: !isEditMode` from `useDroppable` in `BreadcrumbSegmentButton`. Breadcrumb drops are now always-on regardless of edit mode
+  - Add Bit-at-root rejection: when `nodeId` is `null` (Home segment), set `disabled: true` if the currently dragged item is a Bit. Read `dragActiveItem` from `useDnd` or accept it as a prop from `grid-runtime.tsx`. Bits cannot exist at root (`parentId` is required on Bits per schema)
+  - In `use-dnd.ts` `handleDragEnd`: when a `grid-breadcrumb-drop` is detected, do **not** execute the move immediately. Instead, stage a `pendingAncestorMove` state (same pattern as `pendingNodeMove`): `{ itemId, itemType, itemTitle, targetNodeId, targetNodeTitle } | null`. Add `handleAncestorMoveConfirm` (executes BFS placement + `parentId` update) and `handleAncestorMoveCancel`
+  - In `grid-runtime.tsx`: render an ancestor move confirmation dialog using `pendingAncestorMove` state. Title: `"Move to '{targetNodeTitle}'?"`. Body: `"'{itemTitle}' will be moved to this location."`. Actions: Cancel / Move. For Home target, use title `"Home"`
+  - Confirmation is required for **all** ancestor moves regardless of edit mode
+- **Acceptance:**
+  - Without edit mode: dragging a Node/Bit onto a breadcrumb segment shows confirmation dialog
+  - In edit mode: same behavior — confirmation always required
+  - Confirming moves the item to the target ancestor's grid via BFS nearest empty cell
+  - Cancelling clears the pending state, item returns to original position
+  - Dragging a Bit onto the Home breadcrumb segment is rejected (disabled drop target)
+  - Dragging a Node onto Home works and shows confirmation
+  - `pnpm test` and `pnpm build` pass
+
+### Task 50: Dotted Area Redesign + Hover-only Plus
+- **Status:** `[x]`
+- **Files:** `src/components/grid/grid-cell.tsx` (update), `src/components/grid/grid-view.tsx` (update)
+- **Dependencies:** Task 46, Task 47
+- **Actions:**
+  - In `grid-cell.tsx`: remove the persistent `border-2 border-dashed border-muted-foreground/30` that renders on all empty cells in edit mode. Replace with:
+    - **Edit mode, no drag active:** empty cells show no border. On hover, show a faint `+` icon (`text-muted-foreground/30` → `text-muted-foreground/60` on hover). Use CSS `:hover` pseudo-class, not React state, to avoid re-renders
+    - **Drag active (edit mode or not):** on the hovered valid target cell, show the dotted area styled per `references/dotted2` — rounded-square dashed border with `+` icon. Only the currently hovered target shows this treatment, not all empty cells. Use `isDragOver` prop (already exists from `GridDropCell`) to trigger
+  - Remove the `isEditMode` conditional on `border-dashed` — edit mode no longer drives persistent dotted styling
+  - Keep the square add-target container (`aspect-square w-full max-w-[4rem] m-auto`) for both hover-only `+` and drag-over dotted target
+  - In `grid-view.tsx`: ensure `GridDropCell` passes `isDragOver` correctly to `GridCell` for drag-hover dotted rendering
+- **Acceptance:**
+  - In edit mode with no drag: empty cells show no dotted border; hovering an empty cell reveals a faint `+`
+  - In edit mode during drag: only the hovered target cell shows the `references/dotted2`-style dotted area
+  - Outside edit mode during drag: same dotted target on hovered valid cell (unchanged from Task 46)
+  - Clicking the hover-revealed `+` in edit mode still opens the create dialog at that cell position
+  - `pnpm build` passes
+
+### Task 51: Drag Focus Hierarchy
+- **Status:** `[x]`
+- **Files:** `src/components/grid/grid-view.tsx` (update), `src/components/layout/sidebar.tsx` (update), `src/app/globals.css` (update)
+- **Dependencies:** Task 48, Task 50
+- **Actions:**
+  - In `grid-view.tsx`: add `data-dragging="true"` attribute on the grid container `div` when a drag is active (use `dragActiveItem` from `useDnd`)
+  - In `globals.css`: add CSS rules using `[data-dragging="true"]` ancestor selector:
+    - `[data-dragging="true"] [data-grid-item]:not([data-drag-active="true"]) { opacity: 0.4; filter: saturate(0.5); transition: opacity 0.15s, filter 0.15s; }` — all non-active grid items desaturate
+    - The actively dragged item should have `data-drag-active="true"` attribute set in `DraggableNodeCard` / `DraggableBitCard` when `isDragging` is true
+  - In `sidebar.tsx`: accept `dragActiveItem` prop (already passed in Task 48). When non-null, apply `opacity-40 saturate-50` classes to the search, calendar, trash, and darkmode buttons. Keep `+` and pencil at full opacity
+  - **Implementation constraint:** all desaturation via CSS classes/data attributes — no per-item React state changes during drag
+- **Acceptance:**
+  - During drag: all non-active Nodes/Bits on the grid appear desaturated and dimmed
+  - The actively dragged item remains at full color/opacity
+  - Sidebar search, calendar, trash, darkmode icons desaturate during drag
+  - Sidebar `+` and pencil icons remain at full opacity during drag
+  - When drag ends, all items return to normal immediately
+  - No perceptible performance degradation during drag (CSS-only, no React re-renders)
+  - `pnpm build` passes
+
+### Task 52: Visual Language — L0 Background + Node Card Square
+- **Status:** `[x]`
+- **Files:** `src/app/globals.css` (update), `src/components/grid/node-card.tsx` (update)
+- **Dependencies:** Task 47
+- **Actions:**
+  - In `globals.css` `:root`: update `--grid-bg-l0` to `48 38% 91%` (≈ `#F1F0E1`). Derive deeper levels by reducing lightness from this base:
+    - `--grid-bg-l0: 48 38% 91%;`
+    - `--grid-bg-l1: 48 30% 88%;`
+    - `--grid-bg-l2: 48 22% 85%;`
+    - `--grid-bg-l3: 48 14% 82%;`
+  - In `globals.css` `.dark`: update dark-mode equivalents preserving the same hue progression with appropriate dark values
+  - In `node-card.tsx`: update the card button to render as a true square / rounded-square tile. Ensure the card container uses `aspect-square` so the tile is visually square within the rectangular grid cell. The tile should be centered in the cell. Keep `rounded-2xl`, shadow, and all existing interactions
+  - Reference: `references/editmode.png` for tile card direction, `references/dotted2` for dotted target
+- **Acceptance:**
+  - L0 grid background is warm beige (`#F1F0E1` equivalent)
+  - Each deeper level is visibly cooler/darker while maintaining the warm tone
+  - Node cards render as square tiles centered within their rectangular grid cells
+  - All existing Node card interactions (click, drag, edit-mode X, jiggle) remain functional
+  - `pnpm build` passes
+- **Visual recipe:** `docs/recipes/node-card-recipe.md` — finalized values: icon `h-8 w-8`, padding `p-3`, title `text-xs` / title zone `h-5`, shadow `shadow`
+
+### Task 53: Node Description Schema Removal + Bit Single-line
+- **Status:** `[x]`
+- **Files:** `src/lib/db/schema.ts` (update), `src/lib/db/indexeddb.ts` (update), `src/components/grid/edit-node-dialog.tsx` (update), `src/components/grid/create-node-dialog.tsx` (update), `src/components/layout/breadcrumbs.tsx` (update if needed), `src/components/grid/bit-card.tsx` (update), `src/types/index.ts` (update if needed), `src/lib/db/deadline-hierarchy.test.ts` (update), `src/lib/db/grid-uniqueness.test.ts` (update), `src/lib/db/auto-completion.test.ts` (update), `src/lib/db/mtime-cascade.test.ts` (update), `src/lib/db/promotion.test.ts` (update), `src/lib/db/indexeddb.test.ts` (update)
+- **Dependencies:** Task 47
+- **Actions:**
+  - **Node description removal (data-destructive):**
+    - In `schema.ts`: remove `description` field from `nodeSchema` and `createNodeSchema`. The `Node` and `CreateNode` inferred types will no longer include `description`
+    - In `indexeddb.ts`: remove any `description` references in Node create/update paths. Existing IndexedDB rows with `description` fields are unaffected (reads are trusted, extra fields ignored by Dexie), but new writes will not include it
+    - In `edit-node-dialog.tsx`: remove the `description` state, the description input field, and the `description` value from the submit payload
+    - In `create-node-dialog.tsx`: remove the `description` state, the `<Textarea>` field, and `description` from `onSubmit` values type
+    - In `breadcrumbs.tsx`: confirm no description rendering remains (Task 47 removed subtitle display — verify no residual code)
+    - In `grid-runtime.tsx`: update `handleCreateNode` if it passes `description` to `createNode`
+    - In all test fixtures (`deadline-hierarchy.test.ts`, `grid-uniqueness.test.ts`, `auto-completion.test.ts`, `mtime-cascade.test.ts`, `promotion.test.ts`): remove `description: ""` from `makeNode` helper functions
+    - In `indexeddb.test.ts`: remove assertion on `promotedNode.description` and any other description references
+  - **Bit single-line policy:**
+    - In `bit-card.tsx`: ensure the title uses `truncate` (single-line ellipsis). If `line-clamp-2` was applied in Task 45, revert to `truncate`. Do not use `line-clamp-2`
+    - Keep the one-cell x/y model. Do not attempt to solve text overlap
+    - Do not create a follow-up task for overlap
+  - **Docs:** Update all canonical documentation to remove Node `description`:
+    - `docs/SCHEMA.md`: remove `description` from the nodes table. Add a note: "Removed in Phase 9 amendment. Existing IndexedDB rows may retain orphaned `description` fields."
+    - `docs/SPEC.md`: remove any references to Node description display (e.g., breadcrumb subtitle, grid descriptions). Ensure no layout or component spec references a Node description field
+    - `docs/DESIGN_TOKENS.md`: remove any component usage references that mention Node description rendering or breadcrumb subtitle styling
+- **Acceptance:**
+  - `nodeSchema` and `createNodeSchema` do not include `description`
+  - `Node` and `CreateNode` TypeScript types do not include `description`
+  - Edit Node dialog has no description field
+  - Create Node dialog has no description field or `<Textarea>`
+  - No `description` references in test fixture `makeNode` helpers
+  - `promoteBitToNode` test does not assert on `description`
+  - Bit card titles render as single line with ellipsis truncation
+  - `pnpm tsc --noEmit` passes (no type errors from removed field)
+  - `pnpm test` passes
+  - `pnpm build` passes
+
+#### Phase 9 Notes (Amendment)
+
+> **Data-destructive change:** Node `description` removal is a one-way schema change. Existing IndexedDB rows retain orphaned `description` fields that Dexie silently ignores on read. No migration is needed, but the data is permanently inaccessible once the UI and schema stop referencing it.
+
+> **Drag-to-delete is a secondary path:** It supplements, not replaces, the per-card X button in edit mode. Both paths converge on the same `DeleteConfirmDialog`.
+
+> **Ancestor move confirmation:** All ancestor moves via breadcrumb now require confirmation regardless of edit mode. This replaces the previous edit-mode-only gate, which existed to prevent accidental hierarchy changes.
+
+---
+
+## Phase 10: Breadcrumb + Deadline UX
+
+> **Purpose:** Redesign the breadcrumb as a compact contextual surface, add deadline quick-edit, surface parent Node deadlines in Bit Detail, enforce L0 no-deadline policy, add optional deadline to Node creation, and redesign deadline input around a date-first interaction model.
+> **Branch:** `phase-10/breadcrumb-deadline-ux`
+> **Canonical refs:** SCHEMA.md (deadline fields, deadlineAllDay), DESIGN_TOKENS.md
+>
+> **Explicit policies:**
+> - L0 Node = no deadline (UI + read-surface enforcement — hide deadline field in L0 create/edit, exclude L0 Nodes from calendar/urgency read paths)
+> - `Week` pill = 7 days later from today
+> - No explicit time selected = `deadlineAllDay = true`
+> - All-day hierarchy comparison = `23:59:59.999` in local timezone for the selected date
+> - Deadline quick-edit = deadline-only shortcut, does not replace full `EditNodeDialog`
+> - Parent deadline label = `"Parent deadline"` (tooltip: `"Child deadline cannot exceed this"`)
+
+### Task 54: Compact Breadcrumb Redesign
+- **Status:** `[ ]`
+- **Files:** `src/components/layout/breadcrumbs.tsx` (rewrite), `src/app/globals.css` (update), `src/components/layout/grid-runtime.tsx` (update)
+- **Dependencies:** Phase 9 complete
+- **Actions:**
+  - Redesign `breadcrumbs.tsx` from a full-width `border-b` navigation strip to a compact contextual block embedded into the grid surface. With max 4 levels (Home > L0 > L1 > L2), the breadcrumb should be a small floating/inline element, not a full-width bar
+  - Remove the `h-breadcrumb` fixed height and `border-b border-border` styling. The breadcrumb should sit within the grid content area, not above it as a separate strip
+  - Position the breadcrumb in the top-left of the grid area, overlaid on the grid surface with appropriate padding and a subtle background (e.g., `bg-background/80 backdrop-blur-sm rounded-lg px-3 py-1.5`)
+  - Keep all existing functionality: navigation via click, droppable segments for ancestor move, segment highlighting on drag-over
+  - In `grid-runtime.tsx`: update the layout so the breadcrumb floats within the grid content area rather than occupying a dedicated layout row above it
+  - In `globals.css`: remove `--breadcrumb-height` if it exists, or any `h-breadcrumb` utility. Update content margin calculations that depended on the breadcrumb strip height
+- **Acceptance:**
+  - Breadcrumb renders as a compact floating element in the top-left of the grid area
+  - No full-width navigation strip visible
+  - Navigation, drag-drop onto segments, and ancestor move confirmation all still work
+  - Grid content occupies the full vertical space (no dedicated breadcrumb row)
+  - `pnpm build` passes
+
+### Task 55: Node Deadline Quick-Edit Surface
+- **Status:** `[ ]`
+- **Files:** `src/components/layout/breadcrumb-deadline.tsx` (create), `src/components/layout/breadcrumbs.tsx` (update), `src/hooks/use-node-actions.ts` (update if needed)
+- **Dependencies:** Task 54, Task 58 (date-first input component)
+- **Actions:**
+  - Create `breadcrumb-deadline.tsx`: a small component rendered below the compact breadcrumb. Accepts `nodeId` and reads the current Node via `useNode`
+  - When the Node has no deadline, render nothing
+  - When the Node has a deadline, render the formatted deadline as clickable text (e.g., `"Due Apr 15"` or `"Due Apr 15, 3:00 PM"`)
+  - On click, open a Popover containing the `DateFirstDeadlinePicker` component (from Task 58). Pre-populate with the current deadline
+  - On date selection: validate against child Bits via deadline hierarchy check. If shortening creates a conflict with any child Bit deadline, show `DeadlineConflictModal` (existing component). On confirm, update the Node deadline via `useNodeActions.updateNode`
+  - On clear: remove the deadline (`deadline: null, deadlineAllDay: false`)
+  - In `breadcrumbs.tsx`: render `<BreadcrumbDeadline nodeId={nodeId} />` below the breadcrumb block when `nodeId` is not null
+- **Acceptance:**
+  - When viewing a Node with a deadline, the deadline text appears below the compact breadcrumb
+  - Clicking the deadline opens a popover with the date-first picker
+  - Selecting a new date updates the Node deadline
+  - Shortening the deadline triggers conflict validation against child Bits
+  - Clearing the deadline removes it from the Node
+  - When viewing a Node without a deadline, no deadline text appears
+  - At L0 (Home), no deadline quick-edit appears (no nodeId)
+  - `pnpm build` passes
+
+### Task 56: Parent Node Deadline in Bit Detail
+- **Status:** `[ ]`
+- **Files:** `src/components/bit-detail/bit-detail-popup.tsx` (update), `src/hooks/use-bit-detail.ts` (update if `parentNode` is not already exposed)
+- **Dependencies:** Phase 9 complete
+- **Actions:**
+  - In `bit-detail-popup.tsx`: after the Bit's own deadline section, add a parent deadline display. `parentNode` is already resolved via `useBitDetail` (the hook reads the parent Node for hierarchy validation)
+  - Render only when `parentNode?.deadline` is not null
+  - Display at the very bottom of deadline-related content (below Bit deadline, above chunks/actions). Layout hierarchy: Bit deadline first (child), parent deadline last (final constraint)
+  - Label: `"Parent deadline"` in `text-xs text-muted-foreground`
+  - Format the deadline using `date-fns` `format` (same format as Bit deadline display)
+  - Add a title/tooltip attribute: `"Child deadline cannot exceed this"`
+  - Read-only display — no editing from this surface (editing is via the breadcrumb quick-edit in Task 55 or the full `EditNodeDialog`)
+- **Acceptance:**
+  - When a Bit's parent Node has a deadline, it appears labeled `"Parent deadline"` below the Bit's own deadline
+  - When the parent Node has no deadline, nothing extra renders
+  - The parent deadline is formatted consistently with the Bit's own deadline
+  - Tooltip on hover shows `"Child deadline cannot exceed this"`
+  - `pnpm build` passes
+
+### Task 57: L0 Deadline Enforcement + Create Node Deadline
+- **Status:** `[ ]`
+- **Files:** `src/components/grid/edit-node-dialog.tsx` (update), `src/components/grid/create-node-dialog.tsx` (update), `src/components/layout/grid-runtime.tsx` (update)
+- **Dependencies:** Phase 9 complete
+- **Actions:**
+  - **L0 enforcement (UI + read surfaces):**
+    - In `edit-node-dialog.tsx`: accept `level` as a prop (or derive from the Node's `level` field). When `level === 0`, hide the entire deadline section. Existing L0 Nodes with deadlines set before this change will not have their deadlines shown or editable — effectively hidden
+    - In `create-node-dialog.tsx`: accept `level` as a prop from `grid-runtime.tsx`. At L0 (`level === 0`), do not render the deadline input. At L1+ (`level >= 1`), render the optional deadline input (see below)
+    - **Read-surface exclusion:** L0 Node deadlines must also be excluded from read surfaces so they cannot create hidden-but-active state. Specifically:
+      - `use-calendar-data.ts`: filter out Nodes with `level === 0` from calendar deadline queries (weekly items, monthly items, pool items)
+      - `use-global-urgency.ts`: exclude Nodes with `level === 0` from urgency scanning
+      - Any other deadline-driven read surface that displays or acts on Node deadlines must skip L0 Nodes
+    - No schema-level Zod rejection. The schema still allows `deadline` on any Node. Enforcement is at the UI write layer + read-surface filtering layer
+  - **Optional deadline in Create Node (L1+ only):**
+    - In `create-node-dialog.tsx`: add an optional deadline section below the icon/color picker when `level >= 1`. Use the `DateFirstDeadlinePicker` component (from Task 58). Default: no deadline selected
+    - Update `onSubmit` values type to include `deadline: number | null` and `deadlineAllDay: boolean`
+    - In `grid-runtime.tsx` `handleCreateNode`: pass `deadline` and `deadlineAllDay` through to `createNode`. Default both to `null` / `false` when not set
+  - **Level prop threading:** `grid-runtime.tsx` already computes `displayLevel`. Pass it to the create/edit dialog components
+- **Acceptance:**
+  - At L0: Create Node dialog has no deadline input; Edit Node dialog hides deadline section
+  - At L1+: Create Node dialog shows optional deadline input with date-first picker
+  - Creating a Node with a deadline persists it correctly
+  - Creating a Node without a deadline works the same as before
+  - Existing L0 Nodes with deadlines: deadline is hidden in edit dialog and ignored by calendar/urgency read surfaces
+  - L0 Nodes do not appear in calendar deadline queries (weekly, monthly, pool)
+  - L0 Nodes do not contribute to global urgency badge
+  - `pnpm tsc --noEmit` passes
+  - `pnpm build` passes
+
+### Task 58: Date-First Deadline Input
+- **Status:** `[ ]`
+- **Files:** `src/components/shared/date-first-deadline-picker.tsx` (create), `src/components/bit-detail/bit-detail-popup.tsx` (update), `src/components/grid/edit-node-dialog.tsx` (update)
+- **Dependencies:** Phase 9 complete
+- **Actions:**
+  - Create `date-first-deadline-picker.tsx` as a shared component. Props: `value: { deadline: number | null; deadlineAllDay: boolean }`, `onChange: (value: { deadline: number | null; deadlineAllDay: boolean }) => void`, `onClear?: () => void`
+  - Visible structure (horizontal row of pill buttons + icons):
+    - `Today` pill: sets deadline to today. No time → `deadlineAllDay = true`
+    - `Week` pill: sets deadline to 7 days from today (same time-of-day or all-day). No time → `deadlineAllDay = true`
+    - `Calendar` icon button: opens a date picker (shadcn `Calendar` component in a `Popover`). Selecting a date sets the deadline. No time → `deadlineAllDay = true`
+    - `Clock` icon button: opens a time picker (hour/minute inputs or a time select). Selecting a time sets `deadlineAllDay = false` and combines with the current date. If no date is set yet, use today
+  - **All-day rule:** if the user selects only a date (via Today, Week, or Calendar) without explicitly setting a time via the Clock icon, the deadline is stored as `deadlineAllDay = true`. The timestamp is set to `00:00:00.000` local time on that date. For hierarchy comparison purposes, all-day deadlines are treated as `23:59:59.999` local time — this logic lives in the comparison/validation code, not in the picker component
+  - Remove the current `"All day"` toggle from any deadline input surfaces. The concept is handled implicitly by whether the user sets a time
+  - Replace existing deadline inputs in `bit-detail-popup.tsx` and `edit-node-dialog.tsx` with `DateFirstDeadlinePicker`
+  - Preserve the existing `deadline` and `deadlineAllDay` schema fields — no schema changes
+- **Acceptance:**
+  - `Today` pill sets deadline to today (all-day)
+  - `Week` pill sets deadline to today + 7 days (all-day)
+  - `Calendar` icon opens date picker; selecting a date sets an all-day deadline
+  - `Clock` icon opens time picker; selecting a time makes the deadline time-specific
+  - No visible "All day" toggle in the UI
+  - Existing deadline editing surfaces (Bit Detail, Edit Node) use the new picker
+  - Deadline hierarchy validation treats all-day deadlines as `23:59:59.999` local
+  - `pnpm build` passes
+
+#### Phase 10 Notes
+
+> **Task dependency order:** Task 58 (Date-First Deadline Input) should be implemented early in Phase 10 as Tasks 55 and 57 depend on the `DateFirstDeadlinePicker` component. Recommended order: 58 → 54 → 56 → 57 → 55.
+
+> **All-day timestamp storage:** The picker stores all-day deadlines with `00:00:00.000` local time. The `23:59:59.999` interpretation is applied only at comparison time (hierarchy validation, urgency calculation, calendar display). This keeps the storage clean while preserving correct end-of-day semantics.
+
+> **L0 deadline enforcement covers UI + read surfaces.** Write surfaces (create/edit dialogs) hide the deadline field at L0. Read surfaces (calendar queries, urgency scanning) filter out L0 Nodes. This prevents hidden-but-active deadline state. Schema-level Zod rejection is deferred — if needed later, add a `refine` on `createNodeSchema` that checks `level === 0 → deadline must be null`.
+
+---
+
+## Phase 11: Calendar Weekly / Monthly Redesign
+
+> **Purpose:** Redesign the calendar weekly and monthly views as a proper interaction model update, not minor polish. Restructure the calendar shell (sidebar, header, pool), redesign weekly day sections with stable sizing and today emphasis, redesign monthly with popup day detail, and add Node/Bit creation from the calendar pool.
+> **Branch:** `phase-11/calendar-redesign`
+> **Canonical refs:** SPEC.md § Routes (calendar routes), DESIGN_TOKENS.md
+>
+> **Explicit policies:**
+> - Calendar sidebar `+` = creation entry point for **unscheduled** Nodes/Bits (not scheduling)
+> - Calendar sidebar `pencil` = disabled in calendar mode
+> - Calendar-created Nodes = `parentId = null`, visible in Grid L0
+> - Calendar-created Bits = require explicit parent Node selection via Node browser; created with no date assigned
+> - Selected parent in Create Bit must be visibly shown in the dialog (title + path)
+> - Create Bit button disabled until a parent Node is selected
+> - Placed calendar items (weekly + monthly) = draggable for rescheduling; cursor affordance only (no drag handles)
+> - Weekly: stable day section footprint with internal scroll; today section wider by default; click-to-expand other days
+> - Monthly: horizontally wider rounded-rectangle cells (not square); day detail = popup overlay (not fixed column)
+> - Monthly popup: one popup at a time; X to close; positioned near click
+
+### Task 59: Calendar Sidebar + Header Redesign
+- **Status:** `[ ]`
+- **Files:** `src/components/layout/sidebar.tsx` (update), `src/app/calendar/layout.tsx` (update), `src/app/calendar/weekly/page.tsx` (update), `src/app/calendar/monthly/page.tsx` (update)
+- **Dependencies:** Phase 10 complete
+- **Actions:**
+  - In `sidebar.tsx`: detect calendar routes via `pathname.startsWith("/calendar/")`. When on a calendar route:
+    - `+` button: wire to a calendar creation flow (opens a chooser for Node vs Bit, then the appropriate create dialog). Items created here are **unscheduled** (no deadline set)
+    - `pencil` button: render as disabled (`pointer-events-none opacity-40`)
+    - Add a `Home` icon button (`Home` from lucide-react) **above** the `+` button. Clicking navigates to `/` (Grid L0). This provides a direct return path from calendar to grid root
+  - In `calendar/layout.tsx`: remove the current `"Calendar Schedule"` heading text. Remove the `"Weekly / Monthly"` label from the top header section
+  - Move the `Weekly / Monthly` toggle to the date navigation row: place it inline with the left/right date navigation arrows and the centered date label. Layout: `[< arrow] [Weekly | Monthly toggle] [date label (centered)] [> arrow]`
+  - Remove `border-b` dividers between calendar header sections. Use spacing, surface color, and font weight to create visual separation instead
+  - Apply the updated icon design language (square/rounded-square icon style) to calendar sidebar buttons
+- **Acceptance:**
+  - In calendar mode: `+` opens creation flow for unscheduled items; `pencil` is disabled; `Home` icon appears above `+` and navigates to `/`
+  - `"Calendar Schedule"` text is removed
+  - `Weekly / Monthly` toggle sits in the date navigation row
+  - No hard border lines between calendar sections
+  - `pnpm build` passes
+
+### Task 60: Pool Fold/Unfold
+- **Status:** `[ ]`
+- **Files:** `src/app/calendar/layout.tsx` (update), `src/stores/calendar-store.ts` (update)
+- **Dependencies:** Task 59
+- **Actions:**
+  - In `calendar-store.ts`: add `isPoolCollapsed: boolean` state and `togglePool` action
+  - In the calendar layout or pool component: add a collapse/expand toggle (chevron icon) at the top of the pool section. When collapsed, the pool section hides its content and shrinks to a minimal bar (showing only the toggle and a label like "Pool"). When expanded, full pool content is visible
+  - Use `AnimatePresence` + `motion.div` for smooth height transition on fold/unfold
+  - When pool is collapsed, the calendar (weekly day columns or monthly grid) expands to fill the reclaimed space
+- **Acceptance:**
+  - Pool section has a toggle to collapse/expand
+  - Collapsing hides pool items and gives more vertical space to the calendar
+  - Expanding restores the pool with smooth animation
+  - Pool state persists within the session (Zustand store)
+  - `pnpm build` passes
+
+### Task 61: Calendar Pool Node Creation
+- **Status:** `[ ]`
+- **Files:** `src/app/calendar/layout.tsx` (update), `src/hooks/use-grid-actions.ts` (update if needed)
+- **Dependencies:** Task 59
+- **Actions:**
+  - When the sidebar `+` is clicked in calendar mode and the user selects "Node" from the chooser:
+    - Open `CreateNodeDialog` (reuse existing component)
+    - On submit: create the Node with `parentId = null`, `level = 0`, and BFS auto-placement at the L0 grid. No deadline is set
+    - The new Node appears in Grid L0 and (if it has a deadline later) in the calendar pool
+  - This is a lightweight reuse of existing creation infrastructure — the only difference from grid creation is the entry point (calendar sidebar vs grid cell `+`)
+- **Acceptance:**
+  - From calendar, sidebar `+` → Node → opens CreateNodeDialog
+  - Created Node appears in Grid L0 with BFS auto-placement
+  - Created Node has no deadline (unscheduled)
+  - `pnpm build` passes
+
+### Task 62: Calendar Pool Bit Creation + Parent Selector
+- **Status:** `[ ]`
+- **Files:** `src/components/calendar/parent-node-selector.tsx` (create), `src/components/grid/create-bit-dialog.tsx` (update), `src/app/calendar/layout.tsx` (update)
+- **Dependencies:** Task 59
+- **Actions:**
+  - Create `parent-node-selector.tsx`: a tree-browsing Node selector component. Props: `value: string | null` (selected Node ID), `onChange: (nodeId: string) => void`
+    - On open, show all L0 Nodes. Clicking a Node either selects it (if it's the desired parent) or drills into its children (if it has child Nodes)
+    - Show each Node with its icon and title. Indicate Nodes that contain child Nodes (e.g., chevron or folder indicator)
+    - Breadcrumb-style path at the top of the selector showing the current browsing location
+    - "Select" button to confirm the currently viewed Node as the parent, or allow clicking a "Select this node" action on each Node row
+    - The selector should be rendered inside a Popover or Dialog
+  - Update `create-bit-dialog.tsx`: accept an optional `requireParent?: boolean` prop and optional `defaultParentId?: string | null` prop
+    - When `requireParent` is true: show the `ParentNodeSelector` in the dialog. Display the selected parent's title and path. Disable the "Create" button until a parent is selected
+    - When `requireParent` is false (default, grid usage): behavior unchanged
+  - In calendar layout: when sidebar `+` → Bit is selected, open `CreateBitDialog` with `requireParent={true}`. If the calendar is drilled into a specific Node context, pass that Node as `defaultParentId`
+  - Created Bit: `parentId = selected Node`, BFS auto-placement in that Node's grid, no deadline (unscheduled)
+- **Acceptance:**
+  - From calendar, sidebar `+` → Bit → opens CreateBitDialog with parent selector
+  - Parent selector shows L0 Nodes, allows browsing deeper, shows path
+  - Create button is disabled until a parent Node is selected
+  - Selected parent is visibly displayed (title + path)
+  - Created Bit appears in the selected parent's grid with no deadline
+  - From grid, CreateBitDialog behavior is unchanged (no parent selector shown)
+  - `pnpm build` passes
+
+### Task 63: Weekly Stable Day Sizing + Today Emphasis
+- **Status:** `[ ]`
+- **Files:** `src/components/calendar/day-column.tsx` (update), `src/app/calendar/weekly/page.tsx` (update), `src/stores/calendar-store.ts` (update)
+- **Dependencies:** Task 60
+- **Actions:**
+  - In `calendar-store.ts`: add `expandedDay: number | null` state (day index 0–6, `null` = use default rule) and `setExpandedDay` action
+  - **Default expanded-day rule:**
+    - If the displayed week includes today: today's column is expanded by default (`expandedDay` resolves to today's day index when `null`)
+    - If the displayed week does not include today: the first visible day column (index 0, Monday) is expanded by default
+    - This ensures exactly one column is always expanded, providing a stable layout regardless of navigation
+  - In `day-column.tsx` / weekly page: replace content-driven column width with a fixed layout model:
+    - Each day column has a fixed base width (e.g., `flex-1`)
+    - The expanded column (today or selected) gets a wider allocation (e.g., `flex-[2]` or `flex-[1.5]`)
+    - Content overflow within a day column scrolls internally (`overflow-y-auto`) rather than expanding the column
+  - Remove the current border-color-only today emphasis. The expanded column should be visually distinct via width and subtle surface color (e.g., slightly lighter/warmer background)
+  - Clicking a non-expanded date header expands that day (animates width increase) and contracts the previously expanded day. Use `motion.div` `layout` animation for smooth width transition
+  - Only one day can be expanded at a time. Clicking the already-expanded day has no effect
+- **Acceptance:**
+  - Day columns have stable widths that don't fluctuate with content
+  - When the displayed week includes today: today's column is wider by default
+  - When the displayed week does not include today: the first day column (Monday) is wider by default
+  - Exactly one column is always expanded
+  - Content-heavy days scroll internally rather than expanding
+  - Clicking another day header expands it with smooth animation
+  - Only one day is expanded at a time
+  - `pnpm build` passes
+
+### Task 64: Weekly Drag Rescheduling + Pool Cleanup
+- **Status:** `[ ]`
+- **Files:** `src/components/calendar/day-column.tsx` (update), `src/components/calendar/items-pool.tsx` (update), `src/hooks/use-dnd.ts` (update)
+- **Dependencies:** Task 63
+- **Actions:**
+  - **Placed items draggable:** Items already placed in a day column must be draggable. Wrap each placed item with `useDraggable`. On drag-end to a different day column: update the item's deadline to the target day. On drag-end back to the pool: clear the deadline (unschedule)
+  - **Cursor affordance:** Set `cursor-grab` on placed items, `cursor-grabbing` during drag. Do not add visible drag-handle icons
+  - **Pool row cleanup:**
+    - Remove the left-side drag icon from each pool item
+    - Replace the right-side `X` (unschedule) icon with `Trash2` icon from lucide-react (matching Bit Detail's delete/trash affordance)
+  - In `use-dnd.ts`: ensure `handleDragEnd` handles the case where a placed calendar item (not just a pool item) is dropped on a different day column — update deadline to the new day
+- **Acceptance:**
+  - Items placed in a weekly day column are draggable to other day columns (rescheduling)
+  - Dragging a placed item to the pool unschedules it (clears deadline)
+  - Placed items show `cursor-grab` on hover, `cursor-grabbing` while dragging
+  - No drag-handle icons on placed items
+  - Pool items have no left-side drag icon
+  - Pool items have `Trash2` icon instead of `X` for unschedule action
+  - `pnpm build` passes
+
+### Task 65: Monthly Cell Redesign + Day Detail Popup
+- **Status:** `[ ]`
+- **Files:** `src/app/calendar/monthly/_components/month-grid.tsx` (update), `src/app/calendar/monthly/_components/date-cell-popover.tsx` (rewrite), `src/app/calendar/monthly/page.tsx` (update)
+- **Dependencies:** Task 60
+- **Actions:**
+  - In `month-grid.tsx`: update date cells from their current shape to **horizontally wider rounded rectangles** (`rounded-xl`, wider aspect ratio). Do not use square cells. Reason: typical viewport is wider than tall, and square cells waste horizontal space in the 2-column (pool + calendar) layout. Reference: `references/monthly.jpg`
+  - **Day detail popup:** Replace the current `date-cell-popover.tsx` (if it uses a fixed side panel) with a Radix `Popover` or floating overlay:
+    - Clicking a date cell opens a popup overlay **near the clicked cell** (use Radix Popover with `side="bottom"` or `side="right"` and viewport collision handling)
+    - Popup shows all items for that day in a list view. Items are clickable → navigate to their grid location (same behavior as current implementation)
+    - Popup has an `X` button in the top-right corner to close
+    - **One popup at a time:** clicking a different date closes the current popup and opens the new one. Manage via `selectedDate` state on the monthly page
+  - In monthly page: remove any fixed 3-column layout (Pool | Calendar | Today Detail). The calendar grid should use the full available width alongside the pool. The popup is an overlay, not a space-consuming panel
+  - Placed items in monthly cells must be draggable to other date cells (rescheduling). Use cursor affordance, no drag handles. When an item is dropped on a different date cell, update its deadline to that date
+- **Acceptance:**
+  - Monthly date cells are horizontally wider rounded rectangles (not square)
+  - Clicking a date opens a popup overlay near the cell, not a fixed side panel
+  - Popup has an X close button
+  - Only one popup is open at a time; clicking another date swaps it
+  - Calendar grid uses full available width (no fixed third column)
+  - Placed items are draggable between date cells for rescheduling
+  - `pnpm build` passes
+
+### Task 66: Monthly Item Representation
+- **Status:** `[ ]`
+- **Files:** `src/app/calendar/monthly/_components/month-grid.tsx` (update), `src/app/calendar/monthly/_components/date-cell-popover.tsx` (update)
+- **Dependencies:** Task 65
+- **Actions:**
+  - In `month-grid.tsx` date cells:
+    - Bits: render as small colored **dots** (circle indicator, `h-2 w-2 rounded-full`). Color derived from parent Node's color. Multiple dots stack horizontally; overflow shows a count badge (e.g., `+3`)
+    - Nodes: render as small versions of the Node tile (miniature icon + title or icon only) using the Node's color. Consistent with the new Phase 9 square/rounded-square Node design language, but smaller (e.g., `h-6 w-6` icon only)
+  - In the popup day detail view: show full item details (icon, title, time if any, parent path) — same richness as the current implementation
+  - Reference: `references/monthly.jpg`
+  - Keep the entire month visible on one screen. The popup is an overlay; the calendar itself should not scroll vertically for a standard 5-week month
+- **Acceptance:**
+  - Bits appear as colored dots in monthly cells
+  - Nodes appear as small tile icons in monthly cells
+  - Popup detail view shows full item information
+  - Entire month is visible on one screen (no vertical scroll for the calendar grid)
+  - `pnpm build` passes
+
+#### Phase 11 Notes
+
+> **Calendar creation is not scheduling.** Items created from the calendar sidebar `+` are unscheduled by default. The user creates first, then drags onto a date to schedule. This keeps the creation flow lightweight and consistent regardless of whether the user starts from grid or calendar.
+
+> **Parent Node selector is the most complex new component.** The tree-browsing Node selector (Task 62) requires a browse-and-select interaction pattern. Consider implementing it as a standalone component that can be reused for any future "pick a Node" interaction (e.g., move-to, reparent).
+
+> **Monthly popup positioning:** Use Radix Popover's built-in viewport collision handling. If the clicked cell is near the bottom-right corner, the popup should flip/shift to remain visible. Test with edge cells explicitly.
+
+> **Placed item drag rescheduling:** Both weekly and monthly surfaces support dragging already-placed items to new dates. The DnD handler in `use-dnd.ts` must detect whether the drag source is a pool item (new scheduling) or a placed item (rescheduling) and update the deadline accordingly in both cases.
+
+---
+
+## Phase 12: Quarterly Calendar View
+
+> **Purpose:** Add a new Quarterly calendar view that shows Nodes (only) placed across quarters. Provides a high-level planning surface for longer-term work.
+> **Branch:** `phase-12/quarterly-view`
+> **Canonical refs:** SCHEMA.md (Node deadline, deadlineAllDay)
+>
+> **Explicit policies:**
+> - Only Nodes can be placed in Quarterly (no Bits, no Chunks)
+> - Placing a Node in a quarter sets its deadline to the **last calendar day** of that quarter:
+>   - Q1 → March 31, Q2 → June 30, Q3 → September 30, Q4 → December 31
+> - Placed deadlines are treated as **all-day** (`deadlineAllDay = true`)
+> - For comparison/validation: local timezone, `23:59:59.999` on the final day
+> - Quarterly is a new calendar mode alongside Weekly and Monthly
+
+### Task 67: Quarterly Calendar View
+- **Status:** `[ ]`
+- **Files:** `src/app/calendar/quarterly/page.tsx` (create), `src/app/calendar/quarterly/_components/quarter-grid.tsx` (create), `src/app/calendar/quarterly/_components/quarter-column.tsx` (create), `src/app/calendar/layout.tsx` (update), `src/stores/calendar-store.ts` (update), `src/hooks/use-calendar-data.ts` (update), `src/hooks/use-dnd.ts` (update)
+- **Dependencies:** Phase 11 complete
+- **Actions:**
+  - In `calendar-store.ts`: add `currentYear: number` state, `navigateYear` action, and extend the calendar view type to include `"quarterly"`
+  - In `calendar/layout.tsx`: add `Quarterly` to the Weekly/Monthly toggle (becomes a 3-way toggle). Route to `/calendar/quarterly`
+  - Create `quarterly/page.tsx`: `"use client"`. Same pool panel as weekly/monthly (shared via calendar layout). Right panel: quarter grid. Only Nodes from the pool can be dragged onto quarters — Bits and Chunks are not droppable
+  - Create `quarter-grid.tsx`: 4-column layout, one per quarter (Q1, Q2, Q3, Q4). Each column shows Nodes with deadlines falling within that quarter. Year navigation arrows + year label at the top
+  - Create `quarter-column.tsx`: column component for a single quarter. Header shows `Q1 (Jan–Mar)` etc. Body lists Nodes placed in that quarter (rendered with the Phase 9 Node tile design language). Column is a `useDroppable` target
+  - **Placement semantics:** dragging a Node from the pool (or from another quarter) onto a quarter column sets:
+    - `deadline` to `new Date(year, lastMonth, lastDay).getTime()` where lastMonth/lastDay correspond to the quarter's end date (Q1: month=2 day=31, Q2: month=5 day=30, Q3: month=8 day=30, Q4: month=11 day=31)
+    - `deadlineAllDay = true`
+  - **Drag validation:** if a Bit or Chunk is dragged onto a quarter column, reject the drop (do not update, optionally show toast: `"Only Nodes can be placed in Quarterly view"`)
+  - In `use-calendar-data.ts`: add `quarterlyItems` query — all Nodes with deadlines, grouped by quarter based on deadline timestamp. Filter: active Nodes only (`deletedAt === null`)
+  - In `use-dnd.ts`: handle `quarterly-column-drop` kind. On drop, update Node deadline to quarter end date
+  - The Node placement section should use **full height** of the available calendar area. Reference: `references/quarter`
+- **Acceptance:**
+  - `/calendar/quarterly` route resolves and renders the quarterly view
+  - 3-way toggle (Weekly / Monthly / Quarterly) works in calendar header
+  - 4-column quarter grid shows Nodes by quarter
+  - Dragging a Node onto a quarter sets its deadline to the last day of that quarter (all-day)
+  - Dragging a Bit/Chunk onto a quarter is rejected
+  - Year navigation arrows update the displayed year
+  - Nodes with deadlines in the displayed year appear in the correct quarter column
+  - Quarter columns use full available height
+  - `pnpm build` passes
+
+#### Phase 12 Notes
+
+> **Quarter end-date computation:** Use `new Date(year, month, 0).getDate()` pattern if needed for months with varying lengths (though Q1-Q4 end dates are fixed: Mar 31, Jun 30, Sep 30, Dec 31). Hard-code the month/day pairs for clarity.
+
+> **Quarterly is Nodes-only by design.** Quarterly is a strategic planning surface. Bits are tactical (specific tasks), and placing them at quarter granularity would lose meaningful scheduling precision. This is an intentional interaction constraint, not a limitation to be relaxed later.
