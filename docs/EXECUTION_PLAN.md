@@ -1419,6 +1419,14 @@ These apply across all phases:
 
 > **Ancestor move confirmation:** All ancestor moves via breadcrumb now require confirmation regardless of edit mode. This replaces the previous edit-mode-only gate, which existed to prevent accidental hierarchy changes.
 
+> **Grid-aware sizing:** Fixed rem-based node sizing breaks across resolutions (FHD vs QHD vs UHD). Container queries with `min(100cqw, 100cqh)` and a 96px cap solved this without JS runtime measurement. See MI-3 through MI-6 in Issues_Phase_9.md.
+
+> **Grid dimension iteration:** Density at higher resolutions drove three grid-dimension changes (12×8 → 15×8 → 18×9). When sizing feels sparse at one resolution, increasing grid density is a better fix than resolution-dependent branching or max-width constraints.
+
+> **Scope drift at phase close:** Phase 10 deadline-conflict code (bit-detail-popup, use-bit-detail-actions) accumulated in the working tree during Phase 9. At close-out, it was misclassified as Phase 9 source by path proximity. Prevention: classify dirty files by diff content + plan cross-reference, not file path. Skill updated.
+
+> **Full issue log:** `docs/issues/Issues_Phase_9.md`
+
 ---
 
 ## Phase 10: Breadcrumb + Deadline UX
