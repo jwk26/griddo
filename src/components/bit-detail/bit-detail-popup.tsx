@@ -249,26 +249,28 @@ export function BitDetailPopup() {
                         </button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-2" align="start">
-                        <div className="grid grid-cols-5 gap-1.5">
-                          {NODE_ICON_NAMES.map((name) => {
-                            const PickerIcon = NODE_ICON_MAP[name];
-                            return (
-                              <button
-                                key={name}
-                                type="button"
-                                aria-label={name}
-                                title={name}
-                                className={cn(
-                                  "flex h-9 w-9 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground",
-                                  bit.icon === name &&
-                                    "border-transparent ring-2 ring-primary ring-offset-1",
-                                )}
-                                onClick={() => handleIconSelect(name)}
-                              >
-                                <PickerIcon className="h-4 w-4" />
-                              </button>
-                            );
-                          })}
+                        <div className="max-h-[200px] overflow-y-auto pr-1">
+                          <div className="grid grid-cols-7 gap-1.5">
+                            {NODE_ICON_NAMES.map((name) => {
+                              const PickerIcon = NODE_ICON_MAP[name];
+                              return (
+                                <button
+                                  key={name}
+                                  type="button"
+                                  aria-label={name}
+                                  title={name}
+                                  className={cn(
+                                    "flex size-10 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground",
+                                    bit.icon === name &&
+                                      "border-transparent ring-2 ring-primary ring-offset-1",
+                                  )}
+                                  onClick={() => handleIconSelect(name)}
+                                >
+                                  <PickerIcon className="h-4 w-4" />
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                       </PopoverContent>
                     </Popover>

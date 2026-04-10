@@ -151,6 +151,7 @@ Chunks do **not** have `mtime` or `created_time`. Aging is tracked at the Bit le
 
 - **Cell-based** positioning. Coordinates (`x`, `y`) are column/row indices, not pixel values.
 - **Default size:** 12 columns x 8 rows. This is a **hard cap** — the grid cannot grow beyond these dimensions. Scrolling is viewport-level only (the fixed 12x8 grid may extend beyond the visible screen area, but no new cells are created).
+  > **Amendment (Phase 9):** Grid dimensions changed from 12×8 → 15×8 → 18×9 during Phase 9 visual tuning. 18×9 was selected for optimal density across FHD/QHD/UHD desktop resolutions. The hard cap policy remains — 18 columns × 9 rows. See `docs/SPEC.md` and `docs/DESIGN_TOKENS.md` for current authoritative values.
 - **No auto-expansion.** A full grid signals the user to reorganize (promote Bits to Nodes, move items, or restructure). If no empty cell exists, the user is prompted to reorganize. This reinforces the app's philosophy of structured decomposition.
 - **Uniform sizing** across all levels to reduce complexity.
 

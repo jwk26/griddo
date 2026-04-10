@@ -3,25 +3,26 @@
 import { useDroppable } from "@dnd-kit/core";
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import type { DragActiveItem } from "@/hooks/use-dnd";
 import { useBreadcrumbChain } from "@/hooks/use-breadcrumb-chain";
 import { getGridBreadcrumbDropId } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
-import { useEditModeStore } from "@/stores/edit-mode-store";
 
 function BreadcrumbSegmentButton({
   label,
   nodeId,
   onClick,
+  dragActiveItem,
 }: {
   label: string;
   nodeId: string | null;
   onClick: () => void;
+  dragActiveItem?: DragActiveItem;
 }) {
-  const isEditMode = useEditModeStore((state) => state.isEditMode);
   const { isOver, setNodeRef } = useDroppable({
     id: getGridBreadcrumbDropId(nodeId),
-    data: { kind: "grid-breadcrumb-drop", targetNodeId: nodeId },
-    disabled: !isEditMode,
+    data: { kind: "grid-breadcrumb-drop", targetNodeId: nodeId, targetNodeTitle: label },
+    disabled: nodeId === null && dragActiveItem?.type === "bit",
   });
 
   return (
@@ -41,23 +42,54 @@ function BreadcrumbSegmentButton({
   );
 }
 
-export function Breadcrumbs({ nodeId }: { nodeId: string }) {
+export function Breadcrumbs({
+  nodeId,
+  dragActiveItem,
+}: {
+  nodeId: string | null;
+  dragActiveItem?: DragActiveItem;
+}) {
   const router = useRouter();
-  const segments = useBreadcrumbChain(nodeId);
+  const segments = useBreadcrumbChain(nodeId ?? "");
+
+  if (nodeId === null) {
+    return (
+      <nav
+        aria-label="Breadcrumb"
+        className="flex h-breadcrumb items-center border-b border-border px-4"
+      >
+        <div className="flex items-center gap-1.5 overflow-x-auto text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <BreadcrumbSegmentButton
+            dragActiveItem={dragActiveItem}
+            label="Home"
+            nodeId={null}
+            onClick={() => router.push("/")}
+          />
+        </div>
+      </nav>
+    );
+  }
+
   const currentNode = segments.at(-1) ?? null;
   const ancestors = currentNode ? segments.slice(0, -1) : [];
 
   return (
     <nav
       aria-label="Breadcrumb"
-      className="flex h-breadcrumb flex-col justify-center gap-0.5 border-b border-border px-4"
+      className="flex h-breadcrumb items-center border-b border-border px-4"
     >
       <div className="flex items-center gap-1.5 overflow-x-auto text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <BreadcrumbSegmentButton label="Home" nodeId={null} onClick={() => router.push("/")} />
+        <BreadcrumbSegmentButton
+          dragActiveItem={dragActiveItem}
+          label="Home"
+          nodeId={null}
+          onClick={() => router.push("/")}
+        />
         {ancestors.map((segment) => (
           <div key={segment.id} className="flex items-center gap-1.5">
             <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
             <BreadcrumbSegmentButton
+              dragActiveItem={dragActiveItem}
               label={segment.title}
               nodeId={segment.id}
               onClick={() => router.push(`/grid/${segment.id}`)}
@@ -69,11 +101,6 @@ export function Breadcrumbs({ nodeId }: { nodeId: string }) {
           {currentNode?.title ?? "..."}
         </span>
       </div>
-      {currentNode?.description ? (
-        <p className="truncate pl-0.5 text-xs text-muted-foreground">
-          {currentNode.description}
-        </p>
-      ) : null}
     </nav>
   );
 }

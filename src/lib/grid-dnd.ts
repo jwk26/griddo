@@ -1,3 +1,5 @@
+import { closestCenter, pointerWithin, type CollisionDetection } from "@dnd-kit/core";
+
 export type GridDropData =
   | {
       kind: "grid-cell";
@@ -8,10 +10,15 @@ export type GridDropData =
   | {
       kind: "grid-node-drop";
       targetNodeId: string;
+      targetNodeTitle?: string;
     }
   | {
       kind: "grid-breadcrumb-drop";
       targetNodeId: string | null;
+      targetNodeTitle?: string;
+    }
+  | {
+      kind: "grid-delete-drop";
     };
 
 export function isGridDropData(value: unknown): value is GridDropData {
@@ -32,7 +39,8 @@ export function isGridDropData(value: unknown): value is GridDropData {
       typeof value.targetNodeId === "string") ||
     (value.kind === "grid-breadcrumb-drop" &&
       "targetNodeId" in value &&
-      (typeof value.targetNodeId === "string" || value.targetNodeId === null))
+      (typeof value.targetNodeId === "string" || value.targetNodeId === null)) ||
+    value.kind === "grid-delete-drop"
   );
 }
 
@@ -47,3 +55,27 @@ export function getGridNodeDropId(nodeId: string): string {
 export function getGridBreadcrumbDropId(nodeId: string | null): string {
   return `grid-breadcrumb:${nodeId ?? "root"}`;
 }
+
+export function getGridDeleteDropId(): string {
+  return "grid-delete-drop";
+}
+
+export const gridCollisionDetection: CollisionDetection = (args) => {
+  const pointerCandidates = pointerWithin(args).filter(
+    (candidate) =>
+      typeof candidate.id === "string" &&
+      (candidate.id.startsWith("grid-node-drop:") ||
+        candidate.id.startsWith("grid-breadcrumb:") ||
+        candidate.id === "grid-delete-drop"),
+  );
+
+  if (pointerCandidates.length > 0) {
+    return pointerCandidates;
+  }
+
+  return closestCenter(args).filter(
+    (candidate) =>
+      typeof candidate.id === "string" &&
+      candidate.id.startsWith("grid-cell:"),
+  );
+};

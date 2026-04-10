@@ -25,9 +25,17 @@ export const magnetSnapTransition: Transition = {
   stiffness: 200,
 };
 
-export const vignetteVariants: Variants = {
-  l0: { opacity: 0 },
-  l1: { opacity: 0.15 },
-  l2: { opacity: 0.3 },
-  l3: { opacity: 0.45 },
+export const creationVariants: Variants = {
+  initial: { scale: 0.85, opacity: 0 },
+  animate: {
+    scale: 1,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 400, damping: 25 },
+  },
+  exit: {
+    scale: 0.9,
+    opacity: 0,
+    y: 8,
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
 };

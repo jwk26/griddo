@@ -19,7 +19,6 @@ function createNode(overrides: Partial<Node>): Node {
   return {
     id: overrides.id ?? crypto.randomUUID(),
     title: overrides.title ?? "Node",
-    description: overrides.description ?? "",
     color: overrides.color ?? "hsl(221, 83%, 53%)",
     icon: overrides.icon ?? "Folder",
     deadline: overrides.deadline ?? null,
@@ -40,6 +39,17 @@ afterEach(() => {
 });
 
 describe("Breadcrumbs", () => {
+  it("renders Home only when nodeId is null", () => {
+    useBreadcrumbChainMock.mockReturnValue([]);
+
+    render(<Breadcrumbs nodeId={null} />);
+
+    expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toHaveClass("items-center");
+    expect(screen.getByRole("button", { name: "Home" })).toBeInTheDocument();
+    expect(screen.queryByText("...")).not.toBeInTheDocument();
+    expect(useBreadcrumbChainMock).toHaveBeenCalledWith("");
+  });
+
   it("renders the ancestor chain and routes each segment", () => {
     const root = createNode({ id: "root-node", title: "Projects" });
     const child = createNode({
@@ -51,7 +61,6 @@ describe("Breadcrumbs", () => {
     const current = createNode({
       id: "current-node",
       title: "Roadmap",
-      description: "Current sprint focus",
       parentId: child.id,
       level: 2,
     });
@@ -60,12 +69,13 @@ describe("Breadcrumbs", () => {
     render(<Breadcrumbs nodeId={current.id} />);
 
     expect(screen.getByText("Roadmap")).toBeInTheDocument();
+    expect(screen.queryByText("Current sprint focus")).not.toBeInTheDocument();
 
     const homeButton = screen.getByRole("button", { name: "Home" });
     const rootButton = screen.getByRole("button", { name: "Projects" });
     const childButton = screen.getByRole("button", { name: "Q2" });
 
-    expect(screen.getByText("Current sprint focus")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toHaveClass("items-center");
     expect(rootButton).toHaveAttribute("data-drop-zone", "breadcrumb-node");
     expect(rootButton).toHaveAttribute("data-node-id", root.id);
     expect(childButton).toHaveAttribute("data-drop-zone", "breadcrumb-node");

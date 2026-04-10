@@ -1,7 +1,7 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,12 +12,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  DEFAULT_COLOR_HEX,
-  DEFAULT_ICON,
-  NODE_ICON_MAP,
-  NODE_ICON_NAMES,
-} from "@/lib/constants/node-icons";
+import { getRandomColor } from "@/lib/constants/color-palette";
+import { DEFAULT_ICON, NODE_ICON_MAP, NODE_ICON_NAMES } from "@/lib/constants/node-icons";
 import { cn } from "@/lib/utils";
 
 type CreateNodeDialogProps = {
@@ -43,20 +39,25 @@ export function CreateNodeDialog({
   const colorId = useId();
   const [title, setTitle] = useState("");
   const [icon, setIcon] = useState(DEFAULT_ICON);
-  const [colorHex, setColorHex] = useState(DEFAULT_COLOR_HEX);
+  const [colorHex, setColorHex] = useState(getRandomColor());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [titleError, setTitleError] = useState(false);
+  const prevOpenRef = useRef(false);
 
   useEffect(() => {
-    if (open) {
-      return;
+    if (open && !prevOpenRef.current) {
+      setTitle("");
+      setIcon(NODE_ICON_NAMES[Math.floor(Math.random() * NODE_ICON_NAMES.length)] ?? DEFAULT_ICON);
+      setColorHex(getRandomColor());
+      setIsSubmitting(false);
+      setTitleError(false);
+    } else if (!open) {
+      setTitle("");
+      setIsSubmitting(false);
+      setTitleError(false);
     }
 
-    setTitle("");
-    setIcon(DEFAULT_ICON);
-    setColorHex(DEFAULT_COLOR_HEX);
-    setIsSubmitting(false);
-    setTitleError(false);
+    prevOpenRef.current = open;
   }, [open]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -87,7 +88,7 @@ export function CreateNodeDialog({
         <DialogHeader>
           <DialogTitle>Create Node</DialogTitle>
           <DialogDescription>
-            Add a new Level 0 node and place it in the nearest available cell.
+            Add a new node and place it in the nearest available cell.
           </DialogDescription>
         </DialogHeader>
 
@@ -118,35 +119,37 @@ export function CreateNodeDialog({
             <div className="text-sm font-medium text-foreground" id={iconId}>
               Icon
             </div>
-            <div
-              aria-labelledby={iconId}
-              className="grid grid-cols-5 gap-2 sm:grid-cols-6"
-              role="radiogroup"
-            >
-              {NODE_ICON_NAMES.map((iconName) => {
-                const Icon = NODE_ICON_MAP[iconName];
-                const isSelected = iconName === icon;
+            <div className="max-h-[200px] overflow-y-auto pr-1">
+              <div
+                aria-labelledby={iconId}
+                className="grid grid-cols-7 gap-1.5"
+                role="radiogroup"
+              >
+                {NODE_ICON_NAMES.map((iconName) => {
+                  const Icon = NODE_ICON_MAP[iconName];
+                  const isSelected = iconName === icon;
 
-                return (
-                  <button
-                    key={iconName}
-                    role="radio"
-                    aria-checked={isSelected}
-                    aria-label={`${iconName} icon`}
-                    className={cn(
-                      "flex size-11 items-center justify-center rounded-md border bg-background text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      isSelected
-                        ? "ring-2 ring-primary ring-offset-2"
-                        : "border-input hover:border-primary/50 hover:text-foreground",
-                    )}
-                    onClick={() => setIcon(iconName)}
-                    title={iconName}
-                    type="button"
-                  >
-                    <Icon aria-hidden={true} className="h-5 w-5" />
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={iconName}
+                      role="radio"
+                      aria-checked={isSelected}
+                      aria-label={`${iconName} icon`}
+                      className={cn(
+                        "flex size-10 items-center justify-center rounded-md border bg-background text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        isSelected
+                          ? "ring-2 ring-primary ring-offset-2"
+                          : "border-input hover:border-primary/50 hover:text-foreground",
+                      )}
+                      onClick={() => setIcon(iconName)}
+                      title={iconName}
+                      type="button"
+                    >
+                      <Icon aria-hidden={true} className="h-5 w-5" />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 

@@ -28,7 +28,6 @@ Category/container items displayed as mobile app-style icons on the grid. Nodes 
 |--------|------|-------------|---------|-------------|
 | `id` | `string` | PK, UUID | `crypto.randomUUID()` | Unique identifier |
 | `title` | `string` | NOT NULL, min 1 char | — | Node name. Nouns preferred (e.g., "Workout", "Finance") |
-| `description` | `string` | — | `""` | Shown below breadcrumb when inside the Node's grid |
 | `color` | `string` | NOT NULL | — | HSL color string (e.g., `"hsl(210, 80%, 55%)"`) for icon/accent. Propagates to child Bits at low saturation |
 | `icon` | `string` | NOT NULL | — | Lucide icon name (e.g., `"dumbbell"`, `"briefcase"`) |
 | `deadline` | `number \| null` | — | `null` | Unix timestamp (ms). Optional target date for the category |
@@ -37,10 +36,12 @@ Category/container items displayed as mobile app-style icons on the grid. Nodes 
 | `createdAt` | `number` | NOT NULL | `Date.now()` | Creation timestamp (ms) |
 | `parentId` | `string \| null` | FK → `nodes.id` | `null` | Parent Node. `null` = Level 0 (root) |
 | `level` | `number` | NOT NULL, 0–2 | — | Hierarchy depth. Derived from parent chain on creation. Nodes exist at levels 0, 1, 2 only (Level 3 = Bits only) |
-| `x` | `number` | NOT NULL, 0–11 | — | Column index on grid |
+| `x` | `number` | NOT NULL, 0–14 | — | Column index on grid |
 | `y` | `number` | NOT NULL, 0–7 | — | Row index on grid |
 | `deletedAt` | `number \| null` | — | `null` | Soft-delete timestamp. `null` = active. Non-null = trashed |
 | `pastDeadlineDismissed` | `boolean` | — | `false` | When `true`, the past-deadline "Done?" overlay is permanently dismissed. Set when user clicks ✗ on the overlay. |
+
+> **Note:** Node `description` was removed in Phase 9 amendment. Existing IndexedDB rows may retain orphaned `description` fields that Dexie silently ignores on read. No migration is needed.
 
 **Indexes:**
 
@@ -74,7 +75,7 @@ Actionable tasks displayed as horizontal rectangles on the grid. Bits contain Ch
 | `mtime` | `number` | NOT NULL | `Date.now()` | Last modified timestamp (ms). Drives aging system |
 | `createdAt` | `number` | NOT NULL | `Date.now()` | Creation timestamp (ms) |
 | `parentId` | `string` | NOT NULL, FK → `nodes.id` | — | Parent Node. Bits always belong to a Node |
-| `x` | `number` | NOT NULL, 0–11 | — | Column index on grid |
+| `x` | `number` | NOT NULL, 0–14 | — | Column index on grid |
 | `y` | `number` | NOT NULL, 0–7 | — | Row index on grid |
 | `deletedAt` | `number \| null` | — | `null` | Soft-delete timestamp. `null` = active |
 | `pastDeadlineDismissed` | `boolean` | — | `false` | When `true`, the past-deadline "Done?" overlay is permanently dismissed. Set when user clicks ✗ on the overlay. |
@@ -143,7 +144,6 @@ const timestampSchema = z.number().int().positive();
 export const nodeSchema = z.object({
   id: idSchema,
   title: z.string().min(1).max(100),
-  description: z.string().max(500).default(""),
   color: z.string().regex(/^hsl\(\d{1,3},\s*\d{1,3}%,\s*\d{1,3}%\)$/),
   icon: z.string().min(1),
   deadline: timestampSchema.nullable().default(null),
@@ -152,7 +152,7 @@ export const nodeSchema = z.object({
   createdAt: timestampSchema,
   parentId: idSchema.nullable().default(null),
   level: z.number().int().min(0).max(2),
-  x: z.number().int().min(0).max(11),
+  x: z.number().int().min(0).max(14),
   y: z.number().int().min(0).max(7),
   deletedAt: timestampSchema.nullable().default(null),
   pastDeadlineDismissed: z.boolean().default(false),
@@ -182,7 +182,7 @@ export const bitSchema = z.object({
   mtime: timestampSchema,
   createdAt: timestampSchema,
   parentId: idSchema,
-  x: z.number().int().min(0).max(11),
+  x: z.number().int().min(0).max(14),
   y: z.number().int().min(0).max(7),
   deletedAt: timestampSchema.nullable().default(null),
   pastDeadlineDismissed: z.boolean().default(false),
@@ -314,7 +314,7 @@ Before inserting or moving a Node/Bit to `(parentId, x, y)`:
 ### 9. Bit-to-Node Promotion
 
 When a Bit is promoted to a Node:
-1. Create a new Node with the Bit's `title`, `icon`, `deadline`, `description`. Assign default `color`. Set `level = parentNode.level + 1` (same level as the Bit's grid position).
+1. Create a new Node with the Bit's `title`, `icon`, `deadline`. Assign default `color`. Set `level = parentNode.level + 1` (same level as the Bit's grid position).
 2. For each Chunk in the Bit: create a new Bit inside the new Node. Map `chunk.title` → `bit.title`, `chunk.time` → `bit.deadline`, `chunk.timeAllDay` → `bit.deadlineAllDay`. Auto-place via BFS.
 3. Delete the original Bit and its Chunks.
 

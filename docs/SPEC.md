@@ -61,7 +61,7 @@
 
 11. **Optimistic UI everywhere** — Local-first means zero network latency. All mutations (create, update, delete, move, complete) apply instantly to IndexedDB and reflect immediately via `useLiveQuery`. No loading spinners, no optimistic rollback, no error states for data operations.
 
-12. **@dnd-kit for all drag interactions** — Unified drag-and-drop across: grid cell repositioning (edit mode), drag-into-Node (move), calendar pool-to-day scheduling, Chunk timeline reordering, and drag-to-breadcrumb. Single library, consistent interaction model.
+12. **@dnd-kit for all drag interactions** — Unified drag-and-drop across: grid cell repositioning, drag-into-Node (move with confirmation), calendar pool-to-day scheduling, Chunk timeline reordering, and drag-to-breadcrumb (edit-mode-only). Grid repositioning and drag-to-child are always enabled; breadcrumb drops require edit mode. Custom collision detection (`gridCollisionDetection`) prioritizes node-drop targets over cell targets. Single library, consistent interaction model.
 
 13. **Motion for all animations** — The PRD specifies jiggle mode, sinking effects, floating animation, vignette transitions, magnet snap, and task-tossing. Motion (Framer Motion) handles all of these declaratively. CSS-only would be insufficient for the interaction-driven animations GridDO requires. Animation variants defined per domain in `src/lib/animations/`.
 
@@ -73,11 +73,13 @@
 
 | Route | Purpose | Rendering | File |
 |-------|---------|-----------|------|
-| `/` | Level 0 grid — root Nodes | Server shell + Client grid | `src/app/page.tsx` |
-| `/grid/[nodeId]` | Grid view inside a Node (Level 1-3) | Server shell + Client grid | `src/app/grid/[nodeId]/page.tsx` |
+| `/` | Level 0 grid — root Nodes | Route-group layout + Client grid | `src/app/(grid)/page.tsx` |
+| `/grid/[nodeId]` | Grid view inside a Node (Level 1-3) | Route-group layout + Client grid | `src/app/(grid)/grid/[nodeId]/page.tsx` |
 | `/calendar/weekly` | Calendar:Weekly — global weekly schedule | Client | `src/app/calendar/weekly/page.tsx` |
 | `/calendar/monthly` | Calendar:Monthly — global monthly overview | Client | `src/app/calendar/monthly/page.tsx` |
 | `/trash` | Trash zone — soft-deleted items | Client | `src/app/trash/page.tsx` |
+
+**Route-group layout:** Grid routes (`/` and `/grid/[nodeId]`) share a `(grid)` route group with a common layout at `src/app/(grid)/layout.tsx`. This layout renders `GridRuntime`, a client wrapper that owns sidebar, breadcrumb, shared DnD boundary, and add-flow orchestration. Page components are thin grid-content renderers — they do not manage shell chrome.
 
 **No auth.** All routes are public. No middleware for route protection. No login/callback routes.
 
@@ -93,7 +95,7 @@
 
 | Category | Location Pattern | Example |
 |----------|-----------------|---------|
-| Pages | `src/app/{route}/page.tsx` | `src/app/grid/[nodeId]/page.tsx` |
+| Pages | `src/app/{route}/page.tsx` | `src/app/(grid)/grid/[nodeId]/page.tsx` |
 | Layouts | `src/app/{route}/layout.tsx` | `src/app/layout.tsx` |
 | Page Components | `src/app/{route}/_components/{name}.tsx` | `src/app/trash/_components/trash-group.tsx` |
 | Shared Components (by domain) | `src/components/{domain}/{name}.tsx` | `src/components/grid/node-card.tsx` |
@@ -106,7 +108,7 @@
 | Constants | `src/lib/constants.ts` | — |
 | Animation Variants | `src/lib/animations/{domain}.ts` | `src/lib/animations/grid.ts` |
 | Types | `src/types/{domain}.ts` | `src/types/index.ts` |
-| Zustand Stores | `src/stores/{name}-store.ts` | `src/stores/sidebar-store.ts` |
+| Zustand Stores | `src/stores/{name}-store.ts` | `src/stores/edit-mode-store.ts` |
 | Providers | `src/app/providers.tsx` | — |
 
 **Component location rule:** Used by one page only → co-locate under `_components/` in that route folder. Used by 2+ pages → `src/components/{domain}/`.
@@ -116,7 +118,7 @@
 | Domain | Contents | Used by |
 |--------|----------|---------|
 | `grid/` | `grid-view.tsx`, `grid-cell.tsx`, `node-card.tsx`, `bit-card.tsx`, `edit-mode-overlay.tsx`, `onboarding-hints.tsx` | Grid pages |
-| `bit-detail/` | `bit-detail-popup.tsx`, `chunk-timeline.tsx`, `chunk-pool.tsx`, `chunk-item.tsx` | Grid + Calendar (popup opens from both) |
+| `bit-detail/` | `bit-detail-popup.tsx`, `chunk-pool.tsx`, `chunk-item.tsx` | Grid + Calendar (popup opens from both) |
 | `calendar/` | `node-pool.tsx`, `items-pool.tsx`, `day-column.tsx`, `compact-bit-item.tsx` | Both calendar views |
 | `layout/` | `sidebar.tsx`, `breadcrumbs.tsx`, `search-overlay.tsx`, `theme-toggle.tsx` | All pages |
 | `trash/` | `trash-list.tsx`, `trash-group.tsx` | Trash page only (but may move to shared if trash preview is added elsewhere) |
@@ -127,25 +129,26 @@
 
 ### Route: `/` (Level 0 Grid)
 
-- **Structure:** Full-width 12x8 grid occupying the main content area. Left sidebar (foldable). No breadcrumbs — "Home" is implicit.
+- **Structure:** Full-width 18x9 grid occupying the main content area. Fixed icon-rail sidebar (always visible, `w-12`). Breadcrumb shows "Home" root-only state.
 - **Content:** Nodes only. No Bits at Level 0.
-- **Sidebar:** All functions visible. Trashbin icon visible. Labs icon visible (deferred).
+- **Sidebar:** Permanent narrow icon rail, always visible, identical across all levels. Icons: + (add), Pencil (edit toggle), Search, Calendar (top); Trash, Theme toggle (bottom). No fold/unfold mechanism.
 - **Onboarding:** On first visit (no Nodes exist), show ghost placeholder Nodes with dashed outlines and hint labels ("Try: Work, Personal, Hobbies"). Disappear after first Node creation.
-- **Interactions:** Click Node → navigate to `/grid/[nodeId]`. Sidebar toggle, theme toggle, search overlay, edit mode.
-- **Visual:** No vignette effect. Standard grid line density. No depth effects at Level 0.
+- **Interactions:** Click Node → navigate to `/grid/[nodeId]`. Theme toggle, search overlay, edit mode. DnD enabled (repositioning works outside edit mode).
+- **Visual:** Level 0 background color (`--grid-bg-l0`). Standard grid line density. No depth effects at Level 0.
 
 ### Route: `/grid/[nodeId]` (Level 1-3 Grid)
 
-- **Structure:** 12x8 grid with breadcrumb bar at top. Node description subtitle below breadcrumb (if description exists). Left sidebar (foldable).
+- **Structure:** 18x9 grid with breadcrumb bar at top. Fixed icon-rail sidebar (same as Level 0, no remount on navigation).
 - **Level 1-2 content:** Nodes (left zone, ~5-6 columns) + Bits (right zone, ~6-7 columns). 2-way split is a soft guide — items can be placed anywhere.
 - **Level 3 content:** Bits only, full-width grid. No Node creation allowed.
 - **Onboarding (Level 1, first visit):** Ghost hints for 2-way split ("Nodes here" on left, "Bits here" on right). Disappear after first item creation.
-- **Sidebar:** Trashbin icon hidden (Level 0 only). "+" context-aware: Level 1-2 shows Node/Bit menu, Level 3 creates Bit directly.
+- **Sidebar:** Trash icon visible on all levels. "+" context-aware: Level 1-2 shows Node/Bit chooser, Level 3 creates Bit directly.
 - **Depth visual effects:**
   - Grid line density increases with level (thinner, denser lines).
-  - Vignette: faint inner shadow at screen edges, intensity increases with level.
+  - Background color changes per level (`--grid-bg-l1` through `--grid-bg-l3`) — progressively cooler/darker.
+- **DnD:** Grid repositioning and drag-to-child enabled outside edit mode. Breadcrumb drops remain edit-mode-only. Drag onto node shows confirmation dialog. Cycle prevention blocks moving a node into its own descendant.
 - **Bit detail:** Click a Bit → URL updates to `?bit=[bitId]` → popup opens (see Bit Detail Popup below).
-- **Edit mode:** Toggle via sidebar Pencil → jiggle animation, dashed cell outlines, "+" on empty cells, drag-to-reposition, delete buttons.
+- **Edit mode:** Toggle via sidebar Pencil → jiggle animation, dashed cell outlines, "+" on empty cells (square affordance, centered), drag-to-reposition, delete buttons with confirmation dialog.
 
 ### Bit Detail Popup (Modal — not a route)
 
@@ -235,26 +238,44 @@ Infrastructure files that don't follow the File Organization Conventions above.
 | Path | Purpose |
 |------|---------|
 | `src/app/globals.css` | CSS custom properties, Tailwind v4 `@theme` bridge, dark mode variant — single source of truth for all design tokens |
-| `src/app/layout.tsx` | Root layout — ThemeProvider, Sidebar, DataStore provider |
-| `src/app/providers.tsx` | Client-side providers wrapper — ThemeProvider, DndContext, DataStoreProvider. Zustand stores require no provider. |
+| `src/app/layout.tsx` | Root layout — ThemeProvider, DataStore provider |
+| `src/app/(grid)/layout.tsx` | Route-group layout — renders GridRuntime for all grid pages |
+| `src/app/providers.tsx` | Client-side providers wrapper — ThemeProvider, DataStoreProvider. Zustand stores require no provider. |
+| `src/components/layout/grid-runtime.tsx` | Client wrapper: route state, sidebar, breadcrumb, shared DnD boundary, add-flow orchestration |
+| `src/components/layout/add-flow-context.tsx` | Minimal React context — pages call `useAddFlow().openAddAtCell(x, y)` to trigger add-flow |
 | `src/lib/db/datastore.ts` | `DataStore` interface — the abstraction boundary between app code and storage |
 | `src/lib/db/indexeddb.ts` | Dexie.js IndexedDB implementation of `DataStore` — v1 storage backend |
 | `src/lib/db/schema.ts` | Zod validation schemas and TypeScript types (from SCHEMA.md) |
-| `src/lib/constants.ts` | Grid dimensions (12×8), aging thresholds (5/11 days), urgency thresholds (3/2/1 days), trash retention (30 days) |
+| `src/lib/constants.ts` | Grid dimensions (18×9), aging thresholds (5/11 days), urgency thresholds (3/2/1 days), trash retention (30 days) |
 | `src/lib/utils/bfs.ts` | BFS auto-placement algorithm — finds nearest empty cell from a starting position |
 | `src/lib/utils/aging.ts` | Aging state computation — Fresh/Stagnant/Neglected from mtime |
 | `src/lib/utils/urgency.ts` | Deadline urgency level computation — Level 1/2/3/Past from deadline |
 | `src/lib/utils/completion.ts` | Node completion check — are all child Bits complete? |
-| `src/stores/sidebar-store.ts` | Sidebar open/closed state, foldable behavior |
+| `src/lib/utils/color.ts` | Shared `hexToHsl` utility (extracted from shell components) |
 | `src/stores/edit-mode-store.ts` | Edit mode toggle, jiggle state |
 | `src/stores/search-store.ts` | Search query, open/closed state |
 | `src/stores/calendar-store.ts` | Calendar drill-down navigation, pool state |
-| `src/lib/animations/grid.ts` | Grid animation variants — jiggle, sinking, floating, depth transitions |
+| `src/lib/animations/grid.ts` | Grid animation variants — jiggle, sinking, creation/deletion, depth transitions |
 | `src/lib/animations/calendar.ts` | Calendar animation variants — vignette expand, magnet snap |
+| `src/lib/grid-dnd.ts` | Grid DnD utilities — `gridCollisionDetection` (prioritizes node-drop over cell) |
+| `src/lib/constants/color-palette.ts` | Curated 10-color palette for node creation randomization |
 | `src/hooks/use-grid-data.ts` | Reactive hook — subscribes to Nodes + Bits for a given parentId via `useLiveQuery` |
 | `src/hooks/use-bit-detail.ts` | Bit detail popup state — reads `?bit` param, fetches Bit + Chunks |
 | `src/hooks/use-search.ts` | Search state — query string, filtered results across all stores |
 | `src/hooks/use-calendar-data.ts` | Calendar data — all items with deadlines, pool items, drill-down state |
-| `src/hooks/use-dnd.ts` | Drag-and-drop coordination — grid moves, calendar scheduling, timeline reorder |
+| `src/hooks/use-dnd.ts` | Drag-and-drop coordination — grid moves, calendar scheduling, timeline reorder, drag-to-child confirmation |
 | `components.json` | shadcn/ui configuration — component output path, Tailwind CSS variables, icon library |
 | `tsconfig.json` | TypeScript config — `@` path alias mapping to `src/` |
+
+---
+
+## Phase 9 PRD Departures
+
+Intentional departures from the PRD introduced in Phase 9. Each is a deliberate design decision, not an omission.
+
+| # | PRD Rule | Phase 9 Change | Reason |
+|---|----------|----------------|--------|
+| 1 | Sidebar is foldable; when folded, no icon strip (Section 16) | Permanent narrow icon rail (`w-12`), always visible, no fold/unfold | Reduces cognitive overhead; all functions always one click away |
+| 2 | Drag-to-reposition and drag-onto-Node are edit-mode-only (Sections 17, 20) | Grid DnD enabled outside edit mode; breadcrumb drops remain edit-mode-only | Repositioning is a frequent action; gating behind edit mode adds friction |
+| 3 | Deeper levels apply vignette effect (Section 5) | Vignette removed; background color changes per level instead (`--grid-bg-l0` through `--grid-bg-l3`) | Background color is a stronger, more immediate depth signal |
+| 4 | Trash icon available on Level 0 only (Section 19) | Trash icon visible on all levels | Sidebar is identical across all levels for consistency |

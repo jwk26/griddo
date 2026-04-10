@@ -49,7 +49,6 @@ function makeNode(id: string, overrides: Partial<Node> = {}): Node {
   return {
     id,
     title: "Node",
-    description: "",
     color: "hsl(210, 80%, 55%)",
     icon: "Folder",
     deadline: null,

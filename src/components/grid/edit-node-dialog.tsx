@@ -95,7 +95,6 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
   const [title, setTitle] = useState("");
   const [icon, setIcon] = useState(DEFAULT_ICON);
   const [colorHex, setColorHex] = useState("#3b82f6");
-  const [description, setDescription] = useState("");
   const [dateStr, setDateStr] = useState("");
   const [timeStr, setTimeStr] = useState("");
   const [allDay, setAllDay] = useState(false);
@@ -109,7 +108,6 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
     setTitle(node.title);
     setIcon(node.icon);
     setColorHex(hslToHex(node.color));
-    setDescription(node.description);
     setDateStr(toDateStr(node.deadline));
     setTimeStr(toTimeStr(node.deadline));
     setAllDay(node.deadlineAllDay);
@@ -137,7 +135,6 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
         title: title.trim(),
         icon,
         color: hexToHsl(colorHex),
-        description,
         deadline,
         deadlineAllDay,
       });
@@ -183,11 +180,12 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
             <div className="text-sm font-medium text-foreground" id={iconId}>
               Icon
             </div>
-            <div
-              aria-labelledby={iconId}
-              className="grid grid-cols-5 gap-2 sm:grid-cols-6"
-              role="radiogroup"
-            >
+            <div className="max-h-[200px] overflow-y-auto pr-1">
+              <div
+                aria-labelledby={iconId}
+                className="grid grid-cols-7 gap-1.5"
+                role="radiogroup"
+              >
               {NODE_ICON_NAMES.map((iconName) => {
                 const Icon = NODE_ICON_MAP[iconName];
                 const isSelected = iconName === icon;
@@ -198,7 +196,7 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
                     aria-checked={isSelected}
                     aria-label={`${iconName} icon`}
                     className={cn(
-                      "flex size-11 items-center justify-center rounded-md border bg-background text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "flex size-10 items-center justify-center rounded-md border bg-background text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isSelected
                         ? "ring-2 ring-primary ring-offset-2"
                         : "border-input hover:border-primary/50 hover:text-foreground",
@@ -211,6 +209,7 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
                   </button>
                 );
               })}
+              </div>
             </div>
           </div>
 
@@ -222,19 +221,6 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
               onChange={(e) => setColorHex(e.target.value)}
               type="color"
               value={colorHex}
-            />
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Description</label>
-            <textarea
-              className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              maxLength={1000}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description…"
-              rows={3}
-              value={description}
             />
           </div>
 

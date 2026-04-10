@@ -14,9 +14,10 @@ type BitCardProps = {
   parentColor: string;
   chunkStats: { completed: number; total: number };
   onClick: () => void;
+  onDelete?: () => void;
 };
 
-export function BitCard({ bit, parentColor, chunkStats, onClick }: BitCardProps) {
+export function BitCard({ bit, parentColor, chunkStats, onClick, onDelete }: BitCardProps) {
   const agingFilter = getAgingFilter(getAgingState(bit.mtime));
   const urgencyLevel = getUrgencyLevel(bit.deadline);
   const pastDeadline = isPastDeadline(bit.deadline);
@@ -28,8 +29,7 @@ export function BitCard({ bit, parentColor, chunkStats, onClick }: BitCardProps)
   return (
     <div
       className={cn(
-        "relative flex items-stretch rounded-[10px] border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-colors hover:bg-accent/50",
-        "cursor-pointer",
+        "relative flex items-stretch rounded-[10px] border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
         urgencyLevel === 1 && "animate-urgency-blink-1",
         urgencyLevel === 2 && "animate-urgency-blink-2",
         urgencyLevel === 3 && "animate-urgency-blink-3",
@@ -57,7 +57,7 @@ export function BitCard({ bit, parentColor, chunkStats, onClick }: BitCardProps)
       <div className="flex flex-1 flex-col gap-2 py-[10px] pl-3 pr-[14px]">
 
         {/* Row 1: icon + title/meta + priority badge */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3">
           <Icon className="h-[18px] w-[18px] flex-shrink-0 text-muted-foreground" />
           <div className="min-w-0 flex-1">
             <p
@@ -149,6 +149,7 @@ export function BitCard({ bit, parentColor, chunkStats, onClick }: BitCardProps)
           className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
           onClick={(event) => {
             event.stopPropagation();
+            onDelete?.();
           }}
         >
           <X className="h-3.5 w-3.5" />
