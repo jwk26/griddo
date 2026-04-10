@@ -10,6 +10,11 @@ export function useBitDetailActions() {
     await dataStore.updateBit(id, data);
   }, []);
 
+  const updateNode = useCallback(async (id: string, data: Partial<Node>): Promise<void> => {
+    const dataStore = await getDataStore();
+    await dataStore.updateNode(id, data);
+  }, []);
+
   const softDeleteBit = useCallback(async (id: string): Promise<void> => {
     const dataStore = await getDataStore();
     await dataStore.softDeleteBit(id);
@@ -20,5 +25,5 @@ export function useBitDetailActions() {
     return dataStore.promoteBitToNode(bitId);
   }, []);
 
-  return { updateBit, softDeleteBit, promoteBitToNode };
+  return { updateBit, updateNode, softDeleteBit, promoteBitToNode };
 }

@@ -1,12 +1,13 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Bit, Chunk } from "@/types";
+import type { Bit, Chunk, Node } from "@/types";
 
 const closeMock = vi.hoisted(() => vi.fn());
 const useBitDetailMock = vi.hoisted(() => vi.fn());
 const updateBitMock = vi.hoisted(() => vi.fn(async () => undefined));
+const updateNodeMock = vi.hoisted(() => vi.fn(async () => undefined));
 const softDeleteBitMock = vi.hoisted(() => vi.fn(async () => undefined));
 const promoteBitToNodeMock = vi.hoisted(() => vi.fn(async () => undefined));
 
@@ -43,9 +44,32 @@ vi.mock("@/hooks/use-bit-detail", () => ({
 vi.mock("@/hooks/use-bit-detail-actions", () => ({
   useBitDetailActions: () => ({
     updateBit: updateBitMock,
+    updateNode: updateNodeMock,
     softDeleteBit: softDeleteBitMock,
     promoteBitToNode: promoteBitToNodeMock,
   }),
+}));
+
+vi.mock("@/components/shared/deadline-conflict-modal", () => ({
+  DeadlineConflictModal: ({
+    open,
+    onKeepChild,
+    onUpdateParent,
+  }: {
+    open: boolean;
+    onKeepChild: () => void;
+    onUpdateParent: () => void;
+  }) =>
+    open ? (
+      <div data-testid="deadline-conflict-modal">
+        <button aria-label="Cancel change" onClick={onKeepChild} type="button">
+          Cancel change
+        </button>
+        <button aria-label="Update parent" onClick={onUpdateParent} type="button">
+          Update parent
+        </button>
+      </div>
+    ) : null,
 }));
 
 vi.mock("@/components/ui/dropdown-menu", () => ({
@@ -100,11 +124,29 @@ function createChunk(overrides: Partial<Chunk> = {}): Chunk {
   };
 }
 
-function mockBitDetail(bit: Bit, chunks: Chunk[] = []) {
+function createNode(overrides: Partial<Node> = {}): Node {
+  return {
+    id: overrides.id ?? "node-1",
+    title: overrides.title ?? "Parent node",
+    color: overrides.color ?? "hsl(221, 83%, 53%)",
+    icon: overrides.icon ?? "Folder",
+    deadline: overrides.deadline ?? null,
+    deadlineAllDay: overrides.deadlineAllDay ?? false,
+    mtime: overrides.mtime ?? Date.now(),
+    createdAt: overrides.createdAt ?? Date.now(),
+    parentId: overrides.parentId ?? null,
+    level: overrides.level ?? 0,
+    x: overrides.x ?? 0,
+    y: overrides.y ?? 0,
+    deletedAt: overrides.deletedAt ?? null,
+  };
+}
+
+function mockBitDetail(bit: Bit, chunks: Chunk[] = [], parentNode: Node | null = null) {
   useBitDetailMock.mockReturnValue({
     bit,
     chunks,
-    parentNode: null,
+    parentNode,
     isOpen: true,
     close: closeMock,
   });
@@ -189,5 +231,46 @@ describe("BitDetailPopup", () => {
     expect(closeMock).not.toHaveBeenCalled();
     expect(screen.queryByLabelText("Deadline date")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Edit deadline date" })).toBeInTheDocument();
+  });
+
+  it("surfaces a deadline conflict modal and can update the parent deadline", async () => {
+    const parentDeadline = new Date(2026, 3, 12, 9, 30).getTime();
+    const nextDateStr = "2026-04-13";
+    const nextDeadline = new Date(`${nextDateStr}T09:30`).getTime();
+    const conflict = Object.assign(new Error("Deadline conflict"), {
+      name: "DeadlineConflictError",
+    });
+
+    updateBitMock.mockRejectedValueOnce(conflict).mockResolvedValueOnce(undefined);
+    mockBitDetail(
+      createBit({ deadline: new Date(2026, 3, 10, 9, 30).getTime() }),
+      [],
+      createNode({ deadline: parentDeadline }),
+    );
+
+    render(<BitDetailPopup />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit deadline date" }));
+    fireEvent.change(screen.getByLabelText("Deadline date"), {
+      target: { value: nextDateStr },
+    });
+
+    expect(await screen.findByTestId("deadline-conflict-modal")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Update parent" }));
+
+    await waitFor(() => {
+      expect(updateNodeMock).toHaveBeenCalledWith("node-1", {
+        deadline: nextDeadline,
+        deadlineAllDay: false,
+      });
+    });
+    await waitFor(() => {
+      expect(updateBitMock).toHaveBeenCalledTimes(2);
+    });
+    expect(updateBitMock).toHaveBeenLastCalledWith("bit-1", {
+      deadline: nextDeadline,
+      deadlineAllDay: false,
+    });
   });
 });

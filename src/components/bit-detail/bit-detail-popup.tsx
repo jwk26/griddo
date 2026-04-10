@@ -37,12 +37,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { DeadlineConflictModal } from "@/components/shared/deadline-conflict-modal";
 import { useBitDetailActions } from "@/hooks/use-bit-detail-actions";
 import { useBitDetail } from "@/hooks/use-bit-detail";
 import { bitDetailPopupVariants } from "@/lib/animations/layout";
 import { NODE_ICON_MAP, NODE_ICON_NAMES } from "@/lib/constants/node-icons";
 import { cn } from "@/lib/utils";
 import type { Bit } from "@/types";
+import { toast } from "sonner";
 
 type Priority = Bit["priority"];
 const PRIORITY_CYCLE: Priority[] = ["high", "mid", "low", null];
@@ -53,6 +55,11 @@ const PRIORITY_LABELS: Record<NonNullable<Priority>, string> = {
 };
 const RING_RADIUS = 16;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+
+type PendingDeadlineConflict = {
+  deadline: number;
+  deadlineAllDay: boolean;
+};
 
 function nextPriority(current: Priority): Priority {
   const idx = PRIORITY_CYCLE.indexOf(current);
@@ -68,13 +75,15 @@ function toTimeStr(ts: number | null): string {
 }
 
 export function BitDetailPopup() {
-  const { updateBit, softDeleteBit, promoteBitToNode } = useBitDetailActions();
+  const { updateBit, updateNode, softDeleteBit, promoteBitToNode } = useBitDetailActions();
   const { bit, chunks, parentNode, isOpen, close } = useBitDetail();
   const [localTitle, setLocalTitle] = useState("");
   const [localDescription, setLocalDescription] = useState("");
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const [isDeadlineEditing, setIsDeadlineEditing] = useState(false);
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+  const [pendingDeadlineConflict, setPendingDeadlineConflict] =
+    useState<PendingDeadlineConflict | null>(null);
   const chunkPoolRef = useRef<ChunkPoolHandle>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
@@ -84,6 +93,7 @@ export function BitDetailPopup() {
     setLocalDescription(bit.description);
     setIsDescriptionOpen(!!bit.description);
     setIsDeadlineEditing(false);
+    setPendingDeadlineConflict(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bit?.id]);
 
@@ -97,6 +107,27 @@ export function BitDetailPopup() {
   }, [isOpen, close, iconPickerOpen]);
 
   if (!isOpen) return null;
+
+  function isDeadlineConflictError(
+    error: unknown,
+  ): error is Error & { conflictType: "child_exceeds_parent" } {
+    return error instanceof Error && error.name === "DeadlineConflictError";
+  }
+
+  async function attemptDeadlineUpdate(deadline: number | null, deadlineAllDay: boolean) {
+    if (!bit) return;
+
+    try {
+      await updateBit(bit.id, { deadline, deadlineAllDay });
+    } catch (error) {
+      if (deadline !== null && parentNode && isDeadlineConflictError(error)) {
+        setPendingDeadlineConflict({ deadline, deadlineAllDay });
+        return;
+      }
+
+      toast.error("Unable to update deadline.");
+    }
+  }
 
   async function handleTitleBlur() {
     if (!bit) return;
@@ -136,28 +167,48 @@ export function BitDetailPopup() {
   async function handleDateChange(dateStr: string) {
     if (!bit) return;
     if (!dateStr) {
-      await updateBit(bit.id, { deadline: null, deadlineAllDay: false });
+      await attemptDeadlineUpdate(null, false);
       return;
     }
     const timeStr = bit.deadlineAllDay
       ? "00:00"
       : toTimeStr(bit.deadline) || "00:00";
-    await updateBit(bit.id, {
-      deadline: new Date(`${dateStr}T${timeStr}`).getTime(),
-    });
+    await attemptDeadlineUpdate(
+      new Date(`${dateStr}T${timeStr}`).getTime(),
+      bit.deadlineAllDay,
+    );
   }
 
   async function handleTimeChange(timeStr: string) {
     if (!bit) return;
     const dateStr = toDateStr(bit.deadline) || format(new Date(), "yyyy-MM-dd");
-    await updateBit(bit.id, {
-      deadline: new Date(`${dateStr}T${timeStr}`).getTime(),
-    });
+    await attemptDeadlineUpdate(
+      new Date(`${dateStr}T${timeStr}`).getTime(),
+      bit.deadlineAllDay,
+    );
   }
 
   async function handleAllDayToggle() {
     if (!bit) return;
-    await updateBit(bit.id, { deadlineAllDay: !bit.deadlineAllDay });
+    await attemptDeadlineUpdate(bit.deadline, !bit.deadlineAllDay);
+  }
+
+  async function handleDeadlineConflictUpdateParent() {
+    if (!bit || !parentNode || !pendingDeadlineConflict) return;
+
+    try {
+      await updateNode(parentNode.id, {
+        deadline: pendingDeadlineConflict.deadline,
+        deadlineAllDay: pendingDeadlineConflict.deadlineAllDay,
+      });
+      await updateBit(bit.id, {
+        deadline: pendingDeadlineConflict.deadline,
+        deadlineAllDay: pendingDeadlineConflict.deadlineAllDay,
+      });
+      setPendingDeadlineConflict(null);
+    } catch {
+      toast.error("Unable to update deadlines.");
+    }
   }
 
   async function handleMoveToTrash() {
@@ -576,6 +627,15 @@ export function BitDetailPopup() {
             </div>
           )}
         </motion.div>
+        <DeadlineConflictModal
+          open={pendingDeadlineConflict !== null}
+          parentDeadline={
+            parentNode?.deadline ?? pendingDeadlineConflict?.deadline ?? Date.now()
+          }
+          parentDeadlineAllDay={parentNode?.deadlineAllDay ?? false}
+          onKeepChild={() => setPendingDeadlineConflict(null)}
+          onUpdateParent={() => void handleDeadlineConflictUpdateParent()}
+        />
       </div>
     </AnimatePresence>
   );
