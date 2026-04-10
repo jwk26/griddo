@@ -1,6 +1,6 @@
 # GridDO (Local-first Task Management)
 
-12×8 Grid | Node(L0) → Bit(L1) → Chunk(L2) hierarchy.
+18×9 Grid | Node(L0) → Bit(L1) → Chunk(L2) hierarchy.
 
 **Always check docs/EXECUTION_PLAN.md first to see the current task before starting work.**
 
@@ -39,6 +39,8 @@
 - **Branch:** `phase-N/<desc>` → `main` via PR
 - **Gates:** Branch verification + build + test enforced by skills. See skill definitions.
 - **Redesign:** Reference-inspired phases use `/reference-redesign`. See WORKFLOW.md.
+- **Issue tracking:** Execution-time issues, fixes, and out-of-plan changes must be recorded in `docs/issues/Issues_Phase_N.md` during execution — not deferred to phase close. Unresolved issues block phase close. Issues may not be marked Closed without explicit user decision. See `docs/WORKFLOW.md` §Phase Execution Record for statuses, categories, and trigger examples.
+- **Task completion gate:** During an active phase, do not mark tasks or phases `[x]` in `docs/EXECUTION_PLAN.md` based only on implementation or internal verification. Update completion status only after checkpoint review and explicit user approval. See `docs/WORKFLOW.md` §Task Completion Gate.
 
 ## Planning Gate
 
