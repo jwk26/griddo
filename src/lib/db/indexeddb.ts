@@ -16,6 +16,7 @@ import {
   type Node,
 } from "@/lib/db/schema";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
+import { isDeadlineAfter } from "@/lib/utils/deadline";
 
 type MutableNodeInput = Omit<Node, "id" | "createdAt" | "deletedAt" | "mtime">;
 type MutableBitInput = Omit<Bit, "id" | "createdAt" | "deletedAt" | "mtime">;
@@ -342,7 +343,11 @@ export class IndexedDBDataStore implements DataStore {
     const parsed = createBitSchema.parse(data);
 
     await this.ensureGridCellAvailable(parsed.parentId, parsed.x, parsed.y);
-    await this.assertBitDeadlineFitsParent(parsed.parentId, parsed.deadline);
+    await this.assertBitDeadlineFitsParent(
+      parsed.parentId,
+      parsed.deadline,
+      parsed.deadlineAllDay,
+    );
 
     const timestamp = Date.now();
     const bit = bitSchema.parse({
@@ -380,7 +385,12 @@ export class IndexedDBDataStore implements DataStore {
       });
     }
 
-    await this.assertBitDeadlineFitsParent(next.parentId, next.deadline, existing.id);
+    await this.assertBitDeadlineFitsParent(
+      next.parentId,
+      next.deadline,
+      next.deadlineAllDay,
+      existing.id,
+    );
 
     const timestamp = Date.now();
     const statusChanged = parsed.status !== undefined && parsed.status !== existing.status;
@@ -478,7 +488,7 @@ export class IndexedDBDataStore implements DataStore {
     const parsed = createChunkSchema.parse(data);
     const bit = await this.getRequiredBit(parsed.parentId);
 
-    await this.assertChunkTimeFitsBit(bit, parsed.time);
+    await this.assertChunkTimeFitsBit(bit, parsed.time, parsed.timeAllDay);
 
     const timestamp = Date.now();
     const chunk = chunkSchema.parse({
@@ -506,7 +516,7 @@ export class IndexedDBDataStore implements DataStore {
     const bit = await this.getRequiredBit(existing.parentId);
     const next = { ...existing, ...parsed };
 
-    await this.assertChunkTimeFitsBit(bit, next.time);
+    await this.assertChunkTimeFitsBit(bit, next.time, next.timeAllDay);
 
     const timestamp = Date.now();
     // Detect uncheck: complete → incomplete triggers sticky force-complete rule
@@ -811,10 +821,15 @@ export class IndexedDBDataStore implements DataStore {
   private async assertBitDeadlineFitsParent(
     parentId: string,
     deadline: number | null,
+    deadlineAllDay: boolean,
     bitId?: string,
   ): Promise<void> {
     const parent = await this.getRequiredNode(parentId);
-    if (deadline !== null && parent.deadline !== null && deadline > parent.deadline) {
+    if (
+      deadline !== null &&
+      parent.deadline !== null &&
+      isDeadlineAfter(deadline, deadlineAllDay, parent.deadline, parent.deadlineAllDay)
+    ) {
       throw new DeadlineConflictError("child_exceeds_parent", bitId ? [bitId] : []);
     }
   }
@@ -822,8 +837,13 @@ export class IndexedDBDataStore implements DataStore {
   private async assertChunkTimeFitsBit(
     bit: Bit,
     time: number | null,
+    timeAllDay: boolean,
   ): Promise<void> {
-    if (time !== null && bit.deadline !== null && time > bit.deadline) {
+    if (
+      time !== null &&
+      bit.deadline !== null &&
+      isDeadlineAfter(time, timeAllDay, bit.deadline, bit.deadlineAllDay)
+    ) {
       throw new Error("Chunk time cannot exceed parent bit deadline");
     }
   }

@@ -4,26 +4,23 @@ import {
   useEffect,
   useRef,
   useState,
-  type FocusEvent,
-  type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { format } from "date-fns";
 import {
   ArrowUpCircle,
-  Calendar,
   CheckCircle2,
   Circle,
   Clock,
   MoreHorizontal,
   Plus,
   Trash2,
-  X,
 } from "lucide-react";
 import {
   ChunkPool,
   type ChunkPoolHandle,
 } from "@/components/bit-detail/chunk-pool";
+import { DateFirstDeadlinePicker } from "@/components/shared/date-first-deadline-picker";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,21 +63,12 @@ function nextPriority(current: Priority): Priority {
   return PRIORITY_CYCLE[(idx + 1) % PRIORITY_CYCLE.length];
 }
 
-function toDateStr(ts: number | null): string {
-  return ts ? format(new Date(ts), "yyyy-MM-dd") : "";
-}
-
-function toTimeStr(ts: number | null): string {
-  return ts ? format(new Date(ts), "HH:mm") : "";
-}
-
 export function BitDetailPopup() {
   const { updateBit, updateNode, softDeleteBit, promoteBitToNode } = useBitDetailActions();
   const { bit, chunks, parentNode, isOpen, close } = useBitDetail();
   const [localTitle, setLocalTitle] = useState("");
   const [localDescription, setLocalDescription] = useState("");
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
-  const [isDeadlineEditing, setIsDeadlineEditing] = useState(false);
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [pendingDeadlineConflict, setPendingDeadlineConflict] =
     useState<PendingDeadlineConflict | null>(null);
@@ -92,7 +80,6 @@ export function BitDetailPopup() {
     setLocalTitle(bit.title);
     setLocalDescription(bit.description);
     setIsDescriptionOpen(!!bit.description);
-    setIsDeadlineEditing(false);
     setPendingDeadlineConflict(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bit?.id]);
@@ -164,35 +151,6 @@ export function BitDetailPopup() {
     }
   }
 
-  async function handleDateChange(dateStr: string) {
-    if (!bit) return;
-    if (!dateStr) {
-      await attemptDeadlineUpdate(null, false);
-      return;
-    }
-    const timeStr = bit.deadlineAllDay
-      ? "00:00"
-      : toTimeStr(bit.deadline) || "00:00";
-    await attemptDeadlineUpdate(
-      new Date(`${dateStr}T${timeStr}`).getTime(),
-      bit.deadlineAllDay,
-    );
-  }
-
-  async function handleTimeChange(timeStr: string) {
-    if (!bit) return;
-    const dateStr = toDateStr(bit.deadline) || format(new Date(), "yyyy-MM-dd");
-    await attemptDeadlineUpdate(
-      new Date(`${dateStr}T${timeStr}`).getTime(),
-      bit.deadlineAllDay,
-    );
-  }
-
-  async function handleAllDayToggle() {
-    if (!bit) return;
-    await attemptDeadlineUpdate(bit.deadline, !bit.deadlineAllDay);
-  }
-
   async function handleDeadlineConflictUpdateParent() {
     if (!bit || !parentNode || !pendingDeadlineConflict) return;
 
@@ -228,24 +186,6 @@ export function BitDetailPopup() {
     if (!bit) return;
     await promoteBitToNode(bit.id);
     close();
-  }
-
-  function handleDeadlineEditorBlur(event: FocusEvent<HTMLDivElement>) {
-    if (
-      !(event.relatedTarget instanceof Node) ||
-      !event.currentTarget.contains(event.relatedTarget)
-    ) {
-      setIsDeadlineEditing(false);
-    }
-  }
-
-  function handleDeadlineEditorKeyDown(
-    event: ReactKeyboardEvent<HTMLDivElement>,
-  ) {
-    if (event.key !== "Escape") return;
-    event.preventDefault();
-    event.stopPropagation();
-    setIsDeadlineEditing(false);
   }
 
   const Icon = bit ? (NODE_ICON_MAP[bit.icon] ?? NODE_ICON_MAP.Box) : null;
@@ -415,102 +355,12 @@ export function BitDetailPopup() {
                     {bit.priority ? PRIORITY_LABELS[bit.priority] : "—"}
                   </button>
 
-                  {isDeadlineEditing ? (
-                    <div
-                      className="flex items-center gap-2"
-                      onBlur={handleDeadlineEditorBlur}
-                      onKeyDown={handleDeadlineEditorKeyDown}
-                    >
-                      <Calendar className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
-                      <input
-                        aria-label="Deadline date"
-                        className="rounded border border-input bg-background px-2 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                        onChange={(event) =>
-                          void handleDateChange(event.target.value)
-                        }
-                        type="date"
-                        value={toDateStr(bit.deadline)}
-                      />
-                      {!bit.deadlineAllDay ? (
-                        <input
-                          aria-label="Deadline time"
-                          className="rounded border border-input bg-background px-2 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                          onChange={(event) =>
-                            void handleTimeChange(event.target.value)
-                          }
-                          type="time"
-                          value={toTimeStr(bit.deadline)}
-                        />
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={() => void handleAllDayToggle()}
-                        className={cn(
-                          "rounded px-2 py-0.5 text-xs font-medium transition-colors",
-                          bit.deadlineAllDay
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-secondary text-muted-foreground hover:bg-accent",
-                        )}
-                      >
-                        All day
-                      </button>
-                    </div>
-                  ) : bit.deadline ? (
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        aria-label="Edit deadline date"
-                        className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                        onClick={() => setIsDeadlineEditing(true)}
-                      >
-                        <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
-                        {format(new Date(bit.deadline), "MMM d")}
-                      </button>
-                      <button
-                        type="button"
-                        aria-label="Clear deadline"
-                        className="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
-                        onClick={() => void handleDateChange("")}
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                      {!bit.deadlineAllDay ? (
-                        <button
-                          type="button"
-                          aria-label="Edit deadline time"
-                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                          onClick={() => setIsDeadlineEditing(true)}
-                        >
-                          <Clock className="h-3.5 w-3.5 flex-shrink-0" />
-                          {format(new Date(bit.deadline), "h:mm a")}
-                        </button>
-                      ) : null}
-                      <button
-                        type="button"
-                        aria-label={
-                          bit.deadlineAllDay ? "All day on" : "All day off"
-                        }
-                        className={cn(
-                          "rounded px-2 py-0.5 text-xs font-medium transition-colors",
-                          bit.deadlineAllDay
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-secondary text-muted-foreground hover:bg-accent",
-                        )}
-                        onClick={() => void handleAllDayToggle()}
-                      >
-                        ALL
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      className="flex items-center gap-1 cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground"
-                      onClick={() => setIsDeadlineEditing(true)}
-                    >
-                      <Calendar className="h-3.5 w-3.5" />
-                      Add date
-                    </button>
-                  )}
+                  <DateFirstDeadlinePicker
+                    value={{ deadline: bit.deadline, deadlineAllDay: bit.deadlineAllDay }}
+                    onChange={(value) =>
+                      void attemptDeadlineUpdate(value.deadline, value.deadlineAllDay)}
+                    onClear={() => void attemptDeadlineUpdate(null, false)}
+                  />
                 </div>
 
                 <div className="px-5 pt-3">

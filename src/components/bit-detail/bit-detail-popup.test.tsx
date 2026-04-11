@@ -1,7 +1,8 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { startOfDay, startOfToday } from "date-fns";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Bit, Chunk, Node } from "@/types";
 
 const closeMock = vi.hoisted(() => vi.fn());
@@ -86,6 +87,18 @@ vi.mock("@/components/ui/popover", () => ({
   PopoverContent: MockDiv,
 }));
 
+vi.mock("@/components/ui/calendar", () => ({
+  Calendar: ({
+    onSelect,
+  }: {
+    onSelect?: (date: Date | undefined) => void;
+  }) => (
+    <button onClick={() => onSelect?.(new Date(2026, 3, 13))} type="button">
+      Choose April 13
+    </button>
+  ),
+}));
+
 vi.mock("@/components/ui/scroll-area", () => ({
   ScrollArea: MockDiv,
 }));
@@ -155,6 +168,12 @@ function mockBitDetail(bit: Bit, chunks: Chunk[] = [], parentNode: Node | null =
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.useRealTimers();
+});
+
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date(2026, 3, 10, 9, 0));
 });
 
 describe("BitDetailPopup", () => {
@@ -216,27 +235,23 @@ describe("BitDetailPopup", () => {
     expect(screen.getAllByText("Untimed step")).toHaveLength(1);
   });
 
-  it("opens deadline editing from the formatted label and escapes without closing the popup", () => {
-    mockBitDetail(createBit({ deadline: new Date(2026, 3, 10, 9, 30).getTime() }));
+  it("applies the Today shortcut as an all-day deadline", async () => {
+    mockBitDetail(createBit());
 
     render(<BitDetailPopup />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Edit deadline date" }));
+    fireEvent.click(screen.getByRole("button", { name: "Today" }));
+    await Promise.resolve();
 
-    const dateInput = screen.getByLabelText("Deadline date");
-    expect(dateInput).toBeInTheDocument();
-
-    fireEvent.keyDown(dateInput, { key: "Escape" });
-
-    expect(closeMock).not.toHaveBeenCalled();
-    expect(screen.queryByLabelText("Deadline date")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Edit deadline date" })).toBeInTheDocument();
+    expect(updateBitMock).toHaveBeenCalledWith("bit-1", {
+      deadline: startOfToday().getTime(),
+      deadlineAllDay: true,
+    });
   });
 
   it("surfaces a deadline conflict modal and can update the parent deadline", async () => {
     const parentDeadline = new Date(2026, 3, 12, 9, 30).getTime();
-    const nextDateStr = "2026-04-13";
-    const nextDeadline = new Date(`${nextDateStr}T09:30`).getTime();
+    const nextDeadline = startOfDay(new Date(2026, 3, 13)).getTime();
     const conflict = Object.assign(new Error("Deadline conflict"), {
       name: "DeadlineConflictError",
     });
@@ -250,27 +265,24 @@ describe("BitDetailPopup", () => {
 
     render(<BitDetailPopup />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Edit deadline date" }));
-    fireEvent.change(screen.getByLabelText("Deadline date"), {
-      target: { value: nextDateStr },
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Choose April 13" }));
     });
 
-    expect(await screen.findByTestId("deadline-conflict-modal")).toBeInTheDocument();
+    expect(screen.getByTestId("deadline-conflict-modal")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Update parent" }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Update parent" }));
+    });
 
-    await waitFor(() => {
-      expect(updateNodeMock).toHaveBeenCalledWith("node-1", {
-        deadline: nextDeadline,
-        deadlineAllDay: false,
-      });
+    expect(updateNodeMock).toHaveBeenCalledWith("node-1", {
+      deadline: nextDeadline,
+      deadlineAllDay: true,
     });
-    await waitFor(() => {
-      expect(updateBitMock).toHaveBeenCalledTimes(2);
-    });
+    expect(updateBitMock).toHaveBeenCalledTimes(2);
     expect(updateBitMock).toHaveBeenLastCalledWith("bit-1", {
       deadline: nextDeadline,
-      deadlineAllDay: false,
+      deadlineAllDay: true,
     });
   });
 });

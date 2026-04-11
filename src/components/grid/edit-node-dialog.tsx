@@ -2,7 +2,7 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useId, useState } from "react";
-import { format } from "date-fns";
+import { DateFirstDeadlinePicker } from "@/components/shared/date-first-deadline-picker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -73,14 +73,6 @@ function hexToHsl(hex: string): string {
   return `hsl(${Math.round(h)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
 }
 
-function toDateStr(ts: number | null): string {
-  return ts ? format(new Date(ts), "yyyy-MM-dd") : "";
-}
-
-function toTimeStr(ts: number | null): string {
-  return ts ? format(new Date(ts), "HH:mm") : "";
-}
-
 type EditNodeDialogProps = {
   node: Node | null;
   open: boolean;
@@ -95,9 +87,8 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
   const [title, setTitle] = useState("");
   const [icon, setIcon] = useState(DEFAULT_ICON);
   const [colorHex, setColorHex] = useState("#3b82f6");
-  const [dateStr, setDateStr] = useState("");
-  const [timeStr, setTimeStr] = useState("");
-  const [allDay, setAllDay] = useState(false);
+  const [deadline, setDeadline] = useState<number | null>(null);
+  const [deadlineAllDay, setDeadlineAllDay] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [titleError, setTitleError] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -108,18 +99,12 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
     setTitle(node.title);
     setIcon(node.icon);
     setColorHex(hslToHex(node.color));
-    setDateStr(toDateStr(node.deadline));
-    setTimeStr(toTimeStr(node.deadline));
-    setAllDay(node.deadlineAllDay);
+    setDeadline(node.deadline);
+    setDeadlineAllDay(node.deadlineAllDay);
     setTitleError(false);
     setError(undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, node?.id]);
-
-  function buildDeadline(): { deadline: number | null; deadlineAllDay: boolean } {
-    if (!dateStr) return { deadline: null, deadlineAllDay: false };
-    const time = allDay ? "00:00" : (timeStr || "00:00");
-    return { deadline: new Date(`${dateStr}T${time}`).getTime(), deadlineAllDay: allDay };
-  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -130,7 +115,6 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
     setError(undefined);
     setIsSubmitting(true);
     try {
-      const { deadline, deadlineAllDay } = buildDeadline();
       await updateNode(node.id, {
         title: title.trim(),
         icon,
@@ -227,31 +211,17 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
           {/* Deadline */}
           <div className="space-y-2">
             <div className="text-sm font-medium text-foreground">Deadline</div>
-            <div className="flex items-center gap-2">
-              <Input
-                className="w-[150px]"
-                type="date"
-                value={dateStr}
-                onChange={(e) => setDateStr(e.target.value)}
-              />
-              {!allDay && (
-                <Input
-                  className="w-[110px]"
-                  type="time"
-                  value={timeStr}
-                  onChange={(e) => setTimeStr(e.target.value)}
-                />
-              )}
-              <label className="flex cursor-pointer items-center gap-1.5 text-sm text-muted-foreground">
-                <input
-                  type="checkbox"
-                  checked={allDay}
-                  onChange={(e) => setAllDay(e.target.checked)}
-                  className="h-4 w-4 accent-primary"
-                />
-                All day
-              </label>
-            </div>
+            <DateFirstDeadlinePicker
+              value={{ deadline, deadlineAllDay }}
+              onChange={(value) => {
+                setDeadline(value.deadline);
+                setDeadlineAllDay(value.deadlineAllDay);
+              }}
+              onClear={() => {
+                setDeadline(null);
+                setDeadlineAllDay(false);
+              }}
+            />
           </div>
 
           <p role="alert" className="min-h-[1.25rem] text-sm text-destructive">
