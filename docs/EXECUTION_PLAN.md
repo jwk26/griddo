@@ -1533,7 +1533,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 58: Date-First Deadline Input
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/shared/date-first-deadline-picker.tsx` (create), `src/components/bit-detail/bit-detail-popup.tsx` (update), `src/components/grid/edit-node-dialog.tsx` (update)
 - **Dependencies:** Phase 9 complete
 - **Actions:**
