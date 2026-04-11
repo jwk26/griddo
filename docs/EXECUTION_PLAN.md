@@ -1528,6 +1528,7 @@ These apply across all phases:
   - Existing L0 Nodes with deadlines: deadline is hidden in edit dialog and ignored by calendar/urgency read surfaces
   - L0 Nodes do not appear in calendar deadline queries (weekly, monthly, pool)
   - L0 Nodes do not contribute to global urgency badge
+  - Creating a child Node with a deadline exceeding its parent Node's deadline is prevented — enforced at both UI level (`CreateNodeDialog` validation) and datastore level (`createNode` path in `indexeddb.ts`)
   - `pnpm tsc --noEmit` passes
   - `pnpm build` passes
 
@@ -1554,6 +1555,8 @@ These apply across all phases:
   - No visible "All day" toggle in the UI
   - Existing deadline editing surfaces (Bit Detail, Edit Node) use the new picker
   - Deadline hierarchy validation treats all-day deadlines as `23:59:59.999` local
+  - A shared all-day deadline comparison utility/rule exists (normalizes `deadlineAllDay` timestamps to `23:59:59.999` local before comparison)
+  - All hierarchy validation paths use the shared rule consistently — UI conflict checks (`DeadlineConflictModal` trigger) and datastore-level validation (`assertBitDeadlineFitsParent`, `assertChunkTimeFitsBit`) agree on the same normalization
   - `pnpm build` passes
 
 #### Phase 10 Notes
