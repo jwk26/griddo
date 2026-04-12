@@ -262,124 +262,126 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
         <div className="flex h-screen overflow-hidden bg-background">
           <Sidebar onAddClick={() => openAdd({ mode: "auto" })} dragActiveItem={activeItem} />
           <main
-            className="relative ml-12 flex flex-1 flex-col overflow-hidden"
+            className="relative ml-12 flex-1 overflow-hidden"
             data-level={displayLevel}
             data-testid="display-level"
           >
-            <Breadcrumbs nodeId={nodeId} dragActiveItem={activeItem} />
+            <div className="pointer-events-none absolute top-3 left-3 z-30 flex flex-col items-start gap-1.5">
+              <div className="pointer-events-auto">
+                <Breadcrumbs nodeId={nodeId} dragActiveItem={activeItem} />
+              </div>
+            </div>
             <AddFlowProvider
               openAddAtCell={(x, y) => openAdd({ mode: "cell", x, y })}
             >
-              <div className="relative min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
-                {children}
-              </div>
+              <div className="h-full overflow-y-auto overflow-x-hidden">{children}</div>
             </AddFlowProvider>
-          <EditModeOverlay />
-          <CreateItemChooser
-            onChooseBit={() => setOpenDialogType("bit")}
-            onChooseNode={() => setOpenDialogType("node")}
-            onOpenChange={(open) => {
-              if (!open) {
-                setError(undefined);
-              }
+            <EditModeOverlay />
+            <CreateItemChooser
+              onChooseBit={() => setOpenDialogType("bit")}
+              onChooseNode={() => setOpenDialogType("node")}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setError(undefined);
+                }
 
-              setChooserOpen(open);
-            }}
-            open={chooserOpen}
-          />
-          <CreateNodeDialog
-            error={openDialogType === "node" ? error : undefined}
-            onOpenChange={(open) => handleDialogOpenChange(open, "node")}
-            onSubmit={handleNodeSubmit}
-            open={openDialogType === "node"}
-          />
-          <CreateBitDialog
-            error={openDialogType === "bit" ? error : undefined}
-            onOpenChange={(open) => handleDialogOpenChange(open, "bit")}
-            onSubmit={handleBitSubmit}
-            open={openDialogType === "bit"}
-          />
-          <DeleteConfirmDialog
-            onCancel={() => setPendingDelete(null)}
-            onConfirm={handleDeleteConfirm}
-            pendingDelete={pendingDelete}
-          />
-          <Dialog
-            open={pendingNodeMove !== null}
-            onOpenChange={(open) => {
-              if (!open) {
-                handleNodeMoveCancel();
-              }
-            }}
-          >
-            <DialogContent showCloseButton={false}>
-              <DialogHeader>
-                <DialogTitle>
+                setChooserOpen(open);
+              }}
+              open={chooserOpen}
+            />
+            <CreateNodeDialog
+              error={openDialogType === "node" ? error : undefined}
+              onOpenChange={(open) => handleDialogOpenChange(open, "node")}
+              onSubmit={handleNodeSubmit}
+              open={openDialogType === "node"}
+            />
+            <CreateBitDialog
+              error={openDialogType === "bit" ? error : undefined}
+              onOpenChange={(open) => handleDialogOpenChange(open, "bit")}
+              onSubmit={handleBitSubmit}
+              open={openDialogType === "bit"}
+            />
+            <DeleteConfirmDialog
+              onCancel={() => setPendingDelete(null)}
+              onConfirm={handleDeleteConfirm}
+              pendingDelete={pendingDelete}
+            />
+            <Dialog
+              open={pendingNodeMove !== null}
+              onOpenChange={(open) => {
+                if (!open) {
+                  handleNodeMoveCancel();
+                }
+              }}
+            >
+              <DialogContent showCloseButton={false}>
+                <DialogHeader>
+                  <DialogTitle>
+                    {pendingNodeMove
+                      ? `Move into '${pendingNodeMove.targetNodeTitle}'?`
+                      : "Move item?"}
+                  </DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground">
                   {pendingNodeMove
-                    ? `Move into '${pendingNodeMove.targetNodeTitle}'?`
-                    : "Move item?"}
-                </DialogTitle>
-              </DialogHeader>
-              <p className="text-sm text-muted-foreground">
-                {pendingNodeMove
-                  ? `'${pendingNodeMove.itemTitle}' will be moved into this node.`
-                  : ""}
-              </p>
-              <DialogFooter>
-                <Button
-                  onClick={handleNodeMoveCancel}
-                  type="button"
-                  variant="outline"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => void handleNodeMoveConfirm()}
-                  type="button"
-                >
-                  Move
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          <Dialog
-            open={pendingAncestorMove !== null}
-            onOpenChange={(open) => {
-              if (!open) {
-                handleAncestorMoveCancel();
-              }
-            }}
-          >
-            <DialogContent showCloseButton={false}>
-              <DialogHeader>
-                <DialogTitle>
+                    ? `'${pendingNodeMove.itemTitle}' will be moved into this node.`
+                    : ""}
+                </p>
+                <DialogFooter>
+                  <Button
+                    onClick={handleNodeMoveCancel}
+                    type="button"
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => void handleNodeMoveConfirm()}
+                    type="button"
+                  >
+                    Move
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <Dialog
+              open={pendingAncestorMove !== null}
+              onOpenChange={(open) => {
+                if (!open) {
+                  handleAncestorMoveCancel();
+                }
+              }}
+            >
+              <DialogContent showCloseButton={false}>
+                <DialogHeader>
+                  <DialogTitle>
+                    {pendingAncestorMove
+                      ? `Move to '${pendingAncestorMove.targetNodeTitle}'?`
+                      : "Move item?"}
+                  </DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground">
                   {pendingAncestorMove
-                    ? `Move to '${pendingAncestorMove.targetNodeTitle}'?`
-                    : "Move item?"}
-                </DialogTitle>
-              </DialogHeader>
-              <p className="text-sm text-muted-foreground">
-                {pendingAncestorMove
-                  ? `'${pendingAncestorMove.itemTitle}' will be moved to this location.`
-                  : ""}
-              </p>
-              <DialogFooter>
-                <Button
-                  onClick={handleAncestorMoveCancel}
-                  type="button"
-                  variant="outline"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => void handleAncestorMoveConfirm()}
-                  type="button"
-                >
-                  Move
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                    ? `'${pendingAncestorMove.itemTitle}' will be moved to this location.`
+                    : ""}
+                </p>
+                <DialogFooter>
+                  <Button
+                    onClick={handleAncestorMoveCancel}
+                    type="button"
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => void handleAncestorMoveConfirm()}
+                    type="button"
+                  >
+                    Move
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
         </main>
       </div>
       </DndContext>

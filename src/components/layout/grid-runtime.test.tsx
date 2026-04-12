@@ -254,12 +254,24 @@ describe("GridRuntime", () => {
       </GridRuntime>,
     );
 
+    expect(screen.getByTestId("breadcrumbs").parentElement).toHaveClass(
+      "pointer-events-auto",
+    );
+    expect(screen.getByTestId("breadcrumbs").parentElement?.parentElement).toHaveClass(
+      "pointer-events-none",
+      "absolute",
+      "top-3",
+      "left-3",
+      "z-30",
+      "flex",
+      "flex-col",
+      "gap-1.5",
+      "items-start",
+    );
     expect(screen.getByTestId("display-level")).toHaveAttribute("data-level", "0");
     expect(screen.getByTestId("breadcrumbs")).toHaveTextContent("root");
     expect(screen.getByLabelText("add-at-cell").parentElement?.parentElement).toHaveClass(
-      "relative",
-      "min-w-0",
-      "flex-1",
+      "h-full",
       "overflow-y-auto",
       "overflow-x-hidden",
     );
@@ -316,6 +328,13 @@ describe("GridRuntime", () => {
 
     expect(screen.getByTestId("display-level")).toHaveAttribute("data-level", "1");
     expect(screen.getByTestId("breadcrumbs")).toHaveTextContent(parentNode.id);
+    expect(screen.getByTestId("breadcrumbs").parentElement?.parentElement).toHaveClass(
+      "pointer-events-none",
+      "absolute",
+      "top-3",
+      "left-3",
+      "z-30",
+    );
 
     fireEvent.click(screen.getByLabelText("add-at-cell"));
     fireEvent.click(screen.getByLabelText("choose-node"));

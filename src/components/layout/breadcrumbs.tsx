@@ -3,6 +3,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Fragment } from "react";
 import type { DragActiveItem } from "@/hooks/use-dnd";
 import { useBreadcrumbChain } from "@/hooks/use-breadcrumb-chain";
 import { getGridBreadcrumbDropId } from "@/lib/grid-dnd";
@@ -29,8 +30,8 @@ function BreadcrumbSegmentButton({
     <button
       ref={setNodeRef}
       className={cn(
-        "rounded-md px-1.5 py-0.5 text-muted-foreground transition-colors hover:text-foreground",
-        isOver && "bg-accent text-foreground",
+        "rounded-md px-1.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground",
+        isOver && "bg-accent text-accent-foreground",
       )}
       data-drop-zone={nodeId ? "breadcrumb-node" : "breadcrumb-root"}
       data-node-id={nodeId ?? undefined}
@@ -51,21 +52,20 @@ export function Breadcrumbs({
 }) {
   const router = useRouter();
   const segments = useBreadcrumbChain(nodeId ?? "");
+  const navClassName = cn(
+    "flex h-8 items-center gap-0.5 rounded-lg border border-border/40 pl-2 pr-3 shadow-sm backdrop-blur-md max-w-[calc(100%-2rem)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+    dragActiveItem ? "bg-background/95 ring-2 ring-primary/20" : "bg-background/80",
+  );
 
   if (nodeId === null) {
     return (
-      <nav
-        aria-label="Breadcrumb"
-        className="flex h-breadcrumb items-center border-b border-border px-4"
-      >
-        <div className="flex items-center gap-1.5 overflow-x-auto text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <BreadcrumbSegmentButton
-            dragActiveItem={dragActiveItem}
-            label="Home"
-            nodeId={null}
-            onClick={() => router.push("/")}
-          />
-        </div>
+      <nav aria-label="Breadcrumb" className={navClassName}>
+        <BreadcrumbSegmentButton
+          dragActiveItem={dragActiveItem}
+          label="Home"
+          nodeId={null}
+          onClick={() => router.push("/")}
+        />
       </nav>
     );
   }
@@ -74,33 +74,28 @@ export function Breadcrumbs({
   const ancestors = currentNode ? segments.slice(0, -1) : [];
 
   return (
-    <nav
-      aria-label="Breadcrumb"
-      className="flex h-breadcrumb items-center border-b border-border px-4"
-    >
-      <div className="flex items-center gap-1.5 overflow-x-auto text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <BreadcrumbSegmentButton
-          dragActiveItem={dragActiveItem}
-          label="Home"
-          nodeId={null}
-          onClick={() => router.push("/")}
-        />
-        {ancestors.map((segment) => (
-          <div key={segment.id} className="flex items-center gap-1.5">
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-            <BreadcrumbSegmentButton
-              dragActiveItem={dragActiveItem}
-              label={segment.title}
-              nodeId={segment.id}
-              onClick={() => router.push(`/grid/${segment.id}`)}
-            />
-          </div>
-        ))}
-        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-        <span aria-current="page" className="font-medium text-foreground">
-          {currentNode?.title ?? "..."}
-        </span>
-      </div>
+    <nav aria-label="Breadcrumb" className={navClassName}>
+      <BreadcrumbSegmentButton
+        dragActiveItem={dragActiveItem}
+        label="Home"
+        nodeId={null}
+        onClick={() => router.push("/")}
+      />
+      {ancestors.map((segment) => (
+        <Fragment key={segment.id}>
+          <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
+          <BreadcrumbSegmentButton
+            dragActiveItem={dragActiveItem}
+            label={segment.title}
+            nodeId={segment.id}
+            onClick={() => router.push(`/grid/${segment.id}`)}
+          />
+        </Fragment>
+      ))}
+      <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
+      <span aria-current="page" className="px-1.5 text-xs font-semibold text-foreground">
+        {currentNode?.title ?? "..."}
+      </span>
     </nav>
   );
 }
