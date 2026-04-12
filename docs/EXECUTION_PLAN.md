@@ -1559,9 +1559,37 @@ These apply across all phases:
   - All hierarchy validation paths use the shared rule consistently — UI conflict checks (`DeadlineConflictModal` trigger) and datastore-level validation (`assertBitDeadlineFitsParent`, `assertChunkTimeFitsBit`) agree on the same normalization
   - `pnpm build` passes
 
+### Task 59: Dynamic Protected Breadcrumb Zone
+- **Status:** `[ ]`
+- **Files:** `src/lib/utils/breadcrumb-zone.ts` (create), `src/lib/utils/bfs.ts` (update), `src/hooks/use-grid-actions.ts` (update), `src/hooks/use-dnd.ts` (update), `src/components/layout/grid-runtime.tsx` (update — expose zone via context), `src/lib/db/indexeddb.ts` (update — one-time migration)
+- **Dependencies:** Task 54, Task 55 (the deadline line contributes to the cluster footprint)
+- **Origin:** `docs/issues/Issues_Phase_10.md` mi-5 — breadcrumb cluster overlaps top-row grid items. Promoted from user-reported issue because the fix requires a new layout rule affecting all placement paths, a one-time migration, and its own acceptance criteria.
+- **Actions:**
+  - **Dynamic zone derivation (not a fixed cell count):** Compute the blocked cell set from the actual rendered breadcrumb cluster footprint (breadcrumb pill + optional deadline line from Task 55) at placement time. Measure the cluster via `ResizeObserver` or `useLayoutEffect` + `getBoundingClientRect` on the cluster wrapper in `grid-runtime.tsx`. Translate pixel rect to `{x, y}` cell coordinates using the same cell-size math used by `GridView` (grid cols, grid gap, inset). Expose the blocked cells as a `Set<string>` keyed by `"x,y"` via React context (preferred — passes through `AddFlowProvider`) or a Zustand slice
+  - Create `src/lib/utils/breadcrumb-zone.ts` with pure helpers: `rectToBlockedCells(rect, gridMetrics) → Set<string>`, `isCellBlocked(x, y, blocked) → boolean`, and a hook-free pixel-to-cell projection that can be unit tested
+  - **BFS auto-placement exclusion:** `findNearestEmptyCell(occupied, originX, originY)` must treat blocked cells as occupied. Option A (recommended): accept an optional `blocked: Set<string>` parameter and merge with `occupied` at the top of the function. Thread the blocked set through `use-grid-actions.ts` create paths (`createNode`, `createBit`) so auto-placement never lands in the zone
+  - **Manual drag-drop rejection:** In `use-dnd.ts` grid-cell drop handler, reject drops onto cells inside the blocked set (no move, optional toast `"Cell reserved by breadcrumb"`). In `gridCollisionDetection`, exclude blocked cells from collision candidates so the drop indicator never highlights them during drag
+  - **Click-to-add rejection:** `AddFlowProvider.openAddAtCell` must skip blocked cells. Either fall back to BFS auto-placement or silently ignore the click with subtle feedback
+  - **One-time migration:** On datastore init (or first access per user), scan existing Nodes/Bits per parent at each level. Any item whose `{x, y}` falls inside the current blocked zone is relocated via BFS to the nearest empty cell outside the zone. Persist a migration flag (`settings.breadcrumbZoneMigrationDone = true`) so it runs exactly once per user. Log relocations in dev mode
+  - **No live reflow on edit:** When the user edits a node/bit title and the breadcrumb visual width changes, existing items **do not reposition**. Only new placements and drag targets respect the updated zone. This prevents disorienting reflow during typing
+  - **Breadcrumb width absorption (unchanged from Task 54 fixes):** Overflow is absorbed inside the breadcrumb pill via `max-w` + `whitespace-nowrap` + horizontal scroll. Task 59 does not change the breadcrumb's own width behavior; it only uses the rendered footprint to compute the blocked zone
+- **Acceptance:**
+  - At every level (L0/L1/L2/L3), new items created via sidebar `+` or cell-level `+` never land in the breadcrumb footprint
+  - BFS auto-placement correctly skips blocked cells at all levels
+  - Dragging a bit/node onto a blocked cell is rejected (no move; optional toast)
+  - Drop indicator during drag never highlights a blocked cell
+  - On first load after this task lands, existing items inside the current blocked zone are relocated to nearest empty cells (logged to console in dev mode); migration runs exactly once
+  - After migration, existing placements remain stable regardless of subsequent title/deadline edits (no live reflow)
+  - Zone shape updates when the deadline line (Task 55) appears or disappears, or when the breadcrumb cluster width changes on navigation
+  - At L0, the zone covers the Home pill footprint (small); at L3 with long titles, the zone expands to match
+  - `pnpm tsc --noEmit` passes
+  - `pnpm build` passes
+
 #### Phase 10 Notes
 
-> **Task dependency order:** Task 58 (Date-First Deadline Input) should be implemented early in Phase 10 as Tasks 55 and 57 depend on the `DateFirstDeadlinePicker` component. Recommended order: 58 → 54 → 56 → 57 → 55.
+> **Task dependency order:** Task 58 (Date-First Deadline Input) should be implemented early in Phase 10 as Tasks 55 and 57 depend on the `DateFirstDeadlinePicker` component. Task 59 (Dynamic Protected Breadcrumb Zone) depends on Task 54 and Task 55 because the zone is derived from the rendered breadcrumb + deadline cluster. Recommended order: 58 → 54 → 56 → 57 → 55 → 59.
+
+> **Task 59 was promoted from user-reported issue mi-5** during Batch 2 (Task 54 review). See `docs/issues/Issues_Phase_10.md` for the original observation and promotion rationale. Phase 11 and Phase 12 task numbers were shifted by +1 as a result: Phase 11 Tasks 59–66 became 60–67, and Phase 12 Task 67 became Task 68.
 
 > **All-day timestamp storage:** The picker stores all-day deadlines with `00:00:00.000` local time. The `23:59:59.999` interpretation is applied only at comparison time (hierarchy validation, urgency calculation, calendar display). This keeps the storage clean while preserving correct end-of-day semantics.
 
@@ -1587,7 +1615,7 @@ These apply across all phases:
 > - Monthly: horizontally wider rounded-rectangle cells (not square); day detail = popup overlay (not fixed column)
 > - Monthly popup: one popup at a time; X to close; positioned near click
 
-### Task 59: Calendar Sidebar + Header Redesign
+### Task 60: Calendar Sidebar + Header Redesign
 - **Status:** `[ ]`
 - **Files:** `src/components/layout/sidebar.tsx` (update), `src/app/calendar/layout.tsx` (update), `src/app/calendar/weekly/page.tsx` (update), `src/app/calendar/monthly/page.tsx` (update)
 - **Dependencies:** Phase 10 complete
@@ -1607,10 +1635,10 @@ These apply across all phases:
   - No hard border lines between calendar sections
   - `pnpm build` passes
 
-### Task 60: Pool Fold/Unfold
+### Task 61: Pool Fold/Unfold
 - **Status:** `[ ]`
 - **Files:** `src/app/calendar/layout.tsx` (update), `src/stores/calendar-store.ts` (update)
-- **Dependencies:** Task 59
+- **Dependencies:** Task 60
 - **Actions:**
   - In `calendar-store.ts`: add `isPoolCollapsed: boolean` state and `togglePool` action
   - In the calendar layout or pool component: add a collapse/expand toggle (chevron icon) at the top of the pool section. When collapsed, the pool section hides its content and shrinks to a minimal bar (showing only the toggle and a label like "Pool"). When expanded, full pool content is visible
@@ -1623,10 +1651,10 @@ These apply across all phases:
   - Pool state persists within the session (Zustand store)
   - `pnpm build` passes
 
-### Task 61: Calendar Pool Node Creation
+### Task 62: Calendar Pool Node Creation
 - **Status:** `[ ]`
 - **Files:** `src/app/calendar/layout.tsx` (update), `src/hooks/use-grid-actions.ts` (update if needed)
-- **Dependencies:** Task 59
+- **Dependencies:** Task 60
 - **Actions:**
   - When the sidebar `+` is clicked in calendar mode and the user selects "Node" from the chooser:
     - Open `CreateNodeDialog` (reuse existing component)
@@ -1639,10 +1667,10 @@ These apply across all phases:
   - Created Node has no deadline (unscheduled)
   - `pnpm build` passes
 
-### Task 62: Calendar Pool Bit Creation + Parent Selector
+### Task 63: Calendar Pool Bit Creation + Parent Selector
 - **Status:** `[ ]`
 - **Files:** `src/components/calendar/parent-node-selector.tsx` (create), `src/components/grid/create-bit-dialog.tsx` (update), `src/app/calendar/layout.tsx` (update)
-- **Dependencies:** Task 59
+- **Dependencies:** Task 60
 - **Actions:**
   - Create `parent-node-selector.tsx`: a tree-browsing Node selector component. Props: `value: string | null` (selected Node ID), `onChange: (nodeId: string) => void`
     - On open, show all L0 Nodes. Clicking a Node either selects it (if it's the desired parent) or drills into its children (if it has child Nodes)
@@ -1664,10 +1692,10 @@ These apply across all phases:
   - From grid, CreateBitDialog behavior is unchanged (no parent selector shown)
   - `pnpm build` passes
 
-### Task 63: Weekly Stable Day Sizing + Today Emphasis
+### Task 64: Weekly Stable Day Sizing + Today Emphasis
 - **Status:** `[ ]`
 - **Files:** `src/components/calendar/day-column.tsx` (update), `src/app/calendar/weekly/page.tsx` (update), `src/stores/calendar-store.ts` (update)
-- **Dependencies:** Task 60
+- **Dependencies:** Task 61
 - **Actions:**
   - In `calendar-store.ts`: add `expandedDay: number | null` state (day index 0–6, `null` = use default rule) and `setExpandedDay` action
   - **Default expanded-day rule:**
@@ -1691,10 +1719,10 @@ These apply across all phases:
   - Only one day is expanded at a time
   - `pnpm build` passes
 
-### Task 64: Weekly Drag Rescheduling + Pool Cleanup
+### Task 65: Weekly Drag Rescheduling + Pool Cleanup
 - **Status:** `[ ]`
 - **Files:** `src/components/calendar/day-column.tsx` (update), `src/components/calendar/items-pool.tsx` (update), `src/hooks/use-dnd.ts` (update)
-- **Dependencies:** Task 63
+- **Dependencies:** Task 64
 - **Actions:**
   - **Placed items draggable:** Items already placed in a day column must be draggable. Wrap each placed item with `useDraggable`. On drag-end to a different day column: update the item's deadline to the target day. On drag-end back to the pool: clear the deadline (unschedule)
   - **Cursor affordance:** Set `cursor-grab` on placed items, `cursor-grabbing` during drag. Do not add visible drag-handle icons
@@ -1711,10 +1739,10 @@ These apply across all phases:
   - Pool items have `Trash2` icon instead of `X` for unschedule action
   - `pnpm build` passes
 
-### Task 65: Monthly Cell Redesign + Day Detail Popup
+### Task 66: Monthly Cell Redesign + Day Detail Popup
 - **Status:** `[ ]`
 - **Files:** `src/app/calendar/monthly/_components/month-grid.tsx` (update), `src/app/calendar/monthly/_components/date-cell-popover.tsx` (rewrite), `src/app/calendar/monthly/page.tsx` (update)
-- **Dependencies:** Task 60
+- **Dependencies:** Task 61
 - **Actions:**
   - In `month-grid.tsx`: update date cells from their current shape to **horizontally wider rounded rectangles** (`rounded-xl`, wider aspect ratio). Do not use square cells. Reason: typical viewport is wider than tall, and square cells waste horizontal space in the 2-column (pool + calendar) layout. Reference: `references/monthly.jpg`
   - **Day detail popup:** Replace the current `date-cell-popover.tsx` (if it uses a fixed side panel) with a Radix `Popover` or floating overlay:
@@ -1733,10 +1761,10 @@ These apply across all phases:
   - Placed items are draggable between date cells for rescheduling
   - `pnpm build` passes
 
-### Task 66: Monthly Item Representation
+### Task 67: Monthly Item Representation
 - **Status:** `[ ]`
 - **Files:** `src/app/calendar/monthly/_components/month-grid.tsx` (update), `src/app/calendar/monthly/_components/date-cell-popover.tsx` (update)
-- **Dependencies:** Task 65
+- **Dependencies:** Task 66
 - **Actions:**
   - In `month-grid.tsx` date cells:
     - Bits: render as small colored **dots** (circle indicator, `h-2 w-2 rounded-full`). Color derived from parent Node's color. Multiple dots stack horizontally; overflow shows a count badge (e.g., `+3`)
@@ -1755,7 +1783,7 @@ These apply across all phases:
 
 > **Calendar creation is not scheduling.** Items created from the calendar sidebar `+` are unscheduled by default. The user creates first, then drags onto a date to schedule. This keeps the creation flow lightweight and consistent regardless of whether the user starts from grid or calendar.
 
-> **Parent Node selector is the most complex new component.** The tree-browsing Node selector (Task 62) requires a browse-and-select interaction pattern. Consider implementing it as a standalone component that can be reused for any future "pick a Node" interaction (e.g., move-to, reparent).
+> **Parent Node selector is the most complex new component.** The tree-browsing Node selector (Task 63) requires a browse-and-select interaction pattern. Consider implementing it as a standalone component that can be reused for any future "pick a Node" interaction (e.g., move-to, reparent).
 
 > **Monthly popup positioning:** Use Radix Popover's built-in viewport collision handling. If the clicked cell is near the bottom-right corner, the popup should flip/shift to remain visible. Test with edge cells explicitly.
 
@@ -1777,7 +1805,7 @@ These apply across all phases:
 > - For comparison/validation: local timezone, `23:59:59.999` on the final day
 > - Quarterly is a new calendar mode alongside Weekly and Monthly
 
-### Task 67: Quarterly Calendar View
+### Task 68: Quarterly Calendar View
 - **Status:** `[ ]`
 - **Files:** `src/app/calendar/quarterly/page.tsx` (create), `src/app/calendar/quarterly/_components/quarter-grid.tsx` (create), `src/app/calendar/quarterly/_components/quarter-column.tsx` (create), `src/app/calendar/layout.tsx` (update), `src/stores/calendar-store.ts` (update), `src/hooks/use-calendar-data.ts` (update), `src/hooks/use-dnd.ts` (update)
 - **Dependencies:** Phase 11 complete
