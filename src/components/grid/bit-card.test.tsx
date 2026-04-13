@@ -106,4 +106,57 @@ describe("BitCard", () => {
     expect(card).toHaveClass("motion-safe:animate-jiggle");
     expect(screen.getByLabelText("Delete Active bit")).toBeInTheDocument();
   });
+
+  it("keeps the card-root drag cursor contract without forcing full-cell sizing", () => {
+    const bit = createBit({
+      title: "Cursor probe",
+      deadline: new Date("2026-03-27T00:00:00.000Z").getTime(),
+      priority: "high",
+    });
+
+    render(
+      <BitCard
+        bit={bit}
+        chunkStats={{ completed: 1, total: 4 }}
+        onClick={vi.fn()}
+        parentColor="hsl(221, 83%, 53%)"
+      />,
+    );
+
+    const card = screen.getByText("Cursor probe").closest('[role="button"]');
+
+    expect(card).not.toBeNull();
+    expect(card).toHaveClass(
+      "inline-flex",
+      "shrink-0",
+      "z-10",
+      "cursor-grab",
+      "active:cursor-grabbing",
+      "select-none",
+    );
+    expect(card).not.toHaveClass("h-full", "w-full", "overflow-hidden");
+  });
+
+  it("keeps passive content layers pointer-enabled while the card stays the drag owner", () => {
+    const bit = createBit({
+      title: "Pointer target probe",
+      deadline: new Date("2026-03-27T00:00:00.000Z").getTime(),
+      priority: "high",
+    });
+
+    render(
+      <BitCard
+        bit={bit}
+        chunkStats={{ completed: 1, total: 4 }}
+        onClick={vi.fn()}
+        parentColor="hsl(221, 83%, 53%)"
+      />,
+    );
+
+    const card = screen.getByText("Pointer target probe").closest('[role="button"]');
+
+    expect(card).not.toBeNull();
+    expect(card?.children[0]).not.toHaveClass("pointer-events-none");
+    expect(card?.children[1]).not.toHaveClass("pointer-events-none");
+  });
 });

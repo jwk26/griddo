@@ -27,6 +27,7 @@ import { useGridActions } from "@/hooks/use-grid-actions";
 import { useNode } from "@/hooks/use-node";
 import { GRID_COLS } from "@/lib/constants";
 import { gridCollisionDetection } from "@/lib/grid-dnd";
+import { cn } from "@/lib/utils";
 import { hexToHsl } from "@/lib/utils/color";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import { AddFlowProvider } from "./add-flow-context";
@@ -266,15 +267,23 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
             data-level={displayLevel}
             data-testid="display-level"
           >
-            <div className="pointer-events-none absolute top-3 left-3 z-30 flex flex-col items-start gap-1.5">
-              <div className="pointer-events-auto">
+            <div className="pointer-events-none absolute top-3 left-3 right-3 z-30 flex flex-col items-start gap-1.5">
+              <div className="pointer-events-none w-full">
                 <Breadcrumbs nodeId={nodeId} dragActiveItem={activeItem} />
               </div>
             </div>
             <AddFlowProvider
               openAddAtCell={(x, y) => openAdd({ mode: "cell", x, y })}
             >
-              <div className="h-full overflow-y-auto overflow-x-hidden">{children}</div>
+              <div
+                className={cn(
+                  "h-full overflow-x-hidden",
+                  activeItem ? "overflow-hidden" : "overflow-y-auto",
+                )}
+                data-dragging={activeItem ? "true" : undefined}
+              >
+                {children}
+              </div>
             </AddFlowProvider>
             <EditModeOverlay />
             <CreateItemChooser

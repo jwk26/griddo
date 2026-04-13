@@ -175,4 +175,32 @@ describe("GridView", () => {
     const cellWrappers = container.querySelectorAll(".grid-cell-container");
     expect(cellWrappers).toHaveLength(GRID_COLS * GRID_ROWS);
   });
+
+  it("puts the draggable contract on the visible bit-card surface", () => {
+    vi.mocked(useGridData).mockReturnValue({
+      nodes: [],
+      bits: [
+        createBit({
+          id: "bit-1",
+          title: "Ship Phase 4",
+        }),
+      ],
+      isLoading: false,
+    });
+
+    render(
+      <GridView
+        level={1}
+        onAddAtCell={vi.fn()}
+        parentColor="hsl(12, 78%, 55%)"
+        parentId="parent-node"
+      />,
+    );
+
+    const bitCard = screen.getByText("Ship Phase 4").closest('[role="button"]');
+
+    expect(bitCard).not.toBeNull();
+    expect(bitCard).toHaveAttribute("data-grid-item", "true");
+    expect(bitCard).toHaveClass("cursor-grab", "active:cursor-grabbing", "select-none");
+  });
 });

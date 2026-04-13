@@ -30,7 +30,7 @@ function BreadcrumbSegmentButton({
     <button
       ref={setNodeRef}
       className={cn(
-        "rounded-md px-1.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground",
+        "rounded-md px-1.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground shrink-0 whitespace-nowrap",
         isOver && "bg-accent text-accent-foreground",
       )}
       data-drop-zone={nodeId ? "breadcrumb-node" : "breadcrumb-root"}
@@ -53,7 +53,7 @@ export function Breadcrumbs({
   const router = useRouter();
   const segments = useBreadcrumbChain(nodeId ?? "");
   const navClassName = cn(
-    "flex h-8 items-center gap-0.5 rounded-lg border border-border/40 pl-2 pr-3 shadow-sm backdrop-blur-md max-w-[calc(100%-2rem)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+    "pointer-events-auto flex h-8 w-fit items-center gap-0.5 rounded-lg border border-border/40 pl-2 pr-3 shadow-sm backdrop-blur-md max-w-[calc(100%-2rem)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
     dragActiveItem ? "bg-background/95 ring-2 ring-primary/20" : "bg-background/80",
   );
 
@@ -83,7 +83,7 @@ export function Breadcrumbs({
       />
       {ancestors.map((segment) => (
         <Fragment key={segment.id}>
-          <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
+          <ChevronRight className="h-3 w-3 text-muted-foreground/60 shrink-0" />
           <BreadcrumbSegmentButton
             dragActiveItem={dragActiveItem}
             label={segment.title}
@@ -92,8 +92,11 @@ export function Breadcrumbs({
           />
         </Fragment>
       ))}
-      <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
-      <span aria-current="page" className="px-1.5 text-xs font-semibold text-foreground">
+      <ChevronRight className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+      <span
+        aria-current="page"
+        className="px-1.5 text-xs font-semibold text-foreground whitespace-nowrap shrink-0"
+      >
         {currentNode?.title ?? "..."}
       </span>
     </nav>

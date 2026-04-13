@@ -61,6 +61,8 @@ describe("Breadcrumbs", () => {
       "pr-3",
       "shadow-sm",
       "backdrop-blur-md",
+      "w-fit",
+      "pointer-events-auto",
       "max-w-[calc(100%-2rem)]",
       "overflow-x-auto",
     );
@@ -72,6 +74,8 @@ describe("Breadcrumbs", () => {
       "font-medium",
       "text-muted-foreground",
       "hover:bg-accent/40",
+      "shrink-0",
+      "whitespace-nowrap",
     );
     expect(homeButton).toHaveAttribute("data-drop-zone", "breadcrumb-root");
     expect(screen.queryByText("...")).not.toBeInTheDocument();
@@ -128,7 +132,14 @@ describe("Breadcrumbs", () => {
     expect(childButton).toHaveAttribute("data-drop-zone", "breadcrumb-node");
     expect(childButton).toHaveAttribute("data-node-id", child.id);
     expect(currentPage).toHaveAttribute("aria-current", "page");
-    expect(currentPage).toHaveClass("text-xs", "font-semibold", "text-foreground", "px-1.5");
+    expect(currentPage).toHaveClass(
+      "text-xs",
+      "font-semibold",
+      "text-foreground",
+      "px-1.5",
+      "whitespace-nowrap",
+      "shrink-0",
+    );
 
     fireEvent.click(homeButton);
     fireEvent.click(rootButton);

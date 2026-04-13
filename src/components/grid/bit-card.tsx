@@ -1,5 +1,7 @@
 "use client";
 
+import type { ComponentPropsWithoutRef } from "react";
+import { forwardRef } from "react";
 import { format } from "date-fns";
 import { Check, X } from "lucide-react";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
@@ -15,9 +17,26 @@ type BitCardProps = {
   chunkStats: { completed: number; total: number };
   onClick: () => void;
   onDelete?: () => void;
-};
+  isDragging?: boolean;
+} & Omit<ComponentPropsWithoutRef<"div">, "children" | "onClick">;
 
-export function BitCard({ bit, parentColor, chunkStats, onClick, onDelete }: BitCardProps) {
+export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard(
+  {
+    bit,
+    parentColor,
+    chunkStats,
+    onClick,
+    onDelete,
+    isDragging = false,
+    className,
+    onKeyDown,
+    role,
+    style,
+    tabIndex,
+    ...divProps
+  },
+  ref,
+) {
   const agingFilter = getAgingFilter(getAgingState(bit.mtime));
   const urgencyLevel = getUrgencyLevel(bit.deadline);
   const pastDeadline = isPastDeadline(bit.deadline);
@@ -28,24 +47,32 @@ export function BitCard({ bit, parentColor, chunkStats, onClick, onDelete }: Bit
 
   return (
     <div
+      {...divProps}
       className={cn(
-        "relative flex items-stretch rounded-[10px] border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+        "relative z-10 inline-flex shrink-0 cursor-grab select-none items-stretch rounded-[10px] border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-colors hover:bg-accent/50 active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+        isDragging && "z-20 cursor-grabbing",
         urgencyLevel === 1 && "animate-urgency-blink-1",
         urgencyLevel === 2 && "animate-urgency-blink-2",
         urgencyLevel === 3 && "animate-urgency-blink-3",
         isEditMode && "motion-safe:animate-jiggle",
         isComplete && "opacity-50",
+        className,
       )}
+      ref={ref}
       onClick={onClick}
       onKeyDown={(event) => {
+        onKeyDown?.(event);
+        if (event.defaultPrevented) {
+          return;
+        }
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           onClick();
         }
       }}
-      role="button"
-      style={{ filter: agingFilter }}
-      tabIndex={0}
+      role={role ?? "button"}
+      style={{ ...style, filter: agingFilter }}
+      tabIndex={tabIndex ?? 0}
     >
       {/* Color accent — spans full card height */}
       <div
@@ -157,4 +184,4 @@ export function BitCard({ bit, parentColor, chunkStats, onClick, onDelete }: Bit
       ) : null}
     </div>
   );
-}
+});

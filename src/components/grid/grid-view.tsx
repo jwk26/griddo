@@ -159,21 +159,20 @@ function DraggableBitCard({
   });
 
   return (
-    <div
-      ref={setNodeRef}
-      className={cn("flex h-full cursor-grab items-center active:cursor-grabbing")}
-      data-grid-item="true"
-      data-drag-active={isDragging ? "true" : undefined}
-      style={toTranslateStyle(transform)}
-      {...attributes}
-      {...listeners}
-    >
+    <div className="flex h-full items-center overflow-visible">
       <BitCard
+        {...attributes}
+        {...listeners}
         bit={bit}
         chunkStats={{ completed: 0, total: 0 }}
+        data-drag-active={isDragging ? "true" : undefined}
+        data-grid-item="true"
+        isDragging={isDragging}
         onClick={onClick}
         onDelete={onDelete}
         parentColor={parentColor}
+        ref={setNodeRef}
+        style={toTranslateStyle(transform)}
       />
     </div>
   );

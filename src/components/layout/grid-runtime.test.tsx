@@ -255,13 +255,15 @@ describe("GridRuntime", () => {
     );
 
     expect(screen.getByTestId("breadcrumbs").parentElement).toHaveClass(
-      "pointer-events-auto",
+      "pointer-events-none",
+      "w-full",
     );
     expect(screen.getByTestId("breadcrumbs").parentElement?.parentElement).toHaveClass(
       "pointer-events-none",
       "absolute",
       "top-3",
       "left-3",
+      "right-3",
       "z-30",
       "flex",
       "flex-col",
@@ -410,6 +412,51 @@ describe("GridRuntime", () => {
       GRID_COLS - 3,
       2,
     );
+  });
+
+  it("clips the grid scroll wrapper while a drag is active", () => {
+    useParamsMock.mockReturnValue({});
+    useNodeMock.mockReturnValue(null);
+
+    useDndMock.mockReturnValue({
+      sensors: [],
+      handleDragStart: vi.fn(),
+      handleDragEnd: vi.fn(),
+      handleDragOver: vi.fn(),
+      handleConflictUpdateParent: vi.fn(),
+      handleConflictKeepChild: vi.fn(),
+      handleNodeMoveConfirm: vi.fn(),
+      handleNodeMoveCancel: vi.fn(),
+      handleAncestorMoveConfirm: vi.fn(),
+      handleAncestorMoveCancel: vi.fn(),
+      activeItem: {
+        id: "bit-1",
+        type: "bit",
+        title: "Ship launch",
+      },
+      overTargetId: null,
+      conflictState: {
+        open: false,
+        parentBitId: null,
+        parentDeadline: Date.now(),
+        parentDeadlineAllDay: false,
+        pendingChunkId: null,
+        pendingTimestamp: null,
+      },
+      pendingNodeMove: null,
+      pendingAncestorMove: null,
+    });
+
+    render(
+      <GridRuntime>
+        <RuntimeProbe />
+      </GridRuntime>,
+    );
+
+    const scrollWrapper = screen.getByLabelText("add-at-cell").parentElement?.parentElement;
+    expect(scrollWrapper).toHaveAttribute("data-dragging", "true");
+    expect(scrollWrapper).toHaveClass("overflow-hidden");
+    expect(scrollWrapper).not.toHaveClass("overflow-y-auto");
   });
 
   it("shows a move confirmation dialog when a pending node move exists", () => {
