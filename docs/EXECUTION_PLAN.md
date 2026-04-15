@@ -1484,7 +1484,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 56: Parent Node Deadline in Bit Detail
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/bit-detail/bit-detail-popup.tsx` (update), `src/hooks/use-bit-detail.ts` (update if `parentNode` is not already exposed)
 - **Dependencies:** Phase 9 complete
 - **Actions:**
