@@ -464,9 +464,27 @@ export function BitDetailPopup() {
                           )}
                         </span>
                       </div>
-                    ) : (
+                    ) : parentNode?.deadline != null ? null : (
                       <div className="pb-5" />
                     )}
+                    {parentNode?.deadline != null ? (
+                      <div
+                        title="Child deadline cannot exceed this"
+                        className="flex flex-col gap-1 pb-5 pt-1"
+                      >
+                        <span className="text-xs text-muted-foreground">
+                          Parent deadline
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {format(
+                            new Date(parentNode.deadline),
+                            parentNode.deadlineAllDay
+                              ? "MMM d, yyyy"
+                              : "MMM d, yyyy h:mm a",
+                          )}
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>

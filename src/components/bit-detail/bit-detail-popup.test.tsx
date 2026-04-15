@@ -249,6 +249,31 @@ describe("BitDetailPopup", () => {
     });
   });
 
+  it("shows the parent deadline label and date even when the bit has no deadline", () => {
+    mockBitDetail(
+      createBit({ deadline: null }),
+      [],
+      createNode({
+        deadline: new Date(2026, 3, 15).getTime(),
+        deadlineAllDay: true,
+      }),
+    );
+
+    render(<BitDetailPopup />);
+
+    expect(screen.getByText("Parent deadline")).toBeInTheDocument();
+    expect(screen.getByText("Apr 15, 2026")).toBeInTheDocument();
+    expect(screen.getByTitle("Child deadline cannot exceed this")).toBeInTheDocument();
+  });
+
+  it("hides the parent deadline row when the parent node has no deadline", () => {
+    mockBitDetail(createBit(), [], createNode({ deadline: null }));
+
+    render(<BitDetailPopup />);
+
+    expect(screen.queryByText("Parent deadline")).toBeNull();
+  });
+
   it("surfaces a deadline conflict modal and can update the parent deadline", async () => {
     const parentDeadline = new Date(2026, 3, 12, 9, 30).getTime();
     const nextDeadline = startOfDay(new Date(2026, 3, 13)).getTime();
