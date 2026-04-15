@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { format } from "date-fns";
 import {
   ArrowUpCircle,
+  Calendar,
   CheckCircle2,
   Circle,
   Clock,
@@ -452,39 +453,53 @@ export function BitDetailPopup() {
                       chunks={chunks}
                       bitId={bit.id}
                     />
-                    {bit.deadline ? (
-                      <div className="flex items-center gap-3 pb-5 pt-1">
-                        <Clock className="relative z-10 h-4 w-4 flex-shrink-0 bg-popover text-destructive" />
-                        <span className="text-sm text-destructive">
-                          {format(
-                            new Date(bit.deadline),
-                            bit.deadlineAllDay
-                              ? "MMM d, yyyy"
-                              : "MMM d, yyyy h:mm a",
+                    <div className="flex flex-col">
+                      {bit.deadline ? (
+                        <div
+                          className={cn(
+                            "flex items-center gap-3 pt-1",
+                            parentNode?.deadline == null && "pb-5",
                           )}
-                        </span>
-                      </div>
-                    ) : parentNode?.deadline != null ? null : (
-                      <div className="pb-5" />
-                    )}
-                    {parentNode?.deadline != null ? (
-                      <div
-                        title="Child deadline cannot exceed this"
-                        className="flex flex-col gap-1 pb-5 pt-1"
-                      >
-                        <span className="text-xs text-muted-foreground">
-                          Parent deadline
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {format(
-                            new Date(parentNode.deadline),
-                            parentNode.deadlineAllDay
-                              ? "MMM d, yyyy"
-                              : "MMM d, yyyy h:mm a",
-                          )}
-                        </span>
-                      </div>
-                    ) : null}
+                        >
+                          <Clock className="relative z-10 h-4 w-4 flex-shrink-0 bg-popover text-destructive" />
+                          <span className="text-sm text-destructive">
+                            {format(
+                              new Date(bit.deadline),
+                              new Date(bit.deadline).getFullYear() === new Date().getFullYear()
+                                ? bit.deadlineAllDay
+                                  ? "MMM d"
+                                  : "MMM d, h:mm a"
+                                : bit.deadlineAllDay
+                                  ? "MMM d, yyyy"
+                                  : "MMM d, yyyy, h:mm a",
+                            )}
+                          </span>
+                        </div>
+                      ) : parentNode?.deadline == null ? (
+                        <div className="pb-5" />
+                      ) : null}
+                      {parentNode?.deadline != null ? (
+                        <div
+                          title="Child deadline cannot exceed this"
+                          className="flex items-center gap-3 pt-1 pb-5"
+                        >
+                          <Calendar className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/70" />
+                          <span className="text-xs font-medium text-muted-foreground/80">
+                            {format(
+                              new Date(parentNode.deadline),
+                              new Date(parentNode.deadline).getFullYear() ===
+                                new Date().getFullYear()
+                                ? parentNode.deadlineAllDay
+                                  ? "MMM d"
+                                  : "MMM d, h:mm a"
+                                : parentNode.deadlineAllDay
+                                  ? "MMM d, yyyy"
+                                  : "MMM d, yyyy, h:mm a",
+                            )}
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </div>

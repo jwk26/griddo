@@ -249,7 +249,31 @@ describe("BitDetailPopup", () => {
     });
   });
 
-  it("shows the parent deadline label and date even when the bit has no deadline", () => {
+  it("keeps the bit deadline urgency styling while omitting the year for current-year dates", () => {
+    mockBitDetail(
+      createBit({
+        deadline: new Date(2026, 3, 16, 9, 30).getTime(),
+        deadlineAllDay: false,
+      }),
+      [],
+      createNode({
+        deadline: new Date(2026, 3, 18).getTime(),
+        deadlineAllDay: true,
+      }),
+    );
+
+    render(<BitDetailPopup />);
+
+    const bitDeadline = screen.getByText("Apr 16, 9:30 AM");
+    expect(bitDeadline).toHaveClass("text-sm", "text-destructive");
+    expect(bitDeadline).not.toHaveClass("font-medium");
+
+    const clockIcon = bitDeadline.parentElement?.querySelector("svg");
+    expect(clockIcon).not.toBeNull();
+    expect(clockIcon).toHaveClass("relative", "z-10", "bg-popover", "text-destructive");
+  });
+
+  it("shows the parent deadline date (Calendar icon) even when the bit has no deadline", () => {
     mockBitDetail(
       createBit({ deadline: null }),
       [],
@@ -261,8 +285,7 @@ describe("BitDetailPopup", () => {
 
     render(<BitDetailPopup />);
 
-    expect(screen.getByText("Parent deadline")).toBeInTheDocument();
-    expect(screen.getByText("Apr 15, 2026")).toBeInTheDocument();
+    expect(screen.getByText("Apr 15")).toBeInTheDocument();
     expect(screen.getByTitle("Child deadline cannot exceed this")).toBeInTheDocument();
   });
 
@@ -271,7 +294,7 @@ describe("BitDetailPopup", () => {
 
     render(<BitDetailPopup />);
 
-    expect(screen.queryByText("Parent deadline")).toBeNull();
+    expect(screen.queryByTitle("Child deadline cannot exceed this")).not.toBeInTheDocument();
   });
 
   it("surfaces a deadline conflict modal and can update the parent deadline", async () => {
