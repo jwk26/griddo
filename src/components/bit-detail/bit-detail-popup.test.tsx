@@ -103,12 +103,6 @@ vi.mock("@/components/ui/scroll-area", () => ({
   ScrollArea: MockDiv,
 }));
 
-vi.mock("@/components/ui/tooltip", () => ({
-  TooltipProvider: MockFragment,
-  Tooltip: MockFragment,
-  TooltipTrigger: MockFragment,
-  TooltipContent: MockDiv,
-}));
 
 const { BitDetailPopup } = await import("@/components/bit-detail/bit-detail-popup");
 

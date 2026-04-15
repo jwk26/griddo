@@ -35,12 +35,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { DeadlineConflictModal } from "@/components/shared/deadline-conflict-modal";
 import { useBitDetailActions } from "@/hooks/use-bit-detail-actions";
 import { useBitDetail } from "@/hooks/use-bit-detail";
@@ -68,6 +62,47 @@ type PendingDeadlineConflict = {
 function nextPriority(current: Priority): Priority {
   const idx = PRIORITY_CYCLE.indexOf(current);
   return PRIORITY_CYCLE[(idx + 1) % PRIORITY_CYCLE.length];
+}
+
+function ParentDeadlineRow({
+  deadline,
+  deadlineAllDay,
+}: {
+  deadline: number;
+  deadlineAllDay: boolean;
+}) {
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+
+  const dateStr = format(
+    new Date(deadline),
+    new Date(deadline).getFullYear() === new Date().getFullYear()
+      ? deadlineAllDay
+        ? "MMM d"
+        : "MMM d, h:mm a"
+      : deadlineAllDay
+        ? "MMM d, yyyy"
+        : "MMM d, yyyy, h:mm a",
+  );
+
+  return (
+    <div
+      data-testid="parent-deadline"
+      className="flex items-center gap-3 pt-1 pb-5"
+      onMouseMove={(e) => setPos({ x: e.clientX, y: e.clientY })}
+      onMouseLeave={() => setPos(null)}
+    >
+      <Calendar className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/70" />
+      <span className="text-sm font-medium text-muted-foreground/80">{dateStr}</span>
+      {pos !== null && (
+        <div
+          className="pointer-events-none fixed z-50 whitespace-nowrap rounded-md bg-muted px-2.5 py-1 text-xs text-muted-foreground shadow-sm"
+          style={{ top: pos.y - 36, left: pos.x + 8 }}
+        >
+          Bit deadline cannot exceed node deadline
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function BitDetailPopup() {
@@ -485,34 +520,10 @@ export function BitDetailPopup() {
                         <div className="pb-5" />
                       ) : null}
                       {parentNode?.deadline != null ? (
-                        <div
-                          data-testid="parent-deadline"
-                          className="flex items-center gap-3 pt-1 pb-5"
-                        >
-                          <Calendar className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/70" />
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="text-sm font-medium text-muted-foreground/80">
-                                  {format(
-                                    new Date(parentNode.deadline),
-                                    new Date(parentNode.deadline).getFullYear() ===
-                                      new Date().getFullYear()
-                                      ? parentNode.deadlineAllDay
-                                        ? "MMM d"
-                                        : "MMM d, h:mm a"
-                                      : parentNode.deadlineAllDay
-                                        ? "MMM d, yyyy"
-                                        : "MMM d, yyyy, h:mm a",
-                                  )}
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                Bit deadline cannot exceed node deadline
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
+                        <ParentDeadlineRow
+                          deadline={parentNode.deadline}
+                          deadlineAllDay={parentNode.deadlineAllDay}
+                        />
                       ) : null}
                     </div>
                   </div>
