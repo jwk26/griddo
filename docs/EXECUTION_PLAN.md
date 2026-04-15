@@ -1444,7 +1444,7 @@ These apply across all phases:
 > - Parent deadline label = `"Parent deadline"` (tooltip: `"Child deadline cannot exceed this"`)
 
 ### Task 54: Compact Breadcrumb Redesign
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/layout/breadcrumbs.tsx` (rewrite), `src/app/globals.css` (update), `src/components/layout/grid-runtime.tsx` (update)
 - **Dependencies:** Phase 9 complete
 - **Actions:**

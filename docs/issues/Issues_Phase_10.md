@@ -27,7 +27,7 @@
 *(Issues flagged by the user during review or testing)*
 
 ### mi-2: Breadcrumb clips at root (L0) and L1 — floating container never reaches full width
-- **Status:** Fix Implemented — Awaiting User Decision
+- **Status:** Closed (user-confirmed via runtime verification after commit d47b54a)
 - **Discovered:** User testing after Batch 2 commit (1d14f96)
 - **Reproduction:** Load `/` (L0) or any single-level grid (`/grid/<id>` with no ancestors). The breadcrumb pill is visibly narrower than the text it contains — "Home" / node title is clipped before `overflow-x-auto` even activates.
 - **Root cause:** In `src/components/layout/grid-runtime.tsx` the absolute wrapper had `left-3` but no `right-3`. With `items-start` on the flex column and no right anchor, the wrapper collapsed to shrink-to-fit (content width). Inside, `<nav>` declared `max-w-[calc(100%-2rem)]`, which resolved against the already-shrunk content — a circular constraint that clipped rather than permitting growth.
@@ -37,7 +37,7 @@
 - **Acceptance for close:** Home segment is fully visible at L0. Long single-node titles expand the nav up to `calc(100% - 2rem)` before scrolling horizontally. No visible clipping at L0/L1. **Awaits user visual confirmation.**
 
 ### mi-3: Breadcrumb text wraps and compresses — missing `whitespace-nowrap` and `shrink-0`
-- **Status:** Fix Implemented — Awaiting User Decision
+- **Status:** Closed (user-confirmed via runtime verification after commit d47b54a)
 - **Discovered:** User testing after Batch 2 commit (1d14f96)
 - **Reproduction:** Navigate into a node with a long title. Text wraps to a second line inside the pill, breaking the `h-8` fixed height. Confirmed to affect **both CJK runs and long Latin titles** — not only Korean.
 - **Root cause:** Segment button and current-page span in `src/components/layout/breadcrumbs.tsx` lacked `whitespace-nowrap`. Under a constrained container (aggravated by mi-2), browsers broke long word runs to fit available width. Additionally, flex children had no `shrink-0`, so the breadcrumb compressed instead of triggering the nav's `overflow-x-auto` horizontal scroll.
@@ -51,7 +51,7 @@
 - **Acceptance for close:** No vertical wrap in the breadcrumb regardless of language or title length. Overlong chains become horizontally scrollable inside the nav pill while preserving `h-8`. Chevrons and segments never squish. **Awaits user visual confirmation.**
 
 ### mi-4: Vertical scrollbar appears on main content area when dragging bits near the bottom of the grid
-- **Status:** Fix Implemented — Awaiting User Decision
+- **Status:** Closed (user-confirmed via runtime verification after commit d47b54a)
 - **Discovered:** User testing after Batch 2 commit (1d14f96)
 - **Reproduction:** Enter a grid (any non-empty L1/L2). Begin dragging a bit card and move the drag cursor toward the lower rows of the grid. A vertical scrollbar appears on the `main` scroll container for the duration of the drag and may persist briefly after drop.
 - **Prior art used:**
@@ -75,7 +75,7 @@
   - Breadcrumb absorbs excess width via `max-w` + `whitespace-nowrap` + horizontal scroll, not by reflowing the grid
 
 ### mi-6: Bit card drag ownership and cursor affordance misaligned with visible surface
-- **Status:** Fix Implemented — Awaiting User Confirmation
+- **Status:** Closed (user-confirmed via runtime verification after commit d47b54a)
 - **Discovered:** User testing after Batch 2 commit (1d14f96); diagnosis confirms the root cause predates Batch 2.
 - **Reproduction:** Hover any Bit card. The **left icon area** shows the expected grab cursor. Most of the Bit card body (title text, description preview, deadline row) shows the **text I-beam cursor**. More broadly, the visible Bit surface could visually extend horizontally, but the draggable / hit-tested surface and the cursor affordance did not reliably cover the full visible card area.
 - **Root cause:** In the previous architecture, the visible Bit surface, the drag owner, and the effective hit/stacking area were misaligned. `DraggableBitCard` in `src/components/grid/grid-view.tsx` attached `useDraggable`'s `setNodeRef`, `attributes`, `listeners`, drag state, and transform style to an **outer wrapper div**, while the visible `BitCard` rendered inside that wrapper as a separate element. Cursor affordance on the visible card body was inherited from the outer wrapper and got overridden by browser defaults on child text nodes (`<p>` → I-beam), while the SVG icon escaped the override because SVG does not trigger the text-cursor default. Layering broad `pointer-events-none` hacks over the inner content was not a viable fix because it would break click-through to the popup. The real fix was to make the **visible `BitCard` root itself the drag owner** and give that surface the correct cursor + stacking contract so the visible surface, the hit area, and the drag affordance are one and the same element.
