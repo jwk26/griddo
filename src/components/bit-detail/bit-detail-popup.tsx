@@ -453,7 +453,7 @@ export function BitDetailPopup() {
                       chunks={chunks}
                       bitId={bit.id}
                     />
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-2">
                       {bit.deadline ? (
                         <div
                           className={cn(
@@ -484,7 +484,7 @@ export function BitDetailPopup() {
                           className="flex items-center gap-3 pt-1 pb-5"
                         >
                           <Calendar className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/70" />
-                          <span className="text-xs font-medium text-muted-foreground/80">
+                          <span className="text-sm font-medium text-muted-foreground/80">
                             {format(
                               new Date(parentNode.deadline),
                               new Date(parentNode.deadline).getFullYear() ===
