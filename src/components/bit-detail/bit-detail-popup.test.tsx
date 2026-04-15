@@ -103,6 +103,13 @@ vi.mock("@/components/ui/scroll-area", () => ({
   ScrollArea: MockDiv,
 }));
 
+vi.mock("@/components/ui/tooltip", () => ({
+  TooltipProvider: MockFragment,
+  Tooltip: MockFragment,
+  TooltipTrigger: MockFragment,
+  TooltipContent: MockDiv,
+}));
+
 const { BitDetailPopup } = await import("@/components/bit-detail/bit-detail-popup");
 
 function createBit(overrides: Partial<Bit> = {}): Bit {
@@ -286,7 +293,7 @@ describe("BitDetailPopup", () => {
     render(<BitDetailPopup />);
 
     expect(screen.getByText("Apr 15")).toBeInTheDocument();
-    expect(screen.getByTitle("Child deadline cannot exceed this")).toBeInTheDocument();
+    expect(screen.getByTestId("parent-deadline")).toBeInTheDocument();
   });
 
   it("hides the parent deadline row when the parent node has no deadline", () => {
@@ -294,7 +301,7 @@ describe("BitDetailPopup", () => {
 
     render(<BitDetailPopup />);
 
-    expect(screen.queryByTitle("Child deadline cannot exceed this")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("parent-deadline")).not.toBeInTheDocument();
   });
 
   it("surfaces a deadline conflict modal and can update the parent deadline", async () => {

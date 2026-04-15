@@ -35,6 +35,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { DeadlineConflictModal } from "@/components/shared/deadline-conflict-modal";
 import { useBitDetailActions } from "@/hooks/use-bit-detail-actions";
 import { useBitDetail } from "@/hooks/use-bit-detail";
@@ -479,25 +485,34 @@ export function BitDetailPopup() {
                         <div className="pb-5" />
                       ) : null}
                       {parentNode?.deadline != null ? (
-                        <div
-                          title="Child deadline cannot exceed this"
-                          className="flex items-center gap-3 pt-1 pb-5"
-                        >
-                          <Calendar className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/70" />
-                          <span className="text-sm font-medium text-muted-foreground/80">
-                            {format(
-                              new Date(parentNode.deadline),
-                              new Date(parentNode.deadline).getFullYear() ===
-                                new Date().getFullYear()
-                                ? parentNode.deadlineAllDay
-                                  ? "MMM d"
-                                  : "MMM d, h:mm a"
-                                : parentNode.deadlineAllDay
-                                  ? "MMM d, yyyy"
-                                  : "MMM d, yyyy, h:mm a",
-                            )}
-                          </span>
-                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div
+                                data-testid="parent-deadline"
+                                className="flex items-center gap-3 pt-1 pb-5"
+                              >
+                                <Calendar className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/70" />
+                                <span className="text-sm font-medium text-muted-foreground/80">
+                                  {format(
+                                    new Date(parentNode.deadline),
+                                    new Date(parentNode.deadline).getFullYear() ===
+                                      new Date().getFullYear()
+                                      ? parentNode.deadlineAllDay
+                                        ? "MMM d"
+                                        : "MMM d, h:mm a"
+                                      : parentNode.deadlineAllDay
+                                        ? "MMM d, yyyy"
+                                        : "MMM d, yyyy, h:mm a",
+                                  )}
+                                </span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Bit deadline cannot exceed node deadline
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       ) : null}
                     </div>
                   </div>
