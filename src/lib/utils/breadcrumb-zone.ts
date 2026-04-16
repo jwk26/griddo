@@ -79,3 +79,16 @@ export function getStaticBlockedCells(): Set<string> {
 
   return blocked;
 }
+
+/**
+ * Returns items whose grid position falls inside the blocked zone,
+ * sorted in row-major order (ascending y, then x) for deterministic processing.
+ */
+export function findItemsInBlockedZone<T extends { x: number; y: number }>(
+  items: T[],
+  blocked: Set<string>,
+): T[] {
+  return [...items]
+    .filter((item) => isCellBlocked(item.x, item.y, blocked))
+    .sort((a, b) => a.y - b.y || a.x - b.x);
+}

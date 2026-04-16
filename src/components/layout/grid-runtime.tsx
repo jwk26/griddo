@@ -26,6 +26,7 @@ import { useDnd } from "@/hooks/use-dnd";
 import { useGridActions } from "@/hooks/use-grid-actions";
 import { useNode } from "@/hooks/use-node";
 import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
+import { getDataStore } from "@/lib/db/datastore";
 import { gridCollisionDetection } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
 import {
@@ -95,6 +96,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | undefined>(undefined);
   const clusterRef = useRef<HTMLDivElement>(null);
   const gridContainerRef = useRef<HTMLDivElement>(null);
+  const migrationSessionRef = useRef<Set<string>>(new Set());
   const setBlockedCells = useBreadcrumbZoneStore((state) => state.setBlockedCells);
   const blockedCells = useBreadcrumbZoneStore((state) => state.blockedCells);
 
@@ -121,6 +123,14 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
       });
 
       setBlockedCells(cells);
+
+      const sessionKey = nodeId ?? "__root__";
+      if (cells.size > 0 && !migrationSessionRef.current.has(sessionKey)) {
+        migrationSessionRef.current.add(sessionKey);
+        void getDataStore().then((store) =>
+          store.runBreadcrumbZoneMigration(nodeId, cells),
+        );
+      }
     }
 
     const ro = new ResizeObserver(updateZone);
@@ -134,7 +144,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
       // clear on unmount — prevents stale state when leaving the grid layout entirely
       // (intra-grid navigations re-trigger ResizeObserver; cleanup only fires on full layout exit)
     };
-  }, [setBlockedCells]);
+  }, [setBlockedCells, nodeId]);
 
   function openAdd(context: PlacementContext) {
     setPlacementContext(context);

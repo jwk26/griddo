@@ -10,6 +10,8 @@ import { GridRuntime, useDeleteFlow } from "./grid-runtime";
 const useParamsMock = vi.hoisted(() => vi.fn());
 const useNodeMock = vi.hoisted(() => vi.fn());
 const useDndMock = vi.hoisted(() => vi.fn());
+const getDataStoreMock = vi.hoisted(() => vi.fn());
+const runBreadcrumbZoneMigrationMock = vi.hoisted(() => vi.fn());
 const getGridOccupancyMock = vi.hoisted(() => vi.fn());
 const createNodeMock = vi.hoisted(() => vi.fn());
 const createBitMock = vi.hoisted(() => vi.fn());
@@ -45,6 +47,10 @@ vi.mock("@/hooks/use-grid-actions", () => ({
     softDeleteNode: softDeleteNodeMock,
     softDeleteBit: softDeleteBitMock,
   }),
+}));
+
+vi.mock("@/lib/db/datastore", () => ({
+  getDataStore: getDataStoreMock,
 }));
 
 vi.mock("@/lib/utils/bfs", () => ({
@@ -241,6 +247,10 @@ function createRect(left: number, top: number, width: number, height: number): D
 describe("GridRuntime", () => {
   beforeEach(() => {
     useBreadcrumbZoneStore.setState({ blockedCells: new Set() });
+    getDataStoreMock.mockResolvedValue({
+      runBreadcrumbZoneMigration: runBreadcrumbZoneMigrationMock,
+    });
+    runBreadcrumbZoneMigrationMock.mockResolvedValue({ relocated: 0 });
     createNodeDialogSubmission.current = {
       title: "  New node  ",
       icon: "Folder",
@@ -383,6 +393,45 @@ describe("GridRuntime", () => {
     await waitFor(() => {
       expect(softDeleteBitMock).toHaveBeenCalledWith("bit-1");
     });
+  });
+
+  it("runs breadcrumb migration once per parent and refreshes the parent id on navigation", async () => {
+    useParamsMock.mockReturnValue({});
+    useNodeMock.mockReturnValue(null);
+
+    const { rerender } = render(
+      <GridRuntime>
+        <RuntimeProbe />
+      </GridRuntime>,
+    );
+
+    await waitFor(() => {
+      expect(runBreadcrumbZoneMigrationMock).toHaveBeenCalledTimes(1);
+    });
+    expect(runBreadcrumbZoneMigrationMock).toHaveBeenNthCalledWith(
+      1,
+      null,
+      new Set(["0,0"]),
+    );
+
+    const parentNode = createNode({ id: "parent-node", level: 0 });
+    useParamsMock.mockReturnValue({ nodeId: parentNode.id });
+    useNodeMock.mockReturnValue(parentNode);
+
+    rerender(
+      <GridRuntime>
+        <RuntimeProbe />
+      </GridRuntime>,
+    );
+
+    await waitFor(() => {
+      expect(runBreadcrumbZoneMigrationMock).toHaveBeenCalledTimes(2);
+    });
+    expect(runBreadcrumbZoneMigrationMock).toHaveBeenNthCalledWith(
+      2,
+      parentNode.id,
+      new Set(["0,0"]),
+    );
   });
 
   it("uses chooser and cell placement when creating a child node inside a non-leaf grid", async () => {

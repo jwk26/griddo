@@ -40,7 +40,7 @@ Summary: Ideation is visual exploration. The output is a throwaway prototype, no
 
 Deliverables:
 
-`docs/PRD.md`
+`docs/prd.md`
 
 Role:
 
@@ -158,13 +158,18 @@ The flow ownership review is the strongest quality gate in the workflow. It prev
 
 Deliverables:
 
-Source code, tests, commits
+Source code, tests, issue-doc updates, commits, checkpoints
 
-Skill: `/execute-next-phase`
+Skills: `/execute-next-phase` (kickoff) → `/execute-task` (execution)
 
 Role:
 
 Translate the finalized execution plan into code using CCG orchestration:
+
+- **`/execute-next-phase`:** phase kickoff wrapper — reads the plan, verifies branch/base state, and hands off.
+- **`/execute-task`:** primary execution skill — batches tasks, prepares prompts, orchestrates providers, runs verification, updates the issue doc, commits implementation, and presents checkpoints.
+
+Each batch is classified before implementation (`logic-heavy` / `mixed` / `ui-heavy`). Classification determines Gemini authority, prompt structure, and whether optional subagent enhancement applies.
 
 - **Claude:** orchestrates — reads the plan, writes prompts, reviews output, runs verification.
 - **Codex:** writes all implementation code.
@@ -172,13 +177,17 @@ Translate the finalized execution plan into code using CCG orchestration:
 
 Claude does not originate implementation code — but refines and fixes quality issues in Codex's output during integration (naming, dead code, unnecessary abstractions, project conventions).
 
+`/execute-task` may also add classification-driven quality layers:
+- **Behavior-heavy batches:** parallel independent test authoring
+- **High blast-radius / weak-coverage batches:** optional reviewer subagents before checkpoint
+
 **User-visible verification** happens during this stage. When a task is tagged `Visibility: User-facing`, its observable acceptance criteria are verified per task or per small flow cluster — confirming that the change actually works as intended.
 
 Key Questions:
 
 Does the code match the plan's per-file specifications?
 Do user-facing acceptance criteria pass when observed in the running app?
-Does the build pass?
+Does the full verification gate pass?
 
 Summary: Implementation translates defined tasks into code. No new product decisions are made here — except when a phase involves reference-inspired redesign, which requires structured design decisions with user approval before code is written (see Reference-Inspired Redesign section).
 
@@ -186,29 +195,29 @@ Important Note:
 
 User-visible verification is not a standalone process. It happens close to implementation time and is confirmed (not duplicated) during closing.
 
-> Branch verification, checkpoint format, and build gates are enforced by the `/execute-next-phase` and `/closing-phase` skills.
+> Branch/base verification is enforced by `/execute-next-phase`. Prompt preview, provider routing, per-batch verification, checkpoint format, issue tracking, and implementation commits are enforced by `/execute-task`. Final close-out gates are enforced by `/closing-phase`.
 
 ### 7. Closing (per phase)
 
 Deliverables:
 
-`docs/issues/Issues_Phase_N.md`
-Updated `docs/EXECUTION_PLAN.md` (task status + phase notes)
+Updated `docs/issues/Issues_Phase_N.md` (if changed during close-out)
+Updated `docs/EXECUTION_PLAN.md` (phase notes; task statuses if not already committed)
 Pull request to main
 
 Skill: `/closing-phase`
 
 Role:
 
-Final gate before integration. Verifies three pillars:
+Final gate before integration. First performs a scope audit if dirty files remain, forcing mixed-scope work into separate commits before close-out. Then verifies three pillars:
 
-1. **Automated checks** pass (lint, typecheck, build).
+1. **Automated checks** pass (test, lint, typecheck, build).
 2. **User-visible verification** was completed for applicable tasks (confirmation, not duplication).
 3. **Architecture conformance review** satisfied — tiered:
    - Blocking violations must be fixed or the standard explicitly amended.
    - Advisory violations are surfaced, acknowledged, and recorded.
 
-Then: documents issues and learnings, marks tasks complete in EXECUTION_PLAN.md, commits docs, pushes, creates PR.
+Then: finalizes any remaining close-out issue updates and phase learnings, updates `EXECUTION_PLAN.md` as needed, makes the docs-only closing commit, pushes, and creates the PR.
 
 Key Questions:
 
@@ -292,7 +301,7 @@ The workflow distinguishes three failure modes. Each is caught by a different me
 | Failure Mode             | Mechanism                       | Stage                 | Skill Step                    |
 | ------------------------ | ------------------------------- | --------------------- | ----------------------------- |
 | Plan Omission            | Flow Ownership Review           | 5. Execution Planning | writing-documents 5b          |
-| False Completion         | User-Visible Verification       | 6. Implementation     | execute-next-phase (per task) |
+| False Completion         | User-Visible Verification       | 6. Implementation     | execute-task (per batch/task), confirmed by closing-phase 2.5 |
 | Implementation Deviation | Architecture Conformance Review | 7. Closing            | closing-phase 2.75            |
 
 **Plan Omission:** A user-visible flow exists in PRD/SPEC but no task owns it clearly enough. Caught by the reviewer subagent tracing flows end-to-end.
@@ -415,13 +424,16 @@ During active-phase execution:
 
 - **Do not** mark a task `[x]` immediately after implementation, even if internal verification (build, test, typecheck) passes
 - **Do not** mark a batch or phase complete based only on code completion or internal verification
-- Before marking `[x]`, stop at the batch checkpoint and present:
+- Before marking `[x]`, stop at the batch checkpoint and present the structured checkpoint contract:
   - What was implemented
   - Key changes made
-  - Verification results (tsc, test, build)
+  - Verification results (the full gate from `CLAUDE.md`, e.g. test, lint, typecheck, build)
   - Review findings (Gemini, self-review, or other)
+  - Visible now / Review now / Planned for later / Unowned items
 - Wait for explicit user approval
 - Only after that approval may the relevant task status be updated to `[x]`
+
+The checkpoint is a structured contract, not an abbreviated progress summary.
 
 During a batch, in-progress tasks may be described as "implemented" or "awaiting review" — but the execution plan status stays `[ ]` until the user approves.
 
@@ -512,7 +524,7 @@ Define what to build and how it should behave.
 
 | Document                | Stage                     | Written By | Required |
 | ----------------------- | ------------------------- | ---------- | -------- |
-| `docs/PRD.md`           | 2. Product Definition     | User       | Always   |
+| `docs/prd.md`           | 2. Product Definition     | User       | Always   |
 | `docs/SCHEMA.md`        | 4. System Rule Definition | Claude     | Always   |
 | `docs/SPEC.md`          | 4. System Rule Definition | Claude     | Always   |
 | `docs/DESIGN_TOKENS.md` | 3 or 4 (track-dependent)  | Claude     | Always   |
@@ -535,7 +547,7 @@ Drive implementation and phase completion.
 | Document                        | Stage                 | Role                                    |
 | ------------------------------- | --------------------- | --------------------------------------- |
 | `docs/EXECUTION_PLAN.md`        | 5. Execution Planning | Phased task specs with geometric values |
-| `docs/issues/Issues_Phase_N.md` | 7. Closing            | Issues and learnings per phase          |
+| `docs/issues/Issues_Phase_N.md` | 6–7. Implementation → Closing | Live phase execution record — captures issues during execution, finalized at close |
 
 ### Standard & Review Documents
 
@@ -564,7 +576,8 @@ Non-authoritative. Used for visual review, not as source of truth.
 | `/design-archaeology` | 3. Design Extraction         | Reference exists; "inherit design", "match reference" |
 | `/reference-redesign` | 6. Implementation (pre-code) | "redesign toward", "match this mockup", reference-driven surface redesign |
 | `/writing-documents`  | 4–5. System Rules → Planning | "PRD is ready", "generate docs", "create spec"        |
-| `/execute-next-phase` | 6. Implementation            | "start phase N", "execute phase"                      |
+| `/execute-next-phase` | 6. Implementation kickoff    | "start phase N", "execute phase"                      |
+| `/execute-task`       | 6. Implementation execution  | "execute tasks", "run batch", task-level or ad-hoc implementation |
 | `/closing-phase`      | 7. Closing                   | "phase done", "close phase"                           |
 
 Stages 1–2 are user-driven (no skill).

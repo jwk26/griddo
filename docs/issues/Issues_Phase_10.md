@@ -24,7 +24,7 @@ Dependency order at phase open: 58 → 54 → 56 → 57 → 55. Task 59 did not 
 | 3b | Task 57 | Implemented |
 | 4 | Task 55 | Implemented |
 | 5 | Task 59 | Implemented |
-| 6 | Task 59b | Pending |
+| 6 | Task 59b | In Progress |
 
 ### Deviations
 - **Batch 3 split into 3a (Task 56) and 3b (Task 57).** Task 56 went through enough revision rounds to justify its own checkpoint; the split was handled implicitly during execution rather than being surfaced to the user at the time. Recorded retroactively.
@@ -151,3 +151,9 @@ Dependency order at phase open: 58 → 54 → 56 → 57 → 55. Task 59 did not 
 - **Context:** Cross-model review (Entry 8 in `docs/brainstorming/execute-task/opinion-codex.md`) identified that the one-time migration sub-task adds significant implementation risk (per-parent markers, atomic writes, deterministic row-major processing, failure handling) while the actual user-facing value of Task 59 is preventing future placement conflicts. Migration relocates items that already work fine under `pointer-events-none` overlay. A global `breadcrumbZoneMigrationDone` flag is unsound when the zone is derived from rendered footprint.
 - **Decision:** Task 59 = forward-only protection only (new placements, drag/drop, click-to-add, cross-parent landing). Migration removed and tracked as Task 59b (per-parent deferred remediation). Task 59b added to Phase 10 in EXECUTION_PLAN.md immediately — not deferred as untracked work.
 - **Rationale:** Implementation risk drops significantly; file surface shrinks; test matrix becomes clearer; Task 59 stays focused on actual user-facing value. Cleanup remains tracked work.
+
+### ED-4: `docs/WORKFLOW.md` updated as out-of-plan documentation change (Batch 6)
+- **Batch:** 6 (Task 59b)
+- **Context:** Codex updated `docs/WORKFLOW.md` as part of its implementation pass. The changes update workflow stage descriptions to reference `/execute-task` alongside `/execute-next-phase`, clarify the issue-doc lifecycle (live during execution, not only at close), update the skill-trigger table, fix a casing inconsistency (`docs/PRD.md` → `docs/prd.md`), and align the verification gate description with the full `test + build` gate. No code was changed.
+- **Decision:** Accept the documentation changes. They are accurate, consistent with how Phase 10 was actually executed, and improve the workflow doc's alignment with current skill behaviour.
+- **Rationale:** The changes are additive documentation corrections with no behavioural side-effects.
