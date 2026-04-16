@@ -60,7 +60,7 @@ export function Breadcrumbs({
 
   if (nodeId === null) {
     return (
-      <div className="flex flex-col items-start gap-1">
+      <div className="flex flex-col items-start gap-1.5">
         <nav aria-label="Breadcrumb" className={navClassName}>
           <BreadcrumbSegmentButton
             dragActiveItem={dragActiveItem}
@@ -77,7 +77,7 @@ export function Breadcrumbs({
   const ancestors = currentNode ? segments.slice(0, -1) : [];
 
   return (
-    <div className="flex flex-col items-start gap-1">
+    <div className="flex flex-col items-start gap-1.5">
       <nav aria-label="Breadcrumb" className={navClassName}>
         <BreadcrumbSegmentButton
           dragActiveItem={dragActiveItem}

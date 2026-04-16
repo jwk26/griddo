@@ -74,7 +74,7 @@ describe("Breadcrumbs", () => {
       "max-w-[calc(100%-2rem)]",
       "overflow-x-auto",
     );
-    expect(wrapper).toHaveClass("flex", "flex-col", "items-start", "gap-1");
+    expect(wrapper).toHaveClass("flex", "flex-col", "items-start", "gap-1.5");
     expect(homeButton).toHaveClass(
       "rounded-md",
       "px-1.5",
