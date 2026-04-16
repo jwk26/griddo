@@ -24,10 +24,12 @@ Dependency order at phase open: 58 → 54 → 56 → 57 → 55. Task 59 did not 
 | 3b | Task 57 | Implemented |
 | 4 | Task 55 | Implemented |
 | 5 | Task 59 | Pending |
+| 6 | Task 59b | Pending |
 
 ### Deviations
 - **Batch 3 split into 3a (Task 56) and 3b (Task 57).** Task 56 went through enough revision rounds to justify its own checkpoint; the split was handled implicitly during execution rather than being surfaced to the user at the time. Recorded retroactively.
 - **Task 59 added from mi-5 promotion.** Not in the original proposal; slotted after Batch 4 per dependency on Tasks 54 and 55.
+- **Task 59 scope narrowed; Task 59b created.** Migration removed from Task 59 (forward-only protection). Legacy overlap cleanup tracked as Task 59b. See ED-3.
 
 ---
 
@@ -143,3 +145,9 @@ Dependency order at phase open: 58 → 54 → 56 → 57 → 55. Task 59 did not 
 - **Context:** Promoting mi-5 to a new task required "Task 59", but Phase 11 already had a Task 59 (Calendar Sidebar + Header Redesign). User chose to renumber Phase 11 and Phase 12 downstream rather than append or sub-number.
 - **Decision:** Insert new Task 59 (Dynamic Protected Breadcrumb Zone) at the end of Phase 10. Renumber Phase 11 Tasks 59–66 → 60–67. Renumber Phase 12 Task 67 → 68. All internal dependency references in Phase 11 are updated to the new numbers. Phase 11 note that refers to Task 62 (Parent Node Selector) is updated to Task 63.
 - **Rationale:** Monotonic phase ordering is preserved. The single downstream cost is a renumbering delta contained in `docs/EXECUTION_PLAN.md` (no code references to these task numbers exist).
+
+### ED-3: Task 59 narrowed to forward-only protection; migration split to Task 59b
+- **Batch:** 5 (Task 59, pre-implementation)
+- **Context:** Cross-model review (Entry 8 in `docs/brainstorming/execute-task/opinion-codex.md`) identified that the one-time migration sub-task adds significant implementation risk (per-parent markers, atomic writes, deterministic row-major processing, failure handling) while the actual user-facing value of Task 59 is preventing future placement conflicts. Migration relocates items that already work fine under `pointer-events-none` overlay. A global `breadcrumbZoneMigrationDone` flag is unsound when the zone is derived from rendered footprint.
+- **Decision:** Task 59 = forward-only protection only (new placements, drag/drop, click-to-add, cross-parent landing). Migration removed and tracked as Task 59b (per-parent deferred remediation). Task 59b added to Phase 10 in EXECUTION_PLAN.md immediately — not deferred as untracked work.
+- **Rationale:** Implementation risk drops significantly; file surface shrinks; test matrix becomes clearer; Task 59 stays focused on actual user-facing value. Cleanup remains tracked work.

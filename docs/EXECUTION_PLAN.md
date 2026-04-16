@@ -1462,7 +1462,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 55: Node Deadline Quick-Edit Surface
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/layout/breadcrumb-deadline.tsx` (create), `src/components/layout/breadcrumbs.tsx` (update), `src/hooks/use-node-actions.ts` (update if needed)
 - **Dependencies:** Task 54, Task 58 (date-first input component)
 - **Actions:**
@@ -1561,7 +1561,7 @@ These apply across all phases:
 
 ### Task 59: Dynamic Protected Breadcrumb Zone
 - **Status:** `[ ]`
-- **Files:** `src/lib/utils/breadcrumb-zone.ts` (create), `src/lib/utils/bfs.ts` (update), `src/hooks/use-grid-actions.ts` (update), `src/hooks/use-dnd.ts` (update), `src/components/layout/grid-runtime.tsx` (update — expose zone via context), `src/lib/db/indexeddb.ts` (update — one-time migration)
+- **Files:** `src/lib/utils/breadcrumb-zone.ts` (create), `src/lib/utils/bfs.ts` (update), `src/hooks/use-grid-actions.ts` (update), `src/hooks/use-dnd.ts` (update), `src/components/layout/grid-runtime.tsx` (update — expose zone via context)
 - **Dependencies:** Task 54, Task 55 (the deadline line contributes to the cluster footprint)
 - **Origin:** `docs/issues/Issues_Phase_10.md` mi-5 — breadcrumb cluster overlaps top-row grid items. Promoted from user-reported issue because the fix requires a new layout rule affecting all placement paths, a one-time migration, and its own acceptance criteria.
 - **Actions:**
@@ -1569,19 +1569,39 @@ These apply across all phases:
   - Create `src/lib/utils/breadcrumb-zone.ts` with pure helpers: `rectToBlockedCells(rect, gridMetrics) → Set<string>`, `isCellBlocked(x, y, blocked) → boolean`, and a hook-free pixel-to-cell projection that can be unit tested
   - **BFS auto-placement exclusion:** `findNearestEmptyCell(occupied, originX, originY)` must treat blocked cells as occupied. Option A (recommended): accept an optional `blocked: Set<string>` parameter and merge with `occupied` at the top of the function. Thread the blocked set through `use-grid-actions.ts` create paths (`createNode`, `createBit`) so auto-placement never lands in the zone
   - **Manual drag-drop rejection:** In `use-dnd.ts` grid-cell drop handler, reject drops onto cells inside the blocked set (no move, optional toast `"Cell reserved by breadcrumb"`). In `gridCollisionDetection`, exclude blocked cells from collision candidates so the drop indicator never highlights them during drag
-  - **Click-to-add rejection:** `AddFlowProvider.openAddAtCell` must skip blocked cells. Either fall back to BFS auto-placement or silently ignore the click with subtle feedback
-  - **One-time migration:** On datastore init (or first access per user), scan existing Nodes/Bits per parent at each level. Any item whose `{x, y}` falls inside the current blocked zone is relocated via BFS to the nearest empty cell outside the zone. Persist a migration flag (`settings.breadcrumbZoneMigrationDone = true`) so it runs exactly once per user. Log relocations in dev mode
+  - **Click-to-add rejection:** `AddFlowProvider.openAddAtCell` must skip blocked cells. Suppress the `+` affordance on blocked cells — do not silently create elsewhere via BFS (silent relocation reads as a bug)
   - **No live reflow on edit:** When the user edits a node/bit title and the breadcrumb visual width changes, existing items **do not reposition**. Only new placements and drag targets respect the updated zone. This prevents disorienting reflow during typing
+  - **Cross-parent landing:** When an item is moved to a different parent (via breadcrumb drop or node drop), BFS placement in the target grid must also respect blocked cells. For target grids that are not currently rendered, use a static conservative estimate (`BREADCRUMB_ZONE_COLS` constant covering top-left cells) rather than DOM measurement
+  - **Scope: forward-only protection.** This task protects new placements only. Existing items that already overlap the breadcrumb zone are not relocated. Legacy overlap cleanup is tracked separately as Task 59b
   - **Breadcrumb width absorption (unchanged from Task 54 fixes):** Overflow is absorbed inside the breadcrumb pill via `max-w` + `whitespace-nowrap` + horizontal scroll. Task 59 does not change the breadcrumb's own width behavior; it only uses the rendered footprint to compute the blocked zone
 - **Acceptance:**
   - At every level (L0/L1/L2/L3), new items created via sidebar `+` or cell-level `+` never land in the breadcrumb footprint
   - BFS auto-placement correctly skips blocked cells at all levels
   - Dragging a bit/node onto a blocked cell is rejected (no move; optional toast)
   - Drop indicator during drag never highlights a blocked cell
-  - On first load after this task lands, existing items inside the current blocked zone are relocated to nearest empty cells (logged to console in dev mode); migration runs exactly once
-  - After migration, existing placements remain stable regardless of subsequent title/deadline edits (no live reflow)
+  - Cross-parent moves (breadcrumb drop, node drop) place items outside the target grid's blocked zone using a static conservative estimate
+  - Existing items that already overlap the breadcrumb zone remain in place (no migration — see Task 59b)
+  - Existing placements remain stable regardless of subsequent title/deadline edits (no live reflow)
   - Zone shape updates when the deadline line (Task 55) appears or disappears, or when the breadcrumb cluster width changes on navigation
   - At L0, the zone covers the Home pill footprint (small); at L3 with long titles, the zone expands to match
+  - `pnpm tsc --noEmit` passes
+  - `pnpm build` passes
+
+### Task 59b: Breadcrumb Zone Legacy Overlap Cleanup
+- **Status:** `[ ]`
+- **Files:** `src/lib/utils/breadcrumb-zone.ts` (update), `src/lib/db/indexeddb.ts` (update), `src/lib/db/datastore.ts` (update if needed)
+- **Dependencies:** Task 59
+- **Origin:** Split from Task 59 scope narrowing — migration removed from Task 59 to reduce implementation risk. See `docs/issues/Issues_Phase_10.md` for the decision record.
+- **Actions:**
+  - **Per-parent deferred remediation:** On first grid view per parent, scan existing Nodes/Bits whose `{x, y}` falls inside the current blocked zone. Relocate via BFS to nearest empty cell outside the zone
+  - **Per-parent migration marker:** Store migration state per parent (not a single global flag). Use durable meta/settings storage. Atomic write of relocated items + marker
+  - **Deterministic processing:** Use combined occupancy across Nodes and Bits. Exclude relocating items from initial occupancy. Process in row-major order. Reserve chosen fallback cells immediately. Fail without setting marker if no legal cell exists
+  - **Dev logging:** Log relocations to console in dev mode
+- **Acceptance:**
+  - On first view of a grid after Task 59b lands, existing items overlapping the breadcrumb zone are relocated to nearest empty cells
+  - Migration runs exactly once per parent (marker persisted)
+  - Relocations are deterministic (same input → same output)
+  - Items already outside the zone are unaffected
   - `pnpm tsc --noEmit` passes
   - `pnpm build` passes
 
