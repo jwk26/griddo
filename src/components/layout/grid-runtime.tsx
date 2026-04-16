@@ -2,7 +2,7 @@
 
 import { DndContext } from "@dnd-kit/core";
 import { useParams } from "next/navigation";
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { CreateBitDialog } from "@/components/grid/create-bit-dialog";
 import { CreateItemChooser } from "@/components/grid/create-item-chooser";
@@ -25,10 +25,17 @@ import { Button } from "@/components/ui/button";
 import { useDnd } from "@/hooks/use-dnd";
 import { useGridActions } from "@/hooks/use-grid-actions";
 import { useNode } from "@/hooks/use-node";
-import { GRID_COLS } from "@/lib/constants";
+import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
 import { gridCollisionDetection } from "@/lib/grid-dnd";
+import { cn } from "@/lib/utils";
+import {
+  isCellBlocked,
+  rectToBlockedCells,
+} from "@/lib/utils/breadcrumb-zone";
 import { hexToHsl } from "@/lib/utils/color";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
+import { isDeadlineAfter } from "@/lib/utils/deadline";
+import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
 import { AddFlowProvider } from "./add-flow-context";
 
 type PlacementContext =
@@ -71,13 +78,14 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
     pendingNodeMove,
     pendingAncestorMove,
     sensors,
-  } = useDnd();
+  } = useDnd(() => useBreadcrumbZoneStore.getState().blockedCells);
   const {
     createBit,
     createNode,
     getGridOccupancy,
     softDeleteBit,
     softDeleteNode,
+    runBreadcrumbZoneMigration,
   } = useGridActions();
   const [placementContext, setPlacementContext] = useState<PlacementContext>({
     mode: "auto",
@@ -86,6 +94,55 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
   const [chooserOpen, setChooserOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null);
   const [error, setError] = useState<string | undefined>(undefined);
+  const clusterRef = useRef<HTMLDivElement>(null);
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+  const migrationSessionRef = useRef<Set<string>>(new Set());
+  const setBlockedCells = useBreadcrumbZoneStore((state) => state.setBlockedCells);
+  const blockedCells = useBreadcrumbZoneStore((state) => state.blockedCells);
+
+  useEffect(() => {
+    const cluster = clusterRef.current;
+    const container = gridContainerRef.current;
+
+    if (!cluster || !container) {
+      return;
+    }
+
+    const clusterElement = cluster;
+    const containerElement = container;
+
+    function updateZone() {
+      const clusterRect = clusterElement.getBoundingClientRect();
+      const containerRect = containerElement.getBoundingClientRect();
+      const cells = rectToBlockedCells({
+        containerRect,
+        clusterRect,
+        cols: GRID_COLS,
+        rows: GRID_ROWS,
+        gap: 8 /* --grid-gap: 0.5rem */,
+      });
+
+      setBlockedCells(cells);
+
+      const sessionKey = nodeId ?? "__root__";
+      if (cells.size > 0 && !migrationSessionRef.current.has(sessionKey)) {
+        migrationSessionRef.current.add(sessionKey);
+        void runBreadcrumbZoneMigration(nodeId, cells);
+      }
+    }
+
+    const ro = new ResizeObserver(updateZone);
+    ro.observe(clusterElement);
+    ro.observe(containerElement);
+    updateZone();
+
+    return () => {
+      ro.disconnect();
+      setBlockedCells(new Set());
+      // clear on unmount — prevents stale state when leaving the grid layout entirely
+      // (intra-grid navigations re-trigger ResizeObserver; cleanup only fires on full layout exit)
+    };
+  }, [setBlockedCells, nodeId]);
 
   function openAdd(context: PlacementContext) {
     setPlacementContext(context);
@@ -117,10 +174,14 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
     title,
     icon,
     colorHex,
+    deadline,
+    deadlineAllDay,
   }: {
     title: string;
     icon: string;
     colorHex: string;
+    deadline: number | null;
+    deadlineAllDay: boolean;
   }) {
     if (nodeId !== null && !node) {
       setError("Unable to find parent node.");
@@ -130,10 +191,20 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
     setError(undefined);
 
     try {
+      if (
+        deadline !== null &&
+        node !== null &&
+        node.deadline !== null &&
+        isDeadlineAfter(deadline, deadlineAllDay, node.deadline, node.deadlineAllDay)
+      ) {
+        setError("Node deadline cannot exceed parent deadline.");
+        return;
+      }
+
       const occupied = await getGridOccupancy(nodeId);
       const originX = placementContext.mode === "auto" ? 2 : placementContext.x;
       const originY = placementContext.mode === "auto" ? 2 : placementContext.y;
-      const cell = findNearestEmptyCell(occupied, originX, originY);
+      const cell = findNearestEmptyCell(occupied, originX, originY, blockedCells);
 
       if (cell === null) {
         if (nodeId === null) {
@@ -150,8 +221,8 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
         title: title.trim(),
         color: hexToHsl(colorHex),
         icon,
-        deadline: null,
-        deadlineAllDay: false,
+        deadline,
+        deadlineAllDay,
         parentId: nodeId,
         level: nodeId === null ? 0 : displayLevel,
         x: cell.x,
@@ -194,7 +265,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
       const originX =
         placementContext.mode === "auto" ? GRID_COLS - 3 : placementContext.x;
       const originY = placementContext.mode === "auto" ? 2 : placementContext.y;
-      const cell = findNearestEmptyCell(occupied, originX, originY);
+      const cell = findNearestEmptyCell(occupied, originX, originY, blockedCells);
 
       if (cell === null) {
         setOpenDialogType(null);
@@ -262,124 +333,140 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
         <div className="flex h-screen overflow-hidden bg-background">
           <Sidebar onAddClick={() => openAdd({ mode: "auto" })} dragActiveItem={activeItem} />
           <main
-            className="relative ml-12 flex flex-1 flex-col overflow-hidden"
+            className="relative ml-12 flex-1 overflow-hidden"
             data-level={displayLevel}
             data-testid="display-level"
           >
-            <Breadcrumbs nodeId={nodeId} dragActiveItem={activeItem} />
+            <div className="pointer-events-none absolute top-3 left-3 right-3 z-30 flex flex-col items-start gap-1.5">
+              <div className="pointer-events-none w-full">
+                <Breadcrumbs ref={clusterRef} nodeId={nodeId} dragActiveItem={activeItem} />
+              </div>
+            </div>
             <AddFlowProvider
-              openAddAtCell={(x, y) => openAdd({ mode: "cell", x, y })}
+              openAddAtCell={(x, y) => {
+                if (!isCellBlocked(x, y, blockedCells)) {
+                  openAdd({ mode: "cell", x, y });
+                }
+              }}
             >
-              <div className="relative min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+              <div
+                ref={gridContainerRef}
+                className={cn(
+                  "h-full overflow-x-hidden",
+                  activeItem ? "overflow-hidden" : "overflow-y-auto",
+                )}
+                data-dragging={activeItem ? "true" : undefined}
+              >
                 {children}
               </div>
             </AddFlowProvider>
-          <EditModeOverlay />
-          <CreateItemChooser
-            onChooseBit={() => setOpenDialogType("bit")}
-            onChooseNode={() => setOpenDialogType("node")}
-            onOpenChange={(open) => {
-              if (!open) {
-                setError(undefined);
-              }
+            <EditModeOverlay />
+            <CreateItemChooser
+              onChooseBit={() => setOpenDialogType("bit")}
+              onChooseNode={() => setOpenDialogType("node")}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setError(undefined);
+                }
 
-              setChooserOpen(open);
-            }}
-            open={chooserOpen}
-          />
-          <CreateNodeDialog
-            error={openDialogType === "node" ? error : undefined}
-            onOpenChange={(open) => handleDialogOpenChange(open, "node")}
-            onSubmit={handleNodeSubmit}
-            open={openDialogType === "node"}
-          />
-          <CreateBitDialog
-            error={openDialogType === "bit" ? error : undefined}
-            onOpenChange={(open) => handleDialogOpenChange(open, "bit")}
-            onSubmit={handleBitSubmit}
-            open={openDialogType === "bit"}
-          />
-          <DeleteConfirmDialog
-            onCancel={() => setPendingDelete(null)}
-            onConfirm={handleDeleteConfirm}
-            pendingDelete={pendingDelete}
-          />
-          <Dialog
-            open={pendingNodeMove !== null}
-            onOpenChange={(open) => {
-              if (!open) {
-                handleNodeMoveCancel();
-              }
-            }}
-          >
-            <DialogContent showCloseButton={false}>
-              <DialogHeader>
-                <DialogTitle>
+                setChooserOpen(open);
+              }}
+              open={chooserOpen}
+            />
+            <CreateNodeDialog
+              error={openDialogType === "node" ? error : undefined}
+              level={displayLevel}
+              onOpenChange={(open) => handleDialogOpenChange(open, "node")}
+              onSubmit={handleNodeSubmit}
+              open={openDialogType === "node"}
+            />
+            <CreateBitDialog
+              error={openDialogType === "bit" ? error : undefined}
+              onOpenChange={(open) => handleDialogOpenChange(open, "bit")}
+              onSubmit={handleBitSubmit}
+              open={openDialogType === "bit"}
+            />
+            <DeleteConfirmDialog
+              onCancel={() => setPendingDelete(null)}
+              onConfirm={handleDeleteConfirm}
+              pendingDelete={pendingDelete}
+            />
+            <Dialog
+              open={pendingNodeMove !== null}
+              onOpenChange={(open) => {
+                if (!open) {
+                  handleNodeMoveCancel();
+                }
+              }}
+            >
+              <DialogContent showCloseButton={false}>
+                <DialogHeader>
+                  <DialogTitle>
+                    {pendingNodeMove
+                      ? `Move into '${pendingNodeMove.targetNodeTitle}'?`
+                      : "Move item?"}
+                  </DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground">
                   {pendingNodeMove
-                    ? `Move into '${pendingNodeMove.targetNodeTitle}'?`
-                    : "Move item?"}
-                </DialogTitle>
-              </DialogHeader>
-              <p className="text-sm text-muted-foreground">
-                {pendingNodeMove
-                  ? `'${pendingNodeMove.itemTitle}' will be moved into this node.`
-                  : ""}
-              </p>
-              <DialogFooter>
-                <Button
-                  onClick={handleNodeMoveCancel}
-                  type="button"
-                  variant="outline"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => void handleNodeMoveConfirm()}
-                  type="button"
-                >
-                  Move
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          <Dialog
-            open={pendingAncestorMove !== null}
-            onOpenChange={(open) => {
-              if (!open) {
-                handleAncestorMoveCancel();
-              }
-            }}
-          >
-            <DialogContent showCloseButton={false}>
-              <DialogHeader>
-                <DialogTitle>
+                    ? `'${pendingNodeMove.itemTitle}' will be moved into this node.`
+                    : ""}
+                </p>
+                <DialogFooter>
+                  <Button
+                    onClick={handleNodeMoveCancel}
+                    type="button"
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => void handleNodeMoveConfirm()}
+                    type="button"
+                  >
+                    Move
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <Dialog
+              open={pendingAncestorMove !== null}
+              onOpenChange={(open) => {
+                if (!open) {
+                  handleAncestorMoveCancel();
+                }
+              }}
+            >
+              <DialogContent showCloseButton={false}>
+                <DialogHeader>
+                  <DialogTitle>
+                    {pendingAncestorMove
+                      ? `Move to '${pendingAncestorMove.targetNodeTitle}'?`
+                      : "Move item?"}
+                  </DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground">
                   {pendingAncestorMove
-                    ? `Move to '${pendingAncestorMove.targetNodeTitle}'?`
-                    : "Move item?"}
-                </DialogTitle>
-              </DialogHeader>
-              <p className="text-sm text-muted-foreground">
-                {pendingAncestorMove
-                  ? `'${pendingAncestorMove.itemTitle}' will be moved to this location.`
-                  : ""}
-              </p>
-              <DialogFooter>
-                <Button
-                  onClick={handleAncestorMoveCancel}
-                  type="button"
-                  variant="outline"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => void handleAncestorMoveConfirm()}
-                  type="button"
-                >
-                  Move
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                    ? `'${pendingAncestorMove.itemTitle}' will be moved to this location.`
+                    : ""}
+                </p>
+                <DialogFooter>
+                  <Button
+                    onClick={handleAncestorMoveCancel}
+                    type="button"
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => void handleAncestorMoveConfirm()}
+                    type="button"
+                  >
+                    Move
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
         </main>
       </div>
       </DndContext>

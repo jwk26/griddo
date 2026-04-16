@@ -2,6 +2,7 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useId, useRef, useState } from "react";
+import { DateFirstDeadlinePicker } from "@/components/shared/date-first-deadline-picker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,17 +18,21 @@ import { DEFAULT_ICON, NODE_ICON_MAP, NODE_ICON_NAMES } from "@/lib/constants/no
 import { cn } from "@/lib/utils";
 
 type CreateNodeDialogProps = {
+  level?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: {
     title: string;
     icon: string;
     colorHex: string;
+    deadline: number | null;
+    deadlineAllDay: boolean;
   }) => Promise<void>;
   error?: string;
 };
 
 export function CreateNodeDialog({
+  level,
   open,
   onOpenChange,
   onSubmit,
@@ -40,6 +45,8 @@ export function CreateNodeDialog({
   const [title, setTitle] = useState("");
   const [icon, setIcon] = useState(DEFAULT_ICON);
   const [colorHex, setColorHex] = useState(getRandomColor());
+  const [deadline, setDeadline] = useState<number | null>(null);
+  const [deadlineAllDay, setDeadlineAllDay] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [titleError, setTitleError] = useState(false);
   const prevOpenRef = useRef(false);
@@ -49,10 +56,14 @@ export function CreateNodeDialog({
       setTitle("");
       setIcon(NODE_ICON_NAMES[Math.floor(Math.random() * NODE_ICON_NAMES.length)] ?? DEFAULT_ICON);
       setColorHex(getRandomColor());
+      setDeadline(null);
+      setDeadlineAllDay(false);
       setIsSubmitting(false);
       setTitleError(false);
     } else if (!open) {
       setTitle("");
+      setDeadline(null);
+      setDeadlineAllDay(false);
       setIsSubmitting(false);
       setTitleError(false);
     }
@@ -76,7 +87,7 @@ export function CreateNodeDialog({
     setIsSubmitting(true);
 
     try {
-      await onSubmit({ title, icon, colorHex });
+      await onSubmit({ title, icon, colorHex, deadline, deadlineAllDay });
     } finally {
       setIsSubmitting(false);
     }
@@ -165,6 +176,23 @@ export function CreateNodeDialog({
               value={colorHex}
             />
           </div>
+
+          {(level ?? 0) >= 1 && (
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-foreground">Deadline</div>
+              <DateFirstDeadlinePicker
+                value={{ deadline, deadlineAllDay }}
+                onChange={(value) => {
+                  setDeadline(value.deadline);
+                  setDeadlineAllDay(value.deadlineAllDay);
+                }}
+                onClear={() => {
+                  setDeadline(null);
+                  setDeadlineAllDay(false);
+                }}
+              />
+            </div>
+          )}
 
           <p role="alert" className="min-h-[1.25rem] text-sm text-destructive">
             {error ?? ""}

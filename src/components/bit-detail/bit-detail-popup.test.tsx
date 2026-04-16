@@ -1,12 +1,14 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { startOfDay, startOfToday } from "date-fns";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Bit, Chunk } from "@/types";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Bit, Chunk, Node } from "@/types";
 
 const closeMock = vi.hoisted(() => vi.fn());
 const useBitDetailMock = vi.hoisted(() => vi.fn());
 const updateBitMock = vi.hoisted(() => vi.fn(async () => undefined));
+const updateNodeMock = vi.hoisted(() => vi.fn(async () => undefined));
 const softDeleteBitMock = vi.hoisted(() => vi.fn(async () => undefined));
 const promoteBitToNodeMock = vi.hoisted(() => vi.fn(async () => undefined));
 
@@ -43,9 +45,32 @@ vi.mock("@/hooks/use-bit-detail", () => ({
 vi.mock("@/hooks/use-bit-detail-actions", () => ({
   useBitDetailActions: () => ({
     updateBit: updateBitMock,
+    updateNode: updateNodeMock,
     softDeleteBit: softDeleteBitMock,
     promoteBitToNode: promoteBitToNodeMock,
   }),
+}));
+
+vi.mock("@/components/shared/deadline-conflict-modal", () => ({
+  DeadlineConflictModal: ({
+    open,
+    onKeepChild,
+    onUpdateParent,
+  }: {
+    open: boolean;
+    onKeepChild: () => void;
+    onUpdateParent: () => void;
+  }) =>
+    open ? (
+      <div data-testid="deadline-conflict-modal">
+        <button aria-label="Cancel change" onClick={onKeepChild} type="button">
+          Cancel change
+        </button>
+        <button aria-label="Update parent" onClick={onUpdateParent} type="button">
+          Update parent
+        </button>
+      </div>
+    ) : null,
 }));
 
 vi.mock("@/components/ui/dropdown-menu", () => ({
@@ -62,9 +87,22 @@ vi.mock("@/components/ui/popover", () => ({
   PopoverContent: MockDiv,
 }));
 
+vi.mock("@/components/ui/calendar", () => ({
+  Calendar: ({
+    onSelect,
+  }: {
+    onSelect?: (date: Date | undefined) => void;
+  }) => (
+    <button onClick={() => onSelect?.(new Date(2026, 3, 13))} type="button">
+      Choose April 13
+    </button>
+  ),
+}));
+
 vi.mock("@/components/ui/scroll-area", () => ({
   ScrollArea: MockDiv,
 }));
+
 
 const { BitDetailPopup } = await import("@/components/bit-detail/bit-detail-popup");
 
@@ -100,11 +138,29 @@ function createChunk(overrides: Partial<Chunk> = {}): Chunk {
   };
 }
 
-function mockBitDetail(bit: Bit, chunks: Chunk[] = []) {
+function createNode(overrides: Partial<Node> = {}): Node {
+  return {
+    id: overrides.id ?? "node-1",
+    title: overrides.title ?? "Parent node",
+    color: overrides.color ?? "hsl(221, 83%, 53%)",
+    icon: overrides.icon ?? "Folder",
+    deadline: overrides.deadline ?? null,
+    deadlineAllDay: overrides.deadlineAllDay ?? false,
+    mtime: overrides.mtime ?? Date.now(),
+    createdAt: overrides.createdAt ?? Date.now(),
+    parentId: overrides.parentId ?? null,
+    level: overrides.level ?? 0,
+    x: overrides.x ?? 0,
+    y: overrides.y ?? 0,
+    deletedAt: overrides.deletedAt ?? null,
+  };
+}
+
+function mockBitDetail(bit: Bit, chunks: Chunk[] = [], parentNode: Node | null = null) {
   useBitDetailMock.mockReturnValue({
     bit,
     chunks,
-    parentNode: null,
+    parentNode,
     isOpen: true,
     close: closeMock,
   });
@@ -113,6 +169,12 @@ function mockBitDetail(bit: Bit, chunks: Chunk[] = []) {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.useRealTimers();
+});
+
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date(2026, 3, 10, 9, 0));
 });
 
 describe("BitDetailPopup", () => {
@@ -174,20 +236,102 @@ describe("BitDetailPopup", () => {
     expect(screen.getAllByText("Untimed step")).toHaveLength(1);
   });
 
-  it("opens deadline editing from the formatted label and escapes without closing the popup", () => {
-    mockBitDetail(createBit({ deadline: new Date(2026, 3, 10, 9, 30).getTime() }));
+  it("applies the Today shortcut as an all-day deadline", async () => {
+    mockBitDetail(createBit());
 
     render(<BitDetailPopup />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Edit deadline date" }));
+    fireEvent.click(screen.getByRole("button", { name: "Today" }));
+    await Promise.resolve();
 
-    const dateInput = screen.getByLabelText("Deadline date");
-    expect(dateInput).toBeInTheDocument();
+    expect(updateBitMock).toHaveBeenCalledWith("bit-1", {
+      deadline: startOfToday().getTime(),
+      deadlineAllDay: true,
+    });
+  });
 
-    fireEvent.keyDown(dateInput, { key: "Escape" });
+  it("keeps the bit deadline urgency styling while omitting the year for current-year dates", () => {
+    mockBitDetail(
+      createBit({
+        deadline: new Date(2026, 3, 16, 9, 30).getTime(),
+        deadlineAllDay: false,
+      }),
+      [],
+      createNode({
+        deadline: new Date(2026, 3, 18).getTime(),
+        deadlineAllDay: true,
+      }),
+    );
 
-    expect(closeMock).not.toHaveBeenCalled();
-    expect(screen.queryByLabelText("Deadline date")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Edit deadline date" })).toBeInTheDocument();
+    render(<BitDetailPopup />);
+
+    const bitDeadline = screen.getByText("Apr 16, 9:30 AM");
+    expect(bitDeadline).toHaveClass("text-sm", "text-destructive");
+    expect(bitDeadline).not.toHaveClass("font-medium");
+
+    const clockIcon = bitDeadline.parentElement?.querySelector("svg");
+    expect(clockIcon).not.toBeNull();
+    expect(clockIcon).toHaveClass("relative", "z-10", "bg-popover", "text-destructive");
+  });
+
+  it("shows the parent deadline date (Calendar icon) even when the bit has no deadline", () => {
+    mockBitDetail(
+      createBit({ deadline: null }),
+      [],
+      createNode({
+        deadline: new Date(2026, 3, 15).getTime(),
+        deadlineAllDay: true,
+      }),
+    );
+
+    render(<BitDetailPopup />);
+
+    expect(screen.getByText("Apr 15")).toBeInTheDocument();
+    expect(screen.getByTestId("parent-deadline")).toBeInTheDocument();
+  });
+
+  it("hides the parent deadline row when the parent node has no deadline", () => {
+    mockBitDetail(createBit(), [], createNode({ deadline: null }));
+
+    render(<BitDetailPopup />);
+
+    expect(screen.queryByTestId("parent-deadline")).not.toBeInTheDocument();
+  });
+
+  it("surfaces a deadline conflict modal and can update the parent deadline", async () => {
+    const parentDeadline = new Date(2026, 3, 12, 9, 30).getTime();
+    const nextDeadline = startOfDay(new Date(2026, 3, 13)).getTime();
+    const conflict = Object.assign(new Error("Deadline conflict"), {
+      name: "DeadlineConflictError",
+    });
+
+    updateBitMock.mockRejectedValueOnce(conflict).mockResolvedValueOnce(undefined);
+    mockBitDetail(
+      createBit({ deadline: new Date(2026, 3, 10, 9, 30).getTime() }),
+      [],
+      createNode({ deadline: parentDeadline }),
+    );
+
+    render(<BitDetailPopup />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Choose April 13" }));
+    });
+
+    expect(screen.getByTestId("deadline-conflict-modal")).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Update parent" }));
+    });
+
+    expect(updateNodeMock).toHaveBeenCalledWith("node-1", {
+      deadline: nextDeadline,
+      deadlineAllDay: true,
+    });
+    expect(updateBitMock).toHaveBeenCalledTimes(2);
+    expect(updateBitMock).toHaveBeenLastCalledWith("bit-1", {
+      deadline: nextDeadline,
+      deadlineAllDay: true,
+    });
   });
 });

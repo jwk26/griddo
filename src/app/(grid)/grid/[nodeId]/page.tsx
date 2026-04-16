@@ -29,6 +29,7 @@ export default function NodeGridPage() {
         parentId={nodeId}
       />
       <EditNodeDialog
+        level={editingNode?.level ?? 0}
         node={editingNode}
         onOpenChange={(open) => {
           if (!open) {

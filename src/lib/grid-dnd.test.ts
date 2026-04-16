@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
 import { gridCollisionDetection } from "./grid-dnd";
 
 const closestCenterMock = vi.hoisted(() => vi.fn());
@@ -13,6 +14,7 @@ describe("gridCollisionDetection", () => {
   beforeEach(() => {
     closestCenterMock.mockReset();
     pointerWithinMock.mockReset();
+    useBreadcrumbZoneStore.setState({ blockedCells: new Set() });
   });
 
   it("returns node-drop targets when the pointer is inside one", () => {
@@ -69,5 +71,17 @@ describe("gridCollisionDetection", () => {
 
     expect(gridCollisionDetection(args)).toEqual([breadcrumbTarget]);
     expect(closestCenterMock).not.toHaveBeenCalled();
+  });
+
+  it("excludes blocked grid-cell candidates from closestCenter results", () => {
+    const args = { collisionRect: null } as never;
+    const blockedTarget = { id: "grid-cell:root:0:0" };
+    const availableTarget = { id: "grid-cell:root:1:0" };
+
+    useBreadcrumbZoneStore.setState({ blockedCells: new Set(["0,0"]) });
+    pointerWithinMock.mockReturnValue([]);
+    closestCenterMock.mockReturnValue([blockedTarget, availableTarget]);
+
+    expect(gridCollisionDetection(args)).toEqual([availableTarget]);
   });
 });

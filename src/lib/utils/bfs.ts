@@ -5,6 +5,7 @@ export function findNearestEmptyCell(
   occupied: Set<string>,
   startX: number,
   startY: number,
+  blocked?: Set<string>,
 ): GridPosition | null {
   const visited = new Set<string>();
   const queue: GridPosition[] = [{ x: startX, y: startY }];
@@ -34,7 +35,7 @@ export function findNearestEmptyCell(
 
     visited.add(key);
 
-    if (!occupied.has(key)) {
+    if (!occupied.has(key) && !blocked?.has(key)) {
       return cell;
     }
 

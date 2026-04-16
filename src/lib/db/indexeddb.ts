@@ -16,6 +16,8 @@ import {
   type Node,
 } from "@/lib/db/schema";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
+import { findItemsInBlockedZone } from "@/lib/utils/breadcrumb-zone";
+import { isDeadlineAfter } from "@/lib/utils/deadline";
 
 type MutableNodeInput = Omit<Node, "id" | "createdAt" | "deletedAt" | "mtime">;
 type MutableBitInput = Omit<Bit, "id" | "createdAt" | "deletedAt" | "mtime">;
@@ -38,10 +40,16 @@ type TableLike<T extends { id: string }> = {
   toArray(): Promise<T[]>;
 };
 
+type SettingsTableLike = {
+  get(key: string): Promise<{ key: string; value: unknown } | undefined>;
+  put(value: { key: string; value: unknown }): Promise<unknown>;
+};
+
 type DatabaseLike = {
   nodes: TableLike<Node>;
   bits: TableLike<Bit>;
   chunks: TableLike<Chunk>;
+  settings?: SettingsTableLike;
 };
 
 const ROOT_PARENT_KEY = "__root__";
@@ -75,6 +83,7 @@ export class GridDODatabase extends Dexie {
   nodes!: Table<Node, string>;
   bits!: Table<Bit, string>;
   chunks!: Table<Chunk, string>;
+  settings!: Table<{ key: string; value: unknown }, string>;
 
   constructor() {
     super("GridDO");
@@ -83,6 +92,10 @@ export class GridDODatabase extends Dexie {
       nodes: "id,parentId,deletedAt,[parentId+deletedAt],level",
       bits: "id,parentId,deletedAt,[parentId+deletedAt],status,deadline,[parentId+status]",
       chunks: "id,parentId,[parentId+order],time,status",
+    });
+
+    this.version(2).stores({
+      settings: "key",
     });
   }
 }
@@ -103,6 +116,13 @@ export class IndexedDBDataStore implements DataStore {
     const parsed = createNodeSchema.parse(data);
 
     await this.ensureGridCellAvailable(parsed.parentId, parsed.x, parsed.y);
+    if (parsed.parentId !== null) {
+      await this.assertNodeDeadlineFitsParent(
+        parsed.parentId,
+        parsed.deadline,
+        parsed.deadlineAllDay,
+      );
+    }
 
     const timestamp = Date.now();
     const node = nodeSchema.parse({
@@ -342,7 +362,11 @@ export class IndexedDBDataStore implements DataStore {
     const parsed = createBitSchema.parse(data);
 
     await this.ensureGridCellAvailable(parsed.parentId, parsed.x, parsed.y);
-    await this.assertBitDeadlineFitsParent(parsed.parentId, parsed.deadline);
+    await this.assertBitDeadlineFitsParent(
+      parsed.parentId,
+      parsed.deadline,
+      parsed.deadlineAllDay,
+    );
 
     const timestamp = Date.now();
     const bit = bitSchema.parse({
@@ -380,7 +404,12 @@ export class IndexedDBDataStore implements DataStore {
       });
     }
 
-    await this.assertBitDeadlineFitsParent(next.parentId, next.deadline, existing.id);
+    await this.assertBitDeadlineFitsParent(
+      next.parentId,
+      next.deadline,
+      next.deadlineAllDay,
+      existing.id,
+    );
 
     const timestamp = Date.now();
     const statusChanged = parsed.status !== undefined && parsed.status !== existing.status;
@@ -478,7 +507,7 @@ export class IndexedDBDataStore implements DataStore {
     const parsed = createChunkSchema.parse(data);
     const bit = await this.getRequiredBit(parsed.parentId);
 
-    await this.assertChunkTimeFitsBit(bit, parsed.time);
+    await this.assertChunkTimeFitsBit(bit, parsed.time, parsed.timeAllDay);
 
     const timestamp = Date.now();
     const chunk = chunkSchema.parse({
@@ -506,7 +535,7 @@ export class IndexedDBDataStore implements DataStore {
     const bit = await this.getRequiredBit(existing.parentId);
     const next = { ...existing, ...parsed };
 
-    await this.assertChunkTimeFitsBit(bit, next.time);
+    await this.assertChunkTimeFitsBit(bit, next.time, next.timeAllDay);
 
     const timestamp = Date.now();
     // Detect uncheck: complete → incomplete triggers sticky force-complete rule
@@ -651,11 +680,125 @@ export class IndexedDBDataStore implements DataStore {
     return occupancy;
   }
 
-  async getChildDeadlineConflicts(nodeId: string, deadline: number): Promise<Bit[]> {
+  async getChildDeadlineConflicts(
+    nodeId: string,
+    deadline: number,
+    deadlineAllDay: boolean,
+  ): Promise<Bit[]> {
     const bits = await this.database.bits.toArray();
     return bits.filter(
-      (bit) => bit.parentId === nodeId && bit.deletedAt === null && bit.deadline !== null && bit.deadline > deadline,
+      (bit) =>
+        bit.parentId === nodeId &&
+        bit.deletedAt === null &&
+        bit.deadline !== null &&
+        isDeadlineAfter(bit.deadline, bit.deadlineAllDay, deadline, deadlineAllDay),
     );
+  }
+
+  async runBreadcrumbZoneMigration(
+    parentId: string | null,
+    blockedCells: Set<string>,
+  ): Promise<{ relocated: number }> {
+    if (!this.database.settings) {
+      return { relocated: 0 };
+    }
+
+    const markerKey = `bzMigration_${parentKey(parentId)}`;
+    const existing = await this.database.settings.get(markerKey);
+
+    if (existing !== undefined) {
+      return { relocated: 0 };
+    }
+
+    if (blockedCells.size === 0) {
+      await this.database.settings.put({ key: markerKey, value: true });
+      return { relocated: 0 };
+    }
+
+    const [allNodes, allBits] = await Promise.all([
+      this.database.nodes.toArray(),
+      this.database.bits.toArray(),
+    ]);
+    const activeNodes = allNodes.filter(
+      (node) => node.parentId === parentId && node.deletedAt === null,
+    );
+    const activeBits = allBits.filter(
+      (bit) => bit.parentId === parentId && bit.deletedAt === null,
+    );
+    const overlappingNodes = findItemsInBlockedZone(activeNodes, blockedCells);
+    const overlappingBits = findItemsInBlockedZone(activeBits, blockedCells);
+
+    if (overlappingNodes.length === 0 && overlappingBits.length === 0) {
+      await this.database.settings.put({ key: markerKey, value: true });
+      return { relocated: 0 };
+    }
+
+    const overlappingNodeIds = new Set(overlappingNodes.map((node) => node.id));
+    const overlappingBitIds = new Set(overlappingBits.map((bit) => bit.id));
+    const occupancy = new Set<string>();
+
+    for (const node of activeNodes) {
+      if (!overlappingNodeIds.has(node.id)) {
+        occupancy.add(gridKey(node.x, node.y));
+      }
+    }
+
+    for (const bit of activeBits) {
+      if (!overlappingBitIds.has(bit.id)) {
+        occupancy.add(gridKey(bit.x, bit.y));
+      }
+    }
+
+    type QueueEntry =
+      | { kind: "node"; item: Node }
+      | { kind: "bit"; item: Bit };
+
+    const queue: QueueEntry[] = [
+      ...overlappingNodes.map((item): QueueEntry => ({ kind: "node", item })),
+      ...overlappingBits.map((item): QueueEntry => ({ kind: "bit", item })),
+    ].sort((a, b) => a.item.y - b.item.y || a.item.x - b.item.x);
+
+    const relocatedNodes: Node[] = [];
+    const relocatedBits: Bit[] = [];
+
+    for (const entry of queue) {
+      const cell = findNearestEmptyCell(
+        occupancy,
+        entry.item.x,
+        entry.item.y,
+        blockedCells,
+      );
+
+      if (!cell) {
+        return { relocated: 0 };
+      }
+
+      occupancy.add(gridKey(cell.x, cell.y));
+
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `[bzMigration] ${entry.kind} "${entry.item.title}" (${entry.item.x},${entry.item.y}) → (${cell.x},${cell.y})`,
+        );
+      }
+
+      if (entry.kind === "node") {
+        relocatedNodes.push({ ...entry.item, x: cell.x, y: cell.y });
+      } else {
+        relocatedBits.push({ ...entry.item, x: cell.x, y: cell.y });
+      }
+    }
+
+    await this.write(async () => {
+      if (relocatedNodes.length > 0) {
+        await this.database.nodes.bulkPut(relocatedNodes);
+      }
+      if (relocatedBits.length > 0) {
+        await this.database.bits.bulkPut(relocatedBits);
+      }
+      await this.database.settings!.put({ key: markerKey, value: true });
+    });
+
+    return { relocated: relocatedNodes.length + relocatedBits.length };
   }
 
   async promoteBitToNode(bitId: string): Promise<Node> {
@@ -742,6 +885,7 @@ export class IndexedDBDataStore implements DataStore {
         this.database.nodes,
         this.database.bits,
         this.database.chunks,
+        this.database.settings,
         scope,
       );
     }
@@ -811,19 +955,44 @@ export class IndexedDBDataStore implements DataStore {
   private async assertBitDeadlineFitsParent(
     parentId: string,
     deadline: number | null,
+    deadlineAllDay: boolean,
     bitId?: string,
   ): Promise<void> {
     const parent = await this.getRequiredNode(parentId);
-    if (deadline !== null && parent.deadline !== null && deadline > parent.deadline) {
+    if (
+      deadline !== null &&
+      parent.deadline !== null &&
+      isDeadlineAfter(deadline, deadlineAllDay, parent.deadline, parent.deadlineAllDay)
+    ) {
       throw new DeadlineConflictError("child_exceeds_parent", bitId ? [bitId] : []);
+    }
+  }
+
+  private async assertNodeDeadlineFitsParent(
+    parentId: string,
+    deadline: number | null,
+    deadlineAllDay: boolean,
+  ): Promise<void> {
+    const parent = await this.getRequiredNode(parentId);
+    if (
+      deadline !== null &&
+      parent.deadline !== null &&
+      isDeadlineAfter(deadline, deadlineAllDay, parent.deadline, parent.deadlineAllDay)
+    ) {
+      throw new DeadlineConflictError("child_exceeds_parent", []);
     }
   }
 
   private async assertChunkTimeFitsBit(
     bit: Bit,
     time: number | null,
+    timeAllDay: boolean,
   ): Promise<void> {
-    if (time !== null && bit.deadline !== null && time > bit.deadline) {
+    if (
+      time !== null &&
+      bit.deadline !== null &&
+      isDeadlineAfter(time, timeAllDay, bit.deadline, bit.deadlineAllDay)
+    ) {
       throw new Error("Chunk time cannot exceed parent bit deadline");
     }
   }

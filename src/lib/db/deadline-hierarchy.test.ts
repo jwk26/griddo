@@ -1,3 +1,4 @@
+import { startOfDay } from "date-fns";
 import { describe, expect, it } from "vitest";
 import type { Bit, Chunk, Node } from "@/lib/db/schema";
 import { IndexedDBDataStore, DeadlineConflictError } from "@/lib/db/indexeddb";
@@ -51,6 +52,43 @@ describe("Hook 2 — deadline hierarchy", () => {
     await expect(store.updateBit(bId, { deadline: CHILD_DEADLINE_OVER })).rejects.toBeInstanceOf(DeadlineConflictError);
   });
 
+  it("allows a timed child on the same day when the parent deadline is all-day", async () => {
+    const nId = crypto.randomUUID();
+    const bId = crypto.randomUUID();
+    const parentDeadline = new Date(2026, 3, 12, 0, 0).getTime();
+    const childDeadline = new Date(2026, 3, 12, 18, 0).getTime();
+    const node = makeNode(nId, { deadline: parentDeadline, deadlineAllDay: true });
+    const bit = makeBit(bId, nId);
+    const store = makeStore([node], [bit]);
+
+    await expect(
+      store.updateBit(bId, { deadline: childDeadline, deadlineAllDay: false }),
+    ).resolves.toBeUndefined();
+  });
+
+  it("rejects an all-day chunk when a timed bit deadline is earlier that same day", async () => {
+    const nId = crypto.randomUUID();
+    const bId = crypto.randomUUID();
+    const node = makeNode(nId);
+    const bitDeadline = new Date(2026, 3, 12, 10, 0).getTime();
+    const bit = makeBit(bId, nId, {
+      deadline: bitDeadline,
+      deadlineAllDay: false,
+    });
+    const store = makeStore([node], [bit]);
+
+    await expect(
+      store.createChunk({
+        title: "Chunk",
+        description: "",
+        time: new Date(2026, 3, 12, 0, 0).getTime(),
+        timeAllDay: true,
+        order: 0,
+        parentId: bId,
+      }),
+    ).rejects.toThrow("Chunk time cannot exceed parent bit deadline");
+  });
+
   it("DeadlineConflictError carries conflictType and conflictingIds", async () => {
     const nId = crypto.randomUUID();
     const bId = crypto.randomUUID();
@@ -80,7 +118,7 @@ describe("Hook 2 — deadline hierarchy", () => {
     const store = makeStore([node], [bitOk, bitOver]);
 
     const newShorterDeadline = BASE_TS + 4 * 86_400_000;
-    const conflicts = await store.getChildDeadlineConflicts(nId, newShorterDeadline);
+    const conflicts = await store.getChildDeadlineConflicts(nId, newShorterDeadline, false);
 
     expect(conflicts.map((b) => b.id)).toContain(bOkId);
     expect(conflicts.map((b) => b.id)).toContain(bOverId);
@@ -93,7 +131,42 @@ describe("Hook 2 — deadline hierarchy", () => {
     const bit = makeBit(bId, nId, { deadline: CHILD_DEADLINE_OK });
     const store = makeStore([node], [bit]);
 
-    const conflicts = await store.getChildDeadlineConflicts(nId, BASE_TS + 6 * 86_400_000);
+    const conflicts = await store.getChildDeadlineConflicts(nId, BASE_TS + 6 * 86_400_000, false);
     expect(conflicts).toHaveLength(0);
+  });
+
+  it("treats an all-day node deadline as end-of-day when checking child conflicts", async () => {
+    const nId = crypto.randomUUID();
+    const bId = crypto.randomUUID();
+    const node = makeNode(nId, { deadline: PARENT_DEADLINE });
+    const proposedDeadline = startOfDay(new Date(2026, 3, 12)).getTime();
+    const bit = makeBit(bId, nId, {
+      deadline: new Date(2026, 3, 12, 18, 0).getTime(),
+      deadlineAllDay: false,
+    });
+    const store = makeStore([node], [bit]);
+
+    const conflicts = await store.getChildDeadlineConflicts(nId, proposedDeadline, true);
+
+    expect(conflicts).toHaveLength(0);
+  });
+
+  it("treats an all-day child bit as end-of-day when checking child conflicts", async () => {
+    const nId = crypto.randomUUID();
+    const bId = crypto.randomUUID();
+    const node = makeNode(nId, { deadline: PARENT_DEADLINE });
+    const bit = makeBit(bId, nId, {
+      deadline: startOfDay(new Date(2026, 3, 12)).getTime(),
+      deadlineAllDay: true,
+    });
+    const store = makeStore([node], [bit]);
+
+    const conflicts = await store.getChildDeadlineConflicts(
+      nId,
+      new Date(2026, 3, 12, 10, 0).getTime(),
+      false,
+    );
+
+    expect(conflicts.map((conflict) => conflict.id)).toContain(bId);
   });
 });

@@ -49,7 +49,6 @@
   /* ── Spacing — generates w-*, p-*, m-*, gap-* utilities ── */
   --spacing-sidebar: var(--sidebar-width);
   --spacing-sidebar-collapsed: var(--sidebar-collapsed-width);
-  --spacing-breadcrumb: var(--breadcrumb-height);
 
   /* ── Container — generates max-w-* utilities ── */
   --container-bit-detail: var(--bit-detail-max-width);
@@ -179,7 +178,6 @@
   /* Layout Dimensions */
   --sidebar-width: 14rem;
   --sidebar-collapsed-width: 0rem;
-  --breadcrumb-height: 3rem;
   --bit-detail-max-width: 40rem;
   --bit-detail-max-height: 85vh;
   --search-overlay-width: 36rem;

@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { getDataStore } from "@/lib/db/datastore";
-import type { Node } from "@/types";
+import type { Bit, Node } from "@/types";
 
 export function useNodeActions() {
   const updateNode = useCallback(async (id: string, data: Partial<Node>): Promise<void> => {
@@ -10,5 +10,13 @@ export function useNodeActions() {
     await dataStore.updateNode(id, data);
   }, []);
 
-  return { updateNode };
+  const getChildDeadlineConflicts = useCallback(
+    async (nodeId: string, deadline: number, deadlineAllDay: boolean): Promise<Bit[]> => {
+      const dataStore = await getDataStore();
+      return dataStore.getChildDeadlineConflicts(nodeId, deadline, deadlineAllDay);
+    },
+    [],
+  );
+
+  return { updateNode, getChildDeadlineConflicts };
 }

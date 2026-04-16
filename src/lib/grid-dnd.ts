@@ -1,4 +1,5 @@
 import { closestCenter, pointerWithin, type CollisionDetection } from "@dnd-kit/core";
+import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
 
 export type GridDropData =
   | {
@@ -61,6 +62,7 @@ export function getGridDeleteDropId(): string {
 }
 
 export const gridCollisionDetection: CollisionDetection = (args) => {
+  const blockedCells = useBreadcrumbZoneStore.getState().blockedCells;
   const pointerCandidates = pointerWithin(args).filter(
     (candidate) =>
       typeof candidate.id === "string" &&
@@ -73,9 +75,16 @@ export const gridCollisionDetection: CollisionDetection = (args) => {
     return pointerCandidates;
   }
 
-  return closestCenter(args).filter(
-    (candidate) =>
-      typeof candidate.id === "string" &&
-      candidate.id.startsWith("grid-cell:"),
-  );
+  return closestCenter(args).filter((candidate) => {
+    if (typeof candidate.id !== "string") return false;
+    if (!candidate.id.startsWith("grid-cell:")) return false;
+
+    const parts = candidate.id.split(":");
+    const x = parseInt(parts[parts.length - 2], 10);
+    const y = parseInt(parts[parts.length - 1], 10);
+
+    if (Number.isNaN(x) || Number.isNaN(y)) return true;
+
+    return !blockedCells.has(`${x},${y}`);
+  });
 };
