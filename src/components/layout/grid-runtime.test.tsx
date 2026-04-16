@@ -2,6 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GRID_COLS } from "@/lib/constants";
+import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
 import type { Bit, Node } from "@/types";
 import { useAddFlow } from "./add-flow-context";
 import { GridRuntime, useDeleteFlow } from "./grid-runtime";
@@ -60,11 +61,21 @@ vi.mock("@/components/layout/sidebar", () => ({
   ),
 }));
 
-vi.mock("@/components/layout/breadcrumbs", () => ({
-  Breadcrumbs: ({ nodeId }: { nodeId: string | null }) => (
-    <div data-testid="breadcrumbs">{nodeId ?? "root"}</div>
-  ),
-}));
+vi.mock("@/components/layout/breadcrumbs", async () => {
+  const { forwardRef } = await import("react");
+
+  return {
+    Breadcrumbs: forwardRef<HTMLDivElement, { nodeId: string | null }>(
+      function BreadcrumbsMock({ nodeId }, ref) {
+        return (
+          <div data-testid="breadcrumbs" ref={ref}>
+            {nodeId ?? "root"}
+          </div>
+        );
+      },
+    ),
+  };
+});
 
 vi.mock("@/components/grid/create-item-chooser", () => ({
   CreateItemChooser: ({
@@ -199,6 +210,13 @@ function RuntimeProbe() {
         Add at cell
       </button>
       <button
+        aria-label="add-at-blocked-cell"
+        onClick={() => openAddAtCell(0, 0)}
+        type="button"
+      >
+        Add at blocked cell
+      </button>
+      <button
         aria-label="request-bit-delete"
         onClick={() => requestDelete({ id: "bit-1", type: "bit", title: "Ship launch" })}
         type="button"
@@ -216,8 +234,13 @@ function RuntimeProbe() {
   );
 }
 
+function createRect(left: number, top: number, width: number, height: number): DOMRect {
+  return new DOMRect(left, top, width, height);
+}
+
 describe("GridRuntime", () => {
   beforeEach(() => {
+    useBreadcrumbZoneStore.setState({ blockedCells: new Set() });
     createNodeDialogSubmission.current = {
       title: "  New node  ",
       icon: "Folder",
@@ -225,6 +248,37 @@ describe("GridRuntime", () => {
       deadline: null,
       deadlineAllDay: false,
     };
+    vi.stubGlobal(
+      "ResizeObserver",
+      class ResizeObserver {
+        constructor(private readonly callback: ResizeObserverCallback) {}
+
+        disconnect() {}
+
+        observe() {
+          this.callback([], this);
+        }
+
+        unobserve() {}
+      },
+    );
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this instanceof HTMLDivElement && this.dataset.testid === "breadcrumbs") {
+        return createRect(12, 12, 90, 50);
+      }
+
+      if (
+        this instanceof HTMLDivElement &&
+        typeof this.className === "string" &&
+        this.className.includes("h-full overflow-x-hidden")
+      ) {
+        return createRect(0, 0, 1936, 964);
+      }
+
+      return createRect(0, 0, 0, 0);
+    });
     useDndMock.mockReturnValue({
       sensors: [],
       handleDragStart: vi.fn(),
@@ -254,6 +308,7 @@ describe("GridRuntime", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("creates a root node from sidebar add and confirms bit deletion through context", async () => {
@@ -312,7 +367,12 @@ describe("GridRuntime", () => {
       });
     });
     expect(getGridOccupancyMock).toHaveBeenCalledWith(null);
-    expect(vi.mocked(findNearestEmptyCell)).toHaveBeenCalledWith(new Set(["0,0"]), 2, 2);
+    expect(vi.mocked(findNearestEmptyCell)).toHaveBeenCalledWith(
+      new Set(["0,0"]),
+      2,
+      2,
+      new Set(["0,0"]),
+    );
 
     fireEvent.click(screen.getByLabelText("request-bit-delete"));
     expect(
@@ -372,7 +432,12 @@ describe("GridRuntime", () => {
         y: 6,
       });
     });
-    expect(vi.mocked(findNearestEmptyCell)).toHaveBeenCalledWith(new Set(["1,1"]), 4, 3);
+    expect(vi.mocked(findNearestEmptyCell)).toHaveBeenCalledWith(
+      new Set(["1,1"]),
+      4,
+      3,
+      new Set(["0,0"]),
+    );
   });
 
   it("passes create-node deadline values through to createNode", async () => {
@@ -511,6 +576,7 @@ describe("GridRuntime", () => {
       new Set(["10,1"]),
       GRID_COLS - 3,
       2,
+      new Set(["0,0"]),
     );
   });
 
@@ -557,6 +623,23 @@ describe("GridRuntime", () => {
     expect(scrollWrapper).toHaveAttribute("data-dragging", "true");
     expect(scrollWrapper).toHaveClass("overflow-hidden");
     expect(scrollWrapper).not.toHaveClass("overflow-y-auto");
+  });
+
+  it("makes openAddAtCell a no-op for blocked cells", () => {
+    useParamsMock.mockReturnValue({});
+    useNodeMock.mockReturnValue(null);
+    useBreadcrumbZoneStore.setState({ blockedCells: new Set(["0,0"]) });
+
+    render(
+      <GridRuntime>
+        <RuntimeProbe />
+      </GridRuntime>,
+    );
+
+    fireEvent.click(screen.getByLabelText("add-at-blocked-cell"));
+
+    expect(screen.queryByLabelText("submit-node")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("create-item-chooser")).not.toBeInTheDocument();
   });
 
   it("shows a move confirmation dialog when a pending node move exists", () => {

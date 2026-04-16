@@ -11,7 +11,9 @@ import { creationVariants } from "@/lib/animations/grid";
 import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
 import { getGridCellDropId, getGridNodeDropId } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
+import { isCellBlocked } from "@/lib/utils/breadcrumb-zone";
 import { useGridData } from "@/hooks/use-grid-data";
+import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
 import { useEditModeStore } from "@/stores/edit-mode-store";
 import type { Bit, Node } from "@/types";
 
@@ -41,6 +43,7 @@ function GridDropCell({
   children,
   isEditMode,
   isEmpty,
+  isBlocked,
   onAddClick,
   parentId,
   x,
@@ -50,6 +53,7 @@ function GridDropCell({
   children: ReactNode;
   isEditMode: boolean;
   isEmpty: boolean;
+  isBlocked: boolean;
   onAddClick?: () => void;
   parentId: string | null;
   x: number;
@@ -58,6 +62,7 @@ function GridDropCell({
   const { isOver, setNodeRef } = useDroppable({
     id: getGridCellDropId(parentId, x, y),
     data: { kind: "grid-cell", parentId, x, y },
+    disabled: isBlocked,
   });
 
   return (
@@ -67,10 +72,10 @@ function GridDropCell({
     >
       <GridCell
         borderOpacity={borderOpacity}
-        isDragOver={isOver}
+        isDragOver={isBlocked ? false : isOver}
         isEditMode={isEditMode}
         isEmpty={isEmpty}
-        onAddClick={onAddClick}
+        onAddClick={isBlocked ? undefined : onAddClick}
         x={x}
         y={y}
       >
@@ -196,6 +201,7 @@ export function GridView({
   const pathname = usePathname();
   const router = useRouter();
   const { nodes, bits } = useGridData(parentId);
+  const blockedCells = useBreadcrumbZoneStore((state) => state.blockedCells);
   const isEditMode = useEditModeStore((state) => state.isEditMode);
   const { active } = useDndContext();
   const itemsByPosition = new Map<string, GridItem>();
@@ -227,6 +233,7 @@ export function GridView({
           Array.from({ length: GRID_COLS }, (_, x) => {
             const positionKey = `${x},${y}`;
             const item = itemsByPosition.get(positionKey);
+            const isBlocked = isCellBlocked(x, y, blockedCells);
             const content = (
               <AnimatePresence initial={false}>
                 {item !== undefined && isNodeItem(item) ? (
@@ -279,6 +286,7 @@ export function GridView({
                 key={positionKey}
                 borderOpacity={borderOpacity}
                 isEditMode={isEditMode}
+                isBlocked={isBlocked}
                 isEmpty={item === undefined}
                 onAddClick={onAddAtCell ? () => onAddAtCell(x, y) : undefined}
                 parentId={parentId}

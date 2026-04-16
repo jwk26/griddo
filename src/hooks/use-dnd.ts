@@ -17,6 +17,11 @@ import { isCalendarDropData } from "@/lib/calendar-dnd";
 import { getDataStore } from "@/lib/db/datastore";
 import { isGridDropData } from "@/lib/grid-dnd";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
+import {
+  getStaticBlockedCells,
+  isCellBlocked,
+} from "@/lib/utils/breadcrumb-zone";
+import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
 
 export type DragActiveItem = {
   id: string;
@@ -118,7 +123,12 @@ export function useDnd(): {
   ) {
     const dataStore = await getDataStore();
     const occupancy = await dataStore.getGridOccupancy(parentId);
-    const position = findNearestEmptyCell(occupancy, originX, originY);
+    const position = findNearestEmptyCell(
+      occupancy,
+      originX,
+      originY,
+      getStaticBlockedCells(),
+    );
 
     if (!position) {
       toast.error("Target grid is full.");
@@ -178,6 +188,13 @@ export function useDnd(): {
 
     if (isGridDropData(dropData)) {
       if (dropData.kind === "grid-cell") {
+        const blockedCells = useBreadcrumbZoneStore.getState().blockedCells;
+
+        if (isCellBlocked(dropData.x, dropData.y, blockedCells)) {
+          toast("Cell reserved by breadcrumb");
+          return;
+        }
+
         if ((dragItem.parentId ?? null) !== dropData.parentId) {
           return;
         }

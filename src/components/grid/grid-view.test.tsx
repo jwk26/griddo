@@ -1,7 +1,8 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
+import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
 import { useEditModeStore } from "@/stores/edit-mode-store";
 import type { Bit, Node } from "@/types";
 import { GridView } from "./grid-view";
@@ -75,6 +76,10 @@ function createNode(overrides: Partial<Node>): Node {
     deletedAt: overrides.deletedAt ?? null,
   };
 }
+
+beforeEach(() => {
+  useBreadcrumbZoneStore.setState({ blockedCells: new Set() });
+});
 
 afterEach(() => {
   cleanup();
@@ -202,5 +207,29 @@ describe("GridView", () => {
     expect(bitCard).not.toBeNull();
     expect(bitCard).toHaveAttribute("data-grid-item", "true");
     expect(bitCard).toHaveClass("cursor-grab", "active:cursor-grabbing", "select-none");
+  });
+
+  it("suppresses + affordance on blocked cells", () => {
+    useEditModeStore.setState({ isEditMode: true });
+    useBreadcrumbZoneStore.setState({ blockedCells: new Set(["0,0"]) });
+    vi.mocked(useGridData).mockReturnValue({
+      nodes: [],
+      bits: [],
+      isLoading: false,
+    });
+
+    const { container } = render(
+      <GridView
+        level={0}
+        onAddAtCell={vi.fn()}
+        parentId={null}
+      />,
+    );
+
+    const blockedCell = container.querySelector('[data-position="0,0"]');
+    const openCell = container.querySelector('[data-position="1,0"]');
+
+    expect(blockedCell?.querySelector('button[aria-label="Add item"]')).toBeNull();
+    expect(openCell?.querySelector('button[aria-label="Add item"]')).not.toBeNull();
   });
 });

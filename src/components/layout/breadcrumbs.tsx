@@ -3,7 +3,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Fragment } from "react";
+import { Fragment, forwardRef } from "react";
 import type { DragActiveItem } from "@/hooks/use-dnd";
 import { useBreadcrumbChain } from "@/hooks/use-breadcrumb-chain";
 import { getGridBreadcrumbDropId } from "@/lib/grid-dnd";
@@ -23,7 +23,11 @@ function BreadcrumbSegmentButton({
 }) {
   const { isOver, setNodeRef } = useDroppable({
     id: getGridBreadcrumbDropId(nodeId),
-    data: { kind: "grid-breadcrumb-drop", targetNodeId: nodeId, targetNodeTitle: label },
+    data: {
+      kind: "grid-breadcrumb-drop",
+      targetNodeId: nodeId,
+      targetNodeTitle: label,
+    },
     disabled: nodeId === null && dragActiveItem?.type === "bit",
   });
 
@@ -44,23 +48,22 @@ function BreadcrumbSegmentButton({
   );
 }
 
-export function Breadcrumbs({
-  nodeId,
-  dragActiveItem,
-}: {
-  nodeId: string | null;
-  dragActiveItem?: DragActiveItem;
-}) {
+export const Breadcrumbs = forwardRef<
+  HTMLDivElement,
+  { nodeId: string | null; dragActiveItem?: DragActiveItem }
+>(function Breadcrumbs({ nodeId, dragActiveItem }, ref) {
   const router = useRouter();
   const segments = useBreadcrumbChain(nodeId ?? "");
   const navClassName = cn(
     "pointer-events-auto flex h-8 w-fit items-center gap-0.5 rounded-lg border border-border/40 pl-2 pr-3 shadow-sm backdrop-blur-md max-w-[calc(100%-2rem)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-    dragActiveItem ? "bg-background/95 ring-2 ring-primary/20" : "bg-background/80",
+    dragActiveItem
+      ? "bg-background/95 ring-2 ring-primary/20"
+      : "bg-background/80",
   );
 
   if (nodeId === null) {
     return (
-      <div className="flex flex-col items-start gap-1.5">
+      <div className="flex flex-col items-start gap-2" ref={ref}>
         <nav aria-label="Breadcrumb" className={navClassName}>
           <BreadcrumbSegmentButton
             dragActiveItem={dragActiveItem}
@@ -77,7 +80,7 @@ export function Breadcrumbs({
   const ancestors = currentNode ? segments.slice(0, -1) : [];
 
   return (
-    <div className="flex flex-col items-start gap-1.5">
+    <div className="flex flex-col items-start gap-2" ref={ref}>
       <nav aria-label="Breadcrumb" className={navClassName}>
         <BreadcrumbSegmentButton
           dragActiveItem={dragActiveItem}
@@ -107,4 +110,4 @@ export function Breadcrumbs({
       <BreadcrumbDeadline nodeId={nodeId} />
     </div>
   );
-}
+});

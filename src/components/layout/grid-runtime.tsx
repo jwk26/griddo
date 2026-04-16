@@ -2,7 +2,7 @@
 
 import { DndContext } from "@dnd-kit/core";
 import { useParams } from "next/navigation";
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { CreateBitDialog } from "@/components/grid/create-bit-dialog";
 import { CreateItemChooser } from "@/components/grid/create-item-chooser";
@@ -25,12 +25,17 @@ import { Button } from "@/components/ui/button";
 import { useDnd } from "@/hooks/use-dnd";
 import { useGridActions } from "@/hooks/use-grid-actions";
 import { useNode } from "@/hooks/use-node";
-import { GRID_COLS } from "@/lib/constants";
+import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
 import { gridCollisionDetection } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
+import {
+  isCellBlocked,
+  rectToBlockedCells,
+} from "@/lib/utils/breadcrumb-zone";
 import { hexToHsl } from "@/lib/utils/color";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import { isDeadlineAfter } from "@/lib/utils/deadline";
+import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
 import { AddFlowProvider } from "./add-flow-context";
 
 type PlacementContext =
@@ -88,6 +93,48 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
   const [chooserOpen, setChooserOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null);
   const [error, setError] = useState<string | undefined>(undefined);
+  const clusterRef = useRef<HTMLDivElement>(null);
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+  const setBlockedCells = useBreadcrumbZoneStore((state) => state.setBlockedCells);
+  const blockedCells = useBreadcrumbZoneStore((state) => state.blockedCells);
+
+  useEffect(() => {
+    const cluster = clusterRef.current;
+    const container = gridContainerRef.current;
+
+    if (!cluster || !container) {
+      return;
+    }
+
+    const clusterElement = cluster;
+    const containerElement = container;
+
+    function updateZone() {
+      const clusterRect = clusterElement.getBoundingClientRect();
+      const containerRect = containerElement.getBoundingClientRect();
+      const cells = rectToBlockedCells({
+        containerRect,
+        clusterRect,
+        cols: GRID_COLS,
+        rows: GRID_ROWS,
+        gap: 8 /* --grid-gap: 0.5rem */,
+      });
+
+      setBlockedCells(cells);
+    }
+
+    const ro = new ResizeObserver(updateZone);
+    ro.observe(clusterElement);
+    ro.observe(containerElement);
+    updateZone();
+
+    return () => {
+      ro.disconnect();
+      setBlockedCells(new Set());
+      // clear on unmount — prevents stale state when leaving the grid layout entirely
+      // (intra-grid navigations re-trigger ResizeObserver; cleanup only fires on full layout exit)
+    };
+  }, [setBlockedCells]);
 
   function openAdd(context: PlacementContext) {
     setPlacementContext(context);
@@ -149,7 +196,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
       const occupied = await getGridOccupancy(nodeId);
       const originX = placementContext.mode === "auto" ? 2 : placementContext.x;
       const originY = placementContext.mode === "auto" ? 2 : placementContext.y;
-      const cell = findNearestEmptyCell(occupied, originX, originY);
+      const cell = findNearestEmptyCell(occupied, originX, originY, blockedCells);
 
       if (cell === null) {
         if (nodeId === null) {
@@ -210,7 +257,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
       const originX =
         placementContext.mode === "auto" ? GRID_COLS - 3 : placementContext.x;
       const originY = placementContext.mode === "auto" ? 2 : placementContext.y;
-      const cell = findNearestEmptyCell(occupied, originX, originY);
+      const cell = findNearestEmptyCell(occupied, originX, originY, blockedCells);
 
       if (cell === null) {
         setOpenDialogType(null);
@@ -284,13 +331,18 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
           >
             <div className="pointer-events-none absolute top-3 left-3 right-3 z-30 flex flex-col items-start gap-1.5">
               <div className="pointer-events-none w-full">
-                <Breadcrumbs nodeId={nodeId} dragActiveItem={activeItem} />
+                <Breadcrumbs ref={clusterRef} nodeId={nodeId} dragActiveItem={activeItem} />
               </div>
             </div>
             <AddFlowProvider
-              openAddAtCell={(x, y) => openAdd({ mode: "cell", x, y })}
+              openAddAtCell={(x, y) => {
+                if (!isCellBlocked(x, y, blockedCells)) {
+                  openAdd({ mode: "cell", x, y });
+                }
+              }}
             >
               <div
+                ref={gridContainerRef}
                 className={cn(
                   "h-full overflow-x-hidden",
                   activeItem ? "overflow-hidden" : "overflow-y-auto",
