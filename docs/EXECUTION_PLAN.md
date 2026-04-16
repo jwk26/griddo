@@ -1503,7 +1503,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 57: L0 Deadline Enforcement + Create Node Deadline
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/edit-node-dialog.tsx` (update), `src/components/grid/create-node-dialog.tsx` (update), `src/components/layout/grid-runtime.tsx` (update)
 - **Dependencies:** Phase 9 complete
 - **Actions:**
