@@ -668,10 +668,18 @@ export class IndexedDBDataStore implements DataStore {
     return occupancy;
   }
 
-  async getChildDeadlineConflicts(nodeId: string, deadline: number): Promise<Bit[]> {
+  async getChildDeadlineConflicts(
+    nodeId: string,
+    deadline: number,
+    deadlineAllDay: boolean,
+  ): Promise<Bit[]> {
     const bits = await this.database.bits.toArray();
     return bits.filter(
-      (bit) => bit.parentId === nodeId && bit.deletedAt === null && bit.deadline !== null && bit.deadline > deadline,
+      (bit) =>
+        bit.parentId === nodeId &&
+        bit.deletedAt === null &&
+        bit.deadline !== null &&
+        isDeadlineAfter(bit.deadline, bit.deadlineAllDay, deadline, deadlineAllDay),
     );
   }
 

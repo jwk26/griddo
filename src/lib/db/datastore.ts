@@ -46,7 +46,7 @@ export interface DataStore {
   promoteBitToNode(bitId: string): Promise<Node>;
 
   /** Returns child Bits whose deadlines exceed the given deadline. Used before/after updateNode to detect conflicts. */
-  getChildDeadlineConflicts(nodeId: string, deadline: number): Promise<Bit[]>;
+  getChildDeadlineConflicts(nodeId: string, deadline: number, deadlineAllDay: boolean): Promise<Bit[]>;
 }
 
 let cachedDataStore: DataStore | null = null;

@@ -6,6 +6,9 @@ import type { Node } from "@/types";
 import { Breadcrumbs } from "./breadcrumbs";
 
 const useBreadcrumbChainMock = vi.hoisted(() => vi.fn());
+const breadcrumbDeadlineMock = vi.hoisted(() => vi.fn(({ nodeId }: { nodeId: string }) => (
+  <div data-testid="breadcrumb-deadline">{nodeId}</div>
+)));
 const push = vi.fn();
 
 vi.mock("next/navigation", () => ({
@@ -14,6 +17,10 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/hooks/use-breadcrumb-chain", () => ({
   useBreadcrumbChain: useBreadcrumbChainMock,
+}));
+
+vi.mock("./breadcrumb-deadline", () => ({
+  BreadcrumbDeadline: breadcrumbDeadlineMock,
 }));
 
 function createNode(overrides: Partial<Node>): Node {
@@ -47,6 +54,7 @@ describe("Breadcrumbs", () => {
 
     const nav = screen.getByRole("navigation", { name: "Breadcrumb" });
     const homeButton = screen.getByRole("button", { name: "Home" });
+    const wrapper = nav.parentElement;
 
     expect(nav).toHaveClass(
       "flex",
@@ -66,6 +74,7 @@ describe("Breadcrumbs", () => {
       "max-w-[calc(100%-2rem)]",
       "overflow-x-auto",
     );
+    expect(wrapper).toHaveClass("flex", "flex-col", "items-start", "gap-1");
     expect(homeButton).toHaveClass(
       "rounded-md",
       "px-1.5",
@@ -79,6 +88,8 @@ describe("Breadcrumbs", () => {
     );
     expect(homeButton).toHaveAttribute("data-drop-zone", "breadcrumb-root");
     expect(screen.queryByText("...")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("breadcrumb-deadline")).not.toBeInTheDocument();
+    expect(breadcrumbDeadlineMock).not.toHaveBeenCalled();
     expect(useBreadcrumbChainMock).toHaveBeenCalledWith("");
   });
 
@@ -148,6 +159,8 @@ describe("Breadcrumbs", () => {
     expect(push).toHaveBeenNthCalledWith(1, "/");
     expect(push).toHaveBeenNthCalledWith(2, `/grid/${root.id}`);
     expect(push).toHaveBeenNthCalledWith(3, `/grid/${child.id}`);
+    expect(screen.getByTestId("breadcrumb-deadline")).toHaveTextContent(current.id);
+    expect(breadcrumbDeadlineMock).toHaveBeenCalledWith({ nodeId: current.id }, undefined);
     expect(useBreadcrumbChainMock).toHaveBeenCalledWith(current.id);
   });
 });

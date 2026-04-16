@@ -8,6 +8,7 @@ import type { DragActiveItem } from "@/hooks/use-dnd";
 import { useBreadcrumbChain } from "@/hooks/use-breadcrumb-chain";
 import { getGridBreadcrumbDropId } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
+import { BreadcrumbDeadline } from "./breadcrumb-deadline";
 
 function BreadcrumbSegmentButton({
   label,
@@ -59,14 +60,16 @@ export function Breadcrumbs({
 
   if (nodeId === null) {
     return (
-      <nav aria-label="Breadcrumb" className={navClassName}>
-        <BreadcrumbSegmentButton
-          dragActiveItem={dragActiveItem}
-          label="Home"
-          nodeId={null}
-          onClick={() => router.push("/")}
-        />
-      </nav>
+      <div className="flex flex-col items-start gap-1">
+        <nav aria-label="Breadcrumb" className={navClassName}>
+          <BreadcrumbSegmentButton
+            dragActiveItem={dragActiveItem}
+            label="Home"
+            nodeId={null}
+            onClick={() => router.push("/")}
+          />
+        </nav>
+      </div>
     );
   }
 
@@ -74,31 +77,34 @@ export function Breadcrumbs({
   const ancestors = currentNode ? segments.slice(0, -1) : [];
 
   return (
-    <nav aria-label="Breadcrumb" className={navClassName}>
-      <BreadcrumbSegmentButton
-        dragActiveItem={dragActiveItem}
-        label="Home"
-        nodeId={null}
-        onClick={() => router.push("/")}
-      />
-      {ancestors.map((segment) => (
-        <Fragment key={segment.id}>
-          <ChevronRight className="h-3 w-3 text-muted-foreground/60 shrink-0" />
-          <BreadcrumbSegmentButton
-            dragActiveItem={dragActiveItem}
-            label={segment.title}
-            nodeId={segment.id}
-            onClick={() => router.push(`/grid/${segment.id}`)}
-          />
-        </Fragment>
-      ))}
-      <ChevronRight className="h-3 w-3 text-muted-foreground/60 shrink-0" />
-      <span
-        aria-current="page"
-        className="px-1.5 text-xs font-semibold text-foreground whitespace-nowrap shrink-0"
-      >
-        {currentNode?.title ?? "..."}
-      </span>
-    </nav>
+    <div className="flex flex-col items-start gap-1">
+      <nav aria-label="Breadcrumb" className={navClassName}>
+        <BreadcrumbSegmentButton
+          dragActiveItem={dragActiveItem}
+          label="Home"
+          nodeId={null}
+          onClick={() => router.push("/")}
+        />
+        {ancestors.map((segment) => (
+          <Fragment key={segment.id}>
+            <ChevronRight className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+            <BreadcrumbSegmentButton
+              dragActiveItem={dragActiveItem}
+              label={segment.title}
+              nodeId={segment.id}
+              onClick={() => router.push(`/grid/${segment.id}`)}
+            />
+          </Fragment>
+        ))}
+        <ChevronRight className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+        <span
+          aria-current="page"
+          className="px-1.5 text-xs font-semibold text-foreground whitespace-nowrap shrink-0"
+        >
+          {currentNode?.title ?? "..."}
+        </span>
+      </nav>
+      <BreadcrumbDeadline nodeId={nodeId} />
+    </div>
   );
 }
