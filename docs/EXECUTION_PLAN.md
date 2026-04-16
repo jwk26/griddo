@@ -1561,9 +1561,9 @@ These apply across all phases:
 
 ### Task 59: Dynamic Protected Breadcrumb Zone
 - **Status:** `[ ]`
-- **Files:** `src/lib/utils/breadcrumb-zone.ts` (create), `src/lib/utils/bfs.ts` (update), `src/hooks/use-grid-actions.ts` (update), `src/hooks/use-dnd.ts` (update), `src/components/layout/grid-runtime.tsx` (update — expose zone via context)
+- **Files:** `src/lib/utils/breadcrumb-zone.ts` (create), `src/lib/utils/bfs.ts` (update), `src/components/grid/grid-view.tsx` (update — suppress `+` on blocked cells), `src/hooks/use-dnd.ts` (update), `src/lib/grid-dnd.ts` (update — collision filtering), `src/components/layout/grid-runtime.tsx` (update — expose zone via context)
 - **Dependencies:** Task 54, Task 55 (the deadline line contributes to the cluster footprint)
-- **Origin:** `docs/issues/Issues_Phase_10.md` mi-5 — breadcrumb cluster overlaps top-row grid items. Promoted from user-reported issue because the fix requires a new layout rule affecting all placement paths, a one-time migration, and its own acceptance criteria.
+- **Origin:** `docs/issues/Issues_Phase_10.md` mi-5 — breadcrumb cluster overlaps top-row grid items. Promoted from user-reported issue because the fix requires a new layout rule affecting all placement paths and its own acceptance criteria. Migration split to Task 59b per ED-3.
 - **Actions:**
   - **Dynamic zone derivation (not a fixed cell count):** Compute the blocked cell set from the actual rendered breadcrumb cluster footprint (breadcrumb pill + optional deadline line from Task 55) at placement time. Measure the cluster via `ResizeObserver` or `useLayoutEffect` + `getBoundingClientRect` on the cluster wrapper in `grid-runtime.tsx`. Translate pixel rect to `{x, y}` cell coordinates using the same cell-size math used by `GridView` (grid cols, grid gap, inset). Expose the blocked cells as a `Set<string>` keyed by `"x,y"` via React context (preferred — passes through `AddFlowProvider`) or a Zustand slice
   - Create `src/lib/utils/breadcrumb-zone.ts` with pure helpers: `rectToBlockedCells(rect, gridMetrics) → Set<string>`, `isCellBlocked(x, y, blocked) → boolean`, and a hook-free pixel-to-cell projection that can be unit tested
@@ -1575,7 +1575,8 @@ These apply across all phases:
   - **Scope: forward-only protection.** This task protects new placements only. Existing items that already overlap the breadcrumb zone are not relocated. Legacy overlap cleanup is tracked separately as Task 59b
   - **Breadcrumb width absorption (unchanged from Task 54 fixes):** Overflow is absorbed inside the breadcrumb pill via `max-w` + `whitespace-nowrap` + horizontal scroll. Task 59 does not change the breadcrumb's own width behavior; it only uses the rendered footprint to compute the blocked zone
 - **Acceptance:**
-  - At every level (L0/L1/L2/L3), new items created via sidebar `+` or cell-level `+` never land in the breadcrumb footprint
+  - At every level (L0/L1/L2/L3), new items created via sidebar `+` never land in the breadcrumb footprint (BFS skips blocked cells)
+  - Cell-level `+` affordance is suppressed on blocked cells (no `+` button rendered); clicking a blocked cell does not silently create elsewhere via BFS
   - BFS auto-placement correctly skips blocked cells at all levels
   - Dragging a bit/node onto a blocked cell is rejected (no move; optional toast)
   - Drop indicator during drag never highlights a blocked cell
@@ -1589,7 +1590,7 @@ These apply across all phases:
 
 ### Task 59b: Breadcrumb Zone Legacy Overlap Cleanup
 - **Status:** `[ ]`
-- **Files:** `src/lib/utils/breadcrumb-zone.ts` (update), `src/lib/db/indexeddb.ts` (update), `src/lib/db/datastore.ts` (update if needed)
+- **Files:** `src/lib/utils/breadcrumb-zone.ts` (update), `src/lib/db/indexeddb.ts` (update), `src/lib/db/datastore.ts` (update if needed), `src/components/layout/grid-runtime.tsx` (update — trigger remediation on first grid view per parent)
 - **Dependencies:** Task 59
 - **Origin:** Split from Task 59 scope narrowing — migration removed from Task 59 to reduce implementation risk. See `docs/issues/Issues_Phase_10.md` for the decision record.
 - **Actions:**
@@ -1607,7 +1608,7 @@ These apply across all phases:
 
 #### Phase 10 Notes
 
-> **Task dependency order:** Task 58 (Date-First Deadline Input) should be implemented early in Phase 10 as Tasks 55 and 57 depend on the `DateFirstDeadlinePicker` component. Task 59 (Dynamic Protected Breadcrumb Zone) depends on Task 54 and Task 55 because the zone is derived from the rendered breadcrumb + deadline cluster. Recommended order: 58 → 54 → 56 → 57 → 55 → 59.
+> **Task dependency order:** Task 58 (Date-First Deadline Input) should be implemented early in Phase 10 as Tasks 55 and 57 depend on the `DateFirstDeadlinePicker` component. Task 59 (Dynamic Protected Breadcrumb Zone) depends on Task 54 and Task 55 because the zone is derived from the rendered breadcrumb + deadline cluster. Task 59b (Legacy Overlap Cleanup) depends on Task 59. Recommended order: 58 → 54 → 56 → 57 → 55 → 59 → 59b.
 
 > **Task 59 was promoted from user-reported issue mi-5** during Batch 2 (Task 54 review). See `docs/issues/Issues_Phase_10.md` for the original observation and promotion rationale. Phase 11 and Phase 12 task numbers were shifted by +1 as a result: Phase 11 Tasks 59–66 became 60–67, and Phase 12 Task 67 became Task 68.
 
