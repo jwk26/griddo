@@ -1,6 +1,33 @@
 # Issues — Phase 10
 
-> Live execution record for Phase 10: Breadcrumb + Deadline UX (Tasks 54-58).
+> Live execution record for Phase 10: Breadcrumb + Deadline UX (Tasks 54-59).
+
+---
+
+## Batch Plan
+
+### Original Proposal (locked — do not edit)
+- **Batch 1:** Task 58 (ui-heavy) — DateFirstDeadlinePicker
+- **Batch 2:** Task 54 (ui-heavy) — Compact Breadcrumb Redesign
+- **Batch 3:** Tasks 56 + 57 (mixed) — Parent deadline display + L0 deadline enforcement
+- **Batch 4:** Task 55 (ui-heavy) — Node Deadline Quick-Edit Surface
+
+Dependency order at phase open: 58 → 54 → 56 → 57 → 55. Task 59 did not exist at phase open.
+
+### Execution Status
+
+| Batch | Tasks | Status |
+|-------|-------|--------|
+| 1 | Task 58 | Implemented |
+| 2 | Task 54 | Implemented |
+| 3a | Task 56 | Implemented |
+| 3b | Task 57 | Implemented |
+| 4 | Task 55 | Pending |
+| 5 | Task 59 | Pending |
+
+### Deviations
+- **Batch 3 split into 3a (Task 56) and 3b (Task 57).** Task 56 went through enough revision rounds to justify its own checkpoint; the split was handled implicitly during execution rather than being surfaced to the user at the time. Recorded retroactively.
+- **Task 59 added from mi-5 promotion.** Not in the original proposal; slotted after Batch 4 per dependency on Tasks 54 and 55.
 
 ---
 
