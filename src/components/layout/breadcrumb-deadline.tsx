@@ -80,7 +80,7 @@ export function BreadcrumbDeadline({ nodeId }: { nodeId: string }) {
       <Popover onOpenChange={setIsOpen} open={isOpen}>
         <PopoverTrigger asChild>
           <button
-            className="pointer-events-auto inline-flex cursor-pointer items-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="pointer-events-auto inline-flex h-8 cursor-pointer items-center gap-1 rounded-lg border border-border/40 bg-background/80 pl-2 pr-3 text-[11px] font-medium text-muted-foreground shadow-sm backdrop-blur-md transition-colors hover:text-foreground"
             type="button"
           >
             <Calendar className="h-3 w-3" />
