@@ -1560,7 +1560,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 59: Dynamic Protected Breadcrumb Zone
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/lib/utils/breadcrumb-zone.ts` (create), `src/lib/utils/bfs.ts` (update), `src/components/grid/grid-view.tsx` (update — suppress `+` on blocked cells), `src/hooks/use-dnd.ts` (update), `src/lib/grid-dnd.ts` (update — collision filtering), `src/components/layout/grid-runtime.tsx` (update — expose zone via context)
 - **Dependencies:** Task 54, Task 55 (the deadline line contributes to the cluster footprint)
 - **Origin:** `docs/issues/Issues_Phase_10.md` mi-5 — breadcrumb cluster overlaps top-row grid items. Promoted from user-reported issue because the fix requires a new layout rule affecting all placement paths and its own acceptance criteria. Migration split to Task 59b per ED-3.
