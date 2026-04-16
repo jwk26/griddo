@@ -1610,7 +1610,7 @@ These apply across all phases:
 
 > **Task dependency order:** Task 58 (Date-First Deadline Input) should be implemented early in Phase 10 as Tasks 55 and 57 depend on the `DateFirstDeadlinePicker` component. Task 59 (Dynamic Protected Breadcrumb Zone) depends on Task 54 and Task 55 because the zone is derived from the rendered breadcrumb + deadline cluster. Task 59b (Legacy Overlap Cleanup) depends on Task 59. Recommended order: 58 → 54 → 56 → 57 → 55 → 59 → 59b.
 
-> **Task 59 was promoted from user-reported issue mi-5** during Batch 2 (Task 54 review). See `docs/issues/Issues_Phase_10.md` for the original observation and promotion rationale. Phase 11 and Phase 12 task numbers were shifted by +1 as a result: Phase 11 Tasks 59–66 became 60–67, and Phase 12 Task 67 became Task 68.
+> **Task 59 was promoted from user-reported issue mi-5** during Batch 2 (Task 54 review). See `docs/issues/Issues_Phase_10.md` for the original observation and promotion rationale. Task numbers were shifted by +1 as a result: Tasks 59–66 became 60–67, and Task 67 became Task 68. Subsequently, the original 8-task Phase 11 (Tasks 60–67) was split into four focused phases: Phase 11 (T60–T61, Calendar Shell), Phase 12 (T62–T63, Creation Flows), Phase 13 (T64–T65, Weekly Redesign), Phase 14 (T66–T67, Monthly Redesign). The original Phase 12 (Task 68, Quarterly) was renumbered to Phase 15.
 
 > **All-day timestamp storage:** The picker stores all-day deadlines with `00:00:00.000` local time. The `23:59:59.999` interpretation is applied only at comparison time (hierarchy validation, urgency calculation, calendar display). This keeps the storage clean while preserving correct end-of-day semantics.
 
@@ -1622,23 +1622,18 @@ These apply across all phases:
 
 ---
 
-## Phase 11: Calendar Weekly / Monthly Redesign
+## Phase 11: Calendar Shell
 
-> **Purpose:** Redesign the calendar weekly and monthly views as a proper interaction model update, not minor polish. Restructure the calendar shell (sidebar, header, pool), redesign weekly day sections with stable sizing and today emphasis, redesign monthly with popup day detail, and add Node/Bit creation from the calendar pool.
-> **Branch:** `phase-11/calendar-redesign`
+> **Purpose:** Restructure the calendar shell — sidebar, header, and pool. Redesign navigation controls, disable pencil in calendar mode, add a Home icon for returning to grid root, move the Weekly/Monthly toggle inline with date navigation, and add pool fold/unfold with smooth animation.
+> **Branch:** `phase-11/calendar-shell`
 > **Canonical refs:** SPEC.md § Routes (calendar routes), DESIGN_TOKENS.md
 >
 > **Explicit policies:**
-> - Calendar sidebar `+` = creation entry point for **unscheduled** Nodes/Bits (not scheduling)
-> - Calendar sidebar `pencil` = disabled in calendar mode
-> - Calendar-created Nodes = `parentId = null`, visible in Grid L0
-> - Calendar-created Bits = require explicit parent Node selection via Node browser; created with no date assigned
-> - Selected parent in Create Bit must be visibly shown in the dialog (title + path)
-> - Create Bit button disabled until a parent Node is selected
-> - Placed calendar items (weekly + monthly) = draggable for rescheduling; cursor affordance only (no drag handles)
-> - Weekly: stable day section footprint with internal scroll; today section wider by default; click-to-expand other days
-> - Monthly: horizontally wider rounded-rectangle cells (not square); day detail = popup overlay (not fixed column)
-> - Monthly popup: one popup at a time; X to close; positioned near click
+> - Calendar sidebar `+` = creation entry point for **unscheduled** Nodes/Bits; opens a Node vs Bit chooser (actual creation dialogs wired in Phase 12)
+> - Calendar sidebar `pencil` = disabled in calendar mode (`pointer-events-none opacity-40`)
+> - Home icon above `+` navigates to `/` (Grid L0)
+> - Weekly/Monthly toggle moves to the date navigation row (inline with `<` arrows and date label)
+> - Pool collapse hides pool content and expands the calendar area; state persists in Zustand
 
 ### Task 60: Calendar Sidebar + Header Redesign
 - **Status:** `[ ]`
@@ -1676,10 +1671,28 @@ These apply across all phases:
   - Pool state persists within the session (Zustand store)
   - `pnpm build` passes
 
+#### Phase 11 Notes
+
+> **Creation chooser wiring only.** T60 wires the sidebar `+` to a Node-vs-Bit chooser (two-button popover). The chooser calls into Phase 12's creation dialogs. For Phase 11, the chooser can open placeholder stubs — Phase 12 completes the flow.
+
+---
+
+## Phase 12: Calendar Creation Flows
+
+> **Purpose:** Wire the calendar sidebar creation entry point (introduced in Phase 11) to actual creation dialogs. Implement Node creation from calendar (unscheduled, `parentId = null`) and Bit creation from calendar with a tree-browsing parent Node selector.
+> **Branch:** `phase-12/calendar-creation`
+> **Canonical refs:** SPEC.md § Routes (calendar routes), SCHEMA.md (Node/Bit fields)
+>
+> **Explicit policies:**
+> - Calendar-created Nodes = `parentId = null`, visible in Grid L0, no deadline assigned
+> - Calendar-created Bits = require explicit parent Node selection via Node browser; created with no date assigned
+> - Selected parent in Create Bit must be visibly shown in the dialog (title + path)
+> - Create Bit button disabled until a parent Node is selected
+
 ### Task 62: Calendar Pool Node Creation
 - **Status:** `[ ]`
 - **Files:** `src/app/calendar/layout.tsx` (update), `src/hooks/use-grid-actions.ts` (update if needed)
-- **Dependencies:** Task 60
+- **Dependencies:** Phase 11 complete
 - **Actions:**
   - When the sidebar `+` is clicked in calendar mode and the user selects "Node" from the chooser:
     - Open `CreateNodeDialog` (reuse existing component)
@@ -1695,7 +1708,7 @@ These apply across all phases:
 ### Task 63: Calendar Pool Bit Creation + Parent Selector
 - **Status:** `[ ]`
 - **Files:** `src/components/calendar/parent-node-selector.tsx` (create), `src/components/grid/create-bit-dialog.tsx` (update), `src/app/calendar/layout.tsx` (update)
-- **Dependencies:** Task 60
+- **Dependencies:** Phase 11 complete
 - **Actions:**
   - Create `parent-node-selector.tsx`: a tree-browsing Node selector component. Props: `value: string | null` (selected Node ID), `onChange: (nodeId: string) => void`
     - On open, show all L0 Nodes. Clicking a Node either selects it (if it's the desired parent) or drills into its children (if it has child Nodes)
@@ -1717,10 +1730,28 @@ These apply across all phases:
   - From grid, CreateBitDialog behavior is unchanged (no parent selector shown)
   - `pnpm build` passes
 
+#### Phase 12 Notes
+
+> **Calendar creation is not scheduling.** Items created from the calendar sidebar `+` are unscheduled by default. The user creates first, then drags onto a date to schedule. This keeps the creation flow lightweight and consistent regardless of entry point.
+
+> **Parent Node selector is the most complex new component.** The tree-browsing Node selector (Task 63) requires a browse-and-select interaction pattern. Consider implementing it as a standalone component reusable for future "pick a Node" interactions (e.g., move-to, reparent).
+
+---
+
+## Phase 13: Weekly Redesign
+
+> **Purpose:** Redesign the calendar weekly view with stable day column sizing, today emphasis via expanded width, and drag rescheduling of already-placed items.
+> **Branch:** `phase-13/weekly-redesign`
+> **Canonical refs:** SPEC.md § Routes (calendar routes), DESIGN_TOKENS.md
+>
+> **Explicit policies:**
+> - Stable day section footprint with internal scroll; today section wider by default; click-to-expand other days
+> - Placed calendar items = draggable for rescheduling; cursor affordance only (no drag handles)
+
 ### Task 64: Weekly Stable Day Sizing + Today Emphasis
 - **Status:** `[ ]`
 - **Files:** `src/components/calendar/day-column.tsx` (update), `src/app/calendar/weekly/page.tsx` (update), `src/stores/calendar-store.ts` (update)
-- **Dependencies:** Task 61
+- **Dependencies:** Phase 12 complete
 - **Actions:**
   - In `calendar-store.ts`: add `expandedDay: number | null` state (day index 0–6, `null` = use default rule) and `setExpandedDay` action
   - **Default expanded-day rule:**
@@ -1764,10 +1795,27 @@ These apply across all phases:
   - Pool items have `Trash2` icon instead of `X` for unschedule action
   - `pnpm build` passes
 
+#### Phase 13 Notes
+
+> **Placed item drag rescheduling (weekly):** `use-dnd.ts` must detect whether the drag source is a pool item (new scheduling) or a placed item (rescheduling). Pool items have no deadline; placed items have a deadline that needs to be updated to the new target day.
+
+---
+
+## Phase 14: Monthly Redesign
+
+> **Purpose:** Redesign the calendar monthly view with horizontally wider date cells, a floating day detail popup instead of a fixed side panel, and draggable placed items for rescheduling.
+> **Branch:** `phase-14/monthly-redesign`
+> **Canonical refs:** SPEC.md § Routes (calendar routes), DESIGN_TOKENS.md
+>
+> **Explicit policies:**
+> - Monthly: horizontally wider rounded-rectangle cells (not square); day detail = popup overlay (not fixed column)
+> - Monthly popup: one popup at a time; X to close; positioned near click
+> - Placed calendar items = draggable for rescheduling; cursor affordance only (no drag handles)
+
 ### Task 66: Monthly Cell Redesign + Day Detail Popup
 - **Status:** `[ ]`
 - **Files:** `src/app/calendar/monthly/_components/month-grid.tsx` (update), `src/app/calendar/monthly/_components/date-cell-popover.tsx` (rewrite), `src/app/calendar/monthly/page.tsx` (update)
-- **Dependencies:** Task 61
+- **Dependencies:** Phase 13 complete
 - **Actions:**
   - In `month-grid.tsx`: update date cells from their current shape to **horizontally wider rounded rectangles** (`rounded-xl`, wider aspect ratio). Do not use square cells. Reason: typical viewport is wider than tall, and square cells waste horizontal space in the 2-column (pool + calendar) layout. Reference: `references/monthly.jpg`
   - **Day detail popup:** Replace the current `date-cell-popover.tsx` (if it uses a fixed side panel) with a Radix `Popover` or floating overlay:
@@ -1804,22 +1852,18 @@ These apply across all phases:
   - Entire month is visible on one screen (no vertical scroll for the calendar grid)
   - `pnpm build` passes
 
-#### Phase 11 Notes
-
-> **Calendar creation is not scheduling.** Items created from the calendar sidebar `+` are unscheduled by default. The user creates first, then drags onto a date to schedule. This keeps the creation flow lightweight and consistent regardless of whether the user starts from grid or calendar.
-
-> **Parent Node selector is the most complex new component.** The tree-browsing Node selector (Task 63) requires a browse-and-select interaction pattern. Consider implementing it as a standalone component that can be reused for any future "pick a Node" interaction (e.g., move-to, reparent).
+#### Phase 14 Notes
 
 > **Monthly popup positioning:** Use Radix Popover's built-in viewport collision handling. If the clicked cell is near the bottom-right corner, the popup should flip/shift to remain visible. Test with edge cells explicitly.
 
-> **Placed item drag rescheduling:** Both weekly and monthly surfaces support dragging already-placed items to new dates. The DnD handler in `use-dnd.ts` must detect whether the drag source is a pool item (new scheduling) or a placed item (rescheduling) and update the deadline accordingly in both cases.
+> **Placed item drag rescheduling (monthly):** `use-dnd.ts` must detect whether the drag source is a pool item (new scheduling) or a placed item (rescheduling). Same detection pattern as Phase 13's weekly rescheduling.
 
 ---
 
-## Phase 12: Quarterly Calendar View
+## Phase 15: Quarterly Calendar View
 
 > **Purpose:** Add a new Quarterly calendar view that shows Nodes (only) placed across quarters. Provides a high-level planning surface for longer-term work.
-> **Branch:** `phase-12/quarterly-view`
+> **Branch:** `phase-15/quarterly-view`
 > **Canonical refs:** SCHEMA.md (Node deadline, deadlineAllDay)
 >
 > **Explicit policies:**
@@ -1833,7 +1877,7 @@ These apply across all phases:
 ### Task 68: Quarterly Calendar View
 - **Status:** `[ ]`
 - **Files:** `src/app/calendar/quarterly/page.tsx` (create), `src/app/calendar/quarterly/_components/quarter-grid.tsx` (create), `src/app/calendar/quarterly/_components/quarter-column.tsx` (create), `src/app/calendar/layout.tsx` (update), `src/stores/calendar-store.ts` (update), `src/hooks/use-calendar-data.ts` (update), `src/hooks/use-dnd.ts` (update)
-- **Dependencies:** Phase 11 complete
+- **Dependencies:** Phase 14 complete
 - **Actions:**
   - In `calendar-store.ts`: add `currentYear: number` state, `navigateYear` action, and extend the calendar view type to include `"quarterly"`
   - In `calendar/layout.tsx`: add `Quarterly` to the Weekly/Monthly toggle (becomes a 3-way toggle). Route to `/calendar/quarterly`
@@ -1858,7 +1902,7 @@ These apply across all phases:
   - Quarter columns use full available height
   - `pnpm build` passes
 
-#### Phase 12 Notes
+#### Phase 15 Notes
 
 > **Quarter end-date computation:** Use `new Date(year, month, 0).getDate()` pattern if needed for months with varying lengths (though Q1-Q4 end dates are fixed: Mar 31, Jun 30, Sep 30, Dec 31). Hard-code the month/day pairs for clarity.
 
