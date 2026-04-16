@@ -1589,7 +1589,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 59b: Breadcrumb Zone Legacy Overlap Cleanup
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/lib/utils/breadcrumb-zone.ts` (update), `src/lib/db/indexeddb.ts` (update), `src/lib/db/datastore.ts` (update if needed), `src/components/layout/grid-runtime.tsx` (update — trigger remediation on first grid view per parent)
 - **Dependencies:** Task 59
 - **Origin:** Split from Task 59 scope narrowing — migration removed from Task 59 to reduce implementation risk. See `docs/issues/Issues_Phase_10.md` for the decision record.
