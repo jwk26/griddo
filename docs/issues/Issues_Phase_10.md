@@ -36,7 +36,17 @@ Dependency order at phase open: 58 → 54 → 56 → 57 → 55. Task 59 did not 
 ## Main Issues
 *(Execution issues discovered by the agent, architecture issues, structural changes beyond planned scope)*
 
-*None so far.*
+### close-1: Hook API boundary violations found at conformance review
+
+- **Status:** Closed
+- **Discovered:** Conformance review at phase close-out
+- **Violations:**
+  - `breadcrumb-deadline.tsx` imported `getDataStore` directly for `getChildDeadlineConflicts` (a validation read in a user event handler — not a reactive read, but still outside the hook boundary)
+  - `grid-runtime.tsx` imported `getDataStore` directly for `runBreadcrumbZoneMigration` (a write in a ResizeObserver callback)
+  - `use-dnd.ts` imported `useBreadcrumbZoneStore` from Zustand (hook importing a Zustand store — blocked by the state-separation rule)
+- **Root cause:** Task 59/59b were implemented under deadline pressure with the migration call landing in the component layer. The `getChildDeadlineConflicts` call was similarly written directly in `breadcrumb-deadline.tsx` rather than being routed through a hook. `use-dnd.ts` needed blocked-cell state at drop time and reached for the store directly inside the hook rather than receiving it as a parameter.
+- **Fix:** `getChildDeadlineConflicts` added to `useNodeActions`; `runBreadcrumbZoneMigration` added to `useGridActions`; `useDnd` refactored to accept a `getBlockedCells: () => Set<string>` parameter — store access stays in the component layer where Zustand imports are permitted. All test mocks updated.
+- **Files changed:** `use-node-actions.ts`, `use-grid-actions.ts`, `use-dnd.ts`, `breadcrumb-deadline.tsx`, `grid-runtime.tsx`, `calendar/layout.tsx`, plus test files.
 
 ---
 

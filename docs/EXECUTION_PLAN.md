@@ -1616,6 +1616,10 @@ These apply across all phases:
 
 > **L0 deadline enforcement covers UI + read surfaces.** Write surfaces (create/edit dialogs) hide the deadline field at L0. Read surfaces (calendar queries, urgency scanning) filter out L0 Nodes. This prevents hidden-but-active deadline state. Schema-level Zod rejection is deferred — if needed later, add a `refine` on `createNodeSchema` that checks `level === 0 → deadline must be null`.
 
+> **Hook API boundary: validation reads and ResizeObserver writes must go through hooks.** Found at close-out: `breadcrumb-deadline.tsx` called `getChildDeadlineConflicts` directly on DataStore (a read in an event handler), and `grid-runtime.tsx` called `runBreadcrumbZoneMigration` directly (a write in a ResizeObserver callback). Both are violations — the rule "UI components import hooks, not DataStore" applies to reads and writes alike. Fix: add the methods to `useNodeActions` / `useGridActions` and call from there. Also: hooks must not import Zustand — `use-dnd.ts` read `useBreadcrumbZoneStore` directly inside the hook. Fix: pass a `getBlockedCells: () => Set<string>` getter from the component layer instead. Full issue log: `docs/issues/Issues_Phase_10.md` close-1.
+
+> **Full issue log:** `docs/issues/Issues_Phase_10.md`
+
 ---
 
 ## Phase 11: Calendar Weekly / Monthly Redesign
