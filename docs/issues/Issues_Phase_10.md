@@ -118,6 +118,15 @@ Dependency order at phase open: 58 → 54 → 56 → 57 → 55. Task 59 did not 
 - **Classification note:** Because this is a pre-existing Phase 9 gap (not caused by Task 54), it does not block Task 54 approval. It was fixed in the same parallel fix track as mi-2 / mi-3 / mi-4 because the batch was already in a fix loop and the visible-surface/drag-ownership correction was the correct path forward once the cursor-class-only fix was rejected as too narrow.
 - **Acceptance for close:** The Bit card body shows `cursor-grab` across the entire visible surface (not just the icon area); `cursor-grabbing` appears while the card is actively being dragged; the visible Bit is both the drag owner and the hit-test surface (dragging anywhere on the card starts the drag); content can extend horizontally without clipping; no text-selection highlight on drag initiation. **Awaits user visual confirmation.**
 
+### mi-7: Edit Node dialog not reachable from L0 grid in edit mode
+- **Status:** Closed
+- **Discovered:** User testing during Batch 4 checkpoint (Task 55)
+- **Reproduction:** At L0 (`/`), enter edit mode and click a Node tile. Expected: Edit Node dialog opens. Actual: navigates to `/grid/[nodeId]`.
+- **Root cause:** `src/app/(grid)/page.tsx` (L0 page) did not pass `onNodeEditClick` to `GridView` and did not render `EditNodeDialog`. In `grid-view.tsx`, the edit-mode click branch (`isEditMode && onNodeEditClick`) falls through to navigation when `onNodeEditClick` is undefined. The L1 page (`[nodeId]/page.tsx`) was wired correctly; L0 was missed.
+- **Fix:** Added `useState<Node | null>` + `onNodeEditClick={setEditingNode}` to `GridView` and `<EditNodeDialog level={editingNode?.level ?? 0} ...>` to the L0 page — same pattern as the L1 page. `level={0}` means the deadline section is hidden per Task 57.
+- **Files changed:** `src/app/(grid)/page.tsx`
+- **Verification:** `pnpm tsc --noEmit` and `pnpm test` (34 files, 132 tests) pass.
+
 ---
 
 ## Execution Decisions
