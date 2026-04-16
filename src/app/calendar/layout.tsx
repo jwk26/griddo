@@ -1,28 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { DndContext, closestCorners } from "@dnd-kit/core";
-import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { ItemsPool } from "@/components/calendar/items-pool";
 import { NodePool } from "@/components/calendar/node-pool";
 import { Sidebar } from "@/components/layout/sidebar";
 import { DeadlineConflictModal } from "@/components/shared/deadline-conflict-modal";
-import { Button } from "@/components/ui/button";
 import { useDnd } from "@/hooks/use-dnd";
 import { cn } from "@/lib/utils";
-
-const CALENDAR_VIEWS = [
-  { href: "/calendar/weekly", label: "Weekly" },
-  { href: "/calendar/monthly", label: "Monthly" },
-] as const;
 
 export default function CalendarLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  const pathname = usePathname();
   const {
     conflictState,
     handleConflictKeepChild,
@@ -38,31 +29,6 @@ export default function CalendarLayout({
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
       <main className="ml-12 flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex items-center justify-between border-b border-border bg-background/80 px-6 py-4 backdrop-blur">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-              Calendar
-            </p>
-            <h1 className="text-xl font-semibold text-foreground">Schedule</h1>
-          </div>
-          <nav className="flex items-center gap-2 rounded-lg border border-border bg-card p-1">
-            {CALENDAR_VIEWS.map((view) => {
-              const isActive = pathname === view.href;
-
-              return (
-                <Button
-                  key={view.href}
-                  asChild
-                  size="sm"
-                  variant={isActive ? "default" : "ghost"}
-                >
-                  <Link href={view.href}>{view.label}</Link>
-                </Button>
-              );
-            })}
-          </nav>
-        </header>
-
         <DndContext
           collisionDetection={closestCorners}
           onDragEnd={handleDragEnd}
