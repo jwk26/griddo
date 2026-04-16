@@ -24,7 +24,7 @@ Dependency order at phase open: 58 → 54 → 56 → 57 → 55. Task 59 did not 
 | 3b | Task 57 | Implemented |
 | 4 | Task 55 | Implemented |
 | 5 | Task 59 | Implemented |
-| 6 | Task 59b | In Progress |
+| 6 | Task 59b | Implemented |
 
 ### Deviations
 - **Batch 3 split into 3a (Task 56) and 3b (Task 57).** Task 56 went through enough revision rounds to justify its own checkpoint; the split was handled implicitly during execution rather than being surfaced to the user at the time. Recorded retroactively.
