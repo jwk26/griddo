@@ -14,6 +14,15 @@ const createNodeMock = vi.hoisted(() => vi.fn());
 const createBitMock = vi.hoisted(() => vi.fn());
 const softDeleteNodeMock = vi.hoisted(() => vi.fn());
 const softDeleteBitMock = vi.hoisted(() => vi.fn());
+const createNodeDialogSubmission = vi.hoisted(() => ({
+  current: {
+    title: "  New node  ",
+    icon: "Folder",
+    colorHex: "#ff0000",
+    deadline: null as number | null,
+    deadlineAllDay: false,
+  },
+}));
 
 vi.mock("next/navigation", () => ({
   useParams: useParamsMock,
@@ -83,28 +92,29 @@ vi.mock("@/components/grid/create-node-dialog", () => ({
   CreateNodeDialog: ({
     open,
     onSubmit,
+    error,
   }: {
     open: boolean;
     onSubmit: (values: {
       title: string;
       icon: string;
       colorHex: string;
+      deadline: number | null;
+      deadlineAllDay: boolean;
     }) => Promise<void>;
+    error?: string;
   }) =>
     open ? (
-      <button
-        aria-label="submit-node"
-        onClick={() =>
-          void onSubmit({
-            title: "  New node  ",
-            icon: "Folder",
-            colorHex: "#ff0000",
-          })
-        }
-        type="button"
-      >
-        Submit node
-      </button>
+      <div>
+        <button
+          aria-label="submit-node"
+          onClick={() => void onSubmit(createNodeDialogSubmission.current)}
+          type="button"
+        >
+          Submit node
+        </button>
+        {error ? <div role="alert">{error}</div> : null}
+      </div>
     ) : null,
 }));
 
@@ -208,6 +218,13 @@ function RuntimeProbe() {
 
 describe("GridRuntime", () => {
   beforeEach(() => {
+    createNodeDialogSubmission.current = {
+      title: "  New node  ",
+      icon: "Folder",
+      colorHex: "#ff0000",
+      deadline: null,
+      deadlineAllDay: false,
+    };
     useDndMock.mockReturnValue({
       sensors: [],
       handleDragStart: vi.fn(),
@@ -356,6 +373,89 @@ describe("GridRuntime", () => {
       });
     });
     expect(vi.mocked(findNearestEmptyCell)).toHaveBeenCalledWith(new Set(["1,1"]), 4, 3);
+  });
+
+  it("passes create-node deadline values through to createNode", async () => {
+    const { findNearestEmptyCell } = await import("@/lib/utils/bfs");
+    const parentNode = createNode({
+      id: "parent-node",
+      level: 0,
+      deadline: new Date(2026, 3, 30, 0, 0).getTime(),
+      deadlineAllDay: true,
+    });
+    const childDeadline = new Date(2026, 3, 24, 9, 30).getTime();
+
+    createNodeDialogSubmission.current = {
+      title: "  New node  ",
+      icon: "Folder",
+      colorHex: "#ff0000",
+      deadline: childDeadline,
+      deadlineAllDay: false,
+    };
+    useParamsMock.mockReturnValue({ nodeId: parentNode.id });
+    useNodeMock.mockReturnValue(parentNode);
+    getGridOccupancyMock.mockResolvedValue(new Set(["2,2"]));
+    createNodeMock.mockResolvedValue(createNode({ id: "child-node", parentId: parentNode.id }));
+    vi.mocked(findNearestEmptyCell).mockReturnValue({ x: 6, y: 4 });
+
+    render(
+      <GridRuntime>
+        <RuntimeProbe />
+      </GridRuntime>,
+    );
+
+    fireEvent.click(screen.getByLabelText("add-at-cell"));
+    fireEvent.click(screen.getByLabelText("choose-node"));
+    fireEvent.click(screen.getByLabelText("submit-node"));
+
+    await waitFor(() => {
+      expect(createNodeMock).toHaveBeenCalledWith({
+        title: "New node",
+        color: "hsl(0, 100%, 50%)",
+        icon: "Folder",
+        deadline: childDeadline,
+        deadlineAllDay: false,
+        parentId: parentNode.id,
+        level: 1,
+        x: 6,
+        y: 4,
+      });
+    });
+  });
+
+  it("blocks child node creation when the deadline exceeds the parent deadline", async () => {
+    const parentNode = createNode({
+      id: "parent-node",
+      level: 0,
+      deadline: new Date(2026, 3, 20, 0, 0).getTime(),
+      deadlineAllDay: true,
+    });
+
+    createNodeDialogSubmission.current = {
+      title: "  New node  ",
+      icon: "Folder",
+      colorHex: "#ff0000",
+      deadline: new Date(2026, 3, 21, 10, 0).getTime(),
+      deadlineAllDay: false,
+    };
+    useParamsMock.mockReturnValue({ nodeId: parentNode.id });
+    useNodeMock.mockReturnValue(parentNode);
+
+    render(
+      <GridRuntime>
+        <RuntimeProbe />
+      </GridRuntime>,
+    );
+
+    fireEvent.click(screen.getByLabelText("add-at-cell"));
+    fireEvent.click(screen.getByLabelText("choose-node"));
+    fireEvent.click(screen.getByLabelText("submit-node"));
+
+    expect(createNodeMock).not.toHaveBeenCalled();
+    expect(getGridOccupancyMock).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Node deadline cannot exceed parent deadline.",
+    );
   });
 
   it("creates a bit directly on leaf grids and uses the updated top-right inset origin", async () => {

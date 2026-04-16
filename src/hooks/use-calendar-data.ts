@@ -180,7 +180,7 @@ export function useCalendarData(): {
   }
 
   const calendarItems: CalendarItem[] = [
-    ...activeNodes.filter((node) => node.deadline !== null),
+    ...activeNodes.filter((node) => node.deadline !== null && node.level !== 0),
     ...activeBits.filter((bit) => bit.deadline !== null),
     ...activeChunks.filter((chunk) => chunk.time !== null),
   ];

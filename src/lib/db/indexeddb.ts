@@ -104,6 +104,13 @@ export class IndexedDBDataStore implements DataStore {
     const parsed = createNodeSchema.parse(data);
 
     await this.ensureGridCellAvailable(parsed.parentId, parsed.x, parsed.y);
+    if (parsed.parentId !== null) {
+      await this.assertNodeDeadlineFitsParent(
+        parsed.parentId,
+        parsed.deadline,
+        parsed.deadlineAllDay,
+      );
+    }
 
     const timestamp = Date.now();
     const node = nodeSchema.parse({
@@ -831,6 +838,21 @@ export class IndexedDBDataStore implements DataStore {
       isDeadlineAfter(deadline, deadlineAllDay, parent.deadline, parent.deadlineAllDay)
     ) {
       throw new DeadlineConflictError("child_exceeds_parent", bitId ? [bitId] : []);
+    }
+  }
+
+  private async assertNodeDeadlineFitsParent(
+    parentId: string,
+    deadline: number | null,
+    deadlineAllDay: boolean,
+  ): Promise<void> {
+    const parent = await this.getRequiredNode(parentId);
+    if (
+      deadline !== null &&
+      parent.deadline !== null &&
+      isDeadlineAfter(deadline, deadlineAllDay, parent.deadline, parent.deadlineAllDay)
+    ) {
+      throw new DeadlineConflictError("child_exceeds_parent", []);
     }
   }
 

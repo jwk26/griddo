@@ -30,6 +30,7 @@ import { gridCollisionDetection } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
 import { hexToHsl } from "@/lib/utils/color";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
+import { isDeadlineAfter } from "@/lib/utils/deadline";
 import { AddFlowProvider } from "./add-flow-context";
 
 type PlacementContext =
@@ -118,10 +119,14 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
     title,
     icon,
     colorHex,
+    deadline,
+    deadlineAllDay,
   }: {
     title: string;
     icon: string;
     colorHex: string;
+    deadline: number | null;
+    deadlineAllDay: boolean;
   }) {
     if (nodeId !== null && !node) {
       setError("Unable to find parent node.");
@@ -131,6 +136,16 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
     setError(undefined);
 
     try {
+      if (
+        deadline !== null &&
+        node !== null &&
+        node.deadline !== null &&
+        isDeadlineAfter(deadline, deadlineAllDay, node.deadline, node.deadlineAllDay)
+      ) {
+        setError("Node deadline cannot exceed parent deadline.");
+        return;
+      }
+
       const occupied = await getGridOccupancy(nodeId);
       const originX = placementContext.mode === "auto" ? 2 : placementContext.x;
       const originY = placementContext.mode === "auto" ? 2 : placementContext.y;
@@ -151,8 +166,8 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
         title: title.trim(),
         color: hexToHsl(colorHex),
         icon,
-        deadline: null,
-        deadlineAllDay: false,
+        deadline,
+        deadlineAllDay,
         parentId: nodeId,
         level: nodeId === null ? 0 : displayLevel,
         x: cell.x,
@@ -300,6 +315,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
             />
             <CreateNodeDialog
               error={openDialogType === "node" ? error : undefined}
+              level={displayLevel}
               onOpenChange={(open) => handleDialogOpenChange(open, "node")}
               onSubmit={handleNodeSubmit}
               open={openDialogType === "node"}

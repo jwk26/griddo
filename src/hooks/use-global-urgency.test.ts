@@ -3,9 +3,24 @@
  * The reactive subscription (liveQuery) is an integration concern; these tests
  * verify that the underlying urgency calculation is correct given a set of Bits.
  */
-import { describe, expect, it } from "vitest";
+import "@testing-library/jest-dom/vitest";
+import { renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { getUrgencyLevel } from "@/lib/utils/urgency";
 import type { UrgencyLevel } from "@/types";
+
+const liveQueryMock = vi.hoisted(() => vi.fn());
+const getDataStoreMock = vi.hoisted(() => vi.fn());
+
+vi.mock("dexie", () => ({
+  liveQuery: liveQueryMock,
+}));
+
+vi.mock("@/lib/db/datastore", () => ({
+  getDataStore: getDataStoreMock,
+}));
+
+const { useGlobalUrgency } = await import("@/hooks/use-global-urgency");
 
 const DAY_MS = 86_400_000;
 const now = Date.now();
@@ -50,5 +65,40 @@ describe("useGlobalUrgency — urgency computation", () => {
     const pastDeadline = now - DAY_MS; // yesterday
     const result = computeGlobalUrgency([pastDeadline]);
     expect(result).toBe(3);
+  });
+
+  it("excludes level-0 node deadlines from the urgency scan", async () => {
+    getDataStoreMock.mockResolvedValue({
+      getAllActiveBits: vi.fn().mockResolvedValue([]),
+      getAllActiveNodes: vi.fn().mockResolvedValue([
+        {
+          id: "root-node",
+          title: "Inbox",
+          color: "hsl(210, 80%, 55%)",
+          icon: "Folder",
+          deadline: now - DAY_MS,
+          deadlineAllDay: false,
+          mtime: now,
+          createdAt: now,
+          parentId: null,
+          level: 0,
+          x: 0,
+          y: 0,
+          deletedAt: null,
+        },
+      ]),
+    });
+    liveQueryMock.mockImplementation((query: () => Promise<unknown>) => ({
+      subscribe: ({ next }: { next: (value: unknown) => void }) => {
+        void query().then(next);
+        return { unsubscribe: vi.fn() };
+      },
+    }));
+
+    const { result } = renderHook(() => useGlobalUrgency());
+
+    await waitFor(() => {
+      expect(result.current).toBeNull();
+    });
   });
 });

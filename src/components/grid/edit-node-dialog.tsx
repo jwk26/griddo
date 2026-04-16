@@ -74,12 +74,13 @@ function hexToHsl(hex: string): string {
 }
 
 type EditNodeDialogProps = {
+  level?: number;
   node: Node | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps) {
+export function EditNodeDialog({ level, node, open, onOpenChange }: EditNodeDialogProps) {
   const { updateNode } = useNodeActions();
   const titleId = useId();
   const titleErrorId = useId();
@@ -209,20 +210,22 @@ export function EditNodeDialog({ node, open, onOpenChange }: EditNodeDialogProps
           </div>
 
           {/* Deadline */}
-          <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">Deadline</div>
-            <DateFirstDeadlinePicker
-              value={{ deadline, deadlineAllDay }}
-              onChange={(value) => {
-                setDeadline(value.deadline);
-                setDeadlineAllDay(value.deadlineAllDay);
-              }}
-              onClear={() => {
-                setDeadline(null);
-                setDeadlineAllDay(false);
-              }}
-            />
-          </div>
+          {(level ?? 0) !== 0 && (
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-foreground">Deadline</div>
+              <DateFirstDeadlinePicker
+                value={{ deadline, deadlineAllDay }}
+                onChange={(value) => {
+                  setDeadline(value.deadline);
+                  setDeadlineAllDay(value.deadlineAllDay);
+                }}
+                onClear={() => {
+                  setDeadline(null);
+                  setDeadlineAllDay(false);
+                }}
+              />
+            </div>
+          )}
 
           <p role="alert" className="min-h-[1.25rem] text-sm text-destructive">
             {error ?? ""}

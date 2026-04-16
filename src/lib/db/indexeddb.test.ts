@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Bit, Chunk, Node } from "@/lib/db/schema";
-import { IndexedDBDataStore } from "@/lib/db/indexeddb";
+import { DeadlineConflictError, IndexedDBDataStore } from "@/lib/db/indexeddb";
 
 type StoredRecord = { id: string };
 
@@ -136,6 +136,29 @@ describe("IndexedDBDataStore", () => {
 
     const occupancy = await store.getGridOccupancy(null);
     expect(occupancy.has("2,3")).toBe(true);
+  });
+
+  it("rejects child node creation when the deadline exceeds the parent deadline", async () => {
+    const parent = createNode({
+      deadline: new Date(2026, 3, 20, 0, 0).getTime(),
+      deadlineAllDay: true,
+      level: 0,
+    });
+    const { store } = createStore({ nodes: [parent] });
+
+    await expect(
+      store.createNode({
+        title: "Child",
+        color: "hsl(210, 80%, 55%)",
+        icon: "folder",
+        deadline: new Date(2026, 3, 21, 10, 0).getTime(),
+        deadlineAllDay: false,
+        parentId: parent.id,
+        level: 1,
+        x: 1,
+        y: 0,
+      }),
+    ).rejects.toBeInstanceOf(DeadlineConflictError);
   });
 
   it("soft-deletes descendant nodes and bits with one cascade timestamp", async () => {
