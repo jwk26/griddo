@@ -8,7 +8,6 @@ import { DeadlineConflictModal } from "@/components/shared/deadline-conflict-mod
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useNode } from "@/hooks/use-node";
 import { useNodeActions } from "@/hooks/use-node-actions";
-import { getDataStore } from "@/lib/db/datastore";
 
 type PendingDeadlineValue = {
   deadline: number;
@@ -17,7 +16,7 @@ type PendingDeadlineValue = {
 
 export function BreadcrumbDeadline({ nodeId }: { nodeId: string }) {
   const node = useNode(nodeId);
-  const { updateNode } = useNodeActions();
+  const { updateNode, getChildDeadlineConflicts } = useNodeActions();
   const [isOpen, setIsOpen] = useState(false);
   const [pendingValue, setPendingValue] = useState<PendingDeadlineValue | null>(null);
   const [conflictModalOpen, setConflictModalOpen] = useState(false);
@@ -37,8 +36,7 @@ export function BreadcrumbDeadline({ nodeId }: { nodeId: string }) {
 
     setIsOpen(false);
 
-    const dataStore = await getDataStore();
-    const conflicts = await dataStore.getChildDeadlineConflicts(
+    const conflicts = await getChildDeadlineConflicts(
       nodeId,
       value.deadline,
       value.deadlineAllDay,

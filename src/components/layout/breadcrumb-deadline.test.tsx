@@ -99,6 +99,7 @@ vi.mock("@/hooks/use-node", () => ({
 vi.mock("@/hooks/use-node-actions", () => ({
   useNodeActions: () => ({
     updateNode: updateNodeMock,
+    getChildDeadlineConflicts: getChildDeadlineConflictsMock,
   }),
 }));
 

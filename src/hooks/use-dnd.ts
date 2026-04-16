@@ -21,7 +21,6 @@ import {
   getStaticBlockedCells,
   isCellBlocked,
 } from "@/lib/utils/breadcrumb-zone";
-import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
 
 export type DragActiveItem = {
   id: string;
@@ -64,7 +63,7 @@ const CLOSED_CONFLICT_STATE: ConflictState = {
   pendingTimestamp: null,
 };
 
-export function useDnd(): {
+export function useDnd(getBlockedCells: () => Set<string>): {
   sensors: ReturnType<typeof useSensors>;
   handleDragStart: (event: DragStartEvent) => void;
   handleDragEnd: (event: DragEndEvent) => Promise<{ id: string; type: "node" | "bit"; title: string } | undefined>;
@@ -188,9 +187,7 @@ export function useDnd(): {
 
     if (isGridDropData(dropData)) {
       if (dropData.kind === "grid-cell") {
-        const blockedCells = useBreadcrumbZoneStore.getState().blockedCells;
-
-        if (isCellBlocked(dropData.x, dropData.y, blockedCells)) {
+        if (isCellBlocked(dropData.x, dropData.y, getBlockedCells())) {
           toast("Cell reserved by breadcrumb");
           return;
         }

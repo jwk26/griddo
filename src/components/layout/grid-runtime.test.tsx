@@ -46,6 +46,7 @@ vi.mock("@/hooks/use-grid-actions", () => ({
     createBit: createBitMock,
     softDeleteNode: softDeleteNodeMock,
     softDeleteBit: softDeleteBitMock,
+    runBreadcrumbZoneMigration: runBreadcrumbZoneMigrationMock,
   }),
 }));
 

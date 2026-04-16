@@ -26,7 +26,6 @@ import { useDnd } from "@/hooks/use-dnd";
 import { useGridActions } from "@/hooks/use-grid-actions";
 import { useNode } from "@/hooks/use-node";
 import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
-import { getDataStore } from "@/lib/db/datastore";
 import { gridCollisionDetection } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
 import {
@@ -79,13 +78,14 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
     pendingNodeMove,
     pendingAncestorMove,
     sensors,
-  } = useDnd();
+  } = useDnd(() => useBreadcrumbZoneStore.getState().blockedCells);
   const {
     createBit,
     createNode,
     getGridOccupancy,
     softDeleteBit,
     softDeleteNode,
+    runBreadcrumbZoneMigration,
   } = useGridActions();
   const [placementContext, setPlacementContext] = useState<PlacementContext>({
     mode: "auto",
@@ -127,9 +127,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
       const sessionKey = nodeId ?? "__root__";
       if (cells.size > 0 && !migrationSessionRef.current.has(sessionKey)) {
         migrationSessionRef.current.add(sessionKey);
-        void getDataStore().then((store) =>
-          store.runBreadcrumbZoneMigration(nodeId, cells),
-        );
+        void runBreadcrumbZoneMigration(nodeId, cells);
       }
     }
 

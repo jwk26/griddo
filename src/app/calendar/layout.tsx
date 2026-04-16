@@ -32,7 +32,7 @@ export default function CalendarLayout({
     handleDragStart,
     overTargetId,
     sensors,
-  } = useDnd();
+  } = useDnd(() => new Set<string>());
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
