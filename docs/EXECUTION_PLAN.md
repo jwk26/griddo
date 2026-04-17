@@ -1636,7 +1636,7 @@ These apply across all phases:
 > - Pool collapse hides pool content and expands the calendar area; state persists in Zustand
 
 ### Task 60: Calendar Sidebar + Header Redesign
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/layout/sidebar.tsx` (update), `src/app/calendar/layout.tsx` (update), `src/app/calendar/weekly/page.tsx` (update), `src/app/calendar/monthly/page.tsx` (update)
 - **Dependencies:** Phase 10 complete
 - **Actions:**
