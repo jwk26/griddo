@@ -36,3 +36,16 @@ None.
 **Fix:** Converted `SidebarIconButton` to `forwardRef`. Type extended with `Omit<ComponentPropsWithoutRef<"button">, "title" | "onClick">` so Radix-injected props are accepted and spread onto the button. `onClick` changed to optional (`onClick?`) to be compatible with the extended type.
 
 **Test gap noted:** `sidebar.test.tsx` masks this class of bug — its `PopoverTrigger` mock manually calls `onOpenChange` via `cloneElement` rather than modeling actual Radix Slot/asChild behavior. The test passes regardless of whether the real trigger wiring works. Fixing the mock would require using the real Radix Popover in tests (significant test refactoring; deferred).
+
+### Issue 2 — Disabled Pencil hover bleeds through; Escape leaves focus ring on chooser option
+
+**Category:** Bug (post-implementation, caught by manual testing)
+**Status:** Fixed
+
+**Description:**
+1. Pencil button on calendar routes: `opacity-40` dimmed the button but `hover:bg-accent hover:text-foreground` still activated on hover, making it read as a hoverable control.
+2. Chooser popover: pressing Escape left a visible `:focus-visible` ring on the Node or Bit option that had focus before close.
+
+**Fixes:**
+1. Added `pointer-events-none` to the disabled Pencil's `className`. CSS `:hover` no longer fires on the button; pointer events pass through to the `cursor-not-allowed` wrapper div, so the cursor remains correct. `disabled` attribute still owns semantic inertness.
+2. Added `onEscapeKeyDown={() => { (document.activeElement as HTMLElement)?.blur(); }}` to `PopoverContent`. This blurs the focused option before Radix processes the close, removing the visual ring. Radix still returns focus to the trigger via its own `onCloseAutoFocus` mechanism — no global focus suppression.

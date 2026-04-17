@@ -111,6 +111,7 @@ export function Sidebar({
           <PopoverContent
             align="start"
             className="flex w-32 flex-col gap-0.5 rounded-lg border border-border bg-popover p-1 shadow-md"
+            onEscapeKeyDown={() => { (document.activeElement as HTMLElement)?.blur(); }}
             side="right"
             sideOffset={12}
           >
@@ -140,7 +141,7 @@ export function Sidebar({
       {isCalendarRoute ? (
         <div className="cursor-not-allowed" title="Editing restricted in Calendar view">
           <SidebarIconButton
-            className="opacity-40"
+            className="opacity-40 pointer-events-none"
             disabled={true}
             icon={Pencil}
             isActive={false}
