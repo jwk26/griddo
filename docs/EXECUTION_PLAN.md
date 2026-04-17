@@ -1718,7 +1718,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 63: Calendar Pool Bit Creation + Parent Selector
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/calendar/parent-node-selector.tsx` (create), `src/components/grid/create-bit-dialog.tsx` (update), `src/app/calendar/layout.tsx` (update)
 - **Dependencies:** Phase 11 complete
 - **Actions:**
