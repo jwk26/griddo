@@ -111,6 +111,7 @@ export function Sidebar({
           <PopoverContent
             align="start"
             className="flex w-32 flex-col gap-0.5 rounded-lg border border-border bg-popover p-1 shadow-md"
+            onCloseAutoFocus={(e) => e.preventDefault()}
             onEscapeKeyDown={() => { (document.activeElement as HTMLElement)?.blur(); }}
             side="right"
             sideOffset={12}
