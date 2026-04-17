@@ -1675,6 +1675,18 @@ These apply across all phases:
 
 > **Creation chooser wiring only.** T60 wires the sidebar `+` to a Node-vs-Bit chooser (two-button popover). The chooser calls into Phase 12's creation dialogs. For Phase 11, the chooser can open placeholder stubs — Phase 12 completes the flow.
 
+> **Radix PopoverTrigger asChild requires forwardRef.** Custom components used as `PopoverTrigger asChild` children must be converted to `forwardRef` and spread `...rest` props onto the underlying `<button>`. Plain function components silently break the trigger — Radix Slot cannot inject `ref` or `data-state`/`aria-expanded` props. Tests using manual `onOpenChange` mocks mask this bug class.
+
+> **pointer-events-none for disabled buttons in a hover-able context.** `opacity-40` dims visually but CSS `:hover` still fires. Add `pointer-events-none` to the disabled element's className to suppress hover. Pointer events pass through to the parent wrapper, so a `cursor-not-allowed` wrapper div still shows the correct cursor without needing extra CSS.
+
+> **Narrow collapsed bar: verify button geometry fits.** 2.5rem (40px) does not fit `px-2` + `h-8 w-8` button (32px + 16px = 48px). Use 3rem (48px) minimum for a bar that holds a standard icon button with standard side padding.
+
+> **aria-controls must not reference unmounted elements.** When pool content is unmounted on collapse, `aria-controls` must be conditional: `aria-controls={isCollapsed ? undefined : "element-id"}`. A permanent `aria-controls` pointing to a non-existent DOM id is an accessibility violation.
+
+> **Horizontal pool collapse: axis clarification.** The execution plan text said "height transition" — the correct axis is width. When writing future specs for panel collapse, be explicit about the animation axis (width vs. height) to avoid prompt ambiguity.
+
+> **Full issue log:** `docs/issues/Issues_Phase_11.md`
+
 ---
 
 ## Phase 12: Calendar Creation Flows
