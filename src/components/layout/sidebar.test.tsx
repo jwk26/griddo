@@ -126,6 +126,43 @@ describe("Sidebar", () => {
     expect(screen.queryByRole("button", { name: "Node" })).not.toBeInTheDocument();
   });
 
+  it("calls onNodeCreate and closes chooser when Node option is clicked", () => {
+    usePathnameMock.mockReturnValue("/calendar/weekly");
+    const onNodeCreate = vi.fn();
+
+    render(<Sidebar onNodeCreate={onNodeCreate} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add item" }));
+    fireEvent.click(screen.getByRole("button", { name: "Node" }));
+
+    expect(onNodeCreate).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("button", { name: "Node" })).not.toBeInTheDocument();
+  });
+
+  it("calls onBitCreate and closes chooser when Bit option is clicked", () => {
+    usePathnameMock.mockReturnValue("/calendar/weekly");
+    const onBitCreate = vi.fn();
+
+    render(<Sidebar onBitCreate={onBitCreate} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add item" }));
+    fireEvent.click(screen.getByRole("button", { name: "Bit" }));
+
+    expect(onBitCreate).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("button", { name: "Bit" })).not.toBeInTheDocument();
+  });
+
+  it("closes chooser without error when Node clicked and onNodeCreate is absent", () => {
+    usePathnameMock.mockReturnValue("/calendar/weekly");
+
+    render(<Sidebar />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add item" }));
+    fireEvent.click(screen.getByRole("button", { name: "Node" }));
+
+    expect(screen.queryByRole("button", { name: "Node" })).not.toBeInTheDocument();
+  });
+
   it("disables edit mode in calendar view and keeps the tooltip on the wrapper", () => {
     usePathnameMock.mockReturnValue("/calendar/monthly");
 
