@@ -1656,7 +1656,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 61: Pool Fold/Unfold
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/app/calendar/layout.tsx` (update), `src/stores/calendar-store.ts` (update)
 - **Dependencies:** Task 60
 - **Actions:**
