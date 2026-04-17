@@ -1702,7 +1702,7 @@ These apply across all phases:
 > - Create Bit button disabled until a parent Node is selected
 
 ### Task 62: Calendar Pool Node Creation
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/app/calendar/layout.tsx` (update), `src/hooks/use-grid-actions.ts` (update if needed)
 - **Dependencies:** Phase 11 complete
 - **Actions:**
