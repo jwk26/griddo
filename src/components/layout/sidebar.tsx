@@ -4,7 +4,7 @@ import { useDroppable } from "@dnd-kit/core";
 import type { LucideIcon } from "lucide-react";
 import { Calendar, Home, Layers, Pencil, Plus, Search, Trash2, X, Zap } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { ComponentPropsWithoutRef, forwardRef, useState } from "react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useGlobalUrgency } from "@/hooks/use-global-urgency";
@@ -20,23 +20,22 @@ type SidebarIconButtonProps = {
   icon: LucideIcon;
   title?: string | null;
   label: string;
-  onClick: () => void;
+  onClick?: () => void;
   isActive?: boolean;
 };
 
-function SidebarIconButton({
-  className,
-  disabled = false,
-  icon: Icon,
-  title,
-  label,
-  onClick,
-  isActive = false,
-}: SidebarIconButtonProps) {
+const SidebarIconButton = forwardRef<
+  HTMLButtonElement,
+  SidebarIconButtonProps & Omit<ComponentPropsWithoutRef<"button">, "title" | "onClick">
+>(function SidebarIconButton(
+  { className, disabled = false, icon: Icon, title, label, onClick, isActive = false, ...rest },
+  ref,
+) {
   const buttonTitle = title === undefined ? label : title;
 
   return (
     <button
+      ref={ref}
       type="button"
       aria-label={label}
       disabled={disabled}
@@ -49,11 +48,12 @@ function SidebarIconButton({
         className,
       )}
       onClick={onClick}
+      {...rest}
     >
       <Icon className="h-5 w-5" />
     </button>
   );
-}
+});
 
 function DeleteDropTarget() {
   const { isOver, setNodeRef } = useDroppable({
