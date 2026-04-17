@@ -16,7 +16,7 @@
 | Batch | Tasks | Status |
 |-------|-------|--------|
 | Batch 1 | T60 | Implemented |
-| Batch 2 | T61 | Pending |
+| Batch 2 | T61 | Implemented |
 
 ### Deviations
 
@@ -49,3 +49,19 @@ None.
 **Fixes:**
 1. Added `pointer-events-none` to the disabled Pencil's `className`. CSS `:hover` no longer fires on the button; pointer events pass through to the `cursor-not-allowed` wrapper div, so the cursor remains correct. `disabled` attribute still owns semantic inertness.
 2. Added `onEscapeKeyDown={() => { (document.activeElement as HTMLElement)?.blur(); }}` to `PopoverContent`. This blurs the focused option before Radix processes the close, removing the visual ring. Radix still returns focus to the trigger via its own `onCloseAutoFocus` mechanism — no global focus suppression.
+
+### Issue 3 — Pool toggle button missing focus-visible ring
+
+**Category:** Accessibility gap (caught by Gemini post-code review)
+**Status:** Fixed
+
+**Description:** The collapse/expand toggle button in `calendar/layout.tsx` had `hover:bg-accent` but no `focus-visible` styles. Keyboard users navigating to the button had no visual focus indicator.
+
+**Fix:** Added `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1` to the toggle button className, matching the codebase standard used in `SidebarIconButton`.
+
+### Note — AnimatePresence without motion.div child
+
+**Category:** Observation (Gemini post-code review, not a spec violation)
+**Status:** Accepted as-is
+
+`AnimatePresence` wraps the pool content but the immediate child is a plain `div`, not a `motion.div` with an `exit` prop. This means the content unmounts instantly rather than fading. The Gemini spec specified unmounting as the visibility strategy (not a fade-out), and `motion.aside overflow-hidden` clips the content during the 250ms width animation, providing adequate visual transition. No exit animation on the content wrapper is required.
