@@ -80,9 +80,13 @@ const noop = () => {};
 export function Sidebar({
   onAddClick,
   dragActiveItem,
+  onNodeCreate,
+  onBitCreate,
 }: {
   onAddClick?: () => void;
   dragActiveItem?: DragActiveItem;
+  onNodeCreate?: () => void;
+  onBitCreate?: () => void;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -119,7 +123,10 @@ export function Sidebar({
             <button
               type="button"
               className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-              onClick={() => setIsChooserOpen(false)}
+              onClick={() => {
+                setIsChooserOpen(false);
+                onNodeCreate?.();
+              }}
             >
               <Layers className="h-4 w-4" />
               Node
@@ -127,7 +134,10 @@ export function Sidebar({
             <button
               type="button"
               className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-              onClick={() => setIsChooserOpen(false)}
+              onClick={() => {
+                setIsChooserOpen(false);
+                onBitCreate?.();
+              }}
             >
               <Zap className="h-4 w-4" />
               Bit
