@@ -6,11 +6,14 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState, type ReactNode } from "react";
 import { ItemsPool } from "@/components/calendar/items-pool";
 import { NodePool } from "@/components/calendar/node-pool";
+import { CreateBitDialog } from "@/components/grid/create-bit-dialog";
+import type { CreateBitDialogValues } from "@/components/grid/create-bit-dialog";
 import { CreateNodeDialog } from "@/components/grid/create-node-dialog";
 import { Sidebar } from "@/components/layout/sidebar";
 import { DeadlineConflictModal } from "@/components/shared/deadline-conflict-modal";
 import { useDnd } from "@/hooks/use-dnd";
 import { useGridActions } from "@/hooks/use-grid-actions";
+import { GRID_COLS } from "@/lib/constants";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import { hexToHsl } from "@/lib/utils/color";
 import { cn } from "@/lib/utils";
@@ -23,7 +26,9 @@ export default function CalendarLayout({
 }) {
   const [isNodeDialogOpen, setIsNodeDialogOpen] = useState(false);
   const [createError, setCreateError] = useState<string | undefined>(undefined);
-  const { getGridOccupancy, createNode } = useGridActions();
+  const [isBitDialogOpen, setIsBitDialogOpen] = useState(false);
+  const [bitCreateError, setBitCreateError] = useState<string | undefined>(undefined);
+  const { getGridOccupancy, createNode, createBit } = useGridActions();
   const {
     conflictState,
     handleConflictKeepChild,
@@ -35,7 +40,10 @@ export default function CalendarLayout({
     sensors,
   } = useDnd(() => new Set<string>());
   const isPoolCollapsed = useCalendarStore((state) => state.isPoolCollapsed);
+  const drillDownPath = useCalendarStore((state) => state.drillDownPath);
   const togglePool = useCalendarStore((state) => state.togglePool);
+  const defaultParentId =
+    drillDownPath.length > 0 ? (drillDownPath[drillDownPath.length - 1] ?? null) : null;
 
   async function handleCalendarNodeSubmit({
     title,
@@ -78,6 +86,48 @@ export default function CalendarLayout({
     }
   }
 
+  async function handleCalendarBitSubmit({
+    title,
+    description,
+    icon,
+    priority,
+    parentId,
+    deadline: _deadline,
+    deadlineAllDay: _deadlineAllDay,
+  }: CreateBitDialogValues) {
+    setBitCreateError(undefined);
+
+    try {
+      if (!parentId) {
+        setBitCreateError("A parent node is required.");
+        return;
+      }
+
+      const occupied = await getGridOccupancy(parentId);
+      const cell = findNearestEmptyCell(occupied, GRID_COLS - 3, 2, new Set());
+
+      if (cell === null) {
+        setBitCreateError("No empty cells available in the parent node.");
+        return;
+      }
+
+      await createBit({
+        title: title.trim(),
+        description: description.trim(),
+        icon,
+        priority,
+        parentId,
+        deadline: null,
+        deadlineAllDay: false,
+        x: cell.x,
+        y: cell.y,
+      });
+      setIsBitDialogOpen(false);
+    } catch (err) {
+      setBitCreateError(err instanceof Error ? err.message : "Unable to create bit.");
+    }
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar
@@ -85,7 +135,10 @@ export default function CalendarLayout({
           setCreateError(undefined);
           setIsNodeDialogOpen(true);
         }}
-        onBitCreate={() => {}}
+        onBitCreate={() => {
+          setBitCreateError(undefined);
+          setIsBitDialogOpen(true);
+        }}
       />
       <main className="ml-12 flex min-w-0 flex-1 flex-col overflow-hidden">
         <DndContext
@@ -191,6 +244,19 @@ export default function CalendarLayout({
         level={0}
         error={createError}
         onSubmit={handleCalendarNodeSubmit}
+      />
+      <CreateBitDialog
+        open={isBitDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setBitCreateError(undefined);
+            setIsBitDialogOpen(false);
+          }
+        }}
+        requireParent={true}
+        defaultParentId={defaultParentId}
+        error={bitCreateError}
+        onSubmit={handleCalendarBitSubmit}
       />
     </div>
   );

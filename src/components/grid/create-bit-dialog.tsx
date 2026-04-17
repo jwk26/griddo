@@ -2,6 +2,7 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useId, useRef, useState } from "react";
+import { ParentNodeSelector } from "@/components/calendar/parent-node-selector";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useCalendarData } from "@/hooks/use-calendar-data";
 import { DEFAULT_ICON, NODE_ICON_MAP, NODE_ICON_NAMES } from "@/lib/constants/node-icons";
 import { cn } from "@/lib/utils";
 import type { Bit } from "@/types";
@@ -21,13 +23,14 @@ type Priority = Bit["priority"];
 const PRIORITY_OPTIONS: Priority[] = ["high", "mid", "low", null];
 const PRIORITY_LABELS: Record<string, string> = { high: "High", mid: "Mid", low: "Low" };
 
-type CreateBitDialogValues = {
+export type CreateBitDialogValues = {
   title: string;
   description: string;
   icon: string;
   deadline: number | null;
   deadlineAllDay: boolean;
   priority: Priority;
+  parentId?: string | null;
 };
 
 type CreateBitDialogProps = {
@@ -35,6 +38,8 @@ type CreateBitDialogProps = {
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: CreateBitDialogValues) => Promise<void>;
   error?: string;
+  requireParent?: boolean;
+  defaultParentId?: string | null;
 };
 
 export function CreateBitDialog({
@@ -42,11 +47,14 @@ export function CreateBitDialog({
   onOpenChange,
   onSubmit,
   error,
+  requireParent = false,
+  defaultParentId = null,
 }: CreateBitDialogProps) {
   const titleId = useId();
   const titleErrorId = useId();
   const descriptionId = useId();
   const iconId = useId();
+  const { nodes } = useCalendarData();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [icon, setIcon] = useState(DEFAULT_ICON);
@@ -54,6 +62,7 @@ export function CreateBitDialog({
   const [timeStr, setTimeStr] = useState("");
   const [allDay, setAllDay] = useState(false);
   const [priority, setPriority] = useState<Priority>(null);
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(defaultParentId ?? null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [titleError, setTitleError] = useState(false);
   const prevOpenRef = useRef(false);
@@ -67,6 +76,7 @@ export function CreateBitDialog({
       setTimeStr("");
       setAllDay(false);
       setPriority(null);
+      setSelectedParentId(defaultParentId ?? null);
       setIsSubmitting(false);
       setTitleError(false);
     } else if (!open) {
@@ -120,6 +130,7 @@ export function CreateBitDialog({
         deadline,
         deadlineAllDay,
         priority,
+        ...(requireParent ? { parentId: selectedParentId } : {}),
       });
     } finally {
       setIsSubmitting(false);
@@ -137,6 +148,15 @@ export function CreateBitDialog({
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
+          {requireParent ? (
+            <ParentNodeSelector
+              defaultParentId={defaultParentId}
+              nodes={nodes}
+              onChange={setSelectedParentId}
+              value={selectedParentId}
+            />
+          ) : null}
+
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground" htmlFor={titleId}>
               Title
@@ -193,10 +213,10 @@ export function CreateBitDialog({
                       aria-checked={isSelected}
                       aria-label={`${iconName} icon`}
                       className={cn(
-                        "flex size-10 items-center justify-center rounded-md border bg-background text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "flex size-10 items-center justify-center rounded-md border bg-background text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                         isSelected
-                          ? "ring-2 ring-primary ring-offset-2"
-                          : "border-input hover:border-primary/50 hover:text-foreground",
+                          ? "border-border bg-accent/60 text-foreground ring-2 ring-ring ring-offset-1"
+                          : "border-input hover:border-border hover:bg-accent/40 hover:text-foreground",
                       )}
                       onClick={() => setIcon(iconName)}
                       title={iconName}
@@ -219,7 +239,7 @@ export function CreateBitDialog({
                   type="button"
                   onClick={() => setPriority(option)}
                   className={cn(
-                    "inline-flex items-center rounded-full px-[10px] py-[3px] text-[11px] font-semibold uppercase tracking-[0.05em] transition-colors",
+                    "inline-flex items-center rounded-full px-[10px] py-[3px] text-[11px] font-semibold uppercase tracking-[0.05em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                     option === "high" &&
                       priority === "high" &&
                       "bg-priority-high-bg text-priority-high ring-2 ring-priority-high",
@@ -252,34 +272,36 @@ export function CreateBitDialog({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">Deadline</div>
-            <div className="flex items-center gap-2">
-              <Input
-                className="w-[150px]"
-                type="date"
-                value={dateStr}
-                onChange={(event) => setDateStr(event.target.value)}
-              />
-              {!allDay ? (
+          {!requireParent ? (
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-foreground">Deadline</div>
+              <div className="flex items-center gap-2">
                 <Input
-                  className="w-[110px]"
-                  type="time"
-                  value={timeStr}
-                  onChange={(event) => setTimeStr(event.target.value)}
+                  className="w-[150px]"
+                  type="date"
+                  value={dateStr}
+                  onChange={(event) => setDateStr(event.target.value)}
                 />
-              ) : null}
-              <label className="flex cursor-pointer items-center gap-1.5 text-sm text-muted-foreground">
-                <input
-                  type="checkbox"
-                  checked={allDay}
-                  onChange={(event) => setAllDay(event.target.checked)}
-                  className="h-4 w-4 accent-primary"
-                />
-                All day
-              </label>
+                {!allDay ? (
+                  <Input
+                    className="w-[110px]"
+                    type="time"
+                    value={timeStr}
+                    onChange={(event) => setTimeStr(event.target.value)}
+                  />
+                ) : null}
+                <label className="flex cursor-pointer items-center gap-1.5 text-sm text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={allDay}
+                    onChange={(event) => setAllDay(event.target.checked)}
+                    className="h-4 w-4 accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                  />
+                  All day
+                </label>
+              </div>
             </div>
-          </div>
+          ) : null}
 
           <p role="alert" className="min-h-[1.25rem] text-sm text-destructive">
             {error ?? ""}
@@ -294,7 +316,10 @@ export function CreateBitDialog({
             >
               Cancel
             </Button>
-            <Button disabled={isSubmitting} type="submit">
+            <Button
+              disabled={isSubmitting || (requireParent && !selectedParentId)}
+              type="submit"
+            >
               Create Bit
             </Button>
           </DialogFooter>
