@@ -40,3 +40,17 @@ No significant issues. Implementation was a clean reuse of existing infrastructu
 - **Root Cause:** `selectedNode` derives from `nodes.find(n => n.id === value)` — nodes are empty until the liveQuery resolves, so `selectedNode` is undefined at mount even when `value` is correctly set.
 - **Solution:** Changed the confirmed-view gate from `isConfirmed && selectedNode` to `isConfirmed && value`. The confirmed card container renders as soon as a value is committed; the card's inner content (icon, title, path) only renders once `selectedNode` is available. This prevents the browsing-view flash.
 - **Learning:** When a confirmed state depends on async-loaded data, gate the *view mode* on the id (stable, synchronous) and gate the *content* on the loaded record (async). Don't couple both to the same condition.
+
+#### Issue 2: Lint warnings from `_`-prefixed intentional params
+
+- **Problem:** `_deadline` and `_deadlineAllDay` params in `calendar/layout.tsx` handlers generate `@typescript-eslint/no-unused-vars` warnings even though `_` prefix is the project convention for accepted-but-ignored params.
+- **Root Cause:** ESLint's `no-unused-vars` rule sees the `_`-prefixed destructured params as unused. The rule is configured as `warning` not `error`, so the gate passes.
+- **Solution:** No fix needed — warnings are acceptable and this is the intended pattern. The `_` prefix signals intent clearly to readers.
+- **Learning:** Accept this warning class as a known project trade-off. Do not suppress with eslint-disable comments unless it becomes a distraction.
+
+#### Issue 3: `useEffect` missing `defaultParentId` dependency in `CreateBitDialog`
+
+- **Problem:** ESLint `react-hooks/exhaustive-deps` warns that `defaultParentId` is missing from the `useEffect` dependency array in `create-bit-dialog.tsx`.
+- **Root Cause:** The effect runs on `open` transitions and resets `selectedParentId` to `defaultParentId`. Including `defaultParentId` in deps would re-run the reset effect whenever the parent component re-renders with a new `defaultParentId`, which is not the intended behavior.
+- **Solution:** Warning accepted. The current deps (`[open]`) are intentionally narrower than the exhaustive set. No fix needed.
+- **Learning:** `react-hooks/exhaustive-deps` is sometimes wrong for state-reset effects that should only fire on explicit event transitions (open/close). Document the intent with a comment if this pattern appears again.

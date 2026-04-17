@@ -1748,6 +1748,12 @@ These apply across all phases:
 
 > **Parent Node selector is the most complex new component.** The tree-browsing Node selector (Task 63) requires a browse-and-select interaction pattern. Consider implementing it as a standalone component reusable for future "pick a Node" interactions (e.g., move-to, reparent).
 
+> **Async-load confirmed-view pattern.** When a component shows a "confirmed" state that depends on async-loaded data (liveQuery), gate the view mode on the stable id and gate the rendered content on the loaded record. `isConfirmed && value` controls the view; `selectedNode` controls the content inside it. Coupling both to the same condition causes a visible flash to the unconfirmed state on mount.
+
+> **`useCalendarData` called unconditionally in `CreateBitDialog`.** React hook rules require unconditional calls, so `useCalendarData()` runs even when `requireParent=false`. The nodes array is only consumed in the selector branch. Acceptable overhead; do not work around it with conditional rendering tricks that move the hook call.
+
+> **Full issue log:** `docs/issues/Issues_Phase_12.md`
+
 ---
 
 ## Phase 13: Weekly Redesign
