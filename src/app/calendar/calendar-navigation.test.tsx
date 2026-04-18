@@ -6,13 +6,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const usePathnameMock = vi.hoisted(() => vi.fn());
 const navigateWeekMock = vi.hoisted(() => vi.fn());
 const navigateMonthMock = vi.hoisted(() => vi.fn());
+const setExpandedDayMock = vi.hoisted(() => vi.fn());
 const weeklyItemsMock = vi.hoisted(() => vi.fn(() => new Map()));
 const monthlyItemsMock = vi.hoisted(() => vi.fn(() => new Map()));
+const renderedDayColumns = vi.hoisted(
+  () =>
+    [] as Array<{
+      date: Date;
+      isExpanded: boolean;
+      isToday: boolean;
+      onExpand: () => void;
+    }>,
+);
 const calendarStoreState = vi.hoisted(() => ({
+  expandedDay: null as number | null,
   currentMonth: new Date(2026, 3, 1),
   currentWeekStart: new Date(2026, 3, 13),
   navigateMonth: navigateMonthMock,
   navigateWeek: navigateWeekMock,
+  setExpandedDay: setExpandedDayMock,
 }));
 
 vi.mock("next/link", () => ({
@@ -27,14 +39,33 @@ vi.mock("next/navigation", () => ({
   usePathname: usePathnameMock,
 }));
 
+vi.mock("motion/react", () => ({
+  LayoutGroup: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
+
 vi.mock("@dnd-kit/core", () => ({
   useDroppable: () => ({ isOver: false, setNodeRef: vi.fn() }),
 }));
 
 vi.mock("@/components/calendar/day-column", () => ({
-  DayColumn: ({ date }: { date: Date }) => (
-    <div data-testid="day-column">{date.toISOString()}</div>
-  ),
+  DayColumn: ({
+    date,
+    isExpanded,
+    isToday,
+    onExpand,
+  }: {
+    date: Date;
+    isExpanded: boolean;
+    isToday: boolean;
+    onExpand: () => void;
+  }) => {
+    renderedDayColumns.push({ date, isExpanded, isToday, onExpand });
+    return (
+      <button data-testid="day-column" type="button" onClick={onExpand}>
+        {date.toISOString()}
+      </button>
+    );
+  },
 }));
 
 vi.mock("@/app/calendar/monthly/_components/date-cell-popover", () => ({
@@ -70,7 +101,13 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date(2026, 3, 15, 9, 0));
   usePathnameMock.mockReturnValue("/calendar/weekly");
+  calendarStoreState.expandedDay = null;
+  calendarStoreState.currentMonth = new Date(2026, 3, 1);
+  calendarStoreState.currentWeekStart = new Date(2026, 3, 13);
+  renderedDayColumns.length = 0;
 });
 
 describe("calendar navigation rows", () => {
@@ -100,6 +137,41 @@ describe("calendar navigation rows", () => {
     expect(navigateWeekMock).toHaveBeenNthCalledWith(2, 1);
   });
 
+  it("expands today by default when no explicit expanded day is stored", () => {
+    render(<WeeklyCalendarPage />);
+
+    expect(renderedDayColumns).toHaveLength(7);
+    expect(renderedDayColumns[2]).toMatchObject({
+      isExpanded: true,
+      isToday: true,
+    });
+    expect(renderedDayColumns.filter((column) => column.isExpanded)).toHaveLength(1);
+  });
+
+  it("uses the stored expanded day index when present", () => {
+    calendarStoreState.expandedDay = 4;
+
+    render(<WeeklyCalendarPage />);
+
+    expect(renderedDayColumns[4]).toMatchObject({
+      isExpanded: true,
+      isToday: false,
+    });
+    expect(renderedDayColumns[2]).toMatchObject({
+      isExpanded: false,
+      isToday: true,
+    });
+    expect(renderedDayColumns.filter((column) => column.isExpanded)).toHaveLength(1);
+  });
+
+  it("writes the clicked day index back to the store", () => {
+    render(<WeeklyCalendarPage />);
+
+    fireEvent.click(screen.getAllByTestId("day-column")[5]);
+
+    expect(setExpandedDayMock).toHaveBeenCalledWith(5);
+  });
+
   it("renders the month grid with the shared toggle layout", () => {
     usePathnameMock.mockReturnValue("/calendar/monthly");
 
@@ -125,4 +197,8 @@ describe("calendar navigation rows", () => {
     expect(navigateMonthMock).toHaveBeenNthCalledWith(1, -1);
     expect(navigateMonthMock).toHaveBeenNthCalledWith(2, 1);
   });
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });

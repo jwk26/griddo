@@ -1,9 +1,9 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import { AnimatePresence, motion } from "motion/react";
 import { format } from "date-fns";
-import { Clock, MoreHorizontal, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { Clock, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import { dayColumnExpandVariants } from "@/lib/animations/calendar";
@@ -12,8 +12,6 @@ import { getCalendarDateDropId } from "@/lib/calendar-dnd";
 import { cn } from "@/lib/utils";
 import { CompactBitItem } from "./compact-bit-item";
 import type { Bit, Chunk, Node } from "@/types";
-
-const COLLAPSED_ITEM_LIMIT = 5;
 
 function getItemTimestamp(item: Node | Bit | Chunk) {
   if ("deadline" in item) {
@@ -101,18 +99,21 @@ function CompactNodeItem({
 
 export function DayColumn({
   date,
-  expanded,
+  isExpanded,
+  isToday,
   items,
-  onExpandedChange,
+  onExpand,
   parentColorMap,
 }: {
   date: Date;
-  expanded: boolean;
+  isExpanded: boolean;
+  isToday: boolean;
   items: (Node | Bit | Chunk)[];
-  onExpandedChange: (expanded: boolean) => void;
+  onExpand: () => void;
   parentColorMap: Map<string, string>;
 }) {
   const router = useRouter();
+  const reducedMotion = useReducedMotion();
   const { unscheduleNode, unscheduleBit, unscheduleChunk } = useCalendarActions();
   const dateKey = format(date, "yyyy-MM-dd");
   const { isOver, setNodeRef } = useDroppable({
@@ -124,8 +125,6 @@ export function DayColumn({
     },
   });
   const sortedItems = sortCalendarItems(items);
-  const visibleItems = expanded ? sortedItems : sortedItems.slice(0, COLLAPSED_ITEM_LIMIT);
-  const hiddenCount = sortedItems.length - visibleItems.length;
 
   function openBit(bitId: string) {
     const next = new URLSearchParams(window.location.search);
@@ -231,27 +230,56 @@ export function DayColumn({
   }
 
   return (
-    <div
+    <motion.div
       ref={setNodeRef}
+      layout="size"
+      transition={
+        reducedMotion ? { duration: 0 } : { type: "spring", bounce: 0, duration: 0.45 }
+      }
       className={cn(
-        "flex min-w-[var(--calendar-day-min-width)] flex-1 flex-col rounded-3xl border border-border bg-card/80 p-3 shadow-sm transition-colors",
-        isOver && "border-primary bg-accent/60",
+        "flex min-w-[var(--calendar-day-min-width)] flex-col rounded-3xl border p-3 shadow-sm transition-colors",
+        isExpanded
+          ? "flex-[3] border-border/80 bg-card shadow-md"
+          : "flex-1 border-border/40 bg-muted/30 dark:bg-card/40",
+        isToday && isExpanded && "ring-2 ring-primary",
+        isToday && !isExpanded && "ring-2 ring-primary/40",
+        isOver && "border-primary bg-primary/5",
       )}
-      onMouseDown={(event) => {
-        if (expanded && event.target === event.currentTarget) {
-          onExpandedChange(false);
-        }
-      }}
     >
-      <div className="mb-3 flex items-baseline justify-between gap-2">
+      <button
+        type="button"
+        className={cn(
+          "mb-3 flex w-full items-baseline justify-between gap-2 rounded-xl px-1 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+          !isExpanded && "cursor-pointer hover:bg-accent/80",
+        )}
+        onClick={() => {
+          if (!isExpanded) {
+            onExpand();
+          }
+        }}
+      >
         <div>
-          <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
+          <p
+            className={cn(
+              "text-xs uppercase tracking-[0.12em]",
+              isExpanded ? "font-bold text-foreground" : "text-muted-foreground/80",
+            )}
+          >
             {format(date, "EEE")}
           </p>
-          <p className="text-lg font-semibold text-foreground">{format(date, "d")}</p>
+          <p
+            className={cn(
+              "text-lg font-semibold",
+              isToday ? "text-primary" : isExpanded ? "text-foreground" : "text-muted-foreground/80",
+            )}
+          >
+            {format(date, "d")}
+          </p>
         </div>
-        <span className="text-xs text-muted-foreground">{sortedItems.length} items</span>
-      </div>
+        <span className={cn("text-xs", isExpanded ? "text-foreground" : "text-muted-foreground")}>
+          {sortedItems.length} items
+        </span>
+      </button>
 
       {sortedItems.length === 0 ? (
         <div className="flex min-h-40 flex-1 items-center justify-center rounded-2xl border border-dashed border-border text-center text-sm text-muted-foreground">
@@ -260,12 +288,12 @@ export function DayColumn({
       ) : (
         <AnimatePresence initial={false}>
           <motion.div
-            animate={expanded ? "expanded" : "collapsed"}
+            animate={isExpanded ? "expanded" : "collapsed"}
             className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto"
             initial={false}
             variants={dayColumnExpandVariants}
           >
-            {visibleItems.map((item) => (
+            {sortedItems.map((item) => (
               <div key={item.id}>
                 {"color" in item && sortedItems.length > 1 ? (
                   <CompactNodeItem
@@ -278,18 +306,9 @@ export function DayColumn({
                 )}
               </div>
             ))}
-            {hiddenCount > 0 ? (
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 self-start rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                onClick={() => onExpandedChange(true)}
-              >
-                <MoreHorizontal className="h-3.5 w-3.5" />+{hiddenCount} more
-              </button>
-            ) : null}
           </motion.div>
         </AnimatePresence>
       )}
-    </div>
+    </motion.div>
   );
 }

@@ -2,9 +2,10 @@
 
 import { addDays, endOfWeek, format, startOfToday } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutGroup } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { DayColumn } from "@/components/calendar/day-column";
 import { Button } from "@/components/ui/button";
 import { useCalendarData } from "@/hooks/use-calendar-data";
@@ -12,10 +13,11 @@ import { cn } from "@/lib/utils";
 import { useCalendarStore } from "@/stores/calendar-store";
 
 export default function WeeklyCalendarPage() {
-  const [expandedDateKey, setExpandedDateKey] = useState<string | null>(null);
   const pathname = usePathname();
   const currentWeekStart = useCalendarStore((state) => state.currentWeekStart);
+  const expandedDay = useCalendarStore((state) => state.expandedDay);
   const navigateWeek = useCalendarStore((state) => state.navigateWeek);
+  const setExpandedDay = useCalendarStore((state) => state.setExpandedDay);
   const { colorMap, weeklyItems } = useCalendarData();
   const todayKey = format(startOfToday(), "yyyy-MM-dd");
   const itemsByDay = weeklyItems(currentWeekStart);
@@ -32,28 +34,14 @@ export default function WeeklyCalendarPage() {
       }),
     [currentWeekStart],
   );
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") {
-        return;
-      }
-
-      const activeBit = new URLSearchParams(window.location.search).get("bit");
-      if (!activeBit) {
-        setExpandedDateKey(null);
-      }
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, []);
+  const todayDayIndex = days.findIndex(({ key }) => key === todayKey);
+  const resolvedExpandedIndex = expandedDay ?? (todayDayIndex >= 0 ? todayDayIndex : 0);
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center px-6 py-4">
         <div className="flex items-center justify-start gap-3">
-          <Button size="icon-sm" variant="outline" onClick={() => navigateWeek(-1)}>
+          <Button aria-label="Previous week" size="icon-sm" variant="outline" onClick={() => navigateWeek(-1)}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="inline-flex items-center rounded-lg border border-border bg-muted/50 p-1">
@@ -92,28 +80,27 @@ export default function WeeklyCalendarPage() {
           </span>
         </div>
         <div className="flex justify-end">
-          <Button size="icon-sm" variant="outline" onClick={() => navigateWeek(1)}>
+          <Button aria-label="Next week" size="icon-sm" variant="outline" onClick={() => navigateWeek(1)}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto px-6 py-4">
-        {days.map(({ date, key }) => (
-          <div
-            key={key}
-            className={key === todayKey ? "rounded-[1.75rem] ring-2 ring-primary/30" : undefined}
-          >
+      <LayoutGroup>
+        <div className="flex min-h-0 w-full flex-1 gap-3 overflow-x-auto px-6 py-4">
+          {days.map(({ date, key }, index) => (
             <DayColumn
+              key={key}
               date={date}
-              expanded={expandedDateKey === key}
+              isExpanded={index === resolvedExpandedIndex}
+              isToday={key === todayKey}
               items={itemsByDay.get(key) ?? []}
-              onExpandedChange={(next) => setExpandedDateKey(next ? key : null)}
+              onExpand={() => setExpandedDay(index)}
               parentColorMap={colorMap}
             />
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </LayoutGroup>
     </div>
   );
 }
