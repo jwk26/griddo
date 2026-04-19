@@ -1767,7 +1767,7 @@ These apply across all phases:
 > - Placed calendar items = draggable for rescheduling; cursor affordance only (no drag handles)
 
 ### Task 64: Weekly Stable Day Sizing + Today Emphasis
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/calendar/day-column.tsx` (update), `src/app/calendar/weekly/page.tsx` (update), `src/stores/calendar-store.ts` (update)
 - **Dependencies:** Phase 12 complete
 - **Actions:**
