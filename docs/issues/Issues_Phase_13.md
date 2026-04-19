@@ -14,7 +14,7 @@
 | Batch | Tasks | Status |
 |-------|-------|--------|
 | Batch 1 | T64 | Implemented |
-| Batch 2 | T65 | Pending |
+| Batch 2 | T65 | Implemented |
 
 ### Deviations
 
@@ -40,3 +40,23 @@ Gemini post-code review flagged two HIGH accessibility issues:
 **Category:** Advisory / pre-existing
 **Batch:** 1 (T64)
 Two MEDIUM items flagged but not fixed: (1) date range `<span>` should be `<h2>` — pre-existing issue not introduced by this batch; (2) `isMonthlyRoute` duplication across view switcher buttons — pre-existing pattern, unchanged.
+
+### B2-I1 — Gemini MEDIUM accessibility fixes applied (In Progress)
+**Category:** Post-review fix
+**Batch:** 2 (T65)
+Gemini post-code review flagged MEDIUM accessibility issue: `PlacedNodeCard`, `PlacedBitCard`, and `CompactNodeItem` open buttons were missing `aria-label`. Added `aria-label={\`Open ${title}\`}` to all three surfaces. Non-visual, applied directly.
+
+### B2-I2 — Test queries updated after aria-label addition (In Progress)
+**Category:** Out-of-plan change (necessary)
+**Batch:** 2 (T65)
+Three `day-column.test.tsx` queries used `{ name: "Roadmap" }` / `{ name: "Ship Phase 4" }` (raw title). After aria-labels were added, queries now expect `"Open Roadmap"` / `"Open Ship Phase 4"`. Updated to keep tests green.
+
+### B2-I3 — Gemini MEDIUM contrast risk advisory (In Progress)
+**Category:** Advisory / pre-existing
+**Batch:** 2 (T65)
+Gemini flagged `text-white` hardcoded on node icon inside colored circle — may fail contrast for light node colors. Pre-existing pattern unchanged by T65; not introduced by this batch. Not fixed.
+
+### B2-I4 — Gemini LOW focus-visible rings advisory (In Progress)
+**Category:** Advisory / pre-existing
+**Batch:** 2 (T65)
+Gemini flagged missing `focus-visible` rings on inner buttons across placed item surfaces. Pre-existing pattern in the calendar component; not introduced by this batch. Not fixed.

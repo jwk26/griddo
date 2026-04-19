@@ -1,14 +1,16 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Bit, Node } from "@/types";
 import { DayColumn } from "./day-column";
 
 const pushMock = vi.hoisted(() => vi.fn());
+const setNodeRefMock = vi.hoisted(() => vi.fn());
 const unscheduleBitMock = vi.hoisted(() => vi.fn());
 const unscheduleChunkMock = vi.hoisted(() => vi.fn());
 const unscheduleNodeMock = vi.hoisted(() => vi.fn());
+const useDraggableMock = vi.hoisted(() => vi.fn());
 
 type MotionDivProps = React.ComponentProps<"div"> & {
   animate?: unknown;
@@ -40,6 +42,7 @@ vi.mock("motion/react", () => ({
 
 vi.mock("@dnd-kit/core", () => ({
   useDroppable: () => ({ isOver: false, setNodeRef: vi.fn() }),
+  useDraggable: useDraggableMock,
 }));
 
 vi.mock("@/hooks/use-calendar-actions", () => ({
@@ -98,6 +101,16 @@ function createBit(overrides: Partial<Bit> = {}): Bit {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+});
+
+beforeEach(() => {
+  useDraggableMock.mockReturnValue({
+    attributes: { "data-drag-source": "true" },
+    listeners: {},
+    setNodeRef: setNodeRefMock,
+    transform: null,
+    isDragging: false,
+  });
 });
 
 describe("DayColumn", () => {
@@ -164,5 +177,119 @@ describe("DayColumn", () => {
     expect(screen.getByRole("button", { name: /wed 15 0 items/i }).parentElement).toHaveClass(
       "ring-primary",
     );
+  });
+
+  it("renders the single node card as a draggable placed surface", () => {
+    useDraggableMock.mockReturnValue({
+      attributes: { "data-drag-source": "true" },
+      listeners: {},
+      setNodeRef: setNodeRefMock,
+      transform: { x: 6, y: 4 },
+      isDragging: true,
+    });
+
+    const node = createNode({ id: "node-1", title: "Roadmap" });
+
+    render(
+      <DayColumn
+        date={new Date(2026, 3, 15)}
+        isExpanded
+        isToday={false}
+        items={[node]}
+        onExpand={vi.fn()}
+        parentColorMap={new Map()}
+      />,
+    );
+
+    const openButton = screen.getByRole("button", { name: "Open Roadmap" });
+    const root = openButton.closest('[data-drag-source="true"]');
+    const unscheduleButton = screen.getByRole("button", { name: "Unschedule Roadmap" });
+
+    expect(useDraggableMock).toHaveBeenCalledWith({
+      id: "node-1",
+      data: { id: "node-1", type: "node", title: "Roadmap" },
+    });
+    expect(root).toHaveAttribute("data-drag-source", "true");
+    expect(root).toHaveClass("cursor-grabbing", "opacity-40");
+    expect(root).toHaveStyle({ transform: "translate3d(6px, 4px, 0)" });
+    expect(openButton).toHaveClass("cursor-pointer");
+    expect(unscheduleButton).toHaveClass("h-8", "w-8", "rounded-md", "cursor-pointer");
+
+    fireEvent.click(unscheduleButton);
+
+    expect(unscheduleNodeMock).toHaveBeenCalledWith("node-1");
+  });
+
+  it("renders the single bit card as a draggable placed surface", () => {
+    const bit = createBit({
+      id: "bit-1",
+      title: "Ship Phase 4",
+      deadline: new Date("2026-04-15T09:00:00.000Z").getTime(),
+    });
+
+    render(
+      <DayColumn
+        date={new Date(2026, 3, 15)}
+        isExpanded
+        isToday={false}
+        items={[bit]}
+        onExpand={vi.fn()}
+        parentColorMap={new Map([["bit-1", "hsl(12, 78%, 55%)"]])}
+      />,
+    );
+
+    const openButton = screen.getByRole("button", { name: "Open Ship Phase 4" });
+    const root = openButton.closest('[data-drag-source="true"]');
+    const unscheduleButton = screen.getByRole("button", {
+      name: "Unschedule Ship Phase 4",
+    });
+
+    expect(useDraggableMock).toHaveBeenCalledWith({
+      id: "bit-1",
+      data: {
+        id: "bit-1",
+        type: "bit",
+        title: "Ship Phase 4",
+        parentId: "node-1",
+      },
+    });
+    expect(root).toHaveAttribute("data-drag-source", "true");
+    expect(root).toHaveClass("cursor-grab");
+    expect(openButton).toHaveClass("cursor-pointer");
+    expect(unscheduleButton).toHaveClass("h-8", "w-8", "rounded-md", "cursor-pointer");
+
+    fireEvent.click(unscheduleButton);
+
+    expect(unscheduleBitMock).toHaveBeenCalledWith("bit-1");
+  });
+
+  it("renders compact node rows as draggable placed surfaces when the day has multiple nodes", () => {
+    render(
+      <DayColumn
+        date={new Date(2026, 3, 15)}
+        isExpanded
+        isToday={false}
+        items={[
+          createNode({ id: "node-1", title: "Roadmap" }),
+          createNode({ id: "node-2", title: "Marketing" }),
+        ]}
+        onExpand={vi.fn()}
+        parentColorMap={new Map()}
+      />,
+    );
+
+    const openButton = screen.getByRole("button", { name: "Open Roadmap" });
+    const root = openButton.closest('[data-drag-source="true"]');
+
+    expect(useDraggableMock).toHaveBeenCalledWith({
+      id: "node-1",
+      data: { id: "node-1", type: "node", title: "Roadmap" },
+    });
+    expect(useDraggableMock).toHaveBeenCalledWith({
+      id: "node-2",
+      data: { id: "node-2", type: "node", title: "Marketing" },
+    });
+    expect(root).toHaveAttribute("data-drag-source", "true");
+    expect(root).toHaveClass("cursor-grab");
   });
 });

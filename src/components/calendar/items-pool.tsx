@@ -63,6 +63,7 @@ export function ItemsPool() {
                 : () => unscheduleChunk(item.id)
             }
             parentColor={colorMap.get(item.id) ?? "hsl(var(--border))"}
+            variant="pool"
           />
         ))}
       </div>

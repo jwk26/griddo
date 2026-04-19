@@ -1,6 +1,6 @@
 "use client";
 
-import { useDroppable } from "@dnd-kit/core";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { format } from "date-fns";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Clock, X } from "lucide-react";
@@ -65,13 +65,33 @@ function CompactNodeItem({
   onClick: () => void;
   onUnschedule: () => void;
 }) {
+  const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
+    id: node.id,
+    data: { id: node.id, type: "node", title: node.title },
+  });
   const Icon = NODE_ICON_MAP[node.icon] ?? NODE_ICON_MAP.Box;
 
   return (
-    <div className="flex items-center gap-2 rounded-r-md border-l-4 border-transparent bg-background/70 px-3 py-1.5 text-sm hover:bg-accent/60">
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className={cn(
+        "flex items-center gap-2 rounded-r-md border-l-4 border-transparent bg-background/70 px-3 py-1.5 text-sm hover:bg-accent/60 transition-opacity",
+        "cursor-grab",
+        isDragging && "cursor-grabbing",
+        isDragging && "opacity-40",
+      )}
+      style={{
+        transform: transform
+          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+          : undefined,
+      }}
+    >
       <button
         type="button"
-        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+        aria-label={`Open ${node.title}`}
+        className="flex min-w-0 flex-1 items-center gap-2 cursor-pointer text-left"
         onClick={onClick}
       >
         <span
@@ -85,14 +105,163 @@ function CompactNodeItem({
       <button
         type="button"
         aria-label={`Unschedule ${node.title}`}
-        className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
         onClick={(event) => {
           event.stopPropagation();
           onUnschedule();
         }}
       >
-        ✕
+        <X className="h-4 w-4" />
       </button>
+    </div>
+  );
+}
+
+function PlacedNodeCard({
+  node,
+  onClick,
+  onUnschedule,
+}: {
+  node: Node;
+  onClick: () => void;
+  onUnschedule: () => void;
+}) {
+  const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
+    id: node.id,
+    data: { id: node.id, type: "node", title: node.title },
+  });
+  const Icon = NODE_ICON_MAP[node.icon] ?? NODE_ICON_MAP.Box;
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className={cn(
+        "rounded-2xl border border-border bg-card p-3 shadow-sm transition-opacity",
+        "cursor-grab",
+        isDragging && "cursor-grabbing",
+        isDragging && "opacity-40",
+      )}
+      style={{
+        transform: transform
+          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+          : undefined,
+      }}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <button
+          type="button"
+          aria-label={`Open ${node.title}`}
+          className="flex min-w-0 items-center gap-3 cursor-pointer text-left"
+          onClick={onClick}
+        >
+          <span
+            className="flex h-10 w-10 items-center justify-center rounded-2xl"
+            style={{ backgroundColor: node.color }}
+          >
+            <Icon className="h-5 w-5 text-white" />
+          </span>
+          <span className="truncate text-sm font-medium text-foreground">{node.title}</span>
+        </button>
+        <button
+          type="button"
+          aria-label={`Unschedule ${node.title}`}
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md cursor-pointer text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          onClick={(event) => {
+            event.stopPropagation();
+            onUnschedule();
+          }}
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PlacedBitCard({
+  item,
+  itemColor,
+  onClick,
+  onUnschedule,
+}: {
+  item: Bit;
+  itemColor: string;
+  onClick: () => void;
+  onUnschedule: () => void;
+}) {
+  const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
+    id: item.id,
+    data: { id: item.id, type: "bit", title: item.title, parentId: item.parentId },
+  });
+  const itemTime =
+    item.deadline && !item.deadlineAllDay
+      ? format(new Date(item.deadline), "h:mm a")
+      : null;
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className={cn(
+        "rounded-2xl border border-border bg-card shadow-sm transition-opacity",
+        "cursor-grab",
+        isDragging && "cursor-grabbing",
+        isDragging && "opacity-40",
+      )}
+      style={{
+        transform: transform
+          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+          : undefined,
+      }}
+    >
+      <div className="flex items-stretch">
+        <div
+          className="w-[3px] flex-shrink-0 rounded-l-[14px]"
+          style={{ backgroundColor: itemColor }}
+        />
+        <div className="flex min-w-0 flex-1 flex-col gap-2 px-3 py-3">
+          <div className="flex items-start justify-between gap-2">
+            <button
+              type="button"
+              aria-label={`Open ${item.title}`}
+              className="min-w-0 flex-1 cursor-pointer text-left"
+              onClick={onClick}
+            >
+              <p
+                className={cn(
+                  "truncate text-sm font-medium text-foreground",
+                  item.status === "complete" && "line-through text-muted-foreground opacity-60",
+                )}
+              >
+                {item.title}
+              </p>
+            </button>
+            <button
+              type="button"
+              aria-label={`Unschedule ${item.title}`}
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md cursor-pointer text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              onClick={(event) => {
+                event.stopPropagation();
+                onUnschedule();
+              }}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span>{item.deadline ? format(new Date(item.deadline), "MMM d") : "No date"}</span>
+            {itemTime ? (
+              <span className="inline-flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {itemTime}
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -134,88 +303,25 @@ export function DayColumn({
 
   function renderSingleItem(item: Node | Bit | Chunk) {
     if ("color" in item) {
-      const Icon = NODE_ICON_MAP[item.icon] ?? NODE_ICON_MAP.Box;
-
       return (
-        <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
-          <div className="flex items-start justify-between gap-2">
-            <button
-              type="button"
-              className="flex min-w-0 items-center gap-3 text-left"
-              onClick={() => router.push(`/grid/${item.id}`)}
-            >
-              <span
-                className="flex h-10 w-10 items-center justify-center rounded-2xl"
-                style={{ backgroundColor: item.color }}
-              >
-                <Icon className="h-5 w-5 text-white" />
-              </span>
-              <span className="truncate text-sm font-medium text-foreground">{item.title}</span>
-            </button>
-            <button
-              type="button"
-              aria-label={`Unschedule ${item.title}`}
-              className="text-muted-foreground transition-colors hover:text-foreground"
-              onClick={() => unscheduleNode(item.id)}
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+        <PlacedNodeCard
+          node={item}
+          onClick={() => router.push(`/grid/${item.id}`)}
+          onUnschedule={() => unscheduleNode(item.id)}
+        />
       );
     }
 
     if ("priority" in item) {
       const itemColor = resolveItemColor(item, parentColorMap);
-      const itemTime =
-        item.deadline && !item.deadlineAllDay
-          ? format(new Date(item.deadline), "h:mm a")
-          : null;
 
       return (
-        <div className="rounded-2xl border border-border bg-card shadow-sm">
-          <div className="flex items-stretch">
-            <div
-              className="w-[3px] flex-shrink-0 rounded-l-[14px]"
-              style={{ backgroundColor: itemColor }}
-            />
-            <div className="flex min-w-0 flex-1 flex-col gap-2 px-3 py-3">
-              <div className="flex items-start justify-between gap-2">
-                <button
-                  type="button"
-                  className="min-w-0 flex-1 text-left"
-                  onClick={() => openBit(item.id)}
-                >
-                  <p
-                    className={cn(
-                      "truncate text-sm font-medium text-foreground",
-                      item.status === "complete" && "line-through text-muted-foreground opacity-60",
-                    )}
-                  >
-                    {item.title}
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  aria-label={`Unschedule ${item.title}`}
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                  onClick={() => unscheduleBit(item.id)}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                <span>{item.deadline ? format(new Date(item.deadline), "MMM d") : "No date"}</span>
-                {itemTime ? (
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {itemTime}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </div>
+        <PlacedBitCard
+          item={item}
+          itemColor={itemColor}
+          onClick={() => openBit(item.id)}
+          onUnschedule={() => unscheduleBit(item.id)}
+        />
       );
     }
 
@@ -225,6 +331,7 @@ export function DayColumn({
         onClick={() => openBit(item.parentId)}
         onUnschedule={() => unscheduleChunk(item.id)}
         parentColor={resolveItemColor(item, parentColorMap)}
+        variant="placed"
       />
     );
   }
