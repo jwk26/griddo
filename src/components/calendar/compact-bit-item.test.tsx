@@ -155,7 +155,7 @@ describe("CompactBitItem", () => {
     });
 
     expect(useDraggableMock).toHaveBeenCalledWith({
-      id: "chunk-1",
+      id: "placed:chunk-1",
       data: {
         id: "chunk-1",
         type: "chunk",

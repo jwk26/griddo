@@ -206,7 +206,7 @@ describe("DayColumn", () => {
     const unscheduleButton = screen.getByRole("button", { name: "Unschedule Roadmap" });
 
     expect(useDraggableMock).toHaveBeenCalledWith({
-      id: "node-1",
+      id: "placed:node-1",
       data: { id: "node-1", type: "node", title: "Roadmap" },
     });
     expect(root).toHaveAttribute("data-drag-source", "true");
@@ -245,7 +245,7 @@ describe("DayColumn", () => {
     });
 
     expect(useDraggableMock).toHaveBeenCalledWith({
-      id: "bit-1",
+      id: "placed:bit-1",
       data: {
         id: "bit-1",
         type: "bit",
@@ -282,11 +282,11 @@ describe("DayColumn", () => {
     const root = openButton.closest('[data-drag-source="true"]');
 
     expect(useDraggableMock).toHaveBeenCalledWith({
-      id: "node-1",
+      id: "placed:node-1",
       data: { id: "node-1", type: "node", title: "Roadmap" },
     });
     expect(useDraggableMock).toHaveBeenCalledWith({
-      id: "node-2",
+      id: "placed:node-2",
       data: { id: "node-2", type: "node", title: "Marketing" },
     });
     expect(root).toHaveAttribute("data-drag-source", "true");

@@ -66,7 +66,7 @@ function CompactNodeItem({
   onUnschedule: () => void;
 }) {
   const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
-    id: node.id,
+    id: `placed:${node.id}`,
     data: { id: node.id, type: "node", title: node.title },
   });
   const Icon = NODE_ICON_MAP[node.icon] ?? NODE_ICON_MAP.Box;
@@ -127,7 +127,7 @@ function PlacedNodeCard({
   onUnschedule: () => void;
 }) {
   const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
-    id: node.id,
+    id: `placed:${node.id}`,
     data: { id: node.id, type: "node", title: node.title },
   });
   const Icon = NODE_ICON_MAP[node.icon] ?? NODE_ICON_MAP.Box;
@@ -192,7 +192,7 @@ function PlacedBitCard({
   onUnschedule: () => void;
 }) {
   const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
-    id: item.id,
+    id: `placed:${item.id}`,
     data: { id: item.id, type: "bit", title: item.title, parentId: item.parentId },
   });
   const itemTime =

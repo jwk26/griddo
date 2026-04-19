@@ -30,7 +30,7 @@ export function CompactBitItem({
   variant,
 }: CompactBitItemProps) {
   const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
-    id: item.id,
+    id: variant === "placed" ? `placed:${item.id}` : item.id,
     data: {
       id: item.id,
       type: "deadline" in item ? "bit" : "chunk",

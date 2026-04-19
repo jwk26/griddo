@@ -60,3 +60,12 @@ Gemini flagged `text-white` hardcoded on node icon inside colored circle — may
 **Category:** Advisory / pre-existing
 **Batch:** 2 (T65)
 Gemini flagged missing `focus-visible` rings on inner buttons across placed item surfaces. Pre-existing pattern in the calendar component; not introduced by this batch. Not fixed.
+
+### B2-I5 — Duplicate draggable ID conflict fixed (In Progress)
+**Category:** Bug fix (necessary)
+**Batch:** 2 (T65)
+`poolItems` in `use-calendar-data.ts` includes ALL active bits/chunks regardless of deadline, so scheduled items appear in both the pool (via `CompactBitItem`) and the day column (via placed surfaces). T65 added `useDraggable` to placed surfaces using bare `item.id`, creating duplicate registrations in the same DndContext.
+
+Fix: namespace placed-surface useDraggable registration IDs as `` `placed:${item.id}` `` while keeping `data: { id: item.id }` unchanged. This makes dnd-kit track them as distinct draggables while `handleDragEnd` still reads the real ID from `event.active.data.current.id`.
+
+Files updated: `compact-bit-item.tsx` (1 call), `day-column.tsx` (3 calls: CompactNodeItem, PlacedNodeCard, PlacedBitCard). Test expectations updated in `compact-bit-item.test.tsx` and `day-column.test.tsx` (5 assertions total).
