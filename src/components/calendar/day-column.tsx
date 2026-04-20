@@ -1,9 +1,9 @@
 "use client";
 
-import { useDroppable } from "@dnd-kit/core";
-import { AnimatePresence, motion } from "motion/react";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { format } from "date-fns";
-import { Clock, MoreHorizontal, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { Clock, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import { dayColumnExpandVariants } from "@/lib/animations/calendar";
@@ -12,8 +12,6 @@ import { getCalendarDateDropId } from "@/lib/calendar-dnd";
 import { cn } from "@/lib/utils";
 import { CompactBitItem } from "./compact-bit-item";
 import type { Bit, Chunk, Node } from "@/types";
-
-const COLLAPSED_ITEM_LIMIT = 5;
 
 function getItemTimestamp(item: Node | Bit | Chunk) {
   if ("deadline" in item) {
@@ -67,13 +65,33 @@ function CompactNodeItem({
   onClick: () => void;
   onUnschedule: () => void;
 }) {
+  const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
+    id: `placed:${node.id}`,
+    data: { id: node.id, type: "node", title: node.title },
+  });
   const Icon = NODE_ICON_MAP[node.icon] ?? NODE_ICON_MAP.Box;
 
   return (
-    <div className="flex items-center gap-2 rounded-r-md border-l-4 border-transparent bg-background/70 px-3 py-1.5 text-sm hover:bg-accent/60">
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className={cn(
+        "flex items-center gap-2 rounded-r-md border-l-4 border-transparent bg-background/70 px-3 py-1.5 text-sm hover:bg-accent/60 transition-opacity",
+        "cursor-grab",
+        isDragging && "cursor-grabbing",
+        isDragging && "opacity-40",
+      )}
+      style={{
+        transform: transform
+          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+          : undefined,
+      }}
+    >
       <button
         type="button"
-        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+        aria-label={`Open ${node.title}`}
+        className="flex min-w-0 flex-1 items-center gap-2 cursor-pointer text-left"
         onClick={onClick}
       >
         <span
@@ -87,32 +105,184 @@ function CompactNodeItem({
       <button
         type="button"
         aria-label={`Unschedule ${node.title}`}
-        className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
         onClick={(event) => {
           event.stopPropagation();
           onUnschedule();
         }}
       >
-        ✕
+        <X className="h-4 w-4" />
       </button>
+    </div>
+  );
+}
+
+function PlacedNodeCard({
+  node,
+  onClick,
+  onUnschedule,
+}: {
+  node: Node;
+  onClick: () => void;
+  onUnschedule: () => void;
+}) {
+  const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
+    id: `placed:${node.id}`,
+    data: { id: node.id, type: "node", title: node.title },
+  });
+  const Icon = NODE_ICON_MAP[node.icon] ?? NODE_ICON_MAP.Box;
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className={cn(
+        "rounded-2xl border border-border bg-card p-3 shadow-sm transition-opacity",
+        "cursor-grab",
+        isDragging && "cursor-grabbing",
+        isDragging && "opacity-40",
+      )}
+      style={{
+        transform: transform
+          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+          : undefined,
+      }}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <button
+          type="button"
+          aria-label={`Open ${node.title}`}
+          className="flex min-w-0 items-center gap-3 cursor-pointer text-left"
+          onClick={onClick}
+        >
+          <span
+            className="flex h-10 w-10 items-center justify-center rounded-2xl"
+            style={{ backgroundColor: node.color }}
+          >
+            <Icon className="h-5 w-5 text-white" />
+          </span>
+          <span className="truncate text-sm font-medium text-foreground">{node.title}</span>
+        </button>
+        <button
+          type="button"
+          aria-label={`Unschedule ${node.title}`}
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md cursor-pointer text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          onClick={(event) => {
+            event.stopPropagation();
+            onUnschedule();
+          }}
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PlacedBitCard({
+  item,
+  itemColor,
+  onClick,
+  onUnschedule,
+}: {
+  item: Bit;
+  itemColor: string;
+  onClick: () => void;
+  onUnschedule: () => void;
+}) {
+  const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
+    id: `placed:${item.id}`,
+    data: { id: item.id, type: "bit", title: item.title, parentId: item.parentId },
+  });
+  const itemTime =
+    item.deadline && !item.deadlineAllDay
+      ? format(new Date(item.deadline), "h:mm a")
+      : null;
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className={cn(
+        "rounded-2xl border border-border bg-card shadow-sm transition-opacity",
+        "cursor-grab",
+        isDragging && "cursor-grabbing",
+        isDragging && "opacity-40",
+      )}
+      style={{
+        transform: transform
+          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+          : undefined,
+      }}
+    >
+      <div className="flex items-stretch">
+        <div
+          className="w-[3px] flex-shrink-0 rounded-l-[14px]"
+          style={{ backgroundColor: itemColor }}
+        />
+        <div className="flex min-w-0 flex-1 flex-col gap-2 px-3 py-3">
+          <div className="flex items-start justify-between gap-2">
+            <button
+              type="button"
+              aria-label={`Open ${item.title}`}
+              className="min-w-0 flex-1 cursor-pointer text-left"
+              onClick={onClick}
+            >
+              <p
+                className={cn(
+                  "truncate text-sm font-medium text-foreground",
+                  item.status === "complete" && "line-through text-muted-foreground opacity-60",
+                )}
+              >
+                {item.title}
+              </p>
+            </button>
+            <button
+              type="button"
+              aria-label={`Unschedule ${item.title}`}
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md cursor-pointer text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              onClick={(event) => {
+                event.stopPropagation();
+                onUnschedule();
+              }}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span>{item.deadline ? format(new Date(item.deadline), "MMM d") : "No date"}</span>
+            {itemTime ? (
+              <span className="inline-flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {itemTime}
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
 export function DayColumn({
   date,
-  expanded,
+  isExpanded,
+  isToday,
   items,
-  onExpandedChange,
+  onExpand,
   parentColorMap,
 }: {
   date: Date;
-  expanded: boolean;
+  isExpanded: boolean;
+  isToday: boolean;
   items: (Node | Bit | Chunk)[];
-  onExpandedChange: (expanded: boolean) => void;
+  onExpand: () => void;
   parentColorMap: Map<string, string>;
 }) {
   const router = useRouter();
+  const reducedMotion = useReducedMotion();
   const { unscheduleNode, unscheduleBit, unscheduleChunk } = useCalendarActions();
   const dateKey = format(date, "yyyy-MM-dd");
   const { isOver, setNodeRef } = useDroppable({
@@ -124,8 +294,6 @@ export function DayColumn({
     },
   });
   const sortedItems = sortCalendarItems(items);
-  const visibleItems = expanded ? sortedItems : sortedItems.slice(0, COLLAPSED_ITEM_LIMIT);
-  const hiddenCount = sortedItems.length - visibleItems.length;
 
   function openBit(bitId: string) {
     const next = new URLSearchParams(window.location.search);
@@ -135,88 +303,25 @@ export function DayColumn({
 
   function renderSingleItem(item: Node | Bit | Chunk) {
     if ("color" in item) {
-      const Icon = NODE_ICON_MAP[item.icon] ?? NODE_ICON_MAP.Box;
-
       return (
-        <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
-          <div className="flex items-start justify-between gap-2">
-            <button
-              type="button"
-              className="flex min-w-0 items-center gap-3 text-left"
-              onClick={() => router.push(`/grid/${item.id}`)}
-            >
-              <span
-                className="flex h-10 w-10 items-center justify-center rounded-2xl"
-                style={{ backgroundColor: item.color }}
-              >
-                <Icon className="h-5 w-5 text-white" />
-              </span>
-              <span className="truncate text-sm font-medium text-foreground">{item.title}</span>
-            </button>
-            <button
-              type="button"
-              aria-label={`Unschedule ${item.title}`}
-              className="text-muted-foreground transition-colors hover:text-foreground"
-              onClick={() => unscheduleNode(item.id)}
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+        <PlacedNodeCard
+          node={item}
+          onClick={() => router.push(`/grid/${item.id}`)}
+          onUnschedule={() => unscheduleNode(item.id)}
+        />
       );
     }
 
     if ("priority" in item) {
       const itemColor = resolveItemColor(item, parentColorMap);
-      const itemTime =
-        item.deadline && !item.deadlineAllDay
-          ? format(new Date(item.deadline), "h:mm a")
-          : null;
 
       return (
-        <div className="rounded-2xl border border-border bg-card shadow-sm">
-          <div className="flex items-stretch">
-            <div
-              className="w-[3px] flex-shrink-0 rounded-l-[14px]"
-              style={{ backgroundColor: itemColor }}
-            />
-            <div className="flex min-w-0 flex-1 flex-col gap-2 px-3 py-3">
-              <div className="flex items-start justify-between gap-2">
-                <button
-                  type="button"
-                  className="min-w-0 flex-1 text-left"
-                  onClick={() => openBit(item.id)}
-                >
-                  <p
-                    className={cn(
-                      "truncate text-sm font-medium text-foreground",
-                      item.status === "complete" && "line-through text-muted-foreground opacity-60",
-                    )}
-                  >
-                    {item.title}
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  aria-label={`Unschedule ${item.title}`}
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                  onClick={() => unscheduleBit(item.id)}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                <span>{item.deadline ? format(new Date(item.deadline), "MMM d") : "No date"}</span>
-                {itemTime ? (
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {itemTime}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </div>
+        <PlacedBitCard
+          item={item}
+          itemColor={itemColor}
+          onClick={() => openBit(item.id)}
+          onUnschedule={() => unscheduleBit(item.id)}
+        />
       );
     }
 
@@ -226,32 +331,62 @@ export function DayColumn({
         onClick={() => openBit(item.parentId)}
         onUnschedule={() => unscheduleChunk(item.id)}
         parentColor={resolveItemColor(item, parentColorMap)}
+        variant="placed"
       />
     );
   }
 
   return (
-    <div
+    <motion.div
       ref={setNodeRef}
+      layout="size"
+      transition={
+        reducedMotion ? { duration: 0 } : { type: "spring", bounce: 0, duration: 0.45 }
+      }
       className={cn(
-        "flex min-w-[var(--calendar-day-min-width)] flex-1 flex-col rounded-3xl border border-border bg-card/80 p-3 shadow-sm transition-colors",
-        isOver && "border-primary bg-accent/60",
+        "flex min-w-[var(--calendar-day-min-width)] flex-col rounded-3xl border p-3 shadow-sm transition-colors",
+        isExpanded
+          ? "flex-[3] border-border/80 bg-card shadow-md"
+          : "flex-1 border-border/40 bg-muted/30 dark:bg-card/40",
+        isToday && isExpanded && "ring-2 ring-primary",
+        isToday && !isExpanded && "ring-2 ring-primary/40",
+        isOver && "border-primary bg-primary/5",
       )}
-      onMouseDown={(event) => {
-        if (expanded && event.target === event.currentTarget) {
-          onExpandedChange(false);
-        }
-      }}
     >
-      <div className="mb-3 flex items-baseline justify-between gap-2">
+      <button
+        type="button"
+        className={cn(
+          "mb-3 flex w-full items-baseline justify-between gap-2 rounded-xl px-1 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+          !isExpanded && "cursor-pointer hover:bg-accent/80",
+        )}
+        onClick={() => {
+          if (!isExpanded) {
+            onExpand();
+          }
+        }}
+      >
         <div>
-          <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
+          <p
+            className={cn(
+              "text-xs uppercase tracking-[0.12em]",
+              isExpanded ? "font-bold text-foreground" : "text-muted-foreground/80",
+            )}
+          >
             {format(date, "EEE")}
           </p>
-          <p className="text-lg font-semibold text-foreground">{format(date, "d")}</p>
+          <p
+            className={cn(
+              "text-lg font-semibold",
+              isToday ? "text-primary" : isExpanded ? "text-foreground" : "text-muted-foreground/80",
+            )}
+          >
+            {format(date, "d")}
+          </p>
         </div>
-        <span className="text-xs text-muted-foreground">{sortedItems.length} items</span>
-      </div>
+        <span className={cn("text-xs", isExpanded ? "text-foreground" : "text-muted-foreground")}>
+          {sortedItems.length} items
+        </span>
+      </button>
 
       {sortedItems.length === 0 ? (
         <div className="flex min-h-40 flex-1 items-center justify-center rounded-2xl border border-dashed border-border text-center text-sm text-muted-foreground">
@@ -260,12 +395,12 @@ export function DayColumn({
       ) : (
         <AnimatePresence initial={false}>
           <motion.div
-            animate={expanded ? "expanded" : "collapsed"}
+            animate={isExpanded ? "expanded" : "collapsed"}
             className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto"
             initial={false}
             variants={dayColumnExpandVariants}
           >
-            {visibleItems.map((item) => (
+            {sortedItems.map((item) => (
               <div key={item.id}>
                 {"color" in item && sortedItems.length > 1 ? (
                   <CompactNodeItem
@@ -278,18 +413,9 @@ export function DayColumn({
                 )}
               </div>
             ))}
-            {hiddenCount > 0 ? (
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 self-start rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                onClick={() => onExpandedChange(true)}
-              >
-                <MoreHorizontal className="h-3.5 w-3.5" />+{hiddenCount} more
-              </button>
-            ) : null}
           </motion.div>
         </AnimatePresence>
       )}
-    </div>
+    </motion.div>
   );
 }

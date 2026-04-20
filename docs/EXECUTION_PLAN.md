@@ -1767,7 +1767,7 @@ These apply across all phases:
 > - Placed calendar items = draggable for rescheduling; cursor affordance only (no drag handles)
 
 ### Task 64: Weekly Stable Day Sizing + Today Emphasis
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/calendar/day-column.tsx` (update), `src/app/calendar/weekly/page.tsx` (update), `src/stores/calendar-store.ts` (update)
 - **Dependencies:** Phase 12 complete
 - **Actions:**
@@ -1794,7 +1794,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 65: Weekly Drag Rescheduling + Pool Cleanup
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/calendar/day-column.tsx` (update), `src/components/calendar/items-pool.tsx` (update), `src/hooks/use-dnd.ts` (update)
 - **Dependencies:** Task 64
 - **Actions:**
@@ -1816,6 +1816,12 @@ These apply across all phases:
 #### Phase 13 Notes
 
 > **Placed item drag rescheduling (weekly):** `use-dnd.ts` must detect whether the drag source is a pool item (new scheduling) or a placed item (rescheduling). Pool items have no deadline; placed items have a deadline that needs to be updated to the new target day.
+
+> **dnd-kit duplicate ID conflict:** `poolItems` includes ALL active items regardless of deadline, so scheduled items register in both the pool and day column under the same `item.id`. Any phase that adds `useDraggable` to a second surface for the same item must namespace the registration ID (e.g., `` `placed:${item.id}` ``). Keep `data: { id: item.id }` unchanged so `handleDragEnd` reads the real ID from event data, not the namespaced key.
+
+> **react/display-name in icon factories:** Arrow functions returned from factory helpers have no display name and fail the `react/display-name` lint rule. Pattern: `const Icon = (...) => <svg/>; Icon.displayName = name;` before returning.
+
+> **Full issue log:** `docs/issues/Issues_Phase_13.md`
 
 ---
 
