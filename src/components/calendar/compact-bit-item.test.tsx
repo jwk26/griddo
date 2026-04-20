@@ -13,12 +13,11 @@ vi.mock("@dnd-kit/core", () => ({
 
 vi.mock("lucide-react", () => {
   function createIcon(name: string) {
-    return ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        data-icon={name}
-      />
+    const Icon = ({ className }: { className?: string }) => (
+      <svg className={className} data-icon={name} />
     );
+    Icon.displayName = name;
+    return Icon;
   }
 
   return {
