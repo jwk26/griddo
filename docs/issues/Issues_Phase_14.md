@@ -29,3 +29,5 @@ T66 was split across two batches (T66A and T66B) at Step 1 before the Original P
 - **X button icon centering (Claude quality pass):** Codex omitted `flex items-center justify-center` from the X button. Applied directly — non-visual structural fix.
 - **Accessibility fixes (Gemini post-code HIGH/MEDIUM):** Added `aria-label` to date cell buttons (full date + item count) and `aria-label` on `PopoverContent`. Both applied directly as non-visual accessibility attributes.
 - **`toSorted()` + `useMemo` (Gemini MEDIUM, deferred):** `toSorted()` already existed pre-phase 14; list is small. Noted but not blocking.
+- **Stale popup on month navigation (checkpoint review MEDIUM):** `selectedDate` was not cleared when navigating months, leaving popup open on out-of-month cells. Fixed by calling `setSelectedDate(null)` before `navigateMonth(-1/1)` in both nav button handlers.
+- **Popup item focus-visible styling (checkpoint review LOW):** Pre-existing; item buttons inside the popup lack `focus-visible` ring. Not introduced by T66A; deferred.

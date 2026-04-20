@@ -120,7 +120,7 @@ export function MonthGrid() {
     <div className="flex h-full flex-col overflow-hidden">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center px-6 py-4">
         <div className="flex items-center justify-start gap-3">
-          <Button size="icon-sm" variant="outline" onClick={() => navigateMonth(-1)}>
+          <Button size="icon-sm" variant="outline" onClick={() => { setSelectedDate(null); navigateMonth(-1); }}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="inline-flex items-center rounded-lg border border-border bg-muted/50 p-1">
@@ -158,7 +158,7 @@ export function MonthGrid() {
           </span>
         </div>
         <div className="flex justify-end">
-          <Button size="icon-sm" variant="outline" onClick={() => navigateMonth(1)}>
+          <Button size="icon-sm" variant="outline" onClick={() => { setSelectedDate(null); navigateMonth(1); }}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
