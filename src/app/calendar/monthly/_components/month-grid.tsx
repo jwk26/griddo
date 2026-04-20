@@ -16,6 +16,7 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { DateCellPopover } from "@/app/calendar/monthly/_components/date-cell-popover";
 import { Button } from "@/components/ui/button";
 import { useCalendarData } from "@/hooks/use-calendar-data";
@@ -29,13 +30,17 @@ function MonthDateCell({
   colorMap,
   currentMonth,
   date,
+  isSelected,
   items,
+  onOpenChange,
 }: {
   bitMap: Map<string, Bit>;
   colorMap: Map<string, string>;
   currentMonth: Date;
   date: Date;
+  isSelected: boolean;
   items: Map<string, (Node | Bit | Chunk)[]>;
+  onOpenChange: (open: boolean) => void;
 }) {
   const dateKey = format(date, "yyyy-MM-dd");
   const dayItems = items.get(dateKey) ?? [];
@@ -50,20 +55,30 @@ function MonthDateCell({
   const isToday = isSameDay(date, startOfToday());
 
   return (
-    <DateCellPopover bitMap={bitMap} date={date} items={dayItems}>
+    <DateCellPopover
+      bitMap={bitMap}
+      date={date}
+      items={dayItems}
+      onOpenChange={onOpenChange}
+      open={isSelected}
+    >
       <button
         ref={setNodeRef}
+        aria-label={`${format(date, "EEEE, MMMM d, yyyy")}, ${dayItems.length} ${dayItems.length === 1 ? "item" : "items"}`}
         type="button"
         className={cn(
-          "flex min-h-28 flex-col rounded-2xl border border-border bg-card/80 p-3 text-left transition-colors hover:bg-accent/40",
-          !isSameMonth(date, currentMonth) && "opacity-50",
-          isOver && "border-primary bg-accent/60",
-          isToday && "ring-2 ring-primary/30",
+          "flex min-h-28 flex-col rounded border border-border bg-card/80 p-3 text-left backdrop-blur-sm transition-colors hover:border-accent hover:bg-accent/40",
+          isToday && "border-primary/50 ring-2 ring-primary/40",
+          !isSameMonth(date, currentMonth) && "opacity-40 grayscale-[0.5]",
+          isOver && "border-primary bg-primary/5",
+          isSelected && "bg-accent/60 ring-2 ring-primary/20",
         )}
       >
         <div className="mb-3 flex items-center justify-between gap-2">
-          <span className="text-sm font-semibold text-foreground">{format(date, "d")}</span>
-          <span className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+          <span className={cn("text-sm font-semibold text-foreground", isToday && "text-primary")}>
+            {format(date, "d")}
+          </span>
+          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             {format(date, "EEE")}
           </span>
         </div>
@@ -88,6 +103,7 @@ function MonthDateCell({
 
 export function MonthGrid() {
   const pathname = usePathname();
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const currentMonth = useCalendarStore((state) => state.currentMonth);
   const navigateMonth = useCalendarStore((state) => state.navigateMonth);
   const { bitMap, colorMap, monthlyItems } = useCalendarData();
@@ -111,7 +127,7 @@ export function MonthGrid() {
             <Button
               asChild
               className={cn(
-                "h-7 rounded-md px-3 text-xs font-medium transition-all",
+                "h-7 rounded-md px-3 text-xs font-medium transition-colors",
                 isMonthlyRoute
                   ? "text-muted-foreground hover:bg-transparent hover:text-foreground"
                   : "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground",
@@ -124,7 +140,7 @@ export function MonthGrid() {
             <Button
               asChild
               className={cn(
-                "h-7 rounded-md px-3 text-xs font-medium transition-all",
+                "h-7 rounded-md px-3 text-xs font-medium transition-colors",
                 isMonthlyRoute
                   ? "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground"
                   : "text-muted-foreground hover:bg-transparent hover:text-foreground",
@@ -155,16 +171,29 @@ export function MonthGrid() {
         ))}
       </div>
       <div className="grid min-h-0 flex-1 grid-cols-7 gap-3 overflow-y-auto px-6 pb-6">
-        {dates.map((date) => (
-          <MonthDateCell
-            key={format(date, "yyyy-MM-dd")}
-            bitMap={bitMap}
-            colorMap={colorMap}
-            currentMonth={currentMonth}
-            date={date}
-            items={items}
-          />
-        ))}
+        {dates.map((date) => {
+          const dateKey = format(date, "yyyy-MM-dd");
+
+          return (
+            <MonthDateCell
+              key={dateKey}
+              bitMap={bitMap}
+              colorMap={colorMap}
+              currentMonth={currentMonth}
+              date={date}
+              isSelected={selectedDate === dateKey}
+              items={items}
+              onOpenChange={(open) => {
+                if (open) {
+                  setSelectedDate(dateKey);
+                  return;
+                }
+
+                setSelectedDate(null);
+              }}
+            />
+          );
+        })}
       </div>
     </div>
   );
