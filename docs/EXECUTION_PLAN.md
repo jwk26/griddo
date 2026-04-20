@@ -1794,7 +1794,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 65: Weekly Drag Rescheduling + Pool Cleanup
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/calendar/day-column.tsx` (update), `src/components/calendar/items-pool.tsx` (update), `src/hooks/use-dnd.ts` (update)
 - **Dependencies:** Task 64
 - **Actions:**

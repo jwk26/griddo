@@ -14,7 +14,7 @@
 | Batch | Tasks | Status |
 |-------|-------|--------|
 | Batch 1 | T64 | Implemented |
-| Batch 2 | T65 | Implemented |
+| Batch 2 | T65 | Completed |
 
 ### Deviations
 
