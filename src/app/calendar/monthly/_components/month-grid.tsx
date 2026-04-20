@@ -1,6 +1,6 @@
 "use client";
 
-import { useDroppable } from "@dnd-kit/core";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 import {
   addDays,
   eachDayOfInterval,
@@ -20,10 +20,119 @@ import { useState } from "react";
 import { DateCellPopover } from "@/app/calendar/monthly/_components/date-cell-popover";
 import { Button } from "@/components/ui/button";
 import { useCalendarData } from "@/hooks/use-calendar-data";
+import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import { getCalendarDateDropId } from "@/lib/calendar-dnd";
 import { cn } from "@/lib/utils";
 import { useCalendarStore } from "@/stores/calendar-store";
 import type { Bit, Chunk, Node } from "@/types";
+
+const PREVIEW_ITEM_LIMIT = 4;
+
+function isNode(item: Node | Bit | Chunk): item is Node {
+  return "color" in item;
+}
+
+function isBit(item: Node | Bit | Chunk): item is Bit {
+  return "priority" in item;
+}
+
+function getPreviewItems(items: (Node | Bit | Chunk)[]) {
+  const nodes: Node[] = [];
+  const details: (Bit | Chunk)[] = [];
+
+  for (const item of items) {
+    if (isNode(item)) {
+      nodes.push(item);
+    } else {
+      details.push(item);
+    }
+  }
+
+  return [...nodes, ...details].slice(0, PREVIEW_ITEM_LIMIT);
+}
+
+function getItemColor(item: Node | Bit | Chunk, colorMap: Map<string, string>) {
+  if (isNode(item)) {
+    return item.color;
+  }
+
+  return colorMap.get(item.id) ?? "hsl(var(--muted-foreground))";
+}
+
+function getDragTransform(
+  transform: ReturnType<typeof useDraggable>["transform"],
+  isDragging: boolean,
+) {
+  return transform
+    ? `translate3d(${transform.x}px, ${transform.y}px, 0) scale(${isDragging ? 0.95 : 1})`
+    : isDragging
+      ? "scale(0.95)"
+      : undefined;
+}
+
+function DraggableNodeTile({ node }: { node: Node }) {
+  const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
+    id: `placed:${node.id}`,
+    data: { id: node.id, type: "node", title: node.title },
+  });
+  const Icon = NODE_ICON_MAP[node.icon] ?? NODE_ICON_MAP.Box;
+
+  return (
+    <button
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      aria-label={`Reschedule ${node.title}`}
+      className={cn(
+        "flex h-6 w-6 flex-shrink-0 cursor-grab items-center justify-center rounded-md shadow-sm ring-1 ring-inset ring-black/5 transition-[opacity,box-shadow,filter] dark:ring-white/10",
+        "hover:ring-1 hover:ring-primary/50 hover:brightness-110",
+        isDragging && "cursor-grabbing opacity-40",
+      )}
+      style={{
+        backgroundColor: node.color,
+        transform: getDragTransform(transform, isDragging),
+      }}
+      type="button"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <Icon className="h-3.5 w-3.5 text-white" />
+    </button>
+  );
+}
+
+function DraggableDot({
+  color,
+  item,
+}: {
+  color: string;
+  item: Bit | Chunk;
+}) {
+  const itemType = isBit(item) ? "bit" : "chunk";
+  const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
+    id: `placed:${item.id}`,
+    data: { id: item.id, type: itemType, title: item.title, parentId: item.parentId },
+  });
+
+  return (
+    <button
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      aria-label={`Reschedule ${item.title}`}
+      className={cn(
+        "h-2.5 w-2.5 flex-shrink-0 cursor-grab rounded-full transition-[opacity,box-shadow,filter]",
+        "hover:ring-1 hover:ring-primary/50 hover:brightness-110",
+        isDragging && "cursor-grabbing opacity-40",
+      )}
+      style={{
+        backgroundColor: color,
+        transform: getDragTransform(transform, isDragging),
+      }}
+      type="button"
+      onClick={(event) => event.stopPropagation()}
+    />
+  );
+}
 
 function MonthDateCell({
   bitMap,
@@ -53,51 +162,61 @@ function MonthDateCell({
     },
   });
   const isToday = isSameDay(date, startOfToday());
+  const previewItems = getPreviewItems(dayItems);
+  const overflowCount = dayItems.length - PREVIEW_ITEM_LIMIT;
 
   return (
-    <DateCellPopover
-      bitMap={bitMap}
-      date={date}
-      items={dayItems}
-      onOpenChange={onOpenChange}
-      open={isSelected}
+    <div
+      ref={setNodeRef}
+      aria-label={`${format(date, "EEEE, MMMM d, yyyy")}, ${dayItems.length} ${dayItems.length === 1 ? "item" : "items"}`}
+      role="group"
+      className={cn(
+        "flex min-h-28 flex-col rounded border border-border bg-card/80 p-3 text-left backdrop-blur-sm transition-colors hover:border-accent hover:bg-accent/40",
+        isToday && "border-primary/50 ring-2 ring-primary/40",
+        !isSameMonth(date, currentMonth) && "opacity-40 grayscale-[0.5]",
+        isOver && "border-primary bg-primary/5",
+        isSelected && "bg-accent/60 ring-2 ring-primary/20",
+      )}
     >
-      <button
-        ref={setNodeRef}
-        aria-label={`${format(date, "EEEE, MMMM d, yyyy")}, ${dayItems.length} ${dayItems.length === 1 ? "item" : "items"}`}
-        type="button"
-        className={cn(
-          "flex min-h-28 flex-col rounded border border-border bg-card/80 p-3 text-left backdrop-blur-sm transition-colors hover:border-accent hover:bg-accent/40",
-          isToday && "border-primary/50 ring-2 ring-primary/40",
-          !isSameMonth(date, currentMonth) && "opacity-40 grayscale-[0.5]",
-          isOver && "border-primary bg-primary/5",
-          isSelected && "bg-accent/60 ring-2 ring-primary/20",
-        )}
+      <DateCellPopover
+        bitMap={bitMap}
+        date={date}
+        items={dayItems}
+        onOpenChange={onOpenChange}
+        open={isSelected}
       >
-        <div className="mb-3 flex items-center justify-between gap-2">
+        <button
+          aria-label={`Open details for ${format(date, "EEEE, MMMM d, yyyy")}, ${dayItems.length} ${dayItems.length === 1 ? "item" : "items"}`}
+          className="mb-3 flex w-full items-center justify-between gap-2 rounded-sm text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+          type="button"
+        >
           <span className={cn("text-sm font-semibold text-foreground", isToday && "text-primary")}>
             {format(date, "d")}
           </span>
           <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             {format(date, "EEE")}
           </span>
-        </div>
-        <div className="mt-auto flex flex-wrap gap-1.5">
-          {dayItems.slice(0, 6).map((item) => (
-            <span
-              key={item.id}
-              className="h-2.5 w-2.5 rounded-full"
-              style={{
-                backgroundColor:
-                  "color" in item
-                    ? item.color
-                    : colorMap.get(item.id) ?? "hsl(var(--muted-foreground))",
-              }}
-            />
-          ))}
-        </div>
-      </button>
-    </DateCellPopover>
+        </button>
+      </DateCellPopover>
+      <div
+        className="mt-auto flex items-center gap-1"
+        onClick={(event) => event.stopPropagation()}
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        {previewItems.map((item) =>
+          isNode(item) ? (
+            <DraggableNodeTile key={item.id} node={item} />
+          ) : (
+            <DraggableDot key={item.id} color={getItemColor(item, colorMap)} item={item} />
+          ),
+        )}
+        {overflowCount > 0 ? (
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-sm bg-muted px-1 text-[10px] font-bold text-muted-foreground">
+            +{overflowCount}
+          </span>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
