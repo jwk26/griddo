@@ -1837,7 +1837,7 @@ These apply across all phases:
 > - Placed calendar items = draggable for rescheduling; cursor affordance only (no drag handles)
 
 ### Task 66: Monthly Cell Redesign + Day Detail Popup
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/app/calendar/monthly/_components/month-grid.tsx` (update), `src/app/calendar/monthly/_components/date-cell-popover.tsx` (rewrite), `src/app/calendar/monthly/page.tsx` (update)
 - **Dependencies:** Phase 13 complete
 - **Actions:**
@@ -1859,7 +1859,7 @@ These apply across all phases:
   - `pnpm build` passes
 
 ### Task 67: Monthly Item Representation
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/app/calendar/monthly/_components/month-grid.tsx` (update), `src/app/calendar/monthly/_components/date-cell-popover.tsx` (update)
 - **Dependencies:** Task 66
 - **Actions:**
@@ -1881,6 +1881,20 @@ These apply across all phases:
 > **Monthly popup positioning:** Use Radix Popover's built-in viewport collision handling. If the clicked cell is near the bottom-right corner, the popup should flip/shift to remain visible. Test with edge cells explicitly.
 
 > **Placed item drag rescheduling (monthly):** `use-dnd.ts` must detect whether the drag source is a pool item (new scheduling) or a placed item (rescheduling). Same detection pattern as Phase 13's weekly rescheduling.
+
+> **React portal event bubbling:** Radix `PopoverContent` (and any portal) bubbles clicks through the React component tree, not the DOM tree. If an ancestor div has `onClick`, clicks inside the portal will reach it — including the X button and item clicks. Fix: add `onClick={(e) => e.stopPropagation()}` to `PopoverContent`.
+
+> **Whole-cell click + controlled Popover:** When making an outer div clickable to open a popup, the inner `PopoverTrigger` button needs `onClick={(e) => e.stopPropagation()}` to prevent the cell div's `onClick` from double-firing. Otherwise, clicking the trigger button calls both Radix's toggle handler and the outer div's open handler.
+
+> **`useDraggable` requires component-level hooks:** dnd-kit hooks cannot be called in a loop. Create sub-components (`DraggableNodeTile`, `DraggableDot`) to call `useDraggable` once per item type.
+
+> **dnd-kit scale + translate conflict:** Applying `scale(0.95)` as a separate CSS class while dnd-kit controls `transform` causes conflicts. Merge both into a single string via a helper: `translate3d(x, y, 0) scale(0.95)`.
+
+> **Draggable items inside `<button>`:** Nested interactive semantics (draggable button inside a date-header button) are invalid HTML and break keyboard/screen-reader behavior. Outer cell must be a `<div>`; `PopoverTrigger` wraps only the date-header button; preview items row is a sibling div.
+
+> **`transition` class expands to `transition-all`:** Bare `transition` violates the project no-transition-all rule. Use `transition-[property1,property2,...]` with explicit properties.
+
+> **Full issue log:** `docs/issues/Issues_Phase_14.md`
 
 ---
 
