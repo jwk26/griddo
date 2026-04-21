@@ -91,6 +91,7 @@ export function DateCellPopover({
         className="flex max-h-96 w-80 flex-col rounded-2xl bg-popover p-3 shadow-xl duration-150 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 motion-reduce:data-[state=closed]:animate-none motion-reduce:data-[state=open]:animate-none"
         side="right"
         sideOffset={12}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between">
           <div className="text-base font-bold text-foreground">{format(date, "EEEE, MMM d")}</div>
