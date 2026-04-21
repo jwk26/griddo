@@ -2,6 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Bit, Node } from "@/types";
 
 const usePathnameMock = vi.hoisted(() => vi.fn());
 const navigateWeekMock = vi.hoisted(() => vi.fn());
@@ -44,6 +45,13 @@ vi.mock("motion/react", () => ({
 }));
 
 vi.mock("@dnd-kit/core", () => ({
+  useDraggable: () => ({
+    attributes: {},
+    isDragging: false,
+    listeners: {},
+    setNodeRef: vi.fn(),
+    transform: null,
+  }),
   useDroppable: () => ({ isOver: false, setNodeRef: vi.fn() }),
 }));
 
@@ -69,7 +77,9 @@ vi.mock("@/components/calendar/day-column", () => ({
 }));
 
 vi.mock("@/app/calendar/monthly/_components/date-cell-popover", () => ({
-  DateCellPopover: ({ children }: { children: ReactNode }) => <>{children}</>,
+  DateCellPopover: ({ children, open }: { children: ReactNode; open: boolean }) => (
+    <div data-open={String(open)}>{children}</div>
+  ),
 }));
 
 vi.mock("@/hooks/use-calendar-data", () => ({
@@ -95,6 +105,45 @@ function findNavRow(container: HTMLElement) {
   );
 }
 
+function createNode(overrides: Partial<Node> = {}): Node {
+  return {
+    id: "node-1",
+    title: "Roadmap",
+    color: "hsl(210, 80%, 55%)",
+    icon: "Box",
+    deadline: new Date(2026, 3, 15, 9, 0).getTime(),
+    deadlineAllDay: false,
+    mtime: 0,
+    createdAt: 0,
+    parentId: null,
+    level: 1,
+    x: 0,
+    y: 0,
+    deletedAt: null,
+    ...overrides,
+  };
+}
+
+function createBit(overrides: Partial<Bit> = {}): Bit {
+  return {
+    id: "bit-1",
+    title: "Ship spec",
+    description: "",
+    icon: "Box",
+    deadline: new Date(2026, 3, 15, 10, 0).getTime(),
+    deadlineAllDay: false,
+    priority: "mid",
+    status: "active",
+    mtime: 0,
+    createdAt: 0,
+    parentId: "node-1",
+    x: 0,
+    y: 0,
+    deletedAt: null,
+    ...overrides,
+  };
+}
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
@@ -107,6 +156,8 @@ beforeEach(() => {
   calendarStoreState.expandedDay = null;
   calendarStoreState.currentMonth = new Date(2026, 3, 1);
   calendarStoreState.currentWeekStart = new Date(2026, 3, 13);
+  monthlyItemsMock.mockReturnValue(new Map());
+  weeklyItemsMock.mockReturnValue(new Map());
   renderedDayColumns.length = 0;
 });
 
@@ -196,6 +247,36 @@ describe("calendar navigation rows", () => {
 
     expect(navigateMonthMock).toHaveBeenNthCalledWith(1, -1);
     expect(navigateMonthMock).toHaveBeenNthCalledWith(2, 1);
+  });
+
+  it("opens monthly day details when a node preview tile is clicked", () => {
+    usePathnameMock.mockReturnValue("/calendar/monthly");
+    monthlyItemsMock.mockReturnValue(new Map([["2026-04-15", [createNode()]]]));
+
+    render(<MonthGrid />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Reschedule Roadmap" }));
+
+    expect(
+      screen.getByRole("button", {
+        name: "Open details for Wednesday, April 15, 2026, 1 item",
+      }).parentElement,
+    ).toHaveAttribute("data-open", "true");
+  });
+
+  it("opens monthly day details when a bit preview dot is clicked", () => {
+    usePathnameMock.mockReturnValue("/calendar/monthly");
+    monthlyItemsMock.mockReturnValue(new Map([["2026-04-15", [createBit()]]]));
+
+    render(<MonthGrid />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Reschedule Ship spec" }));
+
+    expect(
+      screen.getByRole("button", {
+        name: "Open details for Wednesday, April 15, 2026, 1 item",
+      }).parentElement,
+    ).toHaveAttribute("data-open", "true");
   });
 });
 

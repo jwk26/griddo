@@ -70,7 +70,13 @@ function getDragTransform(
       : undefined;
 }
 
-function DraggableNodeTile({ node }: { node: Node }) {
+function DraggableNodeTile({
+  node,
+  onOpenDetails,
+}: {
+  node: Node;
+  onOpenDetails: () => void;
+}) {
   const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
     id: `placed:${node.id}`,
     data: { id: node.id, type: "node", title: node.title },
@@ -93,7 +99,10 @@ function DraggableNodeTile({ node }: { node: Node }) {
         transform: getDragTransform(transform, isDragging),
       }}
       type="button"
-      onClick={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation();
+        onOpenDetails();
+      }}
     >
       <Icon className="h-3.5 w-3.5 text-white" />
     </button>
@@ -103,9 +112,11 @@ function DraggableNodeTile({ node }: { node: Node }) {
 function DraggableDot({
   color,
   item,
+  onOpenDetails,
 }: {
   color: string;
   item: Bit | Chunk;
+  onOpenDetails: () => void;
 }) {
   const itemType = isBit(item) ? "bit" : "chunk";
   const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
@@ -129,7 +140,10 @@ function DraggableDot({
         transform: getDragTransform(transform, isDragging),
       }}
       type="button"
-      onClick={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation();
+        onOpenDetails();
+      }}
     />
   );
 }
@@ -205,9 +219,18 @@ function MonthDateCell({
       >
         {previewItems.map((item) =>
           isNode(item) ? (
-            <DraggableNodeTile key={item.id} node={item} />
+            <DraggableNodeTile
+              key={item.id}
+              node={item}
+              onOpenDetails={() => onOpenChange(true)}
+            />
           ) : (
-            <DraggableDot key={item.id} color={getItemColor(item, colorMap)} item={item} />
+            <DraggableDot
+              key={item.id}
+              color={getItemColor(item, colorMap)}
+              item={item}
+              onOpenDetails={() => onOpenChange(true)}
+            />
           ),
         )}
         {overflowCount > 0 ? (
