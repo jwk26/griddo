@@ -88,7 +88,7 @@ function DraggableNodeTile({
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      aria-label={`Reschedule ${node.title}`}
+      aria-label={`${node.title} — drag to reschedule, click for details`}
       className={cn(
         "flex h-6 w-6 flex-shrink-0 cursor-grab items-center justify-center rounded-md shadow-sm ring-1 ring-inset ring-black/5 transition-[opacity,box-shadow,filter] dark:ring-white/10",
         "hover:ring-1 hover:ring-primary/50 hover:brightness-110",
@@ -129,7 +129,7 @@ function DraggableDot({
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      aria-label={`Reschedule ${item.title}`}
+      aria-label={`${item.title} — drag to reschedule, click for details`}
       className={cn(
         "h-2.5 w-2.5 flex-shrink-0 cursor-grab rounded-full transition-[opacity,box-shadow,filter]",
         "hover:ring-1 hover:ring-primary/50 hover:brightness-110",

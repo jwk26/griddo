@@ -255,7 +255,7 @@ describe("calendar navigation rows", () => {
 
     render(<MonthGrid />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Reschedule Roadmap" }));
+    fireEvent.click(screen.getByRole("button", { name: "Roadmap — drag to reschedule, click for details" }));
 
     expect(
       screen.getByRole("button", {
@@ -270,7 +270,7 @@ describe("calendar navigation rows", () => {
 
     render(<MonthGrid />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Reschedule Ship spec" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ship spec — drag to reschedule, click for details" }));
 
     expect(
       screen.getByRole("button", {
