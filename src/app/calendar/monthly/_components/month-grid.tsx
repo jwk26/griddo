@@ -88,7 +88,7 @@ function DraggableNodeTile({
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      aria-label={`${node.title} — drag to reschedule, click for details`}
+      aria-label={`Open ${node.title} details or drag to reschedule`}
       className={cn(
         "flex h-6 w-6 flex-shrink-0 cursor-grab items-center justify-center rounded-md shadow-sm ring-1 ring-inset ring-black/5 transition-[opacity,box-shadow,filter] dark:ring-white/10",
         "hover:ring-1 hover:ring-primary/50 hover:brightness-110",
@@ -129,7 +129,7 @@ function DraggableDot({
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      aria-label={`${item.title} — drag to reschedule, click for details`}
+      aria-label={`Open ${item.title} details or drag to reschedule`}
       className={cn(
         "h-2.5 w-2.5 flex-shrink-0 cursor-grab rounded-full transition-[opacity,box-shadow,filter]",
         "hover:ring-1 hover:ring-primary/50 hover:brightness-110",
@@ -155,6 +155,7 @@ function MonthDateCell({
   date,
   isSelected,
   items,
+  nodeMap,
   onOpenChange,
 }: {
   bitMap: Map<string, Bit>;
@@ -163,6 +164,7 @@ function MonthDateCell({
   date: Date;
   isSelected: boolean;
   items: Map<string, (Node | Bit | Chunk)[]>;
+  nodeMap: Map<string, Node>;
   onOpenChange: (open: boolean) => void;
 }) {
   const dateKey = format(date, "yyyy-MM-dd");
@@ -196,6 +198,7 @@ function MonthDateCell({
         bitMap={bitMap}
         date={date}
         items={dayItems}
+        nodeMap={nodeMap}
         onOpenChange={onOpenChange}
         open={isSelected}
       >
@@ -248,7 +251,7 @@ export function MonthGrid() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const currentMonth = useCalendarStore((state) => state.currentMonth);
   const navigateMonth = useCalendarStore((state) => state.navigateMonth);
-  const { bitMap, colorMap, monthlyItems } = useCalendarData();
+  const { bitMap, colorMap, monthlyItems, nodeMap } = useCalendarData();
   const items = monthlyItems(currentMonth);
   const gridStart = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 });
   const gridEnd = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 });
@@ -262,7 +265,7 @@ export function MonthGrid() {
     <div className="flex h-full flex-col overflow-hidden">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center px-6 py-4">
         <div className="flex items-center justify-start gap-3">
-          <Button size="icon-sm" variant="outline" onClick={() => { setSelectedDate(null); navigateMonth(-1); }}>
+          <Button aria-label="Previous month" size="icon-sm" variant="outline" onClick={() => { setSelectedDate(null); navigateMonth(-1); }}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="inline-flex items-center rounded-lg border border-border bg-muted/50 p-1">
@@ -300,7 +303,7 @@ export function MonthGrid() {
           </span>
         </div>
         <div className="flex justify-end">
-          <Button size="icon-sm" variant="outline" onClick={() => { setSelectedDate(null); navigateMonth(1); }}>
+          <Button aria-label="Next month" size="icon-sm" variant="outline" onClick={() => { setSelectedDate(null); navigateMonth(1); }}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -325,6 +328,7 @@ export function MonthGrid() {
               date={date}
               isSelected={selectedDate === dateKey}
               items={items}
+              nodeMap={nodeMap}
               onOpenChange={(open) => {
                 if (open) {
                   setSelectedDate(dateKey);

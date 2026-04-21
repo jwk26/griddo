@@ -87,6 +87,7 @@ vi.mock("@/hooks/use-calendar-data", () => ({
     bitMap: new Map(),
     colorMap: new Map(),
     monthlyItems: monthlyItemsMock,
+    nodeMap: new Map(),
     weeklyItems: weeklyItemsMock,
   }),
 }));
@@ -255,7 +256,7 @@ describe("calendar navigation rows", () => {
 
     render(<MonthGrid />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Roadmap — drag to reschedule, click for details" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open Roadmap details or drag to reschedule" }));
 
     expect(
       screen.getByRole("button", {
@@ -270,7 +271,7 @@ describe("calendar navigation rows", () => {
 
     render(<MonthGrid />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Ship spec — drag to reschedule, click for details" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open Ship spec details or drag to reschedule" }));
 
     expect(
       screen.getByRole("button", {

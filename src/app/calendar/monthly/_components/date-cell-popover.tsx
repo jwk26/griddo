@@ -8,6 +8,20 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import type { Bit, Chunk, Node } from "@/types";
 
+function getParentLabel(
+  item: Node | Bit | Chunk,
+  nodeMap: Map<string, Node>,
+  bitMap: Map<string, Bit>,
+): string | null {
+  if ("color" in item) {
+    return item.parentId ? (nodeMap.get(item.parentId)?.title ?? null) : null;
+  }
+  if ("priority" in item) {
+    return nodeMap.get(item.parentId)?.title ?? null;
+  }
+  return bitMap.get(item.parentId)?.title ?? null;
+}
+
 function getTimestamp(item: Node | Bit | Chunk) {
   if ("deadline" in item) {
     return item.deadline;
@@ -31,6 +45,7 @@ export function DateCellPopover({
   children,
   date,
   items,
+  nodeMap,
   onOpenChange,
   open,
 }: {
@@ -38,6 +53,7 @@ export function DateCellPopover({
   children: ReactNode;
   date: Date;
   items: (Node | Bit | Chunk)[];
+  nodeMap: Map<string, Node>;
   onOpenChange: (open: boolean) => void;
   open: boolean;
 }) {
@@ -90,6 +106,7 @@ export function DateCellPopover({
         <div className="min-h-0 space-y-1 overflow-y-auto">
           {sortedItems.map((item) => {
             const Icon = "color" in item ? FolderKanban : "priority" in item ? CalendarRange : ListTodo;
+            const parentLabel = getParentLabel(item, nodeMap, bitMap);
 
             return (
               <button
@@ -108,9 +125,12 @@ export function DateCellPopover({
                   >
                     {item.title}
                   </p>
+                  {parentLabel ? (
+                    <p className="truncate text-xs text-muted-foreground">{parentLabel}</p>
+                  ) : null}
                 </div>
                 {getTimeLabel(item) ? (
-                  <span className="text-xs tabular-nums text-muted-foreground">{getTimeLabel(item)}</span>
+                  <span className="flex-shrink-0 text-xs tabular-nums text-muted-foreground">{getTimeLabel(item)}</span>
                 ) : null}
               </button>
             );
