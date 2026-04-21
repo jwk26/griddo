@@ -187,12 +187,13 @@ function MonthDateCell({
       aria-label={`${format(date, "EEEE, MMMM d, yyyy")}, ${dayItems.length} ${dayItems.length === 1 ? "item" : "items"}`}
       role="group"
       className={cn(
-        "flex min-h-28 flex-col rounded border border-border bg-card/80 p-3 text-left backdrop-blur-sm transition-colors hover:border-accent hover:bg-accent/40",
+        "flex min-h-28 cursor-pointer flex-col rounded border border-border bg-card/80 p-3 text-left backdrop-blur-sm transition-colors hover:border-accent hover:bg-accent/40",
         isToday && "border-primary/50 ring-2 ring-primary/40",
         !isSameMonth(date, currentMonth) && "opacity-40 grayscale-[0.5]",
         isOver && "border-primary bg-primary/5",
         isSelected && "bg-accent/60 ring-2 ring-primary/20",
       )}
+      onClick={() => onOpenChange(true)}
     >
       <DateCellPopover
         bitMap={bitMap}
@@ -206,6 +207,7 @@ function MonthDateCell({
           aria-label={`Open details for ${format(date, "EEEE, MMMM d, yyyy")}, ${dayItems.length} ${dayItems.length === 1 ? "item" : "items"}`}
           className="mb-3 flex w-full items-center justify-between gap-2 rounded-sm text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           type="button"
+          onClick={(e) => e.stopPropagation()}
         >
           <span className={cn("text-sm font-semibold text-foreground", isToday && "text-primary")}>
             {format(date, "d")}

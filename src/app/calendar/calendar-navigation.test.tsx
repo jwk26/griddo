@@ -250,6 +250,23 @@ describe("calendar navigation rows", () => {
     expect(navigateMonthMock).toHaveBeenNthCalledWith(2, 1);
   });
 
+  it("opens monthly day details when the cell area is clicked", () => {
+    usePathnameMock.mockReturnValue("/calendar/monthly");
+    monthlyItemsMock.mockReturnValue(new Map([["2026-04-15", []]]));
+
+    render(<MonthGrid />);
+
+    fireEvent.click(
+      screen.getByRole("group", { name: "Wednesday, April 15, 2026, 0 items" }),
+    );
+
+    expect(
+      screen.getByRole("button", {
+        name: "Open details for Wednesday, April 15, 2026, 0 items",
+      }).parentElement,
+    ).toHaveAttribute("data-open", "true");
+  });
+
   it("opens monthly day details when a node preview tile is clicked", () => {
     usePathnameMock.mockReturnValue("/calendar/monthly");
     monthlyItemsMock.mockReturnValue(new Map([["2026-04-15", [createNode()]]]));
