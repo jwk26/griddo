@@ -1,19 +1,26 @@
 "use client";
 
 import { format } from "date-fns";
-import { CalendarRange, FolderKanban, ListTodo } from "lucide-react";
-import { useState } from "react";
+import { CalendarRange, FolderKanban, ListTodo, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverHeader,
-  PopoverTitle,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import type { Bit, Chunk, Node } from "@/types";
+
+function getParentLabel(
+  item: Node | Bit | Chunk,
+  nodeMap: Map<string, Node>,
+  bitMap: Map<string, Bit>,
+): string | null {
+  if ("color" in item) {
+    return item.parentId ? (nodeMap.get(item.parentId)?.title ?? null) : null;
+  }
+  if ("priority" in item) {
+    return nodeMap.get(item.parentId)?.title ?? null;
+  }
+  return bitMap.get(item.parentId)?.title ?? null;
+}
 
 function getTimestamp(item: Node | Bit | Chunk) {
   if ("deadline" in item) {
@@ -38,20 +45,25 @@ export function DateCellPopover({
   children,
   date,
   items,
+  nodeMap,
+  onOpenChange,
+  open,
 }: {
   bitMap: Map<string, Bit>;
   children: ReactNode;
   date: Date;
   items: (Node | Bit | Chunk)[];
+  nodeMap: Map<string, Node>;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
 }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const sortedItems = items.toSorted(
     (left, right) => (getTimestamp(left) ?? 0) - (getTimestamp(right) ?? 0),
   );
 
   function navigate(item: Node | Bit | Chunk) {
-    setOpen(false);
+    onOpenChange(false);
 
     if ("color" in item) {
       router.push(`/grid/${item.id}`);
@@ -70,15 +82,32 @@ export function DateCellPopover({
   }
 
   return (
-    <Popover onOpenChange={setOpen} open={open}>
+    <Popover onOpenChange={onOpenChange} open={open}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent align="start" className="w-80 p-3">
-        <PopoverHeader className="mb-3">
-          <PopoverTitle>{format(date, "EEEE, MMM d")}</PopoverTitle>
-        </PopoverHeader>
-        <div className="space-y-1">
+      <PopoverContent
+        align="start"
+        aria-label={format(date, "EEEE, MMMM d, yyyy")}
+        avoidCollisions={true}
+        className="flex max-h-96 w-80 flex-col rounded-2xl bg-popover p-3 shadow-xl duration-150 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 motion-reduce:data-[state=closed]:animate-none motion-reduce:data-[state=open]:animate-none"
+        side="right"
+        sideOffset={12}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-3 flex items-center justify-between">
+          <div className="text-base font-bold text-foreground">{format(date, "EEEE, MMM d")}</div>
+          <button
+            aria-label="Close day details"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            type="button"
+            onClick={() => onOpenChange(false)}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="min-h-0 space-y-1 overflow-y-auto">
           {sortedItems.map((item) => {
             const Icon = "color" in item ? FolderKanban : "priority" in item ? CalendarRange : ListTodo;
+            const parentLabel = getParentLabel(item, nodeMap, bitMap);
 
             return (
               <button
@@ -97,9 +126,12 @@ export function DateCellPopover({
                   >
                     {item.title}
                   </p>
+                  {parentLabel ? (
+                    <p className="truncate text-xs text-muted-foreground">{parentLabel}</p>
+                  ) : null}
                 </div>
                 {getTimeLabel(item) ? (
-                  <span className="text-xs text-muted-foreground">{getTimeLabel(item)}</span>
+                  <span className="flex-shrink-0 text-xs tabular-nums text-muted-foreground">{getTimeLabel(item)}</span>
                 ) : null}
               </button>
             );
