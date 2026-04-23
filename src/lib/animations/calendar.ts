@@ -1,16 +1,20 @@
 import type { Transition, Variants } from "motion/react";
+import {
+  motionOpacity,
+  motionScale,
+  motionSpring,
+} from "@/lib/animations/motion-language";
 
 export const dayColumnExpandVariants: Variants = {
-  collapsed: { opacity: 0.7, scaleY: 0.95 },
+  collapsed: {
+    opacity: motionOpacity.dayColumnCollapsed,
+    scaleY: motionScale.dayColumnCollapsed,
+  },
   expanded: {
-    opacity: 1,
+    opacity: motionOpacity.visible,
     scaleY: 1,
-    transition: { type: "spring", damping: 20, stiffness: 300 },
+    transition: motionSpring.dayColumn,
   },
 };
 
-export const magnetSnapCalendarTransition: Transition = {
-  type: "spring",
-  damping: 20,
-  stiffness: 250,
-};
+export const magnetSnapCalendarTransition: Transition = motionSpring.calendarSnap;
