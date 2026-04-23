@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const pushMock = vi.hoisted(() => vi.fn());
@@ -15,6 +16,33 @@ vi.mock("next/navigation", () => ({
 vi.mock("@dnd-kit/core", () => ({
   useDroppable: () => ({ isOver: false, setNodeRef: vi.fn() }),
 }));
+
+vi.mock("motion/react", async () => {
+  const React = await import("react");
+
+  const MotionButton = React.forwardRef<
+    HTMLButtonElement,
+    ComponentProps<"button"> & {
+      animate?: unknown;
+      transition?: unknown;
+    }
+  >(function MotionButton({ animate, transition, ...props }, ref) {
+    return (
+      <button
+        ref={ref}
+        data-motion-animate={JSON.stringify(animate)}
+        data-motion-transition={JSON.stringify(transition)}
+        {...props}
+      />
+    );
+  });
+
+  return {
+    motion: {
+      button: MotionButton,
+    },
+  };
+});
 
 vi.mock("@/components/layout/theme-toggle", () => ({
   ThemeToggle: ({ className }: { className?: string }) => (
@@ -178,5 +206,20 @@ describe("Sidebar", () => {
     fireEvent.click(editButton);
 
     expect(toggleEditModeMock).not.toHaveBeenCalled();
+  });
+
+  it("expands the pencil target while a grid item is being dragged", () => {
+    render(
+      <Sidebar
+        dragActiveItem={{ id: "node-1", title: "Node", type: "node" }}
+      />,
+    );
+
+    const editButton = screen.getByRole("button", { name: "Toggle edit mode" });
+
+    expect(editButton).toHaveAttribute("data-motion-animate", expect.stringContaining('"scale":1.2'));
+    expect(editButton).toHaveAttribute("data-motion-animate", expect.stringContaining('"boxShadow":"0 0 20px hsl(var(--primary) / 0.45)"'));
+    expect(editButton).toHaveAttribute("data-motion-animate", expect.stringContaining('"borderColor":"hsl(var(--primary) / 0.65)"'));
+    expect(editButton).toHaveClass("border-transparent");
   });
 });

@@ -1,8 +1,44 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Node } from "@/types";
-import { NodeCard } from "./node-card";
+
+vi.mock("motion/react", async () => {
+  const React = await import("react");
+
+  const MotionButton = React.forwardRef<
+    HTMLButtonElement,
+    ComponentProps<"button"> & {
+      animate?: unknown;
+      transition?: unknown;
+      variants?: unknown;
+      whileHover?: unknown;
+    }
+  >(function MotionButton(
+    { animate, transition, variants, whileHover, ...props },
+    ref,
+  ) {
+    return (
+      <button
+        ref={ref}
+        data-motion-animate={String(animate)}
+        data-motion-transition={JSON.stringify(transition)}
+        data-motion-variants={JSON.stringify(variants)}
+        data-motion-while-hover={String(whileHover)}
+        {...props}
+      />
+    );
+  });
+
+  return {
+    motion: {
+      button: MotionButton,
+    },
+  };
+});
+
+const { NodeCard } = await import("./node-card");
 
 function createNode(overrides: Partial<Node> = {}): Node {
   return {
@@ -47,8 +83,7 @@ describe("NodeCard", () => {
       "max-h-full",
       "max-w-full",
       "grid-rows-[1fr_var(--grid-node-title-height)]",
-      "transition-[transform,box-shadow,background-color]",
-      "hover:scale-[1.02]",
+      "transition-[box-shadow,background-color]",
     );
     expect(card).toHaveClass(
       "shadow-[0_4px_14px_rgba(15,23,42,0.10)]",
@@ -92,6 +127,9 @@ describe("NodeCard", () => {
       "hover:bg-muted/40",
       "active:bg-muted/60",
     );
+    expect(restingCard).toHaveAttribute("data-motion-animate", "rest");
+    expect(restingCard).toHaveAttribute("data-motion-while-hover", "hover");
+    expect(restingCard).toHaveAttribute("data-motion-variants", expect.stringContaining('"hover":{"scale":1.05,"zIndex":40}'));
     expect(restingCard).not.toHaveClass("cursor-grabbing", "bg-muted/60");
 
     rerender(
@@ -102,7 +140,8 @@ describe("NodeCard", () => {
     expect(draggingCard).toHaveClass(
       "cursor-grabbing",
       "bg-muted/60",
-      "scale-[1.02]",
     );
+    expect(draggingCard).toHaveAttribute("data-motion-animate", "dragging");
+    expect(draggingCard).toHaveAttribute("data-motion-variants", expect.stringContaining('"dragging":{"scale":1.1,"zIndex":50}'));
   });
 });

@@ -150,6 +150,10 @@
   --aging-neglected-filter: saturate(0.2) brightness(0.75);
   --aging-dust-opacity: 0.3;
 
+  /* Motion */
+  --motion-duration-affordance: 150ms;
+  --motion-duration-theme: 300ms;
+
   /* Grid Layout */
   --grid-cols: 18;
   --grid-rows: 9;
@@ -232,6 +236,8 @@
   --grid-bg-l1: 48 12% 10%;
   --grid-bg-l2: 48 9% 8%;
   --grid-bg-l3: 48 6% 6%;
+
+  --page-bg: hsl(240 10% 6%);
 }
 
 @layer base {
@@ -240,12 +246,9 @@
   }
 
   body {
-    background: var(--page-bg);
+    background-color: var(--page-bg);
+    transition: background-color var(--motion-duration-theme) ease, color var(--motion-duration-theme) ease;
     @apply text-foreground antialiased;
-  }
-
-  .dark body {
-    @apply bg-background;
   }
 
   @media (prefers-reduced-motion: reduce) {

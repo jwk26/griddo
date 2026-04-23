@@ -22,6 +22,7 @@ Values that differ from `docs/design-system-preview.html` **on purpose**:
 - [CSS Variables](#css-variables)
 - [Responsive Grid Node Tokens](#responsive-grid-node-tokens)
 - [Tailwind v4 Theme Bridge](#tailwind-v4-theme-bridge)
+- [Motion Language](#motion-language)
 - [Font Loading](#font-loading)
 - [Component Usage Quick Reference](#component-usage-quick-reference)
 
@@ -89,6 +90,10 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
     --aging-stagnant-filter: saturate(0.5) brightness(0.9);
     --aging-neglected-filter: saturate(0.2) brightness(0.75);
     --aging-dust-opacity: 0.3;
+
+    /* Motion */
+    --motion-duration-affordance: 150ms;
+    --motion-duration-theme: 300ms;
 
     /* Grid Layout — input tokens / policy knobs */
     --grid-cols: 18;                       /* ← 12 (original) → 15 → 18 during Phase 9 density tuning */
@@ -370,6 +375,7 @@ The following CSS variables are consumed via `var()` in component styles or Java
 | Variable group | Reason |
 |---|---|
 | `--aging-fresh-filter`, `--aging-stagnant-filter`, `--aging-neglected-filter`, `--aging-dust-opacity` | Applied as `filter:` values — stagnant includes `brightness(0.9)`, neglected `brightness(0.75)` |
+| `--motion-duration-affordance`, `--motion-duration-theme` | CSS-native transition durations; Motion runtime uses `src/lib/animations/motion-language.ts` |
 | `--grid-cols`, `--grid-rows`, `--grid-gap`, `--grid-cell-min` | Consumed by CSS Grid template or inline styles |
 | `--grid-inset`, `--grid-node-max-size` | Layer 1 policy knobs for cell-scoped node sizing |
 | `--grid-node-size`, `--grid-node-icon-size`, `--grid-node-title-height`, `--grid-node-padding-*`, `--grid-node-icon-lift` | Layer 2 derived sizing tokens — computed via `@container grid-cell` rules; `:root` values are static fallbacks only |
@@ -402,6 +408,38 @@ The following CSS variables are consumed via `var()` in component styles or Java
 | Day column expand (calendar) | Motion layout animation with vignette effect (column expands vertically, adjacent columns hidden) | `src/lib/animations/calendar.ts` |
 | Search overlay open/close | Motion fade + scale | `src/lib/animations/layout.ts` |
 | Bit detail popup | Motion fade + slide-up | `src/lib/animations/layout.ts` |
+
+---
+
+## Motion Language
+
+GridDO source extraction targets:
+
+| Interaction | Source behavior | GridDO2 token |
+|-------------|-----------------|---------------|
+| Node hover | `whileHover={{ scale: 1.05, zIndex: 40 }}` | `motionScale.nodeHover = 1.05`, `motionZIndex.nodeHover = 40` |
+| Node drag lift | `whileDrag={{ scale: 1.1, zIndex: 50 }}` | `motionScale.nodeDrag = 1.1`, `motionZIndex.nodeDrag = 50` |
+| Sidebar pencil drag target | `animate={{ scale: 1.2, boxShadow: "0 0 20px var(--accent-muted)" }}` | `motionScale.sidebarDragTarget = 1.2`, `motionShadow.sidebarDragTarget = 0 0 20px hsl(var(--primary) / 0.45)` |
+| Dark mode transition | `background-color 0.3s, color 0.3s` | `--motion-duration-theme: 300ms`, `motionDuration.theme = 0.3` |
+
+Runtime motion values live in `src/lib/animations/motion-language.ts`. Component and domain animation files must import named tokens from that file instead of defining raw duration, scale, spring, shadow, or z-index values inline.
+
+| Category | Token | Value |
+|----------|-------|-------|
+| Fast affordance | `motionDuration.affordance` / `--motion-duration-affordance` | `0.15s` / `150ms` |
+| Normal layout | `motionDuration.layout` | `0.25s` |
+| Modal enter | `motionDuration.modalEnter` | `0.2s` |
+| Modal exit | `motionDuration.modalExit` | `0.15s` |
+| Search exit | `motionDuration.searchExit` | `0.1s` |
+| Item exit | `motionDuration.itemExit` | `0.2s` |
+| Completion exit | `motionDuration.completionExit` | `0.3s` |
+| Theme transition | `motionDuration.theme` / `--motion-duration-theme` | `0.3s` / `300ms` |
+| Node hover scale | `motionScale.nodeHover` | `1.05` |
+| Node drag scale | `motionScale.nodeDrag` | `1.1` |
+| Sidebar drag target scale | `motionScale.sidebarDragTarget` | `1.2` |
+| Motion scale spring | `motionSpring.scale` | `type: "spring"`, `stiffness: 550`, `damping: 30`, `restSpeed: 10` |
+| Creation spring | `motionSpring.creation` | `type: "spring"`, `stiffness: 400`, `damping: 25` |
+| Grid snap spring | `motionSpring.gridSnap` | `type: "spring"`, `stiffness: 200`, `damping: 15` |
 
 ---
 

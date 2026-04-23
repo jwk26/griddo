@@ -1,30 +1,39 @@
 import type { Variants } from "motion/react";
+import {
+  motionBorderColor,
+  motionDistance,
+  motionDuration,
+  motionOpacity,
+  motionScale,
+  motionShadow,
+  motionSpring,
+} from "@/lib/animations/motion-language";
 
 export const searchOverlayVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.95 },
+  hidden: { opacity: motionOpacity.hidden, scale: motionScale.overlayInitial },
   visible: {
-    opacity: 1,
+    opacity: motionOpacity.visible,
     scale: 1,
-    transition: { duration: 0.15, ease: "easeOut" },
+    transition: { duration: motionDuration.affordance, ease: "easeOut" },
   },
   exit: {
-    opacity: 0,
-    scale: 0.95,
-    transition: { duration: 0.1, ease: "easeIn" },
+    opacity: motionOpacity.hidden,
+    scale: motionScale.overlayInitial,
+    transition: { duration: motionDuration.searchExit, ease: "easeIn" },
   },
 };
 
 export const bitDetailPopupVariants: Variants = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: motionOpacity.hidden, y: motionDistance.popupSlide },
   visible: {
-    opacity: 1,
+    opacity: motionOpacity.visible,
     y: 0,
-    transition: { duration: 0.2, ease: "easeOut" },
+    transition: { duration: motionDuration.modalEnter, ease: "easeOut" },
   },
   exit: {
-    opacity: 0,
-    y: 16,
-    transition: { duration: 0.15, ease: "easeIn" },
+    opacity: motionOpacity.hidden,
+    y: motionDistance.popupSlide,
+    transition: { duration: motionDuration.modalExit, ease: "easeIn" },
   },
 };
 
@@ -32,3 +41,17 @@ export const sidebarVariants: Variants = {
   open: { width: "var(--sidebar-width)" },
   closed: { width: "var(--sidebar-collapsed-width)" },
 };
+
+export const sidebarDragTargetRest = {
+  scale: 1,
+  boxShadow: motionShadow.none,
+  borderColor: motionBorderColor.transparent,
+} as const;
+
+export const sidebarDragTargetActive = {
+  scale: motionScale.sidebarDragTarget,
+  boxShadow: motionShadow.sidebarDragTarget,
+  borderColor: motionBorderColor.sidebarDragTarget,
+} as const;
+
+export const sidebarDragTargetTransition = motionSpring.scale;
