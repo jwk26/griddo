@@ -24,13 +24,15 @@ vi.mock("motion/react", async () => {
     HTMLButtonElement,
     ComponentProps<"button"> & {
       animate?: unknown;
+      initial?: unknown;
       transition?: unknown;
     }
-  >(function MotionButton({ animate, transition, ...props }, ref) {
+  >(function MotionButton({ animate, initial, transition, ...props }, ref) {
     return (
       <button
         ref={ref}
         data-motion-animate={JSON.stringify(animate)}
+        data-motion-initial={JSON.stringify(initial)}
         data-motion-transition={JSON.stringify(transition)}
         {...props}
       />
@@ -219,7 +221,7 @@ describe("Sidebar", () => {
 
     expect(editButton).toHaveAttribute("data-motion-animate", expect.stringContaining('"scale":1.2'));
     expect(editButton).toHaveAttribute("data-motion-animate", expect.stringContaining('"boxShadow":"0 0 20px hsl(var(--primary) / 0.45)"'));
-    expect(editButton).toHaveAttribute("data-motion-animate", expect.stringContaining('"borderColor":"hsl(var(--primary) / 0.65)"'));
-    expect(editButton).toHaveClass("border-transparent");
+    expect(editButton).not.toHaveAttribute("data-motion-animate", expect.stringContaining("borderColor"));
+    expect(editButton).toHaveClass("border-primary/60");
   });
 });

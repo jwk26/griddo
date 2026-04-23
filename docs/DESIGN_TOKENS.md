@@ -434,6 +434,8 @@ Runtime motion values live in `src/lib/animations/motion-language.ts`. Component
 | Item exit | `motionDuration.itemExit` | `0.2s` |
 | Completion exit | `motionDuration.completionExit` | `0.3s` |
 | Theme transition | `motionDuration.theme` / `--motion-duration-theme` | `0.3s` / `300ms` |
+| Completion sink offset | `motionDistance.sink` | `8px` |
+| Item exit y-offset | `motionDistance.itemExitY` | `8px` |
 | Node hover scale | `motionScale.nodeHover` | `1.05` |
 | Node drag scale | `motionScale.nodeDrag` | `1.1` |
 | Sidebar drag target scale | `motionScale.sidebarDragTarget` | `1.2` |
@@ -484,20 +486,30 @@ All classes reference CSS variables + Tailwind config above. No hardcoded hex or
 ### Node Card
 
 ```tsx
-{/* Node — mobile app icon design, no border */}
-<div className="flex flex-col items-center gap-1.5 p-3 rounded-xl cursor-pointer transition-transform hover:scale-105">
-  {/* Icon container — color from Node.color */}
-  <div
-    className="flex items-center justify-center w-[52px] h-[52px] rounded-[14px]"
-    style={{ backgroundColor: nodeColor }}
-  >
-    <Icon className="w-[26px] h-[26px] text-white" />
+{/* Node — Motion hover/drag scale; sizing comes from grid-node tokens */}
+<motion.button
+  animate={isDragging ? "dragging" : "rest"}
+  className="grid h-[var(--grid-node-size)] w-[var(--grid-node-size)]
+             grid-rows-[1fr_var(--grid-node-title-height)] rounded-3xl bg-card
+             transition-[box-shadow,background-color] hover:bg-muted/40"
+  transition={nodeCardTransition}
+  variants={nodeCardVariants}
+  whileHover={isDragging ? undefined : "hover"}
+>
+  {/* Icon — color from Node.color */}
+  <div className="flex min-h-0 items-center justify-center pb-[var(--grid-node-icon-lift)]">
+    <Icon
+      className="h-[var(--grid-node-icon-size)] w-[var(--grid-node-icon-size)] shrink-0"
+      style={{ color: node.color }}
+    />
   </div>
   {/* Title */}
-  <span className="text-[11px] font-medium text-foreground truncate max-w-[5rem]">
-    {title}
-  </span>
-</div>
+  <div className="h-[var(--grid-node-title-height)] w-full overflow-hidden">
+    <p className="truncate whitespace-nowrap text-center text-[11px] font-semibold">
+      {node.title}
+    </p>
+  </div>
+</motion.button>
 ```
 
 ### Bit Card (Grid View)

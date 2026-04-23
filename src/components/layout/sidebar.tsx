@@ -184,6 +184,7 @@ export function Sidebar({
         </div>
       ) : (
         <SidebarIconButton
+          className={cn(isGridItemDrag && "border-primary/60")}
           icon={Pencil}
           label="Toggle edit mode"
           motionProps={{

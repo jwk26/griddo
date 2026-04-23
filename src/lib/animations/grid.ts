@@ -9,7 +9,7 @@ import {
 } from "@/lib/animations/motion-language";
 
 export const nodeCardVariants: Variants = {
-  rest: { scale: 1, zIndex: motionZIndex.nodeRest },
+  rest: { scale: 1 },
   hover: { scale: motionScale.nodeHover, zIndex: motionZIndex.nodeHover },
   dragging: { scale: motionScale.nodeDrag, zIndex: motionZIndex.nodeDrag },
 };
@@ -47,7 +47,7 @@ export const creationVariants: Variants = {
   exit: {
     scale: motionScale.deletionExit,
     opacity: motionOpacity.hidden,
-    y: motionDistance.sink,
+    y: motionDistance.itemExitY,
     transition: { duration: motionDuration.itemExit, ease: "easeIn" },
   },
 };

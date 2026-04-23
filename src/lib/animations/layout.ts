@@ -1,6 +1,5 @@
 import type { Variants } from "motion/react";
 import {
-  motionBorderColor,
   motionDistance,
   motionDuration,
   motionOpacity,
@@ -37,21 +36,14 @@ export const bitDetailPopupVariants: Variants = {
   },
 };
 
-export const sidebarVariants: Variants = {
-  open: { width: "var(--sidebar-width)" },
-  closed: { width: "var(--sidebar-collapsed-width)" },
-};
-
 export const sidebarDragTargetRest = {
   scale: 1,
   boxShadow: motionShadow.none,
-  borderColor: motionBorderColor.transparent,
 } as const;
 
 export const sidebarDragTargetActive = {
   scale: motionScale.sidebarDragTarget,
   boxShadow: motionShadow.sidebarDragTarget,
-  borderColor: motionBorderColor.sidebarDragTarget,
 } as const;
 
 export const sidebarDragTargetTransition = motionSpring.scale;

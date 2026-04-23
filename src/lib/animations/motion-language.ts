@@ -25,11 +25,11 @@ export const motionScale = {
 
 export const motionDistance = {
   sink: 8,
+  itemExitY: 8,
   popupSlide: 16,
 } as const;
 
 export const motionZIndex = {
-  nodeRest: 10,
   nodeHover: 40,
   nodeDrag: 50,
 } as const;
@@ -44,11 +44,6 @@ export const motionOpacity = {
 export const motionShadow = {
   sidebarDragTarget: "0 0 20px hsl(var(--primary) / 0.45)",
   none: "0 0 0px hsl(var(--primary) / 0)",
-} as const;
-
-export const motionBorderColor = {
-  sidebarDragTarget: "hsl(var(--primary) / 0.65)",
-  transparent: "hsl(var(--border) / 0)",
 } as const;
 
 const scaleSpring = {

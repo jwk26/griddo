@@ -129,7 +129,9 @@ describe("NodeCard", () => {
     );
     expect(restingCard).toHaveAttribute("data-motion-animate", "rest");
     expect(restingCard).toHaveAttribute("data-motion-while-hover", "hover");
+    expect(restingCard).toHaveAttribute("data-motion-variants", expect.stringContaining('"rest":{"scale":1}'));
     expect(restingCard).toHaveAttribute("data-motion-variants", expect.stringContaining('"hover":{"scale":1.05,"zIndex":40}'));
+    expect(restingCard).not.toHaveAttribute("data-motion-variants", expect.stringContaining('"nodeRest"'));
     expect(restingCard).not.toHaveClass("cursor-grabbing", "bg-muted/60");
 
     rerender(
