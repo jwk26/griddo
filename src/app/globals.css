@@ -232,6 +232,8 @@
   --grid-bg-l1: 48 12% 10%;
   --grid-bg-l2: 48 9% 8%;
   --grid-bg-l3: 48 6% 6%;
+
+  --page-bg: hsl(240 10% 6%);
 }
 
 @layer base {
@@ -242,10 +244,6 @@
   body {
     background: var(--page-bg);
     @apply text-foreground antialiased;
-  }
-
-  .dark body {
-    @apply bg-background;
   }
 
   @media (prefers-reduced-motion: reduce) {
