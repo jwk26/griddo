@@ -157,7 +157,7 @@ export default function CalendarLayout({
             >
               <div
                 className={cn(
-                  "flex h-12 shrink-0 items-center border-b border-border px-2",
+                  "flex h-16 shrink-0 items-center border-b border-border px-4",
                   isPoolCollapsed ? "justify-center" : "justify-between",
                 )}
               >

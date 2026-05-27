@@ -12,8 +12,8 @@ interface CalendarState {
   pushDrillDown: (nodeId: string) => void;
   popDrillDown: () => void;
   resetDrillDown: () => void;
-  navigateWeek: (direction: 1 | -1) => void;
-  navigateMonth: (direction: 1 | -1) => void;
+  navigateWeek: (direction: number) => void;
+  navigateMonth: (direction: number) => void;
   setExpandedDay: (day: number | null) => void;
   setPoolCollapsed: (collapsed: boolean) => void;
   togglePool: () => void;

@@ -13,12 +13,9 @@ import {
   startOfToday,
   startOfWeek,
 } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { DateCellPopover } from "@/app/calendar/monthly/_components/date-cell-popover";
-import { Button } from "@/components/ui/button";
+import { CalendarViewHeader } from "@/components/calendar/calendar-view-header";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import { getCalendarDateDropId } from "@/lib/calendar-dnd";
@@ -90,12 +87,13 @@ function DraggableNodeTile({
       {...listeners}
       aria-label={`Open ${node.title} details or drag to reschedule`}
       className={cn(
-        "flex h-6 w-6 flex-shrink-0 cursor-grab items-center justify-center rounded-md shadow-sm ring-1 ring-inset ring-black/5 transition-[opacity,box-shadow,filter] dark:ring-white/10",
+        "flex h-6 w-6 flex-shrink-0 cursor-grab items-center justify-center shadow-sm ring-1 ring-inset ring-black/5 transition-[opacity,box-shadow,filter] dark:ring-white/10",
         "hover:ring-1 hover:ring-primary/50 hover:brightness-110",
         isDragging && "cursor-grabbing opacity-40",
       )}
       style={{
         backgroundColor: node.color,
+        borderRadius: "var(--theme-radius, 6px)",
         transform: getDragTransform(transform, isDragging),
       }}
       type="button"
@@ -178,6 +176,7 @@ function MonthDateCell({
     },
   });
   const isToday = isSameDay(date, startOfToday());
+  const isFirstOfMonth = date.getDate() === 1;
   const previewItems = getPreviewItems(dayItems);
   const overflowCount = dayItems.length - PREVIEW_ITEM_LIMIT;
 
@@ -187,12 +186,27 @@ function MonthDateCell({
       aria-label={`${format(date, "EEEE, MMMM d, yyyy")}, ${dayItems.length} ${dayItems.length === 1 ? "item" : "items"}`}
       role="group"
       className={cn(
-        "flex min-h-28 cursor-pointer flex-col rounded border border-border bg-card/80 p-3 text-left backdrop-blur-sm transition-colors hover:border-accent hover:bg-accent/40",
-        isToday && "border-primary/50 ring-2 ring-primary/40",
+        "flex min-h-32 cursor-pointer flex-col p-2 text-left backdrop-blur-sm transition-all hover:brightness-105",
         !isSameMonth(date, currentMonth) && "opacity-40 grayscale-[0.5]",
-        isOver && "border-primary bg-primary/5",
-        isSelected && "bg-accent/60 ring-2 ring-primary/20",
+        isOver && "ring-2 ring-primary/40",
+        isSelected && "z-10 ring-2 ring-primary",
       )}
+      style={{
+        background: "var(--calendar-cell-bg)",
+        borderColor: isToday
+          ? "var(--calendar-today-border-color)"
+          : "var(--calendar-border-color)",
+        borderRadius: "var(--calendar-cell-radius)",
+        borderStyle: isToday
+          ? "var(--calendar-today-border-style)"
+          : "var(--calendar-border-style)",
+        borderWidth: isToday
+          ? "var(--calendar-today-border-width)"
+          : "var(--calendar-border-width)",
+        boxShadow: isToday
+          ? "var(--calendar-today-shadow)"
+          : "var(--calendar-cell-shadow)",
+      }}
       onClick={() => onOpenChange(true)}
     >
       <DateCellPopover
@@ -205,15 +219,20 @@ function MonthDateCell({
       >
         <button
           aria-label={`Open details for ${format(date, "EEEE, MMMM d, yyyy")}, ${dayItems.length} ${dayItems.length === 1 ? "item" : "items"}`}
-          className="mb-3 flex w-full items-center justify-between gap-2 rounded-sm text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+          className="flex w-full items-start justify-end gap-1 rounded-sm text-right transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           type="button"
           onClick={(e) => e.stopPropagation()}
         >
-          <span className={cn("text-sm font-semibold text-foreground", isToday && "text-primary")}>
-            {format(date, "d")}
-          </span>
-          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            {format(date, "EEE")}
+          <span
+            className={cn(
+              "text-xs font-medium",
+              isToday
+                ? "flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                : "text-muted-foreground",
+              isFirstOfMonth && !isToday && "font-semibold text-foreground",
+            )}
+          >
+            {isFirstOfMonth ? format(date, "MMM d") : format(date, "d")}
           </span>
         </button>
       </DateCellPopover>
@@ -249,7 +268,6 @@ function MonthDateCell({
 }
 
 export function MonthGrid() {
-  const pathname = usePathname();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const currentMonth = useCalendarStore((state) => state.currentMonth);
   const navigateMonth = useCalendarStore((state) => state.navigateMonth);
@@ -261,63 +279,55 @@ export function MonthGrid() {
   const weekdayLabels = Array.from({ length: 7 }, (_, index) =>
     format(addDays(startOfWeek(startOfToday(), { weekStartsOn: 1 }), index), "EEE"),
   );
-  const isMonthlyRoute = pathname === "/calendar/monthly";
+
+  const handleToday = () => {
+    const today = startOfMonth(new Date());
+    const diff =
+      (today.getFullYear() - currentMonth.getFullYear()) * 12 +
+      (today.getMonth() - currentMonth.getMonth());
+
+    if (diff !== 0) {
+      navigateMonth(diff);
+    }
+
+    setSelectedDate(null);
+  };
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center px-6 py-4">
-        <div className="flex items-center justify-start gap-3">
-          <Button aria-label="Previous month" size="icon-sm" variant="outline" onClick={() => { setSelectedDate(null); navigateMonth(-1); }}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="inline-flex items-center rounded-lg border border-border bg-muted/50 p-1">
-            <Button
-              asChild
-              className={cn(
-                "h-7 rounded-md px-3 text-xs font-medium transition-colors",
-                isMonthlyRoute
-                  ? "text-muted-foreground hover:bg-transparent hover:text-foreground"
-                  : "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground",
-              )}
-              size="sm"
-              variant="ghost"
-            >
-              <Link href="/calendar/weekly">Weekly</Link>
-            </Button>
-            <Button
-              asChild
-              className={cn(
-                "h-7 rounded-md px-3 text-xs font-medium transition-colors",
-                isMonthlyRoute
-                  ? "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground"
-                  : "text-muted-foreground hover:bg-transparent hover:text-foreground",
-              )}
-              size="sm"
-              variant="ghost"
-            >
-              <Link href="/calendar/monthly">Monthly</Link>
-            </Button>
-          </div>
-        </div>
-        <div className="flex justify-center">
-          <span className="text-lg font-semibold tracking-tight tabular-nums">
-            {format(currentMonth, "MMMM yyyy")}
-          </span>
-        </div>
-        <div className="flex justify-end">
-          <Button aria-label="Next month" size="icon-sm" variant="outline" onClick={() => { setSelectedDate(null); navigateMonth(1); }}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-      <div className="grid grid-cols-7 gap-3 px-6 py-4">
+      <CalendarViewHeader
+        activeView="monthly"
+        nextLabel="Next month"
+        onNext={() => {
+          setSelectedDate(null);
+          navigateMonth(1);
+        }}
+        onPrevious={() => {
+          setSelectedDate(null);
+          navigateMonth(-1);
+        }}
+        onToday={handleToday}
+        previousLabel="Previous month"
+        subtitle={format(currentMonth, "yyyy")}
+        title={format(currentMonth, "MMMM")}
+      />
+      <div
+        className="grid grid-cols-7 border-b border-border transition-colors"
+        style={{ background: "var(--calendar-header-bg)" }}
+      >
         {weekdayLabels.map((label) => (
-          <div key={label} className="px-2 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          <div
+            key={label}
+            className="py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70"
+          >
             {label}
           </div>
         ))}
       </div>
-      <div className="grid min-h-0 flex-1 grid-cols-7 gap-3 overflow-y-auto px-6 pb-6">
+      <div
+        className="grid min-h-0 flex-1 grid-cols-7 gap-px overflow-y-auto pb-px transition-colors"
+        style={{ backgroundColor: "var(--calendar-grid-line-color)" }}
+      >
         {dates.map((date) => {
           const dateKey = format(date, "yyyy-MM-dd");
 
