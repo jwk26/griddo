@@ -1,0 +1,326 @@
+/* 1. Tiny Desk — wooden planner / corkboard */
+:root[data-color-theme="tiny-desk"] {
+  --background: 35 60% 90%;
+  --foreground: 25 50% 30%;
+  --card: 35 60% 85%;
+  --primary: 25 50% 30%;
+  --page-bg: hsl(35 60% 90%);
+  --border: 25 50% 30%;
+  --grid-line-color: 25 50% 30%;
+  --grid-bg-l0: 35 60% 90%;
+  --grid-bg-l1: 35 60% 85%;
+  --grid-bg-l2: 35 60% 80%;
+  --grid-bg-l3: 35 60% 75%;
+
+  --theme-font: var(--font-playfair), serif;
+  --theme-radius: 8px;
+  --theme-border-width: 3px;
+  --theme-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  --theme-shadow-hover: 4px 4px 10px rgba(0, 0, 0, 0.25);
+
+  --calendar-cell-bg: hsl(35 60% 95%);
+  --calendar-header-bg: hsl(40 40% 80%);
+  --calendar-border-color: hsl(25 50% 40% / 0.3);
+  --calendar-grid-line-color: hsl(25 50% 40% / 0.3);
+  --calendar-cell-radius: 4px;
+}
+
+.dark[data-color-theme="tiny-desk"] {
+  --background: 25 50% 15%;
+  --foreground: 35 60% 80%;
+  --card: 25 50% 12%;
+  --primary: 35 60% 80%;
+  --page-bg: hsl(25 50% 15%);
+  --border: 35 60% 80%;
+  --grid-line-color: 35 60% 80%;
+  --grid-bg-l0: 25 50% 15%;
+  --grid-bg-l1: 25 50% 12%;
+  --grid-bg-l2: 25 50% 9%;
+  --grid-bg-l3: 25 50% 6%;
+
+  --theme-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+  --theme-shadow-hover: 4px 4px 10px rgba(0, 0, 0, 0.5);
+  --calendar-cell-bg: hsl(25 50% 18%);
+  --calendar-header-bg: hsl(25 30% 25%);
+}
+
+/* 2. New Morphism — soft extrusion */
+:root[data-color-theme="neumorphism"] {
+  --background: 210 20% 90%;
+  --foreground: 0 0% 20%;
+  --card: 210 20% 90%;
+  --primary: 0 0% 20%;
+  --page-bg: hsl(210 20% 90%);
+  --border: 210 20% 90%;
+  --grid-line-color: 0 0% 20%;
+  --grid-bg-l0: 210 20% 90%;
+  --grid-bg-l1: 210 20% 90%;
+  --grid-bg-l2: 210 20% 90%;
+  --grid-bg-l3: 210 20% 90%;
+
+  --theme-font: var(--font-inter), sans-serif;
+  --theme-radius: 20px;
+  --theme-border-width: 0px;
+  --theme-card-bg: var(--page-bg);
+  --theme-shadow: 8px 8px 16px #c5c9d1, -8px -8px 16px #ffffff;
+  --theme-shadow-hover: 12px 12px 20px #c5c9d1, -12px -12px 20px #ffffff;
+
+  --calendar-cell-bg: var(--page-bg);
+  --calendar-cell-radius: 24px;
+  --calendar-border-color: transparent;
+  --calendar-grid-line-color: transparent;
+  --calendar-cell-shadow: 4px 4px 8px #c5c9d1, -4px -4px 8px #ffffff;
+  --calendar-today-shadow: inset 4px 4px 8px #c5c9d1, inset -4px -4px 8px #ffffff;
+}
+
+.dark[data-color-theme="neumorphism"] {
+  --background: 0 0% 10%;
+  --foreground: 0 0% 90%;
+  --card: 0 0% 10%;
+  --primary: 0 0% 90%;
+  --page-bg: hsl(0 0% 10%);
+  --border: 0 0% 10%;
+  --grid-line-color: 0 0% 90%;
+  --grid-bg-l0: 0 0% 10%;
+  --grid-bg-l1: 0 0% 10%;
+  --grid-bg-l2: 0 0% 10%;
+  --grid-bg-l3: 0 0% 10%;
+
+  --theme-card-bg: var(--page-bg);
+  --theme-shadow: 5px 5px 10px #0b0b0b, -5px -5px 10px #292929;
+  --theme-shadow-hover: 8px 8px 15px #0b0b0b, -8px -8px 15px #292929;
+  --calendar-cell-shadow: 4px 4px 8px #080808, -4px -4px 8px #181818;
+  --calendar-today-shadow: inset 4px 4px 8px #080808, inset -4px -4px 8px #181818;
+}
+
+/* 3. 3D Claymorphism — puffy / tactile */
+:root[data-color-theme="claymorphism"] {
+  --background: 340 30% 95%;
+  --foreground: 340 30% 30%;
+  --card: 340 30% 95%;
+  --primary: 340 80% 60%;
+  --page-bg: hsl(340 30% 95%);
+  --border: 340 30% 95%;
+  --grid-line-color: 340 30% 85%;
+  --grid-bg-l0: 340 30% 95%;
+  --grid-bg-l1: 340 30% 95%;
+  --grid-bg-l2: 340 30% 95%;
+  --grid-bg-l3: 340 30% 95%;
+
+  --theme-font: var(--font-inter), sans-serif;
+  --theme-radius: 32px;
+  --theme-border-width: 0px;
+  --theme-shadow: 6px 6px 12px rgba(0, 0, 0, 0.1), -6px -6px 12px rgba(255, 255, 255, 0.9), inset 4px 4px 8px rgba(255, 255, 255, 0.9), inset -4px -4px 8px rgba(0, 0, 0, 0.05);
+  --theme-shadow-hover: 8px 8px 16px rgba(0, 0, 0, 0.15), -8px -8px 16px rgba(255, 255, 255, 1), inset 6px 6px 10px rgba(255, 255, 255, 1), inset -6px -6px 10px rgba(0, 0, 0, 0.05);
+
+  --calendar-cell-bg: hsl(340 30% 97%);
+  --calendar-cell-radius: 32px;
+  --calendar-border-color: transparent;
+  --calendar-grid-line-color: transparent;
+  --calendar-cell-shadow: 10px 10px 20px rgba(0, 0, 0, 0.05), inset 4px 4px 8px rgba(255, 255, 255, 0.8);
+}
+
+.dark[data-color-theme="claymorphism"] {
+  --background: 240 20% 15%;
+  --foreground: 240 20% 90%;
+  --card: 240 20% 20%;
+  --primary: 340 80% 60%;
+  --page-bg: hsl(240 20% 15%);
+  --border: 240 20% 20%;
+  --grid-line-color: 240 20% 25%;
+  --grid-bg-l0: 240 20% 15%;
+  --grid-bg-l1: 240 20% 15%;
+  --grid-bg-l2: 240 20% 15%;
+  --grid-bg-l3: 240 20% 15%;
+
+  --theme-shadow: 6px 6px 12px rgba(0, 0, 0, 0.3), -6px -6px 12px rgba(255, 255, 255, 0.05), inset 4px 4px 8px rgba(255, 255, 255, 0.1), inset -4px -4px 8px rgba(0, 0, 0, 0.2);
+  --theme-shadow-hover: 8px 8px 16px rgba(0, 0, 0, 0.4), -8px -8px 16px rgba(255, 255, 255, 0.05), inset 6px 6px 10px rgba(255, 255, 255, 0.15), inset -6px -6px 10px rgba(0, 0, 0, 0.3);
+  --calendar-cell-bg: hsl(240 20% 18%);
+}
+
+/* 4. Origami Papercraft — folded / faceted */
+:root[data-color-theme="origami"] {
+  --background: 40 20% 95%;
+  --foreground: 0 0% 20%;
+  --card: 40 20% 98%;
+  --primary: 15 80% 60%;
+  --page-bg: hsl(40 20% 95%);
+  --border: 0 0% 80%;
+  --grid-line-color: 0 0% 80%;
+  --grid-bg-l0: 40 20% 95%;
+  --grid-bg-l1: 40 20% 93%;
+  --grid-bg-l2: 40 20% 91%;
+  --grid-bg-l3: 40 20% 89%;
+
+  --theme-font: var(--font-space-mono), monospace;
+  --theme-radius: 2px 12px 2px 12px / 12px 2px 12px 2px;
+  --theme-border-width: 1px;
+  --theme-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05), -1px -1px 2px rgba(255, 255, 255, 0.8);
+  --theme-shadow-hover: 4px 4px 8px rgba(0, 0, 0, 0.1), -2px -2px 4px rgba(255, 255, 255, 0.9);
+
+  --calendar-cell-bg: linear-gradient(135deg, hsl(40 20% 98%) 80%, hsl(40 20% 90%) 100%);
+  --calendar-cell-radius: 0px;
+  --calendar-border-color: hsl(0 0% 85%);
+  --calendar-grid-line-color: hsl(0 0% 85%);
+}
+
+.dark[data-color-theme="origami"] {
+  --background: 220 20% 15%;
+  --foreground: 40 20% 90%;
+  --card: 220 20% 18%;
+  --primary: 15 80% 60%;
+  --page-bg: hsl(220 20% 15%);
+  --border: 220 20% 25%;
+  --grid-line-color: 220 20% 25%;
+  --grid-bg-l0: 220 20% 15%;
+  --grid-bg-l1: 220 20% 13%;
+  --grid-bg-l2: 220 20% 11%;
+  --grid-bg-l3: 220 20% 9%;
+
+  --theme-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), -1px -1px 2px rgba(255, 255, 255, 0.05);
+  --theme-shadow-hover: 4px 4px 8px rgba(0, 0, 0, 0.5), -2px -2px 4px rgba(255, 255, 255, 0.1);
+  --calendar-cell-bg: linear-gradient(135deg, hsl(220 20% 20%) 80%, hsl(220 20% 10%) 100%);
+}
+
+/* 5. MS-DOS Terminal — retro console */
+:root[data-color-theme="terminal"] {
+  --background: 0 0% 5%;
+  --foreground: 120 100% 50%;
+  --card: 0 0% 5%;
+  --primary: 120 100% 50%;
+  --page-bg: hsl(0 0% 5%);
+  --border: 120 100% 50%;
+  --grid-line-color: 120 100% 50%;
+  --grid-bg-l0: 0 0% 5%;
+  --grid-bg-l1: 0 0% 7%;
+  --grid-bg-l2: 0 0% 9%;
+  --grid-bg-l3: 0 0% 11%;
+
+  --theme-font: var(--font-vt323), monospace;
+  --theme-radius: 0px;
+  --theme-border-width: 2px;
+  --theme-card-bg: hsl(0 0% 5%);
+  --theme-shadow: none;
+  --theme-shadow-hover: 0 0 15px hsl(120 100% 50%);
+
+  --calendar-cell-bg: transparent;
+  --calendar-cell-radius: 0px;
+  --calendar-border-style: dashed;
+  --calendar-border-color: hsl(120 100% 50% / 0.5);
+  --calendar-grid-line-color: hsl(120 100% 50% / 0.5);
+  --calendar-today-border-width: 2px;
+  --calendar-today-border-color: hsl(120 100% 50%);
+}
+
+.dark[data-color-theme="terminal"] {
+  --background: 0 0% 0%;
+  --foreground: 30 100% 50%;
+  --card: 0 0% 0%;
+  --primary: 30 100% 50%;
+  --page-bg: hsl(0 0% 0%);
+  --border: 30 100% 50%;
+  --grid-line-color: 30 100% 50%;
+  --grid-bg-l0: 0 0% 0%;
+  --grid-bg-l1: 0 0% 4%;
+  --grid-bg-l2: 0 0% 8%;
+  --grid-bg-l3: 0 0% 12%;
+
+  --theme-card-bg: hsl(0 0% 0%);
+  --theme-shadow-hover: 0 0 15px hsl(30 100% 50%);
+  --calendar-border-color: hsl(30 100% 50% / 0.5);
+  --calendar-grid-line-color: hsl(30 100% 50% / 0.5);
+  --calendar-today-border-color: hsl(30 100% 50%);
+}
+
+/* 6. Retro Macintosh — classic desktop */
+:root[data-color-theme="retro-mac"] {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --card: 0 0% 100%;
+  --primary: 0 0% 0%;
+  --page-bg: hsl(0 0% 90%);
+  --border: 0 0% 0%;
+  --grid-line-color: 0 0% 0%;
+  --grid-bg-l0: 0 0% 90%;
+  --grid-bg-l1: 0 0% 85%;
+  --grid-bg-l2: 0 0% 80%;
+  --grid-bg-l3: 0 0% 75%;
+
+  --theme-font: var(--font-space-mono), monospace;
+  --theme-radius: 4px;
+  --theme-border-width: 2px;
+  --theme-shadow: 2px 2px 0px rgba(0, 0, 0, 1);
+  --theme-shadow-hover: 4px 4px 0px rgba(0, 0, 0, 1);
+
+  --calendar-cell-bg: #ffffff;
+  --calendar-header-bg: repeating-linear-gradient(45deg, #eeeeee, #eeeeee 2px, #ffffff 2px, #ffffff 4px);
+  --calendar-cell-radius: 0px;
+  --calendar-border-color: #000000;
+  --calendar-grid-line-color: #000000;
+}
+
+.dark[data-color-theme="retro-mac"] {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 0%;
+  --primary: 0 0% 100%;
+  --page-bg: hsl(0 0% 10%);
+  --border: 0 0% 100%;
+  --grid-line-color: 0 0% 100%;
+  --grid-bg-l0: 0 0% 10%;
+  --grid-bg-l1: 0 0% 15%;
+  --grid-bg-l2: 0 0% 20%;
+  --grid-bg-l3: 0 0% 25%;
+
+  --theme-shadow: 2px 2px 0px rgba(255, 255, 255, 1);
+  --theme-shadow-hover: 4px 4px 0px rgba(255, 255, 255, 1);
+  --calendar-cell-bg: #000000;
+  --calendar-header-bg: repeating-linear-gradient(45deg, #222222, #222222 2px, #000000 2px, #000000 4px);
+  --calendar-border-color: #ffffff;
+  --calendar-grid-line-color: #ffffff;
+}
+
+/* 7. Graphite Minimalist — architectural */
+:root[data-color-theme="graphite"] {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 20%;
+  --card: 0 0% 96%;
+  --primary: 0 0% 20%;
+  --page-bg: hsl(0 0% 100%);
+  --border: 0 0% 20%;
+  --grid-line-color: 0 0% 20%;
+  --grid-bg-l0: 0 0% 100%;
+  --grid-bg-l1: 0 0% 98%;
+  --grid-bg-l2: 0 0% 96%;
+  --grid-bg-l3: 0 0% 94%;
+
+  --theme-font: var(--font-inter), sans-serif;
+  --theme-radius: 8px;
+  --theme-border-width: 2px;
+  --theme-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  --theme-shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.1);
+
+  --calendar-cell-bg: transparent;
+  --calendar-cell-radius: 0px;
+  --calendar-border-color: hsl(0 0% 90%);
+  --calendar-grid-line-color: hsl(0 0% 90%);
+}
+
+.dark[data-color-theme="graphite"] {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 90%;
+  --card: 0 0% 6%;
+  --primary: 0 0% 90%;
+  --page-bg: hsl(0 0% 0%);
+  --border: 0 0% 90%;
+  --grid-line-color: 0 0% 90%;
+  --grid-bg-l0: 0 0% 0%;
+  --grid-bg-l1: 0 0% 4%;
+  --grid-bg-l2: 0 0% 8%;
+  --grid-bg-l3: 0 0% 12%;
+
+  --theme-shadow: 0 4px 10px rgba(255, 255, 255, 0.05);
+  --theme-shadow-hover: 0 8px 20px rgba(255, 255, 255, 0.1);
+  --calendar-border-color: hsl(0 0% 20%);
+  --calendar-grid-line-color: hsl(0 0% 20%);
+}

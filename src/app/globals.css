@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./themes.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -193,6 +194,40 @@
   --calendar-pool-width: 18rem;
   --calendar-node-pool-ratio: 0.6;
   --calendar-day-min-width: 8rem;
+
+  /* Color Theme Contract */
+  --theme-font: var(--font-geist-sans), -apple-system, system-ui, sans-serif;
+  --theme-radius: 1.5rem;
+  --theme-border-width: 1px;
+  --theme-border-style: solid;
+  --theme-line-style: dashed;
+  --theme-card-bg: hsl(var(--card));
+  --theme-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+  --theme-shadow-hover: 0 10px 24px rgba(15, 23, 42, 0.14);
+
+  /* Calendar Visual Theme Contract */
+  --calendar-cell-bg: hsl(var(--card) / 0.8);
+  --calendar-header-bg: hsl(var(--muted) / 0.2);
+  --calendar-border-width: 1px;
+  --calendar-border-style: solid;
+  --calendar-border-color: hsl(var(--border) / 0.2);
+  --calendar-grid-line-color: hsl(var(--border) / 0.1);
+  --calendar-cell-radius: 0px;
+  --calendar-cell-shadow: none;
+  --calendar-today-border-width: 2px;
+  --calendar-today-border-style: solid;
+  --calendar-today-border-color: hsl(var(--primary));
+  --calendar-today-shadow: var(--calendar-cell-shadow);
+
+  /* Color Theme Swatches */
+  --color-theme-swatch-griddo: hsl(38 28% 91%);
+  --color-theme-swatch-tiny-desk: hsl(35 60% 82%);
+  --color-theme-swatch-neumorphism: hsl(210 20% 90%);
+  --color-theme-swatch-claymorphism: hsl(340 30% 91%);
+  --color-theme-swatch-origami: hsl(40 20% 93%);
+  --color-theme-swatch-terminal: hsl(120 100% 50%);
+  --color-theme-swatch-retro-mac: hsl(0 0% 95%);
+  --color-theme-swatch-graphite: hsl(0 0% 47%);
 }
 
 .dark {
@@ -238,6 +273,9 @@
   --grid-bg-l3: 48 6% 6%;
 
   --page-bg: hsl(240 10% 6%);
+
+  --theme-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  --theme-shadow-hover: 0 10px 24px rgba(0, 0, 0, 0.4);
 }
 
 @layer base {
@@ -247,6 +285,7 @@
 
   body {
     background-color: var(--page-bg);
+    font-family: var(--theme-font), var(--font-geist-sans), -apple-system, system-ui, sans-serif;
     transition: background-color var(--motion-duration-theme) ease, color var(--motion-duration-theme) ease;
     @apply text-foreground antialiased;
   }
@@ -260,6 +299,42 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+@layer components {
+  .theme-node-card {
+    background: var(--theme-card-bg);
+    border-color: hsl(var(--border));
+    border-radius: var(--theme-radius);
+    border-style: var(--theme-border-style);
+    border-width: var(--theme-border-width);
+    box-shadow: var(--theme-shadow);
+    font-family: var(--theme-font);
+  }
+
+  .theme-node-card:hover {
+    box-shadow: var(--theme-shadow-hover);
+  }
+
+  .theme-grid-line {
+    border-color: hsl(var(--border));
+    border-radius: var(--theme-radius);
+    border-style: var(--theme-line-style);
+    border-width: var(--theme-border-width);
+  }
+
+  .theme-surface {
+    background: var(--theme-card-bg);
+    border-color: hsl(var(--border));
+    border-radius: var(--theme-radius);
+    border-style: var(--theme-border-style);
+    border-width: var(--theme-border-width);
+    box-shadow: var(--theme-shadow);
+  }
+
+  .theme-surface:hover {
+    box-shadow: var(--theme-shadow-hover);
   }
 }
 

@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { Toaster } from "sonner";
 import type { ReactNode } from "react";
 import { BitDetailPopup } from "@/components/bit-detail/bit-detail-popup";
+import { ColorThemeProvider } from "@/components/layout/color-theme-provider";
 import { SearchOverlay } from "@/components/layout/search-overlay";
 import { useTrashAutoCleanup } from "@/hooks/use-trash-auto-cleanup";
 
@@ -24,6 +25,7 @@ export default function Providers({
       defaultTheme="system"
       enableSystem
     >
+      <ColorThemeProvider />
       <TrashAutoCleanup />
       {children}
       <Suspense>
