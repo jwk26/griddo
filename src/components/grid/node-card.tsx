@@ -33,8 +33,8 @@ export function NodeCard({
         type="button"
         animate={isDragging ? "dragging" : "rest"}
         className={cn(
-          "relative grid h-[var(--grid-node-size)] w-[var(--grid-node-size)] max-h-full max-w-full cursor-grab grid-rows-[1fr_var(--grid-node-title-height)] justify-items-center rounded-3xl bg-card px-[var(--grid-node-padding-x)] pb-[var(--grid-node-padding-bottom)] pt-[var(--grid-node-padding-top)] shadow-[0_4px_14px_rgba(15,23,42,0.10)] transition-[box-shadow,background-color] hover:bg-muted/40 hover:shadow-[0_10px_24px_rgba(15,23,42,0.14)] active:cursor-grabbing active:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          isDragging && "cursor-grabbing bg-muted/60 shadow-[0_10px_24px_rgba(15,23,42,0.14)]",
+          "theme-node-card group relative grid h-[var(--grid-node-size)] w-[var(--grid-node-size)] max-h-full max-w-full cursor-grab grid-rows-[1fr_var(--grid-node-title-height)] justify-items-center overflow-hidden px-[var(--grid-node-padding-x)] pb-[var(--grid-node-padding-bottom)] pt-[var(--grid-node-padding-top)] transition-[box-shadow,background-color,filter] hover:bg-muted/40 active:cursor-grabbing active:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          isDragging && "cursor-grabbing bg-muted/60",
           isEditMode && "motion-safe:animate-jiggle",
         )}
         initial={false}
@@ -47,13 +47,13 @@ export function NodeCard({
         {/* Fixed icon slot so title length never shifts or scales the icon */}
         <div className="flex min-h-0 items-center justify-center self-center pb-[var(--grid-node-icon-lift)]">
           <Icon
-            className="h-[var(--grid-node-icon-size)] w-[var(--grid-node-icon-size)] shrink-0"
+            className="h-[var(--grid-node-icon-size)] w-[var(--grid-node-icon-size)] shrink-0 opacity-80 transition-opacity group-hover:opacity-100"
             style={{ color: node.color }}
           />
         </div>
         {/* Fixed title slot so short titles remain visible and long ones ellipsize */}
         <div className="h-[var(--grid-node-title-height)] w-full overflow-hidden self-start">
-          <p className="truncate whitespace-nowrap text-center text-[11px] font-semibold leading-[var(--grid-node-title-height)] text-foreground">
+          <p className="truncate whitespace-nowrap text-center text-[11px] font-semibold leading-[var(--grid-node-title-height)] text-foreground transition-colors group-hover:text-primary">
             {node.title}
           </p>
         </div>

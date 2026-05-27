@@ -33,7 +33,7 @@ export function GridCell({
   return (
     <div
       className={cn(
-        "relative h-full rounded-md transition-all border border-dashed",
+        "theme-grid-line relative h-full transition-all",
         showEmptyAffordance && "flex min-h-[5rem] items-center justify-center",
       )}
       data-position={`${x},${y}`}
