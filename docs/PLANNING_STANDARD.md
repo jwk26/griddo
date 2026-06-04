@@ -55,6 +55,18 @@ Three tiers:
 
 **Rule of thumb:** if a user would notice the decision, it must be explicit. If only a developer would notice, it can be inferred — unless it's an architectural invariant.
 
+### Code-Readiness Invariant
+
+Three rules govern what may appear in an active execution plan:
+
+1. **Code-ready only.** Every task in EXECUTION_PLAN.md must be implementable from the task spec alone, without requiring additional product, design, or policy decisions. If a task needs a decision that hasn't been made, it is not code-ready and must not be in the plan.
+
+2. **No unresolved blockers.** Unresolved decisions, open questions, design dependencies, and policy choices must not appear as blockers in the active plan. Either resolve them before the task enters the plan, or move the task to `docs/brainstorming/future_ideas/`.
+
+3. **Future work lives in future_ideas.** Deferred features, blocked tasks, and unscheduled work live in `docs/brainstorming/future_ideas/`, not in the execution plan. The plan contains only active, schedulable work.
+
+**Enforcement:** The `execute-next-phase` skill runs a mechanical readiness scan before branch creation. The `execute-task` skill runs a batch-level readiness check before prompt preparation. Both halt on violations.
+
 ---
 
 ## 3. Flow-Trace Review
