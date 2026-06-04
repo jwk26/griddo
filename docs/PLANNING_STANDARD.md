@@ -157,13 +157,17 @@ Violations of core architectural invariants. **Must be fixed before close-out / 
 - [ ] **Zod write-boundary:** Zod validation at write boundary only (`createNodeSchema.parse()`, `createBitSchema.parse()`, etc.). No read-path validation.
 - [ ] **State separation:** UI state in Zustand stores (`src/stores/`). Data state in hooks (`src/hooks/`). No mixing — hooks don't import Zustand, stores don't import DataStore.
 - [ ] **Hook API boundary:** UI components import hooks, not DataStore. Hooks are the reactive data boundary.
+- [ ] **Lifecycle active-filter (archive sweep):** Every "active items" query filters `archivedAt = null` alongside `deletedAt = null` (L0 grid rendering also excludes `hiddenFromGrid = true`). Covers grid contents, node completion, calendar items, items pool, badge, global urgency, text search, grid occupancy, aging. Trash queries key off `deletedAt` only. (Added Batch 1 — SCHEMA.md Key Queries.)
+- [ ] **System-managed field guard:** `createNodeSchema` / `createBitSchema` never accept `systemRole`, `hiddenFromGrid`, or `archivedAt`. These are set only by system seeding (internal full-schema path) or the archive hooks — never from a user-facing create path. (Added Batch 1.)
+- [ ] **System node lifecycle exclusion:** System nodes (`systemRole !== null`) are never soft-deleted/trashed or archived (Hooks 4 and 10). "Remove from grid" uses `hiddenFromGrid = true`; the sidebar still lists them. (Added Batch 1.)
 
 ### Tier: Advisory
 
 Important issues that should be surfaced and recorded, but do not automatically block closing. Closing continues with explicit acknowledgement.
 
 - [ ] **Optimistic UI:** No loading states, spinners, or skeleton screens for local data operations. Local-first means zero-latency.
-- [ ] **File organization:** New files follow key path conventions from CLAUDE.md (utils in `src/lib/utils/`, hooks in `src/hooks/`, stores in `src/stores/`).
+- [ ] **File organization:** New files follow key path conventions from CLAUDE.md (utils in `src/lib/utils/`, hooks in `src/hooks/`, stores in `src/stores/`). New Batch 1 component domains: `src/components/quick-capture/`, `src/components/triage/`, `src/components/archive/`.
+- [ ] **scratchBreakdowns store boundary:** Breakdown rows live in the dedicated `scratchBreakdowns` store (not Chunks) and must not participate in Hook 3 (Bit Auto-Completion). Triage staging is UI-state-only; real Node/Bit records are created only on confirmed placement (when `consumedAt` is set). (Added Batch 1.)
 
 ### Updating this checklist
 

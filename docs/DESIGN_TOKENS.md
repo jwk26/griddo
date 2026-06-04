@@ -738,6 +738,23 @@ Buttons are `28×28px` (w-7 h-7). "Done?" text is foreground (not muted), semibo
 </div>
 ```
 
+### Inbox Badge (Triage)
+
+Active-Scratch count badge on the Inbox system Node. Three-level pressure model (exact count; thresholds in `src/lib/constants.ts`). Colors use **semantic tokens — no hard-coded HSL**:
+
+| Count | Level | Token mapping (Batch 1 baseline) |
+|-------|-------|----------------------------------|
+| 0 | hidden | no badge |
+| 1–7 | neutral | `bg-muted text-muted-foreground` |
+| 8–14 | warm | `bg-priority-mid-bg text-priority-mid` |
+| 15+ | high-pressure | `bg-destructive text-destructive-foreground` |
+
+> **Semantic reuse, not a new token:** the "warm" tier reuses the existing amber `--priority-mid` pair (`45 93% 47%`; medium-priority = caution), already wired in the theme bridge as `--color-priority-mid(-bg)`. This satisfies the "semantic tokens, no hard-coded HSL" rule without inventing a value. If the count-pressure scale later needs to diverge from task priority, a dedicated pressure token can be introduced in Batch 2 — Batch 1 does not require it.
+
+### Compact Drag Token (Inbox/Triage)
+
+Inbox/Triage drag previews (Breakdown row, staged Node, staged Bit) use a **compact token**, not the full row/card (SPEC Decision 16; pointer-centered targeting; valid / invalid / pending-confirmation target states). The existing calendar `compact-bit-item.tsx` "full drag surface" is the **anti-pattern** to avoid. Batch 1 uses existing GridDO baseline tokens; exact drag-token classes are an implementation detail within the Inbox/Triage phase (no dedicated theme tokens in Batch 1).
+
 ---
 
 ## Surface Recipes
@@ -748,6 +765,19 @@ Buttons are `28×28px` (w-7 h-7). "Done?" text is foreground (not muted), semibo
 > Reference for verification: the source image listed in each recipe header.
 >
 > Surface recipes are referenced by execution plan tasks via a `Recipe:` field.
+> Larger surface recipes may live as standalone files under `docs/recipes/` and are linked below.
+
+### Quick Capture `+` Entry Surface
+
+> Recipe file: `docs/recipes/quick-capture-entry-surface-visual-recipe.md`
+> Source: `prototype/future-ideas` @ `e662163` (`surface(main)` variant).
+> Scope: anchored `+` entry-surface popover + Scratch capture modal. Geometric detail (classes, spacing, motion) lives in the recipe file; product behavior is in SPEC § Quick Capture `+` Entry Surface.
+
+### Command Palette (Cmd+K)
+
+> Recipe file: `docs/recipes/command-palette-visual-recipe.md`
+> Source: `prototype/future-ideas` @ `e662163` (palette variant).
+> Scope: Cmd+K command-palette visual shell. Command set/keys are a product rule (SPEC § Command Palette), not part of this visual recipe. Geometric detail lives in the recipe file.
 
 ### Bit Detail Surface
 
