@@ -123,8 +123,8 @@ Reduce false completion by making "done" concretely verifiable for user-facing t
 
 ### How it works
 
-- Tasks that change user-visible behavior are tagged `Visibility: User-facing` in the execution plan (internal tasks left untagged)
-- Acceptance criteria for user-facing tasks are written as **observable verification questions** that can be confirmed by looking at the running app
+- User-facing tasks (those that change user-visible behavior) are identified by their **acceptance criteria** — written as verification questions describing **user-visible outcomes confirmable in the running app**. This is the load-bearing convention in this project.
+- The `Visibility: User-facing` tag is **optional** here: the execution plan has historically relied on these observable acceptance criteria rather than the tag, and closing-phase Step 2.5 identifies user-facing tasks by them. Add the tag only if the project later adopts tagging as a convention.
 - Verification happens close to implementation time — per task or per small flow cluster (2-3 tightly related tasks completing one user-visible flow)
 - The closing-phase skill confirms verification was completed, but does not duplicate it
 
