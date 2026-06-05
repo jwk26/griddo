@@ -22,6 +22,7 @@ Values that differ from `docs/design-system-preview.html` **on purpose**:
 - [CSS Variables](#css-variables)
 - [Responsive Grid Node Tokens](#responsive-grid-node-tokens)
 - [Tailwind v4 Theme Bridge](#tailwind-v4-theme-bridge)
+- [Motion Language](#motion-language)
 - [Font Loading](#font-loading)
 - [Component Usage Quick Reference](#component-usage-quick-reference)
 
@@ -89,6 +90,10 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
     --aging-stagnant-filter: saturate(0.5) brightness(0.9);
     --aging-neglected-filter: saturate(0.2) brightness(0.75);
     --aging-dust-opacity: 0.3;
+
+    /* Motion */
+    --motion-duration-affordance: 150ms;
+    --motion-duration-theme: 300ms;
 
     /* Grid Layout — input tokens / policy knobs */
     --grid-cols: 18;                       /* ← 12 (original) → 15 → 18 during Phase 9 density tuning */
@@ -370,6 +375,7 @@ The following CSS variables are consumed via `var()` in component styles or Java
 | Variable group | Reason |
 |---|---|
 | `--aging-fresh-filter`, `--aging-stagnant-filter`, `--aging-neglected-filter`, `--aging-dust-opacity` | Applied as `filter:` values — stagnant includes `brightness(0.9)`, neglected `brightness(0.75)` |
+| `--motion-duration-affordance`, `--motion-duration-theme` | CSS-native transition durations; Motion runtime uses `src/lib/animations/motion-language.ts` |
 | `--grid-cols`, `--grid-rows`, `--grid-gap`, `--grid-cell-min` | Consumed by CSS Grid template or inline styles |
 | `--grid-inset`, `--grid-node-max-size` | Layer 1 policy knobs for cell-scoped node sizing |
 | `--grid-node-size`, `--grid-node-icon-size`, `--grid-node-title-height`, `--grid-node-padding-*`, `--grid-node-icon-lift` | Layer 2 derived sizing tokens — computed via `@container grid-cell` rules; `:root` values are static fallbacks only |
@@ -402,6 +408,40 @@ The following CSS variables are consumed via `var()` in component styles or Java
 | Day column expand (calendar) | Motion layout animation with vignette effect (column expands vertically, adjacent columns hidden) | `src/lib/animations/calendar.ts` |
 | Search overlay open/close | Motion fade + scale | `src/lib/animations/layout.ts` |
 | Bit detail popup | Motion fade + slide-up | `src/lib/animations/layout.ts` |
+
+---
+
+## Motion Language
+
+GridDO source extraction targets:
+
+| Interaction | Source behavior | GridDO2 token |
+|-------------|-----------------|---------------|
+| Node hover | `whileHover={{ scale: 1.05, zIndex: 40 }}` | `motionScale.nodeHover = 1.05`, `motionZIndex.nodeHover = 40` |
+| Node drag lift | `whileDrag={{ scale: 1.1, zIndex: 50 }}` | `motionScale.nodeDrag = 1.1`, `motionZIndex.nodeDrag = 50` |
+| Sidebar pencil drag target | `animate={{ scale: 1.2, boxShadow: "0 0 20px var(--accent-muted)" }}` | `motionScale.sidebarDragTarget = 1.2`, `motionShadow.sidebarDragTarget = 0 0 20px hsl(var(--primary) / 0.45)` |
+| Dark mode transition | `background-color 0.3s, color 0.3s` | `--motion-duration-theme: 300ms`, `motionDuration.theme = 0.3` |
+
+Runtime motion values live in `src/lib/animations/motion-language.ts`. Component and domain animation files must import named tokens from that file instead of defining raw duration, scale, spring, shadow, or z-index values inline.
+
+| Category | Token | Value |
+|----------|-------|-------|
+| Fast affordance | `motionDuration.affordance` / `--motion-duration-affordance` | `0.15s` / `150ms` |
+| Normal layout | `motionDuration.layout` | `0.25s` |
+| Modal enter | `motionDuration.modalEnter` | `0.2s` |
+| Modal exit | `motionDuration.modalExit` | `0.15s` |
+| Search exit | `motionDuration.searchExit` | `0.1s` |
+| Item exit | `motionDuration.itemExit` | `0.2s` |
+| Completion exit | `motionDuration.completionExit` | `0.3s` |
+| Theme transition | `motionDuration.theme` / `--motion-duration-theme` | `0.3s` / `300ms` |
+| Completion sink offset | `motionDistance.sink` | `8px` |
+| Item exit y-offset | `motionDistance.itemExitY` | `8px` |
+| Node hover scale | `motionScale.nodeHover` | `1.05` |
+| Node drag scale | `motionScale.nodeDrag` | `1.1` |
+| Sidebar drag target scale | `motionScale.sidebarDragTarget` | `1.2` |
+| Motion scale spring | `motionSpring.scale` | `type: "spring"`, `stiffness: 550`, `damping: 30`, `restSpeed: 10` |
+| Creation spring | `motionSpring.creation` | `type: "spring"`, `stiffness: 400`, `damping: 25` |
+| Grid snap spring | `motionSpring.gridSnap` | `type: "spring"`, `stiffness: 200`, `damping: 15` |
 
 ---
 
@@ -446,20 +486,30 @@ All classes reference CSS variables + Tailwind config above. No hardcoded hex or
 ### Node Card
 
 ```tsx
-{/* Node — mobile app icon design, no border */}
-<div className="flex flex-col items-center gap-1.5 p-3 rounded-xl cursor-pointer transition-transform hover:scale-105">
-  {/* Icon container — color from Node.color */}
-  <div
-    className="flex items-center justify-center w-[52px] h-[52px] rounded-[14px]"
-    style={{ backgroundColor: nodeColor }}
-  >
-    <Icon className="w-[26px] h-[26px] text-white" />
+{/* Node — Motion hover/drag scale; sizing comes from grid-node tokens */}
+<motion.button
+  animate={isDragging ? "dragging" : "rest"}
+  className="grid h-[var(--grid-node-size)] w-[var(--grid-node-size)]
+             grid-rows-[1fr_var(--grid-node-title-height)] rounded-3xl bg-card
+             transition-[box-shadow,background-color] hover:bg-muted/40"
+  transition={nodeCardTransition}
+  variants={nodeCardVariants}
+  whileHover={isDragging ? undefined : "hover"}
+>
+  {/* Icon — color from Node.color */}
+  <div className="flex min-h-0 items-center justify-center pb-[var(--grid-node-icon-lift)]">
+    <Icon
+      className="h-[var(--grid-node-icon-size)] w-[var(--grid-node-icon-size)] shrink-0"
+      style={{ color: node.color }}
+    />
   </div>
   {/* Title */}
-  <span className="text-[11px] font-medium text-foreground truncate max-w-[5rem]">
-    {title}
-  </span>
-</div>
+  <div className="h-[var(--grid-node-title-height)] w-full overflow-hidden">
+    <p className="truncate whitespace-nowrap text-center text-[11px] font-semibold">
+      {node.title}
+    </p>
+  </div>
+</motion.button>
 ```
 
 ### Bit Card (Grid View)
@@ -688,6 +738,23 @@ Buttons are `28×28px` (w-7 h-7). "Done?" text is foreground (not muted), semibo
 </div>
 ```
 
+### Inbox Badge (Triage)
+
+Active-Scratch count badge on the Inbox system Node. Three-level pressure model (exact count; thresholds in `src/lib/constants.ts`). Colors use **semantic tokens — no hard-coded HSL**:
+
+| Count | Level | Token mapping (Batch 1 baseline) |
+|-------|-------|----------------------------------|
+| 0 | hidden | no badge |
+| 1–7 | neutral | `bg-muted text-muted-foreground` |
+| 8–14 | warm | `bg-priority-mid-bg text-priority-mid` |
+| 15+ | high-pressure | `bg-destructive text-destructive-foreground` |
+
+> **Semantic reuse, not a new token:** the "warm" tier reuses the existing amber `--priority-mid` pair (`45 93% 47%`; medium-priority = caution), already wired in the theme bridge as `--color-priority-mid(-bg)`. This satisfies the "semantic tokens, no hard-coded HSL" rule without inventing a value. If the count-pressure scale later needs to diverge from task priority, a dedicated pressure token can be introduced in Batch 2 — Batch 1 does not require it.
+
+### Compact Drag Token (Inbox/Triage)
+
+Inbox/Triage drag previews (Breakdown row, staged Node, staged Bit) use a **compact token**, not the full row/card (SPEC Decision 16; pointer-centered targeting; valid / invalid / pending-confirmation target states). The existing calendar `compact-bit-item.tsx` "full drag surface" is the **anti-pattern** to avoid. Batch 1 uses existing GridDO baseline tokens; exact drag-token classes are an implementation detail within the Inbox/Triage phase (no dedicated theme tokens in Batch 1).
+
 ---
 
 ## Surface Recipes
@@ -698,6 +765,19 @@ Buttons are `28×28px` (w-7 h-7). "Done?" text is foreground (not muted), semibo
 > Reference for verification: the source image listed in each recipe header.
 >
 > Surface recipes are referenced by execution plan tasks via a `Recipe:` field.
+> Larger surface recipes may live as standalone files under `docs/recipes/` and are linked below.
+
+### Quick Capture `+` Entry Surface
+
+> Recipe file: `docs/recipes/quick-capture-entry-surface-visual-recipe.md`
+> Source: `prototype/future-ideas` @ `e662163` (`surface(main)` variant).
+> Scope: anchored `+` entry-surface popover + Scratch capture modal. Geometric detail (classes, spacing, motion) lives in the recipe file; product behavior is in SPEC § Quick Capture `+` Entry Surface.
+
+### Command Palette (Cmd+K)
+
+> Recipe file: `docs/recipes/command-palette-visual-recipe.md`
+> Source: `prototype/future-ideas` @ `e662163` (palette variant).
+> Scope: Cmd+K command-palette visual shell. Command set/keys are a product rule (SPEC § Command Palette), not part of this visual recipe. Geometric detail lives in the recipe file.
 
 ### Bit Detail Surface
 

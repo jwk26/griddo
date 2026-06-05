@@ -3,12 +3,18 @@
 import { useDroppable } from "@dnd-kit/core";
 import type { LucideIcon } from "lucide-react";
 import { Calendar, Home, Layers, Pencil, Plus, Search, Trash2, X, Zap } from "lucide-react";
+import { motion, type HTMLMotionProps, type MotionProps } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
-import { ComponentPropsWithoutRef, forwardRef, useState } from "react";
+import { forwardRef, useState } from "react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useGlobalUrgency } from "@/hooks/use-global-urgency";
 import type { DragActiveItem } from "@/hooks/use-dnd";
+import {
+  sidebarDragTargetActive,
+  sidebarDragTargetRest,
+  sidebarDragTargetTransition,
+} from "@/lib/animations/layout";
 import { getGridDeleteDropId } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
 import { useEditModeStore } from "@/stores/edit-mode-store";
@@ -20,38 +26,52 @@ type SidebarIconButtonProps = {
   icon: LucideIcon;
   title?: string | null;
   label: string;
+  motionProps?: Pick<MotionProps, "animate" | "initial" | "transition">;
   onClick?: () => void;
   isActive?: boolean;
 };
 
 const SidebarIconButton = forwardRef<
   HTMLButtonElement,
-  SidebarIconButtonProps & Omit<ComponentPropsWithoutRef<"button">, "title" | "onClick">
+  SidebarIconButtonProps & Omit<HTMLMotionProps<"button">, "children" | "title" | "onClick">
 >(function SidebarIconButton(
-  { className, disabled = false, icon: Icon, title, label, onClick, isActive = false, ...rest },
+  {
+    className,
+    disabled = false,
+    icon: Icon,
+    title,
+    label,
+    motionProps,
+    onClick,
+    isActive = false,
+    ...rest
+  },
   ref,
 ) {
   const buttonTitle = title === undefined ? label : title;
 
   return (
-    <button
+    <motion.button
       ref={ref}
       type="button"
       aria-label={label}
       disabled={disabled}
       title={buttonTitle ?? undefined}
       className={cn(
-        "flex h-10 w-10 items-center justify-center rounded-lg p-2.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+        "flex h-10 w-10 items-center justify-center rounded-lg border border-transparent p-2.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
         isActive
           ? "bg-accent text-foreground"
           : "text-muted-foreground hover:bg-accent hover:text-foreground",
         className,
       )}
+      initial={motionProps?.initial}
+      animate={motionProps?.animate}
       onClick={onClick}
+      transition={motionProps?.transition}
       {...rest}
     >
       <Icon className="h-5 w-5" />
-    </button>
+    </motion.button>
   );
 });
 
@@ -96,6 +116,7 @@ export function Sidebar({
   const toggleEditMode = useEditModeStore((state) => state.toggle);
   const isCalendarRoute = pathname.startsWith("/calendar/");
   const isTrashRoute = pathname === "/trash";
+  const isGridItemDrag = dragActiveItem?.type === "node" || dragActiveItem?.type === "bit";
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-full w-12 flex-col items-center gap-1 border-r border-border bg-background py-3">
@@ -163,8 +184,14 @@ export function Sidebar({
         </div>
       ) : (
         <SidebarIconButton
+          className={cn(isGridItemDrag && "border-primary/60")}
           icon={Pencil}
           label="Toggle edit mode"
+          motionProps={{
+            initial: false,
+            animate: isGridItemDrag ? sidebarDragTargetActive : sidebarDragTargetRest,
+            transition: sidebarDragTargetTransition,
+          }}
           onClick={toggleEditMode}
           isActive={isEditMode}
         />

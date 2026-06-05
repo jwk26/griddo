@@ -1,7 +1,12 @@
 "use client";
 
 import { X } from "lucide-react";
+import { motion } from "motion/react";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
+import {
+  nodeCardTransition,
+  nodeCardVariants,
+} from "@/lib/animations/grid";
 import { getAgingFilter, getAgingState } from "@/lib/utils/aging";
 import { cn } from "@/lib/utils";
 import type { Node } from "@/types";
@@ -24,15 +29,20 @@ export function NodeCard({
 
   return (
     <div className="relative flex h-full items-center justify-center">
-      <button
+      <motion.button
         type="button"
+        animate={isDragging ? "dragging" : "rest"}
         className={cn(
-          "grid h-[var(--grid-node-size)] w-[var(--grid-node-size)] max-h-full max-w-full cursor-grab grid-rows-[1fr_var(--grid-node-title-height)] justify-items-center rounded-3xl bg-card px-[var(--grid-node-padding-x)] pb-[var(--grid-node-padding-bottom)] pt-[var(--grid-node-padding-top)] shadow-[0_4px_14px_rgba(15,23,42,0.10)] transition-[transform,box-shadow,background-color] hover:scale-[1.02] hover:bg-muted/40 hover:shadow-[0_10px_24px_rgba(15,23,42,0.14)] active:cursor-grabbing active:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          isDragging && "cursor-grabbing scale-[1.02] bg-muted/60 shadow-[0_10px_24px_rgba(15,23,42,0.14)]",
+          "relative grid h-[var(--grid-node-size)] w-[var(--grid-node-size)] max-h-full max-w-full cursor-grab grid-rows-[1fr_var(--grid-node-title-height)] justify-items-center rounded-3xl bg-card px-[var(--grid-node-padding-x)] pb-[var(--grid-node-padding-bottom)] pt-[var(--grid-node-padding-top)] shadow-[0_4px_14px_rgba(15,23,42,0.10)] transition-[box-shadow,background-color] hover:bg-muted/40 hover:shadow-[0_10px_24px_rgba(15,23,42,0.14)] active:cursor-grabbing active:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          isDragging && "cursor-grabbing bg-muted/60 shadow-[0_10px_24px_rgba(15,23,42,0.14)]",
           isEditMode && "motion-safe:animate-jiggle",
         )}
+        initial={false}
         onClick={onClick}
         style={{ filter: agingFilter }}
+        transition={nodeCardTransition}
+        variants={nodeCardVariants}
+        whileHover={isDragging ? undefined : "hover"}
       >
         {/* Fixed icon slot so title length never shifts or scales the icon */}
         <div className="flex min-h-0 items-center justify-center self-center pb-[var(--grid-node-icon-lift)]">
@@ -47,7 +57,7 @@ export function NodeCard({
             {node.title}
           </p>
         </div>
-      </button>
+      </motion.button>
 
       {isEditMode ? (
         <button

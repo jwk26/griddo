@@ -31,6 +31,7 @@
 4. **Render-time Compute:** Aging/Urgency/Completion calculated on the fly.
 5. **Validation:** Zod at write boundary only. Reads are trusted.
 6. **Optimistic UI:** Local-first = Zero latency. No loading states.
+7. **Lifecycle & System Nodes:** Inbox and Archive are system Nodes (`systemRole: 'inbox' | 'archive_view'`) rendered on `/grid/[id]` with role-specific surfaces. Archive is manual (`archivedAt`); completion never auto-archives. System Nodes are never trashed or archived; use `hiddenFromGrid` to remove them from the L0 grid. Scratch breakdown rows use `scratchBreakdowns`, not Chunks. See SCHEMA.md Hooks 10/11.
 
 ## Workflow
 

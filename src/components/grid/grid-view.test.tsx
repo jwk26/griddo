@@ -17,6 +17,32 @@ vi.mock("next/navigation", () => ({
 vi.mock("motion/react", () => ({
   AnimatePresence: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
   motion: {
+    button: ({
+      animate,
+      children,
+      transition,
+      variants,
+      whileHover,
+      ...props
+    }: {
+      animate?: string;
+      children?: React.ReactNode;
+      className?: string;
+      style?: React.CSSProperties;
+      transition?: unknown;
+      variants?: unknown;
+      whileHover?: string;
+    }) => (
+      <button
+        data-motion-animate={animate}
+        data-motion-transition={JSON.stringify(transition)}
+        data-motion-variants={JSON.stringify(variants)}
+        data-motion-while-hover={whileHover}
+        {...props}
+      >
+        {children}
+      </button>
+    ),
     div: ({
       animate,
       children,

@@ -55,6 +55,18 @@ Three tiers:
 
 **Rule of thumb:** if a user would notice the decision, it must be explicit. If only a developer would notice, it can be inferred — unless it's an architectural invariant.
 
+### Code-Readiness Invariant
+
+Three rules govern what may appear in an active execution plan:
+
+1. **Code-ready only.** Every task in EXECUTION_PLAN.md must be implementable from the task spec alone, without requiring additional product, design, or policy decisions. If a task needs a decision that hasn't been made, it is not code-ready and must not be in the plan.
+
+2. **No unresolved blockers.** Unresolved decisions, open questions, design dependencies, and policy choices must not appear as blockers in the active plan. Either resolve them before the task enters the plan, or move the task to `docs/brainstorming/future_ideas/`.
+
+3. **Future work lives in future_ideas.** Deferred features, blocked tasks, and unscheduled work live in `docs/brainstorming/future_ideas/`, not in the execution plan. The plan contains only active, schedulable work.
+
+**Enforcement:** The `execute-next-phase` skill runs a mechanical readiness scan before branch creation. The `execute-task` skill runs a batch-level readiness check before prompt preparation. Both halt on violations.
+
 ---
 
 ## 3. Flow-Trace Review
@@ -123,8 +135,8 @@ Reduce false completion by making "done" concretely verifiable for user-facing t
 
 ### How it works
 
-- Tasks that change user-visible behavior are tagged `Visibility: User-facing` in the execution plan (internal tasks left untagged)
-- Acceptance criteria for user-facing tasks are written as **observable verification questions** that can be confirmed by looking at the running app
+- User-facing tasks (those that change user-visible behavior) are identified by their **acceptance criteria** — written as verification questions describing **user-visible outcomes confirmable in the running app**. This is the load-bearing convention in this project.
+- The `Visibility: User-facing` tag is **optional** here: the execution plan has historically relied on these observable acceptance criteria rather than the tag, and closing-phase Step 2.5 identifies user-facing tasks by them. Add the tag only if the project later adopts tagging as a convention.
 - Verification happens close to implementation time — per task or per small flow cluster (2-3 tightly related tasks completing one user-visible flow)
 - The closing-phase skill confirms verification was completed, but does not duplicate it
 
@@ -157,13 +169,17 @@ Violations of core architectural invariants. **Must be fixed before close-out / 
 - [ ] **Zod write-boundary:** Zod validation at write boundary only (`createNodeSchema.parse()`, `createBitSchema.parse()`, etc.). No read-path validation.
 - [ ] **State separation:** UI state in Zustand stores (`src/stores/`). Data state in hooks (`src/hooks/`). No mixing — hooks don't import Zustand, stores don't import DataStore.
 - [ ] **Hook API boundary:** UI components import hooks, not DataStore. Hooks are the reactive data boundary.
+- [ ] **Lifecycle active-filter (archive sweep):** Every "active items" query filters `archivedAt = null` alongside `deletedAt = null` (L0 grid rendering also excludes `hiddenFromGrid = true`). Covers grid contents, node completion, calendar items, items pool, badge, global urgency, text search, grid occupancy, aging. Trash queries key off `deletedAt` only. (Added Batch 1 — SCHEMA.md Key Queries.)
+- [ ] **System-managed field guard:** `createNodeSchema` / `createBitSchema` never accept `systemRole`, `hiddenFromGrid`, or `archivedAt`. These are set only by system seeding (internal full-schema path) or the archive hooks — never from a user-facing create path. (Added Batch 1.)
+- [ ] **System node lifecycle exclusion:** System nodes (`systemRole !== null`) are never soft-deleted/trashed or archived (Hooks 4 and 10). "Remove from grid" uses `hiddenFromGrid = true`; the sidebar still lists them. (Added Batch 1.)
 
 ### Tier: Advisory
 
 Important issues that should be surfaced and recorded, but do not automatically block closing. Closing continues with explicit acknowledgement.
 
 - [ ] **Optimistic UI:** No loading states, spinners, or skeleton screens for local data operations. Local-first means zero-latency.
-- [ ] **File organization:** New files follow key path conventions from CLAUDE.md (utils in `src/lib/utils/`, hooks in `src/hooks/`, stores in `src/stores/`).
+- [ ] **File organization:** New files follow key path conventions from CLAUDE.md (utils in `src/lib/utils/`, hooks in `src/hooks/`, stores in `src/stores/`). New Batch 1 component domains: `src/components/quick-capture/`, `src/components/triage/`, `src/components/archive/`.
+- [ ] **scratchBreakdowns store boundary:** Breakdown rows live in the dedicated `scratchBreakdowns` store (not Chunks) and must not participate in Hook 3 (Bit Auto-Completion). Triage staging is UI-state-only; real Node/Bit records are created only on confirmed placement (when `consumedAt` is set). (Added Batch 1.)
 
 ### Updating this checklist
 

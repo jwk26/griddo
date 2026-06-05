@@ -53,3 +53,7 @@ docs/user_review_detailed.md
 chunk_timeline.png
 bitlong.png
 leftsidebar.png
+
+# local tool and reference artifacts
+.playwright-mcp/
+references/

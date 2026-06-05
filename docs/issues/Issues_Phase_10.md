@@ -158,7 +158,7 @@ Dependency order at phase open: 58 → 54 → 56 → 57 → 55. Task 59 did not 
 
 ### ED-3: Task 59 narrowed to forward-only protection; migration split to Task 59b
 - **Batch:** 5 (Task 59, pre-implementation)
-- **Context:** Cross-model review (Entry 8 in `docs/brainstorming/execute-task/opinion-codex.md`) identified that the one-time migration sub-task adds significant implementation risk (per-parent markers, atomic writes, deterministic row-major processing, failure handling) while the actual user-facing value of Task 59 is preventing future placement conflicts. Migration relocates items that already work fine under `pointer-events-none` overlay. A global `breadcrumbZoneMigrationDone` flag is unsound when the zone is derived from rendered footprint.
+- **Context:** Cross-model review during execute-task workflow ideation identified that the one-time migration sub-task adds significant implementation risk (per-parent markers, atomic writes, deterministic row-major processing, failure handling) while the actual user-facing value of Task 59 is preventing future placement conflicts. Migration relocates items that already work fine under `pointer-events-none` overlay. A global `breadcrumbZoneMigrationDone` flag is unsound when the zone is derived from rendered footprint.
 - **Decision:** Task 59 = forward-only protection only (new placements, drag/drop, click-to-add, cross-parent landing). Migration removed and tracked as Task 59b (per-parent deferred remediation). Task 59b added to Phase 10 in EXECUTION_PLAN.md immediately — not deferred as untracked work.
 - **Rationale:** Implementation risk drops significantly; file surface shrinks; test matrix becomes clearer; Task 59 stays focused on actual user-facing value. Cleanup remains tracked work.
 

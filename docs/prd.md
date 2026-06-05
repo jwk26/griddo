@@ -1958,7 +1958,7 @@ Or did you mean something else? If you're thinking about further refining the PR
 ✻ Worked for 41s
 
 ❯ ls /Users/jwk/.claude/skills  
-closing-phase design-archaeology find-skills vercel-react-best-practices web-design-guidelines  
+closing-phase extract-design find-skills vercel-react-best-practices web-design-guidelines  
 deploy-to-vercel execute-next-phase vercel-composition-patterns vercel-react-native-skills writing-documents
 
 seems we have writing-documents skill.

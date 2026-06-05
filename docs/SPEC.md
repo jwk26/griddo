@@ -53,7 +53,7 @@
 
 7. **Zod validation at write boundary** — Data is validated with Zod schemas (SCHEMA.md) when entering the DataStore (create/update operations). Data read from the store is trusted — no runtime validation on reads. This keeps read paths fast.
 
-8. **Domain-grouped shared components** — Shared components are organized by domain (`grid/`, `calendar/`, `bit-detail/`, `layout/`, `trash/`) under `src/components/`. Page-specific components live in `_components/` within their route folder.
+8. **Domain-grouped shared components** — Shared components are organized by domain (`grid/`, `calendar/`, `bit-detail/`, `layout/`, `trash/`, `quick-capture/`, `triage/`, `archive/`) under `src/components/`. Page-specific components live in `_components/` within their route folder.
 
 9. **Zustand for client state** — GridDO has complex UI state (edit mode, sidebar fold, drag operations, calendar drill-down, search query). React Context alone doesn't scale for cross-cutting interactive state. Zustand stores in `src/stores/` provide lightweight, boilerplate-free state management. Data state stays in Dexie (`useLiveQuery`); UI state stays in Zustand. Clean separation.
 
@@ -66,6 +66,10 @@
 13. **Motion for all animations** — The PRD specifies jiggle mode, sinking effects, floating animation, vignette transitions, magnet snap, and task-tossing. Motion (Framer Motion) handles all of these declaratively. CSS-only would be insufficient for the interaction-driven animations GridDO requires. Animation variants defined per domain in `src/lib/animations/`.
 
 14. **Pure utility functions for algorithms** — BFS auto-placement, aging state computation, urgency level computation, and Node completion check are pure functions in `src/lib/utils/`. No side effects, independently testable.
+
+15. **System Nodes (lifecycle)** — Two system Nodes (`systemRole: 'inbox' | 'archive_view'`) are seeded at first launch / migration (defaults in SCHEMA.md § Default System Nodes). They use the standard `/grid/[nodeId]` URL but render role-specific surfaces (Inbox → Triage workspace; Archive View → Archive View surface) — **no new routes**. System Nodes cannot be archived or trashed; they are removed from the L0 grid via `hiddenFromGrid` (not trash) and always appear in the sidebar regardless. `systemRole` is immutable; non-null uniqueness is enforced at the application level. Archive is a manual lifecycle action (`archivedAt`, Hooks 10/11); completion never auto-archives.
+
+16. **Compact-token DnD + pending-confirmation targets (Inbox/Triage)** — Extends Decision 12. Inbox/Triage drag interactions (Breakdown rows, staged Node/Bit candidates) use a **compact drag token** rather than a full-row/card preview, with pointer-centered targeting. Drop targets distinguish three states — valid, invalid, and **pending-confirmation** (a drop that opens a confirmation dialog before any write). This is a local, partial implementation of the broader Grid DnD direction (`2026-06-02-grid-dnd-preview-and-drop-targeting`, not promoted in full); existing main-grid / calendar / pool DnD is unchanged.
 
 ---
 
@@ -88,6 +92,10 @@
 **Search overlay:** Not a route. Triggered by sidebar Search button or keyboard shortcut. Rendered as a portal overlay on any page.
 
 **Edit mode:** Not a route. Toggled via sidebar Pencil button or keyboard shortcut. Visual overlay on the current grid page.
+
+**System Node surfaces:** Not new routes. The Inbox and Archive View system Nodes use `/grid/[nodeId]`; `GridRuntime` dispatches on `systemRole` to render the Triage workspace or Archive View surface instead of the standard grid.
+
+**Quick Capture entry surface & Command Palette:** Not routes. The `+` entry surface is an anchored popover from the sidebar `+` button; `Cmd+K` opens the Command Palette (key `1` = Scratch capture, key `2` = existing Search overlay). Both are modals/overlays on the current page, as is the Scratch capture modal.
 
 ---
 
@@ -122,6 +130,9 @@
 | `calendar/` | `node-pool.tsx`, `items-pool.tsx`, `day-column.tsx`, `compact-bit-item.tsx` | Both calendar views |
 | `layout/` | `sidebar.tsx`, `breadcrumbs.tsx`, `search-overlay.tsx`, `theme-toggle.tsx` | All pages |
 | `trash/` | `trash-list.tsx`, `trash-group.tsx` | Trash page only (but may move to shared if trash preview is added elsewhere) |
+| `quick-capture/` | `entry-surface.tsx`, `scratch-modal.tsx`, `command-palette.tsx` | Quick Capture `+` surface + Cmd+K palette (Batch 1) |
+| `triage/` | `triage-workspace.tsx`, `scratch-pool.tsx`, `breakdown-panel.tsx`, `staging-zone.tsx`, `hierarchy-explorer.tsx` | Inbox/Triage workspace, system node `inbox` (Batch 1) |
+| `archive/` | `archive-view.tsx`, `archive-group.tsx` | Archive View surface, system node `archive_view` (Batch 1) |
 
 ---
 
@@ -213,7 +224,63 @@
 - **Structure:** Centered overlay on blurred background. Search input at top with real-time filtering.
 - **Results:** Each result shows: item name, type icon (Node/Bit/Chunk), parent path (e.g., "Work > Project A > Frontend"), deadline if present.
 - **Action:** Click result → navigate to item's grid location. Search overlay closes.
-- **Scope:** Vanilla text search across all active (non-trashed) Nodes, Bits, and Chunks. Case-insensitive substring matching.
+- **Scope:** Vanilla text search across all active (non-trashed, non-archived) Nodes, Bits, and Chunks. Case-insensitive substring matching.
+
+### System Node Routing (Inbox / Archive View)
+
+Both system Nodes use `/grid/[nodeId]`. `GridRuntime` reads the Node's `systemRole` and dispatches:
+
+| `systemRole` | Renders |
+|--------------|---------|
+| `null` | Standard grid view |
+| `'inbox'` | Triage workspace (below) |
+| `'archive_view'` | Archive View surface (below) |
+
+System Nodes always appear in the sidebar (queried by `systemRole !== null`) regardless of `hiddenFromGrid`. They cannot be archived or trashed; "remove from grid" sets `hiddenFromGrid = true` (retains `x/y`; "Show on Grid" reverses it, BFS-placing if the original cell is occupied).
+
+### Quick Capture `+` Entry Surface (Modal — not a route)
+
+- **Trigger:** Sidebar `+` button. Anchored popover that slides/fades in next to the `+` (not a centered modal). Visual realization: `docs/recipes/quick-capture-entry-surface-visual-recipe.md`.
+- **Structure:** Two intent groups — **Ideas** (Scratch) and **Create** (Node, Bit). Scratch is the primary action by position. The surface may show an optional surface-level `Cmd+K` palette hint; the Scratch row itself carries no per-row shortcut.
+- **Scratch:** Opens a centered one-line capture modal ("Capture your ideas..."). Captured Scratch is a Bit parented to the Inbox Node (icon `"sparkles"`, `x=0,y=0` sentinel); routed to Inbox regardless of current location; no parent/cell selection in fast capture.
+- **Create (Node/Bit):** Open the **existing** create dialogs (`create-node-dialog.tsx` / `create-bit-dialog.tsx`; create-modal redesign is out of scope). Context rules: L0/global `Bit` opens a parent selector (no direct L0 Bit); inside a Node, `Bit` uses the current Node; Level 3 is Bit-only.
+
+### Command Palette (Cmd+K) (Modal — not a route)
+
+- **Trigger:** `Cmd+K`. Visual/interaction realization: `docs/recipes/command-palette-visual-recipe.md`.
+- **Commands (fixed):** key `1` = Scratch capture; key `2` = open the existing Search overlay. No Search redesign — the palette's prompt input is visual-shell only, not an app-wide search/filter.
+
+### Inbox / Triage Workspace (rendered for `systemRole: 'inbox'`)
+
+A processing workspace that turns Scratch into Node/Bit hierarchy. Four areas:
+
+```text
+[ Scratch Pool ] [ Main Work Area                          ]
+                 [ Breakdown/Scribble ] [ Node/Bit Staging ]
+                 [ Hierarchy Explorer (Home–L3)            ]
+```
+
+- **Layout ratios:** Main Work Area vertical Top 60% / Bottom 40%; top horizontal Breakdown 60% / Staging 40%; Staging internal Node Zone 35% / Bit Zone 65% (Node Zone renders a two-column grid of icon-centered Node candidates; Bit Zone a vertical list of text rows).
+- **Scratch Pool:** Full-height list of active Scratch Bits ordered by `createdAt` (`2h ago` / `yesterday` / `m/dd/yy`). Auto-collapses after a Scratch is selected. Inbox badge: 0 hidden / 1–7 neutral / 8–14 warm / 15+ high-pressure (exact count; thresholds in `constants.ts`; semantic tokens — no hard-coded HSL).
+- **Breakdown/Scribble:** The selected Scratch is the context. Always-active input row; rows persist in the `scratchBreakdowns` store (not Chunks). Dragging a row into Staging creates a UI candidate and de-emphasizes the source row — `consumedAt` is **not** set yet.
+- **Node/Bit Staging:** UI state only, scoped to the selected Scratch (candidates never mix across Scratches; switching Scratch loses no persisted data because rows stay unconsumed). Node and Bit candidates are visually distinct (Node = icon-centered object; Bit = text-centered row). No inline edit (remove → edit the Breakdown row → re-stage).
+- **Hierarchy Explorer:** Home / L1 / L2 / L3 columns (progressive reveal; Nodes before Bits). Dropping a staged candidate — or a Breakdown row via the fast path — is a **pending-confirmation** target: it opens the placement confirmation dialog (reuses the existing GridDO move-confirmation `Dialog`) showing source content, candidate type, destination hierarchy path, and result summary. Confirm creates the real Node/Bit at the target and marks the source `scratchBreakdowns` row `consumedAt`; cancel/Escape creates nothing and leaves `consumedAt` null. If the target grid is full, confirm is disabled with a reason. The fast path requires an explicit Node/Bit type choice (no default).
+- **Remove from staging:** A shared `Remove from staging` drop target appears while dragging staged candidates (reuses the existing grid delete affordance; not a per-card ✗). Dropping removes only the staged candidate; the source Breakdown row returns to active display and `consumedAt` stays null. Non-destructive (no toast).
+- **Archive Scratch (narrow exception):** When all Breakdown rows are placed/consumed and no staged candidates remain, the user may be offered an explicit Archive Scratch affordance (requires confirmation). Confirm sets `archivedAt` on the Scratch Bit; decline leaves it active in Inbox. Never hard-deleted via this path.
+- **DnD:** compact drag token + pending-confirmation targets (Decision 16). Batch 1 uses existing GridDO baseline UI/tokens; visual theme variants are Batch 2.
+
+### Archive View Surface (rendered for `systemRole: 'archive_view'`)
+
+A **portal, not a container** — archived items keep their original `parentId`; the surface queries all items where `archivedAt` is set (it does not read its own children).
+
+- **Grouping:** by original parent Node (archived L0 Nodes form their own top-level group). **Sort:** `archivedAt` descending within each group. **Search:** filters by title.
+- **Restore:** single-item (↩) clears `archivedAt`; BFS auto-placement if the original cell is occupied; restoring a Bit whose parent is archived restores the parent chain (±5s window, Hook 11). Bulk restore is not in v1.
+- **Tone:** warm/dignified (distinct from Trash's destructive tone); completed items show ✓.
+- **Visual:** existing GridDO baseline UI/tokens in Batch 1 (no dedicated Archive View theme source; future global theme system may affect it via global tokens).
+
+### Direct Archive (context menu)
+
+Any non-system Node or Bit can be archived from its context menu (no Review Mode required) — sets `archivedAt` with cascade (Hook 10). System Nodes are excluded. **Completion does not auto-archive**; completed-but-unarchived items remain in place on the grid until the user archives them.
 
 ---
 

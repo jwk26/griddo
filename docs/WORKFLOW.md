@@ -6,18 +6,19 @@
 ## Table of Contents
 
 1. [Overall Workflow](#overall-workflow)
-2. [Two Parallel Tracks](#two-parallel-tracks)
-3. [Three Failure Modes](#three-failure-modes)
-4. [Phase Execution Record](#phase-execution-record)
-5. [Document Hierarchy](#document-hierarchy)
-6. [Skill Map](#skill-map)
-7. [Document Role Boundaries](#document-role-boundaries)
+2. [Post-PRD Ideation Topics](#post-prd-ideation-topics)
+3. [Two Parallel Tracks](#two-parallel-tracks)
+4. [Three Failure Modes](#three-failure-modes)
+5. [Phase Execution Record](#phase-execution-record)
+6. [Document Hierarchy](#document-hierarchy)
+7. [Skill Map](#skill-map)
+8. [Document Role Boundaries](#document-role-boundaries)
 
 ---
 
 ## Overall Workflow
 
-### 1. Ideation
+### 1. Initial Ideation
 
 Deliverables:
 
@@ -34,7 +35,11 @@ What does this look like?
 What interactions feel right?
 Does the visual direction hold up?
 
-Summary: Ideation is visual exploration. The output is a throwaway prototype, not production code.
+Summary: Initial ideation is pre-PRD visual exploration. The output is a throwaway prototype, not production code.
+
+Important Note:
+
+This stage is intentionally document-light. It does not cover product-direction changes that emerge after the PRD, after an execution plan, or during implementation. Those are handled by **Post-PRD Ideation Topics**.
 
 ### 2. Product Definition
 
@@ -59,6 +64,30 @@ Important Note:
 
 The PRD is the only document the user must write. All other documents are generated from it.
 
+### 2.5 Product Direction Changes (as needed)
+
+Deliverables:
+
+`docs/brainstorming/YYYY-MM-DD-<topic>/DECISION.md`
+`docs/brainstorming/YYYY-MM-DD-<topic>/NOTES.md`
+
+Role:
+
+Capture product-direction changes that emerge after the initial PRD or during later planning/implementation. This includes new ideas, reversals, rejected assumptions, prototype-driven decisions, and feature structures that are not yet ready for execution planning.
+
+Key Questions:
+
+What changed from the previous direction?
+What is the current decision that future work should follow?
+Where did this topic originate — PRD, phase, task, parent document, prototype, or user observation?
+What was discarded, and why?
+
+Summary: Post-PRD ideation topics preserve evolving product judgment without scattering notes across unrelated documents. `DECISION.md` is the current source of truth for the topic. `NOTES.md` preserves only the compact history needed to understand the decision.
+
+Important Note:
+
+This stage is reusable across projects. The folder/date/template convention should remain stable even when the project-specific document names differ.
+
 ### 3. Design Extraction (conditional)
 
 Deliverables:
@@ -68,7 +97,7 @@ Deliverables:
 `docs/DESIGN_ALIGNMENT.md`
 `docs/DESIGN_TOKENS.md` (final)
 
-Skill: `/design-archaeology`
+Skill: `/extract-design`
 
 Role:
 
@@ -253,6 +282,230 @@ Summary: Integration is the final hand-off. Stages 6–8 repeat per phase until 
 
 ---
 
+## Post-PRD Ideation Topics
+
+Post-PRD ideation topics handle product thinking that emerges after the PRD, during execution planning, or while implementation/prototyping reveals that an earlier assumption is incomplete.
+
+This mechanism exists because product direction often changes after initial documents are written. Without a structured place for these changes, decisions become scattered across chat history, prototype prompts, old planning documents, and temporary worktrees.
+
+### When To Use
+
+Create or update a brainstorming topic when any of the following happens:
+
+- A new idea appears after the PRD or execution plan.
+- An existing PRD/plan decision is challenged or reversed.
+- A prototype reveals that a feature needs a different structure.
+- A feature is not ready for implementation because product logic is still unclear.
+- A previous phase is deferred and a new product direction branches from that decision.
+- The user asks to preserve ideation so future agents can continue from the current judgment.
+
+Do not use this for small implementation bugs or phase execution corrections. Those belong in `docs/issues/Issues_Phase_N.md`.
+
+### Folder Convention
+
+Each topic gets one dated folder:
+
+```text
+docs/brainstorming/YYYY-MM-DD-<topic>/
+  DECISION.md
+  NOTES.md
+```
+
+Rules:
+
+- `YYYY-MM-DD` is the date the topic became an independent ideation topic.
+- `<topic>` is lowercase, stable, and filesystem-safe.
+- Use underscores for multi-word topics, e.g. `quick_capture`, `inbox_triage`.
+- The date is part of the folder name so the topic can be traced to the phase/context where it emerged.
+
+Examples:
+
+```text
+docs/brainstorming/2026-06-12-search_routing/
+docs/brainstorming/2026-07-03-billing_flows/
+```
+
+When one broad product-direction branch creates several related child topics, use a dated parent topic folder and nest child topics below it:
+
+```text
+docs/brainstorming/YYYY-MM-DD-<parent_topic>/
+  DECISION.md
+  NOTES.md
+  child_topic/
+    DECISION.md
+    NOTES.md
+  references/
+    <historical-or-source-material>.md
+```
+
+Nested child topic folders do not need another date in the folder name. Preserve the child topic's own start date in its metadata instead.
+
+Example:
+
+```text
+docs/brainstorming/2026-04-28-out_of_phase/
+  DECISION.md
+  NOTES.md
+  quick_capture/
+    DECISION.md
+    NOTES.md
+  inbox_triage/
+    DECISION.md
+    NOTES.md
+  references/
+    original_out_of_phase_plan_eng.md
+```
+
+### Document Roles
+
+#### `DECISION.md`
+
+`DECISION.md` is the topic's current execution baseline.
+
+It answers:
+
+- What is the current direction?
+- What should future agents follow?
+- What is stable enough to plan or implement?
+- What remains open?
+
+`DECISION.md` should not preserve every step of the conversation. It should be concise enough that a future agent can read it and continue work without replaying the ideation history.
+
+#### `NOTES.md`
+
+`NOTES.md` preserves only the context needed to understand why the decision exists.
+
+It contains:
+
+- `History & Prompt Notes`
+- `Discarded Ideas`
+- `References`
+
+Do not store every prompt verbatim. Store the prompt's purpose and outcome when it materially affected the decision.
+
+Do not treat disposable worktrees as durable references. If a prototype worktree is expected to be deleted, extract its useful decision into `DECISION.md` or summarize the role it played in `NOTES.md`.
+
+### Required Metadata
+
+Both `DECISION.md` and `NOTES.md` should start with metadata. `DECISION.md` includes status because it is the current execution baseline. `NOTES.md` may repeat the same status when useful, but its required fields are date, origin, related phase/context, and parent document.
+
+```markdown
+# <Topic> Decision
+
+> Started: YYYY-MM-DD
+> Status: <current status>
+> Origin: <why this topic started>
+> Related phase: <phase/task/context>
+> Parent document: <source document, if any>
+```
+
+`Parent document` matters when a topic branches from an existing planning document. For example:
+
+```text
+Phase 15 / Task 68 defer
+-> docs/brainstorming/2026-04-28-out_of_phase/DECISION.md
+-> docs/brainstorming/2026-04-28-out_of_phase/inbox_triage/DECISION.md
+```
+
+This makes the document lineage explicit.
+
+### `DECISION.md` Template
+
+```markdown
+# <Topic> Decision
+
+> Started: YYYY-MM-DD
+> Status: <current status>
+> Origin: <why this topic started>
+> Related phase: <phase/task/context>
+> Parent document: <source document, if any>
+
+## Status
+
+<One or two paragraphs describing whether this is settled, in ideation, blocked, or ready for planning.>
+
+## Current Decision
+
+<The current product direction that future work should follow.>
+
+## Product Language
+
+<Terms and definitions introduced or changed by this topic.>
+
+## Final Structure
+
+<Stable structure, layout, data model, or interaction model. Use diagrams/tables when useful.>
+
+## User Flow
+
+<The intended user path through the feature or decision.>
+
+## Implementation Notes
+
+<Constraints future implementation must respect. Keep this product-level unless concrete implementation details are already settled.>
+
+## Open Questions
+
+<Only unresolved questions that block planning or implementation. If none, say so.>
+```
+
+Section names can be adapted to the topic, but the document must still answer the same questions.
+
+### `NOTES.md` Template
+
+```markdown
+# <Topic> Notes
+
+> Started: YYYY-MM-DD
+> Status: <current status, optional but recommended>
+> Origin: <why this topic started>
+> Related phase: <phase/task/context>
+> Parent document: <source document, if any>
+
+## History & Prompt Notes
+
+<Summarize the core direction changes. Include prompt intent and outcome only when it shaped the decision. Do not paste every prompt.>
+
+## Discarded Ideas
+
+- <Idea>: <brief reason it was dropped>
+
+## References
+
+- <durable document or artifact> — <why it matters>
+```
+
+References should be stable artifacts, not temporary worktree paths. If a worktree generated the final direction, summarize that in History & Prompt Notes instead.
+
+### Promotion Rule
+
+When a topic becomes stable enough to implement, promote its decision into the normal planning chain:
+
+```text
+DECISION.md
+  -> update PRD/SPEC/SCHEMA/DESIGN_TOKENS as needed
+  -> update or create EXECUTION_PLAN.md tasks
+```
+
+The brainstorming folder remains as the decision history, but implementation should not depend on reading chat logs or deleted prototype worktrees.
+
+### Relationship To Skills
+
+This topic-folder structure is implemented as a reusable personal workflow skill: `/recording-ideas`.
+
+The skill:
+
+- Creates the dated topic folder.
+- Generates or updates `DECISION.md`.
+- Generates or updates `NOTES.md`.
+- Keeps `DECISION.md` focused on current decisions.
+- Keeps `NOTES.md` compact: history, prompt intent, discarded ideas, durable references.
+- Asks for or infers `Started`, `Origin`, `Related phase`, and `Parent document`.
+
+If the skill is not available, agents should follow this section directly.
+
+---
+
 ## Two Parallel Tracks
 
 The document chain has two independent tracks that merge at the execution plan:
@@ -291,6 +544,8 @@ Track A derives from the PRD. Track B derives from the reference prototype. They
 Track B is conditional. Greenfield projects skip it entirely — DESIGN_TOKENS.md is generated during Track A (writing-documents Step 4).
 
 **Parallelism:** SCHEMA + DESIGN_AUDIT can run in parallel (independent inputs). SPEC + DESIGN_TOKENS draft can run in parallel (after their respective prerequisites). Everything converges at EXECUTION_PLAN.
+
+**Post-PRD topic branches:** A brainstorming topic can branch from PRD, SPEC, EXECUTION_PLAN, a deferred phase, or a parent design document. Once stable, its `DECISION.md` is promoted back into the canonical document chain before implementation planning continues.
 
 ---
 
@@ -518,6 +773,17 @@ Steps 5–7 were added based on Phase 8 pilot evidence. Writing the recipe durab
 
 ## Document Hierarchy
 
+### Brainstorming Decision Documents
+
+Capture product-direction changes after the PRD or during later phases.
+
+| Document | Stage | Role |
+| -------- | ----- | ---- |
+| `docs/brainstorming/YYYY-MM-DD-<topic>/DECISION.md` | 2.5 Product Direction Changes | Current source of truth for a post-PRD ideation topic |
+| `docs/brainstorming/YYYY-MM-DD-<topic>/NOTES.md` | 2.5 Product Direction Changes | Compact history, prompt intent, discarded ideas, and durable references |
+
+These documents are not a substitute for PRD/SPEC/SCHEMA/EXECUTION_PLAN. When a decision stabilizes, promote it into the canonical planning chain.
+
 ### Canonical Documents
 
 Define what to build and how it should behave.
@@ -573,7 +839,8 @@ Non-authoritative. Used for visual review, not as source of truth.
 
 | Skill                 | Stages                       | Trigger                                               |
 | --------------------- | ---------------------------- | ----------------------------------------------------- |
-| `/design-archaeology` | 3. Design Extraction         | Reference exists; "inherit design", "match reference" |
+| `/recording-ideas` | 2.5 Product Direction Changes | "record this idea", "create brainstorming topic", "update topic decision", "document direction change" |
+| `/extract-design` | 3. Design Extraction         | Reference exists; "inherit design", "match reference" |
 | `/reference-redesign` | 6. Implementation (pre-code) | "redesign toward", "match this mockup", reference-driven surface redesign |
 | `/writing-documents`  | 4–5. System Rules → Planning | "PRD is ready", "generate docs", "create spec"        |
 | `/execute-next-phase` | 6. Implementation kickoff    | "start phase N", "execute phase"                      |
@@ -581,6 +848,7 @@ Non-authoritative. Used for visual review, not as source of truth.
 | `/closing-phase`      | 7. Closing                   | "phase done", "close phase"                           |
 
 Stages 1–2 are user-driven (no skill).
+Stage 2.5 can be done with `/recording-ideas`, or manually from this document if the skill is unavailable.
 Stage 8 is handled by closing-phase's final steps (push + PR).
 
 ---
@@ -591,6 +859,8 @@ Each document has a specific role. Confusion about scope causes drift.
 
 | Document                     | Is NOT                                                                                         |
 | ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| `brainstorming/.../DECISION.md` | A raw notes dump. It is the current topic decision baseline, not a transcript.               |
+| `brainstorming/.../NOTES.md` | A full conversation archive. It stores compact history, prompt intent, discarded ideas, and durable references only. |
 | `DESIGN_AUDIT.md`            | A decisions document. Reports what exists, not what to do.                                     |
 | `DESIGN_TOKENS.md`           | A decisions document. Specifies values. Decisions live in ALIGNMENT.                           |
 | `DESIGN_ALIGNMENT.md`        | A values document. Records decisions. Values live in TOKENS.                                   |
