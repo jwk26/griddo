@@ -410,9 +410,9 @@ Phase 8 was not just a Bit Detail UI phase. It was a recipe-driven workflow pilo
 
 1. **A narrow, scoped pilot.** Phase 8 was intentionally limited to one surface (Bit Detail) so the workflow experiment would produce interpretable evidence. We documented the gap review and pilot hypotheses before writing code.
 
-2. **The lesson that reference interpretation needs a strict first step.** If code or current implementation structure is read too soon, it biases visual interpretation. This led to the rule: read the image before the code, document only visible facts first. This lesson is already reflected in the `design-archaeology` skill (Phase 0 → 0.25 → 0.5 ordering).
+2. **The lesson that reference interpretation needs a strict first step.** If code or current implementation structure is read too soon, it biases visual interpretation. This led to the rule: read the image before the code, document only visible facts first. This lesson is now reflected in the `extract-design` skill.
 
-3. **The conclusion that design-archaeology alone was not enough.** Bit Detail was not just extraction — the reference did not include every existing product control (priority, timed chunks, progress ring). Those could not simply be deleted. The real questions were: should this control remain? If so, where does it go? How do we preserve product function without breaking reference fidelity? That was a redesign conversation, not an extraction task.
+3. **The conclusion that extract-design alone was not enough.** Bit Detail was not just extraction — the reference did not include every existing product control (priority, timed chunks, progress ring). Those could not simply be deleted. The real questions were: should this control remain? If so, where does it go? How do we preserve product function without breaking reference fidelity? That was a redesign conversation, not an extraction task.
 
 4. **The `reference-redesign` skill.** This skill was created because the Bit Detail work needed capabilities beyond extraction:
    - Retain/remove was not enough — reintegration placement decisions were needed.
@@ -428,7 +428,7 @@ Phase 8 was not just a Bit Detail UI phase. It was a recipe-driven workflow pilo
 
 ### What is already institutionalized
 
-- Reference fact extraction (in `design-archaeology`)
+- Reference fact extraction (in `extract-design`)
 - Recipe → durable docs → canonical docs promotion (in `reference-redesign`)
 - Ownership ambiguity warnings (partially in `execute-next-phase`)
 
