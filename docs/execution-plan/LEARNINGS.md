@@ -1,0 +1,94 @@
+# GridDO — Execution Learnings
+
+> Cross-phase patterns that generalise beyond a single phase.
+> GridDO-specific decisions live in the per-phase archive files.
+
+---
+
+## React Patterns
+
+**Derived state over effect for index/selection resets.** When a selected index needs to reset on query or open changes, compute it inline from combined `{ query, index }` state rather than syncing via `useEffect`. Avoids `react-hooks/set-state-in-effect` and removes a render cycle. *(Phase 7)*
+
+**liveQuery init-guard vs. loading UX.** `isLoading` flags that suppress premature empty-state renders while `liveQuery` hydrates are *not* optimistic-UI violations. Distinguish initialisation guards (`isLoading ? null : <Component />`) from user-visible loading UX (spinners, skeletons). The former is acceptable; the latter violates local-first principles. *(Phase 7)*
+
+**Async-load confirmed-view pattern.** When a component shows a "confirmed" state that depends on async-loaded data, gate the view *mode* on the stable ID and gate the rendered *content* on the loaded record. Coupling both conditions to the same expression causes a visible flash to the unconfirmed state on mount. *(Phase 12)*
+
+**Accept criteria implying user action requires a complete UI path.** Any acceptance criterion that implies a user action (e.g., "creating first node removes hints") requires a fully wired UI path — not just a data layer call. A task is not complete until the trigger surface exists. *(Phase 3)*
+
+**Code existing ≠ acceptance criteria met.** Always verify each acceptance line against live running behaviour before closing a task. Committed code can satisfy none of the observable acceptance criteria. *(Phase 4)*
+
+---
+
+## Radix UI
+
+**PopoverTrigger `asChild` requires `forwardRef`.** Custom components used as `PopoverTrigger asChild` children must be converted to `forwardRef` and spread `...rest` props onto the underlying `<button>`. Plain function components silently break the trigger — Radix Slot cannot inject `ref` or `data-state`/`aria-expanded`. Tests using manual `onOpenChange` mocks mask this bug class. *(Phase 11)*
+
+**React portal event bubbling.** `PopoverContent` (and any Radix portal) bubbles clicks through the React component tree, not the DOM tree. If an ancestor has `onClick`, clicks inside the portal reach it. Fix: `onClick={(e) => e.stopPropagation()}` on `PopoverContent`. *(Phase 14)*
+
+**Whole-cell click + controlled Popover.** When an outer `div` is clickable to open a popup, add `onClick={(e) => e.stopPropagation()}` to the inner `PopoverTrigger` button to prevent the cell handler from double-firing. *(Phase 14)*
+
+---
+
+## dnd-kit
+
+**Component-level hooks only — no loops.** `useDraggable` / `useDroppable` cannot be called inside a loop. Create per-item sub-components (`DraggableNodeTile`, `DraggableDot`) to call each hook once. *(Phase 14)*
+
+**Namespace IDs when an item appears on two surfaces.** If the same item registers `useDraggable` in both a pool and a placed-item surface, their IDs collide. Namespace the registration key (e.g., `` `placed:${item.id}` ``) while keeping `data: { id: item.id }` unchanged so `handleDragEnd` reads the real ID from event data. *(Phase 13)*
+
+**Classify drag source before writing in the drop handler.** Items can originate from different surfaces (e.g., a pool vs. an already-placed surface) and require different write logic even when sharing the same drop target. Classify the source explicitly in the drop handler before dispatching any write. *(Phases 13, 14)*
+
+**Always specify boolean gate conditions in AI delegation prompts.** If a component is mode-gated (e.g., only active in an edit state), include the explicit condition (e.g., `disabled: !isActive`) in the prompt and acceptance criteria. Natural-language phrases like "only in edit mode" are not reliably inferred as prop-level constraints. *(Phase 7)*
+
+---
+
+## Dexie v4
+
+**`liveQuery` not `useLiveQuery`.** Dexie v4 removes `useLiveQuery`. Use `liveQuery` from `dexie` with `useState` + `useEffect` subscribe/unsubscribe. `dexie-react-hooks` is not needed. *(Phase 2)*
+
+---
+
+## CSS / Tailwind
+
+**Container queries for viewport-independent grid sizing.** Fixed `rem` grid cell sizing breaks across FHD / QHD / UHD. Use container queries with `min(100cqw, 100cqh)` and a pixel cap instead of resolution-dependent branching. *(Phase 9)*
+
+**Hide overflow scrollbars cross-browser.** `[scrollbar-width:none] [&::-webkit-scrollbar]:hidden` on the `overflow-x-auto` container suppresses native scrollbars in both Firefox and WebKit. *(Phase 4)*
+
+**`pointer-events-none` for disabled buttons in a hoverable context.** `opacity-40` dims visually but `:hover` still fires. Add `pointer-events-none` to the disabled element to suppress hover; pointer events pass through to the parent, so a `cursor-not-allowed` wrapper still shows the correct cursor. *(Phase 11)*
+
+---
+
+## Accessibility
+
+**Visually-hidden `h1` on every page shell.** Every major page shell needs `<h1 className="sr-only">{title}</h1>` even when the visual design omits a visible heading. *(Phase 4)*
+
+**`aria-controls` must not reference unmounted elements.** When pool content is unmounted on collapse, make `aria-controls` conditional: `aria-controls={isCollapsed ? undefined : "element-id"}`. A permanent reference to a non-existent DOM id is an a11y violation. *(Phase 11)*
+
+---
+
+## Testing (Vitest)
+
+**`vi.hoisted()` for mocks used inside `vi.mock()` factories.** Variables referenced inside a `vi.mock()` factory must be declared with `vi.hoisted()`, not `const`. `vi.mock` is hoisted to the top of the file; a plain `const` is initialized after the factory runs → `ReferenceError`. *(Phase 5.5)*
+
+**`eslint-disable exhaustive-deps` placement.** The `react-hooks/exhaustive-deps` disable comment must go on the line immediately before the closing `}, [deps])` of the `useEffect` — not inside the effect body. *(Phase 5.5)*
+
+---
+
+## Recipe-Driven Implementation
+
+**Recipe geometry constraint.** `left-[X]` inside a `pl-N` container must satisfy `X = padding-left + (element-width / 2)`. Validate before delegating implementation — spatial relationships are not inferred from prose descriptions. *(Phase 8)*
+
+**Add component ownership notes to recipes.** A one-line ownership note per component boundary in the recipe prevents duplicate-render bugs that are invisible to screenshot review. *(Phase 8)*
+
+---
+
+## Workflow / Process
+
+**Spec ambiguities break delegation.** Codex follows formulas literally. Resolve any contradiction in docs *before* delegating — ambiguous specs produce spec-conformant but wrong implementations. *(Phase 1)*
+
+**Stub the correct algorithm shape.** Even when deferring a utility (e.g., BFS), implement the same algorithm shape in the stub. A linear scan from `(0,0)` is not equivalent to BFS from the original position. *(Phase 1)*
+
+**Branch base verification before writing code.** `git log --oneline origin/main..HEAD` must be empty at phase start. A branch repair mid-phase is expensive; detect and fix before writing any code. *(Phase 5)*
+
+**Audit docs without close-out steps become debt.** Audit action items are plan tasks — give each a status and owner before the session ends. An audit left without follow-up tracks has zero execution value. *(Phase 4.5)*
+
+**Scope drift detection at phase close: diff content, not file path.** Classify dirty files by `git diff` content and plan cross-reference, not by path proximity to the phase work. Phase N+1 changes can accumulate in directories adjacent to Phase N work. *(Phase 9)*

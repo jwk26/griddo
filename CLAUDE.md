@@ -2,7 +2,7 @@
 
 18×9 Grid | Node(L0) → Bit(L1) → Chunk(L2) hierarchy.
 
-**Always check docs/EXECUTION_PLAN.md first to see the current task before starting work.**
+**Always check docs/EXECUTION_PLAN.md first to see the current task before starting work.** When `Execution plan mode: scaled` is present, read `## Phase Index` to identify the active phase, then load the active phase detail before consulting archive files. Archive files are for historical detail, not the default starting context.
 
 ## Documentation (Priority: SCHEMA > SPEC > DESIGN > PLAN > STANDARD)
 
