@@ -25,6 +25,7 @@ import { isDeadlineAfter } from "@/lib/utils/deadline";
 
 type MutableNodeInput = Omit<Node, "id" | "createdAt" | "deletedAt" | "mtime">;
 type MutableBitInput = Omit<Bit, "id" | "createdAt" | "deletedAt" | "mtime">;
+type SystemNodeRole = NonNullable<Node["systemRole"]>;
 
 type SearchResult = {
   type: "node" | "bit" | "chunk";
@@ -59,6 +60,19 @@ type DatabaseLike = {
 
 const ROOT_PARENT_KEY = "__root__";
 const DEFAULT_PROMOTED_NODE_COLOR = "hsl(221, 83%, 53%)";
+const SYSTEM_NODE_ROLES = ["inbox", "archive_view"] as const satisfies readonly SystemNodeRole[];
+const SYSTEM_NODE_SEEDS: Record<SystemNodeRole, Pick<Node, "title" | "icon" | "color">> = {
+  inbox: {
+    title: "Inbox",
+    icon: "inbox",
+    color: "hsl(221, 83%, 53%)",
+  },
+  archive_view: {
+    title: "Archive",
+    icon: "layers",
+    color: "hsl(240, 4%, 46%)",
+  },
+};
 
 /**
  * Thrown when a deadline write would violate the parent–child deadline constraint.
@@ -700,6 +714,118 @@ export class IndexedDBDataStore implements DataStore {
     await this.write(async () => {
       await this.database.bits.put(bitSchema.parse(restoredBit));
       await this.touchNodeIds([restoredBit.parentId], Date.now());
+    });
+  }
+
+  async ensureSystemNodes(): Promise<void> {
+    const allNodes = await this.database.nodes.toArray();
+    const missingRoles: SystemNodeRole[] = [];
+    const driftedRows: Array<{ role: SystemNodeRole; node: Node }> = [];
+
+    for (const role of SYSTEM_NODE_ROLES) {
+      const existing = allNodes.find((node) => node.systemRole === role);
+
+      if (!existing) {
+        missingRoles.push(role);
+      } else if (existing.deletedAt !== null || existing.archivedAt !== null) {
+        driftedRows.push({ role, node: existing });
+      }
+    }
+
+    if (missingRoles.length === 0 && driftedRows.length === 0) {
+      return;
+    }
+
+    const occupancy = new Set<string>();
+
+    for (const node of allNodes) {
+      if (
+        node.parentId === null &&
+        node.deletedAt === null &&
+        node.archivedAt === null &&
+        !node.hiddenFromGrid
+      ) {
+        occupancy.add(gridKey(node.x, node.y));
+      }
+    }
+
+    const normalizePlan: Array<{ node: Node; x: number; y: number }> = [];
+    const seedPlan: Array<{ role: SystemNodeRole; x: number; y: number }> = [];
+
+    for (const { role, node } of driftedRows) {
+      if (node.hiddenFromGrid) {
+        normalizePlan.push({ node, x: node.x, y: node.y });
+        continue;
+      }
+
+      if (!occupancy.has(gridKey(node.x, node.y))) {
+        occupancy.add(gridKey(node.x, node.y));
+        normalizePlan.push({ node, x: node.x, y: node.y });
+        continue;
+      }
+
+      const cell = findFirstAvailableCell(occupancy);
+
+      if (!cell) {
+        throw new Error(
+          `GRID_FULL: Cannot normalize system node "${role}" — no L0 cell available`,
+        );
+      }
+
+      occupancy.add(gridKey(cell.x, cell.y));
+      normalizePlan.push({ node, x: cell.x, y: cell.y });
+    }
+
+    for (const role of missingRoles) {
+      const cell = findFirstAvailableCell(occupancy);
+
+      if (!cell) {
+        throw new Error(`GRID_FULL: Cannot seed system node "${role}" — no L0 cell available`);
+      }
+
+      occupancy.add(gridKey(cell.x, cell.y));
+      seedPlan.push({ role, x: cell.x, y: cell.y });
+    }
+
+    const seedTimestamp = Date.now();
+    const seedNodes = seedPlan.map(({ role, x, y }) =>
+      nodeSchema.parse({
+        id: crypto.randomUUID(),
+        mtime: seedTimestamp,
+        createdAt: seedTimestamp,
+        title: SYSTEM_NODE_SEEDS[role].title,
+        icon: SYSTEM_NODE_SEEDS[role].icon,
+        color: SYSTEM_NODE_SEEDS[role].color,
+        systemRole: role,
+        hiddenFromGrid: false,
+        archivedAt: null,
+        deletedAt: null,
+        parentId: null,
+        level: 0,
+        x,
+        y,
+        deadline: null,
+        deadlineAllDay: false,
+      }),
+    );
+
+    const timestamp = Date.now();
+
+    await this.write(async () => {
+      for (const { node, x, y } of normalizePlan) {
+        await this.database.nodes.put({
+          ...node,
+          x,
+          y,
+          deletedAt: null,
+          archivedAt: null,
+          mtime: timestamp,
+        });
+      }
+
+      if (seedNodes.length > 0) {
+        await this.database.nodes.bulkPut(seedNodes);
+      }
     });
   }
 
