@@ -118,8 +118,9 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 71: Active-item query archive sweep
-- **Status:** `[ ]`
-- **Files:** `src/hooks/use-grid-data.ts`, `src/hooks/use-calendar-data.ts`, `src/hooks/use-search.ts` (update); `src/lib/utils/completion.ts`, `src/lib/utils/bfs.ts`, `src/lib/utils/urgency.ts` (update as needed)
+- **Status:** `[x]`
+- **Files (planned):** `src/hooks/use-grid-data.ts`, `src/hooks/use-calendar-data.ts`, `src/hooks/use-search.ts` (update); `src/lib/utils/completion.ts`, `src/lib/utils/bfs.ts`, `src/lib/utils/urgency.ts` (update as needed)
+- **Files (actual):** `src/lib/db/indexeddb.ts` (PRIMARY — 14 changes, 11 methods; the planned list omitted it), `src/hooks/use-calendar-data.ts`, `src/hooks/use-global-urgency.ts`, `src/hooks/use-node-urgency.ts`; new `src/lib/db/archive-sweep.test.ts` (13 cases). The codebase centralizes active-item queries in the `indexeddb.ts` DataStore layer, so the sweep lands there as one choke point rather than scattered across hooks/utils; `completion.ts`/`bfs.ts`/`urgency.ts`/`aging.ts` are pure functions over pre-filtered arrays and needed no edits. See `docs/issues/Issues_Phase_15.md` Batch C + skill-audit A15.
 - **Dependencies:** Task 69
 - **Actions:**
   - Add `archivedAt = null` alongside `deletedAt = null` to every active-item query per SCHEMA.md Key Queries: grid contents (+ L0 also excludes `hiddenFromGrid = true`), node completion, calendar items (+ non-archived parents for Chunks), items pool, badge computation, global urgency, text search, grid occupancy, aging.

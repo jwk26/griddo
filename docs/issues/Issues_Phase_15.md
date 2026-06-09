@@ -19,7 +19,7 @@
 |-------|-------|--------|
 | Batch A | T68 + T69 | Implemented |
 | Batch B | T70 | Implemented |
-| Batch C | T71 | In Progress |
+| Batch C | T71 | Implemented |
 | Batch D | T72 | Pending |
 
 ### Deviations
