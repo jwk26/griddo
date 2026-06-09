@@ -131,7 +131,7 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 72: Default system node seeding
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files (planned):** `src/lib/db/indexeddb.ts` (seed), `src/app/providers.tsx` or a startup hook (update)
 - **Files (actual):** `src/lib/db/datastore.ts` (interface), `src/lib/db/indexeddb.ts` (implementation), `src/hooks/use-system-node-seeding.ts` (new hook), `src/app/providers.tsx` (wiring), `src/lib/db/system-nodes.test.ts` (new, 13 tests)
 - **Dependencies:** Task 70
