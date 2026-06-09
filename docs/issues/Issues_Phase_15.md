@@ -18,7 +18,7 @@
 | Batch | Tasks | Status |
 |-------|-------|--------|
 | Batch A | T68 + T69 | Implemented |
-| Batch B | T70 | Pending |
+| Batch B | T70 | Implemented |
 | Batch C | T71 | Pending |
 | Batch D | T72 | Pending |
 
@@ -53,6 +53,20 @@ None. The 4-batch structure was the initial user-approved plan (decided before t
 - **Detail:** EXECUTION_PLAN T69 acceptance (line 103) said *"verify via `src/app/debug-indexeddb`"*, and T74 (line 183, Phase 16) carries the same reference. That route does not exist — `debug-indexeddb` appears only in `EXECUTION_PLAN.md` and the 2026-06-04 storage-reliability brainstorming docs. Separately, the Dexie `version(3).upgrade()` backfill is unreachable by the in-memory `FakeTable` test harness, so it has no automated coverage.
 - **Disposition:** T69 acceptance (line 103) reworded to remove the route and point here (**Reflected**). T74's reference left explicitly **Tagged** for Phase 16 (not edited from the Phase 15 branch). The backfill *code* is statically reviewed + `pnpm test`/`build` green; a method to verify the backfill against real existing IndexedDB data — ① add `fake-indexeddb` for a real-Dexie test, ② a debug/inspection route as its own task, or ③ a one-time manual check recorded at closing — is **deferred: decide at T70 or closing.**
 
+### ISSUE-15-02 — Codex B parallel test authoring: 1st run no-artifact, 2nd run delayed
+
+- **Status:** Open (resolved in practice — Claude-written tests landed and verified; Codex B artifact later compared, no additional coverage)
+- **Category:** tooling / parallel-test-authoring workflow
+- **Detail:** `omc ask codex` was launched twice for blind test authoring (Batch B). First run (ba6ixezvb) stalled with no artifact for >30 min and was eventually terminated (no output ever produced). Second run / re-request (bns2yulzs) was delayed but did arrive (~50 min after launch).
+- **Disposition:** Rather than block, Claude wrote `archive.test.ts` and `scratch-breakdowns.test.ts` directly from the same 9-invariant spec; tests are spec-faithful but not strictly blind (Claude had reviewed Codex A's implementation). When the 2nd Codex B artifact arrived it was compared against Claude's tests — the proposed cases matched 1:1, **no additional invariants were adopted from it.** Note: neither the pre-written 9-invariant list nor the Codex B output independently caught the `unarchiveNode` parent-child consistency gap (ISSUE-15-03); that surfaced only from the Codex implementation review. Logged as a skill-audit candidate: (a) `omc ask codex` timeout/no-artifact handling, and (b) parallel-test-authoring should compare invariant parity against the nearest reference implementation, not just follow a fixed pre-written list.
+
+### ISSUE-15-03 — `unarchiveNode` restored Bits without confirming their parent Node was restored
+
+- **Status:** Resolved (fixed in Batch B before checkpoint)
+- **Category:** logic defect / data-layer invariant (parent-child consistency)
+- **Detail:** Codex A's first `unarchiveNode` implementation filtered restorable Bits by `subtreeIdSet.has(bit.parentId) && bit.archivedAt !== null && isWithinRestoreWindow(...)` — but omitted the parent-restoration guard that the sibling trash `restoreNode` already carries. A Bit whose `archivedAt` falls inside the ±5s restore window could therefore be un-archived even when its parent Node is outside the window and stays archived, yielding an **archived-Node-with-active-Bit** state. Surfaced by the Codex implementation review (not by the pre-written test invariants nor Codex B). No public-API call sequence was found that reaches this state today (archive cascade re-stamps a subtree to one uniform timestamp, and every unarchive path handles the parent chain first), but this is treated as a **data-layer invariant preservation** issue, not mere defensive code: IndexedDB rows can leave "normal-API-only" states via migration, manual debug, future Phase 19 direct-archive UI, external bugs, or partial writes.
+- **Disposition:** `unarchiveNode` now tracks a `restorableNodeIds` set (already-active Nodes + Nodes restored this pass) and the Bit filter requires `restorableNodeIds.has(bit.parentId)` — mirroring trash `restoreNode` and completing the Hook 11 intent for archive restore. Regression test added to `archive.test.ts` ("does not restore a Bit whose parent Node stays archived (outside restore window)"). `pnpm test`/`build` re-run green. This is a completion of the existing pattern, **not a new design.**
+
 ---
 
 ## Phase-local Question Resolution
@@ -63,3 +77,5 @@ None. The 4-batch structure was the initial user-approved plan (decided before t
 | 2 | T69 acceptance cited the non-existent `src/app/debug-indexeddb` route as the verification method (ISSUE-15-01) | EXECUTION_PLAN T69 acceptance (line 103) reworded: route removed, runtime backfill verification pointed to ISSUE-15-01 | EXECUTION_PLAN T69 acceptance wording | **Reflected** |
 | 3 | T74 (Phase 16) acceptance also cites `debug-indexeddb` (line 183) | Left explicitly **Tagged** — Phase 16 task, not edited from the Phase 15 branch; correct when Phase 16 is planned/executed | EXECUTION_PLAN T74 acceptance wording | **Tagged** |
 | 4 | Should `DatabaseLike` gain a required `scratchBreakdowns` member in Batch A? | Deferred to T70 to avoid growing every `FakeTable` test fixture before any code references the table | None (internal scope decision) | None |
+| 5 | T70 Hook 11 wording says `restoreNode`/`restoreBit`, which collide with the existing trash-restore API of the same name | Batch B implements archive restore as `unarchiveNode`/`unarchiveBit`; EXECUTION_PLAN T70 (line 113) reworded to match | EXECUTION_PLAN T70 acceptance wording | **Reflected** |
+| 6 | The same `restoreNode`/`restoreBit` naming appears in **Phase 19** Task 87 (Single-item restore) / Task 88 (Direct archive references `archiveNode`/`archiveBit`) | Future-phase canonical impact of the T70 rename; **not edited from the Phase 15 branch.** Reconcile to `unarchiveNode`/`unarchiveBit` when Phase 19 is planned/executed | EXECUTION_PLAN Task 87 wording (Phase 19) | **Tagged** |

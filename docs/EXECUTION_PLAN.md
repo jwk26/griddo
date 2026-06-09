@@ -105,12 +105,12 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 70: DataStore archive/restore + scratchBreakdown CRUD (Hooks 10/11)
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/lib/db/datastore.ts` (update interface), `src/lib/db/indexeddb.ts` (implement)
 - **Dependencies:** Task 69
 - **Actions:**
-  - **Hook 10 (Archive Cascade):** `archiveNode(id)` — create one shared timestamp, set `archivedAt` on the Node + all descendant Nodes/Bits (reuse the soft-delete cascade traversal pattern). `archiveBit(id)`. Both reject when `systemRole !== null`.
-  - **Hook 11 (Archive Restore):** `restoreNode(id)` / `restoreBit(id)` — restore only descendants within ±5s of the parent's `archivedAt` (reuse `isWithinRestoreWindow`); BFS reposition if the original cell is occupied; restoring a Bit whose parent is archived restores the parent chain.
+  - **Hook 10 (Archive Cascade):** `archiveNode(id)` — create one shared timestamp, set `archivedAt` on the Node + all descendant Nodes/Bits (reuse the soft-delete cascade traversal pattern). `archiveNode(id)` rejects when the target Node has `systemRole !== null`; `archiveBit(id)` archives only the target Bit (Bits have no `systemRole`).
+  - **Hook 11 (Archive Restore):** `unarchiveNode(id)` / `unarchiveBit(id)` — restore only descendants within ±5s of the parent's `archivedAt` (reuse `isWithinRestoreWindow`), and only Bits whose parent Node is itself restored (mirrors trash `restoreNode`'s parent guard); BFS reposition if the original cell is occupied; restoring a Bit whose parent is archived restores the parent chain. (Named `unarchive*` to avoid collision with the existing trash-restore `restoreNode`/`restoreBit`.)
   - **scratchBreakdowns CRUD:** create / list-by-scratch (ordered) / update content+order / `markConsumed` (set `consumedAt`) / `unconsume` (`null`) / bulk-delete-by-scratch. Scratch Bit **hard-delete** also hard-deletes its `scratchBreakdowns` rows; **archive** does not.
 - **Acceptance:**
   - Archiving a Node sets one shared `archivedAt` across descendants; restore brings back only same-window members; archiving a system node is blocked.
