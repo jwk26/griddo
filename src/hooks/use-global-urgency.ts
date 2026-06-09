@@ -25,9 +25,15 @@ export function useGlobalUrgency(): UrgencyLevel {
       return { bits, nodes };
     }).subscribe({
       next: ({ bits, nodes }) => {
-        const activeBits = bits.filter((b) => b.deletedAt === null && b.deadline !== null);
+        const activeBits = bits.filter(
+          (b) => b.deletedAt === null && b.archivedAt === null && b.deadline !== null,
+        );
         const activeNodes = nodes.filter(
-          (node) => node.deletedAt === null && node.deadline !== null && node.level !== 0,
+          (node) =>
+            node.deletedAt === null &&
+            node.archivedAt === null &&
+            node.deadline !== null &&
+            node.level !== 0,
         );
         let max: UrgencyLevel = null;
 

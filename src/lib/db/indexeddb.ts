@@ -132,7 +132,12 @@ export class IndexedDBDataStore implements DataStore {
 
   async getNodes(parentId: string | null): Promise<Node[]> {
     const nodes = await this.database.nodes.toArray();
-    return sortGridItems(nodes.filter((node) => node.parentId === parentId && node.deletedAt === null));
+    return sortGridItems(
+      nodes.filter(
+        (node) =>
+          node.parentId === parentId && node.deletedAt === null && node.archivedAt === null,
+      ),
+    );
   }
 
   async createNode(data: CreateNode): Promise<Node> {
@@ -251,8 +256,13 @@ export class IndexedDBDataStore implements DataStore {
     const subtreeIds = collectDescendantNodeIds(id, allNodes);
     const subtreeIdSet = new Set(subtreeIds);
     const occupiedByParent = buildOccupiedByParent(
-      allNodes.filter((item) => item.deletedAt === null),
-      allBits.filter((item) => item.deletedAt === null),
+      allNodes.filter(
+        (item) =>
+          item.deletedAt === null &&
+          item.archivedAt === null &&
+          !(item.parentId === null && item.hiddenFromGrid),
+      ),
+      allBits.filter((item) => item.deletedAt === null && item.archivedAt === null),
     );
     const restoredNodes: Node[] = [];
     const restorableNodeIds = new Set<string>();
@@ -363,22 +373,26 @@ export class IndexedDBDataStore implements DataStore {
 
   async getBits(parentId: string): Promise<Bit[]> {
     const bits = await this.database.bits.toArray();
-    return sortGridItems(bits.filter((bit) => bit.parentId === parentId && bit.deletedAt === null));
+    return sortGridItems(
+      bits.filter(
+        (bit) => bit.parentId === parentId && bit.deletedAt === null && bit.archivedAt === null,
+      ),
+    );
   }
 
   async getBitsForNode(nodeId: string): Promise<Bit[]> {
     const bits = await this.database.bits.toArray();
-    return bits.filter((b) => b.parentId === nodeId && b.deletedAt === null);
+    return bits.filter((b) => b.parentId === nodeId && b.deletedAt === null && b.archivedAt === null);
   }
 
   async getAllActiveNodes(): Promise<Node[]> {
     const nodes = await this.database.nodes.toArray();
-    return nodes.filter((n) => n.deletedAt === null);
+    return nodes.filter((n) => n.deletedAt === null && n.archivedAt === null);
   }
 
   async getAllActiveBits(): Promise<Bit[]> {
     const bits = await this.database.bits.toArray();
-    return bits.filter((b) => b.deletedAt === null);
+    return bits.filter((b) => b.deletedAt === null && b.archivedAt === null);
   }
 
   async createBit(data: CreateBit): Promise<Bit> {
@@ -492,8 +506,13 @@ export class IndexedDBDataStore implements DataStore {
       this.database.bits.toArray(),
     ]);
     const occupiedByParent = buildOccupiedByParent(
-      allNodes.filter((item) => item.deletedAt === null),
-      allBits.filter((item) => item.deletedAt === null),
+      allNodes.filter(
+        (item) =>
+          item.deletedAt === null &&
+          item.archivedAt === null &&
+          !(item.parentId === null && item.hiddenFromGrid),
+      ),
+      allBits.filter((item) => item.deletedAt === null && item.archivedAt === null),
     );
     const restoredBit = placeRestoredGridItem(
       { ...refreshedBit, deletedAt: null },
@@ -820,7 +839,8 @@ export class IndexedDBDataStore implements DataStore {
       parentId === null ? Promise.resolve([]) : this.getBits(parentId),
     ]);
 
-    return { nodes, bits };
+    const filteredNodes = parentId === null ? nodes.filter((n) => !n.hiddenFromGrid) : nodes;
+    return { nodes: filteredNodes, bits };
   }
 
   async getCalendarItems(): Promise<{ bits: Bit[]; chunks: Chunk[] }> {
@@ -828,7 +848,7 @@ export class IndexedDBDataStore implements DataStore {
       this.database.bits.toArray(),
       this.database.chunks.toArray(),
     ]);
-    const activeBits = bits.filter((bit) => bit.deletedAt === null);
+    const activeBits = bits.filter((bit) => bit.deletedAt === null && bit.archivedAt === null);
     const activeBitIds = new Set(activeBits.map((bit) => bit.id));
 
     return {
@@ -864,8 +884,10 @@ export class IndexedDBDataStore implements DataStore {
       this.database.bits.toArray(),
       this.database.chunks.toArray(),
     ]);
-    const activeNodes = nodes.filter((node) => node.deletedAt === null);
-    const activeBits = bits.filter((bit) => bit.deletedAt === null);
+    const activeNodes = nodes.filter(
+      (node) => node.deletedAt === null && node.archivedAt === null,
+    );
+    const activeBits = bits.filter((bit) => bit.deletedAt === null && bit.archivedAt === null);
     const activeBitIds = new Set(activeBits.map((bit) => bit.id));
     const nodesById = new Map(nodes.map((node) => [node.id, node]));
     const bitsById = new Map(bits.map((bit) => [bit.id, bit]));
@@ -921,13 +943,18 @@ export class IndexedDBDataStore implements DataStore {
     const occupancy = new Set<string>();
 
     for (const node of nodes) {
-      if (node.parentId === parentId && node.deletedAt === null) {
+      if (
+        node.parentId === parentId &&
+        node.deletedAt === null &&
+        node.archivedAt === null &&
+        !(parentId === null && node.hiddenFromGrid)
+      ) {
         occupancy.add(gridKey(node.x, node.y));
       }
     }
 
     for (const bit of bits) {
-      if (bit.parentId === parentId && bit.deletedAt === null) {
+      if (bit.parentId === parentId && bit.deletedAt === null && bit.archivedAt === null) {
         occupancy.add(gridKey(bit.x, bit.y));
       }
     }
@@ -945,6 +972,7 @@ export class IndexedDBDataStore implements DataStore {
       (bit) =>
         bit.parentId === nodeId &&
         bit.deletedAt === null &&
+        bit.archivedAt === null &&
         bit.deadline !== null &&
         isDeadlineAfter(bit.deadline, bit.deadlineAllDay, deadline, deadlineAllDay),
     );
@@ -975,10 +1003,14 @@ export class IndexedDBDataStore implements DataStore {
       this.database.bits.toArray(),
     ]);
     const activeNodes = allNodes.filter(
-      (node) => node.parentId === parentId && node.deletedAt === null,
+      (node) =>
+        node.parentId === parentId &&
+        node.deletedAt === null &&
+        node.archivedAt === null &&
+        !(parentId === null && node.hiddenFromGrid),
     );
     const activeBits = allBits.filter(
-      (bit) => bit.parentId === parentId && bit.deletedAt === null,
+      (bit) => bit.parentId === parentId && bit.deletedAt === null && bit.archivedAt === null,
     );
     const overlappingNodes = findItemsInBlockedZone(activeNodes, blockedCells);
     const overlappingBits = findItemsInBlockedZone(activeBits, blockedCells);
@@ -1281,6 +1313,8 @@ export class IndexedDBDataStore implements DataStore {
       (node) =>
         node.parentId === parentId &&
         node.deletedAt === null &&
+        node.archivedAt === null &&
+        !(parentId === null && node.hiddenFromGrid) &&
         node.x === x &&
         node.y === y &&
         !(options?.excludedNodeIds?.has(node.id) ?? false),
@@ -1289,6 +1323,7 @@ export class IndexedDBDataStore implements DataStore {
       (bit) =>
         bit.parentId === parentId &&
         bit.deletedAt === null &&
+        bit.archivedAt === null &&
         bit.x === x &&
         bit.y === y &&
         !(options?.excludedBitIds?.has(bit.id) ?? false),
