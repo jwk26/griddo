@@ -24,6 +24,9 @@ export const nodeSchema = z.object({
   x: gridXSchema,
   y: gridYSchema,
   deletedAt: timestampSchema.nullable().default(null),
+  archivedAt: timestampSchema.nullable().default(null),
+  systemRole: z.enum(["inbox", "archive_view"]).nullable().default(null),
+  hiddenFromGrid: z.boolean().default(false),
 });
 
 export const createNodeSchema = nodeSchema.omit({
@@ -31,6 +34,9 @@ export const createNodeSchema = nodeSchema.omit({
   mtime: true,
   createdAt: true,
   deletedAt: true,
+  archivedAt: true,
+  systemRole: true,
+  hiddenFromGrid: true,
 });
 
 export type Node = z.infer<typeof nodeSchema>;
@@ -53,6 +59,7 @@ export const bitSchema = z.object({
   x: gridXSchema,
   y: gridYSchema,
   deletedAt: timestampSchema.nullable().default(null),
+  archivedAt: timestampSchema.nullable().default(null),
 });
 
 export const createBitSchema = bitSchema.omit({
@@ -61,10 +68,31 @@ export const createBitSchema = bitSchema.omit({
   createdAt: true,
   status: true,
   deletedAt: true,
+  archivedAt: true,
 });
 
 export type Bit = z.infer<typeof bitSchema>;
 export type CreateBit = z.infer<typeof createBitSchema>;
+
+// --- Scratch Breakdown ---
+
+export const scratchBreakdownSchema = z.object({
+  id: idSchema,
+  scratchBitId: idSchema,
+  content: z.string().min(1).max(1000),
+  order: z.number().int().min(0),
+  createdAt: timestampSchema,
+  consumedAt: timestampSchema.nullable().default(null),
+});
+
+export const createScratchBreakdownSchema = scratchBreakdownSchema.omit({
+  id: true,
+  createdAt: true,
+  consumedAt: true,
+});
+
+export type ScratchBreakdown = z.infer<typeof scratchBreakdownSchema>;
+export type CreateScratchBreakdown = z.infer<typeof createScratchBreakdownSchema>;
 
 // --- Chunk ---
 

@@ -4,7 +4,9 @@ import {
   createBitSchema,
   createChunkSchema,
   createNodeSchema,
+  createScratchBreakdownSchema,
   nodeSchema,
+  scratchBreakdownSchema,
 } from "@/lib/db/schema";
 
 describe("schema", () => {
@@ -64,6 +66,48 @@ describe("schema", () => {
     ).toThrow();
   });
 
+  it("applies lifecycle defaults for stored nodes", () => {
+    const timestamp = Date.now();
+    const parsed = nodeSchema.parse({
+      id: crypto.randomUUID(),
+      title: "Inbox",
+      color: "hsl(210, 80%, 55%)",
+      icon: "inbox",
+      deadline: null,
+      deadlineAllDay: false,
+      mtime: timestamp,
+      createdAt: timestamp,
+      parentId: null,
+      level: 0,
+      x: 2,
+      y: 3,
+      deletedAt: null,
+    });
+
+    expect(parsed.archivedAt).toBeNull();
+    expect(parsed.systemRole).toBeNull();
+    expect(parsed.hiddenFromGrid).toBe(false);
+  });
+
+  it("strips system-managed node lifecycle fields from creation payloads", () => {
+    const parsed = createNodeSchema.parse({
+      title: "Inbox",
+      color: "hsl(210, 80%, 55%)",
+      icon: "inbox",
+      parentId: null,
+      level: 0,
+      x: 2,
+      y: 3,
+      systemRole: "inbox",
+      hiddenFromGrid: true,
+      archivedAt: 123,
+    });
+
+    expect(parsed).not.toHaveProperty("systemRole");
+    expect(parsed).not.toHaveProperty("hiddenFromGrid");
+    expect(parsed).not.toHaveProperty("archivedAt");
+  });
+
   it("applies defaults for bit and chunk creation payloads", () => {
     const parentId = crypto.randomUUID();
     const bit = createBitSchema.parse({
@@ -100,6 +144,19 @@ describe("schema", () => {
     });
   });
 
+  it("strips system-managed bit lifecycle fields from creation payloads", () => {
+    const parsed = createBitSchema.parse({
+      title: "Write tests",
+      icon: "pen",
+      parentId: crypto.randomUUID(),
+      x: 1,
+      y: 4,
+      archivedAt: 123,
+    });
+
+    expect(parsed).not.toHaveProperty("archivedAt");
+  });
+
   it("accepts node and bit coordinates up to the configured grid bounds", () => {
     const parentId = crypto.randomUUID();
 
@@ -124,5 +181,55 @@ describe("schema", () => {
         y: GRID_ROWS - 1,
       }),
     ).not.toThrow();
+  });
+
+  it("validates scratch breakdown creation payloads and defaults consumedAt", () => {
+    const scratchBitId = crypto.randomUUID();
+
+    expect(() =>
+      createScratchBreakdownSchema.parse({
+        scratchBitId,
+        content: "",
+        order: 0,
+      }),
+    ).toThrow();
+
+    expect(() =>
+      createScratchBreakdownSchema.parse({
+        scratchBitId,
+        content: "a".repeat(1001),
+        order: 0,
+      }),
+    ).toThrow();
+
+    expect(() =>
+      createScratchBreakdownSchema.parse({
+        scratchBitId,
+        content: "Plan first pass",
+        order: -1,
+      }),
+    ).toThrow();
+
+    expect(
+      createScratchBreakdownSchema.parse({
+        scratchBitId,
+        content: "Plan first pass",
+        order: 0,
+      }),
+    ).toEqual({
+      scratchBitId,
+      content: "Plan first pass",
+      order: 0,
+    });
+
+    expect(
+      scratchBreakdownSchema.parse({
+        id: crypto.randomUUID(),
+        scratchBitId,
+        content: "Plan first pass",
+        order: 0,
+        createdAt: Date.now(),
+      }).consumedAt,
+    ).toBeNull();
   });
 });

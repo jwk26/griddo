@@ -14,6 +14,7 @@ import {
   type CreateChunk,
   type CreateNode,
   type Node,
+  type ScratchBreakdown,
 } from "@/lib/db/schema";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import { findItemsInBlockedZone } from "@/lib/utils/breadcrumb-zone";
@@ -83,6 +84,7 @@ export class GridDODatabase extends Dexie {
   nodes!: Table<Node, string>;
   bits!: Table<Bit, string>;
   chunks!: Table<Chunk, string>;
+  scratchBreakdowns!: Table<ScratchBreakdown, string>;
   settings!: Table<{ key: string; value: unknown }, string>;
 
   constructor() {
@@ -97,6 +99,23 @@ export class GridDODatabase extends Dexie {
     this.version(2).stores({
       settings: "key",
     });
+
+    this.version(3)
+      .stores({
+        nodes: "id,parentId,deletedAt,[parentId+deletedAt],level,systemRole,archivedAt,[parentId+deletedAt+archivedAt]",
+        bits: "id,parentId,deletedAt,[parentId+deletedAt],status,deadline,[parentId+status],archivedAt,[parentId+deletedAt+archivedAt]",
+        scratchBreakdowns: "id,scratchBitId,[scratchBitId+order]",
+      })
+      .upgrade(async (tx) => {
+        await tx.table("nodes").toCollection().modify((node) => {
+          if (node.archivedAt === undefined) node.archivedAt = null;
+          if (node.systemRole === undefined) node.systemRole = null;
+          if (node.hiddenFromGrid === undefined) node.hiddenFromGrid = false;
+        });
+        await tx.table("bits").toCollection().modify((bit) => {
+          if (bit.archivedAt === undefined) bit.archivedAt = null;
+        });
+      });
   }
 }
 
