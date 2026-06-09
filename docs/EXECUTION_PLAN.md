@@ -79,7 +79,7 @@ These apply across all phases:
 > - Completion stays purely computed and never auto-archives.
 
 ### Task 68: Schema fields + Zod (lifecycle)
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/lib/db/schema.ts` (update)
 - **Dependencies:** Phase 14 complete
 - **Actions:**
@@ -88,19 +88,19 @@ These apply across all phases:
   - New `scratchBreakdownSchema` (`id`, `scratchBitId` FK→`bits.id`, `content` min 1 max 1000, `order` int ≥ 0, `createdAt`, `consumedAt` nullable default `null`) + `createScratchBreakdownSchema` (omit `id`/`createdAt`/`consumedAt`). Export `ScratchBreakdown` / `CreateScratchBreakdown` types.
 - **Acceptance:**
   - `schema.ts` type-checks; `Node` includes `systemRole`/`hiddenFromGrid`/`archivedAt`, `Bit` includes `archivedAt`.
-  - `createNodeSchema.parse()` rejects objects that set `systemRole`/`hiddenFromGrid`/`archivedAt`.
+  - `createNodeSchema.parse()` strips system-managed fields (`systemRole`/`hiddenFromGrid`/`archivedAt`) from its parsed output — Zod strip semantics (no `.strict()`), so they cannot enter through the create path.
   - `ScratchBreakdown` / `CreateScratchBreakdown` exported.
   - `pnpm build` passes.
 
 ### Task 69: Dexie store version + indexes + migration
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/lib/db/indexeddb.ts` (update)
 - **Dependencies:** Task 68
 - **Actions:**
   - Bump the Dexie version. Add the `scratchBreakdowns` object store. Add indexes: `idx_nodes_systemRole`, `idx_nodes_archivedAt`, `idx_nodes_active_full` `[parentId,deletedAt,archivedAt]`, `idx_bits_archivedAt`, `idx_bits_active_full` `[parentId,deletedAt,archivedAt]`, and `scratchBreakdowns` `[scratchBitId,order]` + `scratchBitId`.
   - Upgrade function: backfill `archivedAt = null`, `systemRole = null`, `hiddenFromGrid = false` on existing `nodes`/`bits` rows so the new indexes are correct.
 - **Acceptance:**
-  - DB opens at the new version without error; the new indexes/store are present (verify via `src/app/debug-indexeddb`).
+  - DB opens at the new version without error; `version(3)` declares the lifecycle indexes + `scratchBreakdowns` store + backfill `upgrade`. Runtime verification of the backfill against existing IndexedDB data is tracked in `docs/issues/Issues_Phase_15.md` (ISSUE-15-01) — no `debug-indexeddb` route exists.
   - Existing rows remain readable with the lifecycle fields defaulted.
   - `pnpm build` passes.
 

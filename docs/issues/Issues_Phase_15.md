@@ -46,12 +46,12 @@ None. The 4-batch structure was the initial user-approved plan (decided before t
 
 ## Issues
 
-### ISSUE-15-01 — Plan acceptance references a non-existent `debug-indexeddb` route
+### ISSUE-15-01 — Dexie v3 migration: no runtime-verification path; plan cited a non-existent route
 
-- **Status:** Open (canonical wording correction deferred to closing)
-- **Category:** plan-vs-reality / acceptance-criteria accuracy
-- **Detail:** EXECUTION_PLAN T69 acceptance says *"verify via `src/app/debug-indexeddb`"*; T68 and T74 carry similar references. That route does not exist in the repo — `debug-indexeddb` appears only in `EXECUTION_PLAN.md` and the 2026-06-04 storage-reliability brainstorming docs.
-- **Disposition:** Removed from the Batch A prompt/acceptance; runtime-verification method deferred (see Open items). EXECUTION_PLAN T68/T69/T74 acceptance wording should be corrected at closing.
+- **Status:** Open (runtime-verification method undecided)
+- **Category:** plan-vs-reality / acceptance-criteria accuracy + test-coverage gap
+- **Detail:** EXECUTION_PLAN T69 acceptance (line 103) said *"verify via `src/app/debug-indexeddb`"*, and T74 (line 183, Phase 16) carries the same reference. That route does not exist — `debug-indexeddb` appears only in `EXECUTION_PLAN.md` and the 2026-06-04 storage-reliability brainstorming docs. Separately, the Dexie `version(3).upgrade()` backfill is unreachable by the in-memory `FakeTable` test harness, so it has no automated coverage.
+- **Disposition:** T69 acceptance (line 103) reworded to remove the route and point here (**Reflected**). T74's reference left explicitly **Tagged** for Phase 16 (not edited from the Phase 15 branch). The backfill *code* is statically reviewed + `pnpm test`/`build` green; a method to verify the backfill against real existing IndexedDB data — ① add `fake-indexeddb` for a real-Dexie test, ② a debug/inspection route as its own task, or ③ a one-time manual check recorded at closing — is **deferred: decide at T70 or closing.**
 
 ---
 
@@ -59,6 +59,7 @@ None. The 4-batch structure was the initial user-approved plan (decided before t
 
 | # | Question | Resolution | Canonical Impact | Status |
 |---|----------|------------|------------------|--------|
-| 1 | T68 acceptance says `createNodeSchema.parse()` "rejects" system-managed fields; Zod without `.strict()` **strips** (no throw) | Implemented strip semantics (matches existing schema convention); tests assert the fields are absent from parsed output | EXECUTION_PLAN T68 acceptance wording ("rejects" → "strips") | Tagged |
-| 2 | T68/T69/T74 acceptance cite `src/app/debug-indexeddb`, which does not exist (ISSUE-15-01) | Removed from Batch A acceptance; runtime-verification method deferred to checkpoint/closing | EXECUTION_PLAN T68/T69/T74 acceptance wording | Tagged |
-| 3 | Should `DatabaseLike` gain a required `scratchBreakdowns` member in Batch A? | Deferred to T70 to avoid growing every `FakeTable` test fixture before any code references the table | None (internal scope decision) | None |
+| 1 | T68 acceptance said `createNodeSchema.parse()` "rejects" system-managed fields; Zod without `.strict()` **strips** (no throw) | EXECUTION_PLAN T68 acceptance (line 91) reworded to "strips … from parsed output"; tests assert the fields are absent | EXECUTION_PLAN T68 acceptance wording | **Reflected** |
+| 2 | T69 acceptance cited the non-existent `src/app/debug-indexeddb` route as the verification method (ISSUE-15-01) | EXECUTION_PLAN T69 acceptance (line 103) reworded: route removed, runtime backfill verification pointed to ISSUE-15-01 | EXECUTION_PLAN T69 acceptance wording | **Reflected** |
+| 3 | T74 (Phase 16) acceptance also cites `debug-indexeddb` (line 183) | Left explicitly **Tagged** — Phase 16 task, not edited from the Phase 15 branch; correct when Phase 16 is planned/executed | EXECUTION_PLAN T74 acceptance wording | **Tagged** |
+| 4 | Should `DatabaseLike` gain a required `scratchBreakdowns` member in Batch A? | Deferred to T70 to avoid growing every `FakeTable` test fixture before any code references the table | None (internal scope decision) | None |
