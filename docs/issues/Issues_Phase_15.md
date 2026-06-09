@@ -20,7 +20,7 @@
 | Batch A | T68 + T69 | Implemented |
 | Batch B | T70 | Implemented |
 | Batch C | T71 | Implemented |
-| Batch D | T72 | Pending |
+| Batch D | T72 | Implemented |
 
 ### Deviations
 
@@ -51,6 +51,16 @@ None. The 4-batch structure was the initial user-approved plan (decided before t
 - **Completeness check clean:** `rg "deletedAt === null"` across `indexeddb.ts`, `src/hooks`, `src/lib/utils` — all bare `deletedAt === null` hits are (a) trash-semantics guards (`if (refreshedNode.deletedAt === null) { return; }` etc.) or (b) multi-line filters with `archivedAt === null` on the continuation line. Zero missed (c) hits.
 - **`pnpm test` green:** 52 test files, 242 tests passed (Batch B baseline: 51 files, 229 tests; delta = +1 file, +13 tests — archive-sweep.test.ts exact match).
 - **Reviewer subagents skipped (Step 7b).** Mechanical sweep with explicit before/after for each change site; spec-faithful; test coverage independent via 13 new cases; blast radius limited to filter predicates (no structural changes). No trigger threshold met.
+
+### Batch D — T72 execution notes
+
+- **Codex output spec-faithful — no quality-pass edits.** All 5 expected files written directly to the working tree: `datastore.ts` (interface), `indexeddb.ts` (`ensureSystemNodes()` implementation), `use-system-node-seeding.ts` (new hook), `providers.tsx` (wiring), and new `system-nodes.test.ts` (13 test cases).
+- **Codex introduced `SYSTEM_NODE_ROLES` / `SYSTEM_NODE_SEEDS` constants** at the top of `indexeddb.ts` rather than inlining seed values — clean extensible pattern, not requested explicitly in the prompt.
+- **Dual timestamp variables correct:** `seedTimestamp` (used for `createdAt`/`mtime` of new Case A nodes) and `timestamp` (used for `mtime` in Case B normalization writes) are defined separately, which is correct — created-at semantics differ from normalization-time semantics.
+- **HARD constraints verified via `git diff`:** `archiveNode`/`unarchiveBit`/`unarchiveNode`/`archiveBit`, all trash-restore semantics, `scratchBreakdowns` CRUD, `schema.ts` unchanged.
+- **`pnpm test` green:** 53 test files, 255 tests passed (Batch C baseline: 52 files, 242 tests; delta = +1 file, +13 tests — system-nodes.test.ts exact match).
+- **`pnpm build` green:** TypeScript clean, all 7 routes compile.
+- **Reviewer subagents skipped (Step 7b).** Mechanical seeding with explicit per-step algorithm; idempotency and no-partial-write enforced by pre-plan + single `write()` call; 13 test cases cover all invariants including GRID_FULL and drift normalization. No trigger threshold met.
 
 ### Open items (carried to checkpoint / closing)
 
@@ -94,3 +104,4 @@ None. The 4-batch structure was the initial user-approved plan (decided before t
 | 5 | T70 Hook 11 wording says `restoreNode`/`restoreBit`, which collide with the existing trash-restore API of the same name | Batch B implements archive restore as `unarchiveNode`/`unarchiveBit`; EXECUTION_PLAN T70 (line 113) reworded to match | EXECUTION_PLAN T70 acceptance wording | **Reflected** |
 | 6 | The same `restoreNode`/`restoreBit` naming appears in **Phase 19** Task 87 (Single-item restore) / Task 88 (Direct archive references `archiveNode`/`archiveBit`) | Future-phase canonical impact of the T70 rename; **not edited from the Phase 15 branch.** Reconcile to `unarchiveNode`/`unarchiveBit` when Phase 19 is planned/executed | EXECUTION_PLAN Task 87 wording (Phase 19) | **Tagged** |
 | 7 | Can the compound index `[parentId+deletedAt+archivedAt]` (added in T69) be used for T71 active-item queries via `.where()`? | No — `DatabaseLike`/`TableLike<T>` exposes only `get()`, `put()`, `bulkPut()`, `delete()`, `bulkDelete()`, `toArray()`; no `.where()`. The compound index benefits Dexie's internal storage/query optimization but is not programmatically accessible through the abstraction. All T71 queries use `toArray() + JS filter`, consistent with the rest of the codebase. | None (internal implementation detail) | **Explicitly Deferred** (won't pursue — toArray+filter is the codebase-wide pattern) |
+| 8 | T72 "offer to recreate" — SCHEMA.md says *"If no Node with a required `systemRole` exists, the system offers to recreate it."* Phase 15 is data-layer only, no UI. How should "offer" be interpreted? | Phase 15 = **silent idempotent auto-recreate**. `ensureSystemNodes()` checks each `systemRole` on every startup and creates the missing node if absent. No toast, dialog, or user confirmation. The visual "offer" UX (sidebar prompt, confirmation) is a Phase 17+ concern when the sidebar is implemented. | None — EXECUTION_PLAN T72 "offer to recreate" wording is intentionally data-layer-agnostic; this entry is the Phase 15 interpretation record. | **Reflected** |

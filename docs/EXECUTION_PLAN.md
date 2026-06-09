@@ -132,7 +132,8 @@ These apply across all phases:
 
 ### Task 72: Default system node seeding
 - **Status:** `[ ]`
-- **Files:** `src/lib/db/indexeddb.ts` (seed), `src/app/providers.tsx` or a startup hook (update)
+- **Files (planned):** `src/lib/db/indexeddb.ts` (seed), `src/app/providers.tsx` or a startup hook (update)
+- **Files (actual):** `src/lib/db/datastore.ts` (interface), `src/lib/db/indexeddb.ts` (implementation), `src/hooks/use-system-node-seeding.ts` (new hook), `src/app/providers.tsx` (wiring), `src/lib/db/system-nodes.test.ts` (new, 13 tests)
 - **Dependencies:** Task 70
 - **Actions:**
   - On first launch / migration: if no Node has `systemRole = 'inbox'`, create the Inbox Node (`title` "Inbox", `icon` "inbox", `color` `hsl(221, 83%, 53%)`, `parentId` null, `level` 0). Same for `'archive_view'` (Archive, "layers", `hsl(240, 4%, 46%)`). Use the internal full-`nodeSchema` path (not `createNodeSchema`). App-level uniqueness check before insert.
