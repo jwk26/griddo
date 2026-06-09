@@ -19,7 +19,7 @@
 |-------|-------|--------|
 | Batch A | T68 + T69 | Implemented |
 | Batch B | T70 | Implemented |
-| Batch C | T71 | Pending |
+| Batch C | T71 | In Progress |
 | Batch D | T72 | Pending |
 
 ### Deviations
@@ -37,6 +37,20 @@ None. The 4-batch structure was the initial user-approved plan (decided before t
 - **Codex output spec-faithful — no quality-pass edits.** All three expected files (`schema.ts`, `indexeddb.ts`, `schema.test.ts`) written directly to the working tree; spec compliance verified (fields, omits, `scratchBreakdownSchema`, `version(3)` index strings carrying forward existing indexes, backfill `upgrade`). No naming/dead-code/scope issues to refine.
 - **Reviewer subagents skipped (Step 7b).** Additive/non-destructive schema+migration, spec-faithful, backfill statically reviewed, `pnpm test`/`pnpm build` green. The only residual risk (real Dexie `upgrade()` runtime backfill on existing IndexedDB data) is a runtime concern unreachable by a code-reading reviewer — so no subagent trigger meaningfully applies.
 - **D1 backfill — load-bearing.** The `version(3).upgrade()` backfills `archivedAt`/`systemRole`/`hiddenFromGrid` (nodes) and `archivedAt` (bits). Required because reads are trusted (no Zod on read): an `undefined` `archivedAt` would (a) make `=== null` active checks false → row treated as archived, and (b) be excluded from the new `[parentId+deletedAt+archivedAt]` compound index by Dexie.
+
+### Batch B — T70 execution notes
+
+- (Notes recorded at Batch B checkpoint — see commit b0d3837.)
+
+### Batch C — T71 execution notes
+
+- **Codex output spec-faithful — no quality-pass edits.** All 5 expected files written directly to the working tree: `indexeddb.ts` (14 changes, 11 methods A–N), `use-calendar-data.ts`, `use-global-urgency.ts`, `use-node-urgency.ts`, and new `archive-sweep.test.ts` (13 test cases).
+- **Codex also updated 7 existing test files** (`indexeddb.test.ts`, `archive-sweep.test.ts`-adjacent fixtures, `cascade-restore.test.ts`, `deadline-hierarchy.test.ts`, `grid-uniqueness.test.ts`, `indexeddb.migration.test.ts`, `mtime-cascade.test.ts`, `use-calendar-data.test.ts`) to backfill `archivedAt: null` in FakeTable factory boilerplate. Required: active queries now assert `archivedAt === null`, so fixtures missing the field would be treated as archived and break existing tests.
+- **Two auditor corrections applied pre-launch:** (1) TableLike description corrected — `filter()`, `count()`, `add()` do not exist on `TableLike`; description now lists only the 6 actual methods. (2) `runBreadcrumbZoneMigration()` (Change K) node filter extended to include `!(parentId === null && node.hiddenFromGrid)` — hiddenFromGrid nodes at L0 must not appear in the relocation target list.
+- **HARD constraints verified via `git diff`:** `archiveNode`/`unarchiveBit`/`unarchiveNode`/`archiveBit` and all trash-restore semantics unchanged. Lines with `archivedAt === null` in those methods (L617-618, L692-693) were already present from Batch B.
+- **Completeness check clean:** `rg "deletedAt === null"` across `indexeddb.ts`, `src/hooks`, `src/lib/utils` — all bare `deletedAt === null` hits are (a) trash-semantics guards (`if (refreshedNode.deletedAt === null) { return; }` etc.) or (b) multi-line filters with `archivedAt === null` on the continuation line. Zero missed (c) hits.
+- **`pnpm test` green:** 52 test files, 242 tests passed (Batch B baseline: 51 files, 229 tests; delta = +1 file, +13 tests — archive-sweep.test.ts exact match).
+- **Reviewer subagents skipped (Step 7b).** Mechanical sweep with explicit before/after for each change site; spec-faithful; test coverage independent via 13 new cases; blast radius limited to filter predicates (no structural changes). No trigger threshold met.
 
 ### Open items (carried to checkpoint / closing)
 
@@ -79,3 +93,4 @@ None. The 4-batch structure was the initial user-approved plan (decided before t
 | 4 | Should `DatabaseLike` gain a required `scratchBreakdowns` member in Batch A? | Deferred to T70 to avoid growing every `FakeTable` test fixture before any code references the table | None (internal scope decision) | None |
 | 5 | T70 Hook 11 wording says `restoreNode`/`restoreBit`, which collide with the existing trash-restore API of the same name | Batch B implements archive restore as `unarchiveNode`/`unarchiveBit`; EXECUTION_PLAN T70 (line 113) reworded to match | EXECUTION_PLAN T70 acceptance wording | **Reflected** |
 | 6 | The same `restoreNode`/`restoreBit` naming appears in **Phase 19** Task 87 (Single-item restore) / Task 88 (Direct archive references `archiveNode`/`archiveBit`) | Future-phase canonical impact of the T70 rename; **not edited from the Phase 15 branch.** Reconcile to `unarchiveNode`/`unarchiveBit` when Phase 19 is planned/executed | EXECUTION_PLAN Task 87 wording (Phase 19) | **Tagged** |
+| 7 | Can the compound index `[parentId+deletedAt+archivedAt]` (added in T69) be used for T71 active-item queries via `.where()`? | No — `DatabaseLike`/`TableLike<T>` exposes only `get()`, `put()`, `bulkPut()`, `delete()`, `bulkDelete()`, `toArray()`; no `.where()`. The compound index benefits Dexie's internal storage/query optimization but is not programmatically accessible through the abstraction. All T71 queries use `toArray() + JS filter`, consistent with the rest of the codebase. | None (internal implementation detail) | **Explicitly Deferred** (won't pursue — toArray+filter is the codebase-wide pattern) |
