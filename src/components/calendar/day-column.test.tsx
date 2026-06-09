@@ -74,6 +74,9 @@ function createNode(overrides: Partial<Node> = {}): Node {
     x: overrides.x ?? 0,
     y: overrides.y ?? 0,
     deletedAt: overrides.deletedAt ?? null,
+    archivedAt: overrides.archivedAt ?? null,
+    systemRole: overrides.systemRole ?? null,
+    hiddenFromGrid: overrides.hiddenFromGrid ?? false,
   };
 }
 
@@ -95,6 +98,7 @@ function createBit(overrides: Partial<Bit> = {}): Bit {
     x: overrides.x ?? 0,
     y: overrides.y ?? 0,
     deletedAt: overrides.deletedAt ?? null,
+    archivedAt: overrides.archivedAt ?? null,
   };
 }
 

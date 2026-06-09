@@ -60,6 +60,9 @@ function makeNode(id: string, overrides: Partial<Node> = {}): Node {
     x: 0,
     y: 0,
     deletedAt: null,
+    archivedAt: null,
+    systemRole: null,
+    hiddenFromGrid: false,
     ...overrides,
   };
 }
@@ -80,6 +83,7 @@ function makeBit(id: string, parentId: string, overrides: Partial<Bit> = {}): Bi
     x: 0,
     y: 0,
     deletedAt: null,
+    archivedAt: null,
     ...overrides,
   };
 }

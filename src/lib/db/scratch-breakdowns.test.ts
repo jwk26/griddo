@@ -283,12 +283,16 @@ describe("IndexedDBDataStore scratchBreakdowns lifecycle integration", () => {
   it("hard-deletes bits and chunks without a scratchBreakdowns table", async () => {
     const parentNode = createNode({ id: testUuid(124) });
     const bit = createBit({ id: testUuid(125), parentId: parentNode.id });
-    const chunk = {
+    const chunk: Chunk = {
       id: testUuid(126),
       parentId: bit.id,
-      content: "chunk content",
+      title: "chunk content",
+      description: "",
+      time: null,
+      timeAllDay: false,
+      status: "incomplete",
       order: 0,
-    } as Chunk;
+    };
     const { database, store } = createStoreWithoutScratch({
       nodes: [parentNode],
       bits: [bit],
