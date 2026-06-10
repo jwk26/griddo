@@ -182,6 +182,15 @@ describe("Sidebar", () => {
     expect(screen.queryByRole("button", { name: "Bit" })).not.toBeInTheDocument();
   });
 
+  it("marks the grid add button active when requested", () => {
+    render(<Sidebar isAddActive={true} onAddClick={vi.fn()} />);
+
+    expect(screen.getByRole("button", { name: "Add item" })).toHaveClass(
+      "bg-accent",
+      "text-foreground",
+    );
+  });
+
   it("closes chooser without error when Node clicked and onNodeCreate is absent", () => {
     usePathnameMock.mockReturnValue("/calendar/weekly");
 

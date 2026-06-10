@@ -83,6 +83,12 @@ const dayColumnSpring = {
   damping: 20,
 } as const satisfies Transition;
 
+const sidebarSlideSpring = {
+  type: "spring",
+  stiffness: 380,
+  damping: 30,
+} as const satisfies Transition;
+
 export const motionSpring = {
   scale: scaleSpring,
   creation: creationSpring,
@@ -90,4 +96,5 @@ export const motionSpring = {
   gridSnap: gridSnapSpring,
   calendarSnap: calendarSnapSpring,
   dayColumn: dayColumnSpring,
+  sidebarSlide: sidebarSlideSpring,
 } as const;

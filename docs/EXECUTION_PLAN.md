@@ -80,16 +80,20 @@ These apply across all phases:
 
 ### Task 73: `+` entry surface (anchored popover)
 - **Status:** `[ ]`
-- **Files:** `src/components/quick-capture/entry-surface.tsx` (create), `src/components/layout/sidebar.tsx` (update — wire `+`), `src/stores/quick-capture-store.ts` (create — open state), `src/components/layout/add-flow-context.tsx` (update if needed)
+- **Files:** `src/components/quick-capture/entry-surface.tsx` (create), `src/components/layout/sidebar.tsx` (update — conditional: grid routes open entry surface; calendar/trash keep existing behavior), `src/stores/quick-capture-store.ts` (create — open state), `src/components/layout/add-flow-context.tsx` (update if needed)
 - **Recipe:** `docs/recipes/quick-capture-entry-surface-visual-recipe.md`
 - **Dependencies:** Phase 15 complete
 - **Actions:**
   - Anchored slide/fade popover from the sidebar `+` (left-anchored per recipe; not a centered modal). Two groups: **Ideas** (Scratch, primary, primary-tinted icon tile) and **Create** (Node, Bit). Optional surface-level `Cmd+K` hint; **no per-row ⌘K badge** on the Scratch row (per DECISION/recipe).
   - Context rules (SPEC): L0/global `Bit` opens a parent selector (no direct L0 Bit); inside a Node, `Bit` uses the current Node; Level 3 is Bit-only.
+  - **Route scope (G4 decision):** Entry surface activates on `/` and `/grid/[nodeId]` only. On `/calendar/*`, the existing `+` chooser/create wiring stays unchanged. On `/trash`, the `+` remains disabled.
   - Use exact classes from the recipe; Batch 1 baseline tokens only.
 - **Acceptance:**
-  - Clicking the sidebar `+` opens an anchored popover with Ideas/Create groups; Scratch is visually primary; the Scratch row has no ⌘K badge.
-  - Esc / outside click closes it.
+  - On `/` and `/grid/[nodeId]`: clicking the sidebar `+` opens the anchored popover with Ideas/Create groups; Scratch is visually primary; the Scratch row has no ⌘K badge.
+  - On `/calendar/*`: existing Calendar `+` create wiring is unchanged.
+  - On `/trash`: `+` remains disabled (no regression).
+  - Esc / outside click closes the popover.
+  - At Level 3, the Create group shows only the Bit row (Node row hidden).
   - `pnpm build` passes.
 
 ### Task 74: Scratch capture modal
@@ -100,7 +104,7 @@ These apply across all phases:
 - **Actions:**
   - Clicking Scratch (or palette key `1`) opens a centered one-line modal ("Capture your ideas..."). On submit, create a Bit with `parentId` = Inbox Node id, `icon` "sparkles", `x = 0, y = 0` sentinel (uniqueness-exempt per Hook 8), `title` = input. Show a lightweight confirmation + a path to open the Inbox.
 - **Acceptance:**
-  - Submitting creates a Scratch Bit parented to the Inbox Node with `sparkles`/`(0,0)` (verify via `debug-indexeddb`), regardless of the current grid location; no parent/cell selection is required.
+  - Submitting creates a Scratch Bit parented to the Inbox Node with `sparkles`/`(0,0)`, regardless of the current grid location; no parent/cell selection is required. Verify by navigating to the Inbox Node page and confirming the Bit appears (browser DevTools > Application > IndexedDB > griddo > bits is an acceptable alternative).
   - `pnpm build` passes.
 
 ### Task 75: Command Palette (Cmd+K)

@@ -100,11 +100,13 @@ const noop = () => {};
 export function Sidebar({
   onAddClick,
   dragActiveItem,
+  isAddActive,
   onNodeCreate,
   onBitCreate,
 }: {
   onAddClick?: () => void;
   dragActiveItem?: DragActiveItem;
+  isAddActive?: boolean;
   onNodeCreate?: () => void;
   onBitCreate?: () => void;
 }) {
@@ -167,7 +169,12 @@ export function Sidebar({
         </Popover>
       ) : (
         <div className={cn(!onAddClick && "pointer-events-none opacity-40")}>
-          <SidebarIconButton icon={Plus} label="Add item" onClick={onAddClick ?? noop} />
+          <SidebarIconButton
+            icon={Plus}
+            isActive={isAddActive}
+            label="Add item"
+            onClick={onAddClick ?? noop}
+          />
         </div>
       )}
       {isCalendarRoute ? (
