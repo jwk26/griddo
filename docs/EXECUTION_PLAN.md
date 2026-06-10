@@ -79,7 +79,7 @@ These apply across all phases:
 > - New component domain `src/components/quick-capture/` (follows SPEC File Organization "shared components by domain").
 
 ### Task 73: `+` entry surface (anchored popover)
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/quick-capture/entry-surface.tsx` (create), `src/components/layout/sidebar.tsx` (update — conditional: grid routes open entry surface; calendar/trash keep existing behavior), `src/stores/quick-capture-store.ts` (create — open state), `src/components/layout/add-flow-context.tsx` (update if needed)
 - **Recipe:** `docs/recipes/quick-capture-entry-surface-visual-recipe.md`
 - **Dependencies:** Phase 15 complete
@@ -119,7 +119,7 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 76: Create Node/Bit from `+` surface (existing dialogs)
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/quick-capture/entry-surface.tsx` (update — wire Create rows); reuse `src/components/grid/create-node-dialog.tsx`, `src/components/grid/create-bit-dialog.tsx`
 - **Dependencies:** Task 73
 - **Actions:**
