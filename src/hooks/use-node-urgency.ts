@@ -21,7 +21,9 @@ export function useNodeUrgency(nodeId: string): UrgencyLevel {
       return dataStore.getBitsForNode(nodeId);
     }).subscribe({
       next: (bits) => {
-        const activeBits = bits.filter((b) => b.deletedAt === null && b.deadline !== null);
+        const activeBits = bits.filter(
+          (b) => b.deletedAt === null && b.archivedAt === null && b.deadline !== null,
+        );
         let max: UrgencyLevel = null;
 
         for (const bit of activeBits) {

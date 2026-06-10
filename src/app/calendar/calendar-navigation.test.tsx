@@ -121,6 +121,9 @@ function createNode(overrides: Partial<Node> = {}): Node {
     x: 0,
     y: 0,
     deletedAt: null,
+    archivedAt: null,
+    systemRole: null,
+    hiddenFromGrid: false,
     ...overrides,
   };
 }
@@ -141,6 +144,7 @@ function createBit(overrides: Partial<Bit> = {}): Bit {
     x: 0,
     y: 0,
     deletedAt: null,
+    archivedAt: null,
     ...overrides,
   };
 }

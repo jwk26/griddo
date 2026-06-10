@@ -20,6 +20,7 @@ function createBit(status: Bit["status"]): Bit {
     x: 0,
     y: 0,
     deletedAt: null,
+    archivedAt: null,
   };
 }
 

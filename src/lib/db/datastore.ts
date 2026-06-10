@@ -1,4 +1,13 @@
-import type { Node, CreateNode, Bit, CreateBit, Chunk, CreateChunk } from "@/lib/db/schema";
+import type {
+  Node,
+  CreateNode,
+  Bit,
+  CreateBit,
+  Chunk,
+  CreateChunk,
+  ScratchBreakdown,
+  CreateScratchBreakdown,
+} from "@/lib/db/schema";
 
 export interface DataStore {
   // --- Nodes ---
@@ -23,6 +32,29 @@ export interface DataStore {
   softDeleteBit(id: string): Promise<void>;
   restoreBit(id: string): Promise<void>;
   hardDeleteBit(id: string): Promise<void>;
+
+  // --- Lifecycle ---
+  archiveNode(id: string): Promise<void>;
+  archiveBit(id: string): Promise<void>;
+  unarchiveNode(id: string): Promise<void>;
+  unarchiveBit(id: string): Promise<void>;
+
+  // --- System Node Seeding ---
+  /**
+   * Idempotently ensures the Inbox and Archive View system nodes exist.
+   * Creates only missing roles; existing nodes are never overwritten.
+   * Normalizes lifecycle-drifted system nodes (deletedAt/archivedAt → null).
+   * Throws "GRID_FULL: ..." if no L0 cell is available for a required node.
+   */
+  ensureSystemNodes(): Promise<void>;
+
+  // --- Scratch Breakdowns ---
+  createScratchBreakdown(data: CreateScratchBreakdown): Promise<ScratchBreakdown>;
+  getScratchBreakdowns(scratchBitId: string): Promise<ScratchBreakdown[]>;
+  updateScratchBreakdown(id: string, data: Partial<Pick<ScratchBreakdown, "content" | "order">>): Promise<void>;
+  markScratchBreakdownConsumed(id: string): Promise<void>;
+  unconsumeScratchBreakdown(id: string): Promise<void>;
+  deleteScratchBreakdownsByScratch(scratchBitId: string): Promise<void>;
 
   // --- Chunks ---
   getChunks(bitId: string): Promise<Chunk[]>;

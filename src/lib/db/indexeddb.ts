@@ -6,14 +6,18 @@ import {
   chunkSchema,
   createBitSchema,
   createChunkSchema,
+  createScratchBreakdownSchema,
   createNodeSchema,
   nodeSchema,
+  scratchBreakdownSchema,
   type Bit,
   type Chunk,
   type CreateBit,
   type CreateChunk,
   type CreateNode,
+  type CreateScratchBreakdown,
   type Node,
+  type ScratchBreakdown,
 } from "@/lib/db/schema";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import { findItemsInBlockedZone } from "@/lib/utils/breadcrumb-zone";
@@ -21,6 +25,7 @@ import { isDeadlineAfter } from "@/lib/utils/deadline";
 
 type MutableNodeInput = Omit<Node, "id" | "createdAt" | "deletedAt" | "mtime">;
 type MutableBitInput = Omit<Bit, "id" | "createdAt" | "deletedAt" | "mtime">;
+type SystemNodeRole = NonNullable<Node["systemRole"]>;
 
 type SearchResult = {
   type: "node" | "bit" | "chunk";
@@ -50,10 +55,24 @@ type DatabaseLike = {
   bits: TableLike<Bit>;
   chunks: TableLike<Chunk>;
   settings?: SettingsTableLike;
+  scratchBreakdowns?: TableLike<ScratchBreakdown>;
 };
 
 const ROOT_PARENT_KEY = "__root__";
 const DEFAULT_PROMOTED_NODE_COLOR = "hsl(221, 83%, 53%)";
+const SYSTEM_NODE_ROLES = ["inbox", "archive_view"] as const satisfies readonly SystemNodeRole[];
+const SYSTEM_NODE_SEEDS: Record<SystemNodeRole, Pick<Node, "title" | "icon" | "color">> = {
+  inbox: {
+    title: "Inbox",
+    icon: "inbox",
+    color: "hsl(221, 83%, 53%)",
+  },
+  archive_view: {
+    title: "Archive",
+    icon: "layers",
+    color: "hsl(240, 4%, 46%)",
+  },
+};
 
 /**
  * Thrown when a deadline write would violate the parent–child deadline constraint.
@@ -83,6 +102,7 @@ export class GridDODatabase extends Dexie {
   nodes!: Table<Node, string>;
   bits!: Table<Bit, string>;
   chunks!: Table<Chunk, string>;
+  scratchBreakdowns!: Table<ScratchBreakdown, string>;
   settings!: Table<{ key: string; value: unknown }, string>;
 
   constructor() {
@@ -97,6 +117,23 @@ export class GridDODatabase extends Dexie {
     this.version(2).stores({
       settings: "key",
     });
+
+    this.version(3)
+      .stores({
+        nodes: "id,parentId,deletedAt,[parentId+deletedAt],level,systemRole,archivedAt,[parentId+deletedAt+archivedAt]",
+        bits: "id,parentId,deletedAt,[parentId+deletedAt],status,deadline,[parentId+status],archivedAt,[parentId+deletedAt+archivedAt]",
+        scratchBreakdowns: "id,scratchBitId,[scratchBitId+order]",
+      })
+      .upgrade(async (tx) => {
+        await tx.table("nodes").toCollection().modify((node) => {
+          if (node.archivedAt === undefined) node.archivedAt = null;
+          if (node.systemRole === undefined) node.systemRole = null;
+          if (node.hiddenFromGrid === undefined) node.hiddenFromGrid = false;
+        });
+        await tx.table("bits").toCollection().modify((bit) => {
+          if (bit.archivedAt === undefined) bit.archivedAt = null;
+        });
+      });
   }
 }
 
@@ -109,7 +146,12 @@ export class IndexedDBDataStore implements DataStore {
 
   async getNodes(parentId: string | null): Promise<Node[]> {
     const nodes = await this.database.nodes.toArray();
-    return sortGridItems(nodes.filter((node) => node.parentId === parentId && node.deletedAt === null));
+    return sortGridItems(
+      nodes.filter(
+        (node) =>
+          node.parentId === parentId && node.deletedAt === null && node.archivedAt === null,
+      ),
+    );
   }
 
   async createNode(data: CreateNode): Promise<Node> {
@@ -228,8 +270,13 @@ export class IndexedDBDataStore implements DataStore {
     const subtreeIds = collectDescendantNodeIds(id, allNodes);
     const subtreeIdSet = new Set(subtreeIds);
     const occupiedByParent = buildOccupiedByParent(
-      allNodes.filter((item) => item.deletedAt === null),
-      allBits.filter((item) => item.deletedAt === null),
+      allNodes.filter(
+        (item) =>
+          item.deletedAt === null &&
+          item.archivedAt === null &&
+          !(item.parentId === null && item.hiddenFromGrid),
+      ),
+      allBits.filter((item) => item.deletedAt === null && item.archivedAt === null),
     );
     const restoredNodes: Node[] = [];
     const restorableNodeIds = new Set<string>();
@@ -340,22 +387,26 @@ export class IndexedDBDataStore implements DataStore {
 
   async getBits(parentId: string): Promise<Bit[]> {
     const bits = await this.database.bits.toArray();
-    return sortGridItems(bits.filter((bit) => bit.parentId === parentId && bit.deletedAt === null));
+    return sortGridItems(
+      bits.filter(
+        (bit) => bit.parentId === parentId && bit.deletedAt === null && bit.archivedAt === null,
+      ),
+    );
   }
 
   async getBitsForNode(nodeId: string): Promise<Bit[]> {
     const bits = await this.database.bits.toArray();
-    return bits.filter((b) => b.parentId === nodeId && b.deletedAt === null);
+    return bits.filter((b) => b.parentId === nodeId && b.deletedAt === null && b.archivedAt === null);
   }
 
   async getAllActiveNodes(): Promise<Node[]> {
     const nodes = await this.database.nodes.toArray();
-    return nodes.filter((n) => n.deletedAt === null);
+    return nodes.filter((n) => n.deletedAt === null && n.archivedAt === null);
   }
 
   async getAllActiveBits(): Promise<Bit[]> {
     const bits = await this.database.bits.toArray();
-    return bits.filter((b) => b.deletedAt === null);
+    return bits.filter((b) => b.deletedAt === null && b.archivedAt === null);
   }
 
   async createBit(data: CreateBit): Promise<Bit> {
@@ -469,8 +520,13 @@ export class IndexedDBDataStore implements DataStore {
       this.database.bits.toArray(),
     ]);
     const occupiedByParent = buildOccupiedByParent(
-      allNodes.filter((item) => item.deletedAt === null),
-      allBits.filter((item) => item.deletedAt === null),
+      allNodes.filter(
+        (item) =>
+          item.deletedAt === null &&
+          item.archivedAt === null &&
+          !(item.parentId === null && item.hiddenFromGrid),
+      ),
+      allBits.filter((item) => item.deletedAt === null && item.archivedAt === null),
     );
     const restoredBit = placeRestoredGridItem(
       { ...refreshedBit, deletedAt: null },
@@ -489,13 +545,357 @@ export class IndexedDBDataStore implements DataStore {
     const chunkIds = chunks
       .filter((chunk) => chunk.parentId === id)
       .map((chunk) => chunk.id);
+
+    const scratchRowIds: string[] = [];
+    if (this.database.scratchBreakdowns) {
+      const rows = await this.database.scratchBreakdowns.toArray();
+      for (const row of rows) {
+        if (row.scratchBitId === id) scratchRowIds.push(row.id);
+      }
+    }
+
     const timestamp = Date.now();
 
     await this.write(async () => {
+      if (this.database.scratchBreakdowns && scratchRowIds.length > 0) {
+        await this.database.scratchBreakdowns.bulkDelete(scratchRowIds);
+      }
       await this.database.chunks.bulkDelete(chunkIds);
       await this.database.bits.delete(id);
       await this.touchNodeIds([bit.parentId], timestamp);
     });
+  }
+
+  async archiveNode(id: string): Promise<void> {
+    const node = await this.getRequiredNode(id);
+
+    if (node.systemRole !== null) {
+      throw new Error("Cannot archive a system node");
+    }
+
+    const { nodes, bits } = await this.collectNodeSubtree(id);
+    const archiveTimestamp = Date.now();
+    const updatedNodes = nodes.map((item) => ({
+      ...item,
+      archivedAt: archiveTimestamp,
+    }));
+    const updatedBits = bits.map((item) => ({
+      ...item,
+      archivedAt: archiveTimestamp,
+    }));
+
+    await this.write(async () => {
+      await this.saveNodes(updatedNodes);
+      await this.saveBits(updatedBits);
+    });
+
+    if (node.parentId) {
+      await this.touchNodeIds([node.parentId], archiveTimestamp);
+    }
+  }
+
+  async archiveBit(id: string): Promise<void> {
+    const bit = await this.getRequiredBit(id);
+    const archivedAt = Date.now();
+
+    await this.write(async () => {
+      await this.database.bits.put(bitSchema.parse({ ...bit, archivedAt }));
+      await this.touchNodeIds([bit.parentId], archivedAt);
+    });
+  }
+
+  async unarchiveNode(id: string): Promise<void> {
+    const node = await this.getRequiredNode(id);
+
+    if (node.parentId) {
+      const parentNode = await this.database.nodes.get(node.parentId);
+      if (parentNode && parentNode.archivedAt !== null) {
+        await this.unarchiveNode(parentNode.id);
+      }
+    }
+
+    const refreshedNode = await this.getRequiredNode(id);
+    if (refreshedNode.archivedAt === null) {
+      return;
+    }
+
+    const [allNodes, allBits] = await Promise.all([
+      this.database.nodes.toArray(),
+      this.database.bits.toArray(),
+    ]);
+    const nodesById = new Map(allNodes.map((candidate) => [candidate.id, candidate]));
+    const restoreAnchor = refreshedNode.archivedAt;
+    const subtreeIds = collectDescendantNodeIds(id, allNodes);
+    const subtreeIdSet = new Set(subtreeIds);
+    const occupiedByParent = buildOccupiedByParent(
+      allNodes.filter((item) => item.deletedAt === null && item.archivedAt === null),
+      allBits.filter((item) => item.deletedAt === null && item.archivedAt === null),
+    );
+    const restoredNodes: Node[] = [];
+    // Mirrors trash `restoreNode`: only restore a Bit when its parent Node is
+    // itself being restored (or already active). Without this guard a Bit whose
+    // archivedAt happens to fall inside the ±5s window could be un-archived while
+    // its parent Node stays archived (parent archived outside the window),
+    // producing an archived-Node-with-active-Bit state that violates the
+    // archive/restore data-layer invariant.
+    const restorableNodeIds = new Set<string>();
+
+    for (const nodeId of subtreeIds) {
+      const current = nodesById.get(nodeId);
+      if (!current) {
+        continue;
+      }
+
+      if (current.archivedAt === null) {
+        restorableNodeIds.add(current.id);
+        continue;
+      }
+
+      if (!isWithinRestoreWindow(current.archivedAt, restoreAnchor)) {
+        continue;
+      }
+
+      const restored = placeRestoredGridItem(
+        { ...current, archivedAt: null },
+        occupiedByParent,
+      );
+      restoredNodes.push(restored);
+      restorableNodeIds.add(restored.id);
+    }
+
+    const restoredBits = sortGridItems(
+      allBits.filter(
+        (bit) =>
+          subtreeIdSet.has(bit.parentId) &&
+          bit.archivedAt !== null &&
+          isWithinRestoreWindow(bit.archivedAt, restoreAnchor) &&
+          restorableNodeIds.has(bit.parentId),
+      ),
+    ).map((bit) => placeRestoredGridItem({ ...bit, archivedAt: null }, occupiedByParent));
+
+    await this.write(async () => {
+      await this.saveNodes(restoredNodes);
+      await this.saveBits(restoredBits);
+
+      if (refreshedNode.parentId) {
+        await this.touchNodeIds([refreshedNode.parentId], Date.now());
+      }
+    });
+  }
+
+  async unarchiveBit(id: string): Promise<void> {
+    const bit = await this.getRequiredBit(id);
+
+    if (bit.parentId) {
+      const parentNode = await this.database.nodes.get(bit.parentId);
+      if (parentNode && parentNode.archivedAt !== null) {
+        await this.unarchiveNode(parentNode.id);
+      }
+    }
+
+    const refreshedBit = await this.getRequiredBit(id);
+    if (refreshedBit.archivedAt === null) {
+      return;
+    }
+
+    const [allNodes, allBits] = await Promise.all([
+      this.database.nodes.toArray(),
+      this.database.bits.toArray(),
+    ]);
+    const occupiedByParent = buildOccupiedByParent(
+      allNodes.filter((item) => item.deletedAt === null && item.archivedAt === null),
+      allBits.filter((item) => item.deletedAt === null && item.archivedAt === null),
+    );
+    const restoredBit = placeRestoredGridItem(
+      { ...refreshedBit, archivedAt: null },
+      occupiedByParent,
+    );
+
+    await this.write(async () => {
+      await this.database.bits.put(bitSchema.parse(restoredBit));
+      await this.touchNodeIds([restoredBit.parentId], Date.now());
+    });
+  }
+
+  async ensureSystemNodes(): Promise<void> {
+    const allNodes = await this.database.nodes.toArray();
+    const missingRoles: SystemNodeRole[] = [];
+    const driftedRows: Array<{ role: SystemNodeRole; node: Node }> = [];
+
+    for (const role of SYSTEM_NODE_ROLES) {
+      const existing = allNodes.find((node) => node.systemRole === role);
+
+      if (!existing) {
+        missingRoles.push(role);
+      } else if (existing.deletedAt !== null || existing.archivedAt !== null) {
+        driftedRows.push({ role, node: existing });
+      }
+    }
+
+    if (missingRoles.length === 0 && driftedRows.length === 0) {
+      return;
+    }
+
+    const occupancy = new Set<string>();
+
+    for (const node of allNodes) {
+      if (
+        node.parentId === null &&
+        node.deletedAt === null &&
+        node.archivedAt === null &&
+        !node.hiddenFromGrid
+      ) {
+        occupancy.add(gridKey(node.x, node.y));
+      }
+    }
+
+    const normalizePlan: Array<{ node: Node; x: number; y: number }> = [];
+    const seedPlan: Array<{ role: SystemNodeRole; x: number; y: number }> = [];
+
+    for (const { role, node } of driftedRows) {
+      if (node.hiddenFromGrid) {
+        normalizePlan.push({ node, x: node.x, y: node.y });
+        continue;
+      }
+
+      if (!occupancy.has(gridKey(node.x, node.y))) {
+        occupancy.add(gridKey(node.x, node.y));
+        normalizePlan.push({ node, x: node.x, y: node.y });
+        continue;
+      }
+
+      const cell = findFirstAvailableCell(occupancy);
+
+      if (!cell) {
+        throw new Error(
+          `GRID_FULL: Cannot normalize system node "${role}" — no L0 cell available`,
+        );
+      }
+
+      occupancy.add(gridKey(cell.x, cell.y));
+      normalizePlan.push({ node, x: cell.x, y: cell.y });
+    }
+
+    for (const role of missingRoles) {
+      const cell = findFirstAvailableCell(occupancy);
+
+      if (!cell) {
+        throw new Error(`GRID_FULL: Cannot seed system node "${role}" — no L0 cell available`);
+      }
+
+      occupancy.add(gridKey(cell.x, cell.y));
+      seedPlan.push({ role, x: cell.x, y: cell.y });
+    }
+
+    const seedTimestamp = Date.now();
+    const seedNodes = seedPlan.map(({ role, x, y }) =>
+      nodeSchema.parse({
+        id: crypto.randomUUID(),
+        mtime: seedTimestamp,
+        createdAt: seedTimestamp,
+        title: SYSTEM_NODE_SEEDS[role].title,
+        icon: SYSTEM_NODE_SEEDS[role].icon,
+        color: SYSTEM_NODE_SEEDS[role].color,
+        systemRole: role,
+        hiddenFromGrid: false,
+        archivedAt: null,
+        deletedAt: null,
+        parentId: null,
+        level: 0,
+        x,
+        y,
+        deadline: null,
+        deadlineAllDay: false,
+      }),
+    );
+
+    const timestamp = Date.now();
+
+    await this.write(async () => {
+      for (const { node, x, y } of normalizePlan) {
+        await this.database.nodes.put({
+          ...node,
+          x,
+          y,
+          deletedAt: null,
+          archivedAt: null,
+          mtime: timestamp,
+        });
+      }
+
+      if (seedNodes.length > 0) {
+        await this.database.nodes.bulkPut(seedNodes);
+      }
+    });
+  }
+
+  async createScratchBreakdown(data: CreateScratchBreakdown): Promise<ScratchBreakdown> {
+    const table = this.requireScratchBreakdowns();
+    const parsed = createScratchBreakdownSchema.parse(data);
+    const row = scratchBreakdownSchema.parse({
+      ...parsed,
+      id: crypto.randomUUID(),
+      createdAt: Date.now(),
+      consumedAt: null,
+    });
+
+    await table.put(row);
+
+    return row;
+  }
+
+  async getScratchBreakdowns(scratchBitId: string): Promise<ScratchBreakdown[]> {
+    const table = this.requireScratchBreakdowns();
+    const all = await table.toArray();
+    return all
+      .filter((row) => row.scratchBitId === scratchBitId)
+      .sort((left, right) => left.order - right.order);
+  }
+
+  async updateScratchBreakdown(
+    id: string,
+    data: Partial<Pick<ScratchBreakdown, "content" | "order">>,
+  ): Promise<void> {
+    const table = this.requireScratchBreakdowns();
+    const row = await table.get(id);
+
+    if (!row) {
+      throw new Error(`Scratch breakdown not found: ${id}`);
+    }
+
+    await table.put(scratchBreakdownSchema.parse({ ...row, ...data }));
+  }
+
+  async markScratchBreakdownConsumed(id: string): Promise<void> {
+    const table = this.requireScratchBreakdowns();
+    const row = await table.get(id);
+
+    if (!row) {
+      throw new Error(`Scratch breakdown not found: ${id}`);
+    }
+
+    await table.put(scratchBreakdownSchema.parse({ ...row, consumedAt: Date.now() }));
+  }
+
+  async unconsumeScratchBreakdown(id: string): Promise<void> {
+    const table = this.requireScratchBreakdowns();
+    const row = await table.get(id);
+
+    if (!row) {
+      throw new Error(`Scratch breakdown not found: ${id}`);
+    }
+
+    await table.put(scratchBreakdownSchema.parse({ ...row, consumedAt: null }));
+  }
+
+  async deleteScratchBreakdownsByScratch(scratchBitId: string): Promise<void> {
+    const table = this.requireScratchBreakdowns();
+    const all = await table.toArray();
+    const ids = all
+      .filter((row) => row.scratchBitId === scratchBitId)
+      .map((row) => row.id);
+
+    await table.bulkDelete(ids);
   }
 
   async getChunks(bitId: string): Promise<Chunk[]> {
@@ -565,7 +965,8 @@ export class IndexedDBDataStore implements DataStore {
       parentId === null ? Promise.resolve([]) : this.getBits(parentId),
     ]);
 
-    return { nodes, bits };
+    const filteredNodes = parentId === null ? nodes.filter((n) => !n.hiddenFromGrid) : nodes;
+    return { nodes: filteredNodes, bits };
   }
 
   async getCalendarItems(): Promise<{ bits: Bit[]; chunks: Chunk[] }> {
@@ -573,7 +974,7 @@ export class IndexedDBDataStore implements DataStore {
       this.database.bits.toArray(),
       this.database.chunks.toArray(),
     ]);
-    const activeBits = bits.filter((bit) => bit.deletedAt === null);
+    const activeBits = bits.filter((bit) => bit.deletedAt === null && bit.archivedAt === null);
     const activeBitIds = new Set(activeBits.map((bit) => bit.id));
 
     return {
@@ -609,8 +1010,10 @@ export class IndexedDBDataStore implements DataStore {
       this.database.bits.toArray(),
       this.database.chunks.toArray(),
     ]);
-    const activeNodes = nodes.filter((node) => node.deletedAt === null);
-    const activeBits = bits.filter((bit) => bit.deletedAt === null);
+    const activeNodes = nodes.filter(
+      (node) => node.deletedAt === null && node.archivedAt === null,
+    );
+    const activeBits = bits.filter((bit) => bit.deletedAt === null && bit.archivedAt === null);
     const activeBitIds = new Set(activeBits.map((bit) => bit.id));
     const nodesById = new Map(nodes.map((node) => [node.id, node]));
     const bitsById = new Map(bits.map((bit) => [bit.id, bit]));
@@ -666,13 +1069,18 @@ export class IndexedDBDataStore implements DataStore {
     const occupancy = new Set<string>();
 
     for (const node of nodes) {
-      if (node.parentId === parentId && node.deletedAt === null) {
+      if (
+        node.parentId === parentId &&
+        node.deletedAt === null &&
+        node.archivedAt === null &&
+        !(parentId === null && node.hiddenFromGrid)
+      ) {
         occupancy.add(gridKey(node.x, node.y));
       }
     }
 
     for (const bit of bits) {
-      if (bit.parentId === parentId && bit.deletedAt === null) {
+      if (bit.parentId === parentId && bit.deletedAt === null && bit.archivedAt === null) {
         occupancy.add(gridKey(bit.x, bit.y));
       }
     }
@@ -690,6 +1098,7 @@ export class IndexedDBDataStore implements DataStore {
       (bit) =>
         bit.parentId === nodeId &&
         bit.deletedAt === null &&
+        bit.archivedAt === null &&
         bit.deadline !== null &&
         isDeadlineAfter(bit.deadline, bit.deadlineAllDay, deadline, deadlineAllDay),
     );
@@ -720,10 +1129,14 @@ export class IndexedDBDataStore implements DataStore {
       this.database.bits.toArray(),
     ]);
     const activeNodes = allNodes.filter(
-      (node) => node.parentId === parentId && node.deletedAt === null,
+      (node) =>
+        node.parentId === parentId &&
+        node.deletedAt === null &&
+        node.archivedAt === null &&
+        !(parentId === null && node.hiddenFromGrid),
     );
     const activeBits = allBits.filter(
-      (bit) => bit.parentId === parentId && bit.deletedAt === null,
+      (bit) => bit.parentId === parentId && bit.deletedAt === null && bit.archivedAt === null,
     );
     const overlappingNodes = findItemsInBlockedZone(activeNodes, blockedCells);
     const overlappingBits = findItemsInBlockedZone(activeBits, blockedCells);
@@ -882,10 +1295,13 @@ export class IndexedDBDataStore implements DataStore {
     if (this.database instanceof GridDODatabase) {
       return this.database.transaction(
         "rw",
-        this.database.nodes,
-        this.database.bits,
-        this.database.chunks,
-        this.database.settings,
+        [
+          this.database.nodes,
+          this.database.bits,
+          this.database.chunks,
+          this.database.settings,
+          this.database.scratchBreakdowns,
+        ],
         scope,
       );
     }
@@ -921,6 +1337,14 @@ export class IndexedDBDataStore implements DataStore {
     }
 
     return chunk;
+  }
+
+  private requireScratchBreakdowns(): TableLike<ScratchBreakdown> {
+    if (!this.database.scratchBreakdowns) {
+      throw new Error("scratchBreakdowns store not available");
+    }
+
+    return this.database.scratchBreakdowns;
   }
 
   private async saveNodes(nodes: Node[]): Promise<void> {
@@ -1015,6 +1439,8 @@ export class IndexedDBDataStore implements DataStore {
       (node) =>
         node.parentId === parentId &&
         node.deletedAt === null &&
+        node.archivedAt === null &&
+        !(parentId === null && node.hiddenFromGrid) &&
         node.x === x &&
         node.y === y &&
         !(options?.excludedNodeIds?.has(node.id) ?? false),
@@ -1023,6 +1449,7 @@ export class IndexedDBDataStore implements DataStore {
       (bit) =>
         bit.parentId === parentId &&
         bit.deletedAt === null &&
+        bit.archivedAt === null &&
         bit.x === x &&
         bit.y === y &&
         !(options?.excludedBitIds?.has(bit.id) ?? false),

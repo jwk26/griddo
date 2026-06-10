@@ -149,8 +149,10 @@ export function useCalendarData(): {
     return () => subscription.unsubscribe();
   }, []);
 
-  const activeNodes = state.nodes.filter((node) => node.deletedAt === null);
-  const activeBits = state.bits.filter((bit) => bit.deletedAt === null);
+  const activeNodes = state.nodes.filter(
+    (node) => node.deletedAt === null && node.archivedAt === null,
+  );
+  const activeBits = state.bits.filter((bit) => bit.deletedAt === null && bit.archivedAt === null);
   const activeBitIds = new Set(activeBits.map((bit) => bit.id));
   const activeChunks = state.chunks.filter((chunk) => activeBitIds.has(chunk.parentId));
   const nodeMap = new Map(activeNodes.map((node) => [node.id, node]));
