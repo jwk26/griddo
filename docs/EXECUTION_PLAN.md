@@ -145,8 +145,21 @@ These apply across all phases:
 
 #### Phase 15 Notes
 
-> Migration is additive/non-destructive (Phase 9's orphan-`description` precedent shows Dexie tolerates field drift); we still set defaults explicitly so the new indexes are correct.
-> System Nodes are created via an internal full-`nodeSchema` path, deliberately bypassing `createNodeSchema` (which forbids system-managed fields). See SCHEMA.md Default System Nodes + the system-node exclusions in Hook 4 (trash) and Hook 10 (archive).
+> **Migration defaults are load-bearing:** Migration is additive/non-destructive, but defaults must be explicit (not relied on implicitly). Dexie silently stores `undefined` as absent from the index — rows without `archivedAt = null` backfill would be excluded from the new `[parentId+deletedAt+archivedAt]` compound index and treated as archived by `=== null` guards.
+
+> **System Nodes use the full-schema path:** System Nodes are created via `nodeSchema.parse()` (not `createNodeSchema`), deliberately bypassing the create-path omit guard. See SCHEMA.md Default System Nodes + Hook 4 (trash) and Hook 10 (archive) exclusion guards.
+
+> **Schema-field additions break pre-existing test factories silently under Vitest:** Vitest transpile-only mode passes even when factory functions are missing required fields; `tsc --noEmit` catches the real type errors. Run `pnpm typecheck` as part of every phase gate, not just `pnpm test`. Phase 15 required backfilling 19 test files.
+
+> **Archive restore needs a parent guard (same invariant as trash restore):** `unarchiveNode` must check that a Bit's parent Node is itself restored before restoring the Bit — mirrors `restoreNode`'s parent guard in trash. This gap was not in the pre-written test invariants; it surfaced during the Codex implementation review.
+
+> **DataStore is the correct active-item filter choke point:** The T71 archive sweep landed almost entirely in `indexeddb.ts`, not scattered across hooks/utils. Pure functions (`completion.ts`, `bfs.ts`, `urgency.ts`) operate on pre-filtered arrays and needed no changes. Future active-query changes should target the DataStore layer first.
+
+> **Dexie migration has no automated runtime verification path:** `version(N).upgrade()` is unreachable by the in-memory FakeTable harness. Any plan task that cites a verification route must verify the route exists before the task is written. ISSUE-15-01 resolution: add a `fake-indexeddb`-based real-Dexie migration test in Phase 16.
+
+> **Browser smoke on isolated context is the right T72 verification:** `chrome-devtools` `isolatedContext` option gives a fully fresh IndexedDB origin without touching user data. Confirmed: on first load, exactly Inbox + Archive appear on the L0 grid. Recommended pattern for data-layer tasks that produce visible startup behavior.
+
+> **Full issue log:** `docs/issues/Issues_Phase_15.md`
 
 ---
 
