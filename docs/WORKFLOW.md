@@ -846,10 +846,16 @@ Non-authoritative. Used for visual review, not as source of truth.
 | `/execute-next-phase` | 6. Implementation kickoff    | "start phase N", "execute phase"                      |
 | `/execute-task`       | 6. Implementation execution  | "execute tasks", "run batch", task-level or ad-hoc implementation |
 | `/closing-phase`      | 7. Closing                   | "phase done", "close phase"                           |
+| `/compaction-advisor` | Any (session / context mgmt) | "should I compact?", "is it time to clear?", a context %, "context is nearly full" |
 
 Stages 1–2 are user-driven (no skill).
 Stage 2.5 can be done with `/recording-ideas`, or manually from this document if the skill is unavailable.
 Stage 8 is handled by closing-phase's final steps (push + PR).
+
+**Compaction handoffs:** Phase/batch handoff records live in `docs/handoffs/`, named
+`phase-N-batch-M.md`. Use the global `compaction-advisor` skill to decide
+keep-going / clean-clear / handoff-clear / handoff-compact and to generate handoffs.
+`docs/compaction-guide.md` is project-local background only — the skill is the active workflow.
 
 ---
 
