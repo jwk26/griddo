@@ -26,7 +26,7 @@
 
 | Batch | Tasks | Status |
 |-------|-------|--------|
-| Batch 1 | T73, T76 | Implemented (awaiting review) |
+| Batch 1 | T73, T76 | Complete (approved + committed) |
 | Batch 2 | T74 | Pending |
 | Batch 3 | T75 | Pending |
 
