@@ -97,7 +97,7 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 74: Scratch capture modal
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/quick-capture/scratch-modal.tsx` (create), `src/hooks/use-inbox.ts` (create), reuse DataStore `createBit`
 - **Recipe:** `docs/recipes/quick-capture-entry-surface-visual-recipe.md` (Scratch Modal)
 - **Dependencies:** Task 73, Phase 15
