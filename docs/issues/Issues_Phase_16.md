@@ -48,3 +48,19 @@
 - **Detail:** Implementing T76 (L0 Bit creation via dialog parent selector), the `handleBitSubmit` guard was simplified from `if (!nodeId || !node)` to `if (!effectiveParentId)`. This dropped the UI-layer check that a `/grid/[nodeId]` parent node actually exists — `/grid/[missing-node]` would proceed to `getGridOccupancy`/`createBit` (DataStore would still throw `Node not found`, but the early UI defense was lost). Root cause was the Codex prompt spec (Claude-side), not the Codex implementation.
 - **Resolution:** Restored `if (nodeId !== null && !node) setError("Unable to find parent node.")` ahead of the `effectiveParentId` check, preserving L0 (`nodeId === null`) Bit creation. Added a regression test in `grid-runtime.test.tsx` (`/grid/missing-node` + `useNode` null → no `createBit`, error surfaced).
 - **Verification:** targeted tests 3 files / 21 passed; full suite 260 passed; build green.
+
+### ISSUE-16-02 — Scratch Modal: no keyboard focus trap or trigger-focus restoration (follow-up)
+
+- **Status:** Open (follow-up, non-blocking for T74)
+- **Category:** accessibility
+- **Detail:** `ScratchModal` is a custom modal using Framer Motion rather than an accessible primitive (e.g. Radix UI Dialog). It carries `role="dialog"` and `aria-modal="true"` per spec, but does not trap keyboard focus within the modal while it is open, and does not restore focus to the trigger element on close. Screen reader users may navigate outside the modal via Tab. T74 spec does not mandate a focus trap, so this is a follow-up a11y hardening task.
+- **Resolution target:** Implement keyboard focus trapping (Tab/Shift-Tab cycle within modal) and restore focus to the quick-capture trigger on `onClose`. Can be done with a lightweight hook or by migrating to a Radix UI Dialog primitive. Must not introduce a broad modal refactor inside T74 scope.
+- **Disposition:** Not blocking Phase 16 close. Resolve before a dedicated a11y pass or Phase 17.
+
+### ISSUE-16-03 — Scratch Modal: hover-pause race condition on success transition (follow-up)
+
+- **Status:** Open (follow-up, low priority)
+- **Category:** interaction / edge case
+- **Detail:** If the user's cursor is already hovering over the modal panel when `submissionState` transitions to `"success"`, `onMouseEnter` has already fired (during the capture state) and `handlePanelMouseEnter` will not re-fire. The auto-close timer therefore starts via `startAutoCloseTimer` (in the `isSuccess` effect) even though the cursor is over the panel — the hover-pause contract is violated for this entry path. Gemini post-code review rated LOW.
+- **Resolution target:** On success state entry, check `isHovering` state (add a boolean ref or state) and skip `startAutoCloseTimer` if the cursor is already within the panel. Alternatively, use `onMouseMove` or `PointerEvents` to detect presence at mount time.
+- **Disposition:** Low priority. Not blocking Phase 16 close.

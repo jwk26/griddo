@@ -133,6 +133,52 @@ describe("ScratchModal", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it("focuses Open Inbox button when success state appears with a known inbox", async () => {
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <ScratchModal
+        inboxNodeId="inbox-1"
+        onClose={vi.fn()}
+        onSubmit={onSubmit}
+        open={true}
+      />,
+    );
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Scratch title" }), {
+      target: { value: "Focus test" },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Capture scratch" }));
+    });
+
+    expect(screen.getByText("Idea captured!")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open Inbox" })).toHaveFocus();
+  });
+
+  it("focuses Capture another button when success state appears without a known inbox", async () => {
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <ScratchModal
+        inboxNodeId={undefined}
+        onClose={vi.fn()}
+        onSubmit={onSubmit}
+        open={true}
+      />,
+    );
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Scratch title" }), {
+      target: { value: "Focus test" },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Capture scratch" }));
+    });
+
+    expect(screen.getByText("Idea captured!")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Capture another" })).toHaveFocus();
+  });
+
   it("dismisses on Escape without submitting", () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
     const onClose = vi.fn();

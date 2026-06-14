@@ -31,8 +31,6 @@ type ScratchModalProps = {
 type SubmissionState = "idle" | "submitting" | "success";
 
 const AUTO_CLOSE_DELAY_MS = 3000;
-const CAPTURE_EXIT_DURATION = 0.1;
-const CONFIRMATION_ENTER_DURATION = 0.12;
 
 export function ScratchModal({
   open,
@@ -72,10 +70,10 @@ function ScratchModalContent({
   const isSuccess = submissionState === "success";
   const contentExitDuration = shouldReduceMotion
     ? motionDuration.modalExit
-    : CAPTURE_EXIT_DURATION;
+    : motionDuration.contentExit;
   const contentEnterDuration = shouldReduceMotion
     ? motionDuration.modalEnter
-    : CONFIRMATION_ENTER_DURATION;
+    : motionDuration.contentEnter;
 
   const clearAutoCloseTimer = useCallback(() => {
     if (autoCloseTimerRef.current !== null) {
@@ -313,6 +311,7 @@ function ScratchModalContent({
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <button
+                    autoFocus={inboxNodeId !== undefined}
                     className="text-xs text-primary hover:text-primary/80 hover:underline outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm disabled:pointer-events-none disabled:opacity-50"
                     disabled={inboxNodeId === undefined}
                     onClick={handleOpenInbox}
@@ -321,6 +320,7 @@ function ScratchModalContent({
                     Open Inbox
                   </button>
                   <button
+                    autoFocus={inboxNodeId === undefined}
                     className="text-muted-foreground hover:text-foreground bg-secondary px-2 py-1 rounded text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     onClick={handleCaptureAnother}
                     type="button"

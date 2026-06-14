@@ -5,6 +5,8 @@ export const motionDuration = {
   layout: 0.25,
   modalEnter: 0.2,
   modalExit: 0.15,
+  contentEnter: 0.12,
+  contentExit: 0.1,
   searchExit: 0.1,
   itemExit: 0.2,
   completionExit: 0.3,
