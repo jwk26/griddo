@@ -353,7 +353,7 @@ function ScratchModalContent({
                     onBlur={() => setIsFocused(false)}
                     onChange={(event) => setTitle(event.target.value)}
                     onFocus={() => setIsFocused(true)}
-                    placeholder="Jot down a thought"
+                    placeholder="Capture your ideas..."
                     ref={inputRef}
                     type="text"
                     value={title}
