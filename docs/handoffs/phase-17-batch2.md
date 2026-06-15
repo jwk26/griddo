@@ -73,7 +73,7 @@ None.
 
 External-state:
 - `git status --short` — expected: only `docs/reviews/phase-15-skill-audit.md` and `docs/reviews/phase-16-skill-audit.md` untracked; nothing modified or staged
-- `git log --oneline -3` — verify: `07ba41b` docs(phase-17) on top, `5a7ff71` below it, `4dec7d2` below that
+- `git log --oneline -5` — verify latest commits include the Batch 2 handoff/audit docs commits above the Batch 1 source commit (`4dec7d2 feat(phase-17): add inbox routing and triage shell`)
 
 Summary-fidelity:
 - Confirm A9/C9 role-boundary rule survived: Claude must not edit source/test files directly post-Codex without explicit user approval
