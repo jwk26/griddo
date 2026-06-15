@@ -108,7 +108,7 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 75: Command Palette (Cmd+K)
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/quick-capture/command-palette.tsx` (create), `src/stores/quick-capture-store.ts` (update — palette open state), global key handler in `src/app/providers.tsx` or `grid-runtime.tsx`
 - **Recipe:** `docs/recipes/command-palette-visual-recipe.md`
 - **Dependencies:** Task 74

@@ -27,8 +27,8 @@
 | Batch | Tasks | Status |
 |-------|-------|--------|
 | Batch 1 | T73, T76 | Complete (approved + committed) |
-| Batch 2 | T74 | Implemented |
-| Batch 3 | T75 | Pending |
+| Batch 2 | T74 | Complete (approved + committed) |
+| Batch 3 | T75 | Complete (approved + committed) |
 
 ### Deviations
 
@@ -36,6 +36,9 @@
 - **Batch 1 `handleBitSubmit` guard refine.** The prompt simplified the parent-existence guard, weakening the `/grid/[missing-node]` defense. Restored in Step 6 (`if (nodeId !== null && !node)`) + regression test. See ISSUE-16-01 and skill-audit A8/C10.
 - **Batch 2 Codex B test B5 rejected.** Codex B's "always uses Inbox regardless of context" test passed a second `context` argument `{ nodeId, parentId }` to `createScratchBit`. The actual implementation signature is `(title: string)` — 1-arg only. The test would cause a TypeScript compile error. Rejected; the intent (inbox always used) is already covered by Codex A's payload test. One valuable test adopted from Codex B: `inboxNodeId === undefined` state assertion (B's A2), added to `use-inbox.test.tsx`.
 - **Batch 2 Codex B Hook 8 tests superseded.** Codex B produced `indexeddb.scratch-inbox.test.ts` (3 tests: sentinel exempt, non-inbox enforced, sentinel exact). Codex A's `grid-uniqueness.test.ts` covers all 3 plus 3 general-uniqueness tests. Codex B file not written to working tree.
+- **Batch 3 Cmd+K ownership transferred from SearchOverlay to CommandPalette.** `search-overlay.tsx` previously registered a global `Cmd+K` handler. Ownership moved entirely to `CommandPalette`; `search-overlay.tsx` is unchanged otherwise — the existing Search UI and Sidebar Search button behavior are unaffected. Key `2` opens the existing Search via `useSearchStore.getState().open()`.
+- **Batch 3 ScratchModal scope expanded to global.** ScratchModal was mounted only inside `GridRuntime` (grid-route scope). Because CommandPalette key `1` must open Scratch from any route, ScratchModal was extracted into a new `QuickCaptureOverlays` wrapper mounted in `providers.tsx`. `GridRuntime` no longer mounts ScratchModal directly.
+- **Batch 3 `rounded-xl` → `rounded-lg` on command rows.** Codex applied `rounded-xl` to command row buttons; the recipe specifies `rounded-lg`. Fixed at Step 6 spec-compliance check (recipe literal class authority over Codex fill-in).
 
 ---
 
