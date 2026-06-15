@@ -282,6 +282,40 @@ The Batch 2 handoff content was mostly accurate, but it was stored in the wrong 
 
 ---
 
+### Entry 8 — Batch 2 Prompt-Prep Sanity Issues Caught Before Gemini Launch (2026-06-16)
+
+#### What happened
+
+During Batch 2 resume and prompt-prep, the sanity check showed `docs/handoffs/phase-17-batch2.md` as `M` (modified) in `git status --short`. Claude treated this as "likely benign from reading the file" and continued to prompt preparation without running `git diff`. File reads do not modify the working tree — the correct response was to diff immediately. The modification turned out to be a legitimate Codex-authored sanity-check sync (adding the `07ba41b` commit to Last verified commits and updating the git log verification line). It was committed as `docs(phase-17): sync batch 2 handoff sanity check` (`86fcb0f`) before any provider launch.
+
+The Gemini Stage 1 prompt preview also contained three pre-launch defects caught by the user:
+1. Framework version stated as `Next.js 15` — actual version per `package.json` is `16.2.1`.
+2. Stale phase wording: `Theme variants are deferred to Batch 2` — T79 is already in Batch 2; correct framing is `use baseline tokens only`.
+3. An unclosed code fence in the `PanelHeader` section (closing ` ``` ` missing).
+
+All three were caught at the prompt-preview gate (Step 4) before Gemini was launched. No source or provider impact.
+
+#### Finding A11 — Resume sanity mismatch was rationalized instead of diffed
+
+- **Bucket:** workflow enforcement / sanity-check discipline
+- **Severity:** low/medium
+- Any unexpected tracked-file modification at resume must trigger `git diff <file>` before prompt prep or provider launch. File reads do not modify the working tree — inferring a modification is "benign from reading" skips the one verification that would settle the question in seconds.
+- **Rule:** Unexpected `M` in `git status --short` at resume = `git diff` before continuing. No exceptions.
+
+#### Finding A12 — Prompt preview contained stale repo facts and markdown structure defects
+
+- **Bucket:** prompt-prep quality
+- **Severity:** low
+- Provider launch was not approved yet, so no downstream impact. Three defects: framework version drift (`15` vs `16.2.1`), stale batch-scope wording, unclosed code fence.
+- **Candidate only if repeated:** prompt prep should verify framework version from `package.json` before embedding it in a provider prompt, and scan generated prompts for broken code fences / stale phase-scope wording before showing for preview.
+
+#### Positive P10 — Prompt preview gate caught all issues before Gemini launch
+
+- User review at Step 4 caught all three prompt defects and the handoff modification before any provider was launched.
+- All corrections (docs commit + prompt re-draft) completed with zero source or provider impact.
+
+---
+
 *[Subsequent entries to follow per batch]*
 
 ---
@@ -309,6 +343,9 @@ The Batch 2 handoff content was mostly accurate, but it was stored in the wrong 
 | P9 | Implementation compatibility amendments correctly shaped Codex output | — | positive |
 | A9 | Source/test follow-up (CI-1, CI-2) applied directly by Claude instead of via Codex | workflow enforcement / role boundary | medium |
 | A10 | Compaction handoff written to obsolete `.omc/handoffs` instead of canonical `docs/handoffs` | skill-application / artifact path fidelity | low/medium |
+| A11 | Resume sanity `M` file rationalized as benign instead of diffed | workflow enforcement / sanity-check discipline | low/medium |
+| A12 | Prompt preview: Next.js version drift, stale batch wording, unclosed code fence | prompt-prep quality | low |
+| P10 | Prompt preview gate caught all pre-launch defects before Gemini launch | — | positive |
 
 ---
 
