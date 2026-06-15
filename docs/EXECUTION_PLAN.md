@@ -116,7 +116,7 @@ These apply across all phases:
 
 ### Task 80: Breakdown / Scribble
 - **Status:** `[ ]`
-- **Files:** `src/components/triage/breakdown-panel.tsx` (create), `src/hooks/use-scratch-breakdowns.ts` (create); DataStore scratchBreakdowns CRUD (Phase 15)
+- **Files:** `src/components/triage/breakdown-panel.tsx` (create), `src/hooks/use-scratch-breakdowns.ts` (create), `src/lib/db/datastore.ts` (update — add `deleteScratchBreakdown(id: string): Promise<void>`), `src/lib/db/indexeddb.ts` (update — implement single-row delete), `src/lib/db/scratch-breakdowns.test.ts` (create or update — unit test for single-row delete); DataStore scratchBreakdowns CRUD (Phase 15)
 - **Dependencies:** Task 79
 - **Actions:**
   - The selected Scratch is the context. An always-active input row appends a `scratchBreakdowns` row (`content`, `order`, `createdAt`). Each row shows content + `createdAt` + an always-visible delete affordance (delete asks confirmation). Numbering optional. Rows are draggable (drag wiring lands in Phase 18).
