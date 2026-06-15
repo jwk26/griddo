@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import type { ReactNode } from "react";
 import { BitDetailPopup } from "@/components/bit-detail/bit-detail-popup";
 import { SearchOverlay } from "@/components/layout/search-overlay";
+import { QuickCaptureOverlays } from "@/components/quick-capture/quick-capture-overlays";
 import { useSystemNodeSeeding } from "@/hooks/use-system-node-seeding";
 import { useTrashAutoCleanup } from "@/hooks/use-trash-auto-cleanup";
 
@@ -33,6 +34,9 @@ export default function Providers({
       <TrashAutoCleanup />
       <SystemNodeSeeding />
       {children}
+      <Suspense>
+        <QuickCaptureOverlays />
+      </Suspense>
       <Suspense>
         <SearchOverlay />
       </Suspense>

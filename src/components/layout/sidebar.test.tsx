@@ -233,4 +233,12 @@ describe("Sidebar", () => {
     expect(editButton).not.toHaveAttribute("data-motion-animate", expect.stringContaining("borderColor"));
     expect(editButton).toHaveClass("border-primary/60");
   });
+
+  it("keeps the Search button wired to open Search", () => {
+    render(<Sidebar />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Search" }));
+
+    expect(openSearchMock).toHaveBeenCalledOnce();
+  });
 });

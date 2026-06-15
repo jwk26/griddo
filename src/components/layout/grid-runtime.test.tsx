@@ -16,7 +16,6 @@ const runBreadcrumbZoneMigrationMock = vi.hoisted(() => vi.fn());
 const getGridOccupancyMock = vi.hoisted(() => vi.fn());
 const createNodeMock = vi.hoisted(() => vi.fn());
 const createBitMock = vi.hoisted(() => vi.fn());
-const createScratchBitMock = vi.hoisted(() => vi.fn());
 const softDeleteNodeMock = vi.hoisted(() => vi.fn());
 const softDeleteBitMock = vi.hoisted(() => vi.fn());
 const createNodeDialogSubmission = vi.hoisted(() => ({
@@ -60,13 +59,6 @@ vi.mock("@/hooks/use-grid-actions", () => ({
     softDeleteNode: softDeleteNodeMock,
     softDeleteBit: softDeleteBitMock,
     runBreadcrumbZoneMigration: runBreadcrumbZoneMigrationMock,
-  }),
-}));
-
-vi.mock("@/hooks/use-inbox", () => ({
-  useInbox: () => ({
-    inboxNodeId: "inbox-1",
-    createScratchBit: createScratchBitMock,
   }),
 }));
 
@@ -133,30 +125,6 @@ vi.mock("@/components/quick-capture/entry-surface", () => ({
         ) : null}
         <button aria-label="entry-create-bit" onClick={onCreateBit} type="button">
           Bit
-        </button>
-      </div>
-    ) : null,
-}));
-
-vi.mock("@/components/quick-capture/scratch-modal", () => ({
-  ScratchModal: ({
-    inboxNodeId,
-    onSubmit,
-    open,
-  }: {
-    open: boolean;
-    onClose: () => void;
-    onSubmit: (title: string) => Promise<void>;
-    inboxNodeId?: string;
-  }) =>
-    open ? (
-      <div data-inbox-node-id={inboxNodeId} data-testid="scratch-modal">
-        <button
-          aria-label="scratch-submit"
-          onClick={() => void onSubmit("Scratch idea")}
-          type="button"
-        >
-          Submit scratch
         </button>
       </div>
     ) : null,
@@ -351,7 +319,6 @@ describe("GridRuntime", () => {
       runBreadcrumbZoneMigration: runBreadcrumbZoneMigrationMock,
     });
     runBreadcrumbZoneMigrationMock.mockResolvedValue({ relocated: 0 });
-    createScratchBitMock.mockResolvedValue(undefined);
     createNodeDialogSubmission.current = {
       title: "  New node  ",
       icon: "Folder",
@@ -512,7 +479,7 @@ describe("GridRuntime", () => {
     });
   });
 
-  it("opens Scratch capture from the entry surface", async () => {
+  it("moves quick capture state to Scratch from the entry surface", async () => {
     useParamsMock.mockReturnValue({});
     useNodeMock.mockReturnValue(null);
 
@@ -526,16 +493,7 @@ describe("GridRuntime", () => {
     fireEvent.click(screen.getByLabelText("entry-scratch"));
 
     expect(screen.queryByTestId("entry-surface")).not.toBeInTheDocument();
-    expect(screen.getByTestId("scratch-modal")).toHaveAttribute(
-      "data-inbox-node-id",
-      "inbox-1",
-    );
-
-    fireEvent.click(screen.getByLabelText("scratch-submit"));
-
-    await waitFor(() => {
-      expect(createScratchBitMock).toHaveBeenCalledWith("Scratch idea");
-    });
+    expect(useQuickCaptureStore.getState().activeOverlay).toBe("scratch");
   });
 
   it("runs breadcrumb migration once per parent and refreshes the parent id on navigation", async () => {

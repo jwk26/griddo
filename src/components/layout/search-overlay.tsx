@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { CheckSquare, Folder, ListChecks, Search } from "lucide-react";
-import { startTransition, useEffect, useEffectEvent, useState } from "react";
+import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { useSearch } from "@/hooks/use-search";
@@ -27,26 +27,11 @@ export function SearchOverlay() {
   const isOpen = useSearchStore((state) => state.isOpen);
   const query = useSearchStore((state) => state.query);
   const setQuery = useSearchStore((state) => state.setQuery);
-  const open = useSearchStore((state) => state.open);
   const close = useSearchStore((state) => state.close);
   const normalizedQuery = query.trim();
   const { results } = useSearch(normalizedQuery);
   const [selection, setSelection] = useState({ query: "", index: -1 });
   const selectedIndex = selection.query === normalizedQuery && isOpen ? selection.index : -1;
-
-  const handleGlobalKeyDown = useEffectEvent((event: KeyboardEvent) => {
-    if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "k") {
-      return;
-    }
-
-    event.preventDefault();
-    open();
-  });
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleGlobalKeyDown);
-    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, []);
 
   return (
     <AnimatePresence>

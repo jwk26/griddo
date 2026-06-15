@@ -15,7 +15,6 @@ import { EditModeOverlay } from "@/components/grid/edit-mode-overlay";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Sidebar } from "@/components/layout/sidebar";
 import { EntrySurface } from "@/components/quick-capture/entry-surface";
-import { ScratchModal } from "@/components/quick-capture/scratch-modal";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +25,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useDnd } from "@/hooks/use-dnd";
 import { useGridActions } from "@/hooks/use-grid-actions";
-import { useInbox } from "@/hooks/use-inbox";
 import { useNode } from "@/hooks/use-node";
 import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
 import { gridCollisionDetection } from "@/lib/grid-dnd";
@@ -106,7 +104,6 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
   const activeOverlay = useQuickCaptureStore((state) => state.activeOverlay);
   const setActiveOverlay = useQuickCaptureStore((state) => state.setActiveOverlay);
   const closeAll = useQuickCaptureStore((state) => state.closeAll);
-  const { inboxNodeId, createScratchBit } = useInbox();
 
   useEffect(() => {
     const cluster = clusterRef.current;
@@ -379,12 +376,6 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
               setPlacementContext({ mode: "auto" });
               setOpenDialogType("bit");
             }}
-          />
-          <ScratchModal
-            open={activeOverlay === "scratch"}
-            onClose={closeAll}
-            onSubmit={createScratchBit}
-            inboxNodeId={inboxNodeId}
           />
           <main
             className="relative ml-12 flex-1 overflow-hidden"
