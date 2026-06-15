@@ -34,7 +34,7 @@ Execution plan mode: scaled
 | 13 | ✅ done | Weekly Redesign | [archive](execution-plan/archive/phase-13.md) |
 | 14 | ✅ done | Monthly Redesign | [archive](execution-plan/archive/phase-14.md) |
 | 15 | ✅ done | Lifecycle Schema Foundation | [archive](execution-plan/archive/phase-15.md) |
-| 16 | 🔲 active | Quick Capture — `+` Entry Surface & Command Palette | — |
+| 16 | ✅ done | Quick Capture — `+` Entry Surface & Command Palette | [archive](execution-plan/archive/phase-16.md) |
 | 17 | 🔲 active | Inbox / Triage Workspace — Routing, Layout, Scratch & Breakdown | — |
 | 18 | 🔲 active | Inbox / Triage — Staging & Placement DnD (compact-token, partial Grid DnD) | — |
 | 19 | 🔲 active | Archive View & Direct Archive | — |
@@ -68,68 +68,6 @@ These apply across all phases:
 
 ---
 
-## Phase 16: Quick Capture — `+` Entry Surface & Command Palette
-
-> **Purpose:** The fast capture path that feeds Scratch into the Inbox, plus the Cmd+K Command Palette. Per SPEC.md (Quick Capture `+` Entry Surface, Command Palette) and the two visual recipes.
-> **Branch:** `phase-16/quick-capture`
-> **Canonical refs:** SPEC.md (Quick Capture `+` Entry Surface, Command Palette, Routes note); DESIGN_TOKENS.md § Surface Recipes
-> **Explicit policies:**
-> - Create-modal redesign is OUT of scope: Node/Bit creation opens the EXISTING `create-node-dialog.tsx` / `create-bit-dialog.tsx`.
-> - Command Palette key `2` opens the EXISTING Search overlay unchanged (no Search redesign).
-> - New component domain `src/components/quick-capture/` (follows SPEC File Organization "shared components by domain").
-
-### Task 73: `+` entry surface (anchored popover)
-- **Status:** `[ ]`
-- **Files:** `src/components/quick-capture/entry-surface.tsx` (create), `src/components/layout/sidebar.tsx` (update — wire `+`), `src/stores/quick-capture-store.ts` (create — open state), `src/components/layout/add-flow-context.tsx` (update if needed)
-- **Recipe:** `docs/recipes/quick-capture-entry-surface-visual-recipe.md`
-- **Dependencies:** Phase 15 complete
-- **Actions:**
-  - Anchored slide/fade popover from the sidebar `+` (left-anchored per recipe; not a centered modal). Two groups: **Ideas** (Scratch, primary, primary-tinted icon tile) and **Create** (Node, Bit). Optional surface-level `Cmd+K` hint; **no per-row ⌘K badge** on the Scratch row (per DECISION/recipe).
-  - Context rules (SPEC): L0/global `Bit` opens a parent selector (no direct L0 Bit); inside a Node, `Bit` uses the current Node; Level 3 is Bit-only.
-  - Use exact classes from the recipe; Batch 1 baseline tokens only.
-- **Acceptance:**
-  - Clicking the sidebar `+` opens an anchored popover with Ideas/Create groups; Scratch is visually primary; the Scratch row has no ⌘K badge.
-  - Esc / outside click closes it.
-  - `pnpm build` passes.
-
-### Task 74: Scratch capture modal
-- **Status:** `[ ]`
-- **Files:** `src/components/quick-capture/scratch-modal.tsx` (create), `src/hooks/use-inbox.ts` (create), reuse DataStore `createBit`
-- **Recipe:** `docs/recipes/quick-capture-entry-surface-visual-recipe.md` (Scratch Modal)
-- **Dependencies:** Task 73, Phase 15
-- **Actions:**
-  - Clicking Scratch (or palette key `1`) opens a centered one-line modal ("Capture your ideas..."). On submit, create a Bit with `parentId` = Inbox Node id, `icon` "sparkles", `x = 0, y = 0` sentinel (uniqueness-exempt per Hook 8), `title` = input. Show a lightweight confirmation + a path to open the Inbox.
-- **Acceptance:**
-  - Submitting creates a Scratch Bit parented to the Inbox Node with `sparkles`/`(0,0)` (verify via `debug-indexeddb`), regardless of the current grid location; no parent/cell selection is required.
-  - `pnpm build` passes.
-
-### Task 75: Command Palette (Cmd+K)
-- **Status:** `[ ]`
-- **Files:** `src/components/quick-capture/command-palette.tsx` (create), `src/stores/quick-capture-store.ts` (update — palette open state), global key handler in `src/app/providers.tsx` or `grid-runtime.tsx`
-- **Recipe:** `docs/recipes/command-palette-visual-recipe.md`
-- **Dependencies:** Task 74
-- **Actions:**
-  - `Cmd+K` opens the palette (top-anchored `max-w-xl` overlay, blur backdrop, prompt input row, command rows with primary-fill highlight, per recipe). **Command set is fixed:** key `1` = Scratch capture (opens the Scratch modal), key `2` = open the EXISTING Search overlay (reuse `search-store` / `search-overlay.tsx`; no redesign). The prompt input is visual-shell only — not an app-wide search/filter.
-- **Acceptance:**
-  - `Cmd+K` opens the palette; `1` triggers Scratch capture; `2` opens the existing Search overlay unchanged.
-  - `pnpm build` passes.
-
-### Task 76: Create Node/Bit from `+` surface (existing dialogs)
-- **Status:** `[ ]`
-- **Files:** `src/components/quick-capture/entry-surface.tsx` (update — wire Create rows); reuse `src/components/grid/create-node-dialog.tsx`, `src/components/grid/create-bit-dialog.tsx`
-- **Dependencies:** Task 73
-- **Actions:**
-  - The Node/Bit rows open the EXISTING create dialogs (NOT the prototype's redesigned modals). Apply the context rules (L0 `Bit` → parent selector first).
-- **Acceptance:**
-  - From the `+` surface, Node opens the existing `create-node-dialog`; Bit opens the existing `create-bit-dialog` (with a parent selector at L0). No new/redesigned create modal is introduced.
-  - `pnpm build` passes.
-
-#### Phase 16 Notes
-
-> Visual realization is governed entirely by the two recipe files; Batch 1 uses existing GridDO baseline tokens (theme variants are Batch 2).
-> Create-modal redesign and Search redesign are explicitly out of scope.
-
----
 
 ## Phase 17: Inbox / Triage Workspace — Routing, Layout, Scratch & Breakdown
 

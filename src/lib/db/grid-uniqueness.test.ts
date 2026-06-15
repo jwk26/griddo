@@ -69,4 +69,54 @@ describe("Hook 8 — grid cell uniqueness", () => {
     expect(bit.x).toBe(0);
     expect(bit.y).toBe(0);
   });
+
+  it("allows multiple Inbox Scratch Bits at the 0,0 sentinel cell", async () => {
+    const inboxId = crypto.randomUUID();
+    const existingId = crypto.randomUUID();
+
+    const store = makeStore(
+      [makeNode(inboxId, { systemRole: "inbox" })],
+      [makeBit(existingId, inboxId, { x: 0, y: 0 })],
+    );
+
+    const bit = await store.createBit({
+      title: "Scratch",
+      description: "",
+      icon: "sparkles",
+      parentId: inboxId,
+      x: 0,
+      y: 0,
+      deadline: null,
+      deadlineAllDay: false,
+      priority: null,
+    });
+
+    expect(bit.parentId).toBe(inboxId);
+    expect(bit.x).toBe(0);
+    expect(bit.y).toBe(0);
+  });
+
+  it("keeps non-sentinel Inbox cells uniqueness-protected", async () => {
+    const inboxId = crypto.randomUUID();
+    const existingId = crypto.randomUUID();
+
+    const store = makeStore(
+      [makeNode(inboxId, { systemRole: "inbox" })],
+      [makeBit(existingId, inboxId, { x: 1, y: 0 })],
+    );
+
+    await expect(
+      store.createBit({
+        title: "Scratch",
+        description: "",
+        icon: "sparkles",
+        parentId: inboxId,
+        x: 1,
+        y: 0,
+        deadline: null,
+        deadlineAllDay: false,
+        priority: null,
+      }),
+    ).rejects.toThrow("already occupied");
+  });
 });

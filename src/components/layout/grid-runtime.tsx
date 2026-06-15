@@ -14,6 +14,7 @@ import {
 import { EditModeOverlay } from "@/components/grid/edit-mode-overlay";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Sidebar } from "@/components/layout/sidebar";
+import { EntrySurface } from "@/components/quick-capture/entry-surface";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,7 @@ import { hexToHsl } from "@/lib/utils/color";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import { isDeadlineAfter } from "@/lib/utils/deadline";
 import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
+import { useQuickCaptureStore } from "@/stores/quick-capture-store";
 import { AddFlowProvider } from "./add-flow-context";
 
 type PlacementContext =
@@ -99,6 +101,9 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
   const migrationSessionRef = useRef<Set<string>>(new Set());
   const setBlockedCells = useBreadcrumbZoneStore((state) => state.setBlockedCells);
   const blockedCells = useBreadcrumbZoneStore((state) => state.blockedCells);
+  const activeOverlay = useQuickCaptureStore((state) => state.activeOverlay);
+  const setActiveOverlay = useQuickCaptureStore((state) => state.setActiveOverlay);
+  const closeAll = useQuickCaptureStore((state) => state.closeAll);
 
   useEffect(() => {
     const cluster = clusterRef.current;
@@ -245,6 +250,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
     deadlineAllDay,
     priority,
     description,
+    parentId: dialogParentId,
   }: {
     title: string;
     icon: string;
@@ -252,20 +258,35 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
     deadlineAllDay: boolean;
     priority: "high" | "mid" | "low" | null;
     description: string;
+    parentId?: string | null;
   }) {
-    if (!nodeId || !node) {
+    if (nodeId !== null && !node) {
       setError("Unable to find parent node.");
+      return;
+    }
+
+    const effectiveParentId = nodeId ?? dialogParentId ?? null;
+
+    if (!effectiveParentId) {
+      setError("A parent node is required to create a bit.");
       return;
     }
 
     setError(undefined);
 
     try {
-      const occupied = await getGridOccupancy(nodeId);
+      const occupied = await getGridOccupancy(effectiveParentId);
       const originX =
         placementContext.mode === "auto" ? GRID_COLS - 3 : placementContext.x;
       const originY = placementContext.mode === "auto" ? 2 : placementContext.y;
-      const cell = findNearestEmptyCell(occupied, originX, originY, blockedCells);
+      const relevantBlockedCells =
+        nodeId === null ? new Set<string>() : blockedCells;
+      const cell = findNearestEmptyCell(
+        occupied,
+        originX,
+        originY,
+        relevantBlockedCells,
+      );
 
       if (cell === null) {
         setOpenDialogType(null);
@@ -280,7 +301,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
         deadline,
         deadlineAllDay,
         priority,
-        parentId: nodeId,
+        parentId: effectiveParentId,
         x: cell.x,
         y: cell.y,
       });
@@ -331,7 +352,31 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
         autoScroll={false}
       >
         <div className="flex h-screen overflow-hidden bg-background">
-          <Sidebar onAddClick={() => openAdd({ mode: "auto" })} dragActiveItem={activeItem} />
+          <Sidebar
+            onAddClick={() =>
+              setActiveOverlay(activeOverlay === "entry" ? null : "entry")
+            }
+            isAddActive={activeOverlay === "entry"}
+            dragActiveItem={activeItem}
+          />
+          <EntrySurface
+            open={activeOverlay === "entry"}
+            canCreateNode={!isLeafLevel}
+            onClose={closeAll}
+            onScratch={() => setActiveOverlay("scratch")}
+            onCreateNode={() => {
+              closeAll();
+              setError(undefined);
+              setPlacementContext({ mode: "auto" });
+              setOpenDialogType("node");
+            }}
+            onCreateBit={() => {
+              closeAll();
+              setError(undefined);
+              setPlacementContext({ mode: "auto" });
+              setOpenDialogType("bit");
+            }}
+          />
           <main
             className="relative ml-12 flex-1 overflow-hidden"
             data-level={displayLevel}
@@ -385,6 +430,8 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
               onOpenChange={(open) => handleDialogOpenChange(open, "bit")}
               onSubmit={handleBitSubmit}
               open={openDialogType === "bit"}
+              requireParent={nodeId === null}
+              defaultParentId={nodeId}
             />
             <DeleteConfirmDialog
               onCancel={() => setPendingDelete(null)}

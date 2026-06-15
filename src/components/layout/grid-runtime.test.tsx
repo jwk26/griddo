@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GRID_COLS } from "@/lib/constants";
 import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
+import { useQuickCaptureStore } from "@/stores/quick-capture-store";
 import type { Bit, Node } from "@/types";
 import { useAddFlow } from "./add-flow-context";
 import { GridRuntime, useDeleteFlow } from "./grid-runtime";
@@ -24,6 +25,17 @@ const createNodeDialogSubmission = vi.hoisted(() => ({
     colorHex: "#ff0000",
     deadline: null as number | null,
     deadlineAllDay: false,
+  },
+}));
+const createBitDialogSubmission = vi.hoisted(() => ({
+  current: {
+    title: "  New bit  ",
+    icon: "Box",
+    deadline: null as number | null,
+    deadlineAllDay: false,
+    priority: "high" as Bit["priority"],
+    description: "Bit description",
+    parentId: undefined as string | null | undefined,
   },
 }));
 
@@ -59,13 +71,63 @@ vi.mock("@/lib/utils/bfs", () => ({
 }));
 
 vi.mock("@/components/layout/sidebar", () => ({
-  Sidebar: ({ onAddClick }: { onAddClick?: () => void }) => (
+  Sidebar: ({
+    isAddActive,
+    onAddClick,
+  }: {
+    isAddActive?: boolean;
+    onAddClick?: () => void;
+  }) => (
     <div>
-      <button aria-label="sidebar-add" onClick={onAddClick} type="button">
+      <button
+        aria-label="sidebar-add"
+        data-active={isAddActive ? "true" : "false"}
+        onClick={onAddClick}
+        type="button"
+      >
         Add
       </button>
     </div>
   ),
+}));
+
+vi.mock("@/components/quick-capture/entry-surface", () => ({
+  EntrySurface: ({
+    canCreateNode,
+    onClose,
+    onCreateBit,
+    onCreateNode,
+    onScratch,
+    open,
+  }: {
+    open: boolean;
+    canCreateNode: boolean;
+    onClose: () => void;
+    onScratch: () => void;
+    onCreateNode: () => void;
+    onCreateBit: () => void;
+  }) =>
+    open ? (
+      <div
+        data-can-create-node={canCreateNode ? "true" : "false"}
+        data-testid="entry-surface"
+      >
+        <button aria-label="entry-close" onClick={onClose} type="button">
+          Close
+        </button>
+        <button aria-label="entry-scratch" onClick={onScratch} type="button">
+          Scratch
+        </button>
+        {canCreateNode ? (
+          <button aria-label="entry-create-node" onClick={onCreateNode} type="button">
+            Node
+          </button>
+        ) : null}
+        <button aria-label="entry-create-bit" onClick={onCreateBit} type="button">
+          Bit
+        </button>
+      </div>
+    ) : null,
 }));
 
 vi.mock("@/components/layout/breadcrumbs", async () => {
@@ -138,9 +200,13 @@ vi.mock("@/components/grid/create-node-dialog", () => ({
 
 vi.mock("@/components/grid/create-bit-dialog", () => ({
   CreateBitDialog: ({
+    defaultParentId,
     open,
     onSubmit,
+    requireParent,
+    error,
   }: {
+    defaultParentId?: string | null;
     open: boolean;
     onSubmit: (values: {
       title: string;
@@ -149,21 +215,18 @@ vi.mock("@/components/grid/create-bit-dialog", () => ({
       deadlineAllDay: boolean;
       priority: Bit["priority"];
       description: string;
+      parentId?: string | null;
     }) => Promise<void>;
+    requireParent?: boolean;
+    error?: string;
   }) =>
     open ? (
       <button
         aria-label="submit-bit"
-        onClick={() =>
-          void onSubmit({
-            title: "  New bit  ",
-            icon: "Box",
-            deadline: null,
-            deadlineAllDay: false,
-            priority: "high",
-            description: "Bit description",
-          })
-        }
+        data-default-parent-id={defaultParentId ?? ""}
+        data-error={error ?? ""}
+        data-require-parent={requireParent ? "true" : "false"}
+        onClick={() => void onSubmit(createBitDialogSubmission.current)}
         type="button"
       >
         Submit bit
@@ -251,6 +314,7 @@ function createRect(left: number, top: number, width: number, height: number): D
 describe("GridRuntime", () => {
   beforeEach(() => {
     useBreadcrumbZoneStore.setState({ blockedCells: new Set() });
+    useQuickCaptureStore.setState({ activeOverlay: null });
     getDataStoreMock.mockResolvedValue({
       runBreadcrumbZoneMigration: runBreadcrumbZoneMigrationMock,
     });
@@ -261,6 +325,15 @@ describe("GridRuntime", () => {
       colorHex: "#ff0000",
       deadline: null,
       deadlineAllDay: false,
+    };
+    createBitDialogSubmission.current = {
+      title: "  New bit  ",
+      icon: "Box",
+      deadline: null,
+      deadlineAllDay: false,
+      priority: "high",
+      description: "Bit description",
+      parentId: undefined,
     };
     vi.stubGlobal(
       "ResizeObserver",
@@ -364,7 +437,14 @@ describe("GridRuntime", () => {
       "overflow-x-hidden",
     );
 
+    expect(screen.getByLabelText("sidebar-add")).toHaveAttribute("data-active", "false");
     fireEvent.click(screen.getByLabelText("sidebar-add"));
+    expect(screen.getByLabelText("sidebar-add")).toHaveAttribute("data-active", "true");
+    expect(screen.getByTestId("entry-surface")).toHaveAttribute(
+      "data-can-create-node",
+      "true",
+    );
+    fireEvent.click(screen.getByLabelText("entry-create-node"));
     fireEvent.click(screen.getByLabelText("submit-node"));
 
     await waitFor(() => {
@@ -397,6 +477,23 @@ describe("GridRuntime", () => {
     await waitFor(() => {
       expect(softDeleteBitMock).toHaveBeenCalledWith("bit-1");
     });
+  });
+
+  it("moves quick capture state to Scratch from the entry surface", async () => {
+    useParamsMock.mockReturnValue({});
+    useNodeMock.mockReturnValue(null);
+
+    render(
+      <GridRuntime>
+        <RuntimeProbe />
+      </GridRuntime>,
+    );
+
+    fireEvent.click(screen.getByLabelText("sidebar-add"));
+    fireEvent.click(screen.getByLabelText("entry-scratch"));
+
+    expect(screen.queryByTestId("entry-surface")).not.toBeInTheDocument();
+    expect(useQuickCaptureStore.getState().activeOverlay).toBe("scratch");
   });
 
   it("runs breadcrumb migration once per parent and refreshes the parent id on navigation", async () => {
@@ -610,6 +707,12 @@ describe("GridRuntime", () => {
     expect(screen.getByTestId("display-level")).toHaveAttribute("data-level", "3");
 
     fireEvent.click(screen.getByLabelText("sidebar-add"));
+    expect(screen.getByTestId("entry-surface")).toHaveAttribute(
+      "data-can-create-node",
+      "false",
+    );
+    expect(screen.queryByLabelText("entry-create-node")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText("entry-create-bit"));
     fireEvent.click(screen.getByLabelText("submit-bit"));
 
     await waitFor(() => {
@@ -631,6 +734,114 @@ describe("GridRuntime", () => {
       2,
       new Set(["0,0"]),
     );
+  });
+
+  it("creates a root-level bit using the dialog parent selector", async () => {
+    const { findNearestEmptyCell } = await import("@/lib/utils/bfs");
+
+    useParamsMock.mockReturnValue({});
+    useNodeMock.mockReturnValue(null);
+    getGridOccupancyMock.mockResolvedValue(new Set(["2,2"]));
+    createBitDialogSubmission.current = {
+      title: "  Root bit  ",
+      icon: "Box",
+      deadline: null,
+      deadlineAllDay: false,
+      priority: "mid",
+      description: "Root bit description",
+      parentId: "selected-parent",
+    };
+    createBitMock.mockResolvedValue({
+      id: "created-root-bit",
+      title: "Root bit",
+      description: "Root bit description",
+      icon: "Box",
+      deadline: null,
+      deadlineAllDay: false,
+      priority: "mid",
+      status: "active",
+      mtime: 1,
+      createdAt: 1,
+      parentId: "selected-parent",
+      x: 8,
+      y: 2,
+      deletedAt: null,
+    });
+    vi.mocked(findNearestEmptyCell).mockReturnValue({ x: 8, y: 2 });
+
+    render(
+      <GridRuntime>
+        <RuntimeProbe />
+      </GridRuntime>,
+    );
+
+    fireEvent.click(screen.getByLabelText("sidebar-add"));
+    fireEvent.click(screen.getByLabelText("entry-create-bit"));
+
+    expect(screen.getByLabelText("submit-bit")).toHaveAttribute(
+      "data-require-parent",
+      "true",
+    );
+    expect(screen.getByLabelText("submit-bit")).toHaveAttribute(
+      "data-default-parent-id",
+      "",
+    );
+
+    fireEvent.click(screen.getByLabelText("submit-bit"));
+
+    await waitFor(() => {
+      expect(createBitMock).toHaveBeenCalledWith({
+        title: "Root bit",
+        description: "Root bit description",
+        icon: "Box",
+        deadline: null,
+        deadlineAllDay: false,
+        priority: "mid",
+        parentId: "selected-parent",
+        x: 8,
+        y: 2,
+      });
+    });
+    expect(getGridOccupancyMock).toHaveBeenCalledWith("selected-parent");
+    expect(vi.mocked(findNearestEmptyCell)).toHaveBeenCalledWith(
+      new Set(["2,2"]),
+      GRID_COLS - 3,
+      2,
+      new Set<string>(),
+    );
+  });
+
+  it("blocks bit creation when the current grid node is missing", async () => {
+    useParamsMock.mockReturnValue({ nodeId: "missing-node" });
+    useNodeMock.mockReturnValue(null);
+    createBitDialogSubmission.current = {
+      title: "Orphan bit",
+      icon: "Box",
+      deadline: null,
+      deadlineAllDay: false,
+      priority: "low",
+      description: "Should not be created",
+      parentId: null,
+    };
+
+    render(
+      <GridRuntime>
+        <RuntimeProbe />
+      </GridRuntime>,
+    );
+
+    fireEvent.click(screen.getByLabelText("sidebar-add"));
+    fireEvent.click(screen.getByLabelText("entry-create-bit"));
+    fireEvent.click(screen.getByLabelText("submit-bit"));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("submit-bit")).toHaveAttribute(
+        "data-error",
+        "Unable to find parent node.",
+      );
+    });
+    expect(createBitMock).not.toHaveBeenCalled();
+    expect(getGridOccupancyMock).not.toHaveBeenCalled();
   });
 
   it("clips the grid scroll wrapper while a drag is active", () => {

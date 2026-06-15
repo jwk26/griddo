@@ -1,4 +1,4 @@
-import Dexie, { type Table } from "dexie";
+import Dexie, { type DexieOptions, type Table } from "dexie";
 import { GRID_COLS, GRID_ROWS, TRASH_RETENTION_DAYS } from "@/lib/constants";
 import type { DataStore } from "@/lib/db/datastore";
 import {
@@ -105,8 +105,8 @@ export class GridDODatabase extends Dexie {
   scratchBreakdowns!: Table<ScratchBreakdown, string>;
   settings!: Table<{ key: string; value: unknown }, string>;
 
-  constructor() {
-    super("GridDO");
+  constructor(options?: DexieOptions) {
+    super("GridDO", options);
 
     this.version(1).stores({
       nodes: "id,parentId,deletedAt,[parentId+deletedAt],level",
@@ -1430,6 +1430,14 @@ export class IndexedDBDataStore implements DataStore {
       excludedBitIds?: Set<string>;
     },
   ): Promise<void> {
+    // Hook 8: Inbox Scratch Bits use the (0,0) sentinel and are uniqueness-exempt.
+    if (x === 0 && y === 0 && parentId !== null) {
+      const parentNode = await this.database.nodes.get(parentId);
+      if (parentNode?.systemRole === "inbox") {
+        return;
+      }
+    }
+
     const [nodes, bits] = await Promise.all([
       this.database.nodes.toArray(),
       this.database.bits.toArray(),

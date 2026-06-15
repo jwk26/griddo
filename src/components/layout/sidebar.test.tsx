@@ -182,6 +182,15 @@ describe("Sidebar", () => {
     expect(screen.queryByRole("button", { name: "Bit" })).not.toBeInTheDocument();
   });
 
+  it("marks the grid add button active when requested", () => {
+    render(<Sidebar isAddActive={true} onAddClick={vi.fn()} />);
+
+    expect(screen.getByRole("button", { name: "Add item" })).toHaveClass(
+      "bg-accent",
+      "text-foreground",
+    );
+  });
+
   it("closes chooser without error when Node clicked and onNodeCreate is absent", () => {
     usePathnameMock.mockReturnValue("/calendar/weekly");
 
@@ -223,5 +232,13 @@ describe("Sidebar", () => {
     expect(editButton).toHaveAttribute("data-motion-animate", expect.stringContaining('"boxShadow":"0 0 20px hsl(var(--primary) / 0.45)"'));
     expect(editButton).not.toHaveAttribute("data-motion-animate", expect.stringContaining("borderColor"));
     expect(editButton).toHaveClass("border-primary/60");
+  });
+
+  it("keeps the Search button wired to open Search", () => {
+    render(<Sidebar />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Search" }));
+
+    expect(openSearchMock).toHaveBeenCalledOnce();
   });
 });

@@ -40,6 +40,7 @@
 - **Branch:** `phase-N/<desc>` → `main` via PR
 - **Gates:** Branch verification + build + test enforced by skills. See skill definitions.
 - **Redesign:** Reference-inspired phases use `/reference-redesign`. See WORKFLOW.md.
+- **Compaction:** When context fills and you compact manually (`/compact`), read `docs/compaction-guide.md` first and build the compact prompt from its template. Auto-compact does not use this guide, so compact manually (~60-70% context) to keep control of what is preserved.
 - **Issue tracking:** Execution-time issues, fixes, and out-of-plan changes must be recorded in `docs/issues/Issues_Phase_N.md` during execution — not deferred to phase close. Unresolved issues block phase close. Issues may not be marked Closed without explicit user decision. See `docs/WORKFLOW.md` §Phase Execution Record for statuses, categories, and trigger examples.
 - **Task completion gate:** During an active phase, do not mark tasks or phases `[x]` in `docs/EXECUTION_PLAN.md` based only on implementation or internal verification. Update completion status only after checkpoint review and explicit user approval. See `docs/WORKFLOW.md` §Task Completion Gate.
 
