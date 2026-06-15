@@ -185,7 +185,7 @@ The user approved *handoff generation*, not next-session provider launch. The ri
    - GridRuntime: conditional exactly inside `<div ref={gridContainerRef}>` — `{children}` only swapped. No early return. Sidebar, EntrySurface, AddFlowProvider, DndContext, Breadcrumbs, dialogs all remain mounted.
    - `systemNodes` inside `use-inbox.ts` — no new hook file. `liveQuery` from `"dexie"` + `useEffect/useState`. NOT `useLiveQuery`.
 5. Verification: typecheck ✅ | 309 tests pass (21 new, up from 288) ✅ | build ✅ | lint ✅
-6b. Two follow-up fixes applied directly by Claude post-Codex (non-UI-visual, ≤ 2 files, ≤ 10 lines each, unambiguous spec):
+6b. Two follow-up fixes applied directly by Claude post-Codex (non-UI-visual, ≤ 2 files, ≤ 10 lines each, unambiguous spec) — **see A9; this is a workflow boundary violation, not a normal path**:
    - `grid-runtime.tsx`: extracted `isInboxRoute` boolean; Breadcrumbs overlay conditionally hidden on inbox route (shell stays mounted)
    - `sidebar.tsx`: added `isSystemNodeRoute` derived from `systemNodes`; Home button shown on system node routes same as calendar routes
 6. Pre-decided Light tier regression reviewer (Step 7b) — satisfied by independently-authored tests: explicit regression coverage for non-inbox routes (Search, Calendar, Trash), `archive_view` non-dispatch, and shell mount preservation. All 307 pass.
@@ -214,6 +214,39 @@ One minor code quality observation (not a skill candidate): `DropdownMenuTrigger
 
 ---
 
+### Entry 6 — Batch 1 Follow-up Fixes Applied Directly by Claude (2026-06-16)
+
+#### What happened
+
+After Codex completed the Batch 1 implementation and the pre-checkpoint verification suite passed, two product-side issues were identified during browser smoke pass:
+
+1. Breadcrumbs component overlaid the TriageWorkspace header on the Inbox route (CI-1 in Issues_Phase_17.md).
+2. No Home escape hatch was available on Inbox/Archive system node routes (CI-2).
+
+A scoped Codex follow-up prompt was available. Both fixes were instead applied directly by Claude — `grid-runtime.tsx` (Breadcrumbs conditional hide on `node?.systemRole === "inbox"`) and `sidebar.tsx` (Home button shown on `isCalendarRoute || isSystemNodeRoute`). Both fixes were small (≤ 2 files, ≤ 10 lines each), unambiguous-spec, browser-verified, and resolved in commit `4dec7d2`.
+
+#### Finding A9 — Source/test follow-up applied directly by Claude instead of via Codex
+
+- **Bucket:** workflow enforcement / role boundary
+- **Severity:** medium
+- The established workflow principle is: Claude orchestrates and reviews; Codex writes source/test files. A scoped Codex follow-up prompt was available for CI-1 and CI-2. Both fixes were instead authored directly by Claude.
+- The fixes were small, correctly verified, user-approved at checkpoint, and committed. No product rollback is needed.
+- The violation is role-boundary: direct Claude source edits bypass the prompt-construction / provider-verification loop that the workflow enforces for exactly this class of change.
+- **Candidate C9:** Post-checkpoint source/test follow-up fixes — however small and clear — should be routed through Codex by default. Exception: user explicitly approves direct Claude edit.
+
+#### Candidate C9 — Post-checkpoint source/test fixes must route through Codex by default
+
+- Default: when a follow-up fix is identified post-Codex (pre-commit or pre-checkpoint), draft a scoped Codex prompt and show for approval. Do not edit source/test files directly.
+- Exception: user explicitly approves direct Claude edit ("fix it directly", "you do it", or equivalent in context).
+- Rationale: preserves the orchestrate/review ↔ implement-via-provider role split. "Small and clear" does not override the boundary.
+- Vehicle: execute-task SKILL.md — Step 6 / post-implementation follow-up handling guidance.
+
+#### Positives
+
+*(None specific to Entry 6 — the fixes were correct, the routing was not.)*
+
+---
+
 *[Subsequent entries to follow per batch]*
 
 ---
@@ -239,10 +272,13 @@ One minor code quality observation (not a skill candidate): `DropdownMenuTrigger
 | P7 | Revised Gemini prompt (explicit artifact-only constraints) prevented A6 recurrence | — | positive |
 | P8 | Codex correctly followed all handoff settled decisions | — | positive |
 | P9 | Implementation compatibility amendments correctly shaped Codex output | — | positive |
+| A9 | Source/test follow-up (CI-1, CI-2) applied directly by Claude instead of via Codex | workflow enforcement / role boundary | medium |
 
 ---
 
 ## Candidate Skill Updates
+
+- **C9 — Post-checkpoint source/test fixes must route through Codex by default.** After Codex implementation, follow-up fixes (however small) must be drafted as scoped Codex prompts and shown for approval — not edited directly by Claude. Exception: explicit user approval of direct edit. Vehicle: execute-task SKILL.md Step 6 / follow-up handling guidance. (From A9.)
 
 - **C8 — Handoff generation must preserve approval boundaries.** A handoff must not turn "ready_for_approval" into "approved_for_launch" without explicit user approval of that exact next-session action; recovery contexts default conservative. Vehicle: `handoff_status` + `next_action_approval` fields on handoffs. **Applied 2026-06-16** to compaction-advisor (SKILL.md + handoff-template) + execute-task defense line. (A5 staleness is covered by `handoff_status`; A8 is the distinct approval-boundary concern.)
 
