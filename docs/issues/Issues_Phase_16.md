@@ -4,11 +4,10 @@
 
 ### ISSUE-15-01 (carried) — Dexie v3 migration: no automated runtime-verification path
 
-- **Status:** Open (carried from Phase 15)
+- **Status:** Resolved (Phase 16, committed `64adf72`)
 - **Category:** test-coverage gap / acceptance-criteria accuracy
-- **Detail:** The Dexie `version(3).upgrade()` backfill path (T69) has no automated test: the `FakeTable` in-memory harness cannot exercise a real Dexie upgrade transaction. Phase 15 deferred this explicitly to Phase 16 with the resolution: add a `fake-indexeddb`-based real-Dexie migration test. This is a **separate concern** from T74 (Scratch modal behavior) — they happen to share the `fake-indexeddb` tool, but their verification targets are unrelated.
-- **Resolution target:** A standalone migration test (`src/lib/db/migration.test.ts` or similar) that boots a real Dexie instance against `fake-indexeddb`, seeds v2-schema rows, runs the upgrade, and asserts the backfill results. Must not be collapsed into T74's Scratch Bit creation test.
-- **Disposition:** Carried per Phase 15 explicit deferral. Resolve before Phase 16 close.
+- **Detail:** The GridDO IndexedDB schema version 3 `upgrade()` backfill path had no automated runtime coverage — the `FakeTable` in-memory harness is a plain Map and cannot exercise a real Dexie schema transition.
+- **Resolution:** `fake-indexeddb` (v6.2.5) added as devDependency. `GridDODatabase` constructor accepts optional `DexieOptions` (testability seam; production no-arg behavior unchanged). New test file `src/lib/db/indexeddb.schema-v3-upgrade.test.ts` uses per-test `IDBFactory` injection to open a real v2 seeder DB, seed v2-shaped rows (physically missing the new fields), then open `GridDODatabase` (v3) against the same backing store — triggering the real 2→3 transition. 4 tests: node backfill, bit backfill, no-overwrite guard, `scratchBreakdowns` store creation. All 288 tests pass.
 
 ---
 
