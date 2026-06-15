@@ -1,4 +1,4 @@
-import Dexie, { type Table } from "dexie";
+import Dexie, { type DexieOptions, type Table } from "dexie";
 import { GRID_COLS, GRID_ROWS, TRASH_RETENTION_DAYS } from "@/lib/constants";
 import type { DataStore } from "@/lib/db/datastore";
 import {
@@ -105,8 +105,8 @@ export class GridDODatabase extends Dexie {
   scratchBreakdowns!: Table<ScratchBreakdown, string>;
   settings!: Table<{ key: string; value: unknown }, string>;
 
-  constructor() {
-    super("GridDO");
+  constructor(options?: DexieOptions) {
+    super("GridDO", options);
 
     this.version(1).stores({
       nodes: "id,parentId,deletedAt,[parentId+deletedAt],level",
