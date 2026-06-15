@@ -80,7 +80,7 @@ These apply across all phases:
 > - New component domain `src/components/triage/`.
 
 ### Task 77: System Node routing + Inbox badge
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/layout/grid-runtime.tsx` (update — dispatch on `systemRole`), `src/components/layout/sidebar.tsx` (update — always show system nodes + badge), `src/hooks/use-inbox.ts` (update — Scratch count), `src/lib/constants.ts` (update — badge thresholds)
 - **Dependencies:** Phase 15 complete
 - **Actions:**
@@ -94,7 +94,7 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 78: Triage layout shell (four areas)
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/triage/triage-workspace.tsx` (create)
 - **Dependencies:** Task 77
 - **Actions:**

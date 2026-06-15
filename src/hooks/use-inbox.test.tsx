@@ -1,13 +1,18 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DataStore } from "@/lib/db/datastore";
-import type { Node } from "@/lib/db/schema";
+import type { Bit, Node } from "@/lib/db/schema";
 import { useInbox } from "./use-inbox";
 
 const getDataStoreMock = vi.hoisted(() => vi.fn());
+const liveQueryMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/db/datastore", () => ({
   getDataStore: getDataStoreMock,
+}));
+
+vi.mock("dexie", () => ({
+  liveQuery: liveQueryMock,
 }));
 
 function createNode(overrides: Partial<Node> = {}): Node {
@@ -31,9 +36,38 @@ function createNode(overrides: Partial<Node> = {}): Node {
   };
 }
 
+function createBit(overrides: Partial<Bit> = {}): Bit {
+  return {
+    id: overrides.id ?? crypto.randomUUID(),
+    title: overrides.title ?? "Bit",
+    description: overrides.description ?? "",
+    icon: overrides.icon ?? "sparkles",
+    deadline: overrides.deadline ?? null,
+    deadlineAllDay: overrides.deadlineAllDay ?? false,
+    priority: overrides.priority ?? null,
+    status: overrides.status ?? "active",
+    mtime: overrides.mtime ?? 1,
+    createdAt: overrides.createdAt ?? 1,
+    parentId: overrides.parentId ?? crypto.randomUUID(),
+    x: overrides.x ?? 0,
+    y: overrides.y ?? 0,
+    deletedAt: overrides.deletedAt ?? null,
+    archivedAt: overrides.archivedAt ?? null,
+  };
+}
+
 describe("useInbox", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    liveQueryMock.mockImplementation((query: () => Promise<unknown>) => ({
+      subscribe: (observer: {
+        next: (value: unknown) => void;
+        error: (error: unknown) => void;
+      }) => {
+        void query().then(observer.next).catch(observer.error);
+        return { unsubscribe: vi.fn() };
+      },
+    }));
   });
 
   afterEach(() => {
@@ -110,11 +144,11 @@ describe("useInbox", () => {
   it("retries Inbox lookup when system node seeding finishes after initial mount", async () => {
     vi.useFakeTimers();
     const inbox = createNode({ id: crypto.randomUUID(), systemRole: "inbox" });
+    let seeded = false;
     const dataStore = {
-      getAllActiveNodes: vi
-        .fn()
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([inbox]),
+      getAllActiveNodes: vi.fn().mockImplementation(() => (
+        Promise.resolve(seeded ? [inbox] : [])
+      )),
       createBit: vi.fn(),
     } as unknown as DataStore;
     getDataStoreMock.mockResolvedValue(dataStore);
@@ -124,11 +158,84 @@ describe("useInbox", () => {
     await actFlush();
     expect(result.current.inboxNodeId).toBeUndefined();
 
+    seeded = true;
     await actFlush(() => {
       vi.advanceTimersByTime(100);
     });
 
     expect(result.current.inboxNodeId).toBe(inbox.id);
+  });
+
+  it("exposes active system nodes regardless of hiddenFromGrid", async () => {
+    const inbox = createNode({
+      id: crypto.randomUUID(),
+      systemRole: "inbox",
+      hiddenFromGrid: true,
+    });
+    const archive = createNode({
+      id: crypto.randomUUID(),
+      systemRole: "archive_view",
+      hiddenFromGrid: false,
+    });
+    const dataStore = {
+      getAllActiveNodes: vi.fn().mockResolvedValue([
+        createNode({ systemRole: null }),
+        inbox,
+        archive,
+        createNode({ systemRole: "inbox", deletedAt: 1 }),
+        createNode({ systemRole: "archive_view", archivedAt: 1 }),
+      ]),
+      getAllActiveBits: vi.fn().mockResolvedValue([]),
+      createBit: vi.fn(),
+    } as unknown as DataStore;
+    getDataStoreMock.mockResolvedValue(dataStore);
+
+    const { result } = renderHook(() => useInbox());
+
+    await waitFor(() => {
+      expect(result.current.systemNodes).toEqual([inbox, archive]);
+    });
+  });
+
+  it("counts only active Scratch Bits under the Inbox node", async () => {
+    const inbox = createNode({ id: crypto.randomUUID(), systemRole: "inbox" });
+    const otherParentId = crypto.randomUUID();
+    const dataStore = {
+      getAllActiveNodes: vi.fn().mockResolvedValue([inbox]),
+      getAllActiveBits: vi.fn().mockResolvedValue([
+        createBit({ parentId: inbox.id, deletedAt: null, archivedAt: null }),
+        createBit({ parentId: inbox.id, deletedAt: null, archivedAt: null }),
+        createBit({ parentId: inbox.id, deletedAt: 1, archivedAt: null }),
+        createBit({ parentId: inbox.id, deletedAt: null, archivedAt: 1 }),
+        createBit({ parentId: otherParentId, deletedAt: null, archivedAt: null }),
+      ]),
+      createBit: vi.fn(),
+    } as unknown as DataStore;
+    getDataStoreMock.mockResolvedValue(dataStore);
+
+    const { result } = renderHook(() => useInbox());
+
+    await waitFor(() => {
+      expect(result.current.scratchCount).toBe(2);
+    });
+  });
+
+  it("resets Scratch count to zero while Inbox is unavailable", async () => {
+    const dataStore = {
+      getAllActiveNodes: vi.fn().mockResolvedValue([]),
+      getAllActiveBits: vi.fn().mockResolvedValue([
+        createBit({ parentId: crypto.randomUUID() }),
+      ]),
+      createBit: vi.fn(),
+    } as unknown as DataStore;
+    getDataStoreMock.mockResolvedValue(dataStore);
+
+    const { result } = renderHook(() => useInbox());
+
+    await waitFor(() => {
+      expect(dataStore.getAllActiveNodes).toHaveBeenCalled();
+    });
+    expect(result.current.scratchCount).toBe(0);
   });
 });
 

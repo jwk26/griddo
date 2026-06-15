@@ -1,12 +1,18 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ComponentProps } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Node } from "@/types";
 
 const pushMock = vi.hoisted(() => vi.fn());
 const usePathnameMock = vi.hoisted(() => vi.fn());
 const toggleEditModeMock = vi.hoisted(() => vi.fn());
 const openSearchMock = vi.hoisted(() => vi.fn());
+const useInboxMock = vi.hoisted(() => vi.fn());
+const updateNodeMock = vi.hoisted(() => vi.fn());
+const getGridOccupancyMock = vi.hoisted(() => vi.fn());
+const findNearestEmptyCellMock = vi.hoisted(() => vi.fn());
+const toastErrorMock = vi.hoisted(() => vi.fn());
 
 vi.mock("next/navigation", () => ({
   usePathname: usePathnameMock,
@@ -39,10 +45,35 @@ vi.mock("motion/react", async () => {
     );
   });
 
+  const MotionSpan = React.forwardRef<
+    HTMLSpanElement,
+    ComponentProps<"span"> & {
+      animate?: unknown;
+      initial?: unknown;
+      layout?: unknown;
+      layoutId?: string;
+      transition?: unknown;
+    }
+  >(function MotionSpan({ animate, initial, layout, layoutId, transition, ...props }, ref) {
+    return (
+      <span
+        ref={ref}
+        data-motion-layout={JSON.stringify(layout)}
+        data-layout-id={layoutId}
+        data-motion-animate={JSON.stringify(animate)}
+        data-motion-initial={JSON.stringify(initial)}
+        data-motion-transition={JSON.stringify(transition)}
+        {...props}
+      />
+    );
+  });
+
   return {
     motion: {
       button: MotionButton,
+      span: MotionSpan,
     },
+    useReducedMotion: () => false,
   };
 });
 
@@ -110,8 +141,125 @@ vi.mock("@/components/ui/popover", async () => {
   return { Popover, PopoverContent, PopoverTrigger };
 });
 
+vi.mock("@/components/ui/dropdown-menu", async () => {
+  const React = await import("react");
+
+  const DropdownContext = React.createContext<{
+    open: boolean;
+    setOpen: (open: boolean) => void;
+  } | null>(null);
+
+  function DropdownMenu({ children }: { children: React.ReactNode }) {
+    const [open, setOpen] = React.useState(false);
+    return (
+      <DropdownContext.Provider value={{ open, setOpen }}>
+        {children}
+      </DropdownContext.Provider>
+    );
+  }
+
+  function DropdownMenuTrigger({
+    children,
+  }: {
+    children: React.ReactElement<{
+      onContextMenu?: (event: React.MouseEvent) => void;
+    }>;
+  }) {
+    const context = React.useContext(DropdownContext);
+
+    if (!context) {
+      return children;
+    }
+
+    return React.cloneElement(children, {
+      onContextMenu: (event: React.MouseEvent) => {
+        children.props.onContextMenu?.(event);
+        event.preventDefault();
+        context.setOpen(true);
+      },
+    });
+  }
+
+  function DropdownMenuContent(props: React.ComponentProps<"div">) {
+    const context = React.useContext(DropdownContext);
+
+    if (!context?.open) {
+      return null;
+    }
+
+    return <div role="menu" {...props} />;
+  }
+
+  function DropdownMenuItem({
+    children,
+    onClick,
+    ...props
+  }: React.ComponentProps<"button">) {
+    const context = React.useContext(DropdownContext);
+
+    return (
+      <button
+        role="menuitem"
+        type="button"
+        onClick={(event) => {
+          onClick?.(event);
+          context?.setOpen(false);
+        }}
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  }
+
+  function DropdownMenuSeparator(props: React.ComponentProps<"div">) {
+    return <div {...props} />;
+  }
+
+  return {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+  };
+});
+
+vi.mock("@/components/ui/tooltip", () => ({
+  Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  TooltipContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  TooltipProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  TooltipTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 vi.mock("@/hooks/use-global-urgency", () => ({
   useGlobalUrgency: () => null,
+}));
+
+vi.mock("@/hooks/use-inbox", () => ({
+  useInbox: useInboxMock,
+}));
+
+vi.mock("@/hooks/use-grid-actions", () => ({
+  useGridActions: () => ({
+    getGridOccupancy: getGridOccupancyMock,
+  }),
+}));
+
+vi.mock("@/hooks/use-node-actions", () => ({
+  useNodeActions: () => ({
+    updateNode: updateNodeMock,
+  }),
+}));
+
+vi.mock("@/lib/utils/bfs", () => ({
+  findNearestEmptyCell: findNearestEmptyCellMock,
+}));
+
+vi.mock("sonner", () => ({
+  toast: {
+    error: toastErrorMock,
+  },
 }));
 
 vi.mock("@/stores/edit-mode-store", () => ({
@@ -128,6 +276,27 @@ vi.mock("@/stores/search-store", () => ({
 
 const { Sidebar } = await import("@/components/layout/sidebar");
 
+function createNode(overrides: Partial<Node> = {}): Node {
+  return {
+    id: overrides.id ?? crypto.randomUUID(),
+    title: overrides.title ?? "Node",
+    color: overrides.color ?? "hsl(221, 83%, 53%)",
+    icon: overrides.icon ?? "Folder",
+    deadline: overrides.deadline ?? null,
+    deadlineAllDay: overrides.deadlineAllDay ?? false,
+    mtime: overrides.mtime ?? 1,
+    createdAt: overrides.createdAt ?? 1,
+    parentId: overrides.parentId ?? null,
+    level: overrides.level ?? 0,
+    x: overrides.x ?? 0,
+    y: overrides.y ?? 0,
+    deletedAt: overrides.deletedAt ?? null,
+    archivedAt: overrides.archivedAt ?? null,
+    systemRole: overrides.systemRole ?? null,
+    hiddenFromGrid: overrides.hiddenFromGrid ?? false,
+  };
+}
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
@@ -135,6 +304,15 @@ afterEach(() => {
 
 beforeEach(() => {
   usePathnameMock.mockReturnValue("/");
+  useInboxMock.mockReturnValue({
+    inboxNodeId: undefined,
+    createScratchBit: vi.fn(),
+    scratchCount: 0,
+    systemNodes: [],
+  });
+  getGridOccupancyMock.mockResolvedValue(new Set<string>());
+  updateNodeMock.mockResolvedValue(undefined);
+  findNearestEmptyCellMock.mockReturnValue(null);
 });
 
 describe("Sidebar", () => {
@@ -154,6 +332,37 @@ describe("Sidebar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Node" }));
 
     expect(screen.queryByRole("button", { name: "Node" })).not.toBeInTheDocument();
+  });
+
+  it("shows Home button on system node routes and navigates to root on click", () => {
+    const inbox = createNode({ id: "inbox-id", systemRole: "inbox" });
+    usePathnameMock.mockReturnValue(`/grid/inbox-id`);
+    useInboxMock.mockReturnValue({
+      inboxNodeId: inbox.id,
+      createScratchBit: vi.fn(),
+      scratchCount: 0,
+      systemNodes: [inbox],
+    });
+
+    render(<Sidebar />);
+
+    expect(screen.getByRole("button", { name: "Home" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Home" }));
+    expect(pushMock).toHaveBeenCalledWith("/");
+  });
+
+  it("does not show Home button on standard grid routes", () => {
+    usePathnameMock.mockReturnValue("/grid/some-regular-node");
+    useInboxMock.mockReturnValue({
+      inboxNodeId: undefined,
+      createScratchBit: vi.fn(),
+      scratchCount: 0,
+      systemNodes: [],
+    });
+
+    render(<Sidebar />);
+
+    expect(screen.queryByRole("button", { name: "Home" })).not.toBeInTheDocument();
   });
 
   it("calls onNodeCreate and closes chooser when Node option is clicked", () => {
@@ -240,5 +449,161 @@ describe("Sidebar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Search" }));
 
     expect(openSearchMock).toHaveBeenCalledOnce();
+  });
+
+  it("renders system nodes even when hidden from the L0 grid", () => {
+    const inbox = createNode({
+      id: "inbox-node",
+      title: "Inbox",
+      systemRole: "inbox",
+      hiddenFromGrid: false,
+    });
+    const archive = createNode({
+      id: "archive-node",
+      title: "Archive View",
+      systemRole: "archive_view",
+      hiddenFromGrid: true,
+    });
+    useInboxMock.mockReturnValue({
+      inboxNodeId: inbox.id,
+      createScratchBit: vi.fn(),
+      scratchCount: 0,
+      systemNodes: [inbox, archive],
+    });
+
+    render(<Sidebar />);
+
+    expect(screen.getByRole("button", { name: "Inbox" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Archive View" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Archive View" })).toHaveClass("opacity-40");
+  });
+
+  it("removes a system node from the L0 grid without extra effects", async () => {
+    const inbox = createNode({
+      id: "inbox-node",
+      title: "Inbox",
+      systemRole: "inbox",
+      hiddenFromGrid: false,
+    });
+    useInboxMock.mockReturnValue({
+      inboxNodeId: inbox.id,
+      createScratchBit: vi.fn(),
+      scratchCount: 0,
+      systemNodes: [inbox],
+    });
+
+    render(<Sidebar />);
+
+    fireEvent.contextMenu(screen.getByRole("button", { name: "Inbox" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Remove from L0 Grid" }));
+
+    await waitFor(() => {
+      expect(updateNodeMock).toHaveBeenCalledWith(inbox.id, {
+        hiddenFromGrid: true,
+      });
+    });
+    expect(getGridOccupancyMock).not.toHaveBeenCalled();
+    expect(findNearestEmptyCellMock).not.toHaveBeenCalled();
+  });
+
+  it("shows a hidden system node on the L0 grid using BFS placement", async () => {
+    const archive = createNode({
+      id: "archive-node",
+      title: "Archive View",
+      systemRole: "archive_view",
+      hiddenFromGrid: true,
+    });
+    const occupied = new Set(["0,0", "1,0"]);
+    getGridOccupancyMock.mockResolvedValue(occupied);
+    findNearestEmptyCellMock.mockReturnValue({ x: 2, y: 0 });
+    useInboxMock.mockReturnValue({
+      inboxNodeId: undefined,
+      createScratchBit: vi.fn(),
+      scratchCount: 0,
+      systemNodes: [archive],
+    });
+
+    render(<Sidebar />);
+
+    fireEvent.contextMenu(screen.getByRole("button", { name: "Archive View" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Show on L0 Grid" }));
+
+    await waitFor(() => {
+      expect(updateNodeMock).toHaveBeenCalledWith(archive.id, {
+        hiddenFromGrid: false,
+        x: 2,
+        y: 0,
+      });
+    });
+    expect(getGridOccupancyMock).toHaveBeenCalledWith(null);
+    expect(findNearestEmptyCellMock).toHaveBeenCalledWith(
+      occupied,
+      0,
+      0,
+      new Set(),
+    );
+  });
+
+  it("shows an error and skips updateNode when the L0 grid is full", async () => {
+    const inbox = createNode({
+      id: "inbox-node",
+      title: "Inbox",
+      systemRole: "inbox",
+      hiddenFromGrid: true,
+    });
+    getGridOccupancyMock.mockResolvedValue(new Set(["0,0"]));
+    findNearestEmptyCellMock.mockReturnValue(null);
+    useInboxMock.mockReturnValue({
+      inboxNodeId: inbox.id,
+      createScratchBit: vi.fn(),
+      scratchCount: 0,
+      systemNodes: [inbox],
+    });
+
+    render(<Sidebar />);
+
+    fireEvent.contextMenu(screen.getByRole("button", { name: "Inbox" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Show on L0 Grid" }));
+
+    await waitFor(() => {
+      expect(toastErrorMock).toHaveBeenCalledWith(
+        "Grid is full. Reorganize or move items to make space.",
+      );
+    });
+    expect(updateNodeMock).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [0, null, ""],
+    [1, "1", "bg-muted text-muted-foreground"],
+    [7, "7", "bg-muted text-muted-foreground"],
+    [8, "8", "bg-priority-mid-bg text-priority-mid"],
+    [14, "14", "bg-priority-mid-bg text-priority-mid"],
+    [15, "15", "bg-destructive text-destructive-foreground"],
+    [99, "99", "bg-destructive text-destructive-foreground"],
+    [100, "99+", "bg-destructive text-destructive-foreground"],
+  ])("renders Inbox badge tier for count %i", (count, label, classes) => {
+    const inbox = createNode({
+      id: "inbox-node",
+      title: "Inbox",
+      systemRole: "inbox",
+    });
+    useInboxMock.mockReturnValue({
+      inboxNodeId: inbox.id,
+      createScratchBit: vi.fn(),
+      scratchCount: count,
+      systemNodes: [inbox],
+    });
+
+    render(<Sidebar />);
+
+    if (label === null) {
+      expect(screen.queryByTestId("inbox-badge")).not.toBeInTheDocument();
+      return;
+    }
+
+    const badge = screen.getByTestId("inbox-badge");
+    expect(badge).toHaveTextContent(label);
+    expect(badge).toHaveClass(...classes.split(" "));
   });
 });
