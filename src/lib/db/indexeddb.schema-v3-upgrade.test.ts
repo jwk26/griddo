@@ -92,13 +92,19 @@ describe("GridDO IndexedDB schema version 3 upgrade", () => {
     db.close();
   });
 
-  it("does not overwrite existing archivedAt values during backfill", async () => {
+  it("does not overwrite existing v3 field values during backfill", async () => {
     const indexedDB = new IDBFactory();
     const options: DexieOptions = { indexedDB, IDBKeyRange };
     const archivedAt = 1700000009000;
 
     const seederDb = new GridDOV2(options);
-    await seederDb.nodes.put({ ...v2NodeMissing, id: "node-archived", archivedAt });
+    await seederDb.nodes.put({
+      ...v2NodeMissing,
+      id: "node-archived",
+      archivedAt,
+      systemRole: "inbox",
+      hiddenFromGrid: true,
+    });
     await seederDb.bits.put({
       ...v2BitMissing,
       id: "bit-archived",
@@ -114,6 +120,8 @@ describe("GridDO IndexedDB schema version 3 upgrade", () => {
     const bit = await db.bits.get("bit-archived");
 
     expect(node?.archivedAt).toBe(archivedAt);
+    expect(node?.systemRole).toBe("inbox");
+    expect(node?.hiddenFromGrid).toBe(true);
     expect(bit?.archivedAt).toBe(archivedAt);
 
     db.close();

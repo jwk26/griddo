@@ -2,7 +2,7 @@
 
 ## Carryover from Phase 15
 
-### ISSUE-15-01 (carried) — Dexie v3 migration: no automated runtime-verification path
+### ISSUE-15-01 (carried) — GridDO IndexedDB schema version 3 upgrade: no automated runtime-verification path
 
 - **Status:** Resolved (Phase 16, committed `64adf72`)
 - **Category:** test-coverage gap / acceptance-criteria accuracy
