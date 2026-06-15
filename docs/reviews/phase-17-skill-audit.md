@@ -247,6 +247,41 @@ A scoped Codex follow-up prompt was available. Both fixes were instead applied d
 
 ---
 
+### Entry 7 — Batch 2 Handoff Written to Non-Canonical Path (2026-06-16)
+
+#### What happened
+
+After Batch 1 was committed, `compaction-advisor` recommended Handoff + Clear for the Batch 2 boundary. A Batch 2 handoff was created at `.omc/handoffs/phase-17-batch2.md`, and the next-session prompt told the user to read that file.
+
+Codex review caught that this conflicts with the installed `compaction-advisor` skill and project workflow:
+- `~/.claude/skills/compaction-advisor/SKILL.md` says generated handoffs go under `docs/handoffs/`.
+- `docs/WORKFLOW.md` says phase/batch handoff records live in `docs/handoffs/`, named `phase-N-batch-M.md`.
+- Prior Phase 16 handoff notes explicitly state `.omc/handoffs/compaction-advisor-skill-draft.md` was an obsolete draft location after the skill was installed.
+
+The Batch 2 handoff content was mostly accurate, but it was stored in the wrong location and therefore would be easy for the next session to miss if it followed the documented workflow instead of the pasted prompt.
+
+#### Finding A10 — Compaction handoff path drifted back to obsolete `.omc/handoffs`
+
+- **Bucket:** skill-application / artifact path fidelity
+- **Severity:** low/medium
+- The active skill and project workflow define `docs/handoffs/` as the canonical location for phase/batch handoffs. The generated Batch 2 handoff instead used `.omc/handoffs/`, an obsolete draft/artifact location.
+- This is distinct from A5/A8: A5 = handoff freshness/provenance; A8 = approval-boundary preservation; A10 = canonical artifact location / discoverability.
+- User caught it before `/clear`, so no next-session loss occurred.
+- **Candidate C10:** `compaction-advisor` fidelity gate should explicitly verify that the handoff was written to the canonical project path (`docs/handoffs/` for this repo) and reject `.omc/handoffs/` for phase/batch handoffs unless the project workflow says otherwise.
+
+#### Candidate C10 — Handoff generation must verify canonical output path
+
+- Before finalizing a Handoff + Clear / Handoff + Compact result, verify the handoff path against the active skill and project workflow.
+- For this repo: phase/batch handoffs belong in `docs/handoffs/phase-N-batch-M.md`.
+- `.omc/handoffs/` may hold obsolete drafts, provider prompt templates, or transient artifacts, but must not be used as the canonical phase/batch handoff location.
+- Vehicle: `compaction-advisor` SKILL.md fidelity gate, plus optional template reminder near the path rule.
+
+#### Positives
+
+*(None specific to Entry 7 — caught during review before `/clear`.)*
+
+---
+
 *[Subsequent entries to follow per batch]*
 
 ---
@@ -273,10 +308,13 @@ A scoped Codex follow-up prompt was available. Both fixes were instead applied d
 | P8 | Codex correctly followed all handoff settled decisions | — | positive |
 | P9 | Implementation compatibility amendments correctly shaped Codex output | — | positive |
 | A9 | Source/test follow-up (CI-1, CI-2) applied directly by Claude instead of via Codex | workflow enforcement / role boundary | medium |
+| A10 | Compaction handoff written to obsolete `.omc/handoffs` instead of canonical `docs/handoffs` | skill-application / artifact path fidelity | low/medium |
 
 ---
 
 ## Candidate Skill Updates
+
+- **C10 — Handoff generation must verify canonical output path.** `compaction-advisor` should fail its fidelity gate if a phase/batch handoff is written outside the project-canonical location. For this repo, generated phase/batch handoffs belong in `docs/handoffs/phase-N-batch-M.md`; `.omc/handoffs/` is only for obsolete drafts/transient prompt artifacts unless the project workflow explicitly says otherwise. Vehicle: compaction-advisor SKILL.md fidelity gate / handoff path rule. (From A10.)
 
 - **C9 — Post-checkpoint source/test fixes must route through Codex by default.** After Codex implementation, follow-up fixes (however small) must be drafted as scoped Codex prompts and shown for approval — not edited directly by Claude. Exception: explicit user approval of direct edit. Vehicle: execute-task SKILL.md Step 6 / follow-up handling guidance. (From A9.)
 
