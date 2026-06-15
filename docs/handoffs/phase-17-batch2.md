@@ -16,6 +16,7 @@ Batch 2 is **mixed** → Gemini Stage 1 design-spec first, then Codex Stage 2; t
 - Branch: `phase-17/inbox-triage-shell`
 - Base: `main`
 - Last verified commits (verify latest with `git log`):
+  - `07ba41b` docs(phase-17): add batch 2 handoff and record A10/C10 path-fidelity finding
   - `5a7ff71` docs(phase-17): record batch 1 follow-up workflow notes
   - `4dec7d2` feat(phase-17): add inbox routing and triage shell
 - Source code changed: yes (Batch 1 — committed). Working tree: untracked docs only —
@@ -72,7 +73,7 @@ None.
 
 External-state:
 - `git status --short` — expected: only `docs/reviews/phase-15-skill-audit.md` and `docs/reviews/phase-16-skill-audit.md` untracked; nothing modified or staged
-- `git log --oneline -3` — verify: `5a7ff71` docs(phase-17) on top, `4dec7d2` below it
+- `git log --oneline -3` — verify: `07ba41b` docs(phase-17) on top, `5a7ff71` below it, `4dec7d2` below that
 
 Summary-fidelity:
 - Confirm A9/C9 role-boundary rule survived: Claude must not edit source/test files directly post-Codex without explicit user approval
