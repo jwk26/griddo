@@ -220,6 +220,63 @@ describe("useInbox", () => {
     });
   });
 
+  it("exposes only active Scratch Bits under the Inbox node newest-first", async () => {
+    const inbox = createNode({ id: crypto.randomUUID(), systemRole: "inbox" });
+    const otherParentId = crypto.randomUUID();
+    const newest = createBit({
+      id: crypto.randomUUID(),
+      title: "Newest",
+      parentId: inbox.id,
+      createdAt: 300,
+      deletedAt: null,
+      archivedAt: null,
+    });
+    const oldest = createBit({
+      id: crypto.randomUUID(),
+      title: "Oldest",
+      parentId: inbox.id,
+      createdAt: 100,
+      deletedAt: null,
+      archivedAt: null,
+    });
+    const dataStore = {
+      getAllActiveNodes: vi.fn().mockResolvedValue([inbox]),
+      getAllActiveBits: vi.fn().mockResolvedValue([
+        oldest,
+        createBit({
+          title: "Deleted",
+          parentId: inbox.id,
+          createdAt: 400,
+          deletedAt: 1,
+          archivedAt: null,
+        }),
+        newest,
+        createBit({
+          title: "Archived",
+          parentId: inbox.id,
+          createdAt: 500,
+          deletedAt: null,
+          archivedAt: 1,
+        }),
+        createBit({
+          title: "Other parent",
+          parentId: otherParentId,
+          createdAt: 600,
+          deletedAt: null,
+          archivedAt: null,
+        }),
+      ]),
+      createBit: vi.fn(),
+    } as unknown as DataStore;
+    getDataStoreMock.mockResolvedValue(dataStore);
+
+    const { result } = renderHook(() => useInbox());
+
+    await waitFor(() => {
+      expect(result.current.activeScratchBits).toEqual([newest, oldest]);
+    });
+  });
+
   it("resets Scratch count to zero while Inbox is unavailable", async () => {
     const dataStore = {
       getAllActiveNodes: vi.fn().mockResolvedValue([]),
@@ -236,6 +293,25 @@ describe("useInbox", () => {
       expect(dataStore.getAllActiveNodes).toHaveBeenCalled();
     });
     expect(result.current.scratchCount).toBe(0);
+  });
+
+  it("returns an empty active Scratch list while Inbox is unavailable", async () => {
+    const dataStore = {
+      getAllActiveNodes: vi.fn().mockResolvedValue([]),
+      getAllActiveBits: vi.fn().mockResolvedValue([
+        createBit({ parentId: crypto.randomUUID() }),
+      ]),
+      createBit: vi.fn(),
+    } as unknown as DataStore;
+    getDataStoreMock.mockResolvedValue(dataStore);
+
+    const { result } = renderHook(() => useInbox());
+
+    await waitFor(() => {
+      expect(dataStore.getAllActiveNodes).toHaveBeenCalled();
+    });
+    expect(result.current.activeScratchBits).toEqual([]);
+    expect(dataStore.getAllActiveBits).not.toHaveBeenCalled();
   });
 });
 

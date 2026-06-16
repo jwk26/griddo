@@ -1,5 +1,6 @@
 "use client";
 
+import { ScratchPool } from "@/components/triage/scratch-pool";
 import type { Node } from "@/types";
 
 function PanelHeader({ title }: { title: string }) {
@@ -36,14 +37,7 @@ export function TriageWorkspace({ node }: { node: Node }) {
       className="flex h-full min-h-0 w-full overflow-hidden bg-background"
       data-testid="triage-workspace"
     >
-      <div className="flex h-full w-72 min-w-0 flex-col border-r border-border bg-muted/10">
-        <PanelHeader title="Scratch Pool" />
-        <div className="min-h-0 flex-1 overflow-y-auto p-3">
-          <div className="text-sm font-medium text-muted-foreground">
-            Scratch Pool
-          </div>
-        </div>
-      </div>
+      <ScratchPool />
 
       <div className="flex h-full min-w-0 flex-1 flex-col bg-background">
         <div className="flex min-h-0 basis-3/5 border-b border-border">

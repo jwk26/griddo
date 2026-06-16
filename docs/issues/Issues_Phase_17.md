@@ -8,11 +8,20 @@
 
 ## Open Issues
 
-*(none yet)*
+*(none)*
 
 ---
 
 ## Closed Issues
+
+### CI-3 — Codex added mock for ScratchPool to grid-runtime.test.tsx (out-of-spec file)
+
+- **Category:** test infrastructure / cascading dependency fix
+- **Detected:** Post-Codex, `git status --porcelain` scan at Step 6
+- **Description:** Codex modified `src/components/layout/grid-runtime.test.tsx` — outside the approved T79 file list. The change is a 4-line `vi.mock()` addition for `@/components/triage/scratch-pool`. This is a necessary cascading fix: `grid-runtime.test.tsx` renders through a component tree that now includes `TriageWorkspace → ScratchPool`; without the mock, `useInbox()` and `useTriageStore()` would be called in an uncontrolled test context.
+- **Fix:** No corrective action needed. Change is correct and benign (test-only, no production impact). Accepted after reporting to user per handoff protocol.
+- **Verification:** All 63 test files / 324 tests pass. Build clean.
+- **Status:** Closed — accepted in Batch 2 commit.
 
 ### CI-1 — Breadcrumbs overlay covered TriageWorkspace header on Inbox route
 
@@ -55,9 +64,10 @@
 | Batch | Tasks | Status |
 |-------|-------|--------|
 | Batch 1 | T77, T78 | Implemented |
-| Batch 2 | T79 | In Progress |
+| Batch 2 | T79 | Implemented |
 | Batch 3 | T80 | Pending |
 
 ### Deviations
 
 - **Batch 1 follow-up (CI-1, CI-2):** Two out-of-plan fixes applied after the Codex implementation pass — Breadcrumbs conditional hide on Inbox route and Home button shown on system node routes. Both were within Batch 1 approved file scope (`grid-runtime.tsx`, `sidebar.tsx`), verified by browser smoke pass + full verification suite, and committed in `4dec7d2`. See phase-17-skill-audit.md A9 for workflow boundary note.
+- **Batch 2 cascading test fix (CI-3):** Codex added a `vi.mock()` for `ScratchPool` in `grid-runtime.test.tsx` — outside the T79 approved file list. Accepted as a necessary test infrastructure fix (no production code changed). Reported to user per handoff protocol before acceptance.

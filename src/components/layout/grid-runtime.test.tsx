@@ -238,6 +238,10 @@ vi.mock("@/components/grid/edit-mode-overlay", () => ({
   EditModeOverlay: () => <div data-testid="edit-mode-overlay" />,
 }));
 
+vi.mock("@/components/triage/scratch-pool", () => ({
+  ScratchPool: () => <div data-testid="scratch-pool" />,
+}));
+
 vi.mock("@/components/grid/edit-node-dialog", () => ({
   EditNodeDialog: ({
     open,
