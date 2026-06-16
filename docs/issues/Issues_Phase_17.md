@@ -55,7 +55,7 @@
 | Batch | Tasks | Status |
 |-------|-------|--------|
 | Batch 1 | T77, T78 | Implemented |
-| Batch 2 | T79 | Pending |
+| Batch 2 | T79 | In Progress |
 | Batch 3 | T80 | Pending |
 
 ### Deviations
