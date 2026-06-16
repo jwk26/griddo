@@ -348,6 +348,33 @@ This created contradictory state inside the same handoff file. The issue was cau
 
 ---
 
+---
+
+### Entry 10 — A12 Code Fence Defect Recurred in Batch 3 Prompt-Prep (2026-06-16)
+
+#### What happened
+
+During Batch 3 (T80) Step 3 prompt preparation, the Codex prompt's FILE 1 section (`src/lib/db/datastore.ts`) opened a ` ```typescript ` code fence but did not close it. The same defect class (unclosed code fence) was already recorded in A12 (Batch 2 prompt-prep). This is a direct recurrence within the same phase, not a one-off.
+
+Additionally: `createBreakdown` order logic used `breakdowns.length` — which produces duplicate `order` values after any middle-row deletion (e.g. rows at order 0,1,2 → delete 1 → length is 2 → new row gets order 2, colliding with existing row). Fixed to `Math.max(...breakdowns.map(r => r.order)) + 1`. Also: focused behavior tests for the hook and component were missing from the prompt.
+
+All three issues were caught at the mandatory prompt preview gate (Step 4) before provider launch. No source or test files were affected.
+
+#### Finding — A12 recurrence confirmed (Batch 3)
+
+- **Bucket:** prompt-prep quality
+- **Severity:** low (caught pre-launch; no downstream impact)
+- A12 was originally flagged as "candidate only if repeated." It has now repeated within the same phase. A12 is a confirmed pattern, not a one-off.
+- The specific failure: prompt generation does not include a self-check for unclosed markdown code fences before the preview is shown.
+
+#### Candidate C12 — Prompt preview must include a code-fence sanity check
+
+- Before any provider prompt is shown for approval, verify that every opened code fence (`` ``` `` or ` ```lang `) has a matching close. An unbalanced fence corrupts the provider's understanding of which lines are code vs. prose.
+- Implementation: before emitting the preview, scan for unbalanced triple-backtick pairs. If count of opening fences ≠ count of closing fences, fix before showing.
+- Vehicle: execute-task SKILL.md Step 3 / prompt preparation guidance.
+
+---
+
 *[Subsequent entries to follow per batch]*
 
 ---
@@ -380,6 +407,7 @@ This created contradictory state inside the same handoff file. The issue was cau
 | P10 | Prompt preview gate caught all pre-launch defects before Gemini launch | — | positive |
 | A13 | Superseded handoff retained stale internal `handoff_status: current` in `## Current State` | skill-side / handoff lifecycle | low/medium |
 | P11 | Supersede inconsistency caught during review before `/clear` | — | positive |
+| A12r | A12 code-fence defect recurred in Batch 3 prompt-prep; `order` logic also defective; behavior tests missing | prompt-prep quality | low (caught pre-launch) |
 
 ---
 
@@ -390,6 +418,8 @@ This created contradictory state inside the same handoff file. The issue was cau
 - **C9 — Post-checkpoint source/test fixes must route through Codex by default.** After Codex implementation, follow-up fixes (however small) must be drafted as scoped Codex prompts and shown for approval — not edited directly by Claude. Exception: explicit user approval of direct edit. Vehicle: execute-task SKILL.md Step 6 / follow-up handling guidance. (From A9.)
 
 - **C11 — Supersede operation needs a status consistency fidelity check.** When marking a handoff superseded, verify every `handoff_status` occurrence in the file says `superseded`, `Superseded by: <path>` is present near the `## Current State` field, and the file does not present itself as the active resume artifact anywhere. A top-banner change alone is insufficient. Vehicle: `compaction-advisor` SKILL.md fidelity gate / handoff lifecycle guidance. (From A13.)
+
+- **C12 — Prompt preview must include a code-fence sanity check.** Before any provider prompt is shown for approval, verify every opened code fence (`` ``` `` or ` ```lang `) has a matching close. An unbalanced fence corrupts provider parsing of code vs. prose. Vehicle: execute-task SKILL.md Step 3 / prompt preparation guidance. (From A12 recurrence, Batch 3.)
 
 - **C8 — Handoff generation must preserve approval boundaries.** A handoff must not turn "ready_for_approval" into "approved_for_launch" without explicit user approval of that exact next-session action; recovery contexts default conservative. Vehicle: `handoff_status` + `next_action_approval` fields on handoffs. **Applied 2026-06-16** to compaction-advisor (SKILL.md + handoff-template) + execute-task defense line. (A5 staleness is covered by `handoff_status`; A8 is the distinct approval-boundary concern.)
 
