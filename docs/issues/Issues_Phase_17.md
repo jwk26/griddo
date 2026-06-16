@@ -52,6 +52,17 @@
 
 ---
 
+## Summary
+
+| # | Issue | Resolution |
+|---|-------|------------|
+| CI-1 | Breadcrumbs overlay covered TriageWorkspace header on Inbox route | Conditionally hide Breadcrumbs when `systemRole === 'inbox'` in `grid-runtime.tsx` |
+| CI-2 | No Home escape hatch on system node routes | Show Home button in `sidebar.tsx` when `isSystemNodeRoute` |
+| CI-3 | Codex added out-of-scope `vi.mock()` for ScratchPool in `grid-runtime.test.tsx` | Accepted as necessary cascading test fix; no production impact |
+| CI-4 | AlertDialog missing `onOpenChange`; stale `pendingDeleteId` on Scratch switch | Added `onOpenChange` + `useEffect([selectedScratchId])` in `breakdown-panel.tsx` |
+
+---
+
 ## Phase-local Question Resolution
 
 *(populated during execution when Decision prerequisite or Provisional default paths fire)*

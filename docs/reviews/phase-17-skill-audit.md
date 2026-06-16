@@ -375,6 +375,33 @@ All three issues were caught at the mandatory prompt preview gate (Step 4) befor
 
 ---
 
+### Entry 11 — Closing Archive Reintroduced Stale Batch Wording (2026-06-16)
+
+#### What happened
+
+During Phase 17 closing, `docs/execution-plan/archive/phase-17.md` preserved stale wording from the original plan:
+- `theme variants are Batch 2`
+- `final visual theme is Batch 2 (inbox-triage-theme-variants)`
+
+This is inaccurate in the completed Phase 17 record: Batch 2 was T79 Scratch Pool, and theme variants remained out of scope for Phase 17. This is the same defect family as A12 (stale phase/batch wording in provider prompts), but surfaced in the closing archive step rather than prompt preparation.
+
+The issue was caught during pre-commit review of the closing-phase documentation. No source/test files were affected.
+
+#### Finding A14 — Closing archive retained stale phase-relative wording
+
+- **Bucket:** closing-phase / archive fidelity
+- **Severity:** low (docs-only, caught pre-commit)
+- Closing archive generation must not blindly preserve obsolete "Batch N" or phase-relative future wording when the phase outcome differs from the original plan. Archive content is a durable historical record; stale relative wording can mislead the next phase.
+- This is distinct from A12/A12r: A12 = provider prompt quality; A14 = closing archive fidelity.
+
+#### Candidate C13 — Closing archive needs stale relative-wording scan
+
+- Before committing a phase archive, scan the archived block for stale relative terms such as `Batch 1`, `Batch 2`, `later`, `future`, `deferred`, `theme variants`, and any named artifact that did not land in the phase.
+- If wording is intentionally historical, mark it as original-plan wording; otherwise rewrite it as completed-phase truth.
+- Vehicle: `closing-phase` SKILL.md archive/fidelity step.
+
+---
+
 *[Subsequent entries to follow per batch]*
 
 ---
@@ -408,6 +435,7 @@ All three issues were caught at the mandatory prompt preview gate (Step 4) befor
 | A13 | Superseded handoff retained stale internal `handoff_status: current` in `## Current State` | skill-side / handoff lifecycle | low/medium |
 | P11 | Supersede inconsistency caught during review before `/clear` | — | positive |
 | A12r | A12 code-fence defect recurred in Batch 3 prompt-prep; `order` logic also defective; behavior tests missing | prompt-prep quality | low (caught pre-launch) |
+| A14 | Closing archive retained stale `Batch 2` theme-variant wording | closing-phase / archive fidelity | low (caught pre-commit) |
 
 ---
 
@@ -420,6 +448,8 @@ All three issues were caught at the mandatory prompt preview gate (Step 4) befor
 - **C11 — Supersede operation needs a status consistency fidelity check.** When marking a handoff superseded, verify every `handoff_status` occurrence in the file says `superseded`, `Superseded by: <path>` is present near the `## Current State` field, and the file does not present itself as the active resume artifact anywhere. A top-banner change alone is insufficient. Vehicle: `compaction-advisor` SKILL.md fidelity gate / handoff lifecycle guidance. (From A13.)
 
 - **C12 — Prompt preview must include a code-fence sanity check.** Before any provider prompt is shown for approval, verify every opened code fence (`` ``` `` or ` ```lang `) has a matching close. An unbalanced fence corrupts provider parsing of code vs. prose. Vehicle: execute-task SKILL.md Step 3 / prompt preparation guidance. (From A12 recurrence, Batch 3.)
+
+- **C13 — Closing archive needs stale relative-wording scan.** Before committing a phase archive, scan archived plan text for stale relative terms such as `Batch 1`, `Batch 2`, `later`, `future`, `deferred`, `theme variants`, and named artifacts that did not land in the phase. If wording is intentionally historical, mark it as original-plan wording; otherwise rewrite it as completed-phase truth. Vehicle: `closing-phase` SKILL.md archive/fidelity step. (From A14.)
 
 - **C8 — Handoff generation must preserve approval boundaries.** A handoff must not turn "ready_for_approval" into "approved_for_launch" without explicit user approval of that exact next-session action; recovery contexts default conservative. Vehicle: `handoff_status` + `next_action_approval` fields on handoffs. **Applied 2026-06-16** to compaction-advisor (SKILL.md + handoff-template) + execute-task defense line. (A5 staleness is covered by `handoff_status`; A8 is the distinct approval-boundary concern.)
 
