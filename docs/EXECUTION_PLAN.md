@@ -104,7 +104,7 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 79: Scratch Pool
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/triage/scratch-pool.tsx` (create), `src/hooks/use-inbox.ts` (update — active Scratch list), `src/stores/triage-store.ts` (create — selected Scratch)
 - **Dependencies:** Task 78
 - **Actions:**
