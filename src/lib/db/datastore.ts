@@ -55,6 +55,7 @@ export interface DataStore {
   markScratchBreakdownConsumed(id: string): Promise<void>;
   unconsumeScratchBreakdown(id: string): Promise<void>;
   deleteScratchBreakdownsByScratch(scratchBitId: string): Promise<void>;
+  deleteScratchBreakdown(id: string): Promise<void>;
 
   // --- Chunks ---
   getChunks(bitId: string): Promise<Chunk[]>;

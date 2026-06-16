@@ -1,5 +1,6 @@
 "use client";
 
+import { BreakdownPanel } from "@/components/triage/breakdown-panel";
 import { ScratchPool } from "@/components/triage/scratch-pool";
 import type { Node } from "@/types";
 
@@ -43,10 +44,8 @@ export function TriageWorkspace({ node }: { node: Node }) {
         <div className="flex min-h-0 basis-3/5 border-b border-border">
           <div className="flex min-w-0 basis-3/5 flex-col border-r border-border bg-card">
             <PanelHeader title="Breakdown / Scribble" />
-            <div className="min-h-0 flex-1 overflow-y-auto p-3">
-              <div className="text-sm font-medium text-muted-foreground">
-                Breakdown
-              </div>
+            <div className="min-h-0 flex-1 overflow-hidden">
+              <BreakdownPanel />
             </div>
           </div>
 

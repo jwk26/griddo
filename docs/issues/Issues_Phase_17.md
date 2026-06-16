@@ -65,7 +65,7 @@
 |-------|-------|--------|
 | Batch 1 | T77, T78 | Implemented |
 | Batch 2 | T79 | Implemented |
-| Batch 3 | T80 | Pending |
+| Batch 3 | T80 | Implemented |
 
 ### Deviations
 

@@ -8,6 +8,10 @@ vi.mock("@/components/triage/scratch-pool", () => ({
   ScratchPool: () => <div data-testid="scratch-pool" />,
 }));
 
+vi.mock("@/components/triage/breakdown-panel", () => ({
+  BreakdownPanel: () => <div data-testid="breakdown-panel" />,
+}));
+
 function createNode(overrides: Partial<Node> = {}): Node {
   return {
     id: overrides.id ?? crypto.randomUUID(),
@@ -34,13 +38,21 @@ afterEach(() => {
 });
 
 describe("TriageWorkspace", () => {
-  it("renders ScratchPool in the left panel and keeps Batch 1 placeholders", () => {
+  it("renders ScratchPool in the left panel and wires in BreakdownPanel", () => {
     render(<TriageWorkspace node={createNode()} />);
 
     const workspace = screen.getByTestId("triage-workspace");
 
     expect(within(workspace).getByTestId("scratch-pool")).toBeInTheDocument();
-    expect(screen.getByText("Breakdown")).toBeInTheDocument();
+    expect(within(workspace).getByTestId("breakdown-panel")).toBeInTheDocument();
+  });
+
+  it("keeps the staging and hierarchy placeholders visible", () => {
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.getByText("Staging: Nodes")).toBeInTheDocument();
+    expect(screen.getByText("Staging: Bits")).toBeInTheDocument();
+    expect(screen.getByText("Hierarchy Explorer")).toBeInTheDocument();
     expect(screen.getAllByText("STAGING ZONE")).toHaveLength(2);
     expect(screen.getByText("HIERARCHY EXPLORER")).toBeInTheDocument();
   });
