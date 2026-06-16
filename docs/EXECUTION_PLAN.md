@@ -102,13 +102,14 @@ These apply across all phases:
 
 ### Task 83: Hierarchy Explorer + placement confirmation
 - **Status:** `[ ]`
-- **Files:** `src/components/triage/hierarchy-explorer.tsx` (create); reuse `grid-runtime.tsx` `handleNodeMoveConfirm`/`handleAncestorMoveConfirm`, `src/components/ui/dialog.tsx`, `create-node-dialog.tsx` / `create-bit-dialog.tsx`
+- **Files:** `src/components/triage/hierarchy-explorer.tsx` (create); reuse `grid-runtime.tsx` `handleNodeMoveConfirm`/`handleAncestorMoveConfirm`, `src/components/ui/dialog.tsx`, `create-node-dialog.tsx` / `create-bit-dialog.tsx`; `src/lib/db/datastore.ts` (add `consumeScratchBreakdown(id: string): Promise<void>`); `src/lib/db/indexeddb.ts` (implement `consumedAt` update); `src/lib/db/scratch-breakdowns.test.ts` (unit test: `consumeScratchBreakdown` sets `consumedAt` without changing `content`/`order`)
 - **Dependencies:** Task 82
 - **Actions:**
-  - Home / L1 / L2 / L3 columns (progressive reveal; Nodes before Bits; long Bit titles ellipsize). Dropping a staged candidate onto a column/parent is a **pending-confirmation** target → open the existing GridDO move-confirmation `Dialog` showing source content / candidate type / destination hierarchy path / result summary. **Confirm:** create the real Node/Bit at the target (reuse the create paths) AND mark the source `scratchBreakdowns` row `consumedAt`. **Cancel/Esc:** no record; `consumedAt` stays `null`. If the target grid is full: confirm disabled with a reason (`No available grid cell in this target`).
+  - Home / L1 / L2 / L3 columns (progressive reveal; Nodes before Bits; long Bit titles ellipsize). Dropping a staged candidate onto a column/parent is a **pending-confirmation** target → open the existing GridDO move-confirmation `Dialog` showing source content / candidate type / destination hierarchy path / result summary. **Confirm:** call `createNode`/`createBit` at the target (the placement dialog is purpose-built; the create-node/bit-dialog UI is NOT re-shown) AND call `consumeScratchBreakdown(id)` to set `consumedAt = Date.now()` on the source `scratchBreakdowns` row. **Cancel/Esc:** no record; `consumedAt` stays `null`. If the target grid is full: confirm disabled with a reason (`No available grid cell in this target`).
 - **Acceptance:**
-  - Dropping a staged Node/Bit onto a hierarchy target opens the confirmation dialog with all four fields; confirm creates the item and line-throughs the source breakdown row (`consumedAt` set); cancel creates nothing.
+  - Dropping a staged Node/Bit onto a hierarchy target opens the confirmation dialog with all four fields; confirm creates the item and line-throughs the source breakdown row (`consumedAt` set via `consumeScratchBreakdown`); cancel creates nothing.
   - A full target disables confirm with a visible reason.
+  - `consumeScratchBreakdown(id)` sets `consumedAt` without altering `content` or `order` (unit test passes).
   - `pnpm build` passes.
 
 ### Task 84: Fast path (Breakdown row → Hierarchy)
