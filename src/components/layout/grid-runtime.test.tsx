@@ -238,6 +238,10 @@ vi.mock("@/components/grid/edit-mode-overlay", () => ({
   EditModeOverlay: () => <div data-testid="edit-mode-overlay" />,
 }));
 
+vi.mock("@/components/triage/scratch-pool", () => ({
+  ScratchPool: () => <div data-testid="scratch-pool" />,
+}));
+
 vi.mock("@/components/grid/edit-node-dialog", () => ({
   EditNodeDialog: ({
     open,
@@ -477,6 +481,74 @@ describe("GridRuntime", () => {
     await waitFor(() => {
       expect(softDeleteBitMock).toHaveBeenCalledWith("bit-1");
     });
+  });
+
+  it("renders TriageWorkspace for Inbox system nodes without escaping the shell", () => {
+    const inboxNode = createNode({ id: "inbox-node", systemRole: "inbox" });
+
+    useParamsMock.mockReturnValue({ nodeId: inboxNode.id });
+    useNodeMock.mockReturnValue(inboxNode);
+
+    render(
+      <GridRuntime>
+        <div data-testid="standard-children">Standard grid</div>
+      </GridRuntime>,
+    );
+
+    expect(screen.getByTestId("triage-workspace")).toBeInTheDocument();
+    expect(screen.queryByTestId("standard-children")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("sidebar-add")).toBeInTheDocument();
+    expect(screen.queryByTestId("breadcrumbs")).not.toBeInTheDocument();
+    expect(screen.getByTestId("edit-mode-overlay")).toBeInTheDocument();
+  });
+
+  it("renders children normally for standard grid nodes", () => {
+    const standardNode = createNode({ id: "standard-node", systemRole: null });
+
+    useParamsMock.mockReturnValue({ nodeId: standardNode.id });
+    useNodeMock.mockReturnValue(standardNode);
+
+    render(
+      <GridRuntime>
+        <div data-testid="standard-children">Standard grid</div>
+      </GridRuntime>,
+    );
+
+    expect(screen.queryByTestId("triage-workspace")).not.toBeInTheDocument();
+    expect(screen.getByTestId("standard-children")).toBeInTheDocument();
+    expect(screen.getByLabelText("sidebar-add")).toBeInTheDocument();
+    expect(screen.getByTestId("breadcrumbs")).toBeInTheDocument();
+    expect(screen.getByTestId("edit-mode-overlay")).toBeInTheDocument();
+  });
+
+  it("does not dispatch Archive View system nodes in this phase", () => {
+    const archiveNode = createNode({ id: "archive-node", systemRole: "archive_view" });
+
+    useParamsMock.mockReturnValue({ nodeId: archiveNode.id });
+    useNodeMock.mockReturnValue(archiveNode);
+
+    render(
+      <GridRuntime>
+        <div data-testid="standard-children">Standard grid</div>
+      </GridRuntime>,
+    );
+
+    expect(screen.queryByTestId("triage-workspace")).not.toBeInTheDocument();
+    expect(screen.getByTestId("standard-children")).toBeInTheDocument();
+  });
+
+  it("renders children on non-node grid routes such as Search, Calendar entry points, and Trash links", () => {
+    useParamsMock.mockReturnValue({});
+    useNodeMock.mockReturnValue(null);
+
+    render(
+      <GridRuntime>
+        <div data-testid="standard-children">Standard grid</div>
+      </GridRuntime>,
+    );
+
+    expect(screen.queryByTestId("triage-workspace")).not.toBeInTheDocument();
+    expect(screen.getByTestId("standard-children")).toBeInTheDocument();
   });
 
   it("moves quick capture state to Scratch from the entry surface", async () => {

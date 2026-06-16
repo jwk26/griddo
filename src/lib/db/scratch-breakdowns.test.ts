@@ -229,6 +229,23 @@ describe("IndexedDBDataStore scratchBreakdowns CRUD", () => {
     expect(await store.getScratchBreakdowns(scratchBitA)).toEqual([]);
     expect(await store.getScratchBreakdowns(scratchBitB)).toHaveLength(2);
   });
+
+  it("deletes a single scratch breakdown by id without affecting others", async () => {
+    const scratchBitId = testUuid(200);
+    const rows = [
+      createScratchBreakdown({ id: testUuid(201), scratchBitId, content: "row A", order: 0 }),
+      createScratchBreakdown({ id: testUuid(202), scratchBitId, content: "row B", order: 1 }),
+      createScratchBreakdown({ id: testUuid(203), scratchBitId, content: "row C", order: 2 }),
+    ];
+    const { store } = createStore({ scratchBreakdowns: rows });
+
+    await store.deleteScratchBreakdown(testUuid(202));
+
+    const remaining = await store.getScratchBreakdowns(scratchBitId);
+    expect(remaining).toHaveLength(2);
+    expect(remaining.map((r) => r.id)).not.toContain(testUuid(202));
+    expect(remaining.map((r) => r.content)).toEqual(["row A", "row C"]);
+  });
 });
 
 describe("IndexedDBDataStore scratchBreakdowns lifecycle integration", () => {

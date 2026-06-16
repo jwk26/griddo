@@ -2,23 +2,45 @@
 
 import { useDroppable } from "@dnd-kit/core";
 import type { LucideIcon } from "lucide-react";
-import { Calendar, Home, Layers, Pencil, Plus, Search, Trash2, X, Zap } from "lucide-react";
-import { motion, type HTMLMotionProps, type MotionProps } from "motion/react";
+import { Calendar, Home, Inbox, Layers, Pencil, Plus, Search, Trash2, X, Zap } from "lucide-react";
+import { motion, type HTMLMotionProps, type MotionProps, useReducedMotion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { forwardRef, useState } from "react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useGridActions } from "@/hooks/use-grid-actions";
 import { useGlobalUrgency } from "@/hooks/use-global-urgency";
 import type { DragActiveItem } from "@/hooks/use-dnd";
+import { useInbox } from "@/hooks/use-inbox";
+import { useNodeActions } from "@/hooks/use-node-actions";
 import {
   sidebarDragTargetActive,
   sidebarDragTargetRest,
   sidebarDragTargetTransition,
 } from "@/lib/animations/layout";
+import {
+  INBOX_BADGE_HIGH_THRESHOLD,
+  INBOX_BADGE_WARM_THRESHOLD,
+} from "@/lib/constants";
 import { getGridDeleteDropId } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
+import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import { useEditModeStore } from "@/stores/edit-mode-store";
 import { useSearchStore } from "@/stores/search-store";
+import type { Node } from "@/types";
+import { toast } from "sonner";
 
 type SidebarIconButtonProps = {
   className?: string;
@@ -29,6 +51,7 @@ type SidebarIconButtonProps = {
   motionProps?: Pick<MotionProps, "animate" | "initial" | "transition">;
   onClick?: () => void;
   isActive?: boolean;
+  children?: React.ReactNode;
 };
 
 const SidebarIconButton = forwardRef<
@@ -44,6 +67,7 @@ const SidebarIconButton = forwardRef<
     motionProps,
     onClick,
     isActive = false,
+    children,
     ...rest
   },
   ref,
@@ -70,7 +94,10 @@ const SidebarIconButton = forwardRef<
       transition={motionProps?.transition}
       {...rest}
     >
-      <Icon className="h-5 w-5" />
+      <span className="relative flex h-5 w-5 items-center justify-center">
+        <Icon className="h-5 w-5" />
+        {children}
+      </span>
     </motion.button>
   );
 });
@@ -97,6 +124,168 @@ function DeleteDropTarget() {
 
 const noop = () => {};
 
+function getSystemNodeLabel(node: Node): string {
+  if (node.systemRole === "inbox") {
+    return "Inbox";
+  }
+
+  if (node.systemRole === "archive_view") {
+    return "Archive View";
+  }
+
+  return node.title;
+}
+
+function getSystemNodeIcon(node: Node): LucideIcon {
+  if (node.systemRole === "inbox") {
+    return Inbox;
+  }
+
+  return Layers;
+}
+
+function getInboxBadgeTone(count: number): string {
+  if (count >= INBOX_BADGE_HIGH_THRESHOLD) {
+    return "bg-destructive text-destructive-foreground";
+  }
+
+  if (count >= INBOX_BADGE_WARM_THRESHOLD) {
+    return "bg-priority-mid-bg text-priority-mid";
+  }
+
+  return "bg-muted text-muted-foreground";
+}
+
+function InboxBadge({ count }: { count: number }) {
+  const shouldReduceMotion = useReducedMotion();
+
+  if (count <= 0) {
+    return null;
+  }
+
+  return (
+    <motion.span
+      animate={shouldReduceMotion ? false : undefined}
+      className={cn(
+        "absolute -top-1 -right-1 z-10 flex h-4 min-w-4 translate-x-[25%] -translate-y-[25%] items-center justify-center rounded-full px-1 font-mono text-[10px] font-bold leading-none tracking-tighter ring-2 ring-background",
+        shouldReduceMotion ? "transition-none" : "transition-colors duration-150",
+        getInboxBadgeTone(count),
+      )}
+      data-testid="inbox-badge"
+      layout={shouldReduceMotion ? false : true}
+      layoutId={shouldReduceMotion ? undefined : "inbox-badge"}
+      transition={shouldReduceMotion ? undefined : { type: "spring", stiffness: 500, damping: 30 }}
+    >
+      {count >= 100 ? "99+" : count}
+    </motion.span>
+  );
+}
+
+function SystemNodeItem({
+  node,
+  pathname,
+  scratchCount,
+  onNavigate,
+}: {
+  node: Node;
+  pathname: string;
+  scratchCount: number;
+  onNavigate: (href: string) => void;
+}) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+  const { getGridOccupancy } = useGridActions();
+  const { updateNode } = useNodeActions();
+  const label = getSystemNodeLabel(node);
+  const Icon = getSystemNodeIcon(node);
+  const isActive = pathname === `/grid/${node.id}`;
+
+  async function handleGridVisibilityToggle() {
+    if (!node.hiddenFromGrid) {
+      await updateNode(node.id, { hiddenFromGrid: true });
+      return;
+    }
+
+    const occupied = await getGridOccupancy(null);
+    const cell = findNearestEmptyCell(occupied, 0, 0, new Set());
+
+    if (cell === null) {
+      toast.error("Grid is full. Reorganize or move items to make space.");
+      return;
+    }
+
+    await updateNode(node.id, {
+      hiddenFromGrid: false,
+      x: cell.x,
+      y: cell.y,
+    });
+  }
+
+  return (
+    <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+      <div className="group/system-node relative flex h-10 w-12 items-center justify-center">
+        <span
+          aria-hidden="true"
+          className={cn(
+            "absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-md",
+            shouldReduceMotion ? "transition-none" : "transition-transform duration-150",
+            isActive
+              ? "scale-y-100 bg-foreground"
+              : "scale-y-0 bg-muted-foreground/40 group-hover/system-node:scale-y-50",
+          )}
+        />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <SidebarIconButton
+                className={cn(
+                  "group relative text-muted-foreground/80 hover:text-foreground",
+                  isActive && "bg-muted/50 text-foreground",
+                  node.hiddenFromGrid && "opacity-40",
+                )}
+                icon={Icon}
+                isActive={isActive}
+                label={label}
+                onClick={() => onNavigate(`/grid/${node.id}`)}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                  setIsMenuOpen(true);
+                }}
+                onPointerDown={(event) => {
+                  if (event.button !== 2) {
+                    event.preventDefault();
+                  }
+                }}
+                title="Right-click for options"
+              >
+                {node.systemRole === "inbox" ? <InboxBadge count={scratchCount} /> : null}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-0.5 -bottom-0.5 h-1 w-1 rounded-full bg-muted-foreground/40 opacity-0 transition-opacity duration-150 group-hover/system-node:opacity-100"
+                />
+                {node.hiddenFromGrid ? (
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -inset-1 rounded border border-dashed border-border"
+                  />
+                ) : null}
+              </SidebarIconButton>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={8}>
+            Right-click for options
+          </TooltipContent>
+        </Tooltip>
+      </div>
+      <DropdownMenuContent align="start" side="right" sideOffset={8}>
+        <DropdownMenuItem onClick={() => void handleGridVisibilityToggle()}>
+          {node.hiddenFromGrid ? "Show on L0 Grid" : "Remove from L0 Grid"}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function Sidebar({
   onAddClick,
   dragActiveItem,
@@ -114,15 +303,18 @@ export function Sidebar({
   const pathname = usePathname();
   const [isChooserOpen, setIsChooserOpen] = useState(false);
   const globalUrgency = useGlobalUrgency();
+  const { systemNodes, scratchCount } = useInbox();
   const isEditMode = useEditModeStore((state) => state.isEditMode);
   const toggleEditMode = useEditModeStore((state) => state.toggle);
   const isCalendarRoute = pathname.startsWith("/calendar/");
   const isTrashRoute = pathname === "/trash";
+  const isSystemNodeRoute = systemNodes.some((n) => pathname === `/grid/${n.id}`);
   const isGridItemDrag = dragActiveItem?.type === "node" || dragActiveItem?.type === "bit";
 
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-full w-12 flex-col items-center gap-1 border-r border-border bg-background py-3">
-      {isCalendarRoute ? (
+    <TooltipProvider>
+      <aside className="fixed left-0 top-0 z-40 flex h-full w-12 flex-col items-center gap-1 border-r border-border bg-background py-3">
+      {(isCalendarRoute || isSystemNodeRoute) ? (
         <SidebarIconButton
           className="active:scale-95"
           icon={Home}
@@ -235,6 +427,20 @@ export function Sidebar({
           </div>
         </>
       )}
+      {systemNodes.length > 0 ? (
+        <div className={cn("flex flex-col items-center gap-1", dragActiveItem && "opacity-40 saturate-50 transition-all duration-150")}>
+          <div className="mx-3 my-2 h-px w-6 border-t border-border" />
+          {systemNodes.map((node) => (
+            <SystemNodeItem
+              key={node.id}
+              node={node}
+              pathname={pathname}
+              scratchCount={scratchCount}
+              onNavigate={(href) => router.push(href)}
+            />
+          ))}
+        </div>
+      ) : null}
       <div className="mt-auto flex flex-col items-center gap-1">
         <div className={cn(dragActiveItem && "opacity-40 saturate-50 transition-all duration-150")}>
           <SidebarIconButton
@@ -248,6 +454,7 @@ export function Sidebar({
           <ThemeToggle className="hover:bg-accent hover:text-foreground" />
         </div>
       </div>
-    </aside>
+      </aside>
+    </TooltipProvider>
   );
 }

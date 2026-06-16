@@ -13,3 +13,7 @@ export const URGENCY_LEVEL_3_DAYS = 1;
 
 // Trash retention
 export const TRASH_RETENTION_DAYS = 30;
+
+// Inbox badge thresholds
+export const INBOX_BADGE_WARM_THRESHOLD = 8;
+export const INBOX_BADGE_HIGH_THRESHOLD = 15;

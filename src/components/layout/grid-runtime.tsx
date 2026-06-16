@@ -15,6 +15,7 @@ import { EditModeOverlay } from "@/components/grid/edit-mode-overlay";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Sidebar } from "@/components/layout/sidebar";
 import { EntrySurface } from "@/components/quick-capture/entry-surface";
+import { TriageWorkspace } from "@/components/triage/triage-workspace";
 import {
   Dialog,
   DialogContent,
@@ -66,6 +67,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
   const params = useParams<{ nodeId?: string | string[] }>();
   const nodeId = typeof params.nodeId === "string" ? params.nodeId : null;
   const node = useNode(nodeId ?? "");
+  const isInboxRoute = node?.systemRole === "inbox";
   const displayLevel = nodeId === null ? 0 : (node?.level ?? 0) + 1;
   const isLeafLevel = displayLevel >= 3;
   const {
@@ -382,11 +384,13 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
             data-level={displayLevel}
             data-testid="display-level"
           >
-            <div className="pointer-events-none absolute top-3 left-3 right-3 z-30 flex flex-col items-start gap-1.5">
-              <div className="pointer-events-none w-full">
-                <Breadcrumbs ref={clusterRef} nodeId={nodeId} dragActiveItem={activeItem} />
+            {!isInboxRoute && (
+              <div className="pointer-events-none absolute top-3 left-3 right-3 z-30 flex flex-col items-start gap-1.5">
+                <div className="pointer-events-none w-full">
+                  <Breadcrumbs ref={clusterRef} nodeId={nodeId} dragActiveItem={activeItem} />
+                </div>
               </div>
-            </div>
+            )}
             <AddFlowProvider
               openAddAtCell={(x, y) => {
                 if (!isCellBlocked(x, y, blockedCells)) {
@@ -402,7 +406,11 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
                 )}
                 data-dragging={activeItem ? "true" : undefined}
               >
-                {children}
+                {isInboxRoute ? (
+                  <TriageWorkspace node={node} />
+                ) : (
+                  children
+                )}
               </div>
             </AddFlowProvider>
             <EditModeOverlay />

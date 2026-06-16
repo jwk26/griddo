@@ -898,6 +898,11 @@ export class IndexedDBDataStore implements DataStore {
     await table.bulkDelete(ids);
   }
 
+  async deleteScratchBreakdown(id: string): Promise<void> {
+    const table = this.requireScratchBreakdowns();
+    await table.delete(id);
+  }
+
   async getChunks(bitId: string): Promise<Chunk[]> {
     const chunks = await this.database.chunks.toArray();
     return sortChunks(chunks.filter((chunk) => chunk.parentId === bitId));
