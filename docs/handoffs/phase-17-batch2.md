@@ -1,7 +1,7 @@
 # GridDO Phase 17 Batch 2 — Handoff
 
-> Durable handoff file. Read this first, run the Resume Sanity Check, then resume.
-> Updated at the Gemini Stage 1 → Codex Stage 2 boundary (context compaction).
+> **handoff_status: superseded** — Superseded by: `docs/handoffs/phase-17-batch3.md`
+> Batch 2 (T79) is complete. Do not use this file to resume; read the Batch 3 handoff instead.
 
 ## Resume Point
 
@@ -18,7 +18,7 @@ Continue from `execute-task` **Step 4 Stage 2** — launch Codex with the saved 
 
 ## Current State
 
-- `handoff_status: current`
+- `handoff_status: superseded` — Superseded by: `docs/handoffs/phase-17-batch3.md`
 - Repo: `/Users/jwk/Documents/griddo2-claude`
 - Branch: `phase-17/inbox-triage-shell`
 - Base: `main`
