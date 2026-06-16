@@ -12,6 +12,12 @@ vi.mock("@/components/triage/breakdown-panel", () => ({
   BreakdownPanel: () => <div data-testid="breakdown-panel" />,
 }));
 
+vi.mock("@/components/triage/staging-zone", () => ({
+  StagingZone: ({ type }: { type: string }) => (
+    <div data-testid={`${type}-staging-zone`} />
+  ),
+}));
+
 function createNode(overrides: Partial<Node> = {}): Node {
   return {
     id: overrides.id ?? crypto.randomUUID(),
@@ -47,13 +53,14 @@ describe("TriageWorkspace", () => {
     expect(within(workspace).getByTestId("breakdown-panel")).toBeInTheDocument();
   });
 
-  it("keeps the staging and hierarchy placeholders visible", () => {
+  it("keeps staging zones and the hierarchy placeholder visible", () => {
     render(<TriageWorkspace node={createNode()} />);
 
     expect(screen.getByText("Staging: Nodes")).toBeInTheDocument();
     expect(screen.getByText("Staging: Bits")).toBeInTheDocument();
     expect(screen.getByText("Hierarchy Explorer")).toBeInTheDocument();
-    expect(screen.getAllByText("STAGING ZONE")).toHaveLength(2);
     expect(screen.getByText("HIERARCHY EXPLORER")).toBeInTheDocument();
+    expect(screen.getByTestId("node-staging-zone")).toBeInTheDocument();
+    expect(screen.getByTestId("bit-staging-zone")).toBeInTheDocument();
   });
 });

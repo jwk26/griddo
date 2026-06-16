@@ -18,6 +18,15 @@ const hookState = vi.hoisted(() => ({
 }));
 const triageStoreState = vi.hoisted(() => ({
   selectedScratchId: null as string | null,
+  stagedCandidates: {} as Record<
+    string,
+    Array<{
+      id: string;
+      type: "node" | "bit";
+      sourceBreakdownId: string;
+      label: string;
+    }>
+  >,
 }));
 const useScratchBreakdownsMock = vi.hoisted(() => vi.fn());
 const useTriageStoreMock = vi.hoisted(() => vi.fn());
@@ -51,9 +60,10 @@ beforeEach(() => {
   hookState.createBreakdown.mockResolvedValue(undefined);
   hookState.deleteBreakdown.mockResolvedValue(undefined);
   triageStoreState.selectedScratchId = null;
+  triageStoreState.stagedCandidates = {};
   useTriageStoreMock.mockImplementation(
-    (selector: (state: { selectedScratchId: string | null }) => unknown) =>
-      selector({ selectedScratchId: triageStoreState.selectedScratchId }),
+    (selector: (state: typeof triageStoreState) => unknown) =>
+      selector(triageStoreState),
   );
   useScratchBreakdownsMock.mockImplementation((scratchBitId: string | null) => ({
     breakdowns:
@@ -234,6 +244,88 @@ describe("BreakdownPanel", () => {
     expect(grip).not.toHaveAttribute("ondragstart");
     expect(grip).not.toHaveAttribute("ondragend");
     expect(grip).not.toHaveAttribute("data-dnd-kit");
+  });
+
+  it("de-emphasises a breakdown row whose id matches a staged candidate sourceBreakdownId", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    triageStoreState.stagedCandidates = {
+      "scratch-1": [
+        {
+          id: "candidate-1",
+          type: "node",
+          sourceBreakdownId: "row-1",
+          label: "Staged note",
+        },
+      ],
+    };
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Staged note" }),
+    ];
+
+    render(<BreakdownPanel />);
+
+    const text = screen.getByText("Staged note");
+    const row = text.closest(".group");
+    const grip = within(row as HTMLElement).getByTestId("breakdown-grip");
+
+    expect(row).toHaveClass("opacity-50", "transition-opacity", "duration-200");
+    expect(text).toHaveClass("text-muted-foreground");
+    expect(grip).toHaveClass("text-muted-foreground/20");
+    expect(screen.getByText("45m ago")).toHaveClass("text-muted-foreground/40");
+  });
+
+  it("does not add line-through styling to a staged row", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    triageStoreState.stagedCandidates = {
+      "scratch-1": [
+        {
+          id: "candidate-1",
+          type: "bit",
+          sourceBreakdownId: "row-1",
+          label: "Staged note",
+        },
+      ],
+    };
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Staged note" }),
+    ];
+
+    render(<BreakdownPanel />);
+
+    const text = screen.getByText("Staged note");
+    const row = text.closest(".group");
+
+    expect(row).not.toHaveClass("line-through");
+    expect(text).not.toHaveClass("line-through");
+  });
+
+  it("does not de-emphasise a non-staged row", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    triageStoreState.stagedCandidates = {
+      "scratch-1": [
+        {
+          id: "candidate-1",
+          type: "node",
+          sourceBreakdownId: "row-2",
+          label: "Other staged note",
+        },
+      ],
+    };
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Active note" }),
+    ];
+
+    render(<BreakdownPanel />);
+
+    const text = screen.getByText("Active note");
+    const row = text.closest(".group");
+    const grip = within(row as HTMLElement).getByTestId("breakdown-grip");
+
+    expect(row).not.toHaveClass("opacity-50");
+    expect(text).toHaveClass("text-foreground");
+    expect(text).not.toHaveClass("text-muted-foreground");
+    expect(grip).toHaveClass("text-muted-foreground/45");
+    expect(screen.getByText("45m ago")).toHaveClass("text-muted-foreground/70");
   });
 
   it("clears the confirmation dialog on Escape without deleting", async () => {

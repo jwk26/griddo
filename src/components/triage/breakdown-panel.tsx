@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import { GripVertical, Trash2 } from "lucide-react";
 import {
   AlertDialog,
@@ -13,11 +19,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useScratchBreakdowns } from "@/hooks/use-scratch-breakdowns";
+import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils/relative-time";
 import { useTriageStore } from "@/stores/triage-store";
 
 export function BreakdownPanel() {
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
+  const stagedCandidates = useTriageStore((state) => state.stagedCandidates);
   const { breakdowns, createBreakdown, deleteBreakdown } =
     useScratchBreakdowns(selectedScratchId);
   const [isAdding, setIsAdding] = useState(false);
@@ -26,6 +34,15 @@ export function BreakdownPanel() {
   const isSubmittingRef = useRef(false);
   const isComposingRef = useRef(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const stagedSourceBreakdownIds = useMemo(
+    () =>
+      new Set(
+        (stagedCandidates[selectedScratchId ?? ""] ?? []).map(
+          (candidate) => candidate.sourceBreakdownId,
+        ),
+      ),
+    [selectedScratchId, stagedCandidates],
+  );
 
   useEffect(() => {
     if (!isAdding) return;
@@ -94,35 +111,59 @@ export function BreakdownPanel() {
   return (
     <div className="flex flex-col h-full">
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
-        {breakdowns.map((row) => (
-          <div
-            className="group flex items-start gap-2 border-b border-border/30 py-2 last:border-b-0"
-            key={row.id}
-          >
-            <GripVertical
-              aria-hidden="true"
-              className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground/45"
-              data-testid="breakdown-grip"
-            />
-            <div className="min-w-0 flex-1">
-              <div className="whitespace-pre-wrap break-words text-sm leading-5 text-foreground">
-                {row.content}
-              </div>
-              <div className="mt-1 text-[10px] text-muted-foreground/70">
-                {formatRelativeTime(row.createdAt)}
-              </div>
-            </div>
-            <button
-              aria-label="Delete breakdown"
-              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 hover:bg-destructive/10 hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              title="Delete breakdown"
-              type="button"
-              onClick={() => setPendingDeleteId(row.id)}
+        {breakdowns.map((row) => {
+          const isStaged = stagedSourceBreakdownIds.has(row.id);
+
+          return (
+            <div
+              className={cn(
+                "group flex items-start gap-2 border-b border-border/30 py-2 last:border-b-0",
+                isStaged && "opacity-50 transition-opacity duration-200",
+              )}
+              key={row.id}
             >
-              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-            </button>
-          </div>
-        ))}
+              <GripVertical
+                aria-hidden="true"
+                className={cn(
+                  "mt-0.5 h-4 w-4 flex-shrink-0",
+                  isStaged
+                    ? "text-muted-foreground/20"
+                    : "text-muted-foreground/45",
+                )}
+                data-testid="breakdown-grip"
+              />
+              <div className="min-w-0 flex-1">
+                <div
+                  className={cn(
+                    "whitespace-pre-wrap break-words text-sm leading-5",
+                    isStaged ? "text-muted-foreground" : "text-foreground",
+                  )}
+                >
+                  {row.content}
+                </div>
+                <div
+                  className={cn(
+                    "mt-1 text-[10px]",
+                    isStaged
+                      ? "text-muted-foreground/40"
+                      : "text-muted-foreground/70",
+                  )}
+                >
+                  {formatRelativeTime(row.createdAt)}
+                </div>
+              </div>
+              <button
+                aria-label="Delete breakdown"
+                className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 hover:bg-destructive/10 hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                title="Delete breakdown"
+                type="button"
+                onClick={() => setPendingDeleteId(row.id)}
+              >
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            </div>
+          );
+        })}
       </div>
 
       <div className="border-t border-border px-3 py-2">

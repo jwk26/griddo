@@ -2,6 +2,7 @@
 
 import { BreakdownPanel } from "@/components/triage/breakdown-panel";
 import { ScratchPool } from "@/components/triage/scratch-pool";
+import { StagingZone } from "@/components/triage/staging-zone";
 import type { Node } from "@/types";
 
 function PanelHeader({ title }: { title: string }) {
@@ -53,14 +54,14 @@ export function TriageWorkspace({ node }: { node: Node }) {
             <div className="flex min-w-0 basis-[35%] flex-col">
               <PanelHeader title="Staging: Nodes" />
               <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
-                <Placeholder heading="STAGING ZONE" />
+                <StagingZone type="node" />
               </div>
             </div>
 
             <div className="flex min-w-0 basis-[65%] flex-col border-l border-dashed border-border/80">
               <PanelHeader title="Staging: Bits" />
               <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
-                <Placeholder heading="STAGING ZONE" />
+                <StagingZone type="bit" />
               </div>
             </div>
           </div>
