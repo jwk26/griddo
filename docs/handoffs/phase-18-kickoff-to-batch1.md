@@ -10,7 +10,8 @@ Do not rely on memory for IC notes, DnD ownership boundaries, or DataStore API g
 
 ## Current State
 
-- handoff_status: current
+- handoff_status: superseded
+- Superseded by: docs/handoffs/phase-18-batch1.md
 - Repo: /Users/jwk/Documents/griddo2-claude
 - Branch: phase-18/inbox-triage-dnd
 - Base: main (origin/main @ 330cf87)
