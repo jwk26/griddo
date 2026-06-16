@@ -12,7 +12,8 @@ After Gemini completes: embed spec into `.omc/prompts/t81-codex.md` (replacing `
 
 ## Current State
 
-- handoff_status: current
+- handoff_status: superseded
+- Superseded by: T81 complete — resume T82 from docs/EXECUTION_PLAN.md §Phase 18 → Task 82
 - Supersedes: docs/handoffs/phase-18-kickoff-to-batch1.md
 - Repo: /Users/jwk/Documents/griddo2-claude
 - Branch: phase-18/inbox-triage-dnd
