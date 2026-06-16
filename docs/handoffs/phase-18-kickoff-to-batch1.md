@@ -14,8 +14,8 @@ Do not rely on memory for IC notes, DnD ownership boundaries, or DataStore API g
 - Repo: /Users/jwk/Documents/griddo2-claude
 - Branch: phase-18/inbox-triage-dnd
 - Base: main (origin/main @ 330cf87)
-- Last verified commits (verify with `git log` — this handoff is committed on top of a202be7):
-  - [handoff commit] docs(phase-18): add kickoff-to-batch1 handoff
+- Last verified commits (verify with `git log`):
+  - 6106469 docs(phase-18): add kickoff-to-batch1 handoff
   - a202be7 docs(phase-18): add flow-review and amend T83 consumedAt API
   - 330cf87 chore: make skill-audit files local-only (.gitignore + untrack)
 - Source code changed: no
@@ -68,7 +68,10 @@ Do not rely on memory for IC notes, DnD ownership boundaries, or DataStore API g
 
 External-state:
 - `git status --short` → expected: (empty — clean working tree)
-- `git log --oneline -3` → verify: `a202be7` at top (docs(phase-18): add flow-review and amend T83 consumedAt API)
+- `git log --oneline -3` → verify:
+  - `6106469 docs(phase-18): add kickoff-to-batch1 handoff`
+  - `a202be7 docs(phase-18): add flow-review and amend T83 consumedAt API`
+  - `330cf87 chore: make skill-audit files local-only (.gitignore + untrack)`
 - `git rev-parse --abbrev-ref HEAD` → verify: `phase-18/inbox-triage-dnd`
 
 Summary-fidelity:
