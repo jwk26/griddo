@@ -1,8 +1,13 @@
 "use client";
 
+import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { BreakdownPanel } from "@/components/triage/breakdown-panel";
 import { ScratchPool } from "@/components/triage/scratch-pool";
+import { TriageDragToken } from "@/components/triage/triage-drag-token";
 import { StagingZone } from "@/components/triage/staging-zone";
+import { useTriageDnd } from "@/hooks/use-dnd";
+import { triageCollisionDetection } from "@/lib/grid-dnd";
+import { useTriageStore } from "@/stores/triage-store";
 import type { Node } from "@/types";
 
 function PanelHeader({ title }: { title: string }) {
@@ -33,6 +38,16 @@ function Placeholder({
 }
 
 export function TriageWorkspace({ node }: { node: Node }) {
+  const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
+  const {
+    activeDragItem,
+    handleDragEnd,
+    handleDragOver,
+    handleDragStart,
+    overTargetId,
+    sensors,
+  } = useTriageDnd(selectedScratchId);
+
   return (
     <section
       aria-label={`${node.title} triage workspace`}
@@ -42,30 +57,51 @@ export function TriageWorkspace({ node }: { node: Node }) {
       <ScratchPool />
 
       <div className="flex h-full min-w-0 flex-1 flex-col bg-background">
-        <div className="flex min-h-0 basis-3/5 border-b border-border">
-          <div className="flex min-w-0 basis-3/5 flex-col border-r border-border bg-card">
-            <PanelHeader title="Breakdown / Scribble" />
-            <div className="min-h-0 flex-1 overflow-hidden">
-              <BreakdownPanel />
-            </div>
-          </div>
-
-          <div className="flex min-w-0 basis-2/5 bg-card">
-            <div className="flex min-w-0 basis-[35%] flex-col">
-              <PanelHeader title="Staging: Nodes" />
-              <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
-                <StagingZone type="node" />
+        <DndContext
+          autoScroll={false}
+          collisionDetection={triageCollisionDetection}
+          sensors={sensors}
+          onDragEnd={handleDragEnd}
+          onDragOver={handleDragOver}
+          onDragStart={handleDragStart}
+        >
+          <div className="flex min-h-0 basis-3/5 border-b border-border">
+            <div className="flex min-w-0 basis-3/5 flex-col border-r border-border bg-card">
+              <PanelHeader title="Breakdown / Scribble" />
+              <div className="min-h-0 flex-1 overflow-hidden">
+                <BreakdownPanel />
               </div>
             </div>
 
-            <div className="flex min-w-0 basis-[65%] flex-col border-l border-dashed border-border/80">
-              <PanelHeader title="Staging: Bits" />
-              <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
-                <StagingZone type="bit" />
+            <div className="flex min-w-0 basis-2/5 bg-card">
+              <div className="flex min-w-0 basis-[35%] flex-col">
+                <PanelHeader title="Staging: Nodes" />
+                <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
+                  <StagingZone
+                    activeDragItem={activeDragItem}
+                    overTargetId={overTargetId}
+                    type="node"
+                  />
+                </div>
+              </div>
+
+              <div className="flex min-w-0 basis-[65%] flex-col border-l border-dashed border-border/80">
+                <PanelHeader title="Staging: Bits" />
+                <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
+                  <StagingZone
+                    activeDragItem={activeDragItem}
+                    overTargetId={overTargetId}
+                    type="bit"
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+
+          <DragOverlay dropAnimation={null}>
+            {activeDragItem ? <TriageDragToken item={activeDragItem} /> : null}
+          </DragOverlay>
+        </DndContext>
 
         <div className="flex min-h-0 basis-2/5 flex-col bg-background">
           <PanelHeader title="Hierarchy Explorer" />

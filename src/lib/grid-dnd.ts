@@ -22,6 +22,29 @@ export type GridDropData =
       kind: "grid-delete-drop";
     };
 
+export type TriageDropData =
+  | { kind: "triage-node-zone-drop" }
+  | { kind: "triage-bit-zone-drop" };
+
+export function isTriageDropData(value: unknown): value is TriageDropData {
+  if (typeof value !== "object" || value === null || !("kind" in value)) {
+    return false;
+  }
+
+  return (
+    value.kind === "triage-node-zone-drop" ||
+    value.kind === "triage-bit-zone-drop"
+  );
+}
+
+export function getTriageNodeZoneDropId(): string {
+  return "triage-node-zone-drop";
+}
+
+export function getTriageBitZoneDropId(): string {
+  return "triage-bit-zone-drop";
+}
+
 export function isGridDropData(value: unknown): value is GridDropData {
   if (typeof value !== "object" || value === null || !("kind" in value)) {
     return false;
@@ -88,3 +111,10 @@ export const gridCollisionDetection: CollisionDetection = (args) => {
     return !blockedCells.has(`${x},${y}`);
   });
 };
+
+export const triageCollisionDetection: CollisionDetection = (args) =>
+  pointerWithin(args).filter(
+    (candidate) =>
+      candidate.id === getTriageNodeZoneDropId() ||
+      candidate.id === getTriageBitZoneDropId(),
+  );

@@ -15,18 +15,31 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { toast } from "sonner";
 import { isCalendarDropData } from "@/lib/calendar-dnd";
 import { getDataStore } from "@/lib/db/datastore";
-import { isGridDropData } from "@/lib/grid-dnd";
+import { isGridDropData, isTriageDropData } from "@/lib/grid-dnd";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import {
   getStaticBlockedCells,
   isCellBlocked,
 } from "@/lib/utils/breadcrumb-zone";
+import { useTriageStore } from "@/stores/triage-store";
 
 export type DragActiveItem = {
   id: string;
   type: "node" | "bit" | "chunk";
   parentId?: string;
   title: string;
+} | null;
+
+export type TriageDragKind =
+  | "triage-breakdown"
+  | "triage-staged-node"
+  | "triage-staged-bit";
+
+export type TriageDragItem = {
+  kind: TriageDragKind;
+  id: string;
+  label: string;
+  sourceBreakdownId?: string;
 } | null;
 
 type PendingNodeMove = {
@@ -62,6 +75,107 @@ const CLOSED_CONFLICT_STATE: ConflictState = {
   pendingChunkId: null,
   pendingTimestamp: null,
 };
+
+function isTriageDragKind(value: unknown): value is TriageDragKind {
+  return (
+    value === "triage-breakdown" ||
+    value === "triage-staged-node" ||
+    value === "triage-staged-bit"
+  );
+}
+
+function readTriageDragItem(value: unknown): TriageDragItem {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("kind" in value) ||
+    !("id" in value) ||
+    !("label" in value) ||
+    !isTriageDragKind(value.kind) ||
+    typeof value.id !== "string" ||
+    typeof value.label !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    kind: value.kind,
+    id: value.id,
+    label: value.label,
+    sourceBreakdownId:
+      "sourceBreakdownId" in value &&
+      typeof value.sourceBreakdownId === "string"
+        ? value.sourceBreakdownId
+        : undefined,
+  };
+}
+
+export function useTriageDnd(selectedScratchId: string | null): {
+  sensors: ReturnType<typeof useSensors>;
+  activeDragItem: TriageDragItem;
+  handleDragStart: (event: DragStartEvent) => void;
+  handleDragEnd: (event: DragEndEvent) => void;
+  handleDragOver: (event: DragOverEvent) => void;
+  overTargetId: string | null;
+} {
+  const addStagedCandidate = useTriageStore(
+    (state) => state.addStagedCandidate,
+  );
+  const [activeDragItem, setActiveDragItem] =
+    useState<TriageDragItem>(null);
+  const [overTargetId, setOverTargetId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, tolerance: 5 },
+    }),
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragItem(readTriageDragItem(event.active.data.current));
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    setOverTargetId(event.over?.id ? String(event.over.id) : null);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const dragItem =
+      readTriageDragItem(event.active.data.current) ?? activeDragItem;
+    const dropData = event.over?.data.current;
+
+    setActiveDragItem(null);
+    setOverTargetId(null);
+
+    if (
+      selectedScratchId === null ||
+      dragItem === null ||
+      dragItem.kind !== "triage-breakdown" ||
+      !isTriageDropData(dropData)
+    ) {
+      return;
+    }
+
+    addStagedCandidate(selectedScratchId, {
+      id: crypto.randomUUID(),
+      type: dropData.kind === "triage-node-zone-drop" ? "node" : "bit",
+      sourceBreakdownId: dragItem.id,
+      label: dragItem.label,
+    });
+  };
+
+  return {
+    sensors,
+    activeDragItem,
+    handleDragStart,
+    handleDragEnd,
+    handleDragOver,
+    overTargetId,
+  };
+}
 
 export function useDnd(getBlockedCells: () => Set<string>): {
   sensors: ReturnType<typeof useSensors>;

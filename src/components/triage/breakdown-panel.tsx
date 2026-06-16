@@ -7,6 +7,7 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
+import { useDraggable } from "@dnd-kit/core";
 import { GripVertical, Trash2 } from "lucide-react";
 import {
   AlertDialog,
@@ -19,9 +20,97 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useScratchBreakdowns } from "@/hooks/use-scratch-breakdowns";
+import type { ScratchBreakdown } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils/relative-time";
 import { useTriageStore } from "@/stores/triage-store";
+
+function BreakdownRow({
+  row,
+  isStaged,
+  onDelete,
+}: {
+  row: ScratchBreakdown;
+  isStaged: boolean;
+  onDelete: (id: string) => void;
+}) {
+  const {
+    attributes,
+    isDragging,
+    listeners,
+    setActivatorNodeRef,
+    setNodeRef,
+  } = useDraggable({
+    id: `triage-breakdown:${row.id}`,
+    data: { kind: "triage-breakdown", id: row.id, label: row.content },
+  });
+  const isMuted = isStaged || isDragging;
+  const gripColorClass =
+    isStaged && !isDragging
+      ? "text-muted-foreground/20"
+      : isMuted
+        ? "text-muted-foreground"
+        : "text-muted-foreground/45";
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "group flex items-start gap-2 border-b border-border/30 py-2 transition-[background-color,border-color,color,opacity] last:border-b-0",
+        isStaged && "opacity-50 transition-opacity duration-200",
+        isDragging &&
+          "opacity-30 border border-dashed border-muted bg-transparent",
+      )}
+    >
+      <button
+        ref={setActivatorNodeRef}
+        aria-label="Drag breakdown"
+        className={cn(
+          "mt-0.5 flex h-4 w-4 flex-shrink-0 cursor-grab items-center justify-center active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        )}
+        type="button"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical
+          aria-hidden="true"
+          className={cn("h-4 w-4 transition-colors", gripColorClass)}
+          data-testid="breakdown-grip"
+        />
+      </button>
+      <div className="min-w-0 flex-1">
+        <div
+          className={cn(
+            "whitespace-pre-wrap break-words text-sm leading-5 transition-colors",
+            isMuted ? "text-muted-foreground" : "text-foreground",
+          )}
+        >
+          {row.content}
+        </div>
+        <div
+          className={cn(
+            "mt-1 text-[10px] transition-colors",
+            isMuted ? "text-muted-foreground/40" : "text-muted-foreground/70",
+          )}
+        >
+          {formatRelativeTime(row.createdAt)}
+        </div>
+      </div>
+      <button
+        aria-label="Delete breakdown"
+        className={cn(
+          "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-destructive/10 hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          isDragging && "text-muted-foreground",
+        )}
+        title="Delete breakdown"
+        type="button"
+        onClick={() => onDelete(row.id)}
+      >
+        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
 
 export function BreakdownPanel() {
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
@@ -115,53 +204,12 @@ export function BreakdownPanel() {
           const isStaged = stagedSourceBreakdownIds.has(row.id);
 
           return (
-            <div
-              className={cn(
-                "group flex items-start gap-2 border-b border-border/30 py-2 last:border-b-0",
-                isStaged && "opacity-50 transition-opacity duration-200",
-              )}
+            <BreakdownRow
               key={row.id}
-            >
-              <GripVertical
-                aria-hidden="true"
-                className={cn(
-                  "mt-0.5 h-4 w-4 flex-shrink-0",
-                  isStaged
-                    ? "text-muted-foreground/20"
-                    : "text-muted-foreground/45",
-                )}
-                data-testid="breakdown-grip"
-              />
-              <div className="min-w-0 flex-1">
-                <div
-                  className={cn(
-                    "whitespace-pre-wrap break-words text-sm leading-5",
-                    isStaged ? "text-muted-foreground" : "text-foreground",
-                  )}
-                >
-                  {row.content}
-                </div>
-                <div
-                  className={cn(
-                    "mt-1 text-[10px]",
-                    isStaged
-                      ? "text-muted-foreground/40"
-                      : "text-muted-foreground/70",
-                  )}
-                >
-                  {formatRelativeTime(row.createdAt)}
-                </div>
-              </div>
-              <button
-                aria-label="Delete breakdown"
-                className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 hover:bg-destructive/10 hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                title="Delete breakdown"
-                type="button"
-                onClick={() => setPendingDeleteId(row.id)}
-              >
-                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-              </button>
-            </div>
+              isStaged={isStaged}
+              row={row}
+              onDelete={setPendingDeleteId}
+            />
           );
         })}
       </div>
