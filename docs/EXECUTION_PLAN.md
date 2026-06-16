@@ -79,7 +79,7 @@ These apply across all phases:
 > - Reuse: `grid-runtime.tsx` move-confirmation `Dialog`, `create-node-dialog.tsx` / `create-bit-dialog.tsx`, `sidebar.tsx` `DeleteDropTarget`, `grid-dnd.ts` `grid-delete-drop`, `use-dnd.ts`.
 
 ### Task 81: Node/Bit Staging zones
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/triage/staging-zone.tsx` (create), `src/stores/triage-store.ts` (update — staged candidates, UI only)
 - **Dependencies:** Phase 17 complete
 - **Actions:**
