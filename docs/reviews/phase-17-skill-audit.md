@@ -316,6 +316,38 @@ All three were caught at the prompt-preview gate (Step 4) before Gemini was laun
 
 ---
 
+### Entry 9 — Handoff Supersede Status Partially Updated (2026-06-16)
+
+#### What happened
+
+When superseding `docs/handoffs/phase-17-batch2.md` after creating `docs/handoffs/phase-17-batch3.md`, the file was only partially updated:
+- Top banner was changed to `handoff_status: superseded`
+- But `## Current State` still contained `handoff_status: current`
+
+This created contradictory state inside the same handoff file. The issue was caught during user/Codex review before `/clear`; the `Current State` line was corrected to `handoff_status: superseded` with `Superseded by: docs/handoffs/phase-17-batch3.md` before the commit. No next-session confusion occurred.
+
+#### Finding A13 — Superseded handoff retained stale internal `current` status
+
+- **Bucket:** skill-side / handoff lifecycle consistency
+- **Severity:** low/medium
+- Superseding a handoff must update all `handoff_status` declarations consistently — not just add a top banner. A stale `handoff_status: current` in `## Current State` can mislead a next session that searches for or reads from that section directly.
+- Distinct from A10: A10 = wrong handoff path; A13 = inconsistent status within the same file during a supersede operation.
+
+#### Candidate C11 — Supersede operation needs a status consistency fidelity check
+
+- When marking a handoff superseded, the fidelity gate must verify:
+  - every `handoff_status` occurrence in the file says `superseded`
+  - `Superseded by: <new handoff path>` is present at least once (top banner) and near the `handoff_status` field in `## Current State`
+  - the file does not present itself as the active resume artifact anywhere
+- Vehicle: `compaction-advisor` SKILL.md fidelity gate / handoff lifecycle guidance.
+
+#### Positive P11 — Supersede inconsistency caught before /clear
+
+- The contradictory status was caught during review before `/clear`; no next-session confusion occurred.
+- Confirms that the review step before committing and clearing has value beyond the canonical-path and approval-boundary checks.
+
+---
+
 *[Subsequent entries to follow per batch]*
 
 ---
@@ -346,6 +378,8 @@ All three were caught at the prompt-preview gate (Step 4) before Gemini was laun
 | A11 | Resume sanity `M` file rationalized as benign instead of diffed | workflow enforcement / sanity-check discipline | low/medium |
 | A12 | Prompt preview: Next.js version drift, stale batch wording, unclosed code fence | prompt-prep quality | low |
 | P10 | Prompt preview gate caught all pre-launch defects before Gemini launch | — | positive |
+| A13 | Superseded handoff retained stale internal `handoff_status: current` in `## Current State` | skill-side / handoff lifecycle | low/medium |
+| P11 | Supersede inconsistency caught during review before `/clear` | — | positive |
 
 ---
 
@@ -354,6 +388,8 @@ All three were caught at the prompt-preview gate (Step 4) before Gemini was laun
 - **C10 — Handoff generation must verify canonical output path.** `compaction-advisor` should fail its fidelity gate if a phase/batch handoff is written outside the project-canonical location. For this repo, generated phase/batch handoffs belong in `docs/handoffs/phase-N-batch-M.md`; `.omc/handoffs/` is only for obsolete drafts/transient prompt artifacts unless the project workflow explicitly says otherwise. Vehicle: compaction-advisor SKILL.md fidelity gate / handoff path rule. (From A10.)
 
 - **C9 — Post-checkpoint source/test fixes must route through Codex by default.** After Codex implementation, follow-up fixes (however small) must be drafted as scoped Codex prompts and shown for approval — not edited directly by Claude. Exception: explicit user approval of direct edit. Vehicle: execute-task SKILL.md Step 6 / follow-up handling guidance. (From A9.)
+
+- **C11 — Supersede operation needs a status consistency fidelity check.** When marking a handoff superseded, verify every `handoff_status` occurrence in the file says `superseded`, `Superseded by: <path>` is present near the `## Current State` field, and the file does not present itself as the active resume artifact anywhere. A top-banner change alone is insufficient. Vehicle: `compaction-advisor` SKILL.md fidelity gate / handoff lifecycle guidance. (From A13.)
 
 - **C8 — Handoff generation must preserve approval boundaries.** A handoff must not turn "ready_for_approval" into "approved_for_launch" without explicit user approval of that exact next-session action; recovery contexts default conservative. Vehicle: `handoff_status` + `next_action_approval` fields on handoffs. **Applied 2026-06-16** to compaction-advisor (SKILL.md + handoff-template) + execute-task defense line. (A5 staleness is covered by `handoff_status`; A8 is the distinct approval-boundary concern.)
 
