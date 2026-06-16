@@ -115,7 +115,7 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 80: Breakdown / Scribble
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/triage/breakdown-panel.tsx` (create), `src/hooks/use-scratch-breakdowns.ts` (create), `src/lib/db/datastore.ts` (update — add `deleteScratchBreakdown(id: string): Promise<void>`), `src/lib/db/indexeddb.ts` (update — implement single-row delete), `src/lib/db/scratch-breakdowns.test.ts` (create or update — unit test for single-row delete); DataStore scratchBreakdowns CRUD (Phase 15)
 - **Dependencies:** Task 79
 - **Actions:**
