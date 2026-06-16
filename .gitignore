@@ -57,3 +57,4 @@ leftsidebar.png
 # local tool and reference artifacts
 .playwright-mcp/
 references/
+docs/reviews/phase-*-skill-audit.md
