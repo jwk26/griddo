@@ -85,9 +85,10 @@ These apply across all phases:
 - **Actions:**
   - Two zones: **Node Zone** (two-column grid of compact, icon-centered candidates) + **Bit Zone** (vertical list of text rows). Enforce shape distinction (Node = icon-centered object; Bit = text-centered row) — not the same card recolored. Candidates are UI state scoped to the selected Scratch (`triage-store`), never mixed across Scratches; switching Scratch preserves data because source breakdown rows stay unconsumed. No inline edit.
 - **Acceptance:**
-  - Dragging a breakdown row into the Node/Bit Zone creates a candidate of that type (UI only); no DB record yet; the source row is de-emphasized but `consumedAt` stays `null`.
-  - Switching Scratch and back loses no breakdown data.
-  - `pnpm build` passes.
+  - The staging zones replace the existing `Placeholder` components in `triage-workspace.tsx`; the Node Zone renders a two-column grid of icon-centered candidate cards; the Bit Zone renders a vertical list of text rows.
+  - `triage-store` exposes `stagedCandidates` keyed by `scratchId`; switching `selectedScratchId` does not clear other scratches' candidates.
+  - A breakdown row whose `id` matches any staged candidate's `sourceBreakdownId` shows de-emphasis styling (not line-through — that is reserved for `consumedAt`).
+  - `pnpm test` and `pnpm build` pass.
 
 ### Task 82: Compact-token DnD (Inbox/Triage, partial)
 - **Status:** `[ ]`
