@@ -14,6 +14,15 @@
 
 ## Closed Issues
 
+### CI-4 — AlertDialog missing `onOpenChange`; stale `pendingDeleteId` on Scratch switch (T80 follow-up)
+
+- **Category:** product-side / interaction state defect
+- **Detected:** Post-checkpoint review (user review of `efa4b52`)
+- **Description:** Two related issues in `breakdown-panel.tsx`: (1) Controlled `AlertDialog` had no `onOpenChange`, so Radix could not clear `pendingDeleteId` on Escape or outside-click — Cancel worked via `onClick` but all other close paths were blocked. (2) `pendingDeleteId` was not cleared on `selectedScratchId` change, so a delete confirmation left open while switching Scratch could execute on a row no longer visible in the current list.
+- **Fix:** Added `onOpenChange={(open) => { if (!open) setPendingDeleteId(null); }}` to the AlertDialog. Added `useEffect(() => { setPendingDeleteId(null); }, [selectedScratchId])`. Added two tests: Escape closes dialog without deleting; Scratch switch closes dialog without deleting.
+- **Verification:** 343 tests pass. `pnpm build` and `pnpm lint` clean.
+- **Status:** Closed — resolved in follow-up commit after checkpoint.
+
 ### CI-3 — Codex added mock for ScratchPool to grid-runtime.test.tsx (out-of-spec file)
 
 - **Category:** test infrastructure / cascading dependency fix

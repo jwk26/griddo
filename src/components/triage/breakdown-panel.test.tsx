@@ -235,4 +235,43 @@ describe("BreakdownPanel", () => {
     expect(grip).not.toHaveAttribute("ondragend");
     expect(grip).not.toHaveAttribute("data-dnd-kit");
   });
+
+  it("clears the confirmation dialog on Escape without deleting", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Keep me" }),
+    ];
+
+    render(<BreakdownPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete breakdown" }));
+    expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    await waitFor(() => {
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    });
+    expect(hookState.deleteBreakdown).not.toHaveBeenCalled();
+  });
+
+  it("closes the confirmation dialog without deleting when the selected Scratch changes", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Keep me" }),
+    ];
+
+    const { rerender } = render(<BreakdownPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete breakdown" }));
+    expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
+
+    triageStoreState.selectedScratchId = "scratch-2";
+    rerender(<BreakdownPanel />);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    });
+    expect(hookState.deleteBreakdown).not.toHaveBeenCalled();
+  });
 });

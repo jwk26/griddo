@@ -32,6 +32,10 @@ export function BreakdownPanel() {
     inputRef.current?.focus();
   }, [isAdding]);
 
+  useEffect(() => {
+    setPendingDeleteId(null);
+  }, [selectedScratchId]);
+
   async function handleAdd(): Promise<void> {
     if (isSubmittingRef.current) return;
     const trimmed = newContent.trim();
@@ -153,7 +157,12 @@ export function BreakdownPanel() {
         )}
       </div>
 
-      <AlertDialog open={pendingDeleteId !== null}>
+      <AlertDialog
+        open={pendingDeleteId !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeleteId(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete breakdown?</AlertDialogTitle>
