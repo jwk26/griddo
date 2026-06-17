@@ -102,7 +102,7 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 83: Hierarchy Explorer + placement confirmation
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/triage/hierarchy-explorer.tsx` (create); reuse `src/components/ui/dialog.tsx`; `src/hooks/use-dnd.ts` (update `useTriageDnd`); `src/lib/grid-dnd.ts` (add hierarchy drop kinds); `src/components/triage/triage-workspace.tsx` (extend DndContext + add dialog); `src/lib/db/scratch-breakdowns.test.ts` (add test: `markScratchBreakdownConsumed` sets `consumedAt` without changing `content`/`order`)
 - **Dependencies:** Task 82
 - **Actions:**
