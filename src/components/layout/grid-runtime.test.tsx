@@ -53,9 +53,12 @@ vi.mock("@/hooks/use-dnd", () => ({
     sensors: [],
     activeDragItem: null,
     overTargetId: null,
+    pendingPlacement: null,
     handleDragStart: vi.fn(),
     handleDragEnd: vi.fn(),
     handleDragOver: vi.fn(),
+    handlePlacementConfirm: vi.fn(),
+    handlePlacementCancel: vi.fn(),
   }),
 }));
 

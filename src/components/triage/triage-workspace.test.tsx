@@ -53,13 +53,13 @@ describe("TriageWorkspace", () => {
     expect(within(workspace).getByTestId("breakdown-panel")).toBeInTheDocument();
   });
 
-  it("keeps staging zones and the hierarchy placeholder visible", () => {
+  it("keeps staging zones and the hierarchy explorer visible", () => {
     render(<TriageWorkspace node={createNode()} />);
 
     expect(screen.getByText("Staging: Nodes")).toBeInTheDocument();
     expect(screen.getByText("Staging: Bits")).toBeInTheDocument();
     expect(screen.getByText("Hierarchy Explorer")).toBeInTheDocument();
-    expect(screen.getByText("HIERARCHY EXPLORER")).toBeInTheDocument();
+    expect(screen.getByTestId("hierarchy-explorer")).toBeInTheDocument();
     expect(screen.getByTestId("node-staging-zone")).toBeInTheDocument();
     expect(screen.getByTestId("bit-staging-zone")).toBeInTheDocument();
   });

@@ -42,6 +42,19 @@ export type TriageDragItem = {
   sourceBreakdownId?: string;
 } | null;
 
+export type PendingPlacement = {
+  candidateId: string;
+  candidateType: "node" | "bit";
+  candidateLabel: string;
+  sourceBreakdownId: string;
+  dropId: string;
+  parentNodeId: string | null;
+  targetNodeLevel: number | null;
+  targetTitle: string;
+  targetParentPath: string[];
+  isFull: boolean;
+} | null;
+
 type PendingNodeMove = {
   itemId: string;
   itemType: "node" | "bit";
@@ -116,14 +129,22 @@ export function useTriageDnd(selectedScratchId: string | null): {
   handleDragStart: (event: DragStartEvent) => void;
   handleDragEnd: (event: DragEndEvent) => void;
   handleDragOver: (event: DragOverEvent) => void;
+  pendingPlacement: PendingPlacement;
+  handlePlacementConfirm: (scratchId: string) => Promise<void>;
+  handlePlacementCancel: () => void;
   overTargetId: string | null;
 } {
   const addStagedCandidate = useTriageStore(
     (state) => state.addStagedCandidate,
   );
+  const removeStagedCandidate = useTriageStore(
+    (state) => state.removeStagedCandidate,
+  );
   const [activeDragItem, setActiveDragItem] =
     useState<TriageDragItem>(null);
   const [overTargetId, setOverTargetId] = useState<string | null>(null);
+  const [pendingPlacement, setPendingPlacement] =
+    useState<PendingPlacement>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -142,7 +163,7 @@ export function useTriageDnd(selectedScratchId: string | null): {
     setOverTargetId(event.over?.id ? String(event.over.id) : null);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const dragItem =
       readTriageDragItem(event.active.data.current) ?? activeDragItem;
     const dropData = event.over?.data.current;
@@ -151,20 +172,155 @@ export function useTriageDnd(selectedScratchId: string | null): {
     setOverTargetId(null);
 
     if (
-      selectedScratchId === null ||
       dragItem === null ||
-      dragItem.kind !== "triage-breakdown" ||
       !isTriageDropData(dropData)
     ) {
       return;
     }
 
-    addStagedCandidate(selectedScratchId, {
-      id: crypto.randomUUID(),
-      type: dropData.kind === "triage-node-zone-drop" ? "node" : "bit",
-      sourceBreakdownId: dragItem.id,
-      label: dragItem.label,
+    if (
+      selectedScratchId !== null &&
+      dragItem.kind === "triage-breakdown" &&
+      (dropData.kind === "triage-node-zone-drop" ||
+        dropData.kind === "triage-bit-zone-drop")
+    ) {
+      addStagedCandidate(selectedScratchId, {
+        id: crypto.randomUUID(),
+        type: dropData.kind === "triage-node-zone-drop" ? "node" : "bit",
+        sourceBreakdownId: dragItem.id,
+        label: dragItem.label,
+      });
+      return;
+    }
+
+    if (
+      dropData.kind !== "triage-hierarchy-drop" ||
+      (dragItem.kind !== "triage-staged-node" &&
+        dragItem.kind !== "triage-staged-bit") ||
+      dragItem.sourceBreakdownId === undefined
+    ) {
+      return;
+    }
+
+    if (
+      dragItem.kind === "triage-staged-node" &&
+      dropData.targetNodeLevel !== null &&
+      dropData.targetNodeLevel >= 2
+    ) {
+      return;
+    }
+
+    if (
+      dragItem.kind === "triage-staged-bit" &&
+      dropData.parentNodeId === null
+    ) {
+      return;
+    }
+
+    const dataStore = await getDataStore();
+    const occupancy = await dataStore.getGridOccupancy(dropData.parentNodeId);
+    const position = findNearestEmptyCell(
+      occupancy,
+      0,
+      0,
+      getStaticBlockedCells(),
+    );
+
+    setPendingPlacement({
+      candidateId: dragItem.id,
+      candidateType: dragItem.kind === "triage-staged-node" ? "node" : "bit",
+      candidateLabel: dragItem.label,
+      sourceBreakdownId: dragItem.sourceBreakdownId,
+      dropId: dropData.dropId,
+      parentNodeId: dropData.parentNodeId,
+      targetNodeLevel: dropData.targetNodeLevel,
+      targetTitle: dropData.targetTitle,
+      targetParentPath: dropData.targetParentPath,
+      isFull: position === null,
     });
+  };
+
+  const handlePlacementConfirm = async (scratchId: string) => {
+    if (pendingPlacement === null) {
+      return;
+    }
+
+    const placement = pendingPlacement;
+
+    try {
+      if (placement.isFull) {
+        return;
+      }
+
+      const dataStore = await getDataStore();
+      const occupancy = await dataStore.getGridOccupancy(
+        placement.parentNodeId,
+      );
+      const position = findNearestEmptyCell(
+        occupancy,
+        0,
+        0,
+        getStaticBlockedCells(),
+      );
+
+      if (position === null) {
+        return;
+      }
+
+      if (
+        placement.candidateType === "node" &&
+        placement.targetNodeLevel !== null &&
+        placement.targetNodeLevel >= 2
+      ) {
+        return;
+      }
+
+      if (placement.candidateType === "node") {
+        await dataStore.createNode({
+          title: placement.candidateLabel,
+          parentId: placement.parentNodeId,
+          level:
+            placement.targetNodeLevel === null
+              ? 0
+              : placement.targetNodeLevel + 1,
+          x: position.x,
+          y: position.y,
+          color: "hsl(210, 80%, 55%)",
+          icon: "Folder",
+          deadline: null,
+          deadlineAllDay: false,
+        });
+      }
+
+      if (placement.candidateType === "bit") {
+        if (placement.parentNodeId === null) {
+          return;
+        }
+
+        await dataStore.createBit({
+          title: placement.candidateLabel,
+          parentId: placement.parentNodeId,
+          x: position.x,
+          y: position.y,
+          description: "",
+          icon: "ListTodo",
+          deadline: null,
+          deadlineAllDay: false,
+          priority: null,
+        });
+      }
+
+      await dataStore.markScratchBreakdownConsumed(
+        placement.sourceBreakdownId,
+      );
+      removeStagedCandidate(scratchId, placement.candidateId);
+    } finally {
+      setPendingPlacement(null);
+    }
+  };
+
+  const handlePlacementCancel = () => {
+    setPendingPlacement(null);
   };
 
   return {
@@ -173,6 +329,9 @@ export function useTriageDnd(selectedScratchId: string | null): {
     handleDragStart,
     handleDragEnd,
     handleDragOver,
+    pendingPlacement,
+    handlePlacementConfirm,
+    handlePlacementCancel,
     overTargetId,
   };
 }

@@ -1,12 +1,24 @@
 "use client";
 
 import { DndContext, DragOverlay } from "@dnd-kit/core";
+import { AlertTriangle } from "lucide-react";
+import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { BreakdownPanel } from "@/components/triage/breakdown-panel";
+import { HierarchyExplorer } from "@/components/triage/hierarchy-explorer";
 import { ScratchPool } from "@/components/triage/scratch-pool";
 import { TriageDragToken } from "@/components/triage/triage-drag-token";
 import { StagingZone } from "@/components/triage/staging-zone";
-import { useTriageDnd } from "@/hooks/use-dnd";
+import { useTriageDnd, type PendingPlacement } from "@/hooks/use-dnd";
 import { triageCollisionDetection } from "@/lib/grid-dnd";
+import { cn } from "@/lib/utils";
 import { useTriageStore } from "@/stores/triage-store";
 import type { Node } from "@/types";
 
@@ -18,33 +30,17 @@ function PanelHeader({ title }: { title: string }) {
   );
 }
 
-function Placeholder({
-  heading,
-  subtext = "[BATCH 1 PLACEHOLDER]",
-}: {
-  heading: string;
-  subtext?: string;
-}) {
-  return (
-    <div className="mx-auto my-auto max-w-xs self-center rounded-md border border-dashed border-border/80 p-6 text-center">
-      <div className="font-mono text-xs font-bold tracking-widest text-muted-foreground">
-        {heading}
-      </div>
-      <div className="mt-1 font-mono text-[10px] text-muted-foreground/60">
-        {subtext}
-      </div>
-    </div>
-  );
-}
-
 export function TriageWorkspace({ node }: { node: Node }) {
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
   const {
     activeDragItem,
     handleDragEnd,
     handleDragOver,
+    handlePlacementCancel,
+    handlePlacementConfirm,
     handleDragStart,
     overTargetId,
+    pendingPlacement,
     sensors,
   } = useTriageDnd(selectedScratchId);
 
@@ -101,15 +97,152 @@ export function TriageWorkspace({ node }: { node: Node }) {
           <DragOverlay dropAnimation={null}>
             {activeDragItem ? <TriageDragToken item={activeDragItem} /> : null}
           </DragOverlay>
-        </DndContext>
 
-        <div className="flex min-h-0 basis-2/5 flex-col bg-background">
-          <PanelHeader title="Hierarchy Explorer" />
-          <div className="flex min-h-0 flex-1 overflow-auto p-3">
-            <Placeholder heading="HIERARCHY EXPLORER" />
+          <div className="flex min-h-0 basis-2/5 flex-col bg-background">
+            <PanelHeader title="Hierarchy Explorer" />
+            <div className="flex min-h-0 flex-1 overflow-hidden p-3">
+              <HierarchyExplorer
+                activeDragItem={activeDragItem}
+                overTargetId={overTargetId}
+                pendingPlacementDropId={pendingPlacement?.dropId ?? null}
+              />
+            </div>
           </div>
-        </div>
+
+          <PlacementConfirmationDialog
+            pendingPlacement={pendingPlacement}
+            selectedScratchId={selectedScratchId}
+            onCancel={handlePlacementCancel}
+            onConfirm={handlePlacementConfirm}
+          />
+        </DndContext>
       </div>
     </section>
+  );
+}
+
+function PlacementConfirmationDialog({
+  onCancel,
+  onConfirm,
+  pendingPlacement,
+  selectedScratchId,
+}: {
+  onCancel: () => void;
+  onConfirm: (scratchId: string) => Promise<void>;
+  pendingPlacement: PendingPlacement;
+  selectedScratchId: string | null;
+}) {
+  const destinationPath =
+    pendingPlacement === null
+      ? []
+      : [...pendingPlacement.targetParentPath, pendingPlacement.targetTitle];
+
+  return (
+    <Dialog
+      open={pendingPlacement !== null}
+      onOpenChange={(open) => {
+        if (!open) onCancel();
+      }}
+    >
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-md w-full overflow-y-hidden border border-border bg-popover p-6 rounded-lg"
+      >
+        <DialogHeader>
+          <DialogTitle>Place item?</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="divide-y divide-border/50">
+            <PlacementField label="Candidate">
+              <div className="truncate text-sm font-medium text-foreground">
+                {pendingPlacement?.candidateLabel}
+              </div>
+            </PlacementField>
+
+            <PlacementField label="Type">
+              <span
+                className={cn(
+                  pendingPlacement?.candidateType === "node"
+                    ? "bg-accent text-foreground border border-primary/50 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                    : "bg-muted text-muted-foreground/80 border border-border/50 text-[10px] font-semibold px-2 py-0.5 rounded-md",
+                )}
+              >
+                {pendingPlacement?.candidateType === "node" ? "Node" : "Bit"}
+              </span>
+            </PlacementField>
+
+            <PlacementField label="Destination">
+              <div className="flex min-w-0 items-center gap-1.5 truncate text-sm font-medium text-foreground">
+                {destinationPath.map((segment, index) => (
+                  <span
+                    key={`${segment}-${index}`}
+                    className="min-w-0 truncate"
+                  >
+                    {index > 0 ? "→ " : ""}
+                    {segment}
+                  </span>
+                ))}
+              </div>
+            </PlacementField>
+
+            <PlacementField label="Result">
+              <div className="text-sm font-semibold text-foreground">
+                {pendingPlacement?.candidateType === "node"
+                  ? `Create a node in ${pendingPlacement.targetTitle}`
+                  : `Create a bit in ${pendingPlacement?.targetTitle}`}
+              </div>
+            </PlacementField>
+          </div>
+
+          {pendingPlacement?.isFull && (
+            <div className="flex items-center gap-2 rounded-md border border-destructive bg-muted p-3">
+              <AlertTriangle
+                aria-hidden="true"
+                className="h-4 w-4 flex-shrink-0 text-destructive"
+              />
+              <p className="text-xs font-semibold text-destructive">
+                No available grid cell in this target
+              </p>
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button
+            disabled={
+              (pendingPlacement?.isFull ?? false) || selectedScratchId === null
+            }
+            onClick={() => {
+              if (selectedScratchId) {
+                void onConfirm(selectedScratchId);
+              }
+            }}
+          >
+            Confirm
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function PlacementField({
+  children,
+  label,
+}: {
+  children: ReactNode;
+  label: string;
+}) {
+  return (
+    <div className="py-3">
+      <div className="mb-1 font-mono text-[10px] font-medium uppercase text-muted-foreground/50">
+        {label}
+      </div>
+      {children}
+    </div>
   );
 }
