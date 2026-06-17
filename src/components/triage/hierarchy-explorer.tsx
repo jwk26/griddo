@@ -28,6 +28,9 @@ type HierarchyCellState =
 const CELL_BASE_CLASS =
   "flex w-full items-center gap-2 rounded-md border border-transparent px-3 py-2 text-left transition-[background-color,border-color,box-shadow,color] touch-action-manipulation cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
+const CELL_DROP_ONLY_CLASS =
+  "flex w-full items-center gap-2 rounded-md border border-transparent px-3 py-2 text-left transition-[background-color,border-color,box-shadow,color]";
+
 const CELL_STATE_CLASSES: Record<HierarchyCellState, string> = {
   default: "",
   "idle-valid": "ring-1 ring-primary border-border/80 text-foreground",
@@ -284,7 +287,7 @@ function HomeDropCell({
     <div
       ref={setNodeRef}
       className={cn(
-        CELL_BASE_CLASS,
+        CELL_DROP_ONLY_CLASS,
         activeDragItem === null && "hover:bg-muted hover:text-foreground",
         CELL_STATE_CLASSES[state],
       )}
@@ -403,19 +406,40 @@ function NodeDropCell({
     pendingPlacementDropId,
   });
 
+  if (onSelectNode) {
+    return (
+      <button
+        ref={setNodeRef}
+        type="button"
+        aria-disabled={state === "invalid"}
+        aria-label={`Select Node: ${node.title}`}
+        className={cn(
+          CELL_BASE_CLASS,
+          activeDragItem === null && "hover:bg-muted hover:text-foreground",
+          isSelected && "bg-accent text-foreground ring-1 ring-primary",
+          CELL_STATE_CLASSES[state],
+        )}
+        onClick={() => onSelectNode(node.id)}
+      >
+        <Folder
+          aria-hidden="true"
+          className="h-4 w-4 flex-shrink-0 text-muted-foreground/80"
+        />
+        <span className="min-w-0 truncate text-sm font-medium text-foreground">
+          {node.title}
+        </span>
+      </button>
+    );
+  }
+
   return (
-    <button
+    <div
       ref={setNodeRef}
-      type="button"
       aria-disabled={state === "invalid"}
-      aria-label={`Select Node: ${node.title}`}
       className={cn(
-        CELL_BASE_CLASS,
-        activeDragItem === null && "hover:bg-muted hover:text-foreground",
-        isSelected && "bg-accent text-foreground ring-1 ring-primary",
+        CELL_DROP_ONLY_CLASS,
         CELL_STATE_CLASSES[state],
       )}
-      onClick={() => onSelectNode?.(node.id)}
     >
       <Folder
         aria-hidden="true"
@@ -424,7 +448,7 @@ function NodeDropCell({
       <span className="min-w-0 truncate text-sm font-medium text-foreground">
         {node.title}
       </span>
-    </button>
+    </div>
   );
 }
 

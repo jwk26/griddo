@@ -62,6 +62,13 @@ _None yet._
 - **Description:** Codex wrote three additional test file changes beyond the single test specified in the T83 spec: (1) `use-triage-dnd.test.ts` — added 4 new behavioral tests for pending placement creation, confirm, cancel, and Bit-to-Home guard; (2) `triage-workspace.test.tsx` — updated assertion from `HIERARCHY EXPLORER` placeholder text to `data-testid="hierarchy-explorer"`; (3) `grid-runtime.test.tsx` — updated `useTriageDnd` mock to include new return values (`pendingPlacement`, `handlePlacementConfirm`, `handlePlacementCancel`). All changes are additive and necessary for the tests to pass.
 - **Status:** Accepted — improvements kept; all tests pass
 
+### ISSUE-18-06 — L3 terminal Node cells rendered as no-op interactive buttons
+- **Batch:** 3 (T83) — found at checkpoint review
+- **Category:** Accessibility defect
+- **Severity:** Medium
+- **Description:** `NodeDropCell` always rendered a `<button aria-label="Select Node: ...">` even in the L3 terminal column where `onSelectNode` is absent, producing a focusable "Select Node" control with a no-op click handler. Also, `HomeDropCell` used `CELL_BASE_CLASS` which includes `cursor-pointer` and focus-ring classes on a non-interactive `<div>`. Fixed: `NodeDropCell` now conditionally renders `<button>` with full interactive styling when `onSelectNode` is defined, and a plain `<div>` (drop-only, no aria-label, no cursor/focus classes) when absent. `HomeDropCell` switched to new `CELL_DROP_ONLY_CLASS`.
+- **Status:** Fixed — patch committed in same session; all tests pass
+
 ### ISSUE-18-03 — Staged+dragging row opacity conflict (cosmetic)
 - **Batch:** 2 (T82)
 - **Category:** Visual edge case
