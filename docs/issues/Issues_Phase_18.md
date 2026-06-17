@@ -10,7 +10,7 @@
 |-------|-------|----------------|-------------|
 | 1 | T81 | mixed | `staging-zone.tsx` (create), `triage-store.ts` (StagedCandidate + stagedCandidates), `breakdown-panel.tsx` (de-emphasis) |
 | 2 | T82 | mixed | Compact drag token, Triage DnD kinds in `use-dnd.ts` / `grid-dnd.ts`, drag wiring in `triage/*` |
-| 3 | T83 | mixed | `hierarchy-explorer.tsx` (create), placement confirmation dialog, `consumeScratchBreakdown` + unit test |
+| 3 | T83 | mixed | `hierarchy-explorer.tsx` (create), placement confirmation dialog, `markScratchBreakdownConsumed` (existing API) + content/order unit test |
 | 4 | T84 | mixed | Fast path (breakdown row → hierarchy), explicit type-choice dialog |
 | 5 | T85 | mixed | Remove-from-staging drop target, Archive Scratch affordance, `useCanArchiveScratch` hook |
 

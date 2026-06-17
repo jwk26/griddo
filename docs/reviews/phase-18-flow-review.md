@@ -18,11 +18,11 @@
 | F6 | Existing grid / calendar / pool DnD unchanged | Any existing grid or calendar drag interaction | Grid/calendar/pool DnD behavior identical to pre-Phase-18 | T82 | EXECUTION_PLAN explicit policy: "do NOT rework main-grid / calendar / pool DnD"; grid-dnd.ts must be additive-only | ✅ Owned |
 | F7 | Hierarchy Explorer renders | Triage workspace visible with staged candidates | Home / L1 / L2 / L3 columns with progressive reveal; Nodes before Bits; long Bit titles ellipsize | T83 | Columns must be reactive to actual hierarchy data (live Nodes/Bits at each level); empty columns are valid | ✅ Owned |
 | F8 | Drop staged candidate onto hierarchy target | User drops onto a column/parent in Hierarchy Explorer | Pending-confirmation dialog opens with: source content, candidate type, destination hierarchy path, result summary | T83 | Dialog must show all four fields; confirmation is the write gate; cancel must be a no-op | ✅ Owned |
-| F9 | Confirm placement | User clicks Confirm in placement dialog | `createNode`/`createBit` called at target; source `scratchBreakdowns` row `consumedAt` set to timestamp; row line-throughs | T83 | `consumeScratchBreakdown(id)` added to `datastore.ts` + `indexeddb.ts` via T83 amendment | ✅ Owned |
+| F9 | Confirm placement | User clicks Confirm in placement dialog | `createNode`/`createBit` called at target; source `scratchBreakdowns` row `consumedAt` set to timestamp; row line-throughs | T83 | `markScratchBreakdownConsumed(id)` — already implemented in `datastore.ts` + `indexeddb.ts`; T83 calls existing API | ✅ Owned |
 | F10 | Cancel / Esc placement | User cancels or escapes the placement dialog | No record created; `consumedAt` stays `null`; staged candidate persists in triage-store | T83 | Must be a clean no-op — no partial writes | ✅ Owned |
 | F11 | Full target grid — confirm disabled | Staged candidate dropped on a full hierarchy target | Confirm button disabled; visible reason displayed ("No available grid cell in this target") | T83 | Grid occupancy check must run before enabling confirm; occupancy is per-target-parent | ✅ Owned |
 | F12 | Fast path: drag breakdown row directly to Hierarchy | User drags row past staging and onto hierarchy target | Same pending-confirmation dialog, but requires explicit Node/Bit type choice — no default preselected | T84 | Staged candidate is NOT created first; type choice is mandatory (contrast to F8 where type is already determined by zone) | ✅ Owned |
-| F13 | Fast path confirm | User confirms with explicit type choice | `createNode`/`createBit` called; same `consumedAt` write as F9; row consumed | T84 | `consumeScratchBreakdown(id)` added via T83 amendment — same resolution as F9 | ✅ Owned |
+| F13 | Fast path confirm | User confirms with explicit type choice | `createNode`/`createBit` called; same `consumedAt` write as F9; row consumed | T84 | `markScratchBreakdownConsumed(id)` — same existing API as F9 | ✅ Owned |
 | F14 | Remove from staging | User drags staged candidate onto Remove target | Staged candidate removed from triage-store; source breakdown row de-emphasis cleared; `consumedAt` stays `null`; non-destructive (no toast) | T85 | Remove target should only appear while a staged candidate is being dragged (not permanent UI); de-emphasis of source row must also clear | ⚠️ Weak |
 | F15 | Archive Scratch affordance appearance | All breakdown rows `consumedAt != null` AND no staged candidates remain for selected Scratch | Archive Scratch affordance becomes visible | T85 | Condition is cross-store: `scratchBreakdowns` (consumedAt state) + triage-store (staged candidates) — see IC-3 | ⚠️ Weak |
 | F16 | Archive Scratch confirm | User confirms Archive Scratch | `archiveBit(scratchId)` called; `archivedAt` set; Scratch leaves active Scratch Pool; appears in Archive View | T85 | `archiveBit` exists in DataStore ✅; Scratch must no longer appear in the active pool; Archive affordance should not trigger auto-archive | ✅ Owned |
@@ -38,11 +38,11 @@ These flows are owned but carry non-trivial integration complexity. Not blockers
 
 `datastore.ts` line 54: `updateScratchBreakdown` originally excluded `consumedAt`. T83 and T84 both require setting `consumedAt = Date.now()` on confirmed placement.
 
-**Resolved by T83 amendment (2026-06-17):**
-- `src/lib/db/datastore.ts` — `consumeScratchBreakdown(id: string): Promise<void>` added to Files list
-- `src/lib/db/indexeddb.ts` — `consumedAt` update implementation added to Files list
-- `src/lib/db/scratch-breakdowns.test.ts` — unit test added to Files list
-- T83 Actions + Acceptance updated to reference `consumeScratchBreakdown(id)` explicitly
+**Resolved by T83 amendment (2026-06-17); API name corrected (2026-06-17):**
+- `datastore.ts` + `indexeddb.ts` already implement `markScratchBreakdownConsumed(id: string): Promise<void>` — no new method needed
+- `src/lib/db/scratch-breakdowns.test.ts` — unit test added to Files list (verifies `content`/`order` unchanged)
+- T83 Actions + Acceptance updated to reference `markScratchBreakdownConsumed(id)` (corrected from `consumeScratchBreakdown`)
+- T83 Files list updated: `datastore.ts` and `indexeddb.ts` removed (already implemented); `use-dnd.ts`, `grid-dnd.ts`, `triage-workspace.tsx` added
 
 F9 and F13 are now ✅ Owned.
 
@@ -91,7 +91,7 @@ This needs a hook or derived selector (e.g., `useCanArchiveScratch(scratchId)`).
 
 | # | Flow | Gap Type | Description | Resolution |
 |---|------|----------|-------------|----------------------|
-| G1 | F9, F13 | Missing DataStore API | `consumedAt` cannot be written — `updateScratchBreakdown` excludes it | ✅ Resolved — T83 amended: `datastore.ts`, `indexeddb.ts`, `scratch-breakdowns.test.ts` added to Files; Actions + Acceptance updated with `consumeScratchBreakdown(id)` |
+| G1 | F9, F13 | Missing DataStore API | `consumedAt` cannot be written — `updateScratchBreakdown` excludes it | ✅ Resolved — `markScratchBreakdownConsumed(id)` already implemented in `datastore.ts` + `indexeddb.ts`; T83 amended to call existing API; unit test (content/order invariant) added to Files |
 
 ---
 
@@ -121,6 +121,6 @@ This needs a hook or derived selector (e.g., `useCanArchiveScratch(scratchId)`).
 
 | Gap | Resolved | Action Taken |
 |-----|----------|--------------|
-| G1 | 2026-06-17 | T83 Files amended: added `datastore.ts` + `indexeddb.ts` + `scratch-breakdowns.test.ts`; Actions clarified (`consumeScratchBreakdown(id)`, placement dialog is purpose-built not create-dialog re-render); Acceptance criterion added for unit test |
+| G1 | 2026-06-17 | T83 amended: `markScratchBreakdownConsumed(id)` already implemented — no new DataStore method needed; `scratch-breakdowns.test.ts` unit test added (content/order invariant); Actions + Acceptance corrected from `consumeScratchBreakdown` → `markScratchBreakdownConsumed` |
 
 IC-2, IC-3, IC-4, IC-5 are implementation notes — they must be embedded in the relevant Codex batch prompts, but they are not plan blockers.
