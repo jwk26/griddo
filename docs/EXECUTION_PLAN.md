@@ -114,7 +114,7 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 84: Fast path (Breakdown row → Hierarchy)
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/triage/breakdown-panel.tsx` + `hierarchy-explorer.tsx` (update), `src/hooks/use-dnd.ts` (update)
 - **Dependencies:** Task 83
 - **Actions:**
