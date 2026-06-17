@@ -1,0 +1,79 @@
+import "@testing-library/jest-dom/vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import type { TriageDragItem } from "@/hooks/use-dnd";
+import { TriageDragToken } from "./triage-drag-token";
+
+vi.mock("lucide-react", () => {
+  function createIcon(name: string) {
+    const Icon = ({ className }: { className?: string }) => (
+      <svg className={className} data-icon={name} data-testid={`icon-${name}`} />
+    );
+    Icon.displayName = name;
+    return Icon;
+  }
+  return {
+    Folder: createIcon("Folder"),
+    GripVertical: createIcon("GripVertical"),
+    ListTodo: createIcon("ListTodo"),
+  };
+});
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
+
+function makeItem(
+  overrides: Partial<NonNullable<TriageDragItem>>,
+): NonNullable<TriageDragItem> {
+  return {
+    kind: "triage-breakdown",
+    id: "item-1",
+    label: "Test label",
+    ...overrides,
+  };
+}
+
+describe("TriageDragToken", () => {
+  it("renders nothing when item is null", () => {
+    const { container } = render(<TriageDragToken item={null} />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  describe("triage-breakdown kind", () => {
+    it("renders the GripVertical icon", () => {
+      render(<TriageDragToken item={makeItem({ kind: "triage-breakdown", label: "My note" })} />);
+      expect(screen.getByTestId("icon-GripVertical")).toBeInTheDocument();
+    });
+
+    it("renders the label text", () => {
+      render(<TriageDragToken item={makeItem({ kind: "triage-breakdown", label: "My note" })} />);
+      expect(screen.getByText("My note")).toBeInTheDocument();
+    });
+  });
+
+  describe("triage-staged-node kind", () => {
+    it("renders the Folder icon", () => {
+      render(<TriageDragToken item={makeItem({ kind: "triage-staged-node", label: "Project" })} />);
+      expect(screen.getByTestId("icon-Folder")).toBeInTheDocument();
+    });
+
+    it("does not render a label", () => {
+      render(<TriageDragToken item={makeItem({ kind: "triage-staged-node", label: "Project" })} />);
+      expect(screen.queryByText("Project")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("triage-staged-bit kind", () => {
+    it("renders the ListTodo icon", () => {
+      render(<TriageDragToken item={makeItem({ kind: "triage-staged-bit", label: "Call Sam" })} />);
+      expect(screen.getByTestId("icon-ListTodo")).toBeInTheDocument();
+    });
+
+    it("renders the label text", () => {
+      render(<TriageDragToken item={makeItem({ kind: "triage-staged-bit", label: "Call Sam" })} />);
+      expect(screen.getByText("Call Sam")).toBeInTheDocument();
+    });
+  });
+});

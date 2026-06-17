@@ -1,8 +1,17 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { TriageDragItem } from "@/hooks/use-dnd";
 import type { StagedCandidate } from "@/stores/triage-store";
 import { StagingZone } from "./staging-zone";
+
+const useDroppableMock = vi.hoisted(() => vi.fn());
+const useDraggableMock = vi.hoisted(() => vi.fn());
+
+vi.mock("@dnd-kit/core", () => ({
+  useDraggable: useDraggableMock,
+  useDroppable: useDroppableMock,
+}));
 
 const triageStoreState = vi.hoisted(() => ({
   selectedScratchId: "scratch-1" as string | null,
@@ -36,6 +45,14 @@ beforeEach(() => {
       }) => unknown,
     ) => selector(triageStoreState),
   );
+  useDroppableMock.mockReturnValue({ setNodeRef: vi.fn() });
+  useDraggableMock.mockReturnValue({
+    setNodeRef: vi.fn(),
+    setActivatorNodeRef: vi.fn(),
+    attributes: {},
+    listeners: {},
+    isDragging: false,
+  });
 });
 
 afterEach(() => {
@@ -126,5 +143,89 @@ describe("StagingZone", () => {
     expect(
       within(zone).queryByText("Other scratch bit"),
     ).not.toBeInTheDocument();
+  });
+});
+
+function makeDragItem(kind: TriageDragItem extends null ? never : NonNullable<TriageDragItem>["kind"]): NonNullable<TriageDragItem> {
+  return { kind, id: "drag-1", label: "Dragged item" };
+}
+
+describe("StagingZone — drop zone state classes", () => {
+  it("Node Zone shows valid state when a breakdown row hovers over it", () => {
+    render(
+      <StagingZone
+        type="node"
+        activeDragItem={makeDragItem("triage-breakdown")}
+        overTargetId="triage-node-zone-drop"
+      />,
+    );
+    const zone = screen.getByTestId("node-staging-zone");
+    expect(zone).toHaveClass("border-primary");
+    expect(zone).toHaveClass("bg-accent");
+  });
+
+  it("Bit Zone shows valid state when a breakdown row hovers over it", () => {
+    render(
+      <StagingZone
+        type="bit"
+        activeDragItem={makeDragItem("triage-breakdown")}
+        overTargetId="triage-bit-zone-drop"
+      />,
+    );
+    const zone = screen.getByTestId("bit-staging-zone");
+    expect(zone).toHaveClass("border-primary");
+    expect(zone).toHaveClass("bg-accent");
+  });
+
+  it("Bit Zone shows invalid state when a staged-node hovers over it", () => {
+    render(
+      <StagingZone
+        type="bit"
+        activeDragItem={makeDragItem("triage-staged-node")}
+        overTargetId="triage-bit-zone-drop"
+      />,
+    );
+    const zone = screen.getByTestId("bit-staging-zone");
+    expect(zone).toHaveClass("border-destructive");
+    expect(zone).toHaveClass("cursor-not-allowed");
+  });
+
+  it("Node Zone shows invalid state when a staged-bit hovers over it", () => {
+    render(
+      <StagingZone
+        type="node"
+        activeDragItem={makeDragItem("triage-staged-bit")}
+        overTargetId="triage-node-zone-drop"
+      />,
+    );
+    const zone = screen.getByTestId("node-staging-zone");
+    expect(zone).toHaveClass("border-destructive");
+    expect(zone).toHaveClass("cursor-not-allowed");
+  });
+
+  it("Node Zone shows idle-valid hint when a breakdown drag is active but not hovering", () => {
+    render(
+      <StagingZone
+        type="node"
+        activeDragItem={makeDragItem("triage-breakdown")}
+        overTargetId={null}
+      />,
+    );
+    const zone = screen.getByTestId("node-staging-zone");
+    expect(zone).toHaveClass("border-dashed");
+    expect(zone).toHaveClass("border-muted");
+  });
+
+  it("Bit Zone shows no hint when an incompatible drag is active but not hovering (idle-invalid)", () => {
+    render(
+      <StagingZone
+        type="bit"
+        activeDragItem={makeDragItem("triage-staged-node")}
+        overTargetId={null}
+      />,
+    );
+    const zone = screen.getByTestId("bit-staging-zone");
+    expect(zone).not.toHaveClass("border-dashed");
+    expect(zone).not.toHaveClass("border-destructive");
   });
 });
