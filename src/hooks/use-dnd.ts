@@ -44,7 +44,7 @@ export type TriageDragItem = {
 
 export type PendingPlacement = {
   candidateId: string;
-  candidateType: "node" | "bit";
+  candidateType: "node" | "bit" | null;
   candidateLabel: string;
   sourceBreakdownId: string;
   dropId: string;
@@ -53,6 +53,7 @@ export type PendingPlacement = {
   targetTitle: string;
   targetParentPath: string[];
   isFull: boolean;
+  isDirectBreakdown: boolean;
 } | null;
 
 type PendingNodeMove = {
@@ -130,7 +131,10 @@ export function useTriageDnd(selectedScratchId: string | null): {
   handleDragEnd: (event: DragEndEvent) => void;
   handleDragOver: (event: DragOverEvent) => void;
   pendingPlacement: PendingPlacement;
-  handlePlacementConfirm: (scratchId: string) => Promise<void>;
+  handlePlacementConfirm: (
+    scratchId: string,
+    confirmedType?: "node" | "bit",
+  ) => Promise<void>;
   handlePlacementCancel: () => void;
   overTargetId: string | null;
 } {
@@ -194,6 +198,38 @@ export function useTriageDnd(selectedScratchId: string | null): {
     }
 
     if (
+      selectedScratchId !== null &&
+      dragItem.kind === "triage-breakdown" &&
+      dropData.kind === "triage-hierarchy-drop"
+    ) {
+      const dataStore = await getDataStore();
+      const occupancy = await dataStore.getGridOccupancy(
+        dropData.parentNodeId,
+      );
+      const position = findNearestEmptyCell(
+        occupancy,
+        0,
+        0,
+        getStaticBlockedCells(),
+      );
+
+      setPendingPlacement({
+        candidateId: dragItem.id,
+        candidateType: null,
+        candidateLabel: dragItem.label,
+        sourceBreakdownId: dragItem.id,
+        dropId: dropData.dropId,
+        parentNodeId: dropData.parentNodeId,
+        targetNodeLevel: dropData.targetNodeLevel,
+        targetTitle: dropData.targetTitle,
+        targetParentPath: dropData.targetParentPath,
+        isFull: position === null,
+        isDirectBreakdown: true,
+      });
+      return;
+    }
+
+    if (
       dropData.kind !== "triage-hierarchy-drop" ||
       (dragItem.kind !== "triage-staged-node" &&
         dragItem.kind !== "triage-staged-bit") ||
@@ -237,15 +273,24 @@ export function useTriageDnd(selectedScratchId: string | null): {
       targetTitle: dropData.targetTitle,
       targetParentPath: dropData.targetParentPath,
       isFull: position === null,
+      isDirectBreakdown: false,
     });
   };
 
-  const handlePlacementConfirm = async (scratchId: string) => {
+  const handlePlacementConfirm = async (
+    scratchId: string,
+    confirmedType?: "node" | "bit",
+  ) => {
     if (pendingPlacement === null) {
       return;
     }
 
     const placement = pendingPlacement;
+    const effectiveType = placement.candidateType ?? confirmedType;
+
+    if (effectiveType === undefined) {
+      return;
+    }
 
     try {
       if (placement.isFull) {
@@ -268,14 +313,14 @@ export function useTriageDnd(selectedScratchId: string | null): {
       }
 
       if (
-        placement.candidateType === "node" &&
+        effectiveType === "node" &&
         placement.targetNodeLevel !== null &&
         placement.targetNodeLevel >= 2
       ) {
         return;
       }
 
-      if (placement.candidateType === "node") {
+      if (effectiveType === "node") {
         await dataStore.createNode({
           title: placement.candidateLabel,
           parentId: placement.parentNodeId,
@@ -292,7 +337,7 @@ export function useTriageDnd(selectedScratchId: string | null): {
         });
       }
 
-      if (placement.candidateType === "bit") {
+      if (effectiveType === "bit") {
         if (placement.parentNodeId === null) {
           return;
         }
@@ -313,7 +358,9 @@ export function useTriageDnd(selectedScratchId: string | null): {
       await dataStore.markScratchBreakdownConsumed(
         placement.sourceBreakdownId,
       );
-      removeStagedCandidate(scratchId, placement.candidateId);
+      if (!placement.isDirectBreakdown) {
+        removeStagedCandidate(scratchId, placement.candidateId);
+      }
     } finally {
       setPendingPlacement(null);
     }

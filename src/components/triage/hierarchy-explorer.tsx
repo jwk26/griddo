@@ -43,9 +43,10 @@ const CELL_STATE_CLASSES: Record<HierarchyCellState, string> = {
 
 function getCandidateType(
   activeDragItem: TriageDragItem,
-): "node" | "bit" | null {
+): "node" | "bit" | "breakdown" | null {
   if (activeDragItem?.kind === "triage-staged-node") return "node";
   if (activeDragItem?.kind === "triage-staged-bit") return "bit";
+  if (activeDragItem?.kind === "triage-breakdown") return "breakdown";
   return null;
 }
 
@@ -66,6 +67,10 @@ function acceptsCandidate({
 
   if (candidateType === "bit") {
     return parentNodeId !== null;
+  }
+
+  if (candidateType === "breakdown") {
+    return true;
   }
 
   return false;

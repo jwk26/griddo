@@ -228,6 +228,46 @@ describe("useTriageDnd — drop matrix", () => {
       targetTitle: "Parent",
       targetParentPath: ["Home"],
       isFull: false,
+      isDirectBreakdown: false,
+    });
+  });
+
+  it("creates a pending placement with unknown type when a breakdown row drops directly on a hierarchy target", async () => {
+    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          {
+            kind: "triage-breakdown",
+            id: "breakdown-1",
+            label: "Project",
+          },
+          {
+            kind: "triage-hierarchy-drop",
+            dropId: "triage-hierarchy:parent-1",
+            parentNodeId: "parent-1",
+            targetNodeLevel: 0,
+            targetTitle: "Parent",
+            targetParentPath: ["Home"],
+          },
+        ),
+      );
+    });
+
+    expect(addStagedCandidateMock).not.toHaveBeenCalled();
+    expect(result.current.pendingPlacement).toEqual({
+      candidateId: "breakdown-1",
+      candidateType: null,
+      candidateLabel: "Project",
+      sourceBreakdownId: "breakdown-1",
+      dropId: "triage-hierarchy:parent-1",
+      parentNodeId: "parent-1",
+      targetNodeLevel: 0,
+      targetTitle: "Parent",
+      targetParentPath: ["Home"],
+      isFull: false,
+      isDirectBreakdown: true,
     });
   });
 
@@ -278,6 +318,87 @@ describe("useTriageDnd — drop matrix", () => {
       "candidate-1",
     );
     expect(result.current.pendingPlacement).toBeNull();
+  });
+
+  it("confirms a direct breakdown placement with the selected Node type without removing a staged candidate", async () => {
+    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          {
+            kind: "triage-breakdown",
+            id: "breakdown-1",
+            label: "Project",
+          },
+          {
+            kind: "triage-hierarchy-drop",
+            dropId: "triage-hierarchy:parent-1",
+            parentNodeId: "parent-1",
+            targetNodeLevel: 0,
+            targetTitle: "Parent",
+            targetParentPath: ["Home"],
+          },
+        ),
+      );
+    });
+
+    await act(async () => {
+      await result.current.handlePlacementConfirm("scratch-1", "node");
+    });
+
+    expect(createNodeMock).toHaveBeenCalledWith({
+      title: "Project",
+      parentId: "parent-1",
+      level: 1,
+      x: 0,
+      y: 0,
+      color: "hsl(210, 80%, 55%)",
+      icon: "Folder",
+      deadline: null,
+      deadlineAllDay: false,
+    });
+    expect(markScratchBreakdownConsumedMock).toHaveBeenCalledWith(
+      "breakdown-1",
+    );
+    expect(removeStagedCandidateMock).not.toHaveBeenCalled();
+    expect(result.current.pendingPlacement).toBeNull();
+  });
+
+  it("keeps a direct breakdown placement open when confirmation has no selected type", async () => {
+    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          {
+            kind: "triage-breakdown",
+            id: "breakdown-1",
+            label: "Project",
+          },
+          {
+            kind: "triage-hierarchy-drop",
+            dropId: "triage-hierarchy:parent-1",
+            parentNodeId: "parent-1",
+            targetNodeLevel: 0,
+            targetTitle: "Parent",
+            targetParentPath: ["Home"],
+          },
+        ),
+      );
+    });
+
+    const placement = result.current.pendingPlacement;
+
+    await act(async () => {
+      await result.current.handlePlacementConfirm("scratch-1");
+    });
+
+    expect(createNodeMock).not.toHaveBeenCalled();
+    expect(createBitMock).not.toHaveBeenCalled();
+    expect(markScratchBreakdownConsumedMock).not.toHaveBeenCalled();
+    expect(removeStagedCandidateMock).not.toHaveBeenCalled();
+    expect(result.current.pendingPlacement).toEqual(placement);
   });
 
   it("cancels a pending placement without datastore writes or candidate removal", async () => {
@@ -338,5 +459,121 @@ describe("useTriageDnd — drop matrix", () => {
 
     expect(result.current.pendingPlacement).toBeNull();
     expect(getGridOccupancyMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
+  it("does not create pendingPlacement when selectedScratchId is null", async () => {
+    const { result } = renderHook(() => useTriageDnd(null));
+
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          { kind: "triage-breakdown", id: "row-1", label: "My idea" },
+          {
+            kind: "triage-hierarchy-drop",
+            dropId: "triage-hierarchy:parent-1",
+            parentNodeId: "parent-1",
+            targetNodeLevel: 0,
+            targetTitle: "Parent",
+            targetParentPath: ["Home"],
+          },
+        ),
+      );
+    });
+
+    expect(result.current.pendingPlacement).toBeNull();
+  });
+
+  it("confirms a direct breakdown placement as a Bit without removing a staged candidate", async () => {
+    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          { kind: "triage-breakdown", id: "row-1", label: "My idea" },
+          {
+            kind: "triage-hierarchy-drop",
+            dropId: "triage-hierarchy:parent-1",
+            parentNodeId: "parent-1",
+            targetNodeLevel: 0,
+            targetTitle: "Parent",
+            targetParentPath: ["Home"],
+          },
+        ),
+      );
+    });
+
+    await act(async () => {
+      await result.current.handlePlacementConfirm("scratch-1", "bit");
+    });
+
+    expect(createBitMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "My idea",
+        parentId: "parent-1",
+      }),
+    );
+    expect(markScratchBreakdownConsumedMock).toHaveBeenCalledWith("row-1");
+    expect(removeStagedCandidateMock).not.toHaveBeenCalled();
+    expect(result.current.pendingPlacement).toBeNull();
+  });
+
+  it("cancels a direct breakdown placement without datastore writes or candidate removal", async () => {
+    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          { kind: "triage-breakdown", id: "row-1", label: "My idea" },
+          {
+            kind: "triage-hierarchy-drop",
+            dropId: "triage-hierarchy:parent-1",
+            parentNodeId: "parent-1",
+            targetNodeLevel: 0,
+            targetTitle: "Parent",
+            targetParentPath: ["Home"],
+          },
+        ),
+      );
+    });
+
+    act(() => {
+      result.current.handlePlacementCancel();
+    });
+
+    expect(createNodeMock).not.toHaveBeenCalled();
+    expect(createBitMock).not.toHaveBeenCalled();
+    expect(markScratchBreakdownConsumedMock).not.toHaveBeenCalled();
+    expect(removeStagedCandidateMock).not.toHaveBeenCalled();
+    expect(result.current.pendingPlacement).toBeNull();
+  });
+
+  it("opens pendingPlacement for a direct breakdown drop on Home", async () => {
+    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          { kind: "triage-breakdown", id: "row-1", label: "My idea" },
+          {
+            kind: "triage-hierarchy-drop",
+            dropId: "triage-hierarchy:root",
+            parentNodeId: null,
+            targetNodeLevel: null,
+            targetTitle: "Home",
+            targetParentPath: [],
+          },
+        ),
+      );
+    });
+
+    expect(result.current.pendingPlacement).toEqual(
+      expect.objectContaining({
+        candidateType: null,
+        parentNodeId: null,
+        isDirectBreakdown: true,
+      }),
+    );
   });
 });

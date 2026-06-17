@@ -1,8 +1,8 @@
 "use client";
 
 import { DndContext, DragOverlay } from "@dnd-kit/core";
-import { AlertTriangle } from "lucide-react";
-import type { ReactNode } from "react";
+import { AlertTriangle, Folder, ListTodo } from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -110,6 +110,7 @@ export function TriageWorkspace({ node }: { node: Node }) {
           </div>
 
           <PlacementConfirmationDialog
+            key={pendingPlacement?.dropId ?? "none"}
             pendingPlacement={pendingPlacement}
             selectedScratchId={selectedScratchId}
             onCancel={handlePlacementCancel}
@@ -128,14 +129,31 @@ function PlacementConfirmationDialog({
   selectedScratchId,
 }: {
   onCancel: () => void;
-  onConfirm: (scratchId: string) => Promise<void>;
+  onConfirm: (
+    scratchId: string,
+    confirmedType?: "node" | "bit",
+  ) => Promise<void>;
   pendingPlacement: PendingPlacement;
   selectedScratchId: string | null;
 }) {
+  const [selectedType, setSelectedType] =
+    useState<"node" | "bit" | null>(null);
   const destinationPath =
     pendingPlacement === null
       ? []
       : [...pendingPlacement.targetParentPath, pendingPlacement.targetTitle];
+  const isDirectPlacement = pendingPlacement?.candidateType === null;
+  const resultType = pendingPlacement?.candidateType ?? selectedType;
+  const isNodeValid =
+    pendingPlacement !== null &&
+    (pendingPlacement.targetNodeLevel === null ||
+      pendingPlacement.targetNodeLevel < 2);
+  const isBitValid =
+    pendingPlacement !== null && pendingPlacement.parentNodeId !== null;
+  const confirmDisabled =
+    (pendingPlacement?.isFull ?? false) ||
+    selectedScratchId === null ||
+    (isDirectPlacement && selectedType === null);
 
   return (
     <Dialog
@@ -161,15 +179,25 @@ function PlacementConfirmationDialog({
             </PlacementField>
 
             <PlacementField label="Type">
-              <span
-                className={cn(
-                  pendingPlacement?.candidateType === "node"
-                    ? "bg-accent text-foreground border border-primary/50 text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                    : "bg-muted text-muted-foreground/80 border border-border/50 text-[10px] font-semibold px-2 py-0.5 rounded-md",
-                )}
-              >
-                {pendingPlacement?.candidateType === "node" ? "Node" : "Bit"}
-              </span>
+              {pendingPlacement !== null &&
+              pendingPlacement.candidateType === null ? (
+                <TypeChoiceSelector
+                  isBitValid={isBitValid}
+                  isNodeValid={isNodeValid}
+                  selectedType={selectedType}
+                  onSelect={setSelectedType}
+                />
+              ) : (
+                <span
+                  className={cn(
+                    pendingPlacement?.candidateType === "node"
+                      ? "bg-accent text-foreground border border-primary/50 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                      : "bg-muted text-muted-foreground/80 border border-border/50 text-[10px] font-semibold px-2 py-0.5 rounded-md",
+                  )}
+                >
+                  {pendingPlacement?.candidateType === "node" ? "Node" : "Bit"}
+                </span>
+              )}
             </PlacementField>
 
             <PlacementField label="Destination">
@@ -188,9 +216,13 @@ function PlacementConfirmationDialog({
 
             <PlacementField label="Result">
               <div className="text-sm font-semibold text-foreground">
-                {pendingPlacement?.candidateType === "node"
-                  ? `Create a node in ${pendingPlacement.targetTitle}`
-                  : `Create a bit in ${pendingPlacement?.targetTitle}`}
+                {pendingPlacement === null
+                  ? null
+                  : resultType === "node"
+                    ? `Create a node in ${pendingPlacement.targetTitle}`
+                    : resultType === "bit"
+                      ? `Create a bit in ${pendingPlacement.targetTitle}`
+                      : "Choose a type"}
               </div>
             </PlacementField>
           </div>
@@ -213,11 +245,14 @@ function PlacementConfirmationDialog({
             Cancel
           </Button>
           <Button
-            disabled={
-              (pendingPlacement?.isFull ?? false) || selectedScratchId === null
-            }
+            disabled={confirmDisabled}
             onClick={() => {
               if (selectedScratchId) {
+                if (isDirectPlacement) {
+                  void onConfirm(selectedScratchId, selectedType ?? undefined);
+                  return;
+                }
+
                 void onConfirm(selectedScratchId);
               }
             }}
@@ -227,6 +262,105 @@ function PlacementConfirmationDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function TypeChoiceSelector({
+  isBitValid,
+  isNodeValid,
+  onSelect,
+  selectedType,
+}: {
+  isBitValid: boolean;
+  isNodeValid: boolean;
+  onSelect: (type: "node" | "bit") => void;
+  selectedType: "node" | "bit" | null;
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <div
+        aria-label="Select placement type"
+        className="flex min-w-0 items-center gap-1.5 rounded-md border border-border/50 bg-muted/30 p-0.5"
+        role="radiogroup"
+      >
+        <TypeChoiceOption
+          disabled={!isNodeValid}
+          icon={<Folder aria-hidden="true" className="h-4 w-4" />}
+          label="Node"
+          selected={selectedType === "node"}
+          type="node"
+          onSelect={onSelect}
+        />
+        <TypeChoiceOption
+          disabled={!isBitValid}
+          icon={<ListTodo aria-hidden="true" className="h-4 w-4" />}
+          label="Bit"
+          selected={selectedType === "bit"}
+          type="bit"
+          onSelect={onSelect}
+        />
+      </div>
+    </div>
+  );
+}
+
+function TypeChoiceOption({
+  disabled,
+  icon,
+  label,
+  onSelect,
+  selected,
+  type,
+}: {
+  disabled: boolean;
+  icon: ReactNode;
+  label: string;
+  onSelect: (type: "node" | "bit") => void;
+  selected: boolean;
+  type: "node" | "bit";
+}) {
+  return (
+    <button
+      aria-checked={selected ? "true" : "false"}
+      aria-label={`Select ${label} type`}
+      className={cn(
+        "group flex min-w-0 items-center gap-1.5 rounded-md border border-transparent bg-transparent px-2 py-1 text-[10px] font-semibold text-muted-foreground/80 transition-opacity touch-action-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
+        disabled
+          ? "cursor-not-allowed border-transparent text-muted-foreground/50 opacity-40"
+          : selected
+            ? "cursor-pointer border-primary bg-accent text-foreground ring-1 ring-primary"
+            : "cursor-pointer hover:bg-muted hover:text-foreground",
+      )}
+      disabled={disabled}
+      role="radio"
+      type="button"
+      onClick={() => onSelect(type)}
+    >
+      <span
+        className={cn(
+          "flex h-4 w-4 flex-shrink-0 items-center justify-center text-muted-foreground/50",
+          disabled
+            ? "text-muted-foreground/50"
+            : selected
+              ? "text-foreground"
+              : "group-hover:text-muted-foreground/80",
+        )}
+      >
+        {icon}
+      </span>
+      <span
+        className={cn(
+          "min-w-0 truncate text-muted-foreground/80",
+          disabled
+            ? "text-muted-foreground/50"
+            : selected
+              ? "text-foreground"
+              : "group-hover:text-foreground",
+        )}
+      >
+        {label}
+      </span>
+    </button>
   );
 }
 

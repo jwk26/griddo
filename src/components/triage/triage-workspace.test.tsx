@@ -1,8 +1,17 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useTriageStore } from "@/stores/triage-store";
 import type { Node } from "@/types";
 import { TriageWorkspace } from "./triage-workspace";
+
+const useTriageDndMock = vi.hoisted(() => vi.fn());
+const handlePlacementConfirmMock = vi.hoisted(() => vi.fn());
+const handlePlacementCancelMock = vi.hoisted(() => vi.fn());
+
+vi.mock("@/hooks/use-dnd", () => ({
+  useTriageDnd: useTriageDndMock,
+}));
 
 vi.mock("@/components/triage/scratch-pool", () => ({
   ScratchPool: () => <div data-testid="scratch-pool" />,
@@ -39,6 +48,56 @@ function createNode(overrides: Partial<Node> = {}): Node {
   };
 }
 
+function createDndState(
+  overrides: Partial<ReturnType<typeof useTriageDndMock>> = {},
+) {
+  return {
+    sensors: [],
+    activeDragItem: null,
+    overTargetId: null,
+    pendingPlacement: null,
+    handleDragStart: vi.fn(),
+    handleDragEnd: vi.fn(),
+    handleDragOver: vi.fn(),
+    handlePlacementConfirm: handlePlacementConfirmMock,
+    handlePlacementCancel: handlePlacementCancelMock,
+    ...overrides,
+  };
+}
+
+function createDirectPendingPlacement(
+  overrides: Partial<
+    NonNullable<ReturnType<typeof createDndState>["pendingPlacement"]>
+  > = {},
+): NonNullable<ReturnType<typeof createDndState>["pendingPlacement"]> {
+  return {
+    candidateId: "breakdown-1",
+    candidateType: null,
+    candidateLabel: "Project",
+    sourceBreakdownId: "breakdown-1",
+    dropId: "triage-hierarchy:parent-1",
+    parentNodeId: "parent-1",
+    targetNodeLevel: 0,
+    targetTitle: "Parent",
+    targetParentPath: ["Home"],
+    isFull: false,
+    isDirectBreakdown: true,
+    ...overrides,
+  };
+}
+
+beforeEach(() => {
+  handlePlacementConfirmMock.mockReset();
+  handlePlacementConfirmMock.mockResolvedValue(undefined);
+  handlePlacementCancelMock.mockReset();
+  useTriageStore.setState({
+    selectedScratchId: "scratch-1",
+    stagedCandidates: {},
+  });
+  useTriageDndMock.mockReset();
+  useTriageDndMock.mockReturnValue(createDndState());
+});
+
 afterEach(() => {
   cleanup();
 });
@@ -62,5 +121,119 @@ describe("TriageWorkspace", () => {
     expect(screen.getByTestId("hierarchy-explorer")).toBeInTheDocument();
     expect(screen.getByTestId("node-staging-zone")).toBeInTheDocument();
     expect(screen.getByTestId("bit-staging-zone")).toBeInTheDocument();
+  });
+
+  it("shows hierarchy cells as valid while a breakdown row is dragged", () => {
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        activeDragItem: {
+          kind: "triage-breakdown",
+          id: "breakdown-1",
+          label: "Project",
+        },
+      }),
+    );
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.getByTestId("hierarchy-home-drop")).toHaveClass("ring-1");
+    expect(screen.getByTestId("hierarchy-home-drop")).not.toHaveClass(
+      "cursor-not-allowed",
+    );
+  });
+
+  it("requires a type choice for direct breakdown placement and passes the selected type on confirm", () => {
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        pendingPlacement: createDirectPendingPlacement(),
+      }),
+    );
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    const confirmButton = screen.getByRole("button", { name: "Confirm" });
+    const nodeOption = screen.getByRole("radio", {
+      name: "Select Node type",
+    });
+    const bitOption = screen.getByRole("radio", {
+      name: "Select Bit type",
+    });
+
+    expect(confirmButton).toBeDisabled();
+    expect(nodeOption).toHaveAttribute("aria-checked", "false");
+    expect(bitOption).toHaveAttribute("aria-checked", "false");
+
+    fireEvent.click(nodeOption);
+
+    expect(nodeOption).toHaveAttribute("aria-checked", "true");
+    expect(confirmButton).toBeEnabled();
+
+    fireEvent.click(confirmButton);
+
+    expect(handlePlacementConfirmMock).toHaveBeenCalledWith(
+      "scratch-1",
+      "node",
+    );
+  });
+
+  it("shows disabled direct type choices for invalid target types", () => {
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        pendingPlacement: createDirectPendingPlacement({
+          dropId: "triage-hierarchy:root",
+          parentNodeId: null,
+          targetNodeLevel: null,
+          targetTitle: "Home",
+          targetParentPath: [],
+        }),
+      }),
+    );
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    const confirmButton = screen.getByRole("button", { name: "Confirm" });
+    const nodeOption = screen.getByRole("radio", {
+      name: "Select Node type",
+    });
+    const bitOption = screen.getByRole("radio", {
+      name: "Select Bit type",
+    });
+
+    expect(nodeOption).toBeEnabled();
+    expect(bitOption).toBeDisabled();
+
+    fireEvent.click(bitOption);
+
+    expect(bitOption).toHaveAttribute("aria-checked", "false");
+    expect(confirmButton).toBeDisabled();
+  });
+
+  it("resets the direct type choice when a new placement opens", () => {
+    let pendingPlacement = createDirectPendingPlacement({
+      dropId: "triage-hierarchy:parent-1",
+    });
+    useTriageDndMock.mockImplementation(() =>
+      createDndState({ pendingPlacement }),
+    );
+
+    const { rerender } = render(<TriageWorkspace node={createNode()} />);
+
+    fireEvent.click(
+      screen.getByRole("radio", { name: "Select Node type" }),
+    );
+    expect(screen.getByRole("button", { name: "Confirm" })).toBeEnabled();
+
+    pendingPlacement = createDirectPendingPlacement({
+      candidateId: "breakdown-2",
+      candidateLabel: "Next Project",
+      sourceBreakdownId: "breakdown-2",
+      dropId: "triage-hierarchy:parent-2",
+    });
+    rerender(<TriageWorkspace node={createNode()} />);
+
+    expect(
+      screen.getByRole("radio", { name: "Select Node type" }),
+    ).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByRole("button", { name: "Confirm" })).toBeDisabled();
   });
 });
