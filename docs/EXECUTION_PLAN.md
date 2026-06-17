@@ -91,7 +91,7 @@ These apply across all phases:
   - `pnpm test` and `pnpm build` pass.
 
 ### Task 82: Compact-token DnD (Inbox/Triage, partial)
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/hooks/use-dnd.ts` (update — Triage drag kinds), `src/lib/grid-dnd.ts` (update — token/targeting helpers), `src/components/triage/*` (drag wiring)
 - **Dependencies:** Task 81
 - **Actions:**

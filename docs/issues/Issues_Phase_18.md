@@ -21,7 +21,7 @@ Rationale: T84/T85 split keeps IC-3 (DeleteDropTarget architecture decision) and
 | Batch | Tasks | Status |
 |-------|-------|--------|
 | 1 | T81 | Complete |
-| 2 | T82 | Implemented |
+| 2 | T82 | Complete |
 | 3 | T83 | Pending |
 | 4 | T84 | Pending |
 | 5 | T85 | Pending |
