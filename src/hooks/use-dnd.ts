@@ -230,6 +230,16 @@ export function useTriageDnd(selectedScratchId: string | null): {
     }
 
     if (
+      selectedScratchId !== null &&
+      (dragItem.kind === "triage-staged-node" ||
+        dragItem.kind === "triage-staged-bit") &&
+      dropData.kind === "triage-remove-drop"
+    ) {
+      removeStagedCandidate(selectedScratchId, dragItem.id);
+      return;
+    }
+
+    if (
       dropData.kind !== "triage-hierarchy-drop" ||
       (dragItem.kind !== "triage-staged-node" &&
         dragItem.kind !== "triage-staged-bit") ||

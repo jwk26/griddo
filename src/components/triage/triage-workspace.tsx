@@ -1,7 +1,7 @@
 "use client";
 
-import { DndContext, DragOverlay } from "@dnd-kit/core";
-import { AlertTriangle, Folder, ListTodo } from "lucide-react";
+import { DndContext, DragOverlay, useDroppable } from "@dnd-kit/core";
+import { AlertTriangle, Folder, ListTodo, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,8 +16,16 @@ import { HierarchyExplorer } from "@/components/triage/hierarchy-explorer";
 import { ScratchPool } from "@/components/triage/scratch-pool";
 import { TriageDragToken } from "@/components/triage/triage-drag-token";
 import { StagingZone } from "@/components/triage/staging-zone";
-import { useTriageDnd, type PendingPlacement } from "@/hooks/use-dnd";
-import { triageCollisionDetection } from "@/lib/grid-dnd";
+import {
+  useTriageDnd,
+  type PendingPlacement,
+  type TriageDragItem,
+} from "@/hooks/use-dnd";
+import {
+  getTriageRemoveDropId,
+  triageCollisionDetection,
+  type TriageDropData,
+} from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
 import { useTriageStore } from "@/stores/triage-store";
 import type { Node } from "@/types";
@@ -26,6 +34,43 @@ function PanelHeader({ title }: { title: string }) {
   return (
     <div className="flex h-8 items-center justify-between border-b border-border bg-muted/30 px-3 py-1.5 font-sans text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80">
       <span>{title}</span>
+    </div>
+  );
+}
+
+function TriageRemoveDropTarget({
+  activeDragItem,
+  overTargetId,
+}: {
+  activeDragItem: TriageDragItem;
+  overTargetId: string | null;
+}) {
+  const id = getTriageRemoveDropId();
+  const dropData = { kind: "triage-remove-drop" } satisfies TriageDropData;
+  const { setNodeRef } = useDroppable({
+    id,
+    data: dropData,
+  });
+  const isStagedDrag =
+    activeDragItem?.kind === "triage-staged-node" ||
+    activeDragItem?.kind === "triage-staged-bit";
+  const isOver = overTargetId === id;
+
+  if (!isStagedDrag) return null;
+
+  return (
+    <div
+      ref={setNodeRef}
+      aria-label="Drop staged item here to remove from staging"
+      className={cn(
+        "flex h-12 w-full items-center justify-center gap-2 border-t bg-transparent px-3 text-xs font-medium transition-[background-color,border-color,color] motion-reduce:transition-none",
+        isOver
+          ? "border-solid border-destructive bg-destructive/10 text-destructive"
+          : "border-dashed border-border text-muted-foreground motion-safe:animate-jiggle",
+      )}
+    >
+      <X aria-hidden="true" className="h-4 w-4 flex-shrink-0" />
+      <span>Remove from staging</span>
     </div>
   );
 }
@@ -69,28 +114,34 @@ export function TriageWorkspace({ node }: { node: Node }) {
               </div>
             </div>
 
-            <div className="flex min-w-0 basis-2/5 bg-card">
-              <div className="flex min-w-0 basis-[35%] flex-col">
-                <PanelHeader title="Staging: Nodes" />
-                <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
-                  <StagingZone
-                    activeDragItem={activeDragItem}
-                    overTargetId={overTargetId}
-                    type="node"
-                  />
+            <div className="flex min-w-0 basis-2/5 flex-col bg-card">
+              <div className="flex min-h-0 flex-1">
+                <div className="flex min-w-0 basis-[35%] flex-col">
+                  <PanelHeader title="Staging: Nodes" />
+                  <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
+                    <StagingZone
+                      activeDragItem={activeDragItem}
+                      overTargetId={overTargetId}
+                      type="node"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex min-w-0 basis-[65%] flex-col border-l border-dashed border-border/80">
-                <PanelHeader title="Staging: Bits" />
-                <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
-                  <StagingZone
-                    activeDragItem={activeDragItem}
-                    overTargetId={overTargetId}
-                    type="bit"
-                  />
+                <div className="flex min-w-0 basis-[65%] flex-col border-l border-dashed border-border/80">
+                  <PanelHeader title="Staging: Bits" />
+                  <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
+                    <StagingZone
+                      activeDragItem={activeDragItem}
+                      overTargetId={overTargetId}
+                      type="bit"
+                    />
+                  </div>
                 </div>
               </div>
+              <TriageRemoveDropTarget
+                activeDragItem={activeDragItem}
+                overTargetId={overTargetId}
+              />
             </div>
           </div>
 

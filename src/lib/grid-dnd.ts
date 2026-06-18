@@ -25,6 +25,7 @@ export type GridDropData =
 export type TriageDropData =
   | { kind: "triage-node-zone-drop" }
   | { kind: "triage-bit-zone-drop" }
+  | { kind: "triage-remove-drop" }
   | {
       kind: "triage-hierarchy-drop";
       dropId: string;
@@ -42,6 +43,7 @@ export function isTriageDropData(value: unknown): value is TriageDropData {
   return (
     value.kind === "triage-node-zone-drop" ||
     value.kind === "triage-bit-zone-drop" ||
+    value.kind === "triage-remove-drop" ||
     value.kind === "triage-hierarchy-drop"
   );
 }
@@ -52,6 +54,10 @@ export function getTriageNodeZoneDropId(): string {
 
 export function getTriageBitZoneDropId(): string {
   return "triage-bit-zone-drop";
+}
+
+export function getTriageRemoveDropId(): string {
+  return "triage-remove-drop";
 }
 
 export function getTriageHierarchyDropId(targetId: string): string {
@@ -130,6 +136,7 @@ export const triageCollisionDetection: CollisionDetection = (args) =>
     (candidate) =>
       candidate.id === getTriageNodeZoneDropId() ||
       candidate.id === getTriageBitZoneDropId() ||
+      candidate.id === getTriageRemoveDropId() ||
       (typeof candidate.id === "string" &&
         candidate.id.startsWith("triage-hierarchy:")),
   );

@@ -123,6 +123,54 @@ describe("TriageWorkspace", () => {
     expect(screen.getByTestId("bit-staging-zone")).toBeInTheDocument();
   });
 
+  it("shows the remove-from-staging strip only while dragging a staged candidate", () => {
+    const { rerender } = render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.queryByText("Remove from staging")).not.toBeInTheDocument();
+
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        activeDragItem: {
+          kind: "triage-staged-node",
+          id: "candidate-1",
+          label: "Project",
+          sourceBreakdownId: "breakdown-1",
+        },
+      }),
+    );
+
+    rerender(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.getByText("Remove from staging")).toBeInTheDocument();
+    expect(
+      document.querySelector(
+        '[aria-label="Drop staged item here to remove from staging"]',
+      ),
+    ).toHaveClass("h-12", "motion-safe:animate-jiggle");
+  });
+
+  it("applies destructive styling while the staged remove target is hovered", () => {
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        activeDragItem: {
+          kind: "triage-staged-bit",
+          id: "candidate-2",
+          label: "Todo",
+          sourceBreakdownId: "breakdown-2",
+        },
+        overTargetId: "triage-remove-drop",
+      }),
+    );
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(
+      document.querySelector(
+        '[aria-label="Drop staged item here to remove from staging"]',
+      ),
+    ).toHaveClass("bg-destructive/10", "text-destructive", "border-solid");
+  });
+
   it("shows hierarchy cells as valid while a breakdown row is dragged", () => {
     useTriageDndMock.mockReturnValue(
       createDndState({

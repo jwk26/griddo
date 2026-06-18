@@ -8,7 +8,8 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { GripVertical, Trash2 } from "lucide-react";
+import { Archive, CheckCircle2, GripVertical, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +20,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useCanArchiveScratch } from "@/hooks/use-can-archive-scratch";
 import { useScratchBreakdowns } from "@/hooks/use-scratch-breakdowns";
+import { getDataStore } from "@/lib/db/datastore";
 import type { ScratchBreakdown } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils/relative-time";
@@ -57,7 +60,7 @@ function BreakdownRow({
       ref={setNodeRef}
       className={cn(
         "group flex items-start gap-2 border-b border-border/30 py-2 transition-[background-color,border-color,color,opacity] last:border-b-0",
-        isStaged && "opacity-50 transition-opacity duration-200",
+        isStaged && !isDragging && "opacity-50 transition-opacity duration-200",
         isDragging &&
           "opacity-30 border border-dashed border-muted bg-transparent",
       )}
@@ -112,11 +115,71 @@ function BreakdownRow({
   );
 }
 
+function ArchiveScratchBar({ scratchId }: { scratchId: string }) {
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  async function handleConfirmArchive(): Promise<void> {
+    const ds = await getDataStore();
+    await ds.archiveBit(scratchId);
+    setIsConfirmOpen(false);
+  }
+
+  return (
+    <>
+      <div className="flex items-center justify-between border-t border-border bg-muted px-3 py-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <CheckCircle2
+            aria-hidden="true"
+            className="h-4 w-4 flex-shrink-0 text-muted-foreground/60"
+          />
+          <span className="min-w-0 truncate text-xs text-muted-foreground">
+            All items processed
+          </span>
+        </div>
+        <Button
+          className="focus-visible:ring-2 focus-visible:ring-ring"
+          size="sm"
+          variant="outline"
+          onClick={() => setIsConfirmOpen(true)}
+        >
+          <Archive aria-hidden="true" className="h-4 w-4" />
+          Archive Scratch
+        </Button>
+      </div>
+
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive this Scratch?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This Scratch and its processed breakdown rows will be moved to
+              your archive. You can access, view, or restore them at any time
+              from the Archive View.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsConfirmOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => void handleConfirmArchive()}>
+              Archive Scratch
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
 export function BreakdownPanel() {
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
   const stagedCandidates = useTriageStore((state) => state.stagedCandidates);
   const { breakdowns, createBreakdown, deleteBreakdown } =
     useScratchBreakdowns(selectedScratchId);
+  const canArchiveScratch = useCanArchiveScratch(
+    selectedScratchId,
+    breakdowns,
+  );
   const [isAdding, setIsAdding] = useState(false);
   const [newContent, setNewContent] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -214,37 +277,41 @@ export function BreakdownPanel() {
         })}
       </div>
 
-      <div className="border-t border-border px-3 py-2">
-        {isAdding ? (
-          <input
-            ref={inputRef}
-            className="block h-8 w-full appearance-none rounded-md border border-border bg-background px-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
-            maxLength={500}
-            onBlur={() => void handleAdd()}
-            onChange={(event) => setNewContent(event.target.value)}
-            onCompositionEnd={() => {
-              isComposingRef.current = false;
-            }}
-            onCompositionStart={() => {
-              isComposingRef.current = true;
-            }}
-            onKeyDown={handleInputKeyDown}
-            placeholder="Add a note..."
-            type="text"
-            value={newContent}
-          />
-        ) : (
-          <div
-            className="flex h-8 cursor-text items-center rounded-md px-2 text-sm text-muted-foreground hover:bg-accent/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            role="button"
-            tabIndex={0}
-            onClick={() => setIsAdding(true)}
-            onKeyDown={handlePlaceholderKeyDown}
-          >
-            Add a note...
-          </div>
-        )}
-      </div>
+      {canArchiveScratch && selectedScratchId !== null ? (
+        <ArchiveScratchBar scratchId={selectedScratchId} />
+      ) : (
+        <div className="border-t border-border px-3 py-2">
+          {isAdding ? (
+            <input
+              ref={inputRef}
+              className="block h-8 w-full appearance-none rounded-md border border-border bg-background px-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
+              maxLength={500}
+              onBlur={() => void handleAdd()}
+              onChange={(event) => setNewContent(event.target.value)}
+              onCompositionEnd={() => {
+                isComposingRef.current = false;
+              }}
+              onCompositionStart={() => {
+                isComposingRef.current = true;
+              }}
+              onKeyDown={handleInputKeyDown}
+              placeholder="Add a note..."
+              type="text"
+              value={newContent}
+            />
+          ) : (
+            <div
+              className="flex h-8 cursor-text items-center rounded-md px-2 text-sm text-muted-foreground hover:bg-accent/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              role="button"
+              tabIndex={0}
+              onClick={() => setIsAdding(true)}
+              onKeyDown={handlePlaceholderKeyDown}
+            >
+              Add a note...
+            </div>
+          )}
+        </div>
+      )}
 
       <AlertDialog
         open={pendingDeleteId !== null}

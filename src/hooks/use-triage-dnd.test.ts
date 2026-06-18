@@ -39,6 +39,7 @@ vi.mock("@/lib/grid-dnd", () => ({
     return (
       k === "triage-node-zone-drop" ||
       k === "triage-bit-zone-drop" ||
+      k === "triage-remove-drop" ||
       k === "triage-hierarchy-drop"
     );
   },
@@ -433,6 +434,34 @@ describe("useTriageDnd — drop matrix", () => {
     expect(result.current.pendingPlacement).toBeNull();
   });
 
+  it("removes a staged candidate when dropped on the remove-from-staging target without datastore writes", async () => {
+    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          {
+            kind: "triage-staged-bit",
+            id: "candidate-2",
+            label: "Todo",
+            sourceBreakdownId: "breakdown-2",
+          },
+          { kind: "triage-remove-drop" },
+        ),
+      );
+    });
+
+    expect(removeStagedCandidateMock).toHaveBeenCalledWith(
+      "scratch-1",
+      "candidate-2",
+    );
+    expect(getDataStoreMock).not.toHaveBeenCalled();
+    expect(createNodeMock).not.toHaveBeenCalled();
+    expect(createBitMock).not.toHaveBeenCalled();
+    expect(markScratchBreakdownConsumedMock).not.toHaveBeenCalled();
+    expect(result.current.pendingPlacement).toBeNull();
+  });
+
   it("does not create a pending placement for a staged Bit dropped on Home", async () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1"));
 
@@ -575,5 +604,82 @@ describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
         isDirectBreakdown: true,
       }),
     );
+  });
+});
+
+describe("useTriageDnd — T85 remove-from-staging drop", () => {
+  it("removes a staged Node candidate dropped on the remove target without datastore writes", async () => {
+    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          {
+            kind: "triage-staged-node",
+            id: "candidate-1",
+            label: "Project",
+            sourceBreakdownId: "breakdown-1",
+          },
+          { kind: "triage-remove-drop" },
+        ),
+      );
+    });
+
+    expect(removeStagedCandidateMock).toHaveBeenCalledWith(
+      "scratch-1",
+      "candidate-1",
+    );
+    expect(getDataStoreMock).not.toHaveBeenCalled();
+    expect(getGridOccupancyMock).not.toHaveBeenCalled();
+    expect(createNodeMock).not.toHaveBeenCalled();
+    expect(createBitMock).not.toHaveBeenCalled();
+    expect(markScratchBreakdownConsumedMock).not.toHaveBeenCalled();
+  });
+
+  it("ignores a breakdown row dropped on the remove target", async () => {
+    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          { kind: "triage-breakdown", id: "breakdown-1", label: "Project" },
+          { kind: "triage-remove-drop" },
+        ),
+      );
+    });
+
+    expect(addStagedCandidateMock).not.toHaveBeenCalled();
+    expect(removeStagedCandidateMock).not.toHaveBeenCalled();
+    expect(getDataStoreMock).not.toHaveBeenCalled();
+    expect(getGridOccupancyMock).not.toHaveBeenCalled();
+    expect(createNodeMock).not.toHaveBeenCalled();
+    expect(createBitMock).not.toHaveBeenCalled();
+    expect(markScratchBreakdownConsumedMock).not.toHaveBeenCalled();
+  });
+
+  it("ignores a staged Node dropped on the remove target when no scratch is selected", async () => {
+    const { result } = renderHook(() => useTriageDnd(null));
+
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          {
+            kind: "triage-staged-node",
+            id: "candidate-1",
+            label: "Project",
+            sourceBreakdownId: "breakdown-1",
+          },
+          { kind: "triage-remove-drop" },
+        ),
+      );
+    });
+
+    expect(addStagedCandidateMock).not.toHaveBeenCalled();
+    expect(removeStagedCandidateMock).not.toHaveBeenCalled();
+    expect(getDataStoreMock).not.toHaveBeenCalled();
+    expect(getGridOccupancyMock).not.toHaveBeenCalled();
+    expect(createNodeMock).not.toHaveBeenCalled();
+    expect(createBitMock).not.toHaveBeenCalled();
+    expect(markScratchBreakdownConsumedMock).not.toHaveBeenCalled();
   });
 });

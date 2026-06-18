@@ -30,6 +30,8 @@ const triageStoreState = vi.hoisted(() => ({
 }));
 const useScratchBreakdownsMock = vi.hoisted(() => vi.fn());
 const useTriageStoreMock = vi.hoisted(() => vi.fn());
+const getDataStoreMock = vi.hoisted(() => vi.fn());
+const archiveBitMock = vi.hoisted(() => vi.fn());
 const currentTime = new Date(2026, 5, 17, 12, 0, 0).getTime();
 
 vi.mock("@/hooks/use-scratch-breakdowns", () => ({
@@ -38,6 +40,10 @@ vi.mock("@/hooks/use-scratch-breakdowns", () => ({
 
 vi.mock("@/stores/triage-store", () => ({
   useTriageStore: useTriageStoreMock,
+}));
+
+vi.mock("@/lib/db/datastore", () => ({
+  getDataStore: getDataStoreMock,
 }));
 
 function createScratchBreakdown(
@@ -73,6 +79,9 @@ beforeEach(() => {
     createBreakdown: hookState.createBreakdown,
     deleteBreakdown: hookState.deleteBreakdown,
   }));
+  getDataStoreMock.mockResolvedValue({
+    archiveBit: archiveBitMock,
+  });
 });
 
 afterEach(() => {
@@ -135,6 +144,103 @@ describe("BreakdownPanel", () => {
 
     await waitFor(() => {
       expect(hookState.createBreakdown).toHaveBeenCalledWith("Follow up");
+    });
+  });
+
+  it("replaces the add-note bar with the archive affordance when every breakdown is consumed and no candidates are staged", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({
+        id: "row-1",
+        content: "Processed note",
+        consumedAt: currentTime,
+      }),
+    ];
+
+    render(<BreakdownPanel />);
+
+    expect(screen.getByText("All items processed")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Archive Scratch" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Add a note...")).not.toBeInTheDocument();
+  });
+
+  it("keeps the add-note bar when consumed breakdowns still have staged candidates", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    triageStoreState.stagedCandidates = {
+      "scratch-1": [
+        {
+          id: "candidate-1",
+          type: "node",
+          sourceBreakdownId: "row-1",
+          label: "Processed note",
+        },
+      ],
+    };
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({
+        id: "row-1",
+        content: "Processed note",
+        consumedAt: currentTime,
+      }),
+    ];
+
+    render(<BreakdownPanel />);
+
+    expect(screen.queryByText("All items processed")).not.toBeInTheDocument();
+    expect(screen.getByText("Add a note...")).toBeInTheDocument();
+  });
+
+  it("archives the selected Scratch after confirmation", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({
+        id: "row-1",
+        content: "Processed note",
+        consumedAt: currentTime,
+      }),
+    ];
+
+    render(<BreakdownPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Archive Scratch" }));
+
+    const dialog = await screen.findByRole("alertdialog");
+    expect(
+      within(dialog).getByText(
+        "This Scratch and its processed breakdown rows will be moved to your archive. You can access, view, or restore them at any time from the Archive View.",
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Archive Scratch" }),
+    );
+
+    await waitFor(() => {
+      expect(archiveBitMock).toHaveBeenCalledWith("scratch-1");
+    });
+  });
+
+  it("leaves the selected Scratch active when archive confirmation is cancelled", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({
+        id: "row-1",
+        content: "Processed note",
+        consumedAt: currentTime,
+      }),
+    ];
+
+    render(<BreakdownPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Archive Scratch" }));
+    const dialog = await screen.findByRole("alertdialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+    expect(archiveBitMock).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
     });
   });
 
