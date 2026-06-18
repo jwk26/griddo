@@ -124,7 +124,7 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 85: Remove-from-staging + Archive Scratch affordance
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/triage/*` (update); reuse `sidebar.tsx` `DeleteDropTarget` + `grid-dnd.ts` `grid-delete-drop`; DataStore `archiveBit` (Hook 10)
 - **Dependencies:** Task 83
 - **Actions:**
