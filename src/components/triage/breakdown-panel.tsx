@@ -117,11 +117,25 @@ function BreakdownRow({
 
 function ArchiveScratchBar({ scratchId }: { scratchId: string }) {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const clearSelection = useTriageStore((state) => state.clearSelection);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const isArchivingRef = useRef(false);
 
   async function handleConfirmArchive(): Promise<void> {
-    const ds = await getDataStore();
-    await ds.archiveBit(scratchId);
-    setIsConfirmOpen(false);
+    if (isArchivingRef.current) return;
+
+    isArchivingRef.current = true;
+    setIsArchiving(true);
+
+    try {
+      const ds = await getDataStore();
+      await ds.archiveBit(scratchId);
+      setIsConfirmOpen(false);
+      clearSelection();
+    } finally {
+      isArchivingRef.current = false;
+      setIsArchiving(false);
+    }
   }
 
   return (
@@ -161,7 +175,13 @@ function ArchiveScratchBar({ scratchId }: { scratchId: string }) {
             <AlertDialogCancel onClick={() => setIsConfirmOpen(false)}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={() => void handleConfirmArchive()}>
+            <AlertDialogAction
+              disabled={isArchiving}
+              onClick={(event) => {
+                event.preventDefault();
+                void handleConfirmArchive();
+              }}
+            >
               Archive Scratch
             </AlertDialogAction>
           </AlertDialogFooter>

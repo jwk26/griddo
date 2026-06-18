@@ -16,6 +16,7 @@ const hookState = vi.hoisted(() => ({
   createBreakdown: vi.fn(),
   deleteBreakdown: vi.fn(),
 }));
+const clearSelectionMock = vi.hoisted(() => vi.fn());
 const triageStoreState = vi.hoisted(() => ({
   selectedScratchId: null as string | null,
   stagedCandidates: {} as Record<
@@ -27,6 +28,7 @@ const triageStoreState = vi.hoisted(() => ({
       label: string;
     }>
   >,
+  clearSelection: clearSelectionMock,
 }));
 const useScratchBreakdownsMock = vi.hoisted(() => vi.fn());
 const useTriageStoreMock = vi.hoisted(() => vi.fn());
@@ -220,6 +222,7 @@ describe("BreakdownPanel", () => {
     await waitFor(() => {
       expect(archiveBitMock).toHaveBeenCalledWith("scratch-1");
     });
+    expect(clearSelectionMock).toHaveBeenCalledTimes(1);
   });
 
   it("leaves the selected Scratch active when archive confirmation is cancelled", async () => {
@@ -241,6 +244,42 @@ describe("BreakdownPanel", () => {
     expect(archiveBitMock).not.toHaveBeenCalled();
     await waitFor(() => {
       expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    });
+  });
+
+  it("prevents archiveBit from being called twice when confirm is clicked rapidly", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", consumedAt: currentTime }),
+    ];
+
+    let resolveArchive!: () => void;
+    archiveBitMock.mockReturnValue(
+      new Promise<void>((resolve) => {
+        resolveArchive = resolve;
+      }),
+    );
+
+    render(<BreakdownPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Archive Scratch" }));
+    const dialog = await screen.findByRole("alertdialog");
+
+    const confirmButton = within(dialog).getByRole("button", {
+      name: "Archive Scratch",
+    });
+    fireEvent.click(confirmButton);
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(archiveBitMock).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+
+    resolveArchive();
+
+    await waitFor(() => {
+      expect(clearSelectionMock).toHaveBeenCalledTimes(1);
     });
   });
 
