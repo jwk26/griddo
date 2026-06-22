@@ -419,6 +419,25 @@ describe("BreakdownPanel", () => {
     expect(screen.getByText("45m ago")).toHaveClass("text-muted-foreground/40");
   });
 
+  it("renders a consumed row with line-through and muted-foreground/40 text when consumedAt is set and no staged candidate", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({
+        id: "row-1",
+        content: "Consumed note",
+        consumedAt: currentTime,
+      }),
+    ];
+
+    render(<BreakdownPanel />);
+
+    const consumedRow = screen.getByTestId("breakdown-row-consumed");
+    expect(consumedRow).toBeInTheDocument();
+    const text = within(consumedRow).getByText("Consumed note");
+    expect(text).toHaveClass("line-through");
+    expect(text).toHaveClass("text-muted-foreground/40");
+  });
+
   it("does not add line-through styling to a staged row", () => {
     triageStoreState.selectedScratchId = "scratch-1";
     triageStoreState.stagedCandidates = {

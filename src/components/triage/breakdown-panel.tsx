@@ -47,6 +47,7 @@ function BreakdownRow({
     id: `triage-breakdown:${row.id}`,
     data: { kind: "triage-breakdown", id: row.id, label: row.content },
   });
+  const isConsumed = row.consumedAt !== null;
   const isMuted = isStaged || isDragging;
   const gripColorClass =
     isStaged && !isDragging
@@ -58,6 +59,7 @@ function BreakdownRow({
   return (
     <div
       ref={setNodeRef}
+      data-testid={isConsumed ? "breakdown-row-consumed" : undefined}
       className={cn(
         "group flex items-start gap-2 border-b border-border/30 py-2 transition-[background-color,border-color,color,opacity] last:border-b-0",
         isStaged && !isDragging && "opacity-50 transition-opacity duration-200",
@@ -85,7 +87,11 @@ function BreakdownRow({
         <div
           className={cn(
             "whitespace-pre-wrap break-words text-sm leading-5 transition-colors",
-            isMuted ? "text-muted-foreground" : "text-foreground",
+            isConsumed
+              ? "line-through text-muted-foreground/40"
+              : isMuted
+                ? "text-muted-foreground"
+                : "text-foreground",
           )}
         >
           {row.content}
