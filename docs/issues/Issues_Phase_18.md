@@ -238,3 +238,35 @@ _None yet._
 | D4 | Archive button styling (`bg-accent` vs Button component) | `variant="outline"` approved as closest Button equivalent — no custom Tailwind | SPEC/DESIGN (button override) | None |
 | D6 | ISSUE-18-03 opacity fix inclusion in T85 | Included in T85 Codex A prompt as cleanup pass | ISSUE-18-03 status | Reflected |
 | D8 | Codex B prompt "do not read tests" contradiction | Patched to "read current tests first"; independence preserved as "no Codex A files" | None (prompt-only) | None |
+
+---
+
+## Summary
+
+| # | Issue | Resolution |
+|---|-------|------------|
+| 01 | Test mock missing `useTriageDnd` export | Added stub to `grid-runtime.test.tsx` mock factory |
+| 02 | T83 DndContext boundary note | Resolved — T83 extended DndContext to wrap HierarchyExplorer |
+| 03 | Staged+dragging row opacity conflict | Fixed in T85 — `isStaged && !isDragging` guard added |
+| 04 | Codex T83 prompt pre-launch blockers (B1/B2/B3) | Patched prompt before launch |
+| 05 | Codex T83 added extra test coverage | Accepted — additive, tests pass |
+| 06 | L3 terminal Node cells rendered as no-op buttons | Fixed — conditional `<button>`/`<div>` in `NodeDropCell` |
+| 07 | Codex T85 B prompt "do not read tests" contradiction | Patched prompt; sequential launch enforced |
+| 08 | Remove-target entry/exit animation not implemented | Deferred — MEDIUM visual polish |
+| 09 | MEDIUM visual findings on remove target | Deferred — visual/a11y polish follow-up |
+| 10 | Staged Node/Bit drag token offset from pointer | Closed — `snapDragTokenToCursor` modifier (Smoke Fix D) |
+| 11 | Staged placement confirm doesn't leave row consumed | Closed — render-layer fix in `BreakdownRow` (Smoke Fix A) |
+| 12 | Direct breakdown placement doesn't consume row | Closed — same render-layer fix (Smoke Fix A) |
+| 13 | Archive Scratch couldn't be verified until 11/12 fixed | Closed — re-verified after Smoke Fix A; no code change |
+| 14 | Hierarchy section/grid mapping shifted by synthetic Home | Closed — synthetic Home removed (Smoke Fix C) |
+| 15 | Section body should be primary placement target | Closed — section-body drop promoted (Smoke Fix C) |
+| 16 | Staged candidates not removable by drop onto Breakdown | Deferred — follow-up Inbox/Triage UX task |
+| 17 | Scratch pool sidebar folds on Scratch selection | Deferred — follow-up workspace UX task |
+| 18 | Add-note input loses focus after Enter | Deferred — keyboard-flow UX fix |
+| 19 | Breakdown panel missing selected Scratch context | Deferred — triage context polish |
+| 20 | Invalid drop state uses destructive red treatment | Deferred — visual-state polish pass |
+| 21 | Hierarchy Explorer search bar may be missing | Deferred — check canonical docs before scoping |
+| 22 | Duplicate Node/Bit titles allowed globally | Deferred — product-policy follow-up |
+| 23 | Archive Scratch affordance replaces add-note input | Closed — ArchiveScratchBar rendered as sibling (Smoke Fix B) |
+| 24 | `useTriageDnd` imports Zustand store directly | Closed — injected actions as parameters; store mock removed from test |
+| 25 | `ArchiveScratchBar` imports `getDataStore` directly | Closed — extracted into `useArchiveScratch` hook |
