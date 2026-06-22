@@ -1,6 +1,6 @@
 "use client";
 
-import { DndContext, DragOverlay, useDroppable } from "@dnd-kit/core";
+import { DndContext, DragOverlay, useDroppable, type Modifier } from "@dnd-kit/core";
 import { AlertTriangle, Folder, ListTodo, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,44 @@ import {
 import { cn } from "@/lib/utils";
 import { useTriageStore } from "@/stores/triage-store";
 import type { Node } from "@/types";
+
+// Positions the compact drag token center at the cursor rather than the
+// original draggable element's top-left. Without this, grabbing a staged
+// Node card or Bit row away from the top-left leaves the token visually
+// detached from the pointer (ISSUE-18-10).
+const snapDragTokenToCursor: Modifier = ({
+  activatorEvent,
+  draggingNodeRect,
+  overlayNodeRect,
+  transform,
+}) => {
+  if (!draggingNodeRect || !activatorEvent) return transform;
+
+  let clientX: number | undefined;
+  let clientY: number | undefined;
+
+  if ("touches" in activatorEvent) {
+    const { touches } = activatorEvent as TouchEvent;
+    if (touches.length > 0) {
+      clientX = touches[0].clientX;
+      clientY = touches[0].clientY;
+    }
+  } else if ("clientX" in activatorEvent) {
+    clientX = (activatorEvent as MouseEvent).clientX;
+    clientY = (activatorEvent as MouseEvent).clientY;
+  }
+
+  if (clientX === undefined || clientY === undefined) return transform;
+
+  const tokenWidth = overlayNodeRect?.width ?? 0;
+  const tokenHeight = overlayNodeRect?.height ?? 0;
+
+  return {
+    ...transform,
+    x: transform.x + clientX - draggingNodeRect.left - tokenWidth / 2,
+    y: transform.y + clientY - draggingNodeRect.top - tokenHeight / 2,
+  };
+};
 
 function PanelHeader({ title }: { title: string }) {
   return (
@@ -145,7 +183,7 @@ export function TriageWorkspace({ node }: { node: Node }) {
             </div>
           </div>
 
-          <DragOverlay dropAnimation={null}>
+          <DragOverlay dropAnimation={null} modifiers={[snapDragTokenToCursor]}>
             {activeDragItem ? <TriageDragToken item={activeDragItem} /> : null}
           </DragOverlay>
 

@@ -103,7 +103,9 @@ _None yet._
 - **Severity:** High (user-visible DnD control issue)
 - **Description:** When dragging a staged Node or staged Bit, the compact drag token appears anchored to the staged item's top-left origin rather than the active mouse pointer. Dragging from any point other than the top-left makes the token visually detached from the pointer. Breakdown rows are less affected because they expose a left-side grip/handle, but staged Node/Bit items are draggable from the full item surface.
 - **Expected:** Dragging a staged Node or Bit from any point on the item should create the compact token at the mouse pointer, so the DnD interaction feels pointer-centered and predictable.
-- **Status:** Open — Phase 18 close blocker; requires focused smoke-fix pass
+- **Root cause (Smoke Fix D, 2026-06-22):** `DragOverlay` in `triage-workspace.tsx` positioned the compact token at the original draggable element's top-left origin (the 80px Node card or full-width Bit row). The transform moved that anchored point, so grabbing anywhere but the top-left left the token visually detached from the cursor.
+- **Fix:** Added `snapDragTokenToCursor` modifier (module-level const in `triage-workspace.tsx`) passed via `modifiers={[snapDragTokenToCursor]}` on the `DragOverlay`. The modifier adjusts the transform using `activatorEvent` (initial pointer position) and `overlayNodeRect` (actual token dimensions) so the token center tracks the cursor regardless of grab point. Touch support included. Breakdown-row drag also benefits (no regression possible — modifier only changes overlay positioning).
+- **Status:** Implemented — awaiting manual smoke confirmation
 
 ### ISSUE-18-11 — Staged placement confirm does not leave source breakdown consumed
 - **Batch:** 3 (T83)
