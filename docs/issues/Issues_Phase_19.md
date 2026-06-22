@@ -188,6 +188,11 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 
 **Status:** ✅ Complete — committed `506a88a`. T88 marked `[x]` in EXECUTION_PLAN.md. Smoke passed.
 
+**Manual smoke (2026-06-23 — post T88):**
+- Regular Node archive → Archive View displays item ✅
+- Restore → item returns to active grid ✅
+- Parent-chain restore: archiving a Bit whose parent Node is also archived → restoring the Bit restores the parent Node as well ✅ (handled inside `indexeddb.ts unarchiveBit`)
+
 ---
 
 ## Open Issues
