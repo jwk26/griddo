@@ -35,7 +35,7 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 | Batch | Tasks | Classification | Status | Notes |
 |-------|-------|----------------|--------|-------|
 | B1 | T86 | mixed | `[x]` Complete | New archive dir + surface + hook + GridRuntime dispatch; Gemini → Codex flow. Pending user approval + commit. |
-| B2a | T87 | mixed | `[ ]` Not started | ↩ restore — updates archive-group.tsx + use-archive.ts |
+| B2a | T87 | logic-heavy | `[~]` Implemented | ↩ restore — use-archive.ts + archive-group.tsx + archive-view.tsx wired; ref guard + 3 tests |
 | B2b | T88 | mixed | `[ ]` Not started | Direct archive context menu — archiveNode/archiveBit must go through use-archive.ts hook boundary; may also touch use-archive.ts |
 
 ### Batch B1 — T86: Archive View surface + routing branch
@@ -123,5 +123,27 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 **Gates:**
 - `pnpm build`: ✅ 0 TypeScript errors, compiled successfully.
 - `pnpm test`: ✅ 70 files, 414 tests — all passed.
+
+**Pending:** User approval + commit.
+
+---
+
+### B2a — T87 Single-item unarchive (2026-06-22)
+
+**Classification:** logic-heavy (button visual already established in B1 Gemini spec; T87 is hook wiring + prop threading only). Claude-direct — 3 files + 1 new test file, ~60 lines.
+
+**Write set:**
+- `src/hooks/use-archive.ts` — added `refreshVersion` state, `restoringIdsRef` (synchronous guard), `restoringIds` state, `unarchive(type, id)` function; updated `useEffect` deps on `refreshVersion`; expanded return type.
+- `src/components/archive/archive-group.tsx` — `RestoreButton` now takes `isRestoring`/`onRestore` props, `disabled` wired to `isRestoring`, `onClick` wired to `onRestore`; `ItemRow` and `ArchiveGroup` accept and forward `onUnarchive`/`restoringIds`.
+- `src/components/archive/archive-view.tsx` — destructures `unarchive`/`restoringIds` from `useArchive()`; passes to `<ArchiveGroup>`.
+- `src/hooks/use-archive.test.ts` (new) — 3 tests: node/bit dispatch, ref guard double-click.
+
+**Architecture constraints confirmed:** no DataStore import in components, no Zustand in hook, no Dexie import, parent-chain restore handled inside `indexeddb.ts unarchiveBit` (no duplication in hook).
+
+**Ref guard design:** `restoringIdsRef` (`useRef<Set<string>>`) checked synchronously before any `await` inside `unarchive()`. The React state copy (`restoringIds`) is derived from the ref for UI rendering. `finally` block clears both.
+
+**Gates:**
+- `pnpm test`: ✅ 71 files, 417 tests — all passed (3 new).
+- `pnpm build`: ✅ 0 TypeScript errors, compiled successfully.
 
 **Pending:** User approval + commit.

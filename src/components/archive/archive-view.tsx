@@ -15,9 +15,11 @@ export function ArchiveView({ node }: { node: ArchiveViewNode }) {
     filteredCount,
     filteredGroups,
     isEmpty,
+    restoringIds,
     searchQuery,
     setSearchQuery,
     totalCount,
+    unarchive,
   } = useArchive();
   const shouldReduceMotion = useReducedMotion();
 
@@ -104,7 +106,11 @@ export function ArchiveView({ node }: { node: ArchiveViewNode }) {
                   layout={shouldReduceMotion ? false : "position"}
                   transition={shouldReduceMotion ? undefined : motionSpring.gridSnap}
                 >
-                  <ArchiveGroup group={group} />
+                  <ArchiveGroup
+                    group={group}
+                    onUnarchive={unarchive}
+                    restoringIds={restoringIds}
+                  />
                 </motion.div>
               ))}
             </AnimatePresence>

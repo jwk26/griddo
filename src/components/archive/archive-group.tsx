@@ -46,12 +46,19 @@ function GroupHeader({ group }: { group: ArchiveGroupData }) {
   );
 }
 
-function RestoreButton() {
+function RestoreButton({
+  isRestoring,
+  onRestore,
+}: {
+  isRestoring: boolean;
+  onRestore: () => void;
+}) {
   return (
     <button
       aria-label="Restore"
       className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed motion-reduce:transition-none"
-      disabled
+      disabled={isRestoring}
+      onClick={onRestore}
       type="button"
     >
       <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
@@ -62,9 +69,13 @@ function RestoreButton() {
 function ItemRow({
   isLast,
   item,
+  onUnarchive,
+  restoringIds,
 }: {
   isLast: boolean;
   item: ArchiveItem;
+  onUnarchive: (type: "node" | "bit", id: string) => Promise<void>;
+  restoringIds: Set<string>;
 }) {
   const ItemIcon = getIcon(item.icon);
   const isBit = item.type === "bit";
@@ -118,12 +129,23 @@ function ItemRow({
       >
         {formatArchivedDate(item.archivedAt)}
       </time>
-      <RestoreButton />
+      <RestoreButton
+        isRestoring={restoringIds.has(item.id)}
+        onRestore={() => void onUnarchive(item.type, item.id)}
+      />
     </div>
   );
 }
 
-export function ArchiveGroup({ group }: { group: ArchiveGroupData }) {
+export function ArchiveGroup({
+  group,
+  onUnarchive,
+  restoringIds,
+}: {
+  group: ArchiveGroupData;
+  onUnarchive: (type: "node" | "bit", id: string) => Promise<void>;
+  restoringIds: Set<string>;
+}) {
   const shouldReduceMotion = useReducedMotion();
 
   return (
@@ -154,6 +176,8 @@ export function ArchiveGroup({ group }: { group: ArchiveGroupData }) {
               <ItemRow
                 isLast={index === group.items.length - 1}
                 item={item}
+                onUnarchive={onUnarchive}
+                restoringIds={restoringIds}
               />
             </motion.div>
           ))}

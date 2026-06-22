@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getDataStore } from "@/lib/db/datastore";
 import type { Bit, Node } from "@/types";
 
@@ -138,12 +138,17 @@ export function useArchive(): {
   totalCount: number;
   filteredCount: number;
   nodeMap: Map<string, Node>;
+  unarchive: (type: "node" | "bit", id: string) => Promise<void>;
+  restoringIds: Set<string>;
 } {
   const [snapshot, setSnapshot] = useState<ArchiveSnapshot>({
     nodes: [],
     bits: [],
   });
   const [searchQuery, setSearchQueryState] = useState("");
+  const [refreshVersion, setRefreshVersion] = useState(0);
+  const restoringIdsRef = useRef(new Set<string>());
+  const [restoringIds, setRestoringIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -162,7 +167,25 @@ export function useArchive(): {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshVersion]);
+
+  async function unarchive(type: "node" | "bit", id: string): Promise<void> {
+    if (restoringIdsRef.current.has(id)) return;
+    restoringIdsRef.current.add(id);
+    setRestoringIds(new Set(restoringIdsRef.current));
+    try {
+      const dataStore = await getDataStore();
+      if (type === "node") {
+        await dataStore.unarchiveNode(id);
+      } else {
+        await dataStore.unarchiveBit(id);
+      }
+      setRefreshVersion((v) => v + 1);
+    } finally {
+      restoringIdsRef.current.delete(id);
+      setRestoringIds(new Set(restoringIdsRef.current));
+    }
+  }
 
   const nodeMap = useMemo(
     () => new Map(snapshot.nodes.map((node) => [node.id, node])),
@@ -195,5 +218,7 @@ export function useArchive(): {
     totalCount,
     filteredCount,
     nodeMap,
+    unarchive,
+    restoringIds,
   };
 }
