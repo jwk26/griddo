@@ -90,10 +90,10 @@ These apply across all phases:
 
 ### Task 87: Single-item restore
 - **Status:** `[ ]`
-- **Files:** `src/components/archive/archive-group.tsx` (update — ↩ action); DataStore `restoreNode`/`restoreBit` (Hook 11)
+- **Files:** `src/components/archive/archive-group.tsx` (update — ↩ action); `src/hooks/use-archive.ts` (update — wire `unarchiveNode`/`unarchiveBit`)
 - **Dependencies:** Task 86
 - **Actions:**
-  - The ↩ action clears `archivedAt` (`restoreNode`/`restoreBit`). BFS reposition if the original `(x, y)` is occupied. Restoring a Bit whose parent is archived restores the parent chain (±5s window). Single-item only (no bulk restore in v1).
+  - The ↩ action clears `archivedAt` via `unarchiveNode`/`unarchiveBit` (Hook 11). Both methods are already implemented in `indexeddb.ts` — no DataStore layer changes needed; wire them through `use-archive.ts`. BFS reposition if the original `(x, y)` is occupied. Restoring a Bit whose parent is archived restores the parent chain (±5s window). Single-item only (no bulk restore in v1).
 - **Acceptance:**
   - Restoring an item clears `archivedAt` and it reappears at its original grid location (or the nearest free cell); if its parent was archived in the same cascade, the parent chain restores too.
   - `pnpm build` passes.
