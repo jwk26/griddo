@@ -80,10 +80,10 @@ These apply across all phases:
 
 ### Task 86: Archive View surface + routing branch
 - **Status:** `[ ]`
-- **Files:** `src/components/archive/archive-view.tsx` (create), `src/components/archive/archive-group.tsx` (create), `src/hooks/use-archive.ts` (create), `src/components/layout/grid-runtime.tsx` (update — add the `'archive_view'` dispatch branch)
+- **Files:** `src/components/archive/archive-view.tsx` (create), `src/components/archive/archive-group.tsx` (create), `src/hooks/use-archive.ts` (create), `src/components/layout/grid-runtime.tsx` (update — add the `'archive_view'` dispatch branch), `src/lib/db/datastore.ts` (update — add `getArchivedItems()`), `src/lib/db/indexeddb.ts` (update — implement `getArchivedItems()`)
 - **Dependencies:** Phase 17 complete (routing dispatch point), Phase 15
 - **Actions:**
-  - Add the `systemRole === 'archive_view'` branch to `GridRuntime` to render `<ArchiveView/>`. Query all items where `archivedAt` is set; group by original parent Node (archived L0 Nodes form their own top-level group); sort `archivedAt` descending within each group; search filters by title. Warm/dignified tone; completed items show ✓. Baseline tokens.
+  - Add `getArchivedItems(): Promise<{ nodes: Node[]; bits: Bit[] }>` to the DataStore interface and implement in `indexeddb.ts` (mirrors `getTrashedItems` pattern — filter `archivedAt !== null`). Add the `systemRole === 'archive_view'` branch to `GridRuntime` to render `<ArchiveView/>`. `use-archive.ts` calls `getArchivedItems()` via the DataStore facade. Group by original parent Node (archived L0 Nodes form their own top-level group); sort `archivedAt` descending within each group; search filters by title. Warm/dignified tone; completed items show ✓. Baseline tokens.
 - **Acceptance:**
   - Opening the Archive Node shows archived items grouped by original parent, newest-archived first; search filters by title.
   - `pnpm build` passes.
@@ -100,10 +100,10 @@ These apply across all phases:
 
 ### Task 88: Direct archive (context menu)
 - **Status:** `[ ]`
-- **Files:** `src/components/grid/*` context menu (update); DataStore `archiveNode`/`archiveBit` (Hook 10)
-- **Dependencies:** Phase 15 complete
+- **Files:** `src/components/grid/node-card.tsx` (update — create context menu, add Archive option), `src/components/grid/bit-card.tsx` (update — create context menu, add Archive option), `src/hooks/use-archive.ts` (update — expose `archiveNode`/`archiveBit` if not already present from T87)
+- **Dependencies:** Phase 15 complete, Task 86
 - **Actions:**
-  - Add "Archive" to the context menu of any non-system Node/Bit. It sets `archivedAt` with cascade (Hook 10). System Nodes are excluded (no Archive option). Completion does NOT auto-archive — completed-but-unarchived items stay on the grid.
+  - Create a context menu (right-click / `DropdownMenu`) on `node-card.tsx` and `bit-card.tsx`. Add "Archive" option for non-system Nodes/Bits only — guard on `node.systemRole === null`. Call `archiveNode`/`archiveBit` through `use-archive.ts` hook boundary — no direct DataStore import in components. It sets `archivedAt` with cascade (Hook 10). System Nodes are excluded (no Archive option). Completion does NOT auto-archive — completed-but-unarchived items stay on the grid.
 - **Acceptance:**
   - The context menu of a non-system Node/Bit shows Archive; archiving removes it from the grid (cascading to descendants) and it appears in Archive View.
   - System Nodes show no Archive option; completing a Bit does not remove it from the grid.
