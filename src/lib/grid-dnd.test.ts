@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
-import { gridCollisionDetection } from "./grid-dnd";
+import {
+  getTriageRemoveDropId,
+  gridCollisionDetection,
+  isTriageDropData,
+  triageCollisionDetection,
+} from "./grid-dnd";
 
 const closestCenterMock = vi.hoisted(() => vi.fn());
 const pointerWithinMock = vi.hoisted(() => vi.fn());
@@ -83,5 +88,26 @@ describe("gridCollisionDetection", () => {
     closestCenterMock.mockReturnValue([blockedTarget, availableTarget]);
 
     expect(gridCollisionDetection(args)).toEqual([availableTarget]);
+  });
+});
+
+describe("triage dnd helpers", () => {
+  beforeEach(() => {
+    pointerWithinMock.mockReset();
+  });
+
+  it("recognizes the remove-from-staging drop data", () => {
+    expect(isTriageDropData({ kind: "triage-remove-drop" })).toBe(true);
+    expect(getTriageRemoveDropId()).toBe("triage-remove-drop");
+  });
+
+  it("keeps the remove-from-staging target in pointer collision results", () => {
+    const args = { collisionRect: null } as never;
+    const removeTarget = { id: "triage-remove-drop" };
+    const unrelatedTarget = { id: "grid-delete-drop" };
+
+    pointerWithinMock.mockReturnValue([unrelatedTarget, removeTarget]);
+
+    expect(triageCollisionDetection(args)).toEqual([removeTarget]);
   });
 });

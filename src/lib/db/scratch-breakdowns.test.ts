@@ -212,6 +212,24 @@ describe("IndexedDBDataStore scratchBreakdowns CRUD", () => {
     expect(unconsumedRow.consumedAt).toBeNull();
   });
 
+  it("markScratchBreakdownConsumed sets consumedAt without altering content or order", async () => {
+    const row = createScratchBreakdown({
+      id: testUuid(300),
+      scratchBitId: testUuid(301),
+      content: "original content",
+      order: 7,
+      consumedAt: null,
+    });
+    const { database, store } = createStore({ scratchBreakdowns: [row] });
+
+    await store.markScratchBreakdownConsumed(row.id);
+
+    const result = expectRecord(await database.scratchBreakdowns.get(row.id));
+    expect(result.consumedAt).toEqual(expect.any(Number));
+    expect(result.content).toBe("original content");
+    expect(result.order).toBe(7);
+  });
+
   it("bulk deletes scratch breakdowns by scratch bit", async () => {
     const scratchBitA = testUuid(106);
     const scratchBitB = testUuid(107);

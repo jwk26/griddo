@@ -15,18 +15,45 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { toast } from "sonner";
 import { isCalendarDropData } from "@/lib/calendar-dnd";
 import { getDataStore } from "@/lib/db/datastore";
-import { isGridDropData } from "@/lib/grid-dnd";
+import { isGridDropData, isTriageDropData } from "@/lib/grid-dnd";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import {
   getStaticBlockedCells,
   isCellBlocked,
 } from "@/lib/utils/breadcrumb-zone";
+import type { StagedCandidate } from "@/stores/triage-store";
 
 export type DragActiveItem = {
   id: string;
   type: "node" | "bit" | "chunk";
   parentId?: string;
   title: string;
+} | null;
+
+export type TriageDragKind =
+  | "triage-breakdown"
+  | "triage-staged-node"
+  | "triage-staged-bit";
+
+export type TriageDragItem = {
+  kind: TriageDragKind;
+  id: string;
+  label: string;
+  sourceBreakdownId?: string;
+} | null;
+
+export type PendingPlacement = {
+  candidateId: string;
+  candidateType: "node" | "bit" | null;
+  candidateLabel: string;
+  sourceBreakdownId: string;
+  dropId: string;
+  parentNodeId: string | null;
+  targetNodeLevel: number | null;
+  targetTitle: string;
+  targetParentPath: string[];
+  isFull: boolean;
+  isDirectBreakdown: boolean;
 } | null;
 
 type PendingNodeMove = {
@@ -62,6 +89,312 @@ const CLOSED_CONFLICT_STATE: ConflictState = {
   pendingChunkId: null,
   pendingTimestamp: null,
 };
+
+function isTriageDragKind(value: unknown): value is TriageDragKind {
+  return (
+    value === "triage-breakdown" ||
+    value === "triage-staged-node" ||
+    value === "triage-staged-bit"
+  );
+}
+
+function readTriageDragItem(value: unknown): TriageDragItem {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("kind" in value) ||
+    !("id" in value) ||
+    !("label" in value) ||
+    !isTriageDragKind(value.kind) ||
+    typeof value.id !== "string" ||
+    typeof value.label !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    kind: value.kind,
+    id: value.id,
+    label: value.label,
+    sourceBreakdownId:
+      "sourceBreakdownId" in value &&
+      typeof value.sourceBreakdownId === "string"
+        ? value.sourceBreakdownId
+        : undefined,
+  };
+}
+
+export function useTriageDnd(
+  selectedScratchId: string | null,
+  {
+    addStagedCandidate,
+    removeStagedCandidate,
+  }: {
+    addStagedCandidate: (scratchId: string, candidate: StagedCandidate) => void;
+    removeStagedCandidate: (scratchId: string, candidateId: string) => void;
+  },
+): {
+  sensors: ReturnType<typeof useSensors>;
+  activeDragItem: TriageDragItem;
+  handleDragStart: (event: DragStartEvent) => void;
+  handleDragEnd: (event: DragEndEvent) => void;
+  handleDragOver: (event: DragOverEvent) => void;
+  pendingPlacement: PendingPlacement;
+  handlePlacementConfirm: (
+    scratchId: string,
+    confirmedType?: "node" | "bit",
+  ) => Promise<void>;
+  handlePlacementCancel: () => void;
+  overTargetId: string | null;
+} {
+  const [activeDragItem, setActiveDragItem] =
+    useState<TriageDragItem>(null);
+  const [overTargetId, setOverTargetId] = useState<string | null>(null);
+  const [pendingPlacement, setPendingPlacement] =
+    useState<PendingPlacement>(null);
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, tolerance: 5 },
+    }),
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragItem(readTriageDragItem(event.active.data.current));
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    setOverTargetId(event.over?.id ? String(event.over.id) : null);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const dragItem =
+      readTriageDragItem(event.active.data.current) ?? activeDragItem;
+    const dropData = event.over?.data.current;
+
+    setActiveDragItem(null);
+    setOverTargetId(null);
+
+    if (
+      dragItem === null ||
+      !isTriageDropData(dropData)
+    ) {
+      return;
+    }
+
+    if (
+      selectedScratchId !== null &&
+      dragItem.kind === "triage-breakdown" &&
+      (dropData.kind === "triage-node-zone-drop" ||
+        dropData.kind === "triage-bit-zone-drop")
+    ) {
+      addStagedCandidate(selectedScratchId, {
+        id: crypto.randomUUID(),
+        type: dropData.kind === "triage-node-zone-drop" ? "node" : "bit",
+        sourceBreakdownId: dragItem.id,
+        label: dragItem.label,
+      });
+      return;
+    }
+
+    if (
+      selectedScratchId !== null &&
+      dragItem.kind === "triage-breakdown" &&
+      dropData.kind === "triage-hierarchy-drop"
+    ) {
+      const dataStore = await getDataStore();
+      const occupancy = await dataStore.getGridOccupancy(
+        dropData.parentNodeId,
+      );
+      const position = findNearestEmptyCell(
+        occupancy,
+        0,
+        0,
+        getStaticBlockedCells(),
+      );
+
+      setPendingPlacement({
+        candidateId: dragItem.id,
+        candidateType: null,
+        candidateLabel: dragItem.label,
+        sourceBreakdownId: dragItem.id,
+        dropId: dropData.dropId,
+        parentNodeId: dropData.parentNodeId,
+        targetNodeLevel: dropData.targetNodeLevel,
+        targetTitle: dropData.targetTitle,
+        targetParentPath: dropData.targetParentPath,
+        isFull: position === null,
+        isDirectBreakdown: true,
+      });
+      return;
+    }
+
+    if (
+      selectedScratchId !== null &&
+      (dragItem.kind === "triage-staged-node" ||
+        dragItem.kind === "triage-staged-bit") &&
+      dropData.kind === "triage-remove-drop"
+    ) {
+      removeStagedCandidate(selectedScratchId, dragItem.id);
+      return;
+    }
+
+    if (
+      dropData.kind !== "triage-hierarchy-drop" ||
+      (dragItem.kind !== "triage-staged-node" &&
+        dragItem.kind !== "triage-staged-bit") ||
+      dragItem.sourceBreakdownId === undefined
+    ) {
+      return;
+    }
+
+    if (
+      dragItem.kind === "triage-staged-node" &&
+      dropData.targetNodeLevel !== null &&
+      dropData.targetNodeLevel >= 2
+    ) {
+      return;
+    }
+
+    if (
+      dragItem.kind === "triage-staged-bit" &&
+      dropData.parentNodeId === null
+    ) {
+      return;
+    }
+
+    const dataStore = await getDataStore();
+    const occupancy = await dataStore.getGridOccupancy(dropData.parentNodeId);
+    const position = findNearestEmptyCell(
+      occupancy,
+      0,
+      0,
+      getStaticBlockedCells(),
+    );
+
+    setPendingPlacement({
+      candidateId: dragItem.id,
+      candidateType: dragItem.kind === "triage-staged-node" ? "node" : "bit",
+      candidateLabel: dragItem.label,
+      sourceBreakdownId: dragItem.sourceBreakdownId,
+      dropId: dropData.dropId,
+      parentNodeId: dropData.parentNodeId,
+      targetNodeLevel: dropData.targetNodeLevel,
+      targetTitle: dropData.targetTitle,
+      targetParentPath: dropData.targetParentPath,
+      isFull: position === null,
+      isDirectBreakdown: false,
+    });
+  };
+
+  const handlePlacementConfirm = async (
+    scratchId: string,
+    confirmedType?: "node" | "bit",
+  ) => {
+    if (pendingPlacement === null) {
+      return;
+    }
+
+    const placement = pendingPlacement;
+    const effectiveType = placement.candidateType ?? confirmedType;
+
+    if (effectiveType === undefined) {
+      return;
+    }
+
+    try {
+      if (placement.isFull) {
+        return;
+      }
+
+      const dataStore = await getDataStore();
+      const occupancy = await dataStore.getGridOccupancy(
+        placement.parentNodeId,
+      );
+      const position = findNearestEmptyCell(
+        occupancy,
+        0,
+        0,
+        getStaticBlockedCells(),
+      );
+
+      if (position === null) {
+        return;
+      }
+
+      if (
+        effectiveType === "node" &&
+        placement.targetNodeLevel !== null &&
+        placement.targetNodeLevel >= 2
+      ) {
+        return;
+      }
+
+      if (effectiveType === "node") {
+        await dataStore.createNode({
+          title: placement.candidateLabel,
+          parentId: placement.parentNodeId,
+          level:
+            placement.targetNodeLevel === null
+              ? 0
+              : placement.targetNodeLevel + 1,
+          x: position.x,
+          y: position.y,
+          color: "hsl(210, 80%, 55%)",
+          icon: "Folder",
+          deadline: null,
+          deadlineAllDay: false,
+        });
+      }
+
+      if (effectiveType === "bit") {
+        if (placement.parentNodeId === null) {
+          return;
+        }
+
+        await dataStore.createBit({
+          title: placement.candidateLabel,
+          parentId: placement.parentNodeId,
+          x: position.x,
+          y: position.y,
+          description: "",
+          icon: "ListTodo",
+          deadline: null,
+          deadlineAllDay: false,
+          priority: null,
+        });
+      }
+
+      await dataStore.markScratchBreakdownConsumed(
+        placement.sourceBreakdownId,
+      );
+      if (!placement.isDirectBreakdown) {
+        removeStagedCandidate(scratchId, placement.candidateId);
+      }
+    } finally {
+      setPendingPlacement(null);
+    }
+  };
+
+  const handlePlacementCancel = () => {
+    setPendingPlacement(null);
+  };
+
+  return {
+    sensors,
+    activeDragItem,
+    handleDragStart,
+    handleDragEnd,
+    handleDragOver,
+    pendingPlacement,
+    handlePlacementConfirm,
+    handlePlacementCancel,
+    overTargetId,
+  };
+}
 
 export function useDnd(getBlockedCells: () => Set<string>): {
   sensors: ReturnType<typeof useSensors>;

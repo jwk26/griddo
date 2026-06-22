@@ -36,7 +36,7 @@ Execution plan mode: scaled
 | 15 | ✅ done | Lifecycle Schema Foundation | [archive](execution-plan/archive/phase-15.md) |
 | 16 | ✅ done | Quick Capture — `+` Entry Surface & Command Palette | [archive](execution-plan/archive/phase-16.md) |
 | 17 | ✅ done | Inbox / Triage Workspace — Routing, Layout, Scratch & Breakdown | [archive](execution-plan/archive/phase-17.md) |
-| 18 | 🔲 active | Inbox / Triage — Staging & Placement DnD (compact-token, partial Grid DnD) | — |
+| 18 | ✅ done | Inbox / Triage — Staging & Placement DnD (compact-token, partial Grid DnD) | [archive](execution-plan/archive/phase-18.md) |
 | 19 | 🔲 active | Archive View & Direct Archive | — |
 
 ## Next Numbers
@@ -65,78 +65,6 @@ These apply across all phases:
 - **BFS origin rule:** Node creation: BFS from `(0, 0)` (top-left corner). Bit creation: BFS from `(GRID_COLS-1, 0)` (top-right corner). Empty-cell `+` click: BFS from `(clickedX, clickedY)` regardless of type — returns the clicked cell if empty, nearest fallback if occupied.
 - **Non-features (PRD Section 26):** Do NOT implement: Mascot System, Labs, AI-Powered Search, Responsive Design, Onboarding Enhancement. These are explicitly deferred.
 - **Doc authority:** SCHEMA.md = data model source of truth. SPEC.md = architecture/routes/components. DESIGN_TOKENS.md = visual values. This file = execution order. PRD = historical context, non-authoritative for implementation.
-
----
-
-## Phase 18: Inbox / Triage — Staging & Placement DnD (compact-token, partial Grid DnD)
-
-> **Purpose:** The conversion + placement flow — Node/Bit Staging, compact-token DnD, pending-confirmation placement into the Hierarchy Explorer, the fast path, remove-from-staging, and Archive Scratch. Per SPEC.md (AD #16, Inbox/Triage Workspace).
-> **Branch:** `phase-18/inbox-triage-dnd`
-> **Canonical refs:** SPEC.md (AD #16, Hierarchy Explorer / Staging / Remove from staging / Archive Scratch); SCHEMA.md (`scratchBreakdowns.consumedAt`, Hook 10); DESIGN_TOKENS.md § Compact Drag Token
-> **Explicit policies:**
-> - **Grid DnD is PARTIAL only:** implement Inbox/Triage compact-token DnD; do NOT rework main-grid / calendar / pool DnD.
-> - Staging is UI state only; real Node/Bit records are created only on confirmed placement.
-> - Reuse: `grid-runtime.tsx` move-confirmation `Dialog`, `create-node-dialog.tsx` / `create-bit-dialog.tsx`, `sidebar.tsx` `DeleteDropTarget`, `grid-dnd.ts` `grid-delete-drop`, `use-dnd.ts`.
-
-### Task 81: Node/Bit Staging zones
-- **Status:** `[ ]`
-- **Files:** `src/components/triage/staging-zone.tsx` (create), `src/stores/triage-store.ts` (update — staged candidates, UI only)
-- **Dependencies:** Phase 17 complete
-- **Actions:**
-  - Two zones: **Node Zone** (two-column grid of compact, icon-centered candidates) + **Bit Zone** (vertical list of text rows). Enforce shape distinction (Node = icon-centered object; Bit = text-centered row) — not the same card recolored. Candidates are UI state scoped to the selected Scratch (`triage-store`), never mixed across Scratches; switching Scratch preserves data because source breakdown rows stay unconsumed. No inline edit.
-- **Acceptance:**
-  - Dragging a breakdown row into the Node/Bit Zone creates a candidate of that type (UI only); no DB record yet; the source row is de-emphasized but `consumedAt` stays `null`.
-  - Switching Scratch and back loses no breakdown data.
-  - `pnpm build` passes.
-
-### Task 82: Compact-token DnD (Inbox/Triage, partial)
-- **Status:** `[ ]`
-- **Files:** `src/hooks/use-dnd.ts` (update — Triage drag kinds), `src/lib/grid-dnd.ts` (update — token/targeting helpers), `src/components/triage/*` (drag wiring)
-- **Dependencies:** Task 81
-- **Actions:**
-  - Use a **compact drag token** (icon token) for breakdown rows, staged Nodes, and staged Bits — the source stays in place; the cursor follows the compact token, not the full row/card. Pointer-centered targeting. Drop-target states: valid / invalid / pending-confirmation. Treat `calendar/compact-bit-item.tsx`'s "full drag surface" as the anti-pattern to avoid. Do NOT modify main-grid / calendar / pool DnD.
-- **Acceptance:**
-  - Dragging within Triage shows a compact token (not the full row); drop targets visibly distinguish valid / invalid / pending-confirmation.
-  - Existing grid/calendar/pool drag behavior is unchanged.
-  - `pnpm build` passes.
-
-### Task 83: Hierarchy Explorer + placement confirmation
-- **Status:** `[ ]`
-- **Files:** `src/components/triage/hierarchy-explorer.tsx` (create); reuse `grid-runtime.tsx` `handleNodeMoveConfirm`/`handleAncestorMoveConfirm`, `src/components/ui/dialog.tsx`, `create-node-dialog.tsx` / `create-bit-dialog.tsx`
-- **Dependencies:** Task 82
-- **Actions:**
-  - Home / L1 / L2 / L3 columns (progressive reveal; Nodes before Bits; long Bit titles ellipsize). Dropping a staged candidate onto a column/parent is a **pending-confirmation** target → open the existing GridDO move-confirmation `Dialog` showing source content / candidate type / destination hierarchy path / result summary. **Confirm:** create the real Node/Bit at the target (reuse the create paths) AND mark the source `scratchBreakdowns` row `consumedAt`. **Cancel/Esc:** no record; `consumedAt` stays `null`. If the target grid is full: confirm disabled with a reason (`No available grid cell in this target`).
-- **Acceptance:**
-  - Dropping a staged Node/Bit onto a hierarchy target opens the confirmation dialog with all four fields; confirm creates the item and line-throughs the source breakdown row (`consumedAt` set); cancel creates nothing.
-  - A full target disables confirm with a visible reason.
-  - `pnpm build` passes.
-
-### Task 84: Fast path (Breakdown row → Hierarchy)
-- **Status:** `[ ]`
-- **Files:** `src/components/triage/breakdown-panel.tsx` + `hierarchy-explorer.tsx` (update), `src/hooks/use-dnd.ts` (update)
-- **Dependencies:** Task 83
-- **Actions:**
-  - Allow dragging a Breakdown row directly into the Hierarchy Explorer (bypassing Staging). It opens the SAME confirmation dialog but REQUIRES an explicit Node/Bit type choice (nothing preselected). Confirm creates the chosen type and marks the source row `consumedAt`.
-- **Acceptance:**
-  - Dragging a breakdown row onto a hierarchy target opens confirmation with an explicit Node/Bit type choice (no default); confirm creates the chosen type and consumes the row.
-  - `pnpm build` passes.
-
-### Task 85: Remove-from-staging + Archive Scratch affordance
-- **Status:** `[ ]`
-- **Files:** `src/components/triage/*` (update); reuse `sidebar.tsx` `DeleteDropTarget` + `grid-dnd.ts` `grid-delete-drop`; DataStore `archiveBit` (Hook 10)
-- **Dependencies:** Task 83
-- **Actions:**
-  - A shared **Remove from staging** drop target appears while dragging staged candidates (reuse the existing grid delete affordance language; NOT a per-card ✗). Dropping removes only the staged candidate; the source breakdown row returns to active display; `consumedAt` stays `null`. Non-destructive (no toast).
-  - **Archive Scratch:** when all breakdown rows for the selected Scratch are placed/consumed AND no staged candidates remain, show an explicit Archive Scratch affordance (requires confirmation). Confirm → `archiveBit` on the Scratch (`archivedAt` set); decline → it stays active. Never hard-deleted via this path.
-- **Acceptance:**
-  - Dragging a staged candidate onto "Remove from staging" removes it and restores the source row (`consumedAt` null), non-destructively.
-  - When a Scratch is fully processed, the Archive Scratch affordance appears; confirming archives the Scratch (it leaves the active pool) and it shows up in Archive View.
-  - `pnpm build` passes.
-
-#### Phase 18 Notes
-
-> This is a **partial** implementation of `2026-06-02-grid-dnd-preview-and-drop-targeting`, scoped to Inbox/Triage only. When that idea is later promoted in full, reconcile this behavior with main-grid / calendar / pool DnD.
-> Staging is UI-state-only (`triage-store`); records are created solely on confirmed placement, and `scratchBreakdowns.consumedAt` is set at that moment (per SCHEMA.md).
 
 ---
 

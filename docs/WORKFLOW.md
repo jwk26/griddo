@@ -722,6 +722,17 @@ The phase issue document does **not** replace canonical product/spec documents:
 
 Large issues are promotable to a new task in `EXECUTION_PLAN.md` or updates to canonical docs.
 
+### Deferred Issues Index
+
+`docs/issues/Issues_Deferred.md` is the project's **central index** of deferred / follow-up issues that are otherwise scattered across per-phase issue documents.
+
+- **Not a source of truth.** Full issue detail stays in the originating `docs/issues/Issues_Phase_N.md`; the index holds only a short pointer row per item.
+- **Not an active backlog.** Do not start work from the index. To act on a deferred item, promote it into `EXECUTION_PLAN.md` (or the appropriate planning document).
+- **Keep it in sync.** When an issue is marked `Deferred`, add a row. When an indexed item later becomes `Closed`, `Dropped`, or `Promoted to Execution Plan`, update both the phase issue document and the index.
+- **Active close blockers stay put.** `Open`, `In Progress`, and `Awaiting User Decision` issues remain in the active phase issue document and still block phase close — they are not moved to the index.
+
+The `execute-task` and `closing-phase` skills keep this index in sync when it is present.
+
 ---
 
 ## Reference-Inspired Redesign
@@ -814,6 +825,7 @@ Drive implementation and phase completion.
 | ------------------------------- | --------------------- | --------------------------------------- |
 | `docs/EXECUTION_PLAN.md`        | 5. Execution Planning | Phased task specs with geometric values |
 | `docs/issues/Issues_Phase_N.md` | 6–7. Implementation → Closing | Live phase execution record — captures issues during execution, finalized at close |
+| `docs/issues/Issues_Deferred.md` | 6–7. Implementation → Closing | Central index of deferred / follow-up issues — lookup aid, not source of truth |
 
 ### Standard & Review Documents
 
@@ -875,3 +887,4 @@ Each document has a specific role. Confusion about scope causes drift.
 | `design-system-preview.html` | A source of truth. Verification artifact only. Corrections must be promoted to canonical docs. |
 | `PLANNING_STANDARD.md`       | A historical document. Active operational standard.                                            |
 | `OMISSION_AUDIT.md`          | An operational document. Historical remediation record.                                        |
+| `docs/issues/Issues_Deferred.md` | A source of truth or an active backlog. A lookup index over per-phase deferred issues; promote to `EXECUTION_PLAN.md` to act. |

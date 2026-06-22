@@ -49,6 +49,17 @@ vi.mock("@/hooks/use-node", () => ({
 
 vi.mock("@/hooks/use-dnd", () => ({
   useDnd: useDndMock,
+  useTriageDnd: () => ({
+    sensors: [],
+    activeDragItem: null,
+    overTargetId: null,
+    pendingPlacement: null,
+    handleDragStart: vi.fn(),
+    handleDragEnd: vi.fn(),
+    handleDragOver: vi.fn(),
+    handlePlacementConfirm: vi.fn(),
+    handlePlacementCancel: vi.fn(),
+  }),
 }));
 
 vi.mock("@/hooks/use-grid-actions", () => ({
