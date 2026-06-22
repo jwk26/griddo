@@ -49,13 +49,7 @@ The consumed-state mechanism already has concrete names:
 - Unconsumed row: `consumedAt === null`
 - Consumed row: `consumedAt` is a timestamp
 
-Do not stop at "the hook calls the mock." Existing `use-triage-dnd.test.ts` coverage already asserts `markScratchBreakdownConsumed` in several staged/direct placement paths. The manual-smoke failure means the missing coverage is likely at an integration/UI/reactivity boundary, or a real confirmation path differs from the hook-level test fixture.
-
-Verify the actual path before patching. Useful hypotheses to test:
-
-- `PlacementConfirmationDialog` calls the expected confirmation path, but the UI does not refresh from updated `consumedAt`.
-- Removing a staged candidate reveals the source row as active because the row display only checks staging state, not persisted `consumedAt`.
-- Direct placement and staged placement share hook logic in tests but diverge at the component/state boundary.
+These hypotheses are now **RESOLVED by read-only diagnosis** — see "Confirmed root cause" under Smoke Fix A below. Summary: the hook correctly calls `markScratchBreakdownConsumed` (`use-triage-dnd.test.ts` already asserts this across staged/direct paths — **do not duplicate it**), and the DB write is correct, but `breakdown-panel.tsx` never reads `row.consumedAt`, so the consumed state is persisted yet never rendered. Do not re-run open-ended diagnosis; go straight to the confirmed fix.
 
 ## Overall Smoke-Fix Structure
 
@@ -75,8 +69,23 @@ Do not fix all blockers in one broad pass. Use three sequential passes.
 - Confirming direct breakdown placement as Bit creates the Bit and marks the original breakdown row consumed/processed.
 - Once every breakdown row is consumed and staged candidates are zero, the Archive Scratch affordance becomes verifiable.
 
+**Confirmed root cause (diagnosed 2026-06-22, read-only):**
+This was diagnosed by reading the code. `ISSUE-18-11` and `ISSUE-18-12` are the **same single bug**, and it is in the **render layer, not the handler**:
+
+- `src/hooks/use-dnd.ts:368` — the confirm handler **does** call `dataStore.markScratchBreakdownConsumed(placement.sourceBreakdownId)` for every path (node/bit, staged/direct). The DB write is correct (`indexeddb.ts:869` sets `consumedAt = Date.now()`; covered by `scratch-breakdowns.test.ts`).
+- `use-dnd.ts:371-373` — for staged placement (`!isDirectBreakdown`) it then calls `removeStagedCandidate(...)`, flipping the row's `isStaged` back to `false`.
+- `src/components/triage/breakdown-panel.tsx` — `BreakdownRow` (lines ~31-116) and the row map (lines ~286-297) drive all de-emphasis from `isStaged`/`isDragging` only. **They never read `row.consumedAt`.** There is no "consumed/processed" rendering branch at all.
+
+Consequence: after confirm, the staged row loses `isStaged` (→ renders active again = `ISSUE-18-11`); the direct row was never staged (→ renders active throughout = `ISSUE-18-12`). `consumedAt` is persisted but never displayed. This is a **missing feature in the view**, not a regression.
+
+`ISSUE-18-13` is effectively already working: `src/hooks/use-can-archive-scratch.ts:12` reads `consumedAt` correctly, so the Archive Scratch bar already appears once all rows are consumed. It was only **un-observable** because the rows still looked active. **`ISSUE-18-13` needs no code change — re-verify only** after the render fix.
+
+**The fix (single, small, direct — no Codex):**
+- In `breakdown-panel.tsx`, add a consumed/processed visual branch to `BreakdownRow` driven by `row.consumedAt !== null` (e.g. line-through + de-emphasis, plus a stable `data-testid` for the test). Confirm `useScratchBreakdowns` still returns consumed rows (the row stays visible-but-processed until Archive; the ArchiveScratchBar copy confirms this intent).
+- Scope is ~5-15 lines in one file. Implement directly; do not run the Codex prompt cycle for a change this small.
+
 **Why this is first:**
-`ISSUE-18-13` is blocked by `ISSUE-18-11` and `ISSUE-18-12`. Archive Scratch cannot be reliably smoke-tested until consumed state is correct.
+`ISSUE-18-13` is gated by `ISSUE-18-11` and `ISSUE-18-12`. Archive Scratch cannot be reliably smoke-tested until consumed state renders correctly.
 
 `ISSUE-18-13` may require no independent implementation. Treat it first as a re-verification item after `ISSUE-18-11` and `ISSUE-18-12` are fixed.
 
@@ -127,22 +136,20 @@ Use the `execute-task` workflow.
 1. Confirm branch and clean/dirty state.
 2. Read the source documents listed above.
 3. Read relevant implementation and test files.
-4. Diagnose why previous automated tests passed while manual smoke failed.
-5. Identify the missing test layer. Prefer an integration/component test that observes row consumed UI/state, not only a hook mock-call assertion.
+4. **Confirm** (do not rediscover) the documented root cause: open `src/hooks/use-dnd.ts:368` (handler calls `markScratchBreakdownConsumed`) and `src/components/triage/breakdown-panel.tsx` (`BreakdownRow` never reads `row.consumedAt`). If reality differs from the Confirmed root cause section, stop and tell the user.
+5. The missing test layer is the render: `breakdown-panel.tsx` showing the consumed state from `row.consumedAt`. This is a component render test, not a hook mock-call assertion.
 6. Write or prompt for the focused regression test **before implementation**.
 7. Run the focused test against current HEAD and confirm it fails for the manual-smoke bug.
    - If a RED automated test is not feasible, document why and ask before proceeding.
-8. Prepare a small implementation plan.
-9. Show the Codex prompt preview and wait for explicit user approval.
-10. Launch Codex only after approval.
-11. Inspect the diff before running tests.
-12. Run the previously failing focused test and confirm it is now green.
-13. Run any adjacent focused tests for T83/T84/T85 placement paths.
-14. Run the actual project verification gate from `CLAUDE.md` / package scripts.
+8. Implement the fix directly in `breakdown-panel.tsx` (~5-15 lines: add a `row.consumedAt !== null` rendering branch to `BreakdownRow` plus a stable `data-testid`). **Do not run the Codex prompt cycle for a change this small** — direct edit is faster and the RED-first test is the safeguard.
+9. Re-read your own diff before running tests.
+10. Run the previously failing focused test and confirm it is now green.
+11. Run any adjacent focused tests for T83/T84/T85 placement paths.
+12. Run the actual project verification gate from `CLAUDE.md` / package scripts.
     - Do not assume `pnpm typecheck` exists.
-15. Update `docs/issues/Issues_Phase_18.md`.
-16. Commit implementation and issue-doc updates.
-17. Emit a checkpoint.
+13. Update `docs/issues/Issues_Phase_18.md`.
+14. Commit implementation and issue-doc updates.
+15. Emit a checkpoint.
 
 ## Issue Status Rules
 
@@ -160,13 +167,13 @@ Separate automated verification from manual smoke. This bug class exists because
 
 ### Automated Verification
 
+Because 11 and 12 share one render-layer root cause, the missing assertion is **a single render test**, not four. Do not re-inflate this into a per-path test matrix.
+
 Minimum automated assertions:
 
-- staged Node placement confirm leaves source breakdown row consumed.
-- staged Bit placement confirm leaves source breakdown row consumed.
-- direct breakdown -> Node confirm marks source breakdown row consumed.
-- direct breakdown -> Bit confirm marks source breakdown row consumed.
-- the regression test fails on current HEAD before implementation and passes after the fix.
+- **The one new test:** a `breakdown-panel.tsx` render test where a row with `consumedAt !== null` and no staged candidate renders the consumed/processed treatment. One representative consumed row is enough because staged-origin and direct-origin rows share the same render condition after confirm. This is the assertion that currently has zero coverage.
+- The new test fails on current HEAD before implementation and passes after the fix (RED → GREEN).
+- Do **not** add more hook-level `markScratchBreakdownConsumed` call assertions — `use-triage-dnd.test.ts` already covers them.
 - Existing T83/T84/T85 placement paths do not regress.
 
 ### Manual Smoke Verification
@@ -224,9 +231,9 @@ Use execute-task workflow:
 - read the required docs,
 - diagnose before patching,
 - identify the missing test layer around markScratchBreakdownConsumed / consumedAt,
-- write a focused regression test first and confirm it fails on current HEAD,
-- show a focused Codex prompt preview and wait for explicit approval,
-- implement only after the RED test is confirmed,
+- the root cause is already confirmed: breakdown-panel.tsx never reads row.consumedAt; the handler and DB write are correct,
+- write ONE render-layer regression test first (consumedAt set -> processed visual) and confirm it fails on current HEAD,
+- implement the fix directly in breakdown-panel.tsx after the RED test is confirmed (small change, no Codex),
 - run focused tests and the actual project gate,
 - update docs/issues/Issues_Phase_18.md,
 - commit implementation + issue doc,
