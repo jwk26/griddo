@@ -88,14 +88,14 @@ _None yet._
 - **Category:** Visual polish gap
 - **Severity:** Low (Gemini labeled HIGH; classified follow-up — spec's own §5 rates this MEDIUM priority)
 - **Description:** `TriageRemoveDropTarget` uses `if (!isStagedDrag) return null` causing immediate mount/unmount with no fade-in/scale-up animation. Spec specifies `transition-all duration-200 ease-in-out` + scale-up on drag start, fade-out on drag end. All behavioral ACs satisfied; DnD mechanics and visual states (rest/hover) correct. Implementing proper enter/exit requires AnimatePresence or CSS delayed-unmount — non-trivial change.
-- **Status:** Open — follow-up; deferred as MEDIUM-priority visual polish
+- **Status:** Deferred — tracked in `docs/issues/Issues_Deferred.md`; follow-up MEDIUM-priority visual polish
 
 ### ISSUE-18-09 — Gemini post-code: MEDIUM visual findings on remove target
 - **Batch:** 5 (T85)
 - **Category:** Visual drift
 - **Severity:** Medium
 - **Description:** (1) Border: spec says `border border-dashed border-border` (all sides) but Codex A prompt explicitly specified `border-t` (top only as a separator strip) — binding spec conflict, user decides. (2) Transition timing: `transition-[background-color,border-color,color]` is missing `duration-200 ease-in-out`; hover state transitions revert to browser defaults. (3) LOW: Archive Scratch button missing `focus-visible:ring-offset-2` accessibility class.
-- **Status:** Open — noted at checkpoint; user decides whether to fix in-session
+- **Status:** Deferred — tracked in `docs/issues/Issues_Deferred.md`; follow-up visual/accessibility polish
 
 ### ISSUE-18-10 — Staged Node/Bit drag token is offset from the pointer
 - **Batch:** 2 (T82)
@@ -151,7 +151,7 @@ _None yet._
 - **Severity:** Medium
 - **Description:** Users commonly expect a staged Node/Bit to return to the Breakdown area when dragged back there. This should behave like `Remove from staging`: remove only the staged candidate, restore the source breakdown row to active display, and keep `consumedAt` as `null`.
 - **Expected:** Dropping a staged candidate onto the Breakdown area removes it from staging non-destructively, matching the remove-from-staging behavior.
-- **Status:** Awaiting User Decision — likely deferred or promoted to a follow-up task unless explicitly included in the smoke-fix pass
+- **Status:** Deferred — tracked in `docs/issues/Issues_Deferred.md`; promote to a follow-up Inbox/Triage UX task
 
 ### ISSUE-18-17 — Scratch pool sidebar folds on Scratch selection instead of Breakdown focus
 - **Batch:** 1/2 adjacent UX
@@ -159,7 +159,7 @@ _None yet._
 - **Severity:** Medium
 - **Description:** The Scratch pool sidebar currently folds immediately when a Scratch item is selected. The expected behavior is to keep the Scratch pool visible after selection and fold it when focus moves into the Breakdown item section, where the user has begun active triage work.
 - **Expected:** Scratch selection alone should not force the pool closed. Focusing the Breakdown section should fold the Scratch pool to expand the work area.
-- **Status:** Awaiting User Decision — UX follow-up; not a Phase 18 close blocker unless explicitly pulled into scope
+- **Status:** Deferred — tracked in `docs/issues/Issues_Deferred.md`; follow-up Inbox/Triage UX task
 
 ### ISSUE-18-18 — Add-note input should keep focus after Enter
 - **Batch:** 1 adjacent UX
@@ -167,7 +167,7 @@ _None yet._
 - **Severity:** Medium
 - **Description:** After entering a note in the `Add a note...` area and pressing Enter, focus is lost and the user must click the input again to add another breakdown row. This interrupts the intended rapid `type -> Enter -> type -> Enter` workflow.
 - **Expected:** After adding a breakdown row with Enter, focus should remain in the add-note input. Exception: global commands such as `Cmd+K` should still move focus to the integrated menu.
-- **Status:** Awaiting User Decision — quick-fix candidate or deferred UX follow-up
+- **Status:** Deferred — tracked in `docs/issues/Issues_Deferred.md`; follow-up keyboard-flow UX task
 
 ### ISSUE-18-19 — Breakdown panel needs selected Scratch context
 - **Batch:** 1 adjacent UX
@@ -175,7 +175,7 @@ _None yet._
 - **Severity:** Medium
 - **Description:** The Breakdown section does not currently show enough context about the selected Scratch item. During triage, users need a clear indicator of which Scratch is active above the breakdown list.
 - **Expected:** The top of the Breakdown section should display the selected Scratch item/context so users can confirm which Scratch they are editing.
-- **Status:** Awaiting User Decision — UX follow-up; not yet classified as a Phase 18 close blocker
+- **Status:** Deferred — tracked in `docs/issues/Issues_Deferred.md`; follow-up Inbox/Triage context task
 
 ### ISSUE-18-20 — Invalid hierarchy/staging drop state is visually too destructive
 - **Batch:** 3/5 visual follow-up
@@ -183,7 +183,7 @@ _None yet._
 - **Severity:** Medium
 - **Description:** During Node/Bit drag, invalid sections are currently shown with a red/destructive line treatment. This reads like an error or destructive action, but the state only means the current target is not valid for that drag.
 - **Expected:** Invalid drop state should use a quieter de-emphasis treatment similar to the Breakdown row staged/de-emphasized visual language, rather than destructive red.
-- **Status:** Awaiting User Decision — visual follow-up
+- **Status:** Deferred — tracked in `docs/issues/Issues_Deferred.md`; follow-up visual-state polish
 
 ### ISSUE-18-21 — Hierarchy Explorer search bar may be missing
 - **Batch:** 3 (T83) or follow-up, pending source check
@@ -191,7 +191,7 @@ _None yet._
 - **Severity:** Medium
 - **Description:** Manual smoke noted that the Hierarchy Explorer has no search bar. It is not yet confirmed whether search was required by `DECISION.md`, `SPEC.md`, or the Phase 18 plan.
 - **Expected:** Check the canonical decision/spec/planning documents. If Hierarchy Explorer search was specified, record this as a Phase 18 omission; otherwise treat it as a follow-up UX enhancement.
-- **Status:** Awaiting Investigation — check canonical docs before classifying
+- **Status:** Deferred — tracked in `docs/issues/Issues_Deferred.md`; investigate canonical docs before scoping
 
 ### ISSUE-18-22 — Duplicate Node/Bit titles are allowed globally
 - **Batch:** Product-wide follow-up observed during Phase 18 smoke
@@ -199,7 +199,7 @@ _None yet._
 - **Severity:** Medium
 - **Description:** Adding Node/Bit items through the Hierarchy Explorer allows duplicate titles. The same appears to be true when adding via the main grid `+` menu, suggesting this is not isolated to Phase 18 but reflects a broader GridDO title-uniqueness policy gap.
 - **Expected:** Decide whether duplicate Node/Bit titles should be allowed globally. If not, define product-wide validation behavior and apply it consistently across Hierarchy Explorer placement and main grid creation flows.
-- **Status:** Awaiting User Decision — likely promote to execution plan or product policy follow-up; do not bundle into Phase 18 blocker fixes without explicit decision
+- **Status:** Deferred — tracked in `docs/issues/Issues_Deferred.md`; product-policy follow-up
 
 ### Phase-local Question Resolution
 
