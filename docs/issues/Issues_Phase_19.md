@@ -34,7 +34,7 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 
 | Batch | Tasks | Classification | Status | Notes |
 |-------|-------|----------------|--------|-------|
-| B1 | T86 | ui-heavy | `[ ]` Not started | New archive dir + surface + hook + GridRuntime dispatch |
+| B1 | T86 | mixed | `[ ]` Not started | New archive dir + surface + hook + GridRuntime dispatch; Gemini → Codex flow |
 | B2a | T87 | mixed | `[ ]` Not started | ↩ restore — updates archive-group.tsx + use-archive.ts |
 | B2b | T88 | mixed | `[ ]` Not started | Direct archive context menu — archiveNode/archiveBit must go through use-archive.ts hook boundary; may also touch use-archive.ts |
 
@@ -55,7 +55,7 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 - GridRuntime already has `isInboxRoute` pattern (line 70) — mirror this for `isArchiveViewRoute`
 - Active item queries throughout the app already filter `archivedAt === null` (SCHEMA.md Key Queries) — do not break this
 
-**Gemini involvement:** Yes — visual design for Archive View surface (grouping layout, warm/dignified tone, ✓ on completed items, search bar, ↩ restore button)
+**Gemini involvement:** Yes (mixed) — visual design spec for Archive View surface only. DataStore/API 설계는 Gemini 범위 밖. Codex가 spec + flow-review 기반으로 DataStore + hook + component 전체 구현.
 
 ### Batch B2a — T87: Single-item unarchive
 
