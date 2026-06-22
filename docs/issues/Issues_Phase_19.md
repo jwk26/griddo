@@ -35,7 +35,7 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 | Batch | Tasks | Classification | Status | Notes |
 |-------|-------|----------------|--------|-------|
 | B1 | T86 | mixed | `[x]` Complete | New archive dir + surface + hook + GridRuntime dispatch; Gemini → Codex flow. Pending user approval + commit. |
-| B2a | T87 | logic-heavy | `[~]` Implemented | ↩ restore — use-archive.ts + archive-group.tsx + archive-view.tsx wired; ref guard + 3 tests |
+| B2a | T87 | logic-heavy | `[x]` Complete | ↩ restore — use-archive.ts + archive-group.tsx + archive-view.tsx wired; ref guard + 3 tests |
 | B2b | T88 | mixed | `[ ]` Not started | Direct archive context menu — archiveNode/archiveBit must go through use-archive.ts hook boundary; may also touch use-archive.ts |
 
 ### Batch B1 — T86: Archive View surface + routing branch
@@ -124,7 +124,7 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 - `pnpm build`: ✅ 0 TypeScript errors, compiled successfully.
 - `pnpm test`: ✅ 70 files, 414 tests — all passed.
 
-**Pending:** User approval + commit.
+**Status:** User approved + committed (`f21eac8`).
 
 ---
 
@@ -146,4 +146,9 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 - `pnpm test`: ✅ 71 files, 417 tests — all passed (3 new).
 - `pnpm build`: ✅ 0 TypeScript errors, compiled successfully.
 
-**Pending:** User approval + commit.
+**Manual smoke (2026-06-22):**
+- Restore flow for Phase 18 archived Scratch Bit: ✅ confirmed (Bit restore covers `unarchiveBit` path including parent-chain logic inside `indexeddb.ts`).
+- Arbitrary Bit/Node archive fixture creation: ⏭ not possible — Direct Archive UI (B2b) not yet implemented; no way to archive a regular Node/Bit from the UI.
+- Node archive / parent-chain restore smoke: 🔜 deferred to after B2b completion (UI prerequisite).
+
+**Status:** ✅ Complete — committed `7d239ba`. T87 marked `[x]` in EXECUTION_PLAN.md.

@@ -89,7 +89,7 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 87: Single-item restore
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/archive/archive-group.tsx` (update — ↩ action); `src/hooks/use-archive.ts` (update — wire `unarchiveNode`/`unarchiveBit`)
 - **Dependencies:** Task 86
 - **Actions:**
