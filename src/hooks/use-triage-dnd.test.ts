@@ -233,6 +233,40 @@ describe("useTriageDnd — drop matrix", () => {
     });
   });
 
+  it("creates pending placement from a section body drop with the section's parentNodeId and targetNodeLevel", async () => {
+    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          {
+            kind: "triage-staged-node",
+            id: "candidate-1",
+            label: "Project",
+            sourceBreakdownId: "breakdown-1",
+          },
+          {
+            kind: "triage-hierarchy-drop",
+            dropId: "triage-hierarchy:body-l1",
+            parentNodeId: "root-node-1",
+            targetNodeLevel: 0,
+            targetTitle: "Root Node",
+            targetParentPath: ["Home"],
+          },
+        ),
+      );
+    });
+
+    expect(result.current.pendingPlacement).toEqual(
+      expect.objectContaining({
+        dropId: "triage-hierarchy:body-l1",
+        parentNodeId: "root-node-1",
+        targetNodeLevel: 0,
+        candidateType: "node",
+      }),
+    );
+  });
+
   it("creates a pending placement with unknown type when a breakdown row drops directly on a hierarchy target", async () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1"));
 

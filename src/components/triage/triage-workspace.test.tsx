@@ -184,10 +184,40 @@ describe("TriageWorkspace", () => {
 
     render(<TriageWorkspace node={createNode()} />);
 
-    expect(screen.getByTestId("hierarchy-home-drop")).toHaveClass("ring-1");
-    expect(screen.getByTestId("hierarchy-home-drop")).not.toHaveClass(
+    expect(screen.getByTestId("hierarchy-section-body-home")).toHaveClass(
+      "ring-1",
+    );
+    expect(screen.getByTestId("hierarchy-section-body-home")).not.toHaveClass(
       "cursor-not-allowed",
     );
+  });
+
+  it("shows Home section body as invalid while a staged Bit is dragged", () => {
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        activeDragItem: {
+          kind: "triage-staged-bit",
+          id: "candidate-2",
+          label: "Todo",
+          sourceBreakdownId: "breakdown-2",
+        },
+      }),
+    );
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.getByTestId("hierarchy-section-body-home")).toHaveClass(
+      "cursor-not-allowed",
+    );
+  });
+
+  it("renders all four hierarchy section body drop zones", () => {
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.getByTestId("hierarchy-section-body-home")).toBeInTheDocument();
+    expect(screen.getByTestId("hierarchy-section-body-l1")).toBeInTheDocument();
+    expect(screen.getByTestId("hierarchy-section-body-l2")).toBeInTheDocument();
+    expect(screen.getByTestId("hierarchy-section-body-l3")).toBeInTheDocument();
   });
 
   it("requires a type choice for direct breakdown placement and passes the selected type on confirm", () => {
