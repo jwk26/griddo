@@ -149,7 +149,7 @@ describe("BreakdownPanel", () => {
     });
   });
 
-  it("replaces the add-note bar with the archive affordance when every breakdown is consumed and no candidates are staged", () => {
+  it("shows the archive affordance alongside the add-note input when every breakdown is consumed and no candidates are staged", () => {
     triageStoreState.selectedScratchId = "scratch-1";
     hookState.breakdownsByScratch["scratch-1"] = [
       createScratchBreakdown({
@@ -165,7 +165,7 @@ describe("BreakdownPanel", () => {
     expect(
       screen.getByRole("button", { name: "Archive Scratch" }),
     ).toBeInTheDocument();
-    expect(screen.queryByText("Add a note...")).not.toBeInTheDocument();
+    expect(screen.getByText("Add a note...")).toBeInTheDocument();
   });
 
   it("keeps the add-note bar when consumed breakdowns still have staged candidates", () => {

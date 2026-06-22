@@ -303,11 +303,12 @@ export function BreakdownPanel() {
         })}
       </div>
 
-      {canArchiveScratch && selectedScratchId !== null ? (
+      {canArchiveScratch && selectedScratchId !== null && (
         <ArchiveScratchBar scratchId={selectedScratchId} />
-      ) : (
-        <div className="border-t border-border px-3 py-2">
-          {isAdding ? (
+      )}
+
+      <div className="border-t border-border px-3 py-2">
+        {isAdding ? (
             <input
               ref={inputRef}
               className="block h-8 w-full appearance-none rounded-md border border-border bg-background px-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
@@ -337,7 +338,6 @@ export function BreakdownPanel() {
             </div>
           )}
         </div>
-      )}
 
       <AlertDialog
         open={pendingDeleteId !== null}

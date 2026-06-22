@@ -212,7 +212,8 @@ _None yet._
 - **Severity:** High (archive-ready state blocks continued breakdown entry)
 - **Description:** When all breakdown rows are consumed and no staged candidates remain, the Archive Scratch affordance appears in the bottom input area, replacing `Add a note...`. Canceling the archive confirmation dialog does not hide the affordance because the archive-ready condition remains true. This leaves the user unable to add more breakdown rows after reaching the archive-ready state.
 - **Expected:** Keep the `Add a note...` input available at the bottom. Render the Archive Scratch affordance inside the breakdown rows/list area instead. If the user adds a new breakdown row, it starts with `consumedAt === null`, so `canArchiveScratch` becomes false and the affordance disappears automatically.
-- **Status:** Open — Phase 18 close blocker
+- **Fix (Smoke Fix B, 2026-06-22):** In `breakdown-panel.tsx`, converted the `canArchiveScratch` ternary (which replaced the add-note div) to a conditional sibling — `ArchiveScratchBar` renders above the add-note div when `canArchiveScratch` is true; the add-note div always renders. Updated the matching test in `breakdown-panel.test.tsx` to assert both "All items processed" and "Add a note..." are present simultaneously.
+- **Status:** Implemented — awaiting manual smoke confirmation
 
 ### Phase-local Question Resolution
 
