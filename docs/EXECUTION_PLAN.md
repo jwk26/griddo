@@ -37,7 +37,7 @@ Execution plan mode: scaled
 | 16 | ✅ done | Quick Capture — `+` Entry Surface & Command Palette | [archive](execution-plan/archive/phase-16.md) |
 | 17 | ✅ done | Inbox / Triage Workspace — Routing, Layout, Scratch & Breakdown | [archive](execution-plan/archive/phase-17.md) |
 | 18 | ✅ done | Inbox / Triage — Staging & Placement DnD (compact-token, partial Grid DnD) | [archive](execution-plan/archive/phase-18.md) |
-| 19 | 🔲 active | Archive View & Direct Archive | — |
+| 19 | ✅ done | Archive View & Direct Archive | [archive](execution-plan/archive/phase-19.md) |
 
 ## Next Numbers
 
@@ -68,48 +68,3 @@ These apply across all phases:
 
 ---
 
-## Phase 19: Archive View & Direct Archive
-
-> **Purpose:** The Archive View surface (rendered for the Archive system Node) + single-item restore + direct archive from the context menu. Per SPEC.md (Archive View Surface, Direct Archive).
-> **Branch:** `phase-19/archive-view`
-> **Canonical refs:** SPEC.md (Archive View Surface, Direct Archive); SCHEMA.md (Hooks 10/11, `archivedAt`)
-> **Explicit policies:**
-> - Archive View is a portal, not a container (archived items keep their original `parentId`).
-> - System Nodes cannot be archived; completion never auto-archives.
-> - Baseline UI/tokens (no dedicated Archive theme source; the future global theme system may influence it later).
-
-### Task 86: Archive View surface + routing branch
-- **Status:** `[ ]`
-- **Files:** `src/components/archive/archive-view.tsx` (create), `src/components/archive/archive-group.tsx` (create), `src/hooks/use-archive.ts` (create), `src/components/layout/grid-runtime.tsx` (update — add the `'archive_view'` dispatch branch), `src/lib/db/datastore.ts` (update — add `getArchivedItems()`), `src/lib/db/indexeddb.ts` (update — implement `getArchivedItems()`)
-- **Dependencies:** Phase 17 complete (routing dispatch point), Phase 15
-- **Actions:**
-  - Add `getArchivedItems(): Promise<{ nodes: Node[]; bits: Bit[] }>` to the DataStore interface and implement in `indexeddb.ts` (mirrors `getTrashedItems` pattern — filter `archivedAt !== null`). Add the `systemRole === 'archive_view'` branch to `GridRuntime` to render `<ArchiveView/>`. `use-archive.ts` calls `getArchivedItems()` via the DataStore facade. Group by original parent Node (archived L0 Nodes form their own top-level group); sort `archivedAt` descending within each group; search filters by title. Warm/dignified tone; completed items show ✓. Baseline tokens.
-- **Acceptance:**
-  - Opening the Archive Node shows archived items grouped by original parent, newest-archived first; search filters by title.
-  - `pnpm build` passes.
-
-### Task 87: Single-item restore
-- **Status:** `[x]`
-- **Files:** `src/components/archive/archive-group.tsx` (update — ↩ action); `src/hooks/use-archive.ts` (update — wire `unarchiveNode`/`unarchiveBit`)
-- **Dependencies:** Task 86
-- **Actions:**
-  - The ↩ action clears `archivedAt` via `unarchiveNode`/`unarchiveBit` (Hook 11). Both methods are already implemented in `indexeddb.ts` — no DataStore layer changes needed; wire them through `use-archive.ts`. BFS reposition if the original `(x, y)` is occupied. Restoring a Bit whose parent is archived restores the parent chain (±5s window). Single-item only (no bulk restore in v1).
-- **Acceptance:**
-  - Restoring an item clears `archivedAt` and it reappears at its original grid location (or the nearest free cell); if its parent was archived in the same cascade, the parent chain restores too.
-  - `pnpm build` passes.
-
-### Task 88: Direct archive (context menu)
-- **Status:** `[x]`
-- **Files:** `src/components/grid/node-card.tsx` (update — create context menu, add Archive option), `src/components/grid/bit-card.tsx` (update — create context menu, add Archive option), `src/hooks/use-archive.ts` (update — expose `archiveNode`/`archiveBit` if not already present from T87)
-- **Dependencies:** Phase 15 complete, Task 86
-- **Actions:**
-  - Create a context menu (right-click / `DropdownMenu`) on `node-card.tsx` and `bit-card.tsx`. Add "Archive" option for non-system Nodes/Bits only — guard on `node.systemRole === null`. Call `archiveNode`/`archiveBit` through `use-archive.ts` hook boundary — no direct DataStore import in components. It sets `archivedAt` with cascade (Hook 10). System Nodes are excluded (no Archive option). Completion does NOT auto-archive — completed-but-unarchived items stay on the grid.
-- **Acceptance:**
-  - The context menu of a non-system Node/Bit shows Archive; archiving removes it from the grid (cascading to descendants) and it appears in Archive View.
-  - System Nodes show no Archive option; completing a Bit does not remove it from the grid.
-  - `pnpm build` passes.
-
-#### Phase 19 Notes
-
-> Archive uses a single shared cascade timestamp (Hook 10) so restore (Hook 11) can identify cascade members within ±5s — mirroring the trash restore window.
-> Archive tone is warm/dignified, distinct from Trash; Batch 1 uses baseline tokens, and the global theme system may influence it later.
