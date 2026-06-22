@@ -2,6 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTriageStore } from "@/stores/triage-store";
+import type { PendingPlacement, TriageDragItem } from "@/hooks/use-dnd";
 import type { Node } from "@/types";
 import { TriageWorkspace } from "./triage-workspace";
 
@@ -48,9 +49,19 @@ function createNode(overrides: Partial<Node> = {}): Node {
   };
 }
 
-function createDndState(
-  overrides: Partial<ReturnType<typeof useTriageDndMock>> = {},
-) {
+type DndState = {
+  sensors: unknown[];
+  activeDragItem: TriageDragItem;
+  overTargetId: string | null;
+  pendingPlacement: PendingPlacement;
+  handleDragStart: ReturnType<typeof vi.fn>;
+  handleDragEnd: ReturnType<typeof vi.fn>;
+  handleDragOver: ReturnType<typeof vi.fn>;
+  handlePlacementConfirm: ReturnType<typeof vi.fn>;
+  handlePlacementCancel: ReturnType<typeof vi.fn>;
+};
+
+function createDndState(overrides: Partial<DndState> = {}): DndState {
   return {
     sensors: [],
     activeDragItem: null,
@@ -66,10 +77,8 @@ function createDndState(
 }
 
 function createDirectPendingPlacement(
-  overrides: Partial<
-    NonNullable<ReturnType<typeof createDndState>["pendingPlacement"]>
-  > = {},
-): NonNullable<ReturnType<typeof createDndState>["pendingPlacement"]> {
+  overrides: Partial<NonNullable<PendingPlacement>> = {},
+): NonNullable<PendingPlacement> {
   return {
     candidateId: "breakdown-1",
     candidateType: null,

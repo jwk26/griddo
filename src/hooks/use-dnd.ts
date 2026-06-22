@@ -21,7 +21,7 @@ import {
   getStaticBlockedCells,
   isCellBlocked,
 } from "@/lib/utils/breadcrumb-zone";
-import { useTriageStore } from "@/stores/triage-store";
+import type { StagedCandidate } from "@/stores/triage-store";
 
 export type DragActiveItem = {
   id: string;
@@ -124,7 +124,16 @@ function readTriageDragItem(value: unknown): TriageDragItem {
   };
 }
 
-export function useTriageDnd(selectedScratchId: string | null): {
+export function useTriageDnd(
+  selectedScratchId: string | null,
+  {
+    addStagedCandidate,
+    removeStagedCandidate,
+  }: {
+    addStagedCandidate: (scratchId: string, candidate: StagedCandidate) => void;
+    removeStagedCandidate: (scratchId: string, candidateId: string) => void;
+  },
+): {
   sensors: ReturnType<typeof useSensors>;
   activeDragItem: TriageDragItem;
   handleDragStart: (event: DragStartEvent) => void;
@@ -138,12 +147,6 @@ export function useTriageDnd(selectedScratchId: string | null): {
   handlePlacementCancel: () => void;
   overTargetId: string | null;
 } {
-  const addStagedCandidate = useTriageStore(
-    (state) => state.addStagedCandidate,
-  );
-  const removeStagedCandidate = useTriageStore(
-    (state) => state.removeStagedCandidate,
-  );
   const [activeDragItem, setActiveDragItem] =
     useState<TriageDragItem>(null);
   const [overTargetId, setOverTargetId] = useState<string | null>(null);

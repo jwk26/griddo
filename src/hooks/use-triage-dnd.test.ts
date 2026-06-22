@@ -11,19 +11,6 @@ const createBitMock = vi.hoisted(() => vi.fn());
 const markScratchBreakdownConsumedMock = vi.hoisted(() => vi.fn());
 const findNearestEmptyCellMock = vi.hoisted(() => vi.fn());
 
-vi.mock("@/stores/triage-store", () => ({
-  useTriageStore: (
-    selector: (state: {
-      addStagedCandidate: typeof addStagedCandidateMock;
-      removeStagedCandidate: typeof removeStagedCandidateMock;
-    }) => unknown,
-  ) =>
-    selector({
-      addStagedCandidate: addStagedCandidateMock,
-      removeStagedCandidate: removeStagedCandidateMock,
-    }),
-}));
-
 vi.mock("@dnd-kit/core", () => ({
   useSensors: (...sensors: unknown[]) => sensors,
   useSensor: () => ({}),
@@ -89,7 +76,7 @@ beforeEach(() => {
 
 describe("useTriageDnd — drop matrix", () => {
   it("creates a Node candidate when a breakdown row drops on the Node Zone", () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     act(() => {
       result.current.handleDragEnd(
@@ -112,7 +99,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("creates a Bit candidate when a breakdown row drops on the Bit Zone", () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     act(() => {
       result.current.handleDragEnd(
@@ -135,7 +122,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("is a noop when a staged-node drops on any zone (invalid cross-type drop)", () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     act(() => {
       result.current.handleDragEnd(
@@ -150,7 +137,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("is a noop when a staged-bit drops on any zone (invalid cross-type drop)", () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     act(() => {
       result.current.handleDragEnd(
@@ -165,7 +152,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("is a noop when selectedScratchId is null", () => {
-    const { result } = renderHook(() => useTriageDnd(null));
+    const { result } = renderHook(() => useTriageDnd(null, { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     act(() => {
       result.current.handleDragEnd(
@@ -180,7 +167,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("is a noop when dropped outside any zone", () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     act(() => {
       result.current.handleDragEnd(
@@ -195,7 +182,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("creates a pending placement when a staged Node drops on a hierarchy target", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -234,7 +221,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("creates pending placement from a section body drop with the section's parentNodeId and targetNodeLevel", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -268,7 +255,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("creates a pending placement with unknown type when a breakdown row drops directly on a hierarchy target", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -307,7 +294,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("confirms a pending Node placement by creating it, consuming the source, and removing the candidate", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -356,7 +343,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("confirms a direct breakdown placement with the selected Node type without removing a staged candidate", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -401,7 +388,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("keeps a direct breakdown placement open when confirmation has no selected type", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -437,7 +424,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("cancels a pending placement without datastore writes or candidate removal", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -469,7 +456,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("removes a staged candidate when dropped on the remove-from-staging target without datastore writes", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -497,7 +484,7 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("does not create a pending placement for a staged Bit dropped on Home", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -527,7 +514,7 @@ describe("useTriageDnd — drop matrix", () => {
 
 describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
   it("does not create pendingPlacement when selectedScratchId is null", async () => {
-    const { result } = renderHook(() => useTriageDnd(null));
+    const { result } = renderHook(() => useTriageDnd(null, { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -549,7 +536,7 @@ describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
   });
 
   it("confirms a direct breakdown placement as a Bit without removing a staged candidate", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -583,7 +570,7 @@ describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
   });
 
   it("cancels a direct breakdown placement without datastore writes or candidate removal", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -613,7 +600,7 @@ describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
   });
 
   it("opens pendingPlacement for a direct breakdown drop on Home", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -643,7 +630,7 @@ describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
 
 describe("useTriageDnd — T85 remove-from-staging drop", () => {
   it("removes a staged Node candidate dropped on the remove target without datastore writes", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -671,7 +658,7 @@ describe("useTriageDnd — T85 remove-from-staging drop", () => {
   });
 
   it("ignores a breakdown row dropped on the remove target", async () => {
-    const { result } = renderHook(() => useTriageDnd("scratch-1"));
+    const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -692,7 +679,7 @@ describe("useTriageDnd — T85 remove-from-staging drop", () => {
   });
 
   it("ignores a staged Node dropped on the remove target when no scratch is selected", async () => {
-    const { result } = renderHook(() => useTriageDnd(null));
+    const { result } = renderHook(() => useTriageDnd(null, { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
       await result.current.handleDragEnd(

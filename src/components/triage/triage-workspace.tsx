@@ -115,6 +115,12 @@ function TriageRemoveDropTarget({
 
 export function TriageWorkspace({ node }: { node: Node }) {
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
+  const addStagedCandidate = useTriageStore(
+    (state) => state.addStagedCandidate,
+  );
+  const removeStagedCandidate = useTriageStore(
+    (state) => state.removeStagedCandidate,
+  );
   const {
     activeDragItem,
     handleDragEnd,
@@ -125,7 +131,10 @@ export function TriageWorkspace({ node }: { node: Node }) {
     overTargetId,
     pendingPlacement,
     sensors,
-  } = useTriageDnd(selectedScratchId);
+  } = useTriageDnd(selectedScratchId, {
+    addStagedCandidate,
+    removeStagedCandidate,
+  });
 
   return (
     <section

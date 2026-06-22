@@ -217,6 +217,20 @@ _None yet._
 - **Fix (Smoke Fix B, 2026-06-22):** In `breakdown-panel.tsx`, converted the `canArchiveScratch` ternary (which replaced the add-note div) to a conditional sibling — `ArchiveScratchBar` renders above the add-note div when `canArchiveScratch` is true; the add-note div always renders. Updated the matching test in `breakdown-panel.test.tsx` to assert both "All items processed" and "Add a note..." are present simultaneously.
 - **Status:** Closed — implemented in Smoke Fix B and manually confirmed on 2026-06-22
 
+### ISSUE-18-24 — `useTriageDnd` hook imports Zustand store directly
+- **Batch:** 2 (T82) — detected at architecture conformance review
+- **Category:** Architecture conformance blocker
+- **Severity:** High (violates State separation rule: hooks must not import Zustand)
+- **Description:** `src/hooks/use-dnd.ts` imports `useTriageStore` from `@/stores/triage-store` to read `addStagedCandidate` and `removeStagedCandidate`. The conformance rule ("hooks don't import Zustand") was violated because the DnD orchestration hook needed to mutate staged-candidate UI state during drag events, and the Zustand import was the direct path. Fix: inject `addStagedCandidate` and `removeStagedCandidate` as parameters into `useTriageDnd`; `TriageWorkspace` (a component) reads them from `useTriageStore` and passes them in.
+- **Status:** Closed — injected `addStagedCandidate`/`removeStagedCandidate` as parameters into `useTriageDnd`; `TriageWorkspace` reads them from `useTriageStore` and passes them in; store mock removed from `use-triage-dnd.test.ts`
+
+### ISSUE-18-25 — `ArchiveScratchBar` component imports `getDataStore` directly
+- **Batch:** 5 (T85) / Smoke Fix B — detected at architecture conformance review
+- **Category:** Architecture conformance blocker
+- **Severity:** High (violates Hook API boundary rule: UI components must not import DataStore)
+- **Description:** `src/components/triage/breakdown-panel.tsx` imports `getDataStore` from `@/lib/db/datastore` inside `ArchiveScratchBar` to call `archiveBit(scratchId)`. The conformance rule ("UI components import hooks, not DataStore") was violated because the archive action was written directly in the component during Smoke Fix B. Fix: extract the DataStore write into a new `useArchiveScratch` hook; the component calls the hook.
+- **Status:** Closed — extracted `archiveBit` call into new `src/hooks/use-archive-scratch.ts` hook; `ArchiveScratchBar` calls the hook; `breakdown-panel.tsx` no longer imports DataStore
+
 ### Phase-local Question Resolution
 
 | # | Question | Resolution | Canonical Impact | Status |

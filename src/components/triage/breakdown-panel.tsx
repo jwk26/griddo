@@ -20,9 +20,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useArchiveScratch } from "@/hooks/use-archive-scratch";
 import { useCanArchiveScratch } from "@/hooks/use-can-archive-scratch";
 import { useScratchBreakdowns } from "@/hooks/use-scratch-breakdowns";
-import { getDataStore } from "@/lib/db/datastore";
 import type { ScratchBreakdown } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils/relative-time";
@@ -126,6 +126,7 @@ function ArchiveScratchBar({ scratchId }: { scratchId: string }) {
   const clearSelection = useTriageStore((state) => state.clearSelection);
   const [isArchiving, setIsArchiving] = useState(false);
   const isArchivingRef = useRef(false);
+  const { archiveScratch } = useArchiveScratch();
 
   async function handleConfirmArchive(): Promise<void> {
     if (isArchivingRef.current) return;
@@ -134,8 +135,7 @@ function ArchiveScratchBar({ scratchId }: { scratchId: string }) {
     setIsArchiving(true);
 
     try {
-      const ds = await getDataStore();
-      await ds.archiveBit(scratchId);
+      await archiveScratch(scratchId);
       setIsConfirmOpen(false);
       clearSelection();
     } finally {
