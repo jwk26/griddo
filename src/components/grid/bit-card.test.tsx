@@ -1,9 +1,24 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useArchiveActions } from "@/hooks/use-archive";
 import { useEditModeStore } from "@/stores/edit-mode-store";
 import type { Bit } from "@/types";
 import { BitCard } from "./bit-card";
+
+vi.mock("@/hooks/use-archive", () => ({
+  useArchiveActions: vi.fn(() => ({ archive: vi.fn() })),
+}));
+
+vi.mock("@/components/ui/dropdown-menu", () => ({
+  DropdownMenu: ({ children }: { children: ReactNode }) => <>{children}</>,
+  DropdownMenuTrigger: ({ children }: { children: ReactNode; asChild?: boolean }) => <>{children}</>,
+  DropdownMenuContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DropdownMenuItem: ({ children, onClick }: { children: ReactNode; onClick?: () => void }) => (
+    <button type="button" onClick={onClick}>{children}</button>
+  ),
+}));
 
 function createBit(overrides: Partial<Bit>): Bit {
   return {
@@ -159,5 +174,47 @@ describe("BitCard", () => {
     expect(card).not.toBeNull();
     expect(card?.children[0]).not.toHaveClass("pointer-events-none");
     expect(card?.children[1]).not.toHaveClass("pointer-events-none");
+  });
+});
+
+describe("B2b — archive context menu (BitCard)", () => {
+  const mockArchive = vi.fn();
+
+  beforeEach(() => {
+    vi.mocked(useArchiveActions).mockReturnValue({ archive: mockArchive });
+  });
+
+  it("shows the options trigger in normal mode", () => {
+    const bit = createBit({ title: "Design sprint" });
+    render(
+      <BitCard bit={bit} chunkStats={{ completed: 0, total: 0 }} onClick={vi.fn()} parentColor="hsl(221, 83%, 53%)" />,
+    );
+    expect(screen.getByLabelText("Design sprint options")).toBeInTheDocument();
+  });
+
+  it("shows the Archive menu item", () => {
+    const bit = createBit({ title: "Design sprint" });
+    render(
+      <BitCard bit={bit} chunkStats={{ completed: 0, total: 0 }} onClick={vi.fn()} parentColor="hsl(221, 83%, 53%)" />,
+    );
+    expect(screen.getByRole("button", { name: "Archive" })).toBeInTheDocument();
+  });
+
+  it("calls archive('bit', id) when Archive is clicked", () => {
+    const bit = createBit({ title: "Design sprint" });
+    render(
+      <BitCard bit={bit} chunkStats={{ completed: 0, total: 0 }} onClick={vi.fn()} parentColor="hsl(221, 83%, 53%)" />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Archive" }));
+    expect(mockArchive).toHaveBeenCalledWith("bit", bit.id);
+  });
+
+  it("hides the options trigger in edit mode", () => {
+    useEditModeStore.setState({ isEditMode: true });
+    const bit = createBit({ title: "Design sprint" });
+    render(
+      <BitCard bit={bit} chunkStats={{ completed: 0, total: 0 }} onClick={vi.fn()} parentColor="hsl(221, 83%, 53%)" />,
+    );
+    expect(screen.queryByLabelText("Design sprint options")).not.toBeInTheDocument();
   });
 });

@@ -36,7 +36,7 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 |-------|-------|----------------|--------|-------|
 | B1 | T86 | mixed | `[x]` Complete | New archive dir + surface + hook + GridRuntime dispatch; Gemini → Codex flow. Pending user approval + commit. |
 | B2a | T87 | logic-heavy | `[x]` Complete | ↩ restore — use-archive.ts + archive-group.tsx + archive-view.tsx wired; ref guard + 3 tests |
-| B2b | T88 | mixed | `[ ]` Not started | Direct archive context menu — archiveNode/archiveBit must go through use-archive.ts hook boundary; may also touch use-archive.ts |
+| B2b | T88 | logic-heavy | `[~]` Implemented | Direct archive context menu — useArchiveActions() hook boundary; NodeCard + BitCard DropdownMenuTrigger-based menu; system Node guard hides trigger entirely |
 
 ### Batch B1 — T86: Archive View surface + routing branch
 
@@ -152,3 +152,38 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 - Node archive / parent-chain restore smoke: 🔜 deferred to after B2b completion (UI prerequisite).
 
 **Status:** ✅ Complete — committed `7d239ba`. T87 marked `[x]` in EXECUTION_PLAN.md.
+
+---
+
+### B2b — T88 Direct archive context menu (2026-06-23)
+
+**Classification:** logic-heavy / Claude-direct (3 implementation files + tests added to 2 existing files; ~50 lines; established DropdownMenu pattern).
+
+**Plan clarifications applied before implementation:**
+- `onContextMenu`-based trigger rejected → DropdownMenuTrigger-based icon-only button (correct Radix usage, accessible)
+- System Node guard: entire trigger hidden when `node.systemRole !== null` (not just Archive menu item)
+- Test files existed → B2b describe blocks added to existing `node-card.test.tsx` / `bit-card.test.tsx`
+
+**Write set:**
+- `src/hooks/use-archive.ts` — added `useArchiveActions()` export: lightweight hook (no state/effects), calls `dataStore.archiveNode` / `dataStore.archiveBit` via DataStore facade
+- `src/components/grid/node-card.tsx` — added `group/card` outer class; `MoreHorizontal` icon-only trigger button + DropdownMenu; shown only when `!isEditMode && node.systemRole === null`; `stopPropagation` on trigger click; `archive("node", node.id)` on Archive item
+- `src/components/grid/bit-card.tsx` — added `group/bit` outer class; same pattern; shown only when `!isEditMode`; `stopPropagation` required (outer div has `onClick`); `archive("bit", bit.id)` on Archive item
+- `src/components/grid/node-card.test.tsx` — added `describe("B2b — archive context menu (NodeCard)")` with 5 tests; added mocks for `@/hooks/use-archive` and `@/components/ui/dropdown-menu`
+- `src/components/grid/bit-card.test.tsx` — added `describe("B2b — archive context menu (BitCard)")` with 4 tests; added same mocks
+
+**Architecture constraints confirmed:**
+- No DataStore import in cards — `useArchiveActions` hook boundary only ✅
+- No Zustand import in `use-archive.ts` ✅
+- No new dependencies ✅
+- `archivedAt === null` active filter untouched — liveQuery in `useGridData` removes item automatically post-archive ✅
+- `grid-view.tsx` unchanged ✅
+
+**Event propagation:**
+- NodeCard: trigger is sibling of `motion.button`; outer div has no onClick → no collision; `stopPropagation` added defensively
+- BitCard: outer div has `onClick` → `stopPropagation` on trigger is required and applied
+
+**Gates:**
+- `pnpm test`: ✅ 71 files, 426 tests — all passed (9 new: 5 NodeCard B2b + 4 BitCard B2b)
+- `pnpm build`: ✅ 0 TypeScript errors, compiled successfully
+
+**Status:** Implemented — awaiting checkpoint review.

@@ -129,6 +129,20 @@ function filterArchiveGroups(groups: ArchiveGroup[], searchQuery: string): Archi
     .filter((group) => group.items.length > 0);
 }
 
+export function useArchiveActions(): {
+  archive: (type: "node" | "bit", id: string) => Promise<void>;
+} {
+  async function archive(type: "node" | "bit", id: string): Promise<void> {
+    const dataStore = await getDataStore();
+    if (type === "node") {
+      await dataStore.archiveNode(id);
+    } else {
+      await dataStore.archiveBit(id);
+    }
+  }
+  return { archive };
+}
+
 export function useArchive(): {
   groups: ArchiveGroup[];
   filteredGroups: ArchiveGroup[];
