@@ -113,7 +113,7 @@ _None yet._
 - **Root cause (Smoke Fix A, 2026-06-22):** `BreakdownRow` in `breakdown-panel.tsx` never read `row.consumedAt`; the handler and DB write were already correct. Missing render branch only.
 - **Fix:** Added `isConsumed = row.consumedAt !== null` in `BreakdownRow`; applies `line-through text-muted-foreground/40` to content text and `data-testid="breakdown-row-consumed"` on the row container.
 - **Expected:** Confirming staged placement should create the Node/Bit, call the breakdown-consumption path, remove the staged candidate, and leave the source breakdown row visibly consumed/processed.
-- **Status:** Implemented — awaiting manual smoke confirmation
+- **Status:** Closed — implemented in Smoke Fix A and manually confirmed on 2026-06-22
 
 ### ISSUE-18-12 — Direct breakdown placement does not consume source row
 - **Batch:** 4 (T84)
@@ -123,7 +123,7 @@ _None yet._
 - **Root cause (Smoke Fix A, 2026-06-22):** Same single render-layer bug as ISSUE-18-11 — same fix resolves both.
 - **Fix:** Same `breakdown-panel.tsx` render-layer change as ISSUE-18-11.
 - **Expected:** Confirming direct breakdown placement should create the chosen type and mark the source breakdown row consumed/processed, matching the T84 fast-path acceptance criteria.
-- **Status:** Implemented — awaiting manual smoke confirmation
+- **Status:** Closed — implemented in Smoke Fix A and manually confirmed on 2026-06-22
 
 ### ISSUE-18-13 — Archive Scratch affordance cannot be verified while consumed-state blockers remain
 - **Batch:** 5 (T85)
@@ -132,7 +132,7 @@ _None yet._
 - **Description:** T85 requires the Archive Scratch affordance to appear when all breakdown rows are consumed and no staged candidates remain. Manual smoke cannot verify this reliably while ISSUE-18-11 and ISSUE-18-12 prevent placement confirmation from leaving source rows consumed.
 - **Root cause (Smoke Fix A, 2026-06-22):** `use-can-archive-scratch.ts` already reads `consumedAt` correctly — no code change needed. Issue was un-observable because consumed rows rendered as active (ISSUE-18-11/12). Resolved by the same render-layer fix.
 - **Expected:** After consumed-state blockers are fixed, re-run the T85 smoke path: consume all breakdown rows through placement, clear staged candidates, verify the Archive Scratch affordance appears, then verify cancel/confirm behavior.
-- **Status:** Implemented (no independent code change) — awaiting manual smoke confirmation
+- **Status:** Closed — re-verified after Smoke Fix A/B manual smoke on 2026-06-22; no independent code change required
 
 ### ISSUE-18-14 — Hierarchy Explorer section/grid mapping is shifted by a synthetic Home item
 - **Batch:** 3 (T83), affects T84/T85 placement
@@ -213,7 +213,7 @@ _None yet._
 - **Description:** When all breakdown rows are consumed and no staged candidates remain, the Archive Scratch affordance appears in the bottom input area, replacing `Add a note...`. Canceling the archive confirmation dialog does not hide the affordance because the archive-ready condition remains true. This leaves the user unable to add more breakdown rows after reaching the archive-ready state.
 - **Expected:** Keep the `Add a note...` input available at the bottom. Render the Archive Scratch affordance inside the breakdown rows/list area instead. If the user adds a new breakdown row, it starts with `consumedAt === null`, so `canArchiveScratch` becomes false and the affordance disappears automatically.
 - **Fix (Smoke Fix B, 2026-06-22):** In `breakdown-panel.tsx`, converted the `canArchiveScratch` ternary (which replaced the add-note div) to a conditional sibling — `ArchiveScratchBar` renders above the add-note div when `canArchiveScratch` is true; the add-note div always renders. Updated the matching test in `breakdown-panel.test.tsx` to assert both "All items processed" and "Add a note..." are present simultaneously.
-- **Status:** Implemented — awaiting manual smoke confirmation
+- **Status:** Closed — implemented in Smoke Fix B and manually confirmed on 2026-06-22
 
 ### Phase-local Question Resolution
 

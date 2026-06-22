@@ -9,9 +9,9 @@ Use this document as the first-read handoff for a new Claude session that will c
 - **Do not create a new branch.**
 - **Do not run `closing-phase` yet.**
 
-Phase 18 implementation was previously marked complete (`T81` through `T85` are `[x]`), but manual smoke testing found close blockers. The phase is not ready to close until `ISSUE-18-10` through `ISSUE-18-15` and `ISSUE-18-23` are fixed and manually confirmed.
+Phase 18 implementation was previously marked complete (`T81` through `T85` are `[x]`), but manual smoke testing found close blockers. Smoke Fix A and Smoke Fix B are now implemented and manually confirmed. The phase is not ready to close until the remaining blockers `ISSUE-18-14`, `ISSUE-18-15`, and `ISSUE-18-10` are fixed and manually confirmed.
 
-Smoke Fix A (`ISSUE-18-11`, `ISSUE-18-12`, `ISSUE-18-13`) has been implemented and committed. Manual smoke confirmed that the Archive Scratch affordance appears once all rows are consumed and staged candidates are zero, but it also exposed `ISSUE-18-23`: the affordance replaces the add-note input and blocks further breakdown entry.
+Smoke Fix A (`ISSUE-18-11`, `ISSUE-18-12`, `ISSUE-18-13`) and Smoke Fix B (`ISSUE-18-23`) are `Closed` in `docs/issues/Issues_Phase_18.md` after user manual-smoke confirmation on 2026-06-22.
 
 `ISSUE-18-16` through `ISSUE-18-22` are deferred follow-ups and are indexed in `docs/issues/Issues_Deferred.md`. Do not include them in the current smoke-fix work.
 
@@ -24,7 +24,8 @@ Read these before planning or editing:
 2. `docs/WORKFLOW.md`
    - Issue statuses, Deferred index rules, issue closure rule.
 3. `docs/issues/Issues_Phase_18.md`
-   - Full source of truth for `ISSUE-18-10` through `ISSUE-18-15` and `ISSUE-18-23`.
+   - Full source of truth for the remaining close blockers `ISSUE-18-14`, `ISSUE-18-15`, and `ISSUE-18-10`.
+   - Confirm `ISSUE-18-11`, `ISSUE-18-12`, `ISSUE-18-13`, and `ISSUE-18-23` are Closed.
    - Confirm `ISSUE-18-16` through `ISSUE-18-22` are Deferred.
 4. `docs/issues/Issues_Deferred.md`
    - Confirm deferred issues are indexed and out of current scope.
@@ -55,7 +56,10 @@ These hypotheses are now **RESOLVED by read-only diagnosis** — see "Confirmed 
 
 ## Overall Smoke-Fix Structure
 
-Do not fix all blockers in one broad pass. Use four sequential passes. Smoke Fix A is already implemented; the next session should start with Smoke Fix B.
+Do not fix all blockers in one broad pass. Smoke Fix A and Smoke Fix B are complete. Use two remaining sequential passes:
+
+1. **Smoke Fix C** — `ISSUE-18-14` / `ISSUE-18-15` (Hierarchy Explorer section/grid model)
+2. **Smoke Fix D** — `ISSUE-18-10` (staged drag token pointer offset)
 
 ### Smoke Fix A — Consumed-State / Archive Verification Unblock
 
@@ -91,7 +95,7 @@ Consequence: after confirm, the staged row loses `isStaged` (→ renders active 
 
 `ISSUE-18-13` may require no independent implementation. Treat it first as a re-verification item after `ISSUE-18-11` and `ISSUE-18-12` are fixed.
 
-**Current status:** Implemented and committed. `ISSUE-18-11`, `ISSUE-18-12`, and `ISSUE-18-13` remain awaiting user manual-smoke confirmation, not `Closed`.
+**Current status:** Closed after user manual-smoke confirmation on 2026-06-22.
 
 ### Smoke Fix B — Archive Scratch Affordance Placement / Add-note Availability
 
@@ -115,6 +119,8 @@ Do not create a separate issue for Archive View visibility. Phase 18 owns archiv
 
 **Why this is second:**
 This was discovered while manually verifying Smoke Fix A and blocks the T85 completion UX. It is smaller and more local than the Hierarchy Explorer model fixes, so handle it before the larger hierarchy pass.
+
+**Current status:** Closed after user manual-smoke confirmation on 2026-06-22.
 
 ### Smoke Fix C — Hierarchy Explorer Section/Grid Model
 
@@ -148,48 +154,69 @@ This was discovered while manually verifying Smoke Fix A and blocks the T85 comp
 **Why this is fourth:**
 This is a DnD overlay/preview positioning issue and is mostly independent from consumed-state and hierarchy-section behavior.
 
-## Start With Smoke Fix B Only
+## Start With Smoke Fix C Only
 
-The next session should begin with **Smoke Fix B only** (`ISSUE-18-23`).
+The next session should begin with **Smoke Fix C only** (`ISSUE-18-14` and `ISSUE-18-15`).
 
-Do not modify `ISSUE-18-14`, `ISSUE-18-15`, or `ISSUE-18-10` unless diagnosis proves a direct dependency. If such a dependency appears, stop and ask the user before expanding scope.
+Do not modify `ISSUE-18-10` unless diagnosis proves a direct dependency. If such a dependency appears, stop and ask the user before expanding scope.
 
 Do not modify Deferred issues `ISSUE-18-16` through `ISSUE-18-22`.
 
-## Required Workflow for Smoke Fix B
+## Workload / Provider Guidance for Smoke Fix C
+
+Smoke Fix C is **larger than Smoke Fix A/B**. It is not just a local JSX move:
+
+- `HierarchyExplorer` currently renders a synthetic `HomeDropCell` inside the Home section.
+- Actual root-grid nodes are rendered in the L1 section, which shifts the hierarchy one section to the right.
+- Section body placement is currently not the primary model; node-row drop cells are the main visible targets.
+- Fixing this likely touches `src/components/triage/hierarchy-explorer.tsx`, existing hierarchy tests in `triage-workspace.test.tsx`, and possibly DnD payload expectations in `use-triage-dnd.test.ts`.
+
+**Recommendation:** use the OMC/Codex implementation path for Smoke Fix C after the initial read/diagnosis and prompt preview. This pass is moderate complexity and affects navigation + DnD semantics. Direct Claude editing is acceptable only if the diagnosis proves the change is still contained to `hierarchy-explorer.tsx` plus a small test update. Do not use Gemini/design review unless a visual design decision appears; the user intent is already specified.
+
+## Required Workflow for Smoke Fix C
 
 Use the `execute-task` workflow.
 
 1. Confirm branch and clean/dirty state.
 2. Read the source documents listed above.
-3. Inspect `src/components/triage/breakdown-panel.tsx` and its existing archive affordance tests.
-4. Confirm the documented behavior: `ArchiveScratchBar` currently occupies/replaces the bottom add-note area when `canArchiveScratch` is true. If reality differs, stop and tell the user.
-5. Keep the fix local unless the code proves otherwise. Expected target is `breakdown-panel.tsx` plus focused tests in `breakdown-panel.test.tsx`.
-6. Move the Archive Scratch affordance into the breakdown rows/list area and keep the add-note input visible at the bottom.
-7. Preserve the existing archive confirmation dialog behavior: cancel dismisses only the dialog; confirm archives the Scratch and clears selection as already implemented.
-8. Add the minimum useful regression coverage. Prefer updating/extending existing archive-affordance tests instead of adding a broad new matrix. The important assertions are: archive affordance can render while the add-note input remains available, and adding a new unconsumed breakdown row would make the archive-ready condition false.
-9. Re-read your own diff before running tests.
-10. Run focused tests for `breakdown-panel.test.tsx`.
-11. Run adjacent T85/Triage tests only if touched behavior warrants it.
-12. Run the actual project verification gate from `CLAUDE.md` / package scripts.
+3. Inspect `src/components/triage/hierarchy-explorer.tsx`, `src/components/triage/triage-workspace.test.tsx`, `src/hooks/use-dnd.ts`, and `src/hooks/use-triage-dnd.test.ts`.
+4. Confirm the documented current behavior:
+   - Home section contains a synthetic `Home` drop cell.
+   - Root-grid nodes appear in L1 instead of Home.
+   - Child grids are opened one section later than intended.
+   - Section body is not the primary placement target.
+5. Prepare a focused implementation plan or Codex prompt for approval before launching any provider.
+6. Expected implementation direction:
+   - Remove the synthetic `Home` item/drop cell from the Home section.
+   - Render root-grid nodes directly in the Home section.
+   - Selecting a node in Home opens that node's grid in L1.
+   - Selecting a node in L1 opens that node's grid in L2.
+   - Selecting a node in L2 opens that node's grid in L3.
+   - Make the section body the primary drop target for that section's represented grid.
+   - Keep direct node-row drop as a shortcut.
+7. Add focused tests for the hierarchy section mapping and section-body drop payload. Avoid a broad test matrix; cover the representative root -> child -> grandchild mapping and one section-body placement path.
+8. Re-read your own diff before running tests.
+9. Run focused triage/hierarchy tests.
+10. Run adjacent DnD hook tests if DnD payloads or drop IDs changed.
+11. Run the actual project verification gate from `CLAUDE.md` / package scripts.
     - Do not assume `pnpm typecheck` exists.
-13. Update `docs/issues/Issues_Phase_18.md`.
-14. Commit implementation and issue-doc updates.
-15. Emit a checkpoint.
+12. Update `docs/issues/Issues_Phase_18.md`.
+13. Commit implementation and issue-doc updates.
+14. Emit a checkpoint.
 
 ## Issue Status Rules
 
-Do not mark `ISSUE-18-11`, `ISSUE-18-12`, `ISSUE-18-13`, or `ISSUE-18-23` as `Closed` after implementation.
+Do not mark `ISSUE-18-14` or `ISSUE-18-15` as `Closed` after implementation.
 
 Issue closure requires explicit user manual-smoke confirmation. Until then, use wording equivalent to:
 
 - `Implemented — awaiting manual smoke confirmation`
 
-The same applies later to `ISSUE-18-14`, `ISSUE-18-15`, and `ISSUE-18-10`.
+The same applies later to `ISSUE-18-10`.
 
-## Smoke Fix A Status / Manual Confirmation
+## Smoke Fix A/B Status
 
-Smoke Fix A has already been implemented. Keep this section as context for what the user is manually confirming; do not redo Smoke Fix A unless the user reports a regression.
+Smoke Fix A and Smoke Fix B have already been implemented and manually confirmed. Keep this section as context only; do not redo them unless the user reports a regression.
 
 ### Completed Automated Verification
 
@@ -202,33 +229,33 @@ Completed automated assertions:
 - Do **not** add more hook-level `markScratchBreakdownConsumed` call assertions — `use-triage-dnd.test.ts` already covers them.
 - Existing T83/T84/T85 placement paths do not regress.
 
-### Remaining Manual Smoke Verification
-
-Manual checks for the user:
+### Manual Smoke Confirmed
 
 - Use shallow placement targets first, such as Home/L1, so Smoke Fix A does not get blocked by known Hierarchy Explorer blockers `ISSUE-18-14` and `ISSUE-18-15`.
 - staged Node placement confirm leaves the visible source breakdown row consumed/processed.
 - staged Bit placement confirm leaves the visible source breakdown row consumed/processed.
 - direct breakdown -> Node confirm leaves the visible source breakdown row consumed/processed.
 - direct breakdown -> Bit confirm leaves the visible source breakdown row consumed/processed.
-- all rows consumed + no staged candidates shows Archive Scratch affordance. This has been observed, but its placement/input blocking is tracked separately as `ISSUE-18-23`.
-- Archive Scratch confirm archives/clears selection as previously implemented, after `ISSUE-18-23` no longer blocks continued breakdown entry.
+- all rows consumed + no staged candidates shows Archive Scratch affordance.
+- Archive Scratch affordance no longer replaces the add-note input.
+- adding a new breakdown row after archive-ready state hides the Archive Scratch affordance.
+- Archive Scratch confirm archives/clears selection as previously implemented.
 
 ## Checkpoint Requirements
 
-The checkpoint for Smoke Fix B must report:
+The checkpoint for Smoke Fix C must report:
 
-- That this pass was **Smoke Fix B**.
-- Whether `ISSUE-18-23` was implemented.
-- Whether the add-note input remains available when the Archive Scratch affordance is visible.
-- Whether adding a new breakdown row after reaching archive-ready state hides the affordance by making `canArchiveScratch` false.
+- That this pass was **Smoke Fix C**.
+- Whether `ISSUE-18-14` and `ISSUE-18-15` were implemented.
+- Whether the Home section now shows root-grid nodes directly.
+- Whether selecting nodes advances child grids into the next section correctly.
+- Whether section body drop is the primary placement path and node-row drop remains a shortcut.
 - Files changed.
 - Tests added or updated.
 - Verification commands and results.
 - `docs/issues/Issues_Phase_18.md` status updates.
 - Which items still need user manual-smoke confirmation.
 - Recommended next pass:
-  - Smoke Fix C: `ISSUE-18-14` / `ISSUE-18-15`
   - Smoke Fix D: `ISSUE-18-10`
 
 ## New Session Prompt
@@ -244,22 +271,24 @@ Read docs/issues/Issues_Phase_18_Smoke_Fix_Handoff.md first, then follow it.
 Stay on the current branch. Do not create a new branch.
 Do not run closing-phase.
 
-Phase 18 has manual-smoke close blockers ISSUE-18-10 through ISSUE-18-15 and ISSUE-18-23.
+Phase 18 has remaining manual-smoke close blockers ISSUE-18-14, ISSUE-18-15, and ISSUE-18-10.
 ISSUE-18-16 through ISSUE-18-22 are Deferred and indexed in docs/issues/Issues_Deferred.md; do not include them.
 
-Smoke Fix A (ISSUE-18-11, ISSUE-18-12, ISSUE-18-13) has already been implemented and awaits user manual-smoke confirmation.
+Smoke Fix A (ISSUE-18-11, ISSUE-18-12, ISSUE-18-13) and Smoke Fix B (ISSUE-18-23) have already been implemented and manually confirmed. Do not redo them unless the user reports a regression.
 
-Start with Smoke Fix B only:
-- ISSUE-18-23
+Start with Smoke Fix C only:
+- ISSUE-18-14
+- ISSUE-18-15
 
 Use execute-task workflow:
 - read the required docs,
-- confirm the documented behavior before patching,
-- fix Archive Scratch affordance placement so it no longer replaces the Add note input,
-- keep the Add note input available when archive affordance is visible,
-- preserve existing archive confirm/cancel behavior,
-- add or update the minimum useful focused tests in breakdown-panel.test.tsx,
-- run focused tests and the actual project gate,
+- inspect hierarchy-explorer.tsx, triage-workspace.test.tsx, use-dnd.ts, and use-triage-dnd.test.ts,
+- confirm the documented behavior before patching: synthetic Home cell, root nodes shifted into L1, section body not primary placement target,
+- treat Smoke Fix C as moderate complexity; prefer OMC/Codex after prompt preview unless diagnosis proves the change is very small,
+- do not use Gemini/design review unless a new visual design decision appears,
+- implement the section/grid mapping fix and section-body primary drop target while keeping node-row drop as a shortcut,
+- add focused tests for representative section mapping and section-body drop payload,
+- run focused triage/hierarchy tests, adjacent DnD hook tests if payload/drop IDs changed, and the actual project gate,
 - update docs/issues/Issues_Phase_18.md,
 - commit implementation + issue doc,
 - do not mark issues Closed until user manual-smoke confirmation.
