@@ -206,6 +206,14 @@ _None yet._
 - **Expected:** Decide whether duplicate Node/Bit titles should be allowed globally. If not, define product-wide validation behavior and apply it consistently across Hierarchy Explorer placement and main grid creation flows.
 - **Status:** Deferred — tracked in `docs/issues/Issues_Deferred.md`; product-policy follow-up
 
+### ISSUE-18-23 — Archive Scratch affordance replaces Add note input and blocks further breakdown entry
+- **Batch:** 5 (T85), discovered during Smoke Fix A manual verification
+- **Category:** Manual smoke blocker / UX blocker
+- **Severity:** High (archive-ready state blocks continued breakdown entry)
+- **Description:** When all breakdown rows are consumed and no staged candidates remain, the Archive Scratch affordance appears in the bottom input area, replacing `Add a note...`. Canceling the archive confirmation dialog does not hide the affordance because the archive-ready condition remains true. This leaves the user unable to add more breakdown rows after reaching the archive-ready state.
+- **Expected:** Keep the `Add a note...` input available at the bottom. Render the Archive Scratch affordance inside the breakdown rows/list area instead. If the user adds a new breakdown row, it starts with `consumedAt === null`, so `canArchiveScratch` becomes false and the affordance disappears automatically.
+- **Status:** Open — Phase 18 close blocker
+
 ### Phase-local Question Resolution
 
 | # | Question | Resolution | Canonical Impact | Status |

@@ -9,7 +9,9 @@ Use this document as the first-read handoff for a new Claude session that will c
 - **Do not create a new branch.**
 - **Do not run `closing-phase` yet.**
 
-Phase 18 implementation was previously marked complete (`T81` through `T85` are `[x]`), but manual smoke testing found close blockers. The phase is not ready to close until `ISSUE-18-10` through `ISSUE-18-15` are fixed and manually confirmed.
+Phase 18 implementation was previously marked complete (`T81` through `T85` are `[x]`), but manual smoke testing found close blockers. The phase is not ready to close until `ISSUE-18-10` through `ISSUE-18-15` and `ISSUE-18-23` are fixed and manually confirmed.
+
+Smoke Fix A (`ISSUE-18-11`, `ISSUE-18-12`, `ISSUE-18-13`) has been implemented and committed. Manual smoke confirmed that the Archive Scratch affordance appears once all rows are consumed and staged candidates are zero, but it also exposed `ISSUE-18-23`: the affordance replaces the add-note input and blocks further breakdown entry.
 
 `ISSUE-18-16` through `ISSUE-18-22` are deferred follow-ups and are indexed in `docs/issues/Issues_Deferred.md`. Do not include them in the current smoke-fix work.
 
@@ -22,7 +24,7 @@ Read these before planning or editing:
 2. `docs/WORKFLOW.md`
    - Issue statuses, Deferred index rules, issue closure rule.
 3. `docs/issues/Issues_Phase_18.md`
-   - Full source of truth for `ISSUE-18-10` through `ISSUE-18-15`.
+   - Full source of truth for `ISSUE-18-10` through `ISSUE-18-15` and `ISSUE-18-23`.
    - Confirm `ISSUE-18-16` through `ISSUE-18-22` are Deferred.
 4. `docs/issues/Issues_Deferred.md`
    - Confirm deferred issues are indexed and out of current scope.
@@ -53,7 +55,7 @@ These hypotheses are now **RESOLVED by read-only diagnosis** — see "Confirmed 
 
 ## Overall Smoke-Fix Structure
 
-Do not fix all blockers in one broad pass. Use three sequential passes.
+Do not fix all blockers in one broad pass. Use four sequential passes. Smoke Fix A is already implemented; the next session should start with Smoke Fix B.
 
 ### Smoke Fix A — Consumed-State / Archive Verification Unblock
 
@@ -89,7 +91,32 @@ Consequence: after confirm, the staged row loses `isStaged` (→ renders active 
 
 `ISSUE-18-13` may require no independent implementation. Treat it first as a re-verification item after `ISSUE-18-11` and `ISSUE-18-12` are fixed.
 
-### Smoke Fix B — Hierarchy Explorer Section/Grid Model
+**Current status:** Implemented and committed. `ISSUE-18-11`, `ISSUE-18-12`, and `ISSUE-18-13` remain awaiting user manual-smoke confirmation, not `Closed`.
+
+### Smoke Fix B — Archive Scratch Affordance Placement / Add-note Availability
+
+**Issue:**
+- `ISSUE-18-23` — Archive Scratch affordance replaces the Add note input and blocks further breakdown entry.
+
+**Observed behavior:**
+- When all breakdown rows are consumed and no staged candidates remain, the Archive Scratch affordance appears in the bottom input area.
+- The affordance replaces `Add a note...`.
+- Canceling the archive confirmation dialog does not hide the affordance because the archive-ready condition remains true.
+- The user cannot add more breakdown rows after reaching archive-ready state.
+
+**Expected behavior:**
+- Keep the `Add a note...` input available at the bottom of the Breakdown panel.
+- Render the Archive Scratch affordance inside the breakdown rows/list area instead of replacing the input.
+- If the user adds a new breakdown row, it starts with `consumedAt === null`; therefore `canArchiveScratch` becomes false and the affordance disappears automatically.
+- Archive confirm/cancel behavior remains otherwise unchanged.
+
+**Archive View note:**
+Do not create a separate issue for Archive View visibility. Phase 18 owns archiving the Scratch out of the active Inbox/Triage flow. Phase 19 (`T86`) owns the Archive View surface/routing where archived Scratches become visible.
+
+**Why this is second:**
+This was discovered while manually verifying Smoke Fix A and blocks the T85 completion UX. It is smaller and more local than the Hierarchy Explorer model fixes, so handle it before the larger hierarchy pass.
+
+### Smoke Fix C — Hierarchy Explorer Section/Grid Model
 
 **Issues:**
 - `ISSUE-18-14` — Hierarchy Explorer section/grid mapping is shifted by a synthetic Home item.
@@ -105,10 +132,10 @@ Consequence: after confirm, the staged row loses `isStaged` (→ renders active 
 - Section body drop is the primary placement action for the represented grid.
 - Direct node-row drop remains available as a shortcut.
 
-**Why this is second:**
+**Why this is third:**
 `ISSUE-18-14` and `ISSUE-18-15` are the same mental-model problem. The section mapping and section-body placement target should be designed and tested together.
 
-### Smoke Fix C — Staged Drag Token Pointer Offset
+### Smoke Fix D — Staged Drag Token Pointer Offset
 
 **Issue:**
 - `ISSUE-18-10` — staged Node/Bit drag token is offset from the pointer.
@@ -118,33 +145,32 @@ Consequence: after confirm, the staged row loses `isStaged` (→ renders active 
 - Dragging a staged Bit from any point on the item creates the compact token at the mouse pointer.
 - Breakdown-row drag behavior does not regress.
 
-**Why this is third:**
+**Why this is fourth:**
 This is a DnD overlay/preview positioning issue and is mostly independent from consumed-state and hierarchy-section behavior.
 
-## Start With Smoke Fix A Only
+## Start With Smoke Fix B Only
 
-The next session should begin with **Smoke Fix A only**.
+The next session should begin with **Smoke Fix B only** (`ISSUE-18-23`).
 
 Do not modify `ISSUE-18-14`, `ISSUE-18-15`, or `ISSUE-18-10` unless diagnosis proves a direct dependency. If such a dependency appears, stop and ask the user before expanding scope.
 
 Do not modify Deferred issues `ISSUE-18-16` through `ISSUE-18-22`.
 
-## Required Workflow for Smoke Fix A
+## Required Workflow for Smoke Fix B
 
 Use the `execute-task` workflow.
 
 1. Confirm branch and clean/dirty state.
 2. Read the source documents listed above.
-3. Read relevant implementation and test files.
-4. **Confirm** (do not rediscover) the documented root cause: open `src/hooks/use-dnd.ts:368` (handler calls `markScratchBreakdownConsumed`) and `src/components/triage/breakdown-panel.tsx` (`BreakdownRow` never reads `row.consumedAt`). If reality differs from the Confirmed root cause section, stop and tell the user.
-5. The missing test layer is the render: `breakdown-panel.tsx` showing the consumed state from `row.consumedAt`. This is a component render test, not a hook mock-call assertion.
-6. Write or prompt for the focused regression test **before implementation**.
-7. Run the focused test against current HEAD and confirm it fails for the manual-smoke bug.
-   - If a RED automated test is not feasible, document why and ask before proceeding.
-8. Implement the fix directly in `breakdown-panel.tsx` (~5-15 lines: add a `row.consumedAt !== null` rendering branch to `BreakdownRow` plus a stable `data-testid`). **Do not run the Codex prompt cycle for a change this small** — direct edit is faster and the RED-first test is the safeguard.
+3. Inspect `src/components/triage/breakdown-panel.tsx` and its existing archive affordance tests.
+4. Confirm the documented behavior: `ArchiveScratchBar` currently occupies/replaces the bottom add-note area when `canArchiveScratch` is true. If reality differs, stop and tell the user.
+5. Keep the fix local unless the code proves otherwise. Expected target is `breakdown-panel.tsx` plus focused tests in `breakdown-panel.test.tsx`.
+6. Move the Archive Scratch affordance into the breakdown rows/list area and keep the add-note input visible at the bottom.
+7. Preserve the existing archive confirmation dialog behavior: cancel dismisses only the dialog; confirm archives the Scratch and clears selection as already implemented.
+8. Add the minimum useful regression coverage. Prefer updating/extending existing archive-affordance tests instead of adding a broad new matrix. The important assertions are: archive affordance can render while the add-note input remains available, and adding a new unconsumed breakdown row would make the archive-ready condition false.
 9. Re-read your own diff before running tests.
-10. Run the previously failing focused test and confirm it is now green.
-11. Run any adjacent focused tests for T83/T84/T85 placement paths.
+10. Run focused tests for `breakdown-panel.test.tsx`.
+11. Run adjacent T85/Triage tests only if touched behavior warrants it.
 12. Run the actual project verification gate from `CLAUDE.md` / package scripts.
     - Do not assume `pnpm typecheck` exists.
 13. Update `docs/issues/Issues_Phase_18.md`.
@@ -153,7 +179,7 @@ Use the `execute-task` workflow.
 
 ## Issue Status Rules
 
-Do not mark `ISSUE-18-11`, `ISSUE-18-12`, or `ISSUE-18-13` as `Closed` after implementation.
+Do not mark `ISSUE-18-11`, `ISSUE-18-12`, `ISSUE-18-13`, or `ISSUE-18-23` as `Closed` after implementation.
 
 Issue closure requires explicit user manual-smoke confirmation. Until then, use wording equivalent to:
 
@@ -161,50 +187,49 @@ Issue closure requires explicit user manual-smoke confirmation. Until then, use 
 
 The same applies later to `ISSUE-18-14`, `ISSUE-18-15`, and `ISSUE-18-10`.
 
-## Smoke Fix A Verification Checklist
+## Smoke Fix A Status / Manual Confirmation
 
-Separate automated verification from manual smoke. This bug class exists because prior automated tests were green while manual smoke failed.
+Smoke Fix A has already been implemented. Keep this section as context for what the user is manually confirming; do not redo Smoke Fix A unless the user reports a regression.
 
-### Automated Verification
+### Completed Automated Verification
 
 Because 11 and 12 share one render-layer root cause, the missing assertion is **a single render test**, not four. Do not re-inflate this into a per-path test matrix.
 
-Minimum automated assertions:
+Completed automated assertions:
 
-- **The one new test:** a `breakdown-panel.tsx` render test where a row with `consumedAt !== null` and no staged candidate renders the consumed/processed treatment. One representative consumed row is enough because staged-origin and direct-origin rows share the same render condition after confirm. This is the assertion that currently has zero coverage.
-- The new test fails on current HEAD before implementation and passes after the fix (RED → GREEN).
+- A `breakdown-panel.tsx` render test now covers a row with `consumedAt !== null` and no staged candidate rendering the consumed/processed treatment.
+- The test was confirmed RED before implementation and GREEN after the fix.
 - Do **not** add more hook-level `markScratchBreakdownConsumed` call assertions — `use-triage-dnd.test.ts` already covers them.
 - Existing T83/T84/T85 placement paths do not regress.
 
-### Manual Smoke Verification
+### Remaining Manual Smoke Verification
 
-Manual checks for the user after implementation:
+Manual checks for the user:
 
 - Use shallow placement targets first, such as Home/L1, so Smoke Fix A does not get blocked by known Hierarchy Explorer blockers `ISSUE-18-14` and `ISSUE-18-15`.
 - staged Node placement confirm leaves the visible source breakdown row consumed/processed.
 - staged Bit placement confirm leaves the visible source breakdown row consumed/processed.
 - direct breakdown -> Node confirm leaves the visible source breakdown row consumed/processed.
 - direct breakdown -> Bit confirm leaves the visible source breakdown row consumed/processed.
-- all rows consumed + no staged candidates shows Archive Scratch affordance.
-- Archive Scratch cancel keeps state unchanged.
-- Archive Scratch confirm archives/clears selection as previously implemented.
+- all rows consumed + no staged candidates shows Archive Scratch affordance. This has been observed, but its placement/input blocking is tracked separately as `ISSUE-18-23`.
+- Archive Scratch confirm archives/clears selection as previously implemented, after `ISSUE-18-23` no longer blocks continued breakdown entry.
 
 ## Checkpoint Requirements
 
-The checkpoint for Smoke Fix A must report:
+The checkpoint for Smoke Fix B must report:
 
-- That this pass was **Smoke Fix A**.
-- Which of `ISSUE-18-11` and `ISSUE-18-12` were implemented.
-- Whether `ISSUE-18-13` was re-verified, and whether it required any independent implementation.
+- That this pass was **Smoke Fix B**.
+- Whether `ISSUE-18-23` was implemented.
+- Whether the add-note input remains available when the Archive Scratch affordance is visible.
+- Whether adding a new breakdown row after reaching archive-ready state hides the affordance by making `canArchiveScratch` false.
 - Files changed.
 - Tests added or updated.
-- The focused regression test's RED result before implementation and GREEN result after implementation.
 - Verification commands and results.
 - `docs/issues/Issues_Phase_18.md` status updates.
 - Which items still need user manual-smoke confirmation.
 - Recommended next pass:
-  - Smoke Fix B: `ISSUE-18-14` / `ISSUE-18-15`
-  - Smoke Fix C: `ISSUE-18-10`
+  - Smoke Fix C: `ISSUE-18-14` / `ISSUE-18-15`
+  - Smoke Fix D: `ISSUE-18-10`
 
 ## New Session Prompt
 
@@ -219,21 +244,21 @@ Read docs/issues/Issues_Phase_18_Smoke_Fix_Handoff.md first, then follow it.
 Stay on the current branch. Do not create a new branch.
 Do not run closing-phase.
 
-Phase 18 has manual-smoke close blockers ISSUE-18-10 through ISSUE-18-15.
+Phase 18 has manual-smoke close blockers ISSUE-18-10 through ISSUE-18-15 and ISSUE-18-23.
 ISSUE-18-16 through ISSUE-18-22 are Deferred and indexed in docs/issues/Issues_Deferred.md; do not include them.
 
-Start with Smoke Fix A only:
-- ISSUE-18-11
-- ISSUE-18-12
-- ISSUE-18-13
+Smoke Fix A (ISSUE-18-11, ISSUE-18-12, ISSUE-18-13) has already been implemented and awaits user manual-smoke confirmation.
+
+Start with Smoke Fix B only:
+- ISSUE-18-23
 
 Use execute-task workflow:
 - read the required docs,
-- diagnose before patching,
-- identify the missing test layer around markScratchBreakdownConsumed / consumedAt,
-- the root cause is already confirmed: breakdown-panel.tsx never reads row.consumedAt; the handler and DB write are correct,
-- write ONE render-layer regression test first (consumedAt set -> processed visual) and confirm it fails on current HEAD,
-- implement the fix directly in breakdown-panel.tsx after the RED test is confirmed (small change, no Codex),
+- confirm the documented behavior before patching,
+- fix Archive Scratch affordance placement so it no longer replaces the Add note input,
+- keep the Add note input available when archive affordance is visible,
+- preserve existing archive confirm/cancel behavior,
+- add or update the minimum useful focused tests in breakdown-panel.test.tsx,
 - run focused tests and the actual project gate,
 - update docs/issues/Issues_Phase_18.md,
 - commit implementation + issue doc,
