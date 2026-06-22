@@ -34,7 +34,7 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 
 | Batch | Tasks | Classification | Status | Notes |
 |-------|-------|----------------|--------|-------|
-| B1 | T86 | mixed | `[ ]` Not started | New archive dir + surface + hook + GridRuntime dispatch; Gemini → Codex flow |
+| B1 | T86 | mixed | `[x]` Complete | New archive dir + surface + hook + GridRuntime dispatch; Gemini → Codex flow. Pending user approval + commit. |
 | B2a | T87 | mixed | `[ ]` Not started | ↩ restore — updates archive-group.tsx + use-archive.ts |
 | B2b | T88 | mixed | `[ ]` Not started | Direct archive context menu — archiveNode/archiveBit must go through use-archive.ts hook boundary; may also touch use-archive.ts |
 
@@ -95,4 +95,33 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 
 ## Execution Log
 
-*(populated during implementation)*
+### B1 — T86 Archive View Surface (2026-06-22)
+
+**Provider flow:** Gemini design-spec (2nd attempt after prompt correction) → Codex implementation.
+
+**Gemini stage:**
+- 1st attempt: timed out — tried to load `web-design-guidelines` as a filesystem path.
+- Prompt corrected: skill reference removed, guidelines embedded inline, filesystem rule added.
+- 2nd attempt: produced full 9-section design spec (HIGH/MEDIUM/LOW ratings). Artifact adopted.
+
+**Design spec conflicts resolved before Codex:**
+- §9 [HIGH] `h-12 → 0` height exit animation → violates "transform/opacity only" rule. **Deferred to B2a.** B1 implements search/filter animation only (opacity + scale, `motionDuration.affordance`).
+- §6 Toast + Undo → **Deferred to B2a.** Restore button is visual affordance only (`disabled`, no `onClick`).
+- Non-standard Tailwind classes (`saturate-70`, `w-4.5 h-4.5`, `scale-115`) → converted to arbitrary values in Codex prompt.
+
+**Codex implementation:**
+- Write set matched exactly: 5 files modified + 2 new files created.
+- `getArchivedItems()` filter: `archivedAt !== null && deletedAt === null && systemRole === null` (nodes); `archivedAt !== null && deletedAt === null` (bits). ✅
+- Architecture rules observed: no Zustand in hook, no DataStore import in components, search state is local `useState`. ✅
+- Restore button: `<button disabled aria-label="Restore">` — no `onClick`, no toast, no unarchive call. ✅
+- `grid-runtime.tsx`: `isArchiveRoute = node?.systemRole === "archive_view"` dispatch branch added. ✅
+
+**Test fix:**
+- Pre-existing guard test "does not dispatch Archive View system nodes in this phase" updated to assert correct behavior (ArchiveView now renders).
+- `getArchivedItems` mock added to `grid-runtime.test.tsx` `beforeEach`.
+
+**Gates:**
+- `pnpm build`: ✅ 0 TypeScript errors, compiled successfully.
+- `pnpm test`: ✅ 70 files, 414 tests — all passed.
+
+**Pending:** User approval + commit.

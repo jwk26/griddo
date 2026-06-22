@@ -332,6 +332,7 @@ describe("GridRuntime", () => {
     useQuickCaptureStore.setState({ activeOverlay: null });
     getDataStoreMock.mockResolvedValue({
       runBreadcrumbZoneMigration: runBreadcrumbZoneMigrationMock,
+      getArchivedItems: vi.fn().mockResolvedValue({ nodes: [], bits: [] }),
     });
     runBreadcrumbZoneMigrationMock.mockResolvedValue({ relocated: 0 });
     createNodeDialogSubmission.current = {
@@ -532,7 +533,7 @@ describe("GridRuntime", () => {
     expect(screen.getByTestId("edit-mode-overlay")).toBeInTheDocument();
   });
 
-  it("does not dispatch Archive View system nodes in this phase", () => {
+  it("dispatches archive_view system nodes to ArchiveView surface", () => {
     const archiveNode = createNode({ id: "archive-node", systemRole: "archive_view" });
 
     useParamsMock.mockReturnValue({ nodeId: archiveNode.id });
@@ -545,7 +546,8 @@ describe("GridRuntime", () => {
     );
 
     expect(screen.queryByTestId("triage-workspace")).not.toBeInTheDocument();
-    expect(screen.getByTestId("standard-children")).toBeInTheDocument();
+    expect(screen.queryByTestId("standard-children")).not.toBeInTheDocument();
+    expect(screen.getByTestId("archive-view")).toBeInTheDocument();
   });
 
   it("renders children on non-node grid routes such as Search, Calendar entry points, and Trash links", () => {
