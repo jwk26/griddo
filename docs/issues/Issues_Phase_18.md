@@ -140,7 +140,7 @@ _None yet._
 - **Severity:** High (blocks deep-grid navigation and placement)
 - **Description:** The Hierarchy Explorer currently renders a synthetic `Home` item/drop cell inside the Home section, so actual root-grid items appear in the L1 section. This shifts the visible hierarchy one section to the right. For a path like `Home -> g -> 121221 -> 32ㄴ -> Bit-only grid`, `32ㄴ` appears as an item in the L3 section, so its child grid cannot be viewed or used as a placement target.
 - **Expected:** Remove the synthetic Home item. The Home section should show root-grid contents directly. Selecting a node in Home should open that node's grid in L1; selecting a node in L1 should open its grid in L2; selecting a node in L2 should open its grid in L3. The final Bit-only grid must remain reachable and placeable.
-- **Status:** Implemented — awaiting manual smoke confirmation
+- **Status:** Closed — implemented in Smoke Fix C and manually confirmed on 2026-06-22
 
 ### ISSUE-18-15 — Hierarchy section body should be the primary placement target
 - **Batch:** 3 (T83), affects T84/T85 placement
@@ -148,7 +148,7 @@ _None yet._
 - **Severity:** High (placement mental model mismatch)
 - **Description:** Placement currently feels centered on dropping directly onto individual node rows. The intended model is section-first: each Hierarchy Explorer section represents a grid context, and dropping onto the section body should place into that section's represented grid. Node rows should primarily navigate to the child grid in the next section.
 - **Expected:** Section body drop is the primary placement action for the represented grid. Direct node-row drop remains available as a shortcut, but it should not be the main required placement path. The selected node in the parent section determines the child section's grid context.
-- **Status:** Implemented — awaiting manual smoke confirmation
+- **Status:** Closed — implemented in Smoke Fix C and manually confirmed on 2026-06-22
 
 ### ISSUE-18-16 — Staged candidates should be removable by dropping back onto the Breakdown area
 - **Batch:** 5 (T85) adjacent behavior
