@@ -9,9 +9,9 @@ Use this document as the first-read handoff for a new Claude session that will c
 - **Do not create a new branch.**
 - **Do not run `closing-phase` yet.**
 
-Phase 18 implementation was previously marked complete (`T81` through `T85` are `[x]`), but manual smoke testing found close blockers. Smoke Fix A, Smoke Fix B, and Smoke Fix C are now implemented and manually confirmed. The phase is not ready to close until the remaining blocker `ISSUE-18-10` is fixed and manually confirmed.
+Phase 18 implementation was previously marked complete (`T81` through `T85` are `[x]`), but manual smoke testing found close blockers. Smoke Fix A, Smoke Fix B, Smoke Fix C, and Smoke Fix D are now implemented and manually confirmed. There are no remaining Phase 18 manual-smoke close blockers.
 
-Smoke Fix A (`ISSUE-18-11`, `ISSUE-18-12`, `ISSUE-18-13`), Smoke Fix B (`ISSUE-18-23`), and Smoke Fix C (`ISSUE-18-14`, `ISSUE-18-15`) are `Closed` in `docs/issues/Issues_Phase_18.md` after user manual-smoke confirmation on 2026-06-22.
+Smoke Fix A (`ISSUE-18-11`, `ISSUE-18-12`, `ISSUE-18-13`), Smoke Fix B (`ISSUE-18-23`), Smoke Fix C (`ISSUE-18-14`, `ISSUE-18-15`), and Smoke Fix D (`ISSUE-18-10`) are `Closed` in `docs/issues/Issues_Phase_18.md` after user manual-smoke confirmation on 2026-06-22.
 
 `ISSUE-18-16` through `ISSUE-18-22` are deferred follow-ups and are indexed in `docs/issues/Issues_Deferred.md`. Do not include them in the current smoke-fix work.
 
@@ -24,8 +24,7 @@ Read these before planning or editing:
 2. `docs/WORKFLOW.md`
    - Issue statuses, Deferred index rules, issue closure rule.
 3. `docs/issues/Issues_Phase_18.md`
-   - Full source of truth for the remaining close blocker `ISSUE-18-10`.
-   - Confirm `ISSUE-18-11`, `ISSUE-18-12`, `ISSUE-18-13`, `ISSUE-18-14`, `ISSUE-18-15`, and `ISSUE-18-23` are Closed.
+   - Confirm `ISSUE-18-10`, `ISSUE-18-11`, `ISSUE-18-12`, `ISSUE-18-13`, `ISSUE-18-14`, `ISSUE-18-15`, and `ISSUE-18-23` are Closed.
    - Confirm `ISSUE-18-16` through `ISSUE-18-22` are Deferred.
 4. `docs/issues/Issues_Deferred.md`
    - Confirm deferred issues are indexed and out of current scope.
@@ -56,9 +55,9 @@ These hypotheses are now **RESOLVED by read-only diagnosis** — see "Confirmed 
 
 ## Overall Smoke-Fix Structure
 
-Do not fix all blockers in one broad pass. Smoke Fix A, Smoke Fix B, and Smoke Fix C are complete. One smoke-fix pass remains:
+Do not fix all blockers in one broad pass. Smoke Fix A, Smoke Fix B, Smoke Fix C, and Smoke Fix D are complete.
 
-1. **Smoke Fix D** — `ISSUE-18-10` (staged drag token pointer offset)
+Phase 18 is ready for `closing-phase` after the final docs commit.
 
 ### Smoke Fix A — Consumed-State / Archive Verification Unblock
 
@@ -155,11 +154,11 @@ This was discovered while manually verifying Smoke Fix A and blocks the T85 comp
 **Why this is fourth:**
 This is a DnD overlay/preview positioning issue and is mostly independent from consumed-state and hierarchy-section behavior.
 
-## Start With Smoke Fix D Only
+**Current status:** Closed after user manual-smoke confirmation on 2026-06-22.
 
-The next session should begin with **Smoke Fix D only** (`ISSUE-18-10`).
+## Next Step
 
-Do not modify Deferred issues `ISSUE-18-16` through `ISSUE-18-22`.
+Run `closing-phase` for Phase 18 after this documentation update is committed. Do not modify Deferred issues `ISSUE-18-16` through `ISSUE-18-22`; they remain indexed in `docs/issues/Issues_Deferred.md`.
 
 ## Workload / Provider Guidance for Smoke Fix D
 
@@ -171,47 +170,20 @@ Smoke Fix D is likely smaller than Smoke Fix C but harder to verify automaticall
 
 **Recommendation:** start with direct Claude diagnosis before using OMC/Codex. If the fix is localized to the drag overlay or staged candidate drag handle/activator, direct editing is appropriate. Use OMC/Codex only if diagnosis shows broader DnD architecture changes. Browser/manual verification is important because pointer offset is difficult to prove with unit tests alone.
 
-## Required Workflow for Smoke Fix D
+## Required Workflow for Closing
 
-Use the `execute-task` workflow.
+Use the `closing-phase` workflow.
 
 1. Confirm branch and clean/dirty state.
 2. Read the source documents listed above.
-3. Inspect staged candidate drag rendering and overlay code, likely:
-   - `src/components/triage/staging-zone.tsx`
-   - `src/components/triage/triage-workspace.tsx`
-   - `src/hooks/use-dnd.ts`
-   - `src/lib/grid-dnd.ts`
-   - existing triage DnD tests
-4. Confirm the documented current behavior:
-   - staged Node/Bit drag token is offset from the pointer when drag starts away from the item's top-left.
-   - breakdown-row drag should not regress.
-5. Prepare a focused implementation plan before editing. Use Codex only if the required change spans multiple DnD layers.
-6. Expected implementation direction:
-   - Make the compact drag token align to the active pointer regardless of where the staged Node/Bit item is grabbed.
-   - Preserve staged Node and staged Bit DnD behavior.
-   - Preserve breakdown-row drag behavior and its grip affordance.
-7. Add focused automated coverage only where practical. Do not force brittle pixel-position unit tests if the behavior is only verifiable in browser/manual smoke. Prefer a minimal regression test around any changed helper or component contract.
-8. Re-read your own diff before running tests.
-9. Run focused triage/DnD tests touched by the change.
-10. Run browser/manual smoke for staged Node and staged Bit pointer alignment if a local dev server is used.
-11. Run the actual project verification gate from `CLAUDE.md` / package scripts.
-    - Do not assume `pnpm typecheck` exists.
-12. Update `docs/issues/Issues_Phase_18.md`.
-13. Commit implementation and issue-doc updates.
-14. Emit a checkpoint.
+3. Confirm all Phase 18 planned tasks are `[x]` in `docs/EXECUTION_PLAN.md`.
+4. Confirm all Phase 18 manual-smoke close blockers are `Closed` in `docs/issues/Issues_Phase_18.md`.
+5. Confirm deferred issues remain in `docs/issues/Issues_Deferred.md`.
+6. Run the closing-phase verification gate and emit the Phase 18 closing checkpoint.
 
-## Issue Status Rules
+## Smoke Fix A/B/C/D Status
 
-Do not mark `ISSUE-18-10` as `Closed` after implementation.
-
-Issue closure requires explicit user manual-smoke confirmation. Until then, use wording equivalent to:
-
-- `Implemented — awaiting manual smoke confirmation`
-
-## Smoke Fix A/B/C Status
-
-Smoke Fix A, Smoke Fix B, and Smoke Fix C have already been implemented and manually confirmed. Keep this section as context only; do not redo them unless the user reports a regression.
+Smoke Fix A, Smoke Fix B, Smoke Fix C, and Smoke Fix D have already been implemented and manually confirmed. Keep this section as context only; do not redo them unless the user reports a regression.
 
 ### Completed Automated Verification
 
@@ -239,22 +211,18 @@ Completed automated assertions:
 - Selecting nodes advances child grids into the next section correctly.
 - Section body drop is the primary placement path.
 - Node-row drop still works as a shortcut.
+- Staged Node/Bit compact drag token aligns to the pointer when grabbed away from top-left.
+- Breakdown-row drag has no visible regression.
 
 ## Checkpoint Requirements
 
-The checkpoint for Smoke Fix D must report:
+The next checkpoint should be the Phase 18 closing checkpoint and must report:
 
-- That this pass was **Smoke Fix D**.
-- Whether `ISSUE-18-10` was implemented.
-- What caused the pointer offset.
-- Whether staged Node and staged Bit drag tokens align to the pointer when grabbed away from top-left.
-- Whether breakdown-row drag behavior still works.
-- Files changed.
-- Tests added or updated.
+- All Phase 18 tasks are complete.
+- All Phase 18 close blockers are closed.
+- Deferred issues remain deferred and indexed.
 - Verification commands and results.
-- `docs/issues/Issues_Phase_18.md` status updates.
-- Which items still need user manual-smoke confirmation.
-- Whether Phase 18 is ready for final manual confirmation / closing-phase after `ISSUE-18-10` is manually confirmed.
+- Merge/PR readiness per closing-phase.
 
 ## New Session Prompt
 
@@ -269,23 +237,16 @@ Read docs/issues/Issues_Phase_18_Smoke_Fix_Handoff.md first, then follow it.
 Stay on the current branch. Do not create a new branch.
 Do not run closing-phase.
 
-Phase 18 has one remaining manual-smoke close blocker: ISSUE-18-10.
+Phase 18 has no remaining manual-smoke close blockers.
 ISSUE-18-16 through ISSUE-18-22 are Deferred and indexed in docs/issues/Issues_Deferred.md; do not include them.
 
-Smoke Fix A (ISSUE-18-11, ISSUE-18-12, ISSUE-18-13), Smoke Fix B (ISSUE-18-23), and Smoke Fix C (ISSUE-18-14, ISSUE-18-15) have already been implemented and manually confirmed. Do not redo them unless the user reports a regression.
+Smoke Fix A (ISSUE-18-11, ISSUE-18-12, ISSUE-18-13), Smoke Fix B (ISSUE-18-23), Smoke Fix C (ISSUE-18-14, ISSUE-18-15), and Smoke Fix D (ISSUE-18-10) have already been implemented and manually confirmed. Do not redo them unless the user reports a regression.
 
-Start with Smoke Fix D only:
-- ISSUE-18-10
-
-Use execute-task workflow:
+Use closing-phase workflow:
 - read the required docs,
-- inspect staged candidate drag rendering and overlay code, likely staging-zone.tsx, triage-workspace.tsx, use-dnd.ts, grid-dnd.ts, and existing triage DnD tests,
-- confirm the documented behavior before patching: staged Node/Bit compact drag token is offset from the pointer when grabbed away from top-left,
-- start with direct Claude diagnosis; use OMC/Codex only if the required change spans multiple DnD layers,
-- implement pointer-centered drag token behavior for staged Node/Bit while preserving breakdown-row drag behavior,
-- add focused automated coverage where practical, but do not force brittle pixel-position tests,
-- run focused triage/DnD tests, browser/manual smoke if a dev server is used, and the actual project gate,
-- update docs/issues/Issues_Phase_18.md,
-- commit implementation + issue doc,
-- do not mark issues Closed until user manual-smoke confirmation.
+- confirm all Phase 18 tasks are [x],
+- confirm all Phase 18 close blockers are Closed,
+- confirm deferred issues remain indexed,
+- run required closing verification,
+- emit the Phase 18 closing checkpoint.
 ```
