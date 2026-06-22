@@ -40,6 +40,23 @@ Likely implementation/test files to inspect after reading the docs:
 - `src/lib/db/datastore.ts`
 - related DataStore implementations/tests
 
+## Smoke Fix A Known Mechanism
+
+The consumed-state mechanism already has concrete names:
+
+- DataStore API: `markScratchBreakdownConsumed(id)`
+- Data field: `scratchBreakdowns.consumedAt`
+- Unconsumed row: `consumedAt === null`
+- Consumed row: `consumedAt` is a timestamp
+
+Do not stop at "the hook calls the mock." Existing `use-triage-dnd.test.ts` coverage already asserts `markScratchBreakdownConsumed` in several staged/direct placement paths. The manual-smoke failure means the missing coverage is likely at an integration/UI/reactivity boundary, or a real confirmation path differs from the hook-level test fixture.
+
+Verify the actual path before patching. Useful hypotheses to test:
+
+- `PlacementConfirmationDialog` calls the expected confirmation path, but the UI does not refresh from updated `consumedAt`.
+- Removing a staged candidate reveals the source row as active because the row display only checks staging state, not persisted `consumedAt`.
+- Direct placement and staged placement share hook logic in tests but diverge at the component/state boundary.
+
 ## Overall Smoke-Fix Structure
 
 Do not fix all blockers in one broad pass. Use three sequential passes.
@@ -60,6 +77,8 @@ Do not fix all blockers in one broad pass. Use three sequential passes.
 
 **Why this is first:**
 `ISSUE-18-13` is blocked by `ISSUE-18-11` and `ISSUE-18-12`. Archive Scratch cannot be reliably smoke-tested until consumed state is correct.
+
+`ISSUE-18-13` may require no independent implementation. Treat it first as a re-verification item after `ISSUE-18-11` and `ISSUE-18-12` are fixed.
 
 ### Smoke Fix B — Hierarchy Explorer Section/Grid Model
 
@@ -109,17 +128,21 @@ Use the `execute-task` workflow.
 2. Read the source documents listed above.
 3. Read relevant implementation and test files.
 4. Diagnose why previous automated tests passed while manual smoke failed.
-5. Prepare a small implementation plan.
-6. Show the Codex prompt preview and wait for explicit user approval.
-7. Launch Codex only after approval.
-8. Inspect the diff before running tests.
-9. Add or update focused regression tests that would have caught the manual-smoke failure.
-10. Run focused tests first.
-11. Run the actual project verification gate from `CLAUDE.md` / package scripts.
+5. Identify the missing test layer. Prefer an integration/component test that observes row consumed UI/state, not only a hook mock-call assertion.
+6. Write or prompt for the focused regression test **before implementation**.
+7. Run the focused test against current HEAD and confirm it fails for the manual-smoke bug.
+   - If a RED automated test is not feasible, document why and ask before proceeding.
+8. Prepare a small implementation plan.
+9. Show the Codex prompt preview and wait for explicit user approval.
+10. Launch Codex only after approval.
+11. Inspect the diff before running tests.
+12. Run the previously failing focused test and confirm it is now green.
+13. Run any adjacent focused tests for T83/T84/T85 placement paths.
+14. Run the actual project verification gate from `CLAUDE.md` / package scripts.
     - Do not assume `pnpm typecheck` exists.
-12. Update `docs/issues/Issues_Phase_18.md`.
-13. Commit implementation and issue-doc updates.
-14. Emit a checkpoint.
+15. Update `docs/issues/Issues_Phase_18.md`.
+16. Commit implementation and issue-doc updates.
+17. Emit a checkpoint.
 
 ## Issue Status Rules
 
@@ -133,25 +156,42 @@ The same applies later to `ISSUE-18-14`, `ISSUE-18-15`, and `ISSUE-18-10`.
 
 ## Smoke Fix A Verification Checklist
 
-Minimum verification for Smoke Fix A:
+Separate automated verification from manual smoke. This bug class exists because prior automated tests were green while manual smoke failed.
+
+### Automated Verification
+
+Minimum automated assertions:
 
 - staged Node placement confirm leaves source breakdown row consumed.
 - staged Bit placement confirm leaves source breakdown row consumed.
 - direct breakdown -> Node confirm marks source breakdown row consumed.
 - direct breakdown -> Bit confirm marks source breakdown row consumed.
+- the regression test fails on current HEAD before implementation and passes after the fix.
+- Existing T83/T84/T85 placement paths do not regress.
+
+### Manual Smoke Verification
+
+Manual checks for the user after implementation:
+
+- Use shallow placement targets first, such as Home/L1, so Smoke Fix A does not get blocked by known Hierarchy Explorer blockers `ISSUE-18-14` and `ISSUE-18-15`.
+- staged Node placement confirm leaves the visible source breakdown row consumed/processed.
+- staged Bit placement confirm leaves the visible source breakdown row consumed/processed.
+- direct breakdown -> Node confirm leaves the visible source breakdown row consumed/processed.
+- direct breakdown -> Bit confirm leaves the visible source breakdown row consumed/processed.
 - all rows consumed + no staged candidates shows Archive Scratch affordance.
 - Archive Scratch cancel keeps state unchanged.
 - Archive Scratch confirm archives/clears selection as previously implemented.
-- Existing T83/T84/T85 placement paths do not regress.
 
 ## Checkpoint Requirements
 
 The checkpoint for Smoke Fix A must report:
 
 - That this pass was **Smoke Fix A**.
-- Which of `ISSUE-18-11`, `ISSUE-18-12`, and `ISSUE-18-13` were implemented.
+- Which of `ISSUE-18-11` and `ISSUE-18-12` were implemented.
+- Whether `ISSUE-18-13` was re-verified, and whether it required any independent implementation.
 - Files changed.
 - Tests added or updated.
+- The focused regression test's RED result before implementation and GREEN result after implementation.
 - Verification commands and results.
 - `docs/issues/Issues_Phase_18.md` status updates.
 - Which items still need user manual-smoke confirmation.
@@ -183,11 +223,12 @@ Start with Smoke Fix A only:
 Use execute-task workflow:
 - read the required docs,
 - diagnose before patching,
+- identify the missing test layer around markScratchBreakdownConsumed / consumedAt,
+- write a focused regression test first and confirm it fails on current HEAD,
 - show a focused Codex prompt preview and wait for explicit approval,
-- add regression tests that catch the manual-smoke failure,
+- implement only after the RED test is confirmed,
 - run focused tests and the actual project gate,
 - update docs/issues/Issues_Phase_18.md,
 - commit implementation + issue doc,
 - do not mark issues Closed until user manual-smoke confirmation.
 ```
-
