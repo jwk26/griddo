@@ -99,7 +99,7 @@ These apply across all phases:
   - `pnpm build` passes.
 
 ### Task 88: Direct archive (context menu)
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Files:** `src/components/grid/node-card.tsx` (update — create context menu, add Archive option), `src/components/grid/bit-card.tsx` (update — create context menu, add Archive option), `src/hooks/use-archive.ts` (update — expose `archiveNode`/`archiveBit` if not already present from T87)
 - **Dependencies:** Phase 15 complete, Task 86
 - **Actions:**

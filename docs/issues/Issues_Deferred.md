@@ -30,6 +30,7 @@ It is **not** the source of truth for issue details. The source remains each `do
 | `Issues_Phase_18.md` | ISSUE-18-20 | Inbox/Triage visual state | Invalid hierarchy/staging drop state uses destructive red treatment too strongly. | Replace with muted/de-emphasized invalid-state language in a visual pass. |
 | `Issues_Phase_18.md` | ISSUE-18-21 | Hierarchy Explorer | Search bar may be missing; canonical requirement still needs confirmation. | Check `DECISION.md`, `SPEC.md`, and planning docs before scoping. |
 | `Issues_Phase_18.md` | ISSUE-18-22 | Product policy | Duplicate Node/Bit titles are allowed globally; policy is undecided. | Decide global title uniqueness policy before implementing validation. |
+| `Issues_Phase_19.md` | ISSUE-19-01 | UX follow-up | Archive menu trigger (`⋯`) on NodeCard/BitCard is too subtle and hard to click. | User to rethink interaction model before implementation. |
 
 ## Resolved Historical Deferrals
 

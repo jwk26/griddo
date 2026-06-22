@@ -36,7 +36,7 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 |-------|-------|----------------|--------|-------|
 | B1 | T86 | mixed | `[x]` Complete | New archive dir + surface + hook + GridRuntime dispatch; Gemini → Codex flow. Pending user approval + commit. |
 | B2a | T87 | logic-heavy | `[x]` Complete | ↩ restore — use-archive.ts + archive-group.tsx + archive-view.tsx wired; ref guard + 3 tests |
-| B2b | T88 | logic-heavy | `[~]` Implemented | Direct archive context menu — useArchiveActions() hook boundary; NodeCard + BitCard DropdownMenuTrigger-based menu; system Node guard hides trigger entirely |
+| B2b | T88 | logic-heavy | `[x]` Complete | Direct archive context menu — useArchiveActions() hook boundary; NodeCard + BitCard DropdownMenuTrigger-based menu; system Node guard hides trigger entirely. Smoke passed. ISSUE-19-01 deferred. |
 
 ### Batch B1 — T86: Archive View surface + routing branch
 
@@ -186,4 +186,24 @@ The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 ki
 - `pnpm test`: ✅ 71 files, 426 tests — all passed (9 new: 5 NodeCard B2b + 4 BitCard B2b)
 - `pnpm build`: ✅ 0 TypeScript errors, compiled successfully
 
-**Status:** Implemented — awaiting checkpoint review.
+**Status:** ✅ Complete — committed `506a88a`. T88 marked `[x]` in EXECUTION_PLAN.md. Smoke passed.
+
+---
+
+## Open Issues
+
+### ISSUE-19-01 — Archive menu trigger is too subtle / hard to target
+
+- **Category:** UX follow-up
+- **Severity:** Medium
+- **Status:** Deferred — user wants to rethink the interaction before implementation
+
+**Description:**
+B2b smoke confirmed direct archive works functionally, but the `⋯` trigger on NodeCard / BitCard is too subtle on hover and hard to click. Since this is the main entry point for Direct Archive, the affordance needs design reconsideration before it can be considered production-ready.
+
+**Options to explore (user-driven):**
+- Always-visible trigger (not opacity-0 by default)
+- Larger hit target or different positioning
+- Different interaction model entirely (e.g., long-press, swipe, or right-click alongside trigger)
+
+**Canonical impact:** None yet — implementation decision pending user direction.
