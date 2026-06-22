@@ -15,16 +15,15 @@
 
 ## Deferred Index Sync
 
-The deferred item `Issues_Phase_15.md` Phase-local Q6 ("Phase 19 still references `restoreNode`/`restoreBit` wording") is now **Resolved** by the T87 correction above. Update `Issues_Deferred.md` at phase close.
+The deferred item `Issues_Phase_15.md` Phase-local Q6` was synced at Phase 19 kickoff (not deferred to phase close):
+- `Issues_Deferred.md` Active table row removed; moved to Resolved Historical Deferrals.
+- `Issues_Phase_15.md` Q6 status updated to **Resolved**.
 
 ---
 
 ## Planning Gate Note
 
-`docs/reviews/phase-19-flow-review.md` does not exist.
-Per CLAUDE.md: flow-trace review is required before implementation starts.
-This gate must be satisfied before any provider prompt (Codex/Gemini) runs for T86/T87/T88.
-Options: run flow-trace review now, or explicit user waiver.
+`docs/reviews/phase-19-flow-review.md` — flow-trace review run at kickoff per CLAUDE.md requirement. See `docs/reviews/phase-19-flow-review.md`.
 
 ---
 
@@ -33,7 +32,8 @@ Options: run flow-trace review now, or explicit user waiver.
 | Batch | Tasks | Classification | Status | Notes |
 |-------|-------|----------------|--------|-------|
 | B1 | T86 | ui-heavy | `[ ]` Not started | New archive dir + surface + hook + GridRuntime dispatch |
-| B2 | T87, T88 | mixed | `[ ]` Not started | T87: ↩ restore wiring; T88: context menu archive. Disjoint write sets — can batch together. |
+| B2a | T87 | mixed | `[ ]` Not started | ↩ restore — updates archive-group.tsx + use-archive.ts |
+| B2b | T88 | mixed | `[ ]` Not started | Direct archive context menu — archiveNode/archiveBit must go through use-archive.ts hook boundary; may also touch use-archive.ts |
 
 ### Batch B1 — T86: Archive View surface + routing branch
 
@@ -51,29 +51,37 @@ Options: run flow-trace review now, or explicit user waiver.
 
 **Gemini involvement:** Yes — visual design for Archive View surface (grouping layout, warm/dignified tone, ✓ on completed items, search bar, ↩ restore button)
 
-### Batch B2 — T87 + T88: Restore + Direct Archive
+### Batch B2a — T87: Single-item unarchive
 
-**Write set (T87):**
+**Write set:**
 - `src/components/archive/archive-group.tsx` (update — add ↩ action button)
 - `src/hooks/use-archive.ts` (update — expose `unarchiveNode`/`unarchiveBit`)
 
-**Write set (T88):**
-- `src/components/grid/node-card.tsx` (update — add Archive to context menu)
-- `src/components/grid/bit-card.tsx` (update — add Archive to context menu)
-- (check: context menu may be in a shared component; adjust on discovery)
-
-**Key constraints (T87):**
+**Key constraints:**
 - Call `unarchiveNode` / `unarchiveBit` — NOT `restoreNode`/`restoreBit`
 - DataStore methods already exist; hook wiring only
-- Restoring archived Bit whose parent is also archived → `unarchiveNode` parent chain (already handled inside `indexeddb.ts` `unarchiveBit`)
+- Parent-chain restore (archived Bit → archived parent Node) is already handled inside `indexeddb.ts unarchiveBit` — no extra hook-level logic needed
 - Single-item only — no bulk restore UI
 
-**Key constraints (T88):**
-- Archive option hidden for `systemRole !== null` nodes
-- Completion does NOT trigger archive — no auto-archive logic
-- Calls `archiveNode` / `archiveBit` (Hook 10) — same API used in T85 `useArchiveScratch`
+**Gemini involvement:** Low — ↩ button addition; brief visual spec for button placement/appearance in the group row
 
-**Gemini involvement:** Low — context menu additions are established pattern; minor visual confirmation if needed
+---
+
+### Batch B2b — T88: Direct archive (context menu)
+
+**Write set:**
+- `src/components/grid/node-card.tsx` (update — add Archive option to context menu)
+- `src/components/grid/bit-card.tsx` (update — add Archive option to context menu)
+- `src/hooks/use-archive.ts` (update — expose `archiveNode`/`archiveBit` if not already exposed by B2a)
+- (actual context menu component location to confirm on discovery)
+
+**Key constraints:**
+- `archiveNode`/`archiveBit` must be called through `use-archive.ts` hook boundary — NOT direct DataStore import in components
+- Archive option must be hidden when `node.systemRole !== null`
+- Completion does NOT trigger archive — no auto-archive logic anywhere
+- Same API (`archiveNode`/`archiveBit`, Hook 10) as Phase 18 T85 `useArchiveScratch`
+
+**Gemini involvement:** Low — context menu addition is established pattern
 
 ---
 
