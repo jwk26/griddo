@@ -97,6 +97,110 @@ _None yet._
 - **Description:** (1) Border: spec says `border border-dashed border-border` (all sides) but Codex A prompt explicitly specified `border-t` (top only as a separator strip) — binding spec conflict, user decides. (2) Transition timing: `transition-[background-color,border-color,color]` is missing `duration-200 ease-in-out`; hover state transitions revert to browser defaults. (3) LOW: Archive Scratch button missing `focus-visible:ring-offset-2` accessibility class.
 - **Status:** Open — noted at checkpoint; user decides whether to fix in-session
 
+### ISSUE-18-10 — Staged Node/Bit drag token is offset from the pointer
+- **Batch:** 2 (T82)
+- **Category:** Manual smoke blocker
+- **Severity:** High (user-visible DnD control issue)
+- **Description:** When dragging a staged Node or staged Bit, the compact drag token appears anchored to the staged item's top-left origin rather than the active mouse pointer. Dragging from any point other than the top-left makes the token visually detached from the pointer. Breakdown rows are less affected because they expose a left-side grip/handle, but staged Node/Bit items are draggable from the full item surface.
+- **Expected:** Dragging a staged Node or Bit from any point on the item should create the compact token at the mouse pointer, so the DnD interaction feels pointer-centered and predictable.
+- **Status:** Open — Phase 18 close blocker; requires focused smoke-fix pass
+
+### ISSUE-18-11 — Staged placement confirm does not leave source breakdown consumed
+- **Batch:** 3 (T83)
+- **Category:** Manual smoke blocker
+- **Severity:** High (breaks the placement completion contract)
+- **Description:** After a staged Node/Bit is dropped onto a hierarchy target and confirmed in the placement dialog, the source breakdown row does not remain in the consumed/processed state. During staging the row appears de-emphasized, but after confirm it returns to the original active breakdown-row state instead of showing the consumed line-through/processed state.
+- **Expected:** Confirming staged placement should create the Node/Bit, call the breakdown-consumption path, remove the staged candidate, and leave the source breakdown row visibly consumed/processed.
+- **Status:** Open — Phase 18 close blocker; also blocks reliable T85 Archive Scratch verification
+
+### ISSUE-18-12 — Direct breakdown placement does not consume source row
+- **Batch:** 4 (T84)
+- **Category:** Manual smoke blocker
+- **Severity:** High (breaks fast-path completion)
+- **Description:** Dragging a breakdown row directly onto the Hierarchy Explorer opens the explicit Node/Bit type-choice dialog, but confirming either Node or Bit placement does not leave the original breakdown row consumed.
+- **Expected:** Confirming direct breakdown placement should create the chosen type and mark the source breakdown row consumed/processed, matching the T84 fast-path acceptance criteria.
+- **Status:** Open — Phase 18 close blocker; also blocks reliable T85 Archive Scratch verification
+
+### ISSUE-18-13 — Archive Scratch affordance cannot be verified while consumed-state blockers remain
+- **Batch:** 5 (T85)
+- **Category:** Manual smoke blocked verification
+- **Severity:** High (acceptance cannot be confirmed)
+- **Description:** T85 requires the Archive Scratch affordance to appear when all breakdown rows are consumed and no staged candidates remain. Manual smoke cannot verify this reliably while ISSUE-18-11 and ISSUE-18-12 prevent placement confirmation from leaving source rows consumed.
+- **Expected:** After consumed-state blockers are fixed, re-run the T85 smoke path: consume all breakdown rows through placement, clear staged candidates, verify the Archive Scratch affordance appears, then verify cancel/confirm behavior.
+- **Status:** Open — blocked by ISSUE-18-11 and ISSUE-18-12
+
+### ISSUE-18-14 — Hierarchy Explorer section/grid mapping is shifted by a synthetic Home item
+- **Batch:** 3 (T83), affects T84/T85 placement
+- **Category:** Manual smoke blocker
+- **Severity:** High (blocks deep-grid navigation and placement)
+- **Description:** The Hierarchy Explorer currently renders a synthetic `Home` item/drop cell inside the Home section, so actual root-grid items appear in the L1 section. This shifts the visible hierarchy one section to the right. For a path like `Home -> g -> 121221 -> 32ㄴ -> Bit-only grid`, `32ㄴ` appears as an item in the L3 section, so its child grid cannot be viewed or used as a placement target.
+- **Expected:** Remove the synthetic Home item. The Home section should show root-grid contents directly. Selecting a node in Home should open that node's grid in L1; selecting a node in L1 should open its grid in L2; selecting a node in L2 should open its grid in L3. The final Bit-only grid must remain reachable and placeable.
+- **Status:** Open — Phase 18 close blocker
+
+### ISSUE-18-15 — Hierarchy section body should be the primary placement target
+- **Batch:** 3 (T83), affects T84/T85 placement
+- **Category:** Manual smoke blocker
+- **Severity:** High (placement mental model mismatch)
+- **Description:** Placement currently feels centered on dropping directly onto individual node rows. The intended model is section-first: each Hierarchy Explorer section represents a grid context, and dropping onto the section body should place into that section's represented grid. Node rows should primarily navigate to the child grid in the next section.
+- **Expected:** Section body drop is the primary placement action for the represented grid. Direct node-row drop remains available as a shortcut, but it should not be the main required placement path. The selected node in the parent section determines the child section's grid context.
+- **Status:** Open — Phase 18 close blocker
+
+### ISSUE-18-16 — Staged candidates should be removable by dropping back onto the Breakdown area
+- **Batch:** 5 (T85) adjacent behavior
+- **Category:** User-requested UX follow-up
+- **Severity:** Medium
+- **Description:** Users commonly expect a staged Node/Bit to return to the Breakdown area when dragged back there. This should behave like `Remove from staging`: remove only the staged candidate, restore the source breakdown row to active display, and keep `consumedAt` as `null`.
+- **Expected:** Dropping a staged candidate onto the Breakdown area removes it from staging non-destructively, matching the remove-from-staging behavior.
+- **Status:** Awaiting User Decision — likely deferred or promoted to a follow-up task unless explicitly included in the smoke-fix pass
+
+### ISSUE-18-17 — Scratch pool sidebar folds on Scratch selection instead of Breakdown focus
+- **Batch:** 1/2 adjacent UX
+- **Category:** User-requested UX follow-up
+- **Severity:** Medium
+- **Description:** The Scratch pool sidebar currently folds immediately when a Scratch item is selected. The expected behavior is to keep the Scratch pool visible after selection and fold it when focus moves into the Breakdown item section, where the user has begun active triage work.
+- **Expected:** Scratch selection alone should not force the pool closed. Focusing the Breakdown section should fold the Scratch pool to expand the work area.
+- **Status:** Awaiting User Decision — UX follow-up; not a Phase 18 close blocker unless explicitly pulled into scope
+
+### ISSUE-18-18 — Add-note input should keep focus after Enter
+- **Batch:** 1 adjacent UX
+- **Category:** User-requested UX follow-up
+- **Severity:** Medium
+- **Description:** After entering a note in the `Add a note...` area and pressing Enter, focus is lost and the user must click the input again to add another breakdown row. This interrupts the intended rapid `type -> Enter -> type -> Enter` workflow.
+- **Expected:** After adding a breakdown row with Enter, focus should remain in the add-note input. Exception: global commands such as `Cmd+K` should still move focus to the integrated menu.
+- **Status:** Awaiting User Decision — quick-fix candidate or deferred UX follow-up
+
+### ISSUE-18-19 — Breakdown panel needs selected Scratch context
+- **Batch:** 1 adjacent UX
+- **Category:** User-requested UX follow-up
+- **Severity:** Medium
+- **Description:** The Breakdown section does not currently show enough context about the selected Scratch item. During triage, users need a clear indicator of which Scratch is active above the breakdown list.
+- **Expected:** The top of the Breakdown section should display the selected Scratch item/context so users can confirm which Scratch they are editing.
+- **Status:** Awaiting User Decision — UX follow-up; not yet classified as a Phase 18 close blocker
+
+### ISSUE-18-20 — Invalid hierarchy/staging drop state is visually too destructive
+- **Batch:** 3/5 visual follow-up
+- **Category:** User-requested visual follow-up
+- **Severity:** Medium
+- **Description:** During Node/Bit drag, invalid sections are currently shown with a red/destructive line treatment. This reads like an error or destructive action, but the state only means the current target is not valid for that drag.
+- **Expected:** Invalid drop state should use a quieter de-emphasis treatment similar to the Breakdown row staged/de-emphasized visual language, rather than destructive red.
+- **Status:** Awaiting User Decision — visual follow-up
+
+### ISSUE-18-21 — Hierarchy Explorer search bar may be missing
+- **Batch:** 3 (T83) or follow-up, pending source check
+- **Category:** Awaiting investigation
+- **Severity:** Medium
+- **Description:** Manual smoke noted that the Hierarchy Explorer has no search bar. It is not yet confirmed whether search was required by `DECISION.md`, `SPEC.md`, or the Phase 18 plan.
+- **Expected:** Check the canonical decision/spec/planning documents. If Hierarchy Explorer search was specified, record this as a Phase 18 omission; otherwise treat it as a follow-up UX enhancement.
+- **Status:** Awaiting Investigation — check canonical docs before classifying
+
+### ISSUE-18-22 — Duplicate Node/Bit titles are allowed globally
+- **Batch:** Product-wide follow-up observed during Phase 18 smoke
+- **Category:** Product policy / validation follow-up
+- **Severity:** Medium
+- **Description:** Adding Node/Bit items through the Hierarchy Explorer allows duplicate titles. The same appears to be true when adding via the main grid `+` menu, suggesting this is not isolated to Phase 18 but reflects a broader GridDO title-uniqueness policy gap.
+- **Expected:** Decide whether duplicate Node/Bit titles should be allowed globally. If not, define product-wide validation behavior and apply it consistently across Hierarchy Explorer placement and main grid creation flows.
+- **Status:** Awaiting User Decision — likely promote to execution plan or product policy follow-up; do not bundle into Phase 18 blocker fixes without explicit decision
+
 ### Phase-local Question Resolution
 
 | # | Question | Resolution | Canonical Impact | Status |
