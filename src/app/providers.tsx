@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { Toaster } from "sonner";
 import type { ReactNode } from "react";
 import { BitDetailPopup } from "@/components/bit-detail/bit-detail-popup";
+import { ColorThemeProvider } from "@/components/layout/color-theme-provider";
 import { SearchOverlay } from "@/components/layout/search-overlay";
 import { QuickCaptureOverlays } from "@/components/quick-capture/quick-capture-overlays";
 import { useSystemNodeSeeding } from "@/hooks/use-system-node-seeding";
@@ -31,19 +32,21 @@ export default function Providers({
       defaultTheme="system"
       enableSystem
     >
-      <TrashAutoCleanup />
-      <SystemNodeSeeding />
-      {children}
-      <Suspense>
-        <QuickCaptureOverlays />
-      </Suspense>
-      <Suspense>
-        <SearchOverlay />
-      </Suspense>
-      <Suspense>
-        <BitDetailPopup />
-      </Suspense>
-      <Toaster richColors position="bottom-right" />
+      <ColorThemeProvider>
+        <TrashAutoCleanup />
+        <SystemNodeSeeding />
+        {children}
+        <Suspense>
+          <QuickCaptureOverlays />
+        </Suspense>
+        <Suspense>
+          <SearchOverlay />
+        </Suspense>
+        <Suspense>
+          <BitDetailPopup />
+        </Suspense>
+        <Toaster richColors position="bottom-right" />
+      </ColorThemeProvider>
     </ThemeProvider>
   );
 }
