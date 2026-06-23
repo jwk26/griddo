@@ -41,7 +41,7 @@
 |-------|------|--------|--------|
 | B1 | T89 — Color theme runtime axis | `[x]` Complete (approved) | `23aa9b6` |
 | B2 | T90 — Exact theme values and shared theme classes | `[x]` Complete (approved) | `80a8044` |
-| B3 | T91 — Sidebar color theme picker | `[ ]` Not started | — |
+| B3 | T91 — Sidebar color theme picker | `[~]` In Progress | — |
 | B4 | T92 — Grid theme consumption | `[ ]` Not started | — |
 
 ### B1 — T89: Color theme runtime axis
