@@ -100,3 +100,35 @@ All changes available on:
 The prototype branch is a reference/source archive, not canonical
 implementation. Theme values, component structure, and calendar layout should
 be re-evaluated during promotion.
+
+## Promotion Intake Decisions — 2026-06-23
+
+These decisions were confirmed during Batch 2 promotion intake after Phase 19
+completion.
+
+### Theme System
+
+- The 8 prototype themes are considered visually mature.
+- Preserve fonts, colors, radius, border weight, shadows, and theme character as
+  closely as practical.
+- Do not wholesale-copy prototype files into the current app. Apply the theme
+  system as a patch over current Phase 19 code.
+- If prototype values conflict with accessibility, build constraints, or current
+  app behavior, record the conflict explicitly instead of silently normalizing
+  the design away.
+
+### Calendar
+
+- Treat the prototype calendar as the visual target.
+- The shared Calendar View Header, monthly grid tightening, today indicator,
+  first-of-month label treatment, theme-aware calendar cells, and weekly header
+  unification are adopted as design direction.
+- Implementation must patch the current calendar code rather than replace it
+  wholesale, preserving current fixes, tests, DnD behavior, popup behavior, and
+  route structure.
+
+### Grid Theme
+
+- The prototype grid theme visuals may be applied with high visual fidelity.
+- Theme implementation still must integrate through the current token/component
+  system instead of bypassing it with isolated prototype styling.

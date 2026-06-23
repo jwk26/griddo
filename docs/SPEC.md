@@ -57,7 +57,7 @@
 
 9. **Zustand for client state** — GridDO has complex UI state (edit mode, sidebar fold, drag operations, calendar drill-down, search query). React Context alone doesn't scale for cross-cutting interactive state. Zustand stores in `src/stores/` provide lightweight, boilerplate-free state management. Data state stays in Dexie (`useLiveQuery`); UI state stays in Zustand. Clean separation.
 
-10. **next-themes for theming** — Dark/Light mode via `next-themes` provider in root layout. Theme token switching is handled through CSS custom properties in `globals.css`, referenced by Tailwind classes. No conditional class logic in components.
+10. **next-themes for dark/light theming** — Dark/Light mode via `next-themes` provider in root layout. Theme token switching is handled through CSS custom properties in `globals.css`, referenced by Tailwind classes. No conditional class logic in components.
 
 11. **Optimistic UI everywhere** — Local-first means zero network latency. All mutations (create, update, delete, move, complete) apply instantly to IndexedDB and reflect immediately via `useLiveQuery`. No loading spinners, no optimistic rollback, no error states for data operations.
 
@@ -70,6 +70,10 @@
 15. **System Nodes (lifecycle)** — Two system Nodes (`systemRole: 'inbox' | 'archive_view'`) are seeded at first launch / migration (defaults in SCHEMA.md § Default System Nodes). They use the standard `/grid/[nodeId]` URL but render role-specific surfaces (Inbox → Triage workspace; Archive View → Archive View surface) — **no new routes**. System Nodes cannot be archived or trashed; they are removed from the L0 grid via `hiddenFromGrid` (not trash) and always appear in the sidebar regardless. `systemRole` is immutable; non-null uniqueness is enforced at the application level. Archive is a manual lifecycle action (`archivedAt`, Hooks 10/11); completion never auto-archives.
 
 16. **Compact-token DnD + pending-confirmation targets (Inbox/Triage)** — Extends Decision 12. Inbox/Triage drag interactions (Breakdown rows, staged Node/Bit candidates) use a **compact drag token** rather than a full-row/card preview, with pointer-centered targeting. Drop targets distinguish three states — valid, invalid, and **pending-confirmation** (a drop that opens a confirmation dialog before any write). This is a local, partial implementation of the broader Grid DnD direction (`2026-06-02-grid-dnd-preview-and-drop-targeting`, not promoted in full); existing main-grid / calendar / pool DnD is unchanged.
+
+17. **Color theme axis (Batch 2)** — Color theme is a second visual axis layered on top of `next-themes` dark/light mode. Dark/light remains class-based (`.dark`); color theme is stored separately and applied to `<html data-color-theme="...">`. The canonical theme set is `griddo`, `tiny-desk`, `neumorphism`, `claymorphism`, `origami`, `terminal`, `retro-mac`, and `graphite`. Components consume semantic CSS variables and theme surface classes; they must not branch on theme id except in the theme picker. Prototype files are visual/function references only — implementation patches the current app and preserves current behavior.
+
+18. **Batch 2 visual alignment preserves Phase 19 behavior** — Theme, Calendar, Grid, and Inbox/Triage visual changes are applied over the current Phase 19 app. They do not reopen lifecycle rules, system node routing, Archive View behavior, direct archive behavior, calendar DnD, or Inbox/Triage compact-token DnD. If a high-fidelity prototype value conflicts with accessibility, current behavior, or build constraints, the conflict is recorded explicitly instead of silently normalizing the design away. **One deliberate exception:** the Scratch Pool auto-collapse trigger is realigned from "collapse on Scratch selection" to "collapse on the first Breakdown keystroke" (`ISSUE-18-17`), restoring the original Inbox/Triage design intent from the `2026-04-28-inbox-triage-workspace` decision — a recorded behavior change, not a silent one.
 
 ---
 
@@ -116,7 +120,7 @@
 | Constants | `src/lib/constants.ts` | — |
 | Animation Variants | `src/lib/animations/{domain}.ts` | `src/lib/animations/grid.ts` |
 | Types | `src/types/{domain}.ts` | `src/types/index.ts` |
-| Zustand Stores | `src/stores/{name}-store.ts` | `src/stores/edit-mode-store.ts` |
+| Zustand Stores | `src/stores/{name}-store.ts` | `src/stores/edit-mode-store.ts`, `src/stores/color-theme-store.ts` |
 | Providers | `src/app/providers.tsx` | — |
 
 **Component location rule:** Used by one page only → co-locate under `_components/` in that route folder. Used by 2+ pages → `src/components/{domain}/`.
@@ -127,8 +131,8 @@
 |--------|----------|---------|
 | `grid/` | `grid-view.tsx`, `grid-cell.tsx`, `node-card.tsx`, `bit-card.tsx`, `edit-mode-overlay.tsx`, `onboarding-hints.tsx` | Grid pages |
 | `bit-detail/` | `bit-detail-popup.tsx`, `chunk-pool.tsx`, `chunk-item.tsx` | Grid + Calendar (popup opens from both) |
-| `calendar/` | `node-pool.tsx`, `items-pool.tsx`, `day-column.tsx`, `compact-bit-item.tsx` | Both calendar views |
-| `layout/` | `sidebar.tsx`, `breadcrumbs.tsx`, `search-overlay.tsx`, `theme-toggle.tsx` | All pages |
+| `calendar/` | `calendar-view-header.tsx`, `node-pool.tsx`, `items-pool.tsx`, `day-column.tsx`, `compact-bit-item.tsx` | Both calendar views |
+| `layout/` | `sidebar.tsx`, `breadcrumbs.tsx`, `search-overlay.tsx`, `theme-toggle.tsx`, `color-theme-toggle.tsx`, `color-theme-provider.tsx` | All pages |
 | `trash/` | `trash-list.tsx`, `trash-group.tsx` | Trash page only (but may move to shared if trash preview is added elsewhere) |
 | `quick-capture/` | `entry-surface.tsx`, `scratch-modal.tsx`, `command-palette.tsx` | Quick Capture `+` surface + Cmd+K palette (Batch 1) |
 | `triage/` | `triage-workspace.tsx`, `scratch-pool.tsx`, `breakdown-panel.tsx`, `staging-zone.tsx`, `hierarchy-explorer.tsx` | Inbox/Triage workspace, system node `inbox` (Batch 1) |
@@ -142,9 +146,9 @@
 
 - **Structure:** Full-width 18x9 grid occupying the main content area. Fixed icon-rail sidebar (always visible, `w-12`). Breadcrumb shows "Home" root-only state.
 - **Content:** Nodes only. No Bits at Level 0.
-- **Sidebar:** Permanent narrow icon rail, always visible, identical across all levels. Icons: + (add), Pencil (edit toggle), Search, Calendar (top); Trash, Theme toggle (bottom). No fold/unfold mechanism.
+- **Sidebar:** Permanent narrow icon rail, always visible, identical across all levels. Icons: + (add), Pencil (edit toggle), Search, Calendar (top); Trash, dark/light Theme toggle, Color Theme toggle (bottom). No fold/unfold mechanism.
 - **Onboarding:** On first visit (no Nodes exist), show ghost placeholder Nodes with dashed outlines and hint labels ("Try: Work, Personal, Hobbies"). Disappear after first Node creation.
-- **Interactions:** Click Node → navigate to `/grid/[nodeId]`. Theme toggle, search overlay, edit mode. DnD enabled (repositioning works outside edit mode).
+- **Interactions:** Click Node → navigate to `/grid/[nodeId]`. Dark/light Theme toggle, Color Theme toggle, search overlay, edit mode. DnD enabled (repositioning works outside edit mode).
 - **Visual:** Level 0 background color (`--grid-bg-l0`). Standard grid line density. No depth effects at Level 0.
 
 ### Route: `/grid/[nodeId]` (Level 1-3 Grid)
@@ -177,6 +181,7 @@
 ### Route: `/calendar/weekly` (Calendar:Weekly)
 
 - **Structure:** Two-panel layout. Left panel + right schedule area. Sidebar on left.
+- **Header (Batch 2):** Weekly and Monthly share a calendar view header. Header contains title + muted subtitle, Weekly/Monthly view switch, previous/today/next navigation, and consistent focus-visible styling. Day/Year controls are not introduced unless future scope adds those views.
 - **Left panel — Node Pool (top, larger section):**
   - Level 0 Nodes shown as icons only (hover for title tooltip).
   - Click a Node → drill down to show sub-Nodes (with `>` chevron) and Bits inside.
@@ -197,17 +202,24 @@
   - **Overflow:** "+N more" indicator. Click → column expands vertically with vignette effect, hiding adjacent columns.
   - **Collapse expanded:** ESC key or click any area in the column except on Bits.
 - **Unschedule:** Drag item back to Items Pool, or ✗ button on hover. Clears deadline.
+- **Batch 2 visual contract:** Day columns consume calendar theme variables for background, border, radius, and shadow. Existing expandable-column behavior, DnD, unschedule actions, and item interactions are preserved.
 
 ### Route: `/calendar/monthly` (Calendar:Monthly)
 
 - **Structure:** Two-panel layout. Same left panel as Weekly. Right = calendar grid. Sidebar on left.
+- **Header (Batch 2):** Same shared calendar view header as Weekly. Month title and year subtitle are displayed separately.
 - **Left panel:** Identical to Weekly — Node Pool (top) + Items Pool (bottom). Same drill-down, search, and drag behavior.
 - **Right — Monthly Grid:**
   - Standard calendar grid: 7 columns (Mon–Sun), rows for weeks of the month.
-  - Left/right arrow navigation between months. Month label displayed.
-  - Items appear as color indicators on date cells with highlight color.
+  - Batch 2 visual target uses tight `gap-px` calendar grid lines instead of separated card gaps.
+  - Weekday header uses a theme-aware header background.
+  - Date cells consume calendar theme variables for background, border, radius, and shadow.
+  - Today is shown as a circular date badge.
+  - First-of-month labels use `MMM d` format (for example, `May 1`); other days use day number only.
+  - Items appear as compact Node tiles and Bit/Chunk dots on date cells with parent color indicators.
   - Drag items from pools to date cells (same deadline-setting behavior as Weekly).
   - Click a date cell → popover showing all items scheduled for that day in a list view. Items in the popover are clickable → navigates to item's grid location.
+  - Popup item controls must have visible `focus-visible` styling.
 
 ### Route: `/trash` (Trash Zone)
 
@@ -252,7 +264,7 @@ System Nodes always appear in the sidebar (queried by `systemRole !== null`) reg
 
 ### Inbox / Triage Workspace (rendered for `systemRole: 'inbox'`)
 
-A processing workspace that turns Scratch into Node/Bit hierarchy. Four areas:
+A processing workspace that turns Scratch into Node/Bit hierarchy. Four internal areas. The labels in this diagram are documentation labels, not visible UI headings:
 
 ```text
 [ Scratch Pool ] [ Main Work Area                          ]
@@ -261,13 +273,15 @@ A processing workspace that turns Scratch into Node/Bit hierarchy. Four areas:
 ```
 
 - **Layout ratios:** Main Work Area vertical Top 60% / Bottom 40%; top horizontal Breakdown 60% / Staging 40%; Staging internal Node Zone 35% / Bit Zone 65% (Node Zone renders a two-column grid of icon-centered Node candidates; Bit Zone a vertical list of text rows).
-- **Scratch Pool:** Full-height list of active Scratch Bits ordered by `createdAt` (`2h ago` / `yesterday` / `m/dd/yy`). Auto-collapses after a Scratch is selected. Inbox badge: 0 hidden / 1–7 neutral / 8–14 warm / 15+ high-pressure (exact count; thresholds in `constants.ts`; semantic tokens — no hard-coded HSL).
-- **Breakdown/Scribble:** The selected Scratch is the context. Always-active input row; rows persist in the `scratchBreakdowns` store (not Chunks). Dragging a row into Staging creates a UI candidate and de-emphasizes the source row — `consumedAt` is **not** set yet.
-- **Node/Bit Staging:** UI state only, scoped to the selected Scratch (candidates never mix across Scratches; switching Scratch loses no persisted data because rows stay unconsumed). Node and Bit candidates are visually distinct (Node = icon-centered object; Bit = text-centered row). No inline edit (remove → edit the Breakdown row → re-stage).
-- **Hierarchy Explorer:** Home / L1 / L2 / L3 columns (progressive reveal; Nodes before Bits). Dropping a staged candidate — or a Breakdown row via the fast path — is a **pending-confirmation** target: it opens the placement confirmation dialog (reuses the existing GridDO move-confirmation `Dialog`) showing source content, candidate type, destination hierarchy path, and result summary. Confirm creates the real Node/Bit at the target and marks the source `scratchBreakdowns` row `consumedAt`; cancel/Escape creates nothing and leaves `consumedAt` null. If the target grid is full, confirm is disabled with a reason. The fast path requires an explicit Node/Bit type choice (no default).
+- **Visible labels:** Final Inbox UI does not show developer section headings such as `Scratch Pool`, `Breakdown / Scribble`, `Node Staging`, `Bit Staging`, or `Hierarchy Explorer`. These names may remain in component names, tests, internal docs, `aria-label`s, or visually hidden labels. `Home`, `L1`, `L2`, and `L3` may remain only as subtle navigation/depth context.
+- **Scratch Pool:** Full-height list of active Scratch Bits, ordered **newest-first by `createdAt`** by default. Each row shows the title and a relative-time `createdAt` label (`2h ago` / `yesterday` / `2 days ago` / `6 days ago` / `m/dd/yy`); long titles ellipsize. Expanded mode shows inbox identity, exact count, fold/unfold control, title search, and an icon-only asc/desc sort toggle. Search filters Scratch titles only. Sort target is Scratch `createdAt` with newest-first and oldest-first modes. Collapsed mode shows compact inbox identity, count badge, fold/unfold control, and compact Scratch switching with **short vertical pills**: each pill represents one active Scratch, the selected Scratch pill is longer and higher-contrast, inactive pills are shorter and muted, pills have no visible text, and accessible labels/tooltips expose Scratch titles. Collapsed mode has no search and no sort control. **Auto-collapse trigger:** selecting a Scratch does **not** collapse the pool; focus or click into the Breakdown area alone does **not** collapse it either. The pool auto-collapses when the user types the **first keystroke** in the Breakdown section while a Scratch is selected. A manually re-expanded pool is respected for the current Scratch editing session and does not auto-collapse again until the selected Scratch changes. (This is the one deliberate Phase 19 behavior change in Batch 2 — see Architecture Decision 18 — restoring original Inbox/Triage intent per `ISSUE-18-17`.) Inbox badge: 0 hidden / 1–7 neutral / 8–14 warm / 15+ high-pressure (exact count; thresholds in `constants.ts`; semantic tokens — no hard-coded HSL).
+- **Breakdown:** The selected Scratch is the visible context and must be clear at a glance. It renders at the **top-left of the Breakdown section** as a compact context strip: a small Scratch/Inbox-family icon, the selected Scratch title, and optional relative-time/meta in a single line. The strip is visually distinct from the Breakdown rows below it through surface tone, border or left accent, smaller type scale, and spacing/separation; it must not look draggable, row-like, or share row hover/drag affordances. Long Scratch titles truncate/ellipsize. Always-active input row; rows persist in the `scratchBreakdowns` store (not Chunks). Dragging a row into Staging creates a UI candidate and de-emphasizes the source row — `consumedAt` is **not** set yet. Drag activation remains grip-only; full-row dragging is rejected. Batch 2 improves grip visibility and hit area without making the entire row appear draggable. After submitting a breakdown row with Enter, focus remains in the add-note input for rapid `type → Enter → type` entry (`ISSUE-18-18`); global commands such as `Cmd+K` still move focus to the command menu.
+- **Node/Bit Staging:** UI state only, scoped to the selected Scratch (candidates never mix across Scratches; switching Scratch loses no persisted data because rows stay unconsumed). Node and Bit candidates remain visually distinct **by shape, not color alone**: `Node = icon-centered object`, `Bit = text-centered row/card` (restored from the `2026-04-28-inbox-triage-workspace` decision; consistent with the Layout-ratios line above — Node Zone two-column icon grid, Bit Zone vertical text list). This shape distinction must be conveyed without the removed developer section labels. No inline edit (remove → edit the Breakdown row → re-stage).
+- **Hierarchy Explorer:** Home / L1 / L2 / L3 columns (progressive reveal; Nodes before Bits). Batch 2 removes the unnecessary gap between the hierarchy shell and the Home/L1/L2/L3 columns. A search input filters only the active hierarchy section (the deepest currently opened section). If only Home/Grid0 is open, search filters Home/Grid0 Nodes/Bits; if Level 2 is active, it filters Level 2 Nodes/Bits. Search query persists when the active section changes. A **persistent filter indicator is primary**: show the active query, the scoped section, the result count, and a clear affordance. A flash/highlight on the search input is a **secondary** cue when the active section changes with a non-empty query. This is not global app search.
+- **Placement confirmation:** Dropping a staged candidate — or a Breakdown row via the fast path — is a **pending-confirmation** target: it opens the placement confirmation dialog (reuses the existing GridDO move-confirmation `Dialog`) showing source content, candidate type, destination hierarchy path, and result summary. Confirm creates the real Node/Bit at the target and marks the source `scratchBreakdowns` row `consumedAt`; cancel/Escape creates nothing and leaves `consumedAt` null. If the target grid is full, confirm is disabled with a reason. The fast path requires an explicit Node/Bit type choice (no default).
 - **Remove from staging:** A shared `Remove from staging` drop target appears while dragging staged candidates (reuses the existing grid delete affordance; not a per-card ✗). Dropping removes only the staged candidate; the source Breakdown row returns to active display and `consumedAt` stays null. Non-destructive (no toast).
 - **Archive Scratch (narrow exception):** When all Breakdown rows are placed/consumed and no staged candidates remain, the user may be offered an explicit Archive Scratch affordance (requires confirmation). Confirm sets `archivedAt` on the Scratch Bit; decline leaves it active in Inbox. Never hard-deleted via this path.
-- **DnD:** compact drag token + pending-confirmation targets (Decision 16). Batch 1 uses existing GridDO baseline UI/tokens; visual theme variants are Batch 2.
+- **DnD states:** compact drag token + pending-confirmation targets (Decision 16). Invalid hierarchy/staging drop states use muted/unavailable visual language, not destructive-red treatment.
 
 ### Archive View Surface (rendered for `systemRole: 'archive_view'`)
 
@@ -305,11 +319,14 @@ Infrastructure files that don't follow the File Organization Conventions above.
 | Path | Purpose |
 |------|---------|
 | `src/app/globals.css` | CSS custom properties, Tailwind v4 `@theme` bridge, dark mode variant — single source of truth for all design tokens |
-| `src/app/layout.tsx` | Root layout — ThemeProvider, DataStore provider |
+| `src/app/layout.tsx` | Root layout — font variables, color-theme no-flash init script, ThemeProvider/DataStore provider shell |
 | `src/app/(grid)/layout.tsx` | Route-group layout — renders GridRuntime for all grid pages |
-| `src/app/providers.tsx` | Client-side providers wrapper — ThemeProvider, DataStoreProvider. Zustand stores require no provider. |
+| `src/app/providers.tsx` | Client-side providers wrapper — ThemeProvider, ColorThemeProvider, DataStoreProvider. Zustand stores require no provider. |
 | `src/components/layout/grid-runtime.tsx` | Client wrapper: route state, sidebar, breadcrumb, shared DnD boundary, add-flow orchestration |
 | `src/components/layout/add-flow-context.tsx` | Minimal React context — pages call `useAddFlow().openAddAtCell(x, y)` to trigger add-flow |
+| `src/components/layout/color-theme-provider.tsx` | Applies the persisted color theme to `<html data-color-theme="...">` |
+| `src/components/layout/color-theme-toggle.tsx` | Color theme picker — 8 visual themes, swatches, selected check |
+| `src/components/calendar/calendar-view-header.tsx` | Shared Calendar weekly/monthly header — title/subtitle, view switch, previous/today/next controls |
 | `src/lib/db/datastore.ts` | `DataStore` interface — the abstraction boundary between app code and storage |
 | `src/lib/db/indexeddb.ts` | Dexie.js IndexedDB implementation of `DataStore` — v1 storage backend |
 | `src/lib/db/schema.ts` | Zod validation schemas and TypeScript types (from SCHEMA.md) |
@@ -322,6 +339,7 @@ Infrastructure files that don't follow the File Organization Conventions above.
 | `src/stores/edit-mode-store.ts` | Edit mode toggle, jiggle state |
 | `src/stores/search-store.ts` | Search query, open/closed state |
 | `src/stores/calendar-store.ts` | Calendar drill-down navigation, pool state |
+| `src/stores/color-theme-store.ts` | Color theme id, validation, and persistence (`griddo-color-theme`) |
 | `src/lib/animations/grid.ts` | Grid animation variants — jiggle, sinking, creation/deletion, depth transitions |
 | `src/lib/animations/calendar.ts` | Calendar animation variants — vignette expand, magnet snap |
 | `src/lib/grid-dnd.ts` | Grid DnD utilities — `gridCollisionDetection` (prioritizes node-drop over cell) |

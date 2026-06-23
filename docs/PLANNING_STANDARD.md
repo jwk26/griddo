@@ -180,6 +180,9 @@ Important issues that should be surfaced and recorded, but do not automatically 
 - [ ] **Optimistic UI:** No loading states, spinners, or skeleton screens for local data operations. Local-first means zero-latency.
 - [ ] **File organization:** New files follow key path conventions from CLAUDE.md (utils in `src/lib/utils/`, hooks in `src/hooks/`, stores in `src/stores/`). New Batch 1 component domains: `src/components/quick-capture/`, `src/components/triage/`, `src/components/archive/`.
 - [ ] **scratchBreakdowns store boundary:** Breakdown rows live in the dedicated `scratchBreakdowns` store (not Chunks) and must not participate in Hook 3 (Bit Auto-Completion). Triage staging is UI-state-only; real Node/Bit records are created only on confirmed placement (when `consumedAt` is set). (Added Batch 1.)
+- [ ] **Theme id non-branching (Batch 2+):** Components must not branch on color-theme id (`data-color-theme`) except the theme picker. Theme differences flow through CSS variables and shared `.theme-*` classes, not per-theme conditionals. (Added Batch 2.)
+- [ ] **Theme class CSS-var consumption (Batch 2+):** Theme-aware surfaces consume CSS variables (`--theme-*`, `--calendar-*`) via the shared `.theme-*` classes; no hard-coded per-theme colors or shadows in components. (Added Batch 2.)
+- [ ] **8-theme smoke (Batch 2+):** After theme work, smoke-check contrast and `focus-visible` across all 8 themes in light/dark — at minimum one high-contrast theme (`terminal` or `retro-mac`), where opacity-muted text (`text-muted-foreground/50` etc.) can fail. (Added Batch 2.)
 
 ### Updating this checklist
 
