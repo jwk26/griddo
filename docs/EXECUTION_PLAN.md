@@ -118,7 +118,7 @@ These apply across all phases:
 
 ### Task 91: Sidebar color theme picker
 
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Dependencies:** Task 89.
 - **Files:** `src/components/layout/color-theme-toggle.tsx` (create), `src/components/layout/sidebar.tsx` (update), `src/components/layout/sidebar.test.tsx` (update)
 - **Recipe:** `docs/recipes/theme-system-and-grid-batch2-visual-recipe.md`
