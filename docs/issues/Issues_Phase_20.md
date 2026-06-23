@@ -41,7 +41,7 @@
 |-------|------|--------|--------|
 | B1 | T89 — Color theme runtime axis | `[x]` Complete (approved) | `23aa9b6` |
 | B2 | T90 — Exact theme values and shared theme classes | `[x]` Complete (approved) | `80a8044` |
-| B3 | T91 — Sidebar color theme picker | `[~]` In Progress | — |
+| B3 | T91 — Sidebar color theme picker | `[i]` Implemented | — |
 | B4 | T92 — Grid theme consumption | `[ ]` Not started | — |
 
 ### B1 — T89: Color theme runtime axis
@@ -80,3 +80,22 @@
 - `pnpm test --run src/app/theme-transition.test.ts` ✅ 2/2
 - `pnpm build` ✅ exit 0
 - `git diff --check` ✅ clean
+
+### B3 — T91: Sidebar color theme picker
+
+**Write set:**
+- `src/components/layout/color-theme-toggle.tsx` (create) — `ColorThemeToggle` component; `Palette` icon trigger, Radix Popover `side="right" align="end" sideOffset={12}`, 8 theme rows with swatch + label + `Check` icon; `aria-pressed` on each row; `useEffect` focus to selected row on open via `querySelector<HTMLButtonElement>('[aria-pressed="true"]')`
+- `src/components/layout/sidebar.tsx` (update) — import `ColorThemeToggle`; insert above `ThemeToggle` in bottom control group with same `dragActiveItem` dim wrapper
+- `src/components/layout/sidebar.test.tsx` (update) — `setColorThemeMock` + `vi.mock("@/stores/color-theme-store")`; 7 new tests in nested `describe("ColorThemeToggle in sidebar")`
+
+**Key decisions:**
+- `SidebarIconButton` is not exported; trigger replicates its Tailwind classes directly on a raw `<button>` — no refactor.
+- `PopoverContent className` explicitly overrides shadcn defaults (`w-56 p-1 bg-popover border border-border shadow-md rounded-lg`); no shadcn internals patched.
+- Check icon conditionally rendered (not `invisible`) — DOM absence is the selected-off signal.
+- No custom Escape handler — Radix Popover returns focus to trigger natively.
+
+**Gates:**
+- `pnpm test --run src/components/layout/sidebar.test.tsx` ✅ 29/29
+- `pnpm build` ✅ exit 0
+- `git diff --check` ✅ clean
+- `git diff --name-only HEAD -- src/components/grid` ✅ no output

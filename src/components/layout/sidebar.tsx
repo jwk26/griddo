@@ -6,6 +6,7 @@ import { Calendar, Home, Inbox, Layers, Pencil, Plus, Search, Trash2, X, Zap } f
 import { motion, type HTMLMotionProps, type MotionProps, useReducedMotion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { forwardRef, useState } from "react";
+import { ColorThemeToggle } from "@/components/layout/color-theme-toggle";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import {
   DropdownMenu,
@@ -449,6 +450,9 @@ export function Sidebar({
             onClick={() => router.push("/trash")}
             isActive={isTrashRoute}
           />
+        </div>
+        <div className={cn(dragActiveItem && "opacity-40 saturate-50 transition-all duration-150")}>
+          <ColorThemeToggle />
         </div>
         <div className={cn(dragActiveItem && "opacity-40 saturate-50 transition-all duration-150")}>
           <ThemeToggle className="hover:bg-accent hover:text-foreground" />
