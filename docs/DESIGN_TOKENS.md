@@ -12,7 +12,7 @@ Values that differ from `docs/design-system-preview.html` **on purpose**:
 
 | # | Token / Component | HTML reference | This file | Reason |
 |---|-------------------|---------------|-----------|--------|
-| 1 | Font family | Inter (Google Fonts) | Geist Sans | Explicit project decision — Geist is the chosen system font |
+| 1 | Base font family | Inter (Google Fonts) | Geist Sans by default; Batch 2 color themes may override via `--theme-font` | Geist remains the default app/system font; color themes may opt into their own display fonts |
 | 2 | Sidebar model | `52px` icon strip | `3rem` (48px) fixed icon rail, always visible | Phase 9: sidebar is now a permanent icon rail — no fold/unfold. Closest to the reference's icon strip model |
 
 ---
@@ -20,6 +20,9 @@ Values that differ from `docs/design-system-preview.html` **on purpose**:
 ## Table of Contents
 
 - [CSS Variables](#css-variables)
+- [Color Theme System](#color-theme-system)
+- [Calendar Visual Theme Contract](#calendar-visual-theme-contract)
+- [Inbox / Triage Batch 2 Surface Contract](#inbox--triage-batch-2-surface-contract)
 - [Responsive Grid Node Tokens](#responsive-grid-node-tokens)
 - [Tailwind v4 Theme Bridge](#tailwind-v4-theme-bridge)
 - [Motion Language](#motion-language)
@@ -213,6 +216,219 @@ Colors in HSL without `hsl()` wrapper (shadcn convention). Shadcn core tokens fi
 
 ---
 
+## Color Theme System
+
+> Batch 2 source recipe: `docs/recipes/theme-system-and-grid-batch2-visual-recipe.md`
+>
+> Color theme is a second visual axis layered on top of dark/light mode. Dark/light remains controlled by `next-themes` (`.dark`). Color theme is applied through `<html data-color-theme="...">`.
+
+### Theme IDs
+
+```ts
+export const COLOR_THEMES = [
+  "griddo",
+  "tiny-desk",
+  "neumorphism",
+  "claymorphism",
+  "origami",
+  "terminal",
+  "retro-mac",
+  "graphite",
+] as const;
+```
+
+| Theme | Label | Character | Font | Shape / border | Depth |
+|---|---|---|---|---|---|
+| `griddo` | GridDO | warm default GridDO identity | `var(--font-geist-sans)` | `--theme-radius: 1.5rem`; `--theme-border-width: 1px` | soft app shadow |
+| `tiny-desk` | Tiny Desk | wooden planner / corkboard | `var(--font-playfair), serif` | `8px`; `3px` | natural offset shadow |
+| `neumorphism` | New Morphism | soft grey extrusion | `var(--font-inter), sans-serif` | `20px`; `0px` | paired light/dark extrusion shadow |
+| `claymorphism` | 3D Clay | glossy tactile clay | `var(--font-inter), sans-serif` | `32px`; `0px` | outer + inset clay shadow |
+| `origami` | Origami | folded/faceted paper | `var(--font-space-mono), monospace` | `2px 12px 2px 12px / 12px 2px 12px 2px`; `1px` | folded paper shadow |
+| `terminal` | Terminal | retro console | `var(--font-vt323), monospace` | `0px`; `2px` | no base shadow; hover glow |
+| `retro-mac` | Retro Mac | classic Mac OS | `var(--font-space-mono), monospace` | `4px`; `2px` | hard offset shadow |
+| `graphite` | Graphite | neutral architectural | `var(--font-inter), sans-serif` | `8px`; `2px` | restrained neutral shadow |
+
+### Runtime Tokens
+
+| Token / rule | Value / requirement |
+|---|---|
+| Runtime attribute | `<html data-color-theme="...">` |
+| Default theme | `griddo` |
+| Persistence key | `griddo-color-theme` |
+| Validation | persisted value must be one of `COLOR_THEMES`; otherwise fall back to `griddo` |
+| No-flash init | root layout sets `data-color-theme` before hydration using the persisted value |
+| Theme picker | icon-only Palette trigger, `aria-label="Change color theme"`, swatch + label + selected check |
+
+### Theme Variable Groups
+
+Each color theme may override these variable groups. Components consume these variables through semantic classes or component-level theme classes; components must not branch on theme id except inside the theme picker.
+
+| Group | Variables |
+|---|---|
+| Core shadcn | `--background`, `--foreground`, `--card`, `--primary`, `--border` |
+| Page | `--page-bg` |
+| Grid | `--grid-line-color`, `--grid-bg-l0`, `--grid-bg-l1`, `--grid-bg-l2`, `--grid-bg-l3` |
+| Typography | `--theme-font` |
+| Shape | `--theme-radius`, `--theme-border-width`, `--theme-border-style`, `--theme-line-style` |
+| Depth | `--theme-card-bg`, `--theme-shadow`, `--theme-shadow-hover` |
+| Calendar | `--calendar-cell-bg`, `--calendar-header-bg`, `--calendar-border-color`, `--calendar-grid-line-color`, `--calendar-cell-radius`, `--calendar-cell-shadow`, `--calendar-today-*` |
+
+### Required Theme Classes
+
+```css
+.theme-node-card {
+  background: var(--theme-card-bg);
+  border-color: hsl(var(--border));
+  border-radius: var(--theme-radius);
+  border-style: var(--theme-border-style);
+  border-width: var(--theme-border-width);
+  box-shadow: var(--theme-shadow);
+  font-family: var(--theme-font);
+}
+
+.theme-node-card:hover {
+  box-shadow: var(--theme-shadow-hover);
+}
+
+.theme-grid-line {
+  border-color: hsl(var(--border));
+  border-radius: var(--theme-radius);
+  border-style: var(--theme-line-style);
+  border-width: var(--theme-border-width);
+}
+
+.theme-surface {
+  background: var(--theme-card-bg);
+  border-color: hsl(var(--border));
+  border-radius: var(--theme-radius);
+  border-style: var(--theme-border-style);
+  border-width: var(--theme-border-width);
+  box-shadow: var(--theme-shadow);
+}
+
+.theme-surface:hover {
+  box-shadow: var(--theme-shadow-hover);
+}
+```
+
+**Fidelity rule:** The **exact** per-theme values — all variable groups × 8 themes × light/dark, including the full `--theme-shadow` / `--theme-shadow-hover` / `--calendar-today-*` box-shadow strings — are the **source of record** in `docs/recipes/theme-system-and-grid-batch2-visual-recipe.md` § *Exact Theme Values (source of record)* — a verbatim copy of the prototype **base layer (`globals.css`: theme/calendar contract defaults, swatches, shared `.theme-*` classes) + the 7 override themes (`themes.css`)**, with the cascade/inheritance model documented. Implementation must copy those exact values; the summary tables in this section are navigational only and must not be used to reconstruct values from prose. If an exact value conflicts with accessibility, build constraints, or current app behavior, record the conflict explicitly instead of silently normalizing the theme.
+
+### Font Loading
+
+Batch 2 themes require these additional font variables in addition to Geist Sans/Mono:
+
+| Font | CSS variable | Used by |
+|---|---|---|
+| Inter | `--font-inter` | `griddo` fallback-aligned variants, `neumorphism`, `claymorphism`, `graphite` |
+| Playfair Display | `--font-playfair` | `tiny-desk` |
+| Space Mono | `--font-space-mono` | `origami`, `retro-mac` |
+| VT323 | `--font-vt323` | `terminal` |
+
+Do not silently collapse all themes to Geist. If a font cannot be loaded, document the fallback and the reason.
+
+---
+
+## Calendar Visual Theme Contract
+
+> Batch 2 source recipe: `docs/recipes/calendar-batch2-visual-recipe.md`
+
+Calendar weekly and monthly views consume the color theme system through calendar-specific variables. These variables are theme-dependent and should be set by the active color theme.
+
+| Token | Role |
+|---|---|
+| `--calendar-cell-bg` | Monthly date cell / weekly day column background |
+| `--calendar-header-bg` | Weekday header row and weekly day header background |
+| `--calendar-border-width` | Calendar cell border width |
+| `--calendar-border-style` | Calendar cell border style |
+| `--calendar-border-color` | Calendar non-today cell border |
+| `--calendar-grid-line-color` | Monthly `gap-px` grid line background |
+| `--calendar-cell-radius` | Date cell / day column radius |
+| `--calendar-cell-shadow` | Non-today cell shadow |
+| `--calendar-today-border-width` | Today cell border width |
+| `--calendar-today-border-style` | Today cell border style |
+| `--calendar-today-border-color` | Today cell border color |
+| `--calendar-today-shadow` | Today cell shadow |
+
+### Monthly Grid Contract
+
+| Element | Required treatment |
+|---|---|
+| Weekday header row | 7-column row using `--calendar-header-bg` |
+| Date grid | 7-column grid with `gap-px`; grid background uses `--calendar-grid-line-color` |
+| Date cell | background/border/radius/shadow from calendar variables |
+| Today date label | circular `bg-primary text-primary-foreground` badge |
+| First of month | `MMM d` label, for example `May 1` |
+| Other days | `d` label |
+| Preview Node | compact square tile, background `node.color`, radius `var(--theme-radius, 6px)` |
+| Preview Bit/Chunk | compact dot using parent color |
+
+### Weekly Contract
+
+| Element | Required treatment |
+|---|---|
+| Shared header | same header pattern as Monthly |
+| Day column | background/border/radius/shadow from calendar variables |
+| Today column | uses `--calendar-today-*` variables |
+| Empty column | non-destructive dashed/empty drop affordance |
+
+Calendar popup item controls must have visible `focus-visible` styling. Recheck `toSorted()` / `useMemo` only if implementation touches relevant list rendering or measurable render cost appears.
+
+---
+
+## Inbox / Triage Batch 2 Surface Contract
+
+> Batch 2 source recipe: `docs/recipes/inbox-triage-batch2-visual-recipe.md`
+
+This section captures canonical visual/interaction rules for Inbox/Triage polish. Exact component implementation remains in `SPEC.md` and execution phases.
+
+### Removed Visible Labels
+
+Do not show these developer-facing labels as visible UI text in final Inbox/Triage:
+
+- `Scratch Pool`
+- `Breakdown / Scribble`
+- `Node Staging`
+- `Bit Staging`
+- `Hierarchy Explorer`
+
+The names may remain in component names, tests, internal docs, `aria-label`s, or visually hidden labels. `Home`, `L1`, `L2`, and `L3` may remain only as subtle navigation/depth context.
+
+### Scratch Pool
+
+| State | Required treatment |
+|---|---|
+| Expanded | inbox identity icon, exact count, fold/unfold control, title search, icon-only asc/desc sort |
+| Collapsed | compact inbox identity, count badge, fold/unfold control, compact Scratch switching |
+| Search | expanded only; filters Scratch title only |
+| Sort | expanded only; icon-only; sorts by `createdAt` newest-first / oldest-first |
+| Accessibility | icon-only controls require `aria-label`; sort and scratch switch targets require tooltips |
+
+### Breakdown
+
+| Element | Required treatment |
+|---|---|
+| Selected Scratch context | top-left compact context strip; small Scratch/Inbox-family icon + selected Scratch title + optional relative-time/meta; visually distinct from rows via surface tone, border or left accent, smaller type scale, and spacing |
+| Drag activator | grip-only; improve visibility and hit target |
+| Full-row dragging | rejected |
+| `ArchiveScratchBar` | intentional completion affordance when all rows are consumed |
+
+### Hierarchy Search
+
+| Rule | Requirement |
+|---|---|
+| Scope | active hierarchy section only |
+| Active section | deepest currently opened section |
+| Query persistence | query remains when active section changes |
+| Persisted-query cue | **Persistent filter indicator (primary):** active query + scoped section + result count + clear affordance. Flash/highlight is **secondary** on active-section change with a non-empty query. |
+| Result target | Node/Bit titles only |
+| Global search | out of scope |
+
+### DnD States
+
+Invalid hierarchy/staging drop states use muted or unavailable visual language. Do not use destructive-red styling for invalid-but-non-destructive targets.
+
+---
+
 ## Responsive Grid Node Tokens
 
 Grid node sizing uses a **three-layer token model** to keep the design-token workflow as the authority while adapting node dimensions to actual cell size at runtime.
@@ -382,6 +598,8 @@ The following CSS variables are consumed via `var()` in component styles or Java
 | `--grid-line-color`, `--grid-line-opacity-l*` | Per-level logic via inline styles |
 | `--grid-bg-l0` through `--grid-bg-l3` | Per-level background via inline styles |
 | `--calendar-node-pool-ratio`, `--calendar-day-min-width` | CSS flexbox/grid or inline styles |
+| `--theme-font`, `--theme-radius`, `--theme-border-width`, `--theme-border-style`, `--theme-line-style`, `--theme-card-bg`, `--theme-shadow`, `--theme-shadow-hover` | Batch 2 color theme surface contract; consumed by `.theme-node-card`, `.theme-grid-line`, `.theme-surface` |
+| `--calendar-cell-bg`, `--calendar-header-bg`, `--calendar-border-*`, `--calendar-grid-line-color`, `--calendar-cell-radius`, `--calendar-cell-shadow`, `--calendar-today-*` | Batch 2 calendar visual theme contract; consumed by calendar cell/day-column inline styles |
 | `--bit-detail-max-height` | Inline style or direct CSS `max-height` |
 
 **Structural constraints for `globals.css`:**
@@ -451,12 +669,17 @@ Runtime motion values live in `src/lib/animations/motion-language.ts`. Component
 |------|---------------|-------------|----------------|
 | Geist Sans | `next/font/local` via `geist` package | `--font-geist-sans` | `font-sans` |
 | Geist Mono | `next/font/local` via `geist` package | `--font-geist-mono` | `font-mono` |
+| Inter | `next/font/google` | `--font-inter` | consumed through `--theme-font` |
+| Playfair Display | `next/font/google` | `--font-playfair` | consumed through `--theme-font` |
+| Space Mono | `next/font/google` | `--font-space-mono` | consumed through `--theme-font` |
+| VT323 | `next/font/google` | `--font-vt323` | consumed through `--theme-font` |
 
 **Wiring chain:**
 
 ```
 Geist Sans: geist/font (next/font) → --font-geist-sans (on <html>) → font-sans (Tailwind) → className="font-sans"
 Geist Mono: geist/font/mono (next/font) → --font-geist-mono (on <html>) → font-mono (Tailwind) → className="font-mono"
+Batch 2 display fonts: next/font/google → --font-* variables (on <html>) → --theme-font → theme-aware surfaces
 ```
 
 **Root layout font loading:**
@@ -465,10 +688,19 @@ Geist Mono: geist/font/mono (next/font) → --font-geist-mono (on <html>) → fo
 // src/app/layout.tsx
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import { Inter, Playfair_Display, Space_Mono, VT323 } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const playfairDisplay = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
+const spaceMono = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-space-mono" });
+const vt323 = VT323({ subsets: ["latin"], weight: "400", variable: "--font-vt323" });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html
+      lang="en"
+      className={`${GeistSans.variable} ${GeistMono.variable} ${inter.variable} ${playfairDisplay.variable} ${spaceMono.variable} ${vt323.variable}`}
+    >
       <body className="font-sans">
         {children}
       </body>
@@ -489,7 +721,7 @@ All classes reference CSS variables + Tailwind config above. No hardcoded hex or
 {/* Node — Motion hover/drag scale; sizing comes from grid-node tokens */}
 <motion.button
   animate={isDragging ? "dragging" : "rest"}
-  className="grid h-[var(--grid-node-size)] w-[var(--grid-node-size)]
+  className="theme-node-card grid h-[var(--grid-node-size)] w-[var(--grid-node-size)]
              grid-rows-[1fr_var(--grid-node-title-height)] rounded-3xl bg-card
              transition-[box-shadow,background-color] hover:bg-muted/40"
   transition={nodeCardTransition}
@@ -577,9 +809,9 @@ Two-row layout: top row has content, bottom row has progress (only when chunks e
 ### Grid Cell
 
 ```tsx
-{/* Grid cell — aspect ratio adapts to grid, dashed outline in edit mode */}
+{/* Grid cell — aspect ratio adapts to grid, theme-aware line treatment */}
 <div className={cn(
-  "relative rounded-md transition-all",
+  "theme-grid-line relative rounded-md transition-all",
   isEditMode && "border-2 border-dashed border-muted-foreground/30",
   isEmpty && isEditMode && "flex items-center justify-center",
 )}>
@@ -778,6 +1010,24 @@ Inbox/Triage drag previews (Breakdown row, staged Node, staged Bit) use a **comp
 > Recipe file: `docs/recipes/command-palette-visual-recipe.md`
 > Source: `prototype/future-ideas` @ `e662163` (palette variant).
 > Scope: Cmd+K command-palette visual shell. Command set/keys are a product rule (SPEC § Command Palette), not part of this visual recipe. Geometric detail lives in the recipe file.
+
+### Batch 2 Theme System + Grid
+
+> Recipe file: `docs/recipes/theme-system-and-grid-batch2-visual-recipe.md`
+> Source: `prototype/future-ideas` @ `64e5236` and `5b3d3c0`.
+> Scope: 8-theme runtime, theme variable contract, font/radius/border/shadow identity, color-theme picker, and theme-aware grid/node-card treatment.
+
+### Batch 2 Calendar
+
+> Recipe file: `docs/recipes/calendar-batch2-visual-recipe.md`
+> Source: `prototype/future-ideas` @ `59ee937`.
+> Scope: shared weekly/monthly header, theme-aware monthly grid, theme-aware weekly day columns, today marker, first-of-month label treatment, and calendar focus-visible polish.
+
+### Batch 2 Inbox / Triage
+
+> Recipe file: `docs/recipes/inbox-triage-batch2-visual-recipe.md`
+> Source: normalized from `d963807` Inbox/Triage variants, current Phase 19 implementation, deferred issues, and user-confirmed Batch 2 decisions.
+> Scope: Scratch Pool expanded/collapsed treatment, selected Scratch context, hierarchy active-section search, visible-label removal, invalid drop state softening, and ArchiveScratchBar visual integration.
 
 ### Bit Detail Surface
 

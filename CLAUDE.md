@@ -32,6 +32,7 @@
 5. **Validation:** Zod at write boundary only. Reads are trusted.
 6. **Optimistic UI:** Local-first = Zero latency. No loading states.
 7. **Lifecycle & System Nodes:** Inbox and Archive are system Nodes (`systemRole: 'inbox' | 'archive_view'`) rendered on `/grid/[id]` with role-specific surfaces. Archive is manual (`archivedAt`); completion never auto-archives. System Nodes are never trashed or archived; use `hiddenFromGrid` to remove them from the L0 grid. Scratch breakdown rows use `scratchBreakdowns`, not Chunks. See SCHEMA.md Hooks 10/11.
+8. **Color Theme axis (Batch 2+):** Color theme is a second visual axis orthogonal to `next-themes` dark/light. Dark/light stays class-based (`.dark`); color theme is stored separately and applied to `<html data-color-theme="...">` — 8 themes (`griddo` base + `tiny-desk`, `neumorphism`, `claymorphism`, `origami`, `terminal`, `retro-mac`, `graphite`). Components consume semantic CSS variables and shared `.theme-*` classes; **never branch on theme id** except the theme picker. Batch 2+ visual/theme passes patch the current app and preserve existing behavior — contrast/build conflicts are recorded explicitly, not silently normalized. See SPEC.md AD#17–18.
 
 ## Workflow
 
