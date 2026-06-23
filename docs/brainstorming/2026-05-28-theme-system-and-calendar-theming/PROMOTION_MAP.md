@@ -6,7 +6,7 @@
 > - `docs/recipes/inbox-triage-batch2-visual-recipe.md`
 > - `docs/issues/Issues_Deferred.md`
 > Date: 2026-06-23
-> Status: Step 6 complete — amendment flow review PASS (`docs/reviews/amendment-batch2-theme-calendar-inbox-flow-review.md`); Step 7 (Summary & CLAUDE.md diff) pending user approval
+> Status: Amendment complete (Steps 0–7); ready for `/execute-next-phase`. Amendment flow review PASS: `docs/reviews/amendment-batch2-theme-calendar-inbox-flow-review.md`.
 >
 > Workflow note: This is a workflow correction — future promotion-map approval should be explicit before canonical edits begin. Existing edits are being reconciled through this checkpoint.
 

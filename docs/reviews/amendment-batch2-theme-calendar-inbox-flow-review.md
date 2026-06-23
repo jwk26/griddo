@@ -119,6 +119,6 @@ Acceptance criteria across Tasks 89–100 are observable verification questions 
 - Mandatory checks: **8/8 pass.** Dependency check: **no functional-source blocker.**
 - Flow-trace: **12 key user-visible flows, all ✅ owned** with boundary cases assigned.
 - Findings: F1–F4 **Fixed & verified**, F5 **Accepted**, **NF1 Fixed & verified**. **0 Blocking.**
-- **Status: PASS.**
+- **Status: PASS — amendment complete (Steps 0–7).**
 
-Per amendment-mode, PASS clears Step 6. NF1 applied to Task 97 (2026-06-24). Remaining pipeline: **Step 7 — Summary & CLAUDE.md diff** (CLAUDE.md additions restricted to standing invariants / canonical pointers: e.g., AD#17 color-theme axis, AD#18 Batch 2 behavior preservation; Phase Summary 20–22).
+Per amendment-mode, PASS clears Step 6. NF1 applied to Task 97 (2026-06-24). Step 7 is complete: the summary was produced and `CLAUDE.md` Rule 8 was applied as a standing invariant pointer to SPEC AD#17–18. Ready for `/execute-next-phase`; this amendment review covers Phases 20–22 as the combined flow-review artifact for the Batch 2 implementation sequence.
