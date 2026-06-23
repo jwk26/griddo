@@ -679,5 +679,12 @@ describe("Sidebar", () => {
       expect(screen.getByRole("button", { name: "Trash" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Theme" })).toBeInTheDocument();
     });
+
+    it("moves focus to the selected theme row when the popover opens", async () => {
+      render(<Sidebar />);
+      fireEvent.click(screen.getByRole("button", { name: "Change color theme" }));
+      const gridDoRow = screen.getByRole("button", { name: /GridDO/ });
+      await waitFor(() => expect(gridDoRow).toHaveFocus());
+    });
   });
 });
