@@ -40,7 +40,7 @@
 | Batch | Task | Status | Commit |
 |-------|------|--------|--------|
 | B1 | T89 — Color theme runtime axis | `[x]` Complete (approved) | `23aa9b6` |
-| B2 | T90 — Exact theme values and shared theme classes | `[ ]` Not started | — |
+| B2 | T90 — Exact theme values and shared theme classes | `[~]` In Progress | — |
 | B3 | T91 — Sidebar color theme picker | `[ ]` Not started | — |
 | B4 | T92 — Grid theme consumption | `[ ]` Not started | — |
 
