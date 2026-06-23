@@ -32,6 +32,7 @@
 | ID | Category | Description | Status |
 |----|----------|-------------|--------|
 | ISSUE-20-01 | Deferred/Low | no-flash script in `layout.tsx` duplicates the 8-theme id list and persistence key from `color-theme-store.ts`. Values are in sync now but could drift if themes change. Refactor to a shared non-client constants module (e.g., `src/lib/constants/color-themes.ts`) when Task 90+ is active. | Deferred — T90 complete, still not a blocker; candidate for closing-phase |
+| ISSUE-20-02 | Deferred/Low | `borderOpacity` prop in `GridCellProps` and `levelOpacityMap` in `grid-view.tsx` are now dead code — superseded by the theme CSS variable system. No build/test impact; silently ignored. Candidate for cleanup in a future phase. | Deferred — out of T92 scope |
 
 ---
 
@@ -42,7 +43,7 @@
 | B1 | T89 — Color theme runtime axis | `[x]` Complete (approved) | `23aa9b6` |
 | B2 | T90 — Exact theme values and shared theme classes | `[x]` Complete (approved) | `80a8044` |
 | B3 | T91 — Sidebar color theme picker | `[x]` Complete (approved) | `dffef82` |
-| B4 | T92 — Grid theme consumption | `[~]` In Progress | — |
+| B4 | T92 — Grid theme consumption | `[i]` Implemented | `27a3143` |
 
 ### B1 — T89: Color theme runtime axis
 
@@ -99,3 +100,26 @@
 - `pnpm build` ✅ exit 0
 - `git diff --check` ✅ clean
 - `git diff --name-only HEAD -- src/components/grid` ✅ no output
+
+### B4 — T92: Grid theme consumption
+
+**Write set:**
+- `src/components/grid/grid-cell.tsx` (update) — removed `rounded-md border border-dashed` and inline `style={borderStyle}`; replaced with `theme-grid-line` class; removed `CSSProperties` import and `borderStyle` const; removed `borderOpacity` from destructure params (prop kept in `GridCellProps` for backward compat with `grid-view.tsx`)
+- `src/components/grid/node-card.tsx` (update) — added `theme-node-card` as first class; removed conflicting Tailwind utilities (`rounded-3xl`, `bg-card`, `shadow-[0_4px_14px_rgba(15,23,42,0.10)]`, `hover:shadow-[0_10px_24px_rgba(15,23,42,0.14)]`); changed `isDragging` shadow to `[box-shadow:var(--theme-shadow-hover)]`
+- `src/components/grid/grid-cell.test.tsx` (update) — added `theme-grid-line` class assertion test (4th test)
+- `src/components/grid/node-card.test.tsx` (update) — replaced removed shadow class assertions with `theme-node-card` class assertion
+
+**Key decisions:**
+- Tailwind v4 `@layer utilities` overrides `@layer components`: simply adding `.theme-*` classes is insufficient; conflicting utility classes must be removed for theme CSS variables to take effect.
+- `borderOpacity` prop kept in `GridCellProps` (silently ignored) to avoid touching `grid-view.tsx`'s `levelOpacityMap` pattern, which is out of T92 scope.
+- `hover:bg-muted/40` retained (behavioral state class, not a direct conflict with `.theme-node-card` background — accepted per DESIGN_TOKENS.md pattern).
+- Phase 19 Archive dropdown guard (`node.systemRole === null`) and edit-mode delete button preserved unchanged.
+- No theme-id conditional branches added.
+
+**Open item (ISSUE-20-02):**
+- `borderOpacity` prop in `GridCellProps` and `levelOpacityMap` in `grid-view.tsx` are now dead code — the level-opacity distinction is superseded by the theme CSS variable system. Candidate for cleanup in a future phase.
+
+**Gates:**
+- `pnpm test --run src/components/grid/grid-cell.test.tsx src/components/grid/node-card.test.tsx` ✅ 12/12
+- `pnpm build` ✅ exit 0
+- `git diff --check` ✅ clean
