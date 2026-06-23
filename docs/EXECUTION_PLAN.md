@@ -100,7 +100,7 @@ These apply across all phases:
 
 ### Task 90: Exact theme values and shared theme classes
 
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Dependencies:** Task 89.
 - **Files:** `src/app/globals.css` (update), `src/app/theme-transition.test.ts` (update as needed)
 - **Recipe:** `docs/recipes/theme-system-and-grid-batch2-visual-recipe.md`
