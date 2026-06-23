@@ -102,10 +102,7 @@ describe("NodeCard", () => {
       "grid-rows-[1fr_var(--grid-node-title-height)]",
       "transition-[box-shadow,background-color]",
     );
-    expect(card).toHaveClass(
-      "shadow-[0_4px_14px_rgba(15,23,42,0.10)]",
-      "hover:shadow-[0_10px_24px_rgba(15,23,42,0.14)]",
-    );
+    expect(card).toHaveClass("theme-node-card");
     expect(title.tagName).toBe("P");
     expect(title).toHaveClass("truncate", "whitespace-nowrap", "text-center");
     expect(title.parentElement).toHaveClass("h-[var(--grid-node-title-height)]");

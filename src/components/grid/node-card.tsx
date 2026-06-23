@@ -41,8 +41,8 @@ export function NodeCard({
         type="button"
         animate={isDragging ? "dragging" : "rest"}
         className={cn(
-          "relative grid h-[var(--grid-node-size)] w-[var(--grid-node-size)] max-h-full max-w-full cursor-grab grid-rows-[1fr_var(--grid-node-title-height)] justify-items-center rounded-3xl bg-card px-[var(--grid-node-padding-x)] pb-[var(--grid-node-padding-bottom)] pt-[var(--grid-node-padding-top)] shadow-[0_4px_14px_rgba(15,23,42,0.10)] transition-[box-shadow,background-color] hover:bg-muted/40 hover:shadow-[0_10px_24px_rgba(15,23,42,0.14)] active:cursor-grabbing active:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          isDragging && "cursor-grabbing bg-muted/60 shadow-[0_10px_24px_rgba(15,23,42,0.14)]",
+          "theme-node-card relative grid h-[var(--grid-node-size)] w-[var(--grid-node-size)] max-h-full max-w-full cursor-grab grid-rows-[1fr_var(--grid-node-title-height)] justify-items-center px-[var(--grid-node-padding-x)] pb-[var(--grid-node-padding-bottom)] pt-[var(--grid-node-padding-top)] transition-[box-shadow,background-color] hover:bg-muted/40 active:cursor-grabbing active:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          isDragging && "cursor-grabbing bg-muted/60 [box-shadow:var(--theme-shadow-hover)]",
           isEditMode && "motion-safe:animate-jiggle",
         )}
         initial={false}

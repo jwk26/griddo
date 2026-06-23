@@ -63,4 +63,19 @@ describe("GridCell", () => {
 
     expect(onAddClick).toHaveBeenCalledTimes(1);
   });
+
+  it("applies theme-grid-line class for CSS-variable-driven borders", () => {
+    const { container } = render(
+      <GridCell
+        borderOpacity="0.15"
+        isDragOver={false}
+        isEditMode={false}
+        isEmpty={false}
+        x={0}
+        y={0}
+      />,
+    );
+
+    expect(container.firstChild).toHaveClass("theme-grid-line");
+  });
 });
