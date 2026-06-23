@@ -31,7 +31,7 @@
 
 | ID | Category | Description | Status |
 |----|----------|-------------|--------|
-| ISSUE-20-01 | Deferred/Low | no-flash script in `layout.tsx` duplicates the 8-theme id list and persistence key from `color-theme-store.ts`. Values are in sync now but could drift if themes change. Refactor to a shared non-client constants module (e.g., `src/lib/constants/color-themes.ts`) when Task 90+ is active. | Open — not a Task 89 blocker |
+| ISSUE-20-01 | Deferred/Low | no-flash script in `layout.tsx` duplicates the 8-theme id list and persistence key from `color-theme-store.ts`. Values are in sync now but could drift if themes change. Refactor to a shared non-client constants module (e.g., `src/lib/constants/color-themes.ts`) when Task 90+ is active. | Deferred — T90 complete, still not a blocker; candidate for closing-phase |
 
 ---
 
@@ -40,7 +40,7 @@
 | Batch | Task | Status | Commit |
 |-------|------|--------|--------|
 | B1 | T89 — Color theme runtime axis | `[x]` Complete (approved) | `23aa9b6` |
-| B2 | T90 — Exact theme values and shared theme classes | `[~]` In Progress | — |
+| B2 | T90 — Exact theme values and shared theme classes | `[~]` Implemented | — |
 | B3 | T91 — Sidebar color theme picker | `[ ]` Not started | — |
 | B4 | T92 — Grid theme consumption | `[ ]` Not started | — |
 
@@ -60,5 +60,23 @@
 
 **Gates:**
 - `pnpm test --run src/stores/color-theme-store.test.ts` ✅ 18/18
+- `pnpm build` ✅ exit 0
+- `git diff --check` ✅ clean
+
+### B2 — T90: Exact theme values and shared theme classes
+
+**Write set:**
+- `src/app/globals.css` (update) — base/default layer theme contract vars (8), calendar visual contract defaults (12), swatch tokens (8); `.dark` base shadow overrides (2); `@layer components` with `.theme-node-card` (+hover), `.theme-grid-line`, `.theme-surface` (+hover); 7 override theme blocks (tiny-desk, neumorphism, claymorphism, origami, terminal, retro-mac, graphite — each with light + dark selectors)
+- `src/app/theme-transition.test.ts` (update) — added 2nd `it` block with 30 assertions: base contract exact values, `.dark` shadow overrides, swatch spot checks, shared class presence, all 7 override selectors, `griddo` override absence, per-theme exact shadow/calendar spot checks
+
+**Key decisions:**
+- `griddo` has no override block — it IS the base layer; 7 override blocks cover the remaining themes.
+- `@layer components` added as top-level block after `@layer base` closing `}`, not inside it.
+- All CSS values copied verbatim from recipe appendix (`64e5236:src/app/globals.css` + `themes.css`); no reconstruction from prose.
+- Cascade/inheritance preserved: override blocks contain only the variables they change; omitted variables inherit from the active base light/dark layer.
+- No existing tokens, selectors, or `@layer` structure modified — purely additive.
+
+**Gates:**
+- `pnpm test --run src/app/theme-transition.test.ts` ✅ 2/2
 - `pnpm build` ✅ exit 0
 - `git diff --check` ✅ clean
