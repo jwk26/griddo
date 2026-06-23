@@ -1,7 +1,8 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import type { ComponentProps } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import type { ComponentProps, ReactNode } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useArchiveActions } from "@/hooks/use-archive";
 import type { Node } from "@/types";
 
 vi.mock("motion/react", async () => {
@@ -37,6 +38,19 @@ vi.mock("motion/react", async () => {
     },
   };
 });
+
+vi.mock("@/hooks/use-archive", () => ({
+  useArchiveActions: vi.fn(() => ({ archive: vi.fn() })),
+}));
+
+vi.mock("@/components/ui/dropdown-menu", () => ({
+  DropdownMenu: ({ children }: { children: ReactNode }) => <>{children}</>,
+  DropdownMenuTrigger: ({ children }: { children: ReactNode; asChild?: boolean }) => <>{children}</>,
+  DropdownMenuContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DropdownMenuItem: ({ children, onClick }: { children: ReactNode; onClick?: () => void }) => (
+    <button type="button" onClick={onClick}>{children}</button>
+  ),
+}));
 
 const { NodeCard } = await import("./node-card");
 
@@ -148,5 +162,45 @@ describe("NodeCard", () => {
     );
     expect(draggingCard).toHaveAttribute("data-motion-animate", "dragging");
     expect(draggingCard).toHaveAttribute("data-motion-variants", expect.stringContaining('"dragging":{"scale":1.1,"zIndex":50}'));
+  });
+});
+
+describe("B2b — archive context menu (NodeCard)", () => {
+  const mockArchive = vi.fn();
+
+  beforeEach(() => {
+    vi.mocked(useArchiveActions).mockReturnValue({ archive: mockArchive });
+  });
+
+  it("shows the options trigger for a non-system node in normal mode", () => {
+    const node = createNode({ title: "Work", systemRole: null });
+    render(<NodeCard node={node} onClick={vi.fn()} />);
+    expect(screen.getByLabelText("Work options")).toBeInTheDocument();
+  });
+
+  it("shows the Archive menu item for a non-system node", () => {
+    const node = createNode({ title: "Work", systemRole: null });
+    render(<NodeCard node={node} onClick={vi.fn()} />);
+    expect(screen.getByRole("button", { name: "Archive" })).toBeInTheDocument();
+  });
+
+  it("calls archive('node', id) when Archive is clicked", () => {
+    const node = createNode({ title: "Work", systemRole: null });
+    render(<NodeCard node={node} onClick={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: "Archive" }));
+    expect(mockArchive).toHaveBeenCalledWith("node", node.id);
+  });
+
+  it("hides the options trigger for system nodes", () => {
+    const node = createNode({ title: "Archive Node", systemRole: "archive_view" });
+    render(<NodeCard node={node} onClick={vi.fn()} />);
+    expect(screen.queryByLabelText("Archive Node options")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Archive" })).not.toBeInTheDocument();
+  });
+
+  it("hides the options trigger in edit mode", () => {
+    const node = createNode({ title: "Work", systemRole: null });
+    render(<NodeCard isEditMode={true} node={node} onClick={vi.fn()} />);
+    expect(screen.queryByLabelText("Work options")).not.toBeInTheDocument();
   });
 });

@@ -15,6 +15,7 @@ import { EditModeOverlay } from "@/components/grid/edit-mode-overlay";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Sidebar } from "@/components/layout/sidebar";
 import { EntrySurface } from "@/components/quick-capture/entry-surface";
+import { ArchiveView } from "@/components/archive/archive-view";
 import { TriageWorkspace } from "@/components/triage/triage-workspace";
 import {
   Dialog,
@@ -68,6 +69,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
   const nodeId = typeof params.nodeId === "string" ? params.nodeId : null;
   const node = useNode(nodeId ?? "");
   const isInboxRoute = node?.systemRole === "inbox";
+  const isArchiveRoute = node?.systemRole === "archive_view";
   const displayLevel = nodeId === null ? 0 : (node?.level ?? 0) + 1;
   const isLeafLevel = displayLevel >= 3;
   const {
@@ -384,7 +386,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
             data-level={displayLevel}
             data-testid="display-level"
           >
-            {!isInboxRoute && (
+            {!isInboxRoute && !isArchiveRoute && (
               <div className="pointer-events-none absolute top-3 left-3 right-3 z-30 flex flex-col items-start gap-1.5">
                 <div className="pointer-events-none w-full">
                   <Breadcrumbs ref={clusterRef} nodeId={nodeId} dragActiveItem={activeItem} />
@@ -406,7 +408,9 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
                 )}
                 data-dragging={activeItem ? "true" : undefined}
               >
-                {isInboxRoute ? (
+                {isArchiveRoute ? (
+                  <ArchiveView node={node} />
+                ) : isInboxRoute ? (
                   <TriageWorkspace node={node} />
                 ) : (
                   children

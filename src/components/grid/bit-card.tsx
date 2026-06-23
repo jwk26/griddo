@@ -3,11 +3,18 @@
 import type { ComponentPropsWithoutRef } from "react";
 import { forwardRef } from "react";
 import { format } from "date-fns";
-import { Check, X } from "lucide-react";
+import { Check, MoreHorizontal, X } from "lucide-react";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import { cn } from "@/lib/utils";
 import { getAgingFilter, getAgingState } from "@/lib/utils/aging";
 import { getUrgencyLevel, isPastDeadline } from "@/lib/utils/urgency";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useArchiveActions } from "@/hooks/use-archive";
 import { useEditModeStore } from "@/stores/edit-mode-store";
 import type { Bit } from "@/types";
 
@@ -43,13 +50,14 @@ export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard
   const isComplete = bit.status === "complete";
   const isEditMode = useEditModeStore((state) => state.isEditMode);
   const Icon = NODE_ICON_MAP[bit.icon] ?? NODE_ICON_MAP.Box;
+  const { archive } = useArchiveActions();
   const formattedDeadline = bit.deadline ? format(new Date(bit.deadline), "MMM d") : null;
 
   return (
     <div
       {...divProps}
       className={cn(
-        "relative z-10 inline-flex shrink-0 cursor-grab select-none items-stretch rounded-[10px] border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-colors hover:bg-accent/50 active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+        "group/bit relative z-10 inline-flex shrink-0 cursor-grab select-none items-stretch rounded-[10px] border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-colors hover:bg-accent/50 active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
         isDragging && "z-20 cursor-grabbing",
         urgencyLevel === 1 && "animate-urgency-blink-1",
         urgencyLevel === 2 && "animate-urgency-blink-2",
@@ -181,6 +189,26 @@ export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard
         >
           <X className="h-3.5 w-3.5" />
         </button>
+      ) : null}
+
+      {!isEditMode ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label={`${bit.title} options`}
+              className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/bit:opacity-60"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <MoreHorizontal className="h-3 w-3" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="bottom" sideOffset={4}>
+            <DropdownMenuItem onClick={() => void archive("bit", bit.id)}>
+              Archive
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ) : null}
     </div>
   );

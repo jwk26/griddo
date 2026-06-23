@@ -1004,6 +1004,23 @@ export class IndexedDBDataStore implements DataStore {
     };
   }
 
+  async getArchivedItems(): Promise<{ nodes: Node[]; bits: Bit[] }> {
+    const [nodes, bits] = await Promise.all([
+      this.database.nodes.toArray(),
+      this.database.bits.toArray(),
+    ]);
+
+    return {
+      nodes: nodes.filter(
+        (node) =>
+          node.archivedAt !== null &&
+          node.deletedAt === null &&
+          node.systemRole === null,
+      ),
+      bits: bits.filter((bit) => bit.archivedAt !== null && bit.deletedAt === null),
+    };
+  }
+
   async searchAll(query: string): Promise<SearchResult[]> {
     const normalized = query.trim().toLowerCase();
     if (!normalized) {

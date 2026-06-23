@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { MoreHorizontal, X } from "lucide-react";
 import { motion } from "motion/react";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import {
@@ -9,6 +9,13 @@ import {
 } from "@/lib/animations/grid";
 import { getAgingFilter, getAgingState } from "@/lib/utils/aging";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useArchiveActions } from "@/hooks/use-archive";
 import type { Node } from "@/types";
 
 export function NodeCard({
@@ -26,9 +33,10 @@ export function NodeCard({
 }) {
   const Icon = NODE_ICON_MAP[node.icon] ?? NODE_ICON_MAP.Box;
   const agingFilter = getAgingFilter(getAgingState(node.mtime));
+  const { archive } = useArchiveActions();
 
   return (
-    <div className="relative flex h-full items-center justify-center">
+    <div className="group/card relative flex h-full items-center justify-center">
       <motion.button
         type="button"
         animate={isDragging ? "dragging" : "rest"}
@@ -71,6 +79,26 @@ export function NodeCard({
         >
           <X className="h-3.5 w-3.5" />
         </button>
+      ) : null}
+
+      {!isEditMode && node.systemRole === null ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label={`${node.title} options`}
+              className="absolute right-1 top-0 flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/card:opacity-60"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <MoreHorizontal className="h-3 w-3" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="bottom" sideOffset={4}>
+            <DropdownMenuItem onClick={() => void archive("node", node.id)}>
+              Archive
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ) : null}
     </div>
   );

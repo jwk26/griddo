@@ -67,6 +67,7 @@ export interface DataStore {
   getActiveGridContents(parentId: string | null): Promise<{ nodes: Node[]; bits: Bit[] }>;
   getCalendarItems(): Promise<{ bits: Bit[]; chunks: Chunk[] }>;
   getTrashedItems(): Promise<{ nodes: Node[]; bits: Bit[] }>;
+  getArchivedItems(): Promise<{ nodes: Node[]; bits: Bit[] }>;
   searchAll(query: string): Promise<Array<{
     type: "node" | "bit" | "chunk";
     item: Node | Bit | Chunk;

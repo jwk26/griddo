@@ -19,7 +19,6 @@ It is **not** the source of truth for issue details. The source remains each `do
 | `Issues_Phase_3.md` | Issue 6 | Architecture | DataStore context exists, but hooks still use direct `indexedDBStore` imports. | Decide canonical data-access pattern before a broad hook refactor. |
 | `Issues_Phase_14.md` | Batch 1 note | Calendar performance | `toSorted()` + `useMemo` review item was deferred because the list was small and the pattern pre-existed. | Recheck only if calendar list size or render cost becomes measurable. |
 | `Issues_Phase_14.md` | Batch 1 note | Accessibility | Popup item buttons lack `focus-visible` styling; pre-existing and deferred. | Include in a calendar/a11y polish pass. |
-| `Issues_Phase_15.md` | Phase-local Q6 | Planning / naming | Phase 19 still references `restoreNode`/`restoreBit` wording that should reconcile with `unarchiveNode`/`unarchiveBit`. | Fix when Phase 19 is planned/executed. |
 | `Issues_Phase_16.md` | ISSUE-16-02 | Accessibility | `ScratchModal` lacks focus trap and trigger-focus restoration. | Add focus trap/restoration before or during a dedicated a11y pass. |
 | `Issues_Phase_16.md` | ISSUE-16-03 | Interaction | Scratch modal auto-close timer can start despite cursor already hovering on success transition. | Track hover state/ref on success entry or migrate timer logic. |
 | `Issues_Phase_18.md` | ISSUE-18-08 | Visual polish | Remove-from-staging target has no entry/exit fade or scale animation. | Revisit as visual polish; likely requires delayed unmount or animation wrapper. |
@@ -31,6 +30,7 @@ It is **not** the source of truth for issue details. The source remains each `do
 | `Issues_Phase_18.md` | ISSUE-18-20 | Inbox/Triage visual state | Invalid hierarchy/staging drop state uses destructive red treatment too strongly. | Replace with muted/de-emphasized invalid-state language in a visual pass. |
 | `Issues_Phase_18.md` | ISSUE-18-21 | Hierarchy Explorer | Search bar may be missing; canonical requirement still needs confirmation. | Check `DECISION.md`, `SPEC.md`, and planning docs before scoping. |
 | `Issues_Phase_18.md` | ISSUE-18-22 | Product policy | Duplicate Node/Bit titles are allowed globally; policy is undecided. | Decide global title uniqueness policy before implementing validation. |
+| `Issues_Phase_19.md` | ISSUE-19-01 | UX follow-up | Archive menu trigger (`⋯`) on NodeCard/BitCard is too subtle and hard to click. | User to rethink interaction model before implementation. |
 
 ## Resolved Historical Deferrals
 
@@ -40,4 +40,5 @@ These are listed so future sessions do not re-open already handled carryovers.
 |---|---|---|
 | `Issues_Phase_5.md` | Issue 6 | Urgency hooks bypassing DataStore facade was deferred to Phase 5.5 and handled there. |
 | `Issues_Phase_15.md` | ISSUE-15-01 | Runtime Dexie v3 migration verification was carried to Phase 16 and resolved with `fake-indexeddb` real migration tests. |
+| `Issues_Phase_15.md` | Phase-local Q6 | Phase 19 kickoff: EXECUTION_PLAN T87 corrected to `unarchiveNode`/`unarchiveBit`; Issues_Phase_15.md Q6 marked Resolved. |
 
