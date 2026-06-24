@@ -43,7 +43,7 @@ describe("useCalendarStore", () => {
 
   it("goToToday resets currentWeekStart, currentMonth, and expandedDay", () => {
     useCalendarStore.getState().setExpandedDay(3);
-    useCalendarStore.getState().navigateWeek(-5);
+    useCalendarStore.getState().navigateWeek(-1);
 
     useCalendarStore.getState().goToToday();
 
