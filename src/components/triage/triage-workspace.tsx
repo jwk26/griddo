@@ -332,12 +332,12 @@ function PlacementConfirmationDialog({
           </div>
 
           {pendingPlacement?.isFull && (
-            <div className="flex items-center gap-2 rounded-md border border-destructive bg-muted p-3">
+            <div className="flex items-center gap-2 rounded-md border border-muted-foreground/30 bg-muted/40 p-3">
               <AlertTriangle
                 aria-hidden="true"
-                className="h-4 w-4 flex-shrink-0 text-destructive"
+                className="h-4 w-4 flex-shrink-0 text-muted-foreground"
               />
-              <p className="text-xs font-semibold text-destructive">
+              <p className="text-xs font-semibold text-muted-foreground">
                 No available grid cell in this target
               </p>
             </div>

@@ -321,4 +321,19 @@ describe("TriageWorkspace", () => {
     ).toHaveAttribute("aria-checked", "false");
     expect(screen.getByRole("button", { name: "Confirm" })).toBeDisabled();
   });
+
+  it("shows isFull warning with muted styling, not destructive, when target is full", () => {
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        pendingPlacement: createDirectPendingPlacement({ isFull: true }),
+      }),
+    );
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    const warning = screen.getByText("No available grid cell in this target");
+    expect(warning).toBeInTheDocument();
+    expect(warning).not.toHaveClass("text-destructive");
+    expect(warning).toHaveClass("text-muted-foreground");
+  });
 });

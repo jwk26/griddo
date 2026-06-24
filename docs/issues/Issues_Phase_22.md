@@ -78,7 +78,9 @@ Hierarchy invalid drop styling (in `hierarchy-explorer.tsx`) is deferred to T100
 
 **Deferred issue resolved:** `ISSUE-18-20` invalid drop reads as destructive → muted/unavailable visual language delivered.
 
-**Verification:** 44 tests passed (staging-zone.test.tsx + triage-workspace.test.tsx + use-triage-dnd.test.ts), build passed, no whitespace errors.
+**Follow-up (code review finding):** `PlacementConfirmationDialog` `isFull` warning box in `triage-workspace.tsx` also used `border-destructive`/`text-destructive`. Fixed in the same commit — replaced with `border-muted-foreground/30 bg-muted/40 text-muted-foreground`. Added `isFull` assertion to `triage-workspace.test.tsx`.
+
+**Verification:** 45 tests passed (staging-zone.test.tsx + triage-workspace.test.tsx + use-triage-dnd.test.ts), build passed, no whitespace errors.
 
 ---
 
