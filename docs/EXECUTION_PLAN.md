@@ -99,7 +99,7 @@ These apply across all phases:
 
 ### Task 94: Monthly grid theme-aware visual target
 
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Dependencies:** Task 93.
 - **Files:** `src/app/calendar/monthly/_components/month-grid.tsx` (update), `src/app/calendar/monthly/_components/date-cell-popover.tsx` (update as needed), `src/app/calendar/calendar-node-creation.test.tsx` (update), `src/app/calendar/calendar-bit-creation.test.tsx` (update)
 - **Recipe:** `docs/recipes/calendar-batch2-visual-recipe.md`
@@ -119,7 +119,7 @@ These apply across all phases:
 
 ### Task 95: Weekly day column theme-aware visual target
 
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Dependencies:** Task 93.
 - **Files:** `src/components/calendar/day-column.tsx` (update), `src/app/calendar/weekly/page.tsx` (update as needed), `src/components/calendar/day-column.test.tsx` (update)
 - **Recipe:** `docs/recipes/calendar-batch2-visual-recipe.md`

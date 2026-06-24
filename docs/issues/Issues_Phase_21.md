@@ -34,31 +34,8 @@
 | Batch | Tasks | Status | Commit |
 |-------|-------|--------|--------|
 | B1 | T93 — Shared calendar view header | `[x]` Complete (approved) | `bffb0c8` |
-| B2 | T94 + T95 — Monthly grid + weekly day column theme visuals | `Implemented` | T94: `7a2e9ae`, T95: `f133d58` |
+| B2 | T94 + T95 — Monthly grid + weekly day column theme visuals | `[x]` Complete (approved) | T94: `7a2e9ae`, T95: `f133d58` |
 | B3 | T96 — Calendar a11y polish and theme smoke | `Pending` | — |
-
-### B2b — T95: Weekly day column theme-aware visual target
-
-**Classification:** logic-heavy (complete spec from user prompt + recipe)
-
-**Write set:**
-- `src/components/calendar/day-column.tsx` (patch)
-- `src/components/calendar/day-column.test.tsx` (update)
-
-**Changes applied:**
-- `motion.div` container: removed `rounded-3xl border shadow-sm` and all conditional border/bg/shadow/today-ring Tailwind utilities. Drop feedback changed from `border-primary bg-primary/5` to `ring-2 ring-primary/40`. Added inline `style` with full `--calendar-cell-*` / `--calendar-today-*` variable set (background, borderColor, borderRadius, borderStyle, borderWidth, boxShadow).
-- Header `button`: removed `rounded-xl`. Added inline `style` with `background: var(--calendar-header-bg)` and `borderRadius: calc(var(--calendar-cell-radius) * 0.8)`.
-- Tests: replaced `toHaveClass("ring-primary/40")` and `toHaveClass("ring-primary")` today-emphasis assertions with `toHaveAttribute("style", expect.stringContaining("var(--calendar-today-shadow)"))`. Added non-today `var(--calendar-cell-bg)` assertion in the existing items test.
-
-**Verification:**
-- `day-column.test.tsx`: 5/5 passed
-- `calendar-navigation.test.tsx`: 14/14 passed
-- `pnpm build`: clean (TypeScript + static pages)
-- `git diff --check`: clean
-
-**No deviations from spec.**
-
----
 
 ### B1 — T93: Shared calendar view header
 
@@ -80,3 +57,45 @@
 - Props include `previousLabel`/`nextLabel` to preserve "Previous week/month" a11y labels
 - `setSelectedDate(null)` preserved in MonthGrid's onPrev/onNext/onToday callbacks (local state, not store)
 - Sequential execution (A → B) chosen over parallel to avoid working-tree race on shared repo
+
+---
+
+### B2a — T94: Monthly grid theme-aware visual target
+
+**Classification:** logic-heavy  
+**Commit:** `7a2e9ae`
+
+**Write set:**
+- `src/app/calendar/monthly/_components/month-grid.tsx` (patch)
+- `src/app/calendar/monthly/monthly-calendar.test.tsx` (update)
+
+**Changes applied:**
+- Replaced `gap-3 px-6` card grid with `gap-px` tight grid using `--calendar-grid-line-color` as background.
+- Weekday header row uses `style={{ background: "var(--calendar-header-bg)" }}`.
+- Date cells use inline `style` with `--calendar-cell-*` / `--calendar-today-*` variable set.
+- Today rendered as circular badge (`rounded-full bg-primary text-primary-foreground`). First-of-month uses `MMM d` format.
+- Node previews: colored square tiles with `var(--theme-radius, 6px)`. Bit/Chunk previews: colored dots.
+
+---
+
+### B2b — T95: Weekly day column theme-aware visual target
+
+**Classification:** logic-heavy (complete spec from user prompt + recipe)  
+**Commit:** `f133d58`
+
+**Write set:**
+- `src/components/calendar/day-column.tsx` (patch)
+- `src/components/calendar/day-column.test.tsx` (update)
+
+**Changes applied:**
+- `motion.div` container: removed `rounded-3xl border shadow-sm` and all conditional border/bg/shadow/today-ring Tailwind utilities. Drop feedback changed from `border-primary bg-primary/5` to `ring-2 ring-primary/40`. Added inline `style` with full `--calendar-cell-*` / `--calendar-today-*` variable set (background, borderColor, borderRadius, borderStyle, borderWidth, boxShadow).
+- Header `button`: removed `rounded-xl`. Added inline `style` with `background: var(--calendar-header-bg)` and `borderRadius: calc(var(--calendar-cell-radius) * 0.8)`.
+- Tests: replaced `toHaveClass("ring-primary/40")` and `toHaveClass("ring-primary")` today-emphasis assertions with `toHaveAttribute("style", expect.stringContaining("var(--calendar-today-shadow)"))`. Added non-today `var(--calendar-cell-bg)` assertion in the existing items test.
+
+**Verification:**
+- `day-column.test.tsx`: 5/5 passed
+- `calendar-navigation.test.tsx`: 14/14 passed
+- `pnpm build`: clean (TypeScript + static pages)
+- `git diff --check`: clean
+
+**No deviations from spec.**
