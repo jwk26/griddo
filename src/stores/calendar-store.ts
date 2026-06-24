@@ -1,6 +1,6 @@
 "use client";
 
-import { addMonths, addWeeks, startOfMonth, startOfWeek } from "date-fns";
+import { addMonths, addWeeks, startOfMonth, startOfToday, startOfWeek } from "date-fns";
 import { create } from "zustand";
 
 interface CalendarState {
@@ -12,6 +12,7 @@ interface CalendarState {
   pushDrillDown: (nodeId: string) => void;
   popDrillDown: () => void;
   resetDrillDown: () => void;
+  goToToday: () => void;
   navigateWeek: (direction: 1 | -1) => void;
   navigateMonth: (direction: 1 | -1) => void;
   setExpandedDay: (day: number | null) => void;
@@ -30,6 +31,12 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   popDrillDown: () =>
     set((state) => ({ drillDownPath: state.drillDownPath.slice(0, -1) })),
   resetDrillDown: () => set({ drillDownPath: [] }),
+  goToToday: () =>
+    set({
+      currentWeekStart: startOfWeek(startOfToday(), { weekStartsOn: 1 }),
+      currentMonth: startOfMonth(startOfToday()),
+      expandedDay: null,
+    }),
   navigateWeek: (direction) =>
     set((state) => ({
       currentWeekStart: addWeeks(state.currentWeekStart, direction),

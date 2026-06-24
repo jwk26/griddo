@@ -7,6 +7,7 @@ import type { Bit, Node } from "@/types";
 const usePathnameMock = vi.hoisted(() => vi.fn());
 const navigateWeekMock = vi.hoisted(() => vi.fn());
 const navigateMonthMock = vi.hoisted(() => vi.fn());
+const goToTodayMock = vi.hoisted(() => vi.fn());
 const setExpandedDayMock = vi.hoisted(() => vi.fn());
 const weeklyItemsMock = vi.hoisted(() => vi.fn(() => new Map()));
 const monthlyItemsMock = vi.hoisted(() => vi.fn(() => new Map()));
@@ -23,6 +24,7 @@ const calendarStoreState = vi.hoisted(() => ({
   expandedDay: null as number | null,
   currentMonth: new Date(2026, 3, 1),
   currentWeekStart: new Date(2026, 3, 13),
+  goToToday: goToTodayMock,
   navigateMonth: navigateMonthMock,
   navigateWeek: navigateWeekMock,
   setExpandedDay: setExpandedDayMock,
@@ -101,9 +103,7 @@ const { MonthGrid } = await import("@/app/calendar/monthly/_components/month-gri
 const { default: WeeklyCalendarPage } = await import("@/app/calendar/weekly/page");
 
 function findNavRow(container: HTMLElement) {
-  return Array.from(container.querySelectorAll("div")).find((element) =>
-    typeof element.className === "string" && element.className.includes("grid-cols-[1fr_auto_1fr]"),
-  );
+  return container.querySelector('header[aria-label="Calendar navigation"]');
 }
 
 function createNode(overrides: Partial<Node> = {}): Node {
@@ -161,6 +161,7 @@ beforeEach(() => {
   calendarStoreState.expandedDay = null;
   calendarStoreState.currentMonth = new Date(2026, 3, 1);
   calendarStoreState.currentWeekStart = new Date(2026, 3, 13);
+  calendarStoreState.goToToday = goToTodayMock;
   monthlyItemsMock.mockReturnValue(new Map());
   weeklyItemsMock.mockReturnValue(new Map());
   renderedDayColumns.length = 0;
@@ -184,7 +185,12 @@ describe("calendar navigation rows", () => {
       "/calendar/monthly",
     );
 
-    const [backButton, forwardButton] = within(navRow as HTMLElement).getAllByRole("button");
+    const backButton = within(navRow as HTMLElement).getByRole("button", {
+      name: "Previous week",
+    });
+    const forwardButton = within(navRow as HTMLElement).getByRole("button", {
+      name: "Next week",
+    });
 
     fireEvent.click(backButton);
     fireEvent.click(forwardButton);
@@ -228,6 +234,28 @@ describe("calendar navigation rows", () => {
     expect(setExpandedDayMock).toHaveBeenCalledWith(5);
   });
 
+  it("weekly Today button calls goToToday", () => {
+    usePathnameMock.mockReturnValue("/calendar/weekly");
+
+    const { container } = render(<WeeklyCalendarPage />);
+    const navRow = findNavRow(container);
+
+    expect(navRow).toBeTruthy();
+
+    fireEvent.click(
+      within(navRow as HTMLElement).getByRole("button", { name: "Today" }),
+    );
+
+    expect(goToTodayMock).toHaveBeenCalledOnce();
+  });
+
+  it("weekly header shows month title and year subtitle", () => {
+    render(<WeeklyCalendarPage />);
+
+    expect(screen.getByText("April")).toBeInTheDocument();
+    expect(screen.getByText("2026")).toBeInTheDocument();
+  });
+
   it("renders the month grid with the shared toggle layout", () => {
     usePathnameMock.mockReturnValue("/calendar/monthly");
 
@@ -245,13 +273,112 @@ describe("calendar navigation rows", () => {
       "/calendar/monthly",
     );
 
-    const [backButton, forwardButton] = within(navRow as HTMLElement).getAllByRole("button");
+    const backButton = within(navRow as HTMLElement).getByRole("button", {
+      name: "Previous month",
+    });
+    const forwardButton = within(navRow as HTMLElement).getByRole("button", {
+      name: "Next month",
+    });
 
     fireEvent.click(backButton);
     fireEvent.click(forwardButton);
 
     expect(navigateMonthMock).toHaveBeenNthCalledWith(1, -1);
     expect(navigateMonthMock).toHaveBeenNthCalledWith(2, 1);
+  });
+
+  it("monthly Today button calls goToToday", () => {
+    usePathnameMock.mockReturnValue("/calendar/monthly");
+
+    const { container } = render(<MonthGrid />);
+    const navRow = findNavRow(container);
+
+    expect(navRow).toBeTruthy();
+
+    fireEvent.click(
+      within(navRow as HTMLElement).getByRole("button", { name: "Today" }),
+    );
+
+    expect(goToTodayMock).toHaveBeenCalledOnce();
+  });
+
+  it("monthly Today button closes an open day popover", () => {
+    usePathnameMock.mockReturnValue("/calendar/monthly");
+    monthlyItemsMock.mockReturnValue(new Map([["2026-04-15", []]]));
+
+    const { container } = render(<MonthGrid />);
+    const navRow = findNavRow(container);
+
+    fireEvent.click(
+      screen.getByRole("group", { name: "Wednesday, April 15, 2026, 0 items" }),
+    );
+    expect(
+      screen.getByRole("button", {
+        name: "Open details for Wednesday, April 15, 2026, 0 items",
+      }).parentElement,
+    ).toHaveAttribute("data-open", "true");
+
+    fireEvent.click(within(navRow as HTMLElement).getByRole("button", { name: "Today" }));
+
+    expect(
+      screen.getByRole("button", {
+        name: "Open details for Wednesday, April 15, 2026, 0 items",
+      }).parentElement,
+    ).toHaveAttribute("data-open", "false");
+  });
+
+  it("monthly header shows month title and year subtitle", () => {
+    usePathnameMock.mockReturnValue("/calendar/monthly");
+
+    render(<MonthGrid />);
+
+    expect(screen.getByText("April")).toBeInTheDocument();
+    expect(screen.getByText("2026")).toBeInTheDocument();
+  });
+
+  it("applies the monthly grid visual target styles", () => {
+    usePathnameMock.mockReturnValue("/calendar/monthly");
+
+    render(<MonthGrid />);
+
+    const firstOfMonthCell = screen.getByRole("group", {
+      name: "Wednesday, April 1, 2026, 0 items",
+    });
+    const dateGrid = firstOfMonthCell.parentElement;
+
+    expect(dateGrid).toHaveClass("gap-px");
+    expect(dateGrid).toHaveAttribute(
+      "style",
+      expect.stringContaining("background-color: var(--calendar-grid-line-color)"),
+    );
+    expect(firstOfMonthCell).toHaveAttribute(
+      "style",
+      expect.stringContaining("background: var(--calendar-cell-bg)"),
+    );
+    expect(
+      within(firstOfMonthCell).getByRole("button", {
+        name: "Open details for Wednesday, April 1, 2026, 0 items",
+      }),
+    ).toHaveTextContent("Apr 1");
+  });
+
+  it("weekly and monthly share the same Calendar navigation header landmark", () => {
+    usePathnameMock.mockReturnValue("/calendar/weekly");
+
+    const weekly = render(<WeeklyCalendarPage />);
+
+    expect(
+      weekly.container.querySelector('header[aria-label="Calendar navigation"]'),
+    ).toBeInTheDocument();
+
+    cleanup();
+    usePathnameMock.mockReturnValue("/calendar/monthly");
+
+    const monthly = render(<MonthGrid />);
+
+    expect(
+      monthly.container.querySelector('header[aria-label="Calendar navigation"]'),
+    ).toBeInTheDocument();
   });
 
   it("opens monthly day details when the cell area is clicked", () => {

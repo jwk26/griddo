@@ -107,7 +107,9 @@ describe("CompactBitItem", () => {
     });
     expect(root).toHaveAttribute("data-drag-source", "true");
     expect(root).toHaveClass("cursor-grab");
+    expect(root).toHaveClass("focus-visible:ring-2", "focus-visible:ring-ring");
     expect(openButton).toHaveClass("cursor-pointer");
+    expect(openButton).toHaveClass("focus-visible:ring-2", "focus-visible:ring-ring");
     expect(root?.querySelector('[data-icon="GripVertical"]')).toBeNull();
     expect(unscheduleButton).toHaveClass(
       "h-8",
@@ -119,6 +121,7 @@ describe("CompactBitItem", () => {
       "hover:bg-destructive/10",
       "hover:text-destructive",
     );
+    expect(unscheduleButton).toHaveClass("focus-visible:ring-2", "focus-visible:ring-ring");
     expect(unscheduleButton.querySelector('[data-icon="Trash2"]')).toBeInTheDocument();
     expect(screen.queryByText("✕")).not.toBeInTheDocument();
 

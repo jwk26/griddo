@@ -144,7 +144,13 @@ describe("DayColumn", () => {
     expect(screen.getByText("Node E")).toBeInTheDocument();
     expect(screen.getByText("Bit F")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /wed 15 6 items/i }));
+    const headerButton = screen.getByRole("button", { name: /wed 15 6 items/i });
+    expect(headerButton.parentElement).toHaveAttribute(
+      "style",
+      expect.stringContaining("var(--calendar-cell-bg)"),
+    );
+
+    fireEvent.click(headerButton);
 
     expect(onExpand).toHaveBeenCalledTimes(1);
   });
@@ -162,8 +168,11 @@ describe("DayColumn", () => {
     );
 
     expect(screen.getByText("15")).toHaveClass("text-primary");
-    expect(screen.getByRole("button", { name: /wed 15 0 items/i }).parentElement).toHaveClass(
-      "ring-primary/40",
+    expect(
+      screen.getByRole("button", { name: /wed 15 0 items/i }).parentElement,
+    ).toHaveAttribute(
+      "style",
+      expect.stringContaining("var(--calendar-today-shadow)"),
     );
 
     rerender(
@@ -178,8 +187,11 @@ describe("DayColumn", () => {
     );
 
     expect(screen.getByText("15")).toHaveClass("text-primary");
-    expect(screen.getByRole("button", { name: /wed 15 0 items/i }).parentElement).toHaveClass(
-      "ring-primary",
+    expect(
+      screen.getByRole("button", { name: /wed 15 0 items/i }).parentElement,
+    ).toHaveAttribute(
+      "style",
+      expect.stringContaining("var(--calendar-today-shadow)"),
     );
   });
 
@@ -217,7 +229,9 @@ describe("DayColumn", () => {
     expect(root).toHaveClass("cursor-grabbing", "opacity-40");
     expect(root).toHaveStyle({ transform: "translate3d(6px, 4px, 0)" });
     expect(openButton).toHaveClass("cursor-pointer");
+    expect(openButton).toHaveClass("focus-visible:ring-2", "focus-visible:ring-ring");
     expect(unscheduleButton).toHaveClass("h-8", "w-8", "rounded-md", "cursor-pointer");
+    expect(unscheduleButton).toHaveClass("focus-visible:ring-2", "focus-visible:ring-ring");
 
     fireEvent.click(unscheduleButton);
 
@@ -260,7 +274,9 @@ describe("DayColumn", () => {
     expect(root).toHaveAttribute("data-drag-source", "true");
     expect(root).toHaveClass("cursor-grab");
     expect(openButton).toHaveClass("cursor-pointer");
+    expect(openButton).toHaveClass("focus-visible:ring-2", "focus-visible:ring-ring");
     expect(unscheduleButton).toHaveClass("h-8", "w-8", "rounded-md", "cursor-pointer");
+    expect(unscheduleButton).toHaveClass("focus-visible:ring-2", "focus-visible:ring-ring");
 
     fireEvent.click(unscheduleButton);
 
@@ -284,6 +300,7 @@ describe("DayColumn", () => {
 
     const openButton = screen.getByRole("button", { name: "Open Roadmap" });
     const root = openButton.closest('[data-drag-source="true"]');
+    const unscheduleButton = screen.getByRole("button", { name: "Unschedule Roadmap" });
 
     expect(useDraggableMock).toHaveBeenCalledWith({
       id: "placed:node-1",
@@ -295,5 +312,7 @@ describe("DayColumn", () => {
     });
     expect(root).toHaveAttribute("data-drag-source", "true");
     expect(root).toHaveClass("cursor-grab");
+    expect(openButton).toHaveClass("focus-visible:ring-2", "focus-visible:ring-ring");
+    expect(unscheduleButton).toHaveClass("focus-visible:ring-2", "focus-visible:ring-ring");
   });
 });

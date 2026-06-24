@@ -113,7 +113,7 @@ export function DateCellPopover({
               <button
                 key={item.id}
                 type="button"
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                 onClick={() => navigate(item)}
               >
                 <Icon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />

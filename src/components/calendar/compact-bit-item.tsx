@@ -49,6 +49,7 @@ export function CompactBitItem({
       className={cn(
         "flex items-center gap-2 border-l-4 px-3 py-1.5 text-sm transition-opacity",
         "rounded-r-md bg-background/70 hover:bg-accent/60",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
         "cursor-grab",
         isDragging && "cursor-grabbing",
         isDragging && "opacity-40",
@@ -64,7 +65,7 @@ export function CompactBitItem({
       <button
         type="button"
         aria-label={`Open ${item.title}`}
-        className="flex min-w-0 flex-1 items-center gap-2 cursor-pointer text-left"
+        className="flex min-w-0 flex-1 items-center gap-2 cursor-pointer text-left rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
         onClick={onClick}
       >
         <span
@@ -86,7 +87,7 @@ export function CompactBitItem({
           type="button"
           aria-label={`Unschedule ${item.title}`}
           className={cn(
-            "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md transition-colors cursor-pointer",
+            "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
             variant === "pool"
               ? "text-muted-foreground/40 hover:bg-destructive/10 hover:text-destructive"
               : "text-muted-foreground hover:bg-accent hover:text-foreground",
