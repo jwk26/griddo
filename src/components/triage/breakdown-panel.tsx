@@ -8,7 +8,13 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { Archive, CheckCircle2, GripVertical, Trash2 } from "lucide-react";
+import {
+  Archive,
+  CheckCircle2,
+  GripVertical,
+  Inbox,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -22,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useArchiveScratch } from "@/hooks/use-archive-scratch";
 import { useCanArchiveScratch } from "@/hooks/use-can-archive-scratch";
+import { useInbox } from "@/hooks/use-inbox";
 import { useScratchBreakdowns } from "@/hooks/use-scratch-breakdowns";
 import type { ScratchBreakdown } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
@@ -71,7 +78,7 @@ function BreakdownRow({
         ref={setActivatorNodeRef}
         aria-label="Drag breakdown"
         className={cn(
-          "mt-0.5 flex h-4 w-4 flex-shrink-0 cursor-grab items-center justify-center active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "mt-0.5 flex h-7 w-7 flex-shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-muted-foreground/60 hover:border-border hover:bg-muted hover:text-foreground active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
         )}
         type="button"
         {...attributes}
@@ -146,11 +153,14 @@ function ArchiveScratchBar({ scratchId }: { scratchId: string }) {
 
   return (
     <>
-      <div className="flex items-center justify-between border-t border-border bg-muted px-3 py-2">
+      <div
+        data-testid="archive-scratch-bar"
+        className="mx-3 mb-2 flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 shadow-sm"
+      >
         <div className="flex min-w-0 items-center gap-2">
           <CheckCircle2
             aria-hidden="true"
-            className="h-4 w-4 flex-shrink-0 text-muted-foreground/60"
+            className="h-4 w-4 flex-shrink-0 text-primary/80"
           />
           <span className="min-w-0 truncate text-xs text-muted-foreground">
             All items processed
@@ -200,6 +210,16 @@ function ArchiveScratchBar({ scratchId }: { scratchId: string }) {
 export function BreakdownPanel() {
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
   const stagedCandidates = useTriageStore((state) => state.stagedCandidates);
+  const scratchPoolExpanded = useTriageStore(
+    (state) => state.scratchPoolExpanded,
+  );
+  const scratchPoolManualExpandedForId = useTriageStore(
+    (state) => state.scratchPoolManualExpandedForId,
+  );
+  const setScratchPoolExpanded = useTriageStore(
+    (state) => state.setScratchPoolExpanded,
+  );
+  const { activeScratchBits } = useInbox();
   const { breakdowns, createBreakdown, deleteBreakdown } =
     useScratchBreakdowns(selectedScratchId);
   const canArchiveScratch = useCanArchiveScratch(
@@ -212,6 +232,10 @@ export function BreakdownPanel() {
   const isSubmittingRef = useRef(false);
   const isComposingRef = useRef(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const selectedScratch = useMemo(
+    () => activeScratchBits.find((bit) => bit.id === selectedScratchId) ?? null,
+    [activeScratchBits, selectedScratchId],
+  );
   const stagedSourceBreakdownIds = useMemo(
     () =>
       new Set(
@@ -231,20 +255,39 @@ export function BreakdownPanel() {
     setPendingDeleteId(null);
   }, [selectedScratchId]);
 
-  async function handleAdd(): Promise<void> {
+  function collapsePoolIfArmed() {
+    if (
+      selectedScratchId !== null &&
+      scratchPoolExpanded === true &&
+      scratchPoolManualExpandedForId !== selectedScratchId
+    ) {
+      setScratchPoolExpanded(false);
+    }
+  }
+
+  async function handleAdd({
+    keepInputOpen = false,
+  }: { keepInputOpen?: boolean } = {}): Promise<void> {
     if (isSubmittingRef.current) return;
     const trimmed = newContent.trim();
     if (!trimmed) {
-      setIsAdding(false);
-      setNewContent("");
+      if (!keepInputOpen) {
+        setIsAdding(false);
+        setNewContent("");
+      }
       return;
     }
 
     isSubmittingRef.current = true;
     try {
       await createBreakdown(trimmed);
-      setIsAdding(false);
       setNewContent("");
+      if (keepInputOpen) {
+        setIsAdding(true);
+        inputRef.current?.focus();
+      } else {
+        setIsAdding(false);
+      }
     } finally {
       isSubmittingRef.current = false;
     }
@@ -254,13 +297,26 @@ export function BreakdownPanel() {
     if (event.key === "Enter") {
       if (isComposingRef.current || event.nativeEvent.isComposing) return;
       event.preventDefault();
-      void handleAdd();
+      void handleAdd({ keepInputOpen: true });
       return;
     }
 
     if (event.key === "Escape") {
       setIsAdding(false);
       setNewContent("");
+      return;
+    }
+
+    // First-keystroke collapse: printable single characters only, no modifiers, not composing
+    if (
+      event.key.length === 1 &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      !isComposingRef.current &&
+      !event.nativeEvent.isComposing
+    ) {
+      collapsePoolIfArmed();
     }
   }
 
@@ -289,6 +345,26 @@ export function BreakdownPanel() {
   return (
     <div className="flex flex-col h-full">
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
+        <div
+          aria-label={`Selected Scratch: ${selectedScratch?.title ?? "Unknown Scratch"}`}
+          className="mx-3 mt-2 flex min-w-0 items-center gap-2 rounded-lg border border-border/70 bg-muted/30 px-2.5 py-1.5"
+        >
+          <Inbox
+            aria-hidden="true"
+            className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground"
+          />
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-xs font-medium text-foreground">
+              {selectedScratch?.title ?? "Unknown Scratch"}
+            </div>
+            {selectedScratch !== null && (
+              <div className="text-[10px] text-muted-foreground/70">
+                {formatRelativeTime(selectedScratch.createdAt)}
+              </div>
+            )}
+          </div>
+        </div>
+
         {breakdowns.map((row) => {
           const isStaged = stagedSourceBreakdownIds.has(row.id);
 

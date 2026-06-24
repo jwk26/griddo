@@ -20,7 +20,7 @@
 | Batch | Task | Scope | Status |
 |-------|------|-------|--------|
 | B1 | T97 | Scratch Pool identity, search, sort, collapsed switcher | Complete ✅ |
-| B2 | T98 | Breakdown selected context and first-keystroke collapse | In Progress 🔄 |
+| B2 | T98 | Breakdown selected context and first-keystroke collapse | Implemented ✅ |
 | B3 | T99 | Staging and triage DnD visual states | Pending |
 | B4 | T100 | Hierarchy search, label removal, workspace integration | Pending |
 
@@ -56,4 +56,21 @@ Issues deferred from Phase 18/19 that are resolved by this phase:
 
 ## Issues
 
-_No execution issues yet. Populated as they arise during implementation._
+### B2/T98 Execution Log
+
+**Classification:** logic-heavy + behavior-heavy (Gemini skipped — all visual decisions pre-specified in task prompt and recipe)
+
+**Parallel test authoring:** Codex A (implementer) and Codex B (test author) ran in parallel on disjoint files.
+
+**Changes delivered:**
+- `breakdown-panel.tsx`: context strip, first-keystroke collapse, Enter-keeps-focus, grip hit-target polish, ArchiveScratchBar completion affordance
+- `breakdown-panel.test.tsx`: useInbox mock + triageStore mock extension + 10 new behavioral tests
+
+**Verification:** 53 tests passed (31 in breakdown-panel.test.tsx + 22 in scratch-pool.test.tsx), build passed, no whitespace errors.
+
+**Observation — context strip double indent:** The context strip uses `mx-3 mt-2` inside a parent div that has `px-3`, resulting in 24px horizontal inset instead of 12px. Spec explicitly specified `mx-3 mt-2`; visual judgment deferred to user review at checkpoint. Not blocking.
+
+**Deferred issues resolved this batch:**
+- `ISSUE-18-17` first-keystroke collapse: fully wired (T97 provided state model; T98 wires the trigger)
+- `ISSUE-18-18` Enter keeps focus: adopted
+- `ISSUE-18-19` selected-Scratch context: compact context strip delivered

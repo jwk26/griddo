@@ -9,6 +9,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ScratchBreakdown } from "@/lib/db/schema";
+import type { Bit } from "@/types";
 import { BreakdownPanel } from "./breakdown-panel";
 
 const hookState = vi.hoisted(() => ({
@@ -29,15 +30,23 @@ const triageStoreState = vi.hoisted(() => ({
     }>
   >,
   clearSelection: clearSelectionMock,
+  scratchPoolExpanded: true as boolean,
+  scratchPoolManualExpandedForId: null as string | null,
+  setScratchPoolExpanded: vi.fn() as ReturnType<typeof vi.fn>,
 }));
 const useScratchBreakdownsMock = vi.hoisted(() => vi.fn());
 const useTriageStoreMock = vi.hoisted(() => vi.fn());
 const getDataStoreMock = vi.hoisted(() => vi.fn());
 const archiveBitMock = vi.hoisted(() => vi.fn());
+const useInboxMock = vi.hoisted(() => vi.fn());
 const currentTime = new Date(2026, 5, 17, 12, 0, 0).getTime();
 
 vi.mock("@/hooks/use-scratch-breakdowns", () => ({
   useScratchBreakdowns: useScratchBreakdownsMock,
+}));
+
+vi.mock("@/hooks/use-inbox", () => ({
+  useInbox: useInboxMock,
 }));
 
 vi.mock("@/stores/triage-store", () => ({
@@ -62,6 +71,26 @@ function createScratchBreakdown(
   };
 }
 
+function createBit(overrides: Partial<Bit> = {}): Bit {
+  return {
+    id: overrides.id ?? crypto.randomUUID(),
+    title: overrides.title ?? "Scratch",
+    description: overrides.description ?? "",
+    icon: overrides.icon ?? "sparkles",
+    deadline: overrides.deadline ?? null,
+    deadlineAllDay: overrides.deadlineAllDay ?? false,
+    priority: overrides.priority ?? null,
+    status: overrides.status ?? "active",
+    mtime: overrides.mtime ?? currentTime,
+    createdAt: overrides.createdAt ?? currentTime,
+    parentId: overrides.parentId ?? "inbox-node",
+    x: overrides.x ?? 0,
+    y: overrides.y ?? 0,
+    deletedAt: overrides.deletedAt ?? null,
+    archivedAt: overrides.archivedAt ?? null,
+  };
+}
+
 beforeEach(() => {
   vi.spyOn(Date, "now").mockReturnValue(currentTime);
   hookState.breakdownsByScratch = {};
@@ -69,6 +98,10 @@ beforeEach(() => {
   hookState.deleteBreakdown.mockResolvedValue(undefined);
   triageStoreState.selectedScratchId = null;
   triageStoreState.stagedCandidates = {};
+  triageStoreState.scratchPoolExpanded = true;
+  triageStoreState.scratchPoolManualExpandedForId = null;
+  triageStoreState.setScratchPoolExpanded.mockReset();
+  useInboxMock.mockReturnValue({ activeScratchBits: [] });
   useTriageStoreMock.mockImplementation(
     (selector: (state: typeof triageStoreState) => unknown) =>
       selector(triageStoreState),
@@ -529,5 +562,167 @@ describe("BreakdownPanel", () => {
       expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
     });
     expect(hookState.deleteBreakdown).not.toHaveBeenCalled();
+  });
+
+  it("renders the selected Scratch context strip with title and relative time", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({
+          id: "scratch-1",
+          title: "Inbox planning note",
+          createdAt: new Date(2026, 5, 17, 11, 15, 0).getTime(),
+        }),
+      ],
+    });
+
+    render(<BreakdownPanel />);
+
+    const strip = screen.getByLabelText("Selected Scratch: Inbox planning note");
+    expect(strip).toBeInTheDocument();
+    const title = within(strip).getByText("Inbox planning note");
+    expect(title).toHaveClass("truncate");
+    expect(within(strip).getByText("45m ago")).toBeInTheDocument();
+  });
+
+  it("clicking the add-note placeholder does not collapse the Scratch Pool", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    triageStoreState.scratchPoolExpanded = true;
+    triageStoreState.scratchPoolManualExpandedForId = null;
+
+    render(<BreakdownPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+
+    expect(triageStoreState.setScratchPoolExpanded).not.toHaveBeenCalled();
+    expect(screen.getByPlaceholderText("Add a note...")).toHaveFocus();
+  });
+
+  it("focusing the add-note input does not collapse the Scratch Pool", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    triageStoreState.scratchPoolExpanded = true;
+
+    render(<BreakdownPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    fireEvent.focus(screen.getByPlaceholderText("Add a note..."));
+
+    expect(triageStoreState.setScratchPoolExpanded).not.toHaveBeenCalled();
+  });
+
+  it("pressing a printable key in the add-note input collapses the Scratch Pool when conditions are met", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    triageStoreState.scratchPoolExpanded = true;
+    triageStoreState.scratchPoolManualExpandedForId = null;
+
+    render(<BreakdownPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.keyDown(input, { key: "A" });
+
+    expect(triageStoreState.setScratchPoolExpanded).toHaveBeenCalledWith(false);
+  });
+
+  it("pressing a modifier shortcut (metaKey+k) in the input does not collapse the Scratch Pool", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    triageStoreState.scratchPoolExpanded = true;
+    triageStoreState.scratchPoolManualExpandedForId = null;
+
+    render(<BreakdownPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.keyDown(input, { key: "k", metaKey: true });
+
+    expect(triageStoreState.setScratchPoolExpanded).not.toHaveBeenCalled();
+  });
+
+  it("pressing Enter submits the breakdown and keeps the add-note input focused", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+
+    render(<BreakdownPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.change(input, { target: { value: "Follow up" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(hookState.createBreakdown).toHaveBeenCalledWith("Follow up");
+    });
+    expect(screen.getByPlaceholderText("Add a note...")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Add a note...")).toHaveFocus();
+    });
+    expect(screen.getByPlaceholderText("Add a note...")).toHaveValue("");
+  });
+
+  it("typing does not collapse pool if the current Scratch was manually re-expanded", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    triageStoreState.scratchPoolExpanded = true;
+    triageStoreState.scratchPoolManualExpandedForId = "scratch-1";
+
+    render(<BreakdownPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.keyDown(input, { key: "A" });
+
+    expect(triageStoreState.setScratchPoolExpanded).not.toHaveBeenCalled();
+  });
+
+  it("typing collapses pool when selected Scratch changed and manual expand was for a different Scratch", () => {
+    triageStoreState.selectedScratchId = "scratch-2";
+    triageStoreState.scratchPoolExpanded = true;
+    triageStoreState.scratchPoolManualExpandedForId = "scratch-1";
+
+    render(<BreakdownPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.keyDown(input, { key: "A" });
+
+    expect(triageStoreState.setScratchPoolExpanded).toHaveBeenCalledWith(false);
+  });
+
+  it("the drag grip button has the larger h-7 w-7 hit target and is the only drag activator", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Has grip" }),
+    ];
+
+    render(<BreakdownPanel />);
+
+    const gripButton = screen.getByRole("button", { name: "Drag breakdown" });
+    expect(gripButton).toHaveClass("h-7");
+    expect(gripButton).toHaveClass("w-7");
+    expect(gripButton).toHaveClass("rounded-md");
+    expect(gripButton).toHaveClass("focus-visible:ring-2");
+
+    const rowContainer = gripButton.closest(".group");
+    expect(rowContainer).not.toHaveAttribute("aria-label", "Drag breakdown");
+  });
+
+  it("ArchiveScratchBar renders with completion affordance styling", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({
+        id: "row-1",
+        content: "Processed note",
+        consumedAt: currentTime,
+      }),
+    ];
+
+    render(<BreakdownPanel />);
+
+    const bar = screen.getByTestId("archive-scratch-bar");
+    expect(bar).toBeInTheDocument();
+    expect(bar).toHaveClass("rounded-lg");
+    expect(bar).toHaveClass("border-primary/20");
+    expect(bar).toHaveClass("bg-primary/5");
+    expect(
+      screen.getByRole("button", { name: "Archive Scratch" }),
+    ).toBeInTheDocument();
   });
 });
