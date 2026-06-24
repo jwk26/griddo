@@ -1,6 +1,5 @@
 import "@testing-library/jest-dom/vitest";
 import {
-  act,
   cleanup,
   fireEvent,
   render,
@@ -46,7 +45,11 @@ beforeEach(() => {
     removeEventListener: vi.fn(),
     matches: false,
   });
-  useTriageStore.setState({ selectedScratchId: null });
+  useTriageStore.setState({
+    selectedScratchId: null,
+    scratchPoolExpanded: true,
+    scratchPoolManualExpandedForId: null,
+  });
   useInboxMock.mockReturnValue({ activeScratchBits: [] });
 });
 
@@ -54,7 +57,11 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   vi.useRealTimers();
-  useTriageStore.setState({ selectedScratchId: null });
+  useTriageStore.setState({
+    selectedScratchId: null,
+    scratchPoolExpanded: true,
+    scratchPoolManualExpandedForId: null,
+  });
 });
 
 describe("ScratchPool", () => {
@@ -115,36 +122,6 @@ describe("ScratchPool", () => {
     expect(pool).toHaveClass("w-72");
   });
 
-  it("selects a Scratch row and auto-collapses after 150ms", () => {
-    const scratch = createBit({
-      id: "scratch-1",
-      title: "Scratch one",
-      createdAt: new Date(2026, 5, 17, 11, 0, 0).getTime(),
-    });
-    const selectScratchSpy = vi.spyOn(useTriageStore.getState(), "selectScratch");
-    useInboxMock.mockReturnValue({ activeScratchBits: [scratch] });
-
-    render(<ScratchPool />);
-
-    const pool = screen.getByTestId("scratch-pool");
-
-    fireEvent.click(screen.getByRole("button", { name: /Scratch one/i }));
-
-    expect(selectScratchSpy).toHaveBeenCalledWith("scratch-1");
-    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-1");
-    expect(pool).toHaveClass("w-72");
-
-    act(() => {
-      vi.advanceTimersByTime(149);
-    });
-    expect(pool).toHaveClass("w-72");
-
-    act(() => {
-      vi.advanceTimersByTime(1);
-    });
-    expect(pool).toHaveClass("w-12");
-  });
-
   it("does not render the selected Scratch title in the collapsed rail", () => {
     const scratch = createBit({
       id: "scratch-1",
@@ -158,6 +135,7 @@ describe("ScratchPool", () => {
     fireEvent.click(screen.getByLabelText("Collapse Scratch Pool"));
 
     expect(screen.queryByText("Selected scratch")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Selected scratch" })).toBeInTheDocument();
   });
 
   it("shows a collapsed count badge when items exist", () => {
@@ -172,8 +150,7 @@ describe("ScratchPool", () => {
 
     fireEvent.click(screen.getByLabelText("Collapse Scratch Pool"));
 
-    const rail = screen.getByLabelText("Expand Scratch Pool");
-    expect(within(rail).getByText("2")).toHaveClass("bg-primary");
+    expect(screen.getByLabelText("2 scratches")).toHaveClass("bg-primary");
   });
 
   it("does not show a collapsed count badge when the pool is empty", () => {
@@ -183,5 +160,222 @@ describe("ScratchPool", () => {
 
     expect(screen.queryByText("0")).not.toBeInTheDocument();
     expect(screen.queryByText("No active scratches")).not.toBeInTheDocument();
+  });
+
+  it("shows total count in expanded header", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "scratch-1" }),
+        createBit({ id: "scratch-2" }),
+      ],
+    });
+
+    render(<ScratchPool />);
+
+    expect(screen.getByLabelText("2 scratches")).toBeInTheDocument();
+  });
+
+  it("search filters scratch titles", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "alpha", title: "Alpha task" }),
+        createBit({ id: "beta", title: "Beta task" }),
+      ],
+    });
+
+    render(<ScratchPool />);
+
+    fireEvent.change(screen.getByLabelText("Search scratches"), {
+      target: { value: "alpha" },
+    });
+
+    expect(screen.getByText("Alpha task")).toBeInTheDocument();
+    expect(screen.queryByText("Beta task")).not.toBeInTheDocument();
+  });
+
+  it("search shows No matches when nothing matches", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "alpha", title: "Alpha task" }),
+        createBit({ id: "beta", title: "Beta task" }),
+      ],
+    });
+
+    render(<ScratchPool />);
+
+    fireEvent.change(screen.getByLabelText("Search scratches"), {
+      target: { value: "zzz" },
+    });
+
+    expect(screen.getByText("No matches")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Alpha task" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Beta task" })).not.toBeInTheDocument();
+  });
+
+  it("clear search restores full list", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "alpha", title: "Alpha task" }),
+        createBit({ id: "beta", title: "Beta task" }),
+      ],
+    });
+
+    render(<ScratchPool />);
+
+    fireEvent.change(screen.getByLabelText("Search scratches"), {
+      target: { value: "alpha" },
+    });
+    fireEvent.click(screen.getByLabelText("Clear search"));
+
+    expect(screen.getByText("Alpha task")).toBeInTheDocument();
+    expect(screen.getByText("Beta task")).toBeInTheDocument();
+  });
+
+  it("sort toggle switches to oldest-first then back", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({
+          id: "older",
+          title: "Older scratch",
+          createdAt: new Date(2026, 5, 17, 10, 0, 0).getTime(),
+        }),
+        createBit({
+          id: "newer",
+          title: "Newer scratch",
+          createdAt: new Date(2026, 5, 17, 11, 15, 0).getTime(),
+        }),
+      ],
+    });
+
+    render(<ScratchPool />);
+
+    const rowTitles = () =>
+      screen
+        .getAllByRole("button", { name: /^(Older|Newer) scratch$/ })
+        .map((row) => row.textContent);
+
+    expect(rowTitles()).toEqual(["Newer scratch45m ago", "Older scratch2h ago"]);
+
+    fireEvent.click(screen.getByRole("button", { name: /Sort:/ }));
+
+    expect(rowTitles()).toEqual(["Older scratch2h ago", "Newer scratch45m ago"]);
+
+    fireEvent.click(screen.getByRole("button", { name: /Sort:/ }));
+
+    expect(rowTitles()).toEqual(["Newer scratch45m ago", "Older scratch2h ago"]);
+  });
+
+  it("collapsed mode has no search or sort controls", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [createBit({ id: "scratch-1", title: "Scratch one" })],
+    });
+
+    render(<ScratchPool />);
+
+    fireEvent.click(screen.getByLabelText("Collapse Scratch Pool"));
+
+    expect(screen.queryByLabelText("Search scratches")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Sort:/ })).not.toBeInTheDocument();
+  });
+
+  it("collapsed mode renders a pill button per scratch", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "scratch-1", title: "Scratch one" }),
+        createBit({ id: "scratch-2", title: "Scratch two" }),
+      ],
+    });
+
+    render(<ScratchPool />);
+
+    fireEvent.click(screen.getByLabelText("Collapse Scratch Pool"));
+
+    const switcher = screen.getByRole("group", { name: "Switch scratch" });
+    expect(within(switcher).getAllByRole("button")).toHaveLength(2);
+  });
+
+  it("clicking collapsed pill selects scratch and does not expand pool", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "scratch-1", title: "Scratch one" }),
+        createBit({ id: "scratch-2", title: "Scratch two" }),
+      ],
+    });
+
+    render(<ScratchPool />);
+
+    const pool = screen.getByTestId("scratch-pool");
+    fireEvent.click(screen.getByLabelText("Collapse Scratch Pool"));
+    fireEvent.click(screen.getByRole("button", { name: "Scratch two" }));
+
+    expect(pool).toHaveClass("w-12");
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-2");
+  });
+
+  it("selecting scratch in expanded mode does not collapse pool", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [createBit({ id: "scratch-1", title: "Scratch one" })],
+    });
+
+    render(<ScratchPool />);
+
+    const pool = screen.getByTestId("scratch-pool");
+    fireEvent.click(screen.getByRole("button", { name: "Scratch one" }));
+
+    expect(pool).toHaveClass("w-72");
+  });
+
+  it("collapsed pills have accessible labels with scratch titles", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [createBit({ id: "scratch-1", title: "My scratch" })],
+    });
+
+    render(<ScratchPool />);
+
+    fireEvent.click(screen.getByLabelText("Collapse Scratch Pool"));
+
+    expect(screen.getByRole("button", { name: "My scratch" })).toBeInTheDocument();
+  });
+
+  it("ScratchRow button has focus-visible ring classes", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [createBit({ id: "scratch-1", title: "Scratch one" })],
+    });
+
+    render(<ScratchPool />);
+
+    const row = screen.getByRole("button", { name: "Scratch one" });
+    expect(row).toHaveClass("focus-visible:ring-2");
+    expect(row).toHaveClass("focus-visible:ring-ring");
+  });
+
+  it("collapsed pill button has focus-visible ring classes", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [createBit({ id: "scratch-1", title: "Scratch one" })],
+    });
+
+    render(<ScratchPool />);
+
+    fireEvent.click(screen.getByLabelText("Collapse Scratch Pool"));
+
+    const pill = screen.getByRole("button", { name: "Scratch one" });
+    expect(pill).toHaveClass("focus-visible:ring-2");
+    expect(pill).toHaveClass("focus-visible:ring-ring");
+  });
+
+  it("sort toggle button has focus-visible ring classes", () => {
+    render(<ScratchPool />);
+
+    const sortButton = screen.getByRole("button", { name: /Sort:/ });
+    expect(sortButton).toHaveClass("focus-visible:ring-2");
+    expect(sortButton).toHaveClass("focus-visible:ring-ring");
+  });
+
+  it("search input has focus-visible ring classes", () => {
+    render(<ScratchPool />);
+
+    const searchInput = screen.getByLabelText("Search scratches");
+    expect(searchInput).toHaveClass("focus-visible:ring-2");
+    expect(searchInput).toHaveClass("focus-visible:ring-ring");
   });
 });
