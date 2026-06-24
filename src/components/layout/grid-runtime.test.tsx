@@ -333,6 +333,12 @@ describe("GridRuntime", () => {
     getDataStoreMock.mockResolvedValue({
       runBreadcrumbZoneMigration: runBreadcrumbZoneMigrationMock,
       getArchivedItems: vi.fn().mockResolvedValue({ nodes: [], bits: [] }),
+      getAllActiveNodes: vi
+        .fn()
+        .mockResolvedValue([
+          createNode({ id: "inbox-node", title: "Inbox", systemRole: "inbox", hiddenFromGrid: true }),
+        ]),
+      getAllActiveBits: vi.fn().mockResolvedValue([]),
     });
     runBreadcrumbZoneMigrationMock.mockResolvedValue({ relocated: 0 });
     createNodeDialogSubmission.current = {

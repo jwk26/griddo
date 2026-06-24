@@ -11,9 +11,13 @@ export interface StagedCandidate {
 
 interface TriageState {
   selectedScratchId: string | null;
+  scratchPoolExpanded: boolean;
+  scratchPoolManualExpandedForId: string | null;
   stagedCandidates: Record<string, StagedCandidate[]>;
   selectScratch: (id: string) => void;
   clearSelection: () => void;
+  setScratchPoolExpanded: (expanded: boolean) => void;
+  setScratchPoolManualExpandedForId: (id: string | null) => void;
   addStagedCandidate: (
     scratchId: string,
     candidate: StagedCandidate,
@@ -24,9 +28,23 @@ interface TriageState {
 
 export const useTriageStore = create<TriageState>((set) => ({
   selectedScratchId: null,
+  scratchPoolExpanded: true,
+  scratchPoolManualExpandedForId: null,
   stagedCandidates: {},
   selectScratch: (id) => set({ selectedScratchId: id }),
-  clearSelection: () => set({ selectedScratchId: null }),
+  clearSelection: () =>
+    set({ selectedScratchId: null, scratchPoolManualExpandedForId: null }),
+  setScratchPoolExpanded: (expanded) =>
+    set(
+      expanded
+        ? { scratchPoolExpanded: true }
+        : {
+            scratchPoolExpanded: false,
+            scratchPoolManualExpandedForId: null,
+          },
+    ),
+  setScratchPoolManualExpandedForId: (id) =>
+    set({ scratchPoolManualExpandedForId: id }),
   addStagedCandidate: (scratchId, candidate) =>
     set((state) => ({
       stagedCandidates: {

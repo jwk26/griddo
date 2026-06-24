@@ -121,12 +121,14 @@ describe("TriageWorkspace", () => {
     expect(within(workspace).getByTestId("breakdown-panel")).toBeInTheDocument();
   });
 
-  it("keeps staging zones and the hierarchy explorer visible", () => {
+  it("keeps staging zones and the hierarchy explorer visible without visible section headings", () => {
     render(<TriageWorkspace node={createNode()} />);
 
-    expect(screen.getByText("Staging: Nodes")).toBeInTheDocument();
-    expect(screen.getByText("Staging: Bits")).toBeInTheDocument();
-    expect(screen.getByText("Hierarchy Explorer")).toBeInTheDocument();
+    // heading text must NOT be visible
+    expect(screen.queryByText("Hierarchy Explorer")).not.toBeInTheDocument();
+    expect(screen.queryByText("Breakdown / Scribble")).not.toBeInTheDocument();
+
+    // structural elements must still render
     expect(screen.getByTestId("hierarchy-explorer")).toBeInTheDocument();
     expect(screen.getByTestId("node-staging-zone")).toBeInTheDocument();
     expect(screen.getByTestId("bit-staging-zone")).toBeInTheDocument();
@@ -158,7 +160,7 @@ describe("TriageWorkspace", () => {
     ).toHaveClass("h-12", "motion-safe:animate-jiggle");
   });
 
-  it("applies destructive styling while the staged remove target is hovered", () => {
+  it("applies neutral hover styling while the staged remove target is hovered", () => {
     useTriageDndMock.mockReturnValue(
       createDndState({
         activeDragItem: {
@@ -177,7 +179,7 @@ describe("TriageWorkspace", () => {
       document.querySelector(
         '[aria-label="Drop staged item here to remove from staging"]',
       ),
-    ).toHaveClass("bg-destructive/10", "text-destructive", "border-solid");
+    ).toHaveClass("bg-muted", "border-solid");
   });
 
   it("shows hierarchy cells as valid while a breakdown row is dragged", () => {
@@ -322,5 +324,20 @@ describe("TriageWorkspace", () => {
       screen.getByRole("radio", { name: "Select Node type" }),
     ).toHaveAttribute("aria-checked", "false");
     expect(screen.getByRole("button", { name: "Confirm" })).toBeDisabled();
+  });
+
+  it("shows isFull warning with muted styling, not destructive, when target is full", () => {
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        pendingPlacement: createDirectPendingPlacement({ isFull: true }),
+      }),
+    );
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    const warning = screen.getByText("No available grid cell in this target");
+    expect(warning).toBeInTheDocument();
+    expect(warning).not.toHaveClass("text-destructive");
+    expect(warning).toHaveClass("text-muted-foreground");
   });
 });
