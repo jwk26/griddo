@@ -144,7 +144,13 @@ describe("DayColumn", () => {
     expect(screen.getByText("Node E")).toBeInTheDocument();
     expect(screen.getByText("Bit F")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /wed 15 6 items/i }));
+    const headerButton = screen.getByRole("button", { name: /wed 15 6 items/i });
+    expect(headerButton.parentElement).toHaveAttribute(
+      "style",
+      expect.stringContaining("var(--calendar-cell-bg)"),
+    );
+
+    fireEvent.click(headerButton);
 
     expect(onExpand).toHaveBeenCalledTimes(1);
   });
@@ -162,8 +168,11 @@ describe("DayColumn", () => {
     );
 
     expect(screen.getByText("15")).toHaveClass("text-primary");
-    expect(screen.getByRole("button", { name: /wed 15 0 items/i }).parentElement).toHaveClass(
-      "ring-primary/40",
+    expect(
+      screen.getByRole("button", { name: /wed 15 0 items/i }).parentElement,
+    ).toHaveAttribute(
+      "style",
+      expect.stringContaining("var(--calendar-today-shadow)"),
     );
 
     rerender(
@@ -178,8 +187,11 @@ describe("DayColumn", () => {
     );
 
     expect(screen.getByText("15")).toHaveClass("text-primary");
-    expect(screen.getByRole("button", { name: /wed 15 0 items/i }).parentElement).toHaveClass(
-      "ring-primary",
+    expect(
+      screen.getByRole("button", { name: /wed 15 0 items/i }).parentElement,
+    ).toHaveAttribute(
+      "style",
+      expect.stringContaining("var(--calendar-today-shadow)"),
     );
   });
 

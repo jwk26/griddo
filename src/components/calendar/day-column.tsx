@@ -344,21 +344,35 @@ export function DayColumn({
         reducedMotion ? { duration: 0 } : { type: "spring", bounce: 0, duration: 0.45 }
       }
       className={cn(
-        "flex min-w-[var(--calendar-day-min-width)] flex-col rounded-3xl border p-3 shadow-sm transition-colors",
-        isExpanded
-          ? "flex-[3] border-border/80 bg-card shadow-md"
-          : "flex-1 border-border/40 bg-muted/30 dark:bg-card/40",
-        isToday && isExpanded && "ring-2 ring-primary",
-        isToday && !isExpanded && "ring-2 ring-primary/40",
-        isOver && "border-primary bg-primary/5",
+        "flex min-w-[var(--calendar-day-min-width)] flex-col p-3 transition-colors",
+        isExpanded ? "flex-[3]" : "flex-1",
+        isOver && "ring-2 ring-primary/40",
       )}
+      style={{
+        background: "var(--calendar-cell-bg)",
+        borderColor: isToday
+          ? "var(--calendar-today-border-color)"
+          : "var(--calendar-border-color)",
+        borderRadius: "var(--calendar-cell-radius)",
+        borderStyle: isToday
+          ? "var(--calendar-today-border-style)"
+          : "var(--calendar-border-style)",
+        borderWidth: isToday
+          ? "var(--calendar-today-border-width)"
+          : "var(--calendar-border-width)",
+        boxShadow: isToday ? "var(--calendar-today-shadow)" : "var(--calendar-cell-shadow)",
+      }}
     >
       <button
         type="button"
         className={cn(
-          "mb-3 flex w-full items-baseline justify-between gap-2 rounded-xl px-1 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+          "mb-3 flex w-full items-baseline justify-between gap-2 px-1 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
           !isExpanded && "cursor-pointer hover:bg-accent/80",
         )}
+        style={{
+          background: "var(--calendar-header-bg)",
+          borderRadius: "calc(var(--calendar-cell-radius) * 0.8)",
+        }}
         onClick={() => {
           if (!isExpanded) {
             onExpand();
