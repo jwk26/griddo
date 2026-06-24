@@ -35,6 +35,8 @@ It is **not** the source of truth for issue details. The source remains each `do
 | `Issues_Phase_20.md` | ISSUE-20-02 | Brainstorming/Visual | BitCard does not yet consume Batch 2 color-theme surface/font/depth treatment. Needs separate design pass before implementation. | Add to brainstorming before implementation. |
 | `Issues_Phase_20.md` | ISSUE-20-03 | Deferred/Low | `borderOpacity` prop in `GridCellProps` and `levelOpacityMap` in `grid-view.tsx` are now dead code, superseded by theme CSS variable system. | Candidate for cleanup in a future phase. |
 | `Issues_Phase_20.md` | ISSUE-20-04 | Deferred/Behavior | Inbox and Archive system Nodes should not receive normal NodeCard aging visual treatment. | Exclude `systemRole !== null` Nodes from aging filter in a focused behavior fix. |
+| `Issues_Phase_21.md` | ISSUE-21-01 | Process/Low | Sequential Codex A→B execution: B's scope verification relied on `git status` alone after A left uncommitted changes — cannot distinguish B's writes from A's. | Save `git diff --name-only` baseline before B launches, or commit A before B. |
+| `Issues_Phase_21.md` | ISSUE-21-03 | UX/Low | Weekly header now shows `"June 2026"` instead of date range; cross-month weeks lose date-range information. Recipe canonical, intentional tradeoff. | Post-Phase 21 UX review — assess whether date-range label is needed alongside month name. |
 
 ## Resolved Historical Deferrals
 

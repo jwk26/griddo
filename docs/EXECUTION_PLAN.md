@@ -39,7 +39,7 @@ Execution plan mode: scaled
 | 18 | ✅ done | Inbox / Triage — Staging & Placement DnD (compact-token, partial Grid DnD) | [archive](execution-plan/archive/phase-18.md) |
 | 19 | ✅ done | Archive View & Direct Archive | [archive](execution-plan/archive/phase-19.md) |
 | 20 | ✅ done | Batch 2 Theme System & Themed Grid | [archive](execution-plan/archive/phase-20.md) |
-| 21 | 🔲 active | Batch 2 Calendar Visual Alignment | — |
+| 21 | ✅ done | Batch 2 Calendar Visual Alignment | [archive](execution-plan/archive/phase-21.md) |
 | 22 | 🔲 active | Batch 2 Inbox / Triage Visual & Interaction Polish | — |
 
 ## Next Numbers
@@ -68,90 +68,6 @@ These apply across all phases:
 - **BFS origin rule:** Node creation: BFS from `(0, 0)` (top-left corner). Bit creation: BFS from `(GRID_COLS-1, 0)` (top-right corner). Empty-cell `+` click: BFS from `(clickedX, clickedY)` regardless of type — returns the clicked cell if empty, nearest fallback if occupied.
 - **Non-features (PRD Section 26):** Do NOT implement: Mascot System, Labs, AI-Powered Search, Responsive Design, Onboarding Enhancement. These are explicitly deferred.
 - **Doc authority:** SCHEMA.md = data model source of truth. SPEC.md = architecture/routes/components. DESIGN_TOKENS.md = visual values. This file = execution order. PRD = historical context, non-authoritative for implementation.
-
----
-
-## Phase 21: Batch 2 Calendar Visual Alignment
-
-> **Purpose:** Apply the Batch 2 calendar visual recipe over the current Phase 19 calendar implementation while preserving existing DnD, popover, unschedule, and navigation behavior.
-> **Dependencies:** Phase 20 complete.
-> **Canonical refs:** SPEC.md `/calendar/weekly` and `/calendar/monthly`; DESIGN_TOKENS.md Calendar Visual Theme Contract; `docs/recipes/calendar-batch2-visual-recipe.md`
-> **Policy:** Patch current calendar files. Do not add Day/Year views. Do not remove current popover or DnD behavior to match prototype visuals.
-
-### Task 93: Shared calendar view header
-
-- **Status:** `[x]`
-- **Dependencies:** Phase 20 complete.
-- **Files:** `src/components/calendar/calendar-view-header.tsx` (create), `src/stores/calendar-store.ts` (update), `src/app/calendar/weekly/page.tsx` (update), `src/app/calendar/monthly/_components/month-grid.tsx` (update), `src/app/calendar/calendar-navigation.test.tsx` (update), `src/stores/calendar-store.test.ts` (update)
-- **Recipe:** `docs/recipes/calendar-batch2-visual-recipe.md`
-- **Actions:**
-  - `src/components/calendar/calendar-view-header.tsx`: create the shared header with title + muted subtitle, Weekly/Monthly segmented control, previous/today/next controls, and visible focus states.
-  - `src/app/calendar/weekly/page.tsx`: replace the local weekly header with the shared header while preserving current week navigation and expanded-day behavior.
-  - `src/app/calendar/monthly/page.tsx`: render the shared header for monthly view, passing month title and year subtitle; keep existing monthly grid behavior delegated to `MonthGrid`.
-  - `src/app/calendar/calendar-navigation.test.tsx`: verify weekly/monthly navigation and view switching still work through the shared header.
-- **Acceptance:**
-  - Weekly and Monthly show the same header structure.
-  - Weekly title/subtitle use the current week/month context; Monthly shows month title and year subtitle.
-  - Previous, Today, Next, Weekly, and Monthly controls are keyboard focusable with visible focus rings.
-  - No Day/Year controls are introduced.
-  - `pnpm test --run src/app/calendar/calendar-navigation.test.tsx` passes.
-- **Commit:** `feat(phase-21): add shared calendar view header`
-
-### Task 94: Monthly grid theme-aware visual target
-
-- **Status:** `[x]`
-- **Dependencies:** Task 93.
-- **Files:** `src/app/calendar/monthly/_components/month-grid.tsx` (update), `src/app/calendar/monthly/_components/date-cell-popover.tsx` (update as needed), `src/app/calendar/calendar-node-creation.test.tsx` (update), `src/app/calendar/calendar-bit-creation.test.tsx` (update)
-- **Recipe:** `docs/recipes/calendar-batch2-visual-recipe.md`
-- **Actions:**
-  - `month-grid.tsx`: apply the tight `gap-px` monthly grid model, `--calendar-grid-line-color`, `--calendar-header-bg`, and theme-aware date cell styles from the recipe.
-  - `month-grid.tsx`: update date label treatment: circular today badge, `MMM d` for first-of-month labels, day number for other days.
-  - `month-grid.tsx`: keep preview limit at 4; render Nodes as compact colored square tiles using `var(--theme-radius, 6px)` and Bits/Chunks as parent-color dots.
-  - `date-cell-popover.tsx`: preserve current popover behavior; only adjust focus-visible styling if monthly visual changes touch popover controls.
-  - Tests: preserve creation/drop behavior while covering the new visual classes or inline calendar-variable styles where practical.
-- **Acceptance:**
-  - Monthly grid uses tight calendar grid lines rather than separated card gaps.
-  - Today is visible as a circular date badge across themes.
-  - First day of each month displays `MMM d`; other days display numeric day labels.
-  - Dragging items to date cells still sets deadlines and existing creation tests pass.
-  - `pnpm test --run src/app/calendar/calendar-node-creation.test.tsx src/app/calendar/calendar-bit-creation.test.tsx` passes.
-- **Commit:** `feat(phase-21): apply themed monthly calendar grid`
-
-### Task 95: Weekly day column theme-aware visual target
-
-- **Status:** `[x]`
-- **Dependencies:** Task 93.
-- **Files:** `src/components/calendar/day-column.tsx` (update), `src/app/calendar/weekly/page.tsx` (update as needed), `src/components/calendar/day-column.test.tsx` (update)
-- **Recipe:** `docs/recipes/calendar-batch2-visual-recipe.md`
-- **Actions:**
-  - `day-column.tsx`: apply calendar variable styles for background, border, radius, shadow, and today treatment.
-  - `day-column.tsx`: keep current expandable-column behavior, no-time item ordering, timed item ordering, unschedule buttons, and item click behavior.
-  - `weekly/page.tsx`: preserve LayoutGroup and expanded-day state while aligning spacing with the shared header.
-  - `day-column.test.tsx`: extend coverage for theme-aware style variables and preserve existing expand/unschedule behavior.
-- **Acceptance:**
-  - Weekly day columns consume `--calendar-cell-*` and `--calendar-today-*` variables.
-  - Expanded column behavior, ESC/collapse rules, and unschedule actions remain unchanged.
-  - No-time items remain above timed items.
-  - `pnpm test --run src/components/calendar/day-column.test.tsx` passes.
-- **Commit:** `feat(phase-21): apply themed weekly day columns`
-
-### Task 96: Calendar a11y polish and theme smoke
-
-- **Status:** `[x]`
-- **Dependencies:** Tasks 94 and 95.
-- **Files:** `src/app/calendar/monthly/_components/date-cell-popover.tsx` (update), `src/components/calendar/compact-bit-item.tsx` (update as needed), `src/components/calendar/compact-bit-item.test.tsx` (update), `src/components/calendar/day-column.test.tsx` (update as needed)
-- **Recipe:** `docs/recipes/calendar-batch2-visual-recipe.md`
-- **Actions:**
-  - Add or verify visible `focus-visible` styling for popup item controls and compact calendar item controls.
-  - Recheck `toSorted()` / `useMemo` only if implementation touched list rendering in a way that creates measurable render cost; document the outcome in code comments only if a non-obvious memoization boundary is added.
-  - Add focused regression coverage for popup item controls or compact item focus behavior where existing tests do not cover it.
-  - Run visual smoke manually across light/dark plus at least one high-contrast theme (`terminal` or `retro-mac`), recording any conflict for follow-up rather than silently normalizing the recipe.
-- **Acceptance:**
-  - Calendar popup item controls have visible keyboard focus.
-  - Existing DateCellPopover click/navigation behavior remains intact.
-  - Calendar remains usable in `griddo`, one high-fidelity visual theme, and one high-contrast theme in light/dark.
-  - `pnpm test --run src/components/calendar/compact-bit-item.test.tsx src/components/calendar/day-column.test.tsx` passes.
-- **Commit:** `fix(phase-21): polish calendar focus and theme smoke`
 
 ---
 
