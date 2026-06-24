@@ -19,7 +19,7 @@
 
 | Batch | Task | Scope | Status |
 |-------|------|-------|--------|
-| B1 | T97 | Scratch Pool identity, search, sort, collapsed switcher | Implemented |
+| B1 | T97 | Scratch Pool identity, search, sort, collapsed switcher | Complete ✅ |
 | B2 | T98 | Breakdown selected context and first-keystroke collapse | Pending |
 | B3 | T99 | Staging and triage DnD visual states | Pending |
 | B4 | T100 | Hierarchy search, label removal, workspace integration | Pending |

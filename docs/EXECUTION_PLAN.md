@@ -80,7 +80,7 @@ These apply across all phases:
 
 ### Task 97: Scratch Pool identity, search, sort, collapsed switcher
 
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Dependencies:** Phase 20 complete.
 - **Files:** `src/components/triage/scratch-pool.tsx` (update), `src/stores/triage-store.ts` (update as needed), `src/components/triage/scratch-pool.test.tsx` (update)
 - **Recipe:** `docs/recipes/inbox-triage-batch2-visual-recipe.md`
