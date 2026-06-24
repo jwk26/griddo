@@ -1,4 +1,4 @@
-import { addWeeks, startOfWeek } from "date-fns";
+import { addWeeks, startOfMonth, startOfToday, startOfWeek } from "date-fns";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useCalendarStore } from "./calendar-store";
 
@@ -38,6 +38,19 @@ describe("useCalendarStore", () => {
     useCalendarStore.getState().navigateWeek(1);
 
     expect(useCalendarStore.getState().currentWeekStart).toEqual(addWeeks(initialWeek, 1));
+    expect(useCalendarStore.getState().expandedDay).toBeNull();
+  });
+
+  it("goToToday resets currentWeekStart, currentMonth, and expandedDay", () => {
+    useCalendarStore.getState().setExpandedDay(3);
+    useCalendarStore.getState().navigateWeek(-5);
+
+    useCalendarStore.getState().goToToday();
+
+    expect(useCalendarStore.getState().currentWeekStart).toEqual(
+      startOfWeek(startOfToday(), { weekStartsOn: 1 }),
+    );
+    expect(useCalendarStore.getState().currentMonth).toEqual(startOfMonth(startOfToday()));
     expect(useCalendarStore.getState().expandedDay).toBeNull();
   });
 });

@@ -29,7 +29,7 @@
 
 | Batch | Tasks | Status | Commit |
 |-------|-------|--------|--------|
-| B1 | T93 — Shared calendar view header | `In Progress` | — |
+| B1 | T93 — Shared calendar view header | `Implemented` | — |
 | B2 | T94 + T95 — Monthly grid + weekly day column theme visuals | `Pending` | — |
 | B3 | T96 — Calendar a11y polish and theme smoke | `Pending` | — |
 

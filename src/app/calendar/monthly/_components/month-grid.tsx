@@ -13,12 +13,9 @@ import {
   startOfToday,
   startOfWeek,
 } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { DateCellPopover } from "@/app/calendar/monthly/_components/date-cell-popover";
-import { Button } from "@/components/ui/button";
+import { CalendarViewHeader } from "@/components/calendar/calendar-view-header";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import { getCalendarDateDropId } from "@/lib/calendar-dnd";
@@ -249,9 +246,9 @@ function MonthDateCell({
 }
 
 export function MonthGrid() {
-  const pathname = usePathname();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const currentMonth = useCalendarStore((state) => state.currentMonth);
+  const goToToday = useCalendarStore((state) => state.goToToday);
   const navigateMonth = useCalendarStore((state) => state.navigateMonth);
   const { bitMap, colorMap, monthlyItems, nodeMap } = useCalendarData();
   const items = monthlyItems(currentMonth);
@@ -261,55 +258,27 @@ export function MonthGrid() {
   const weekdayLabels = Array.from({ length: 7 }, (_, index) =>
     format(addDays(startOfWeek(startOfToday(), { weekStartsOn: 1 }), index), "EEE"),
   );
-  const isMonthlyRoute = pathname === "/calendar/monthly";
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center px-6 py-4">
-        <div className="flex items-center justify-start gap-3">
-          <Button aria-label="Previous month" size="icon-sm" variant="outline" onClick={() => { setSelectedDate(null); navigateMonth(-1); }}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="inline-flex items-center rounded-lg border border-border bg-muted/50 p-1">
-            <Button
-              asChild
-              className={cn(
-                "h-7 rounded-md px-3 text-xs font-medium transition-colors",
-                isMonthlyRoute
-                  ? "text-muted-foreground hover:bg-transparent hover:text-foreground"
-                  : "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground",
-              )}
-              size="sm"
-              variant="ghost"
-            >
-              <Link href="/calendar/weekly">Weekly</Link>
-            </Button>
-            <Button
-              asChild
-              className={cn(
-                "h-7 rounded-md px-3 text-xs font-medium transition-colors",
-                isMonthlyRoute
-                  ? "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground"
-                  : "text-muted-foreground hover:bg-transparent hover:text-foreground",
-              )}
-              size="sm"
-              variant="ghost"
-            >
-              <Link href="/calendar/monthly">Monthly</Link>
-            </Button>
-          </div>
-        </div>
-        <div className="flex justify-center">
-          <span className="text-lg font-semibold tracking-tight tabular-nums">
-            {format(currentMonth, "MMMM yyyy")}
-          </span>
-        </div>
-        <div className="flex justify-end">
-          <Button aria-label="Next month" size="icon-sm" variant="outline" onClick={() => { setSelectedDate(null); navigateMonth(1); }}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <CalendarViewHeader
+        nextLabel="Next month"
+        previousLabel="Previous month"
+        subtitle={format(currentMonth, "yyyy")}
+        title={format(currentMonth, "MMMM")}
+        onNext={() => {
+          setSelectedDate(null);
+          navigateMonth(1);
+        }}
+        onPrev={() => {
+          setSelectedDate(null);
+          navigateMonth(-1);
+        }}
+        onToday={() => {
+          setSelectedDate(null);
+          goToToday();
+        }}
+      />
       <div className="grid grid-cols-7 gap-3 px-6 py-4">
         {weekdayLabels.map((label) => (
           <div key={label} className="px-2 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
