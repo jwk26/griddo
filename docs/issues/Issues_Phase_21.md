@@ -24,8 +24,9 @@
 | ID | Category | Description | Status |
 |----|----------|-------------|--------|
 | ISSUE-21-01 | Process/Low | Sequential Codex A→B execution: B's scope verification relied on `git status` alone after A left uncommitted changes — cannot distinguish B's writes from A's. Future batches: save `git diff --name-only` baseline before B launches, or commit A before B. | Deferred — process improvement for B2 onwards |
-| ISSUE-21-02 | Test/Low | Monthly Today button test verifies `goToToday` is called but does not assert `setSelectedDate(null)` side-effect (open popover should close). Non-blocking; current implementation is correct. T96 focus polish pass could add this regression guard. | Deferred — T96 candidate |
-| ISSUE-21-03 | UX/Low | Weekly header now shows `"April / 2026"` instead of `"Apr 27 – May 3, 2026"`. Recipe canonical, intentional tradeoff. Cross-month weeks lose date-range information. Track for UX review after T96 visual smoke. | Deferred — post-T96 UX review candidate |
+| ISSUE-21-02 | Test/Low | Monthly Today button test verifies `goToToday` is called but does not assert `setSelectedDate(null)` side-effect (open popover should close). | Closed — T96 added regression guard in `calendar-navigation.test.tsx` |
+| ISSUE-21-03 | UX/Low | Weekly header now shows `"June 2026"` instead of date range. Recipe canonical, intentional tradeoff. Cross-month weeks lose date-range information. T96 smoke: no severe usability finding. | Deferred — post-Phase 21 UX review |
+| ISSUE-21-04 | A11y/Medium | DayColumn internal draggable card buttons (CompactNodeItem open/unschedule, PlacedNodeCard open/unschedule, PlacedBitCard open/unschedule) missing `focus-visible` ring. Out of T96 scope (T95 write set). Explicit follow-up required — not a "later candidate". | Deferred — explicit follow-up before Phase 21 close |
 
 ---
 
@@ -35,7 +36,7 @@
 |-------|-------|--------|--------|
 | B1 | T93 — Shared calendar view header | `[x]` Complete (approved) | `bffb0c8` |
 | B2 | T94 + T95 — Monthly grid + weekly day column theme visuals | `[x]` Complete (approved) | T94: `7a2e9ae`, T95: `f133d58` |
-| B3 | T96 — Calendar a11y polish and theme smoke | `Pending` | — |
+| B3 | T96 — Calendar a11y polish and theme smoke | `Implemented` | pending approval |
 
 ### B1 — T93: Shared calendar view header
 
@@ -99,3 +100,43 @@
 - `git diff --check`: clean
 
 **No deviations from spec.**
+
+---
+
+### B3 — T96: Calendar a11y polish and theme smoke
+
+**Classification:** logic-heavy, Claude-direct (exact classes specified; user instruction: skip Gemini for tiny/exact changes)
+
+**Write set:**
+- `src/app/calendar/monthly/_components/date-cell-popover.tsx` (patch)
+- `src/components/calendar/compact-bit-item.tsx` (patch)
+- `src/components/calendar/compact-bit-item.test.tsx` (update)
+- `src/app/calendar/calendar-navigation.test.tsx` (update — ISSUE-21-02 regression guard)
+- `docs/issues/Issues_Phase_21.md` (this document)
+
+**Focus-visible changes applied:**
+- `date-cell-popover.tsx`: Added `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1` to popup item navigation buttons (close button already had ring).
+- `compact-bit-item.tsx`: Added focus-visible ring to root drag surface div, open button (`rounded-sm` added for ring containment), and unschedule button.
+
+**Test additions:**
+- `compact-bit-item.test.tsx`: Added `focus-visible:ring-2 / ring-ring` assertions for root, open button, and unschedule button in pool variant test.
+- `calendar-navigation.test.tsx`: Added `"monthly Today button closes an open day popover"` test — closes ISSUE-21-02.
+
+**Verification:**
+- `compact-bit-item.test.tsx` + `day-column.test.tsx` + `calendar-navigation.test.tsx`: 22/22 passed
+- `pnpm build`: clean (TypeScript + static pages)
+- `git diff --check`: clean
+
+**Visual smoke (2026-06-24):**
+
+| Theme | Mode | Monthly | Weekly | Notes |
+|-------|------|---------|--------|-------|
+| griddo | light | ✅ | — | today badge, grid lines, Jun 1 label |
+| griddo | dark | ✅ | — | today badge, grid lines readable |
+| terminal | dark | ✅ | — | amber high-contrast, dashed grid, today badge |
+| terminal | light | ✅ | ✅ | bright green, today emphasis visible; out-of-month dates near-zero contrast — recipe `opacity-40 grayscale` on bright green, not T96 regression |
+| neumorphism | light | — | ✅ | today column black border, rounded card style |
+
+**Smoke findings:** No new issues. ISSUE-21-03 (weekly header date range) not a severe usability finding — remains deferred. ISSUE-21-04 (DayColumn internal card buttons missing focus-visible) identified and recorded; out of T96 scope.
+
+**Out-of-scope finding recorded as ISSUE-21-04:** DayColumn internal draggable card buttons (CompactNodeItem, PlacedNodeCard, PlacedBitCard — open and unschedule) missing `focus-visible` ring. These are T95 write-set files excluded from T96 scope. Explicit follow-up required before Phase 21 close.

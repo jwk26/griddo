@@ -302,6 +302,31 @@ describe("calendar navigation rows", () => {
     expect(goToTodayMock).toHaveBeenCalledOnce();
   });
 
+  it("monthly Today button closes an open day popover", () => {
+    usePathnameMock.mockReturnValue("/calendar/monthly");
+    monthlyItemsMock.mockReturnValue(new Map([["2026-04-15", []]]));
+
+    const { container } = render(<MonthGrid />);
+    const navRow = findNavRow(container);
+
+    fireEvent.click(
+      screen.getByRole("group", { name: "Wednesday, April 15, 2026, 0 items" }),
+    );
+    expect(
+      screen.getByRole("button", {
+        name: "Open details for Wednesday, April 15, 2026, 0 items",
+      }).parentElement,
+    ).toHaveAttribute("data-open", "true");
+
+    fireEvent.click(within(navRow as HTMLElement).getByRole("button", { name: "Today" }));
+
+    expect(
+      screen.getByRole("button", {
+        name: "Open details for Wednesday, April 15, 2026, 0 items",
+      }).parentElement,
+    ).toHaveAttribute("data-open", "false");
+  });
+
   it("monthly header shows month title and year subtitle", () => {
     usePathnameMock.mockReturnValue("/calendar/monthly");
 
