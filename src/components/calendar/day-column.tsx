@@ -91,7 +91,7 @@ function CompactNodeItem({
       <button
         type="button"
         aria-label={`Open ${node.title}`}
-        className="flex min-w-0 flex-1 items-center gap-2 cursor-pointer text-left"
+        className="flex min-w-0 flex-1 items-center gap-2 cursor-pointer text-left rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
         onClick={onClick}
       >
         <span
@@ -105,7 +105,7 @@ function CompactNodeItem({
       <button
         type="button"
         aria-label={`Unschedule ${node.title}`}
-        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
+        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
         onClick={(event) => {
           event.stopPropagation();
           onUnschedule();
@@ -153,7 +153,7 @@ function PlacedNodeCard({
         <button
           type="button"
           aria-label={`Open ${node.title}`}
-          className="flex min-w-0 items-center gap-3 cursor-pointer text-left"
+          className="flex min-w-0 items-center gap-3 cursor-pointer text-left rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           onClick={onClick}
         >
           <span
@@ -167,7 +167,7 @@ function PlacedNodeCard({
         <button
           type="button"
           aria-label={`Unschedule ${node.title}`}
-          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md cursor-pointer text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md cursor-pointer text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           onClick={(event) => {
             event.stopPropagation();
             onUnschedule();
@@ -227,7 +227,7 @@ function PlacedBitCard({
             <button
               type="button"
               aria-label={`Open ${item.title}`}
-              className="min-w-0 flex-1 cursor-pointer text-left"
+              className="min-w-0 flex-1 cursor-pointer text-left rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
               onClick={onClick}
             >
               <p
@@ -242,7 +242,7 @@ function PlacedBitCard({
             <button
               type="button"
               aria-label={`Unschedule ${item.title}`}
-              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md cursor-pointer text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md cursor-pointer text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
               onClick={(event) => {
                 event.stopPropagation();
                 onUnschedule();

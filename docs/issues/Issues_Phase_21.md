@@ -26,7 +26,7 @@
 | ISSUE-21-01 | Process/Low | Sequential Codex A→B execution: B's scope verification relied on `git status` alone after A left uncommitted changes — cannot distinguish B's writes from A's. Future batches: save `git diff --name-only` baseline before B launches, or commit A before B. | Deferred — process improvement for B2 onwards |
 | ISSUE-21-02 | Test/Low | Monthly Today button test verifies `goToToday` is called but does not assert `setSelectedDate(null)` side-effect (open popover should close). | Closed — T96 added regression guard in `calendar-navigation.test.tsx` |
 | ISSUE-21-03 | UX/Low | Weekly header now shows `"June 2026"` instead of date range. Recipe canonical, intentional tradeoff. Cross-month weeks lose date-range information. T96 smoke: no severe usability finding. | Deferred — post-Phase 21 UX review |
-| ISSUE-21-04 | A11y/Medium | DayColumn internal draggable card buttons (CompactNodeItem open/unschedule, PlacedNodeCard open/unschedule, PlacedBitCard open/unschedule) missing `focus-visible` ring. Out of T96 scope (T95 write set). Explicit follow-up required — not a "later candidate". | Deferred — explicit follow-up before Phase 21 close |
+| ISSUE-21-04 | A11y/Medium | DayColumn internal draggable card buttons (CompactNodeItem open/unschedule, PlacedNodeCard open/unschedule, PlacedBitCard open/unschedule) missing `focus-visible` ring. | Closed — fixed in T96 follow-up commit; regression assertions added to `day-column.test.tsx` |
 
 ---
 
@@ -139,4 +139,4 @@
 
 **Smoke findings:** No new issues. ISSUE-21-03 (weekly header date range) not a severe usability finding — remains deferred. ISSUE-21-04 (DayColumn internal card buttons missing focus-visible) identified and recorded; out of T96 scope.
 
-**Out-of-scope finding recorded as ISSUE-21-04:** DayColumn internal draggable card buttons (CompactNodeItem, PlacedNodeCard, PlacedBitCard — open and unschedule) missing `focus-visible` ring. These are T95 write-set files excluded from T96 scope. Explicit follow-up required before Phase 21 close.
+**ISSUE-21-04 resolved in follow-up commit:** After checkpoint, user directed T96 to resolve ISSUE-21-04 within the same task. Added `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1` to `CompactNodeItem`, `PlacedNodeCard`, and `PlacedBitCard` open/unschedule buttons in `day-column.tsx`. Added regression assertions to the single-node-card, single-bit-card, and compact-node-rows tests in `day-column.test.tsx`. 22/22 tests pass, build clean.
