@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,13 +19,9 @@ export function GridCell({
   isEditMode,
   isEmpty,
   isDragOver = false,
-  borderOpacity = "0.15",
   onAddClick,
   children,
 }: GridCellProps) {
-  const borderStyle: CSSProperties = {
-    borderColor: `hsl(var(--border) / ${borderOpacity})`,
-  };
   const showEditModeAddButton = isEmpty && isEditMode && !!onAddClick && !isDragOver;
   const showDragOverIndicator = isEmpty && isDragOver;
   const showEmptyAffordance = showEditModeAddButton || showDragOverIndicator;
@@ -33,11 +29,10 @@ export function GridCell({
   return (
     <div
       className={cn(
-        "relative h-full rounded-md transition-all border border-dashed",
+        "theme-grid-line relative h-full transition-all",
         showEmptyAffordance && "flex min-h-[5rem] items-center justify-center",
       )}
       data-position={`${x},${y}`}
-      style={borderStyle}
     >
       {children}
       {showEditModeAddButton ? (

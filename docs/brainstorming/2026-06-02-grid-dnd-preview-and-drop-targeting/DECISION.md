@@ -105,6 +105,36 @@ When this Grid DnD item is later promoted, the implementation should review and
 reconcile the Inbox/Triage DnD behavior with the main grid, calendar, and pool
 DnD behavior.
 
+## Addendum: Grid Bit Compact Chip Exploration (2026-06-24)
+
+Phase 20 smoke identified that BitCard needs a separate visual/design pass before
+it consumes Batch 2 theme surface/font/depth treatment (`ISSUE-20-02`). That
+design pass should also revisit Bit drag presentation because the same underlying
+problem appears here: a full horizontal Bit card is too large and can obscure the
+target cell or Node while dragging.
+
+Use the Inbox/Triage staged-item compact token approach as a reference, not a
+direct copy. The grid version should feel like a compact grid Bit, not like a
+Triage staging chip:
+
+- It should fit comfortably inside one grid cell footprint while still reading
+  as a Bit.
+- It should preserve enough Bit identity for targeting: Bit icon, short title or
+  title hint if space allows, and parent/accent color where useful.
+- It should be theme-aware once BitCard theme treatment is designed, including
+  font, border/radius, shadow/depth, and high-contrast themes such as Terminal
+  and Retro Mac.
+- It should remain pointer-centered so the cursor indicates the intended drop
+  target.
+- It should not copy the full BitCard's priority badge, deadline overlay, or
+  progress bar unless the design pass proves those elements remain legible at
+  compact size.
+
+Before implementation, explore this with Gemini and/or a lightweight visual
+mockup. The open design question is the exact shape of a "cell-sized Bit chip":
+how much text it carries, how it uses parent color, and how it differs from both
+Node compact tokens and Inbox/Triage staged Bit tokens.
+
 ## Out of Scope for Now
 
 - Node density mode
