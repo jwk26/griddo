@@ -214,7 +214,7 @@ describe("HierarchyExplorer", () => {
       expect(countEl.textContent).toContain("1 result");
 
       const clearBtn =
-        screen.queryByRole("button", { name: /clear search/i }) ??
+        screen.queryByRole("button", { name: /clear hierarchy search/i }) ??
         screen.queryByTestId("hierarchy-search-clear");
       expect(clearBtn).toBeInTheDocument();
     });
@@ -350,7 +350,7 @@ describe("HierarchyExplorer", () => {
       expect(screen.getByTestId("hierarchy-search-indicator")).toBeInTheDocument();
 
       const clearBtn =
-        screen.getByRole("button", { name: /clear search/i }) ??
+        screen.getByRole("button", { name: /clear hierarchy search/i }) ??
         screen.getByTestId("hierarchy-search-clear");
       fireEvent.click(clearBtn);
 

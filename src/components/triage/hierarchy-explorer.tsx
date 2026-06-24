@@ -334,7 +334,7 @@ export function HierarchyExplorer({
               {activeResultCount === 1 ? "result" : "results"}
             </span>
             <button
-              aria-label="Clear search"
+              aria-label="Clear hierarchy search"
               className="ml-auto flex-shrink-0 rounded px-1 py-0.5 text-muted-foreground/60 hover:bg-muted hover:text-foreground"
               data-testid="hierarchy-search-clear"
               type="button"
