@@ -103,7 +103,7 @@ These apply across all phases:
 
 ### Task 98: Breakdown selected context and first-keystroke collapse
 
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Dependencies:** Task 97.
 - **Files:** `src/components/triage/breakdown-panel.tsx` (update), `src/components/triage/scratch-pool.tsx` (update as needed), `src/stores/triage-store.ts` (update as needed), `src/components/triage/breakdown-panel.test.tsx` (update), `src/components/triage/scratch-pool.test.tsx` (update as needed)
 - **Recipe:** `docs/recipes/inbox-triage-batch2-visual-recipe.md`
