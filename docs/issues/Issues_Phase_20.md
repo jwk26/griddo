@@ -32,7 +32,8 @@
 | ID | Category | Description | Status |
 |----|----------|-------------|--------|
 | ISSUE-20-01 | Deferred/Low | no-flash script in `layout.tsx` duplicates the 8-theme id list and persistence key from `color-theme-store.ts`. Values are in sync now but could drift if themes change. Refactor to a shared non-client constants module (e.g., `src/lib/constants/color-themes.ts`) when Task 90+ is active. | Deferred — T90 complete, still not a blocker; candidate for closing-phase |
-| ISSUE-20-02 | Deferred/Low | `borderOpacity` prop in `GridCellProps` and `levelOpacityMap` in `grid-view.tsx` are now dead code — superseded by the theme CSS variable system. No build/test impact; silently ignored. Candidate for cleanup in a future phase. | Deferred — out of T92 scope |
+| ISSUE-20-02 | Brainstorming/Visual follow-up | BitCard currently does not consume the Batch 2 color-theme surface/font/depth treatment. This is intentional out-of-scope for T92, whose canonical owner is GridCell + NodeCard only. BitCard needs a separate design pass before implementation: decide theme font, border/radius/shadow/depth, priority badge/progress/deadline overlay treatment, and how closely BitCard should align with NodeCard while preserving its text-row/card identity. | Open — add to brainstorming before implementation |
+| ISSUE-20-03 | Deferred/Low | `borderOpacity` prop in `GridCellProps` and `levelOpacityMap` in `grid-view.tsx` are now dead code — superseded by the theme CSS variable system. No build/test impact; silently ignored. Candidate for cleanup in a future phase. | Deferred — out of T92 scope |
 
 ---
 
@@ -116,7 +117,10 @@
 - Phase 19 Archive dropdown guard (`node.systemRole === null`) and edit-mode delete button preserved unchanged.
 - No theme-id conditional branches added.
 
-**Open item (ISSUE-20-02):**
+**Deferred visual follow-up (ISSUE-20-02):**
+- BitCard theme treatment intentionally not changed in T92. Smoke found that Bits do not yet match theme-specific font/shadow/border depth. This is recorded as ISSUE-20-02 and should go through brainstorming/design before implementation.
+
+**Dead code noted (ISSUE-20-03):**
 - `borderOpacity` prop in `GridCellProps` and `levelOpacityMap` in `grid-view.tsx` are now dead code — the level-opacity distinction is superseded by the theme CSS variable system. Candidate for cleanup in a future phase.
 
 **Gates:**

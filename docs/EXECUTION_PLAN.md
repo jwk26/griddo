@@ -135,7 +135,7 @@ These apply across all phases:
 
 ### Task 92: Grid theme consumption
 
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Dependencies:** Task 90.
 - **Files:** `src/components/grid/grid-cell.tsx` (update), `src/components/grid/node-card.tsx` (update), `src/components/grid/grid-cell.test.tsx` (update), `src/components/grid/node-card.test.tsx` (update)
 - **Recipe:** `docs/recipes/theme-system-and-grid-batch2-visual-recipe.md`
