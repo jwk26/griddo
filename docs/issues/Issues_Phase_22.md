@@ -21,7 +21,7 @@
 |-------|------|-------|--------|
 | B1 | T97 | Scratch Pool identity, search, sort, collapsed switcher | Complete ✅ |
 | B2 | T98 | Breakdown selected context and first-keystroke collapse | Implemented ✅ |
-| B3 | T99 | Staging and triage DnD visual states | In Progress |
+| B3 | T99 | Staging and triage DnD visual states | Complete ✅ |
 | B4 | T100 | Hierarchy search, label removal, workspace integration | Pending |
 
 ---

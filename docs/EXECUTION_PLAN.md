@@ -125,7 +125,7 @@ These apply across all phases:
 
 ### Task 99: Staging and triage DnD visual states
 
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Dependencies:** Task 97.
 - **Files:** `src/components/triage/staging-zone.tsx` (update), `src/components/triage/triage-workspace.tsx` (update), `src/components/triage/triage-drag-token.tsx` (update as needed), `src/components/triage/staging-zone.test.tsx` (update), `src/hooks/use-triage-dnd.test.ts` (update as needed)
 - **Recipe:** `docs/recipes/inbox-triage-batch2-visual-recipe.md`
