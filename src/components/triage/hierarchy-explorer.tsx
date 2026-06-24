@@ -38,7 +38,7 @@ const CELL_STATE_CLASSES: Record<HierarchyCellState, string> = {
   "pending-confirmation":
     "border-ring bg-popover text-foreground motion-safe:animate-pulse",
   invalid:
-    "border-destructive bg-background text-muted-foreground/50 cursor-not-allowed",
+    "border-muted bg-muted/10 text-muted-foreground/50 cursor-not-allowed",
 };
 
 function getCandidateType(
@@ -104,6 +104,7 @@ export function HierarchyExplorer({
   const [selectedHomeId, setSelectedHomeId] = useState<string | null>(null);
   const [selectedL1Id, setSelectedL1Id] = useState<string | null>(null);
   const [selectedL2Id, setSelectedL2Id] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const { nodes: rootGridNodes } = useGridData(null);
   const { nodes: rawL1Nodes, bits: rawL1Bits } = useGridData(selectedHomeId);
   const { nodes: rawL2Nodes, bits: rawL2Bits } = useGridData(selectedL1Id);
@@ -128,6 +129,57 @@ export function HierarchyExplorer({
   const selectedHomeTitle = selectedHomeNode?.title ?? null;
   const selectedL1Title = selectedL1Node?.title ?? null;
   const selectedL2Title = selectedL2Node?.title ?? null;
+
+  const activeSection: "home" | "l1" | "l2" | "l3" =
+    selectedL2Id !== null
+      ? "l3"
+      : selectedL1Id !== null
+        ? "l2"
+        : selectedHomeId !== null
+          ? "l1"
+          : "home";
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  function filterByTitle<T extends { title: string }>(items: T[]): T[] {
+    if (!normalizedQuery) return items;
+    return items.filter((item) =>
+      item.title.toLowerCase().includes(normalizedQuery),
+    );
+  }
+
+  const displayRootNodes =
+    activeSection === "home" ? filterByTitle(rootNodes) : rootNodes;
+  const displayL1Nodes =
+    activeSection === "l1" ? filterByTitle(l1Nodes) : l1Nodes;
+  const displayL1Bits =
+    activeSection === "l1" ? filterByTitle(l1Bits) : l1Bits;
+  const displayL2Nodes =
+    activeSection === "l2" ? filterByTitle(l2Nodes) : l2Nodes;
+  const displayL2Bits =
+    activeSection === "l2" ? filterByTitle(l2Bits) : l2Bits;
+  const displayL3Nodes =
+    activeSection === "l3" ? filterByTitle(l3Nodes) : l3Nodes;
+  const displayL3Bits =
+    activeSection === "l3" ? filterByTitle(l3Bits) : l3Bits;
+
+  const activeSectionLabel =
+    activeSection === "home"
+      ? "Home"
+      : activeSection === "l1"
+        ? (selectedHomeTitle ?? "L1")
+        : activeSection === "l2"
+          ? (selectedL1Title ?? "L2")
+          : (selectedL2Title ?? "L3");
+
+  const activeResultCount =
+    activeSection === "home"
+      ? displayRootNodes.length
+      : activeSection === "l1"
+        ? displayL1Nodes.length + displayL1Bits.length
+        : activeSection === "l2"
+          ? displayL2Nodes.length + displayL2Bits.length
+          : displayL3Nodes.length + displayL3Bits.length;
 
   const homeSectionDropId = getTriageHierarchyDropId("body-home");
   const { setNodeRef: setHomeSectionRef } = useDroppable({
@@ -247,110 +299,169 @@ export function HierarchyExplorer({
 
   return (
     <div
-      className="flex min-h-0 w-full flex-row overflow-x-hidden rounded-md border border-border/50 bg-card"
+      className="flex min-h-0 w-full flex-col rounded-md border border-border/50 bg-card"
       data-testid="hierarchy-explorer"
     >
-      <HierarchyColumn
-        label="Home"
-        selectedTitle="Home"
-        hasRightBorder
-        bodyRef={setHomeSectionRef}
-        bodyStateClass={CELL_STATE_CLASSES[homeSectionBodyState]}
-        bodyTestId="hierarchy-section-body-home"
-      >
-        <HierarchyItemList
-          activeDragItem={activeDragItem}
-          bits={[]}
-          nodes={rootNodes}
-          onSelectNode={(nodeId) => {
-            setSelectedHomeId(nodeId);
-            setSelectedL1Id(null);
-            setSelectedL2Id(null);
-          }}
-          overTargetId={overTargetId}
-          parentPath={["Home"]}
-          pendingPlacementDropId={pendingPlacementDropId}
-          selectedNodeId={selectedHomeId}
+      {/* Search bar */}
+      <div className="flex flex-col gap-1 border-b border-border/50 px-2 py-1.5">
+        <input
+          aria-label="Search hierarchy"
+          className="h-7 w-full rounded-md border border-border/50 bg-background px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          placeholder="Search hierarchy"
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
-      </HierarchyColumn>
 
-      <HierarchyColumn
-        label="L1"
-        selectedTitle={selectedHomeTitle ?? "None selected"}
-        hasRightBorder
-        isDimmed={selectedHomeId === null}
-        bodyRef={setL1SectionRef}
-        bodyStateClass={CELL_STATE_CLASSES[l1SectionBodyState]}
-        bodyTestId="hierarchy-section-body-l1"
-      >
-        {selectedHomeId === null ? null : (
+        {normalizedQuery && (
+          <div
+            aria-label={`Filtering ${activeSectionLabel} for ${searchQuery}, ${activeResultCount} ${activeResultCount === 1 ? "result" : "results"}`}
+            aria-live="polite"
+            className="flex min-w-0 items-center gap-1 text-[10px] text-muted-foreground/70"
+            data-testid="hierarchy-search-indicator"
+          >
+            <span className="sr-only">{activeSectionLabel}:</span>
+
+            <span className="truncate font-mono" data-testid="hierarchy-search-query">
+              &ldquo;{searchQuery}&rdquo;
+            </span>
+            <span className="flex-shrink-0">·</span>
+            <span
+              className="flex-shrink-0"
+              data-testid="hierarchy-search-result-count"
+            >
+              {activeResultCount}{" "}
+              {activeResultCount === 1 ? "result" : "results"}
+            </span>
+            <button
+              aria-label="Clear search"
+              className="ml-auto flex-shrink-0 rounded px-1 py-0.5 text-muted-foreground/60 hover:bg-muted hover:text-foreground"
+              data-testid="hierarchy-search-clear"
+              type="button"
+              onClick={() => setSearchQuery("")}
+            >
+              Clear
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Columns — active section gets scope-highlight, inactive sections de-emphasized */}
+      <div className="flex min-h-0 flex-1 flex-row overflow-x-hidden">
+        <HierarchyColumn
+          label="Home"
+          selectedTitle="Home"
+          hasRightBorder
+          isScopeActive={normalizedQuery !== "" && activeSection === "home"}
+          isScopeInactive={normalizedQuery !== "" && activeSection !== "home"}
+          bodyRef={setHomeSectionRef}
+          bodyStateClass={CELL_STATE_CLASSES[homeSectionBodyState]}
+          bodyTestId="hierarchy-section-body-home"
+        >
           <HierarchyItemList
             activeDragItem={activeDragItem}
-            bits={l1Bits}
-            nodes={l1Nodes}
+            bits={[]}
+            hasActiveQuery={normalizedQuery !== "" && activeSection === "home"}
+            nodes={displayRootNodes}
             onSelectNode={(nodeId) => {
-              setSelectedL1Id(nodeId);
+              setSelectedHomeId(nodeId);
+              setSelectedL1Id(null);
               setSelectedL2Id(null);
             }}
             overTargetId={overTargetId}
-            parentPath={["Home", selectedHomeTitle ?? "Unknown"]}
+            parentPath={["Home"]}
             pendingPlacementDropId={pendingPlacementDropId}
-            selectedNodeId={selectedL1Id}
+            selectedNodeId={selectedHomeId}
           />
-        )}
-      </HierarchyColumn>
+        </HierarchyColumn>
 
-      <HierarchyColumn
-        label="L2"
-        selectedTitle={selectedL1Title ?? "None selected"}
-        hasRightBorder
-        isDimmed={selectedL1Id === null}
-        bodyRef={setL2SectionRef}
-        bodyStateClass={CELL_STATE_CLASSES[l2SectionBodyState]}
-        bodyTestId="hierarchy-section-body-l2"
-      >
-        {selectedL1Id === null ? null : (
-          <HierarchyItemList
-            activeDragItem={activeDragItem}
-            bits={l2Bits}
-            nodes={l2Nodes}
-            onSelectNode={setSelectedL2Id}
-            overTargetId={overTargetId}
-            parentPath={[
-              "Home",
-              selectedHomeTitle ?? "Unknown",
-              selectedL1Title ?? "Unknown",
-            ]}
-            pendingPlacementDropId={pendingPlacementDropId}
-            selectedNodeId={selectedL2Id}
-          />
-        )}
-      </HierarchyColumn>
+        <HierarchyColumn
+          label="L1"
+          selectedTitle={selectedHomeTitle ?? "None selected"}
+          hasRightBorder
+          isDimmed={selectedHomeId === null}
+          isScopeActive={normalizedQuery !== "" && activeSection === "l1"}
+          isScopeInactive={normalizedQuery !== "" && activeSection !== "l1"}
+          bodyRef={setL1SectionRef}
+          bodyStateClass={CELL_STATE_CLASSES[l1SectionBodyState]}
+          bodyTestId="hierarchy-section-body-l1"
+        >
+          {selectedHomeId === null ? null : (
+            <HierarchyItemList
+              activeDragItem={activeDragItem}
+              bits={displayL1Bits}
+              hasActiveQuery={normalizedQuery !== "" && activeSection === "l1"}
+              nodes={displayL1Nodes}
+              onSelectNode={(nodeId) => {
+                setSelectedL1Id(nodeId);
+                setSelectedL2Id(null);
+              }}
+              overTargetId={overTargetId}
+              parentPath={["Home", selectedHomeTitle ?? "Unknown"]}
+              pendingPlacementDropId={pendingPlacementDropId}
+              selectedNodeId={selectedL1Id}
+            />
+          )}
+        </HierarchyColumn>
 
-      <HierarchyColumn
-        label="L3"
-        selectedTitle={selectedL2Title ?? "None selected"}
-        isDimmed={selectedL2Id === null}
-        bodyRef={setL3SectionRef}
-        bodyStateClass={CELL_STATE_CLASSES[l3SectionBodyState]}
-        bodyTestId="hierarchy-section-body-l3"
-      >
-        {selectedL2Id === null ? null : (
-          <HierarchyItemList
-            activeDragItem={activeDragItem}
-            bits={l3Bits}
-            nodes={l3Nodes}
-            overTargetId={overTargetId}
-            parentPath={[
-              "Home",
-              selectedHomeTitle ?? "Unknown",
-              selectedL1Title ?? "Unknown",
-              selectedL2Title ?? "Unknown",
-            ]}
-            pendingPlacementDropId={pendingPlacementDropId}
-          />
-        )}
-      </HierarchyColumn>
+        <HierarchyColumn
+          label="L2"
+          selectedTitle={selectedL1Title ?? "None selected"}
+          hasRightBorder
+          isDimmed={selectedL1Id === null}
+          isScopeActive={normalizedQuery !== "" && activeSection === "l2"}
+          isScopeInactive={normalizedQuery !== "" && activeSection !== "l2"}
+          bodyRef={setL2SectionRef}
+          bodyStateClass={CELL_STATE_CLASSES[l2SectionBodyState]}
+          bodyTestId="hierarchy-section-body-l2"
+        >
+          {selectedL1Id === null ? null : (
+            <HierarchyItemList
+              activeDragItem={activeDragItem}
+              bits={displayL2Bits}
+              hasActiveQuery={normalizedQuery !== "" && activeSection === "l2"}
+              nodes={displayL2Nodes}
+              onSelectNode={setSelectedL2Id}
+              overTargetId={overTargetId}
+              parentPath={[
+                "Home",
+                selectedHomeTitle ?? "Unknown",
+                selectedL1Title ?? "Unknown",
+              ]}
+              pendingPlacementDropId={pendingPlacementDropId}
+              selectedNodeId={selectedL2Id}
+            />
+          )}
+        </HierarchyColumn>
+
+        <HierarchyColumn
+          label="L3"
+          selectedTitle={selectedL2Title ?? "None selected"}
+          isDimmed={selectedL2Id === null}
+          isScopeActive={normalizedQuery !== "" && activeSection === "l3"}
+          isScopeInactive={normalizedQuery !== "" && activeSection !== "l3"}
+          bodyRef={setL3SectionRef}
+          bodyStateClass={CELL_STATE_CLASSES[l3SectionBodyState]}
+          bodyTestId="hierarchy-section-body-l3"
+        >
+          {selectedL2Id === null ? null : (
+            <HierarchyItemList
+              activeDragItem={activeDragItem}
+              bits={displayL3Bits}
+              hasActiveQuery={normalizedQuery !== "" && activeSection === "l3"}
+              nodes={displayL3Nodes}
+              overTargetId={overTargetId}
+              parentPath={[
+                "Home",
+                selectedHomeTitle ?? "Unknown",
+                selectedL1Title ?? "Unknown",
+                selectedL2Title ?? "Unknown",
+              ]}
+              pendingPlacementDropId={pendingPlacementDropId}
+            />
+          )}
+        </HierarchyColumn>
+      </div>
     </div>
   );
 }
@@ -363,6 +474,8 @@ function HierarchyColumn({
   children,
   hasRightBorder = false,
   isDimmed = false,
+  isScopeActive = false,
+  isScopeInactive = false,
   label,
   selectedTitle,
 }: {
@@ -373,6 +486,8 @@ function HierarchyColumn({
   children: ReactNode;
   hasRightBorder?: boolean;
   isDimmed?: boolean;
+  isScopeActive?: boolean;
+  isScopeInactive?: boolean;
   label: string;
   selectedTitle: string;
 }) {
@@ -382,7 +497,11 @@ function HierarchyColumn({
         "flex min-w-0 flex-1 flex-col bg-background",
         hasRightBorder && "border-r border-border/50",
         isDimmed && "bg-muted/30 border-border/50",
+        isScopeActive && "ring-1 ring-primary/40",
+        isScopeInactive && "opacity-50",
       )}
+      data-scope-active={isScopeActive || undefined}
+      data-scope-inactive={isScopeInactive || undefined}
     >
       <div className="border-b border-border/50 bg-muted/30 px-3 py-2">
         <div className="truncate font-mono text-[10px] font-medium uppercase text-muted-foreground/50">
@@ -411,6 +530,7 @@ function HierarchyColumn({
 function HierarchyItemList({
   activeDragItem,
   bits,
+  hasActiveQuery,
   nodes,
   onSelectNode,
   overTargetId,
@@ -420,6 +540,7 @@ function HierarchyItemList({
 }: {
   activeDragItem: TriageDragItem;
   bits: Bit[];
+  hasActiveQuery?: boolean;
   nodes: Node[];
   onSelectNode?: (nodeId: string) => void;
   overTargetId: string | null;
@@ -431,7 +552,7 @@ function HierarchyItemList({
     return (
       <div className="flex h-full items-center justify-center p-4">
         <div className="font-sans text-xs text-muted-foreground/50">
-          No items in this grid
+          {hasActiveQuery ? "No matches" : "No items in this grid"}
         </div>
       </div>
     );

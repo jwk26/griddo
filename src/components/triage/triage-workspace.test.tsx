@@ -121,10 +121,14 @@ describe("TriageWorkspace", () => {
     expect(within(workspace).getByTestId("breakdown-panel")).toBeInTheDocument();
   });
 
-  it("keeps staging zones and the hierarchy explorer visible", () => {
+  it("keeps staging zones and the hierarchy explorer visible without visible section headings", () => {
     render(<TriageWorkspace node={createNode()} />);
 
-    expect(screen.getByText("Hierarchy Explorer")).toBeInTheDocument();
+    // heading text must NOT be visible
+    expect(screen.queryByText("Hierarchy Explorer")).not.toBeInTheDocument();
+    expect(screen.queryByText("Breakdown / Scribble")).not.toBeInTheDocument();
+
+    // structural elements must still render
     expect(screen.getByTestId("hierarchy-explorer")).toBeInTheDocument();
     expect(screen.getByTestId("node-staging-zone")).toBeInTheDocument();
     expect(screen.getByTestId("bit-staging-zone")).toBeInTheDocument();

@@ -28,7 +28,7 @@ It is **not** the source of truth for issue details. The source remains each `do
 | `Issues_Phase_18.md` | ISSUE-18-18 | Inbox/Triage UX | `Add a note...` input loses focus after Enter, blocking rapid note entry. | Promote as a small keyboard-flow UX fix. |
 | `Issues_Phase_18.md` | ISSUE-18-19 | Inbox/Triage UX | Breakdown panel needs visible selected Scratch context. | Design and implement with broader triage workspace polish. |
 | `Issues_Phase_18.md` | ISSUE-18-20 | Inbox/Triage visual state | Invalid hierarchy/staging drop state uses destructive red treatment too strongly. | Replace with muted/de-emphasized invalid-state language in a visual pass. |
-| `Issues_Phase_18.md` | ISSUE-18-21 | Hierarchy Explorer | Search bar may be missing; canonical requirement still needs confirmation. | Check `DECISION.md`, `SPEC.md`, and planning docs before scoping. |
+| ~~`Issues_Phase_18.md`~~ | ~~ISSUE-18-21~~ | ~~Hierarchy Explorer~~ | ~~Search bar may be missing; canonical requirement still needs confirmation.~~ | **Closed — Phase 22 T100:** scoped active-section search delivered with persistent filter indicator. |
 | `Issues_Phase_18.md` | ISSUE-18-22 | Product policy | Duplicate Node/Bit titles are allowed globally; policy is undecided. | Decide global title uniqueness policy before implementing validation. |
 | `Issues_Phase_19.md` | ISSUE-19-01 | UX follow-up | Archive menu trigger (`⋯`) on NodeCard/BitCard is too subtle and hard to click. | User to rethink interaction model before implementation. |
 | `Issues_Phase_20.md` | ISSUE-20-01 | Deferred/Low | `no-flash` script in `layout.tsx` duplicates the 8-theme id list and persistence key from `color-theme-store.ts`. | Refactor to a shared non-client constants module in a future phase. |

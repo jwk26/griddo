@@ -22,7 +22,7 @@
 | B1 | T97 | Scratch Pool identity, search, sort, collapsed switcher | Complete ✅ |
 | B2 | T98 | Breakdown selected context and first-keystroke collapse | Implemented ✅ |
 | B3 | T99 | Staging and triage DnD visual states | Complete ✅ |
-| B4 | T100 | Hierarchy search, label removal, workspace integration | In Progress |
+| B4 | T100 | Hierarchy search, label removal, workspace integration | Implemented ✅ |
 
 ---
 
@@ -109,3 +109,33 @@ Hierarchy invalid drop styling (in `hierarchy-explorer.tsx`) is deferred to T100
 - `ISSUE-18-17` first-keystroke collapse: fully wired (T97 provided state model; T98 wires the trigger)
 - `ISSUE-18-18` Enter keeps focus: adopted
 - `ISSUE-18-19` selected-Scratch context: compact context strip delivered
+
+---
+
+### B4/T100 Execution Log
+
+**Classification:** logic-heavy + behavior-heavy (Gemini skipped — spec fully prescriptive: exact class names for invalid state, exact filtering scope rules, exact indicator attributes; no design judgment gap)
+
+**Design decision during batch:** ISSUE-22-D03 recorded before launch — visible filter pill must NOT show scope label text (Home/L1/L2/L3); scope communicated via visual column emphasis + `aria-label` + `sr-only` text only.
+
+**Parallel test authoring:** Codex A (implementer) and Codex B (test author) ran in parallel. Codex A deviated by also writing `hierarchy-explorer.test.tsx`; Codex B's version (which arrived last) took precedence as the independent test author. Both files were inspected before committing.
+
+**Single-writer deviation note:** Codex A created `hierarchy-explorer.test.tsx` in addition to its implementation targets. This violates the single-writer rule. Codex B's independently-authored version was used; Codex A's test contribution was discarded (overwritten). No merge conflict — sequential writes, last writer wins.
+
+**Changes delivered:**
+- `hierarchy-explorer.tsx`: `invalid` state class `border-destructive` → `border-muted bg-muted/10` (muted/unavailable language)
+- `hierarchy-explorer.tsx`: `searchQuery` state + `activeSection` derived value + `filterByTitle` per-section filtering
+- `hierarchy-explorer.tsx`: outer layout changed from `flex-row` to `flex-col`; search input + filter indicator added above columns
+- `hierarchy-explorer.tsx`: filter indicator — `sr-only` scope span + `aria-label` with scope + visible query + result count + Clear button; no visible scope text in pill (ISSUE-22-D03)
+- `hierarchy-explorer.tsx`: `HierarchyColumn` gains `isScopeActive`/`isScopeInactive` props (gated on `normalizedQuery !== ""`); `data-scope-active`/`data-scope-inactive` attributes for testability
+- `hierarchy-explorer.tsx`: `HierarchyItemList` gains `hasActiveQuery` prop; empty state shows "No matches" vs "No items in this grid"
+- `triage-workspace.tsx`: `<PanelHeader title="Breakdown / Scribble" />` replaced with 32px `aria-hidden` spacer
+- `triage-workspace.tsx`: `<PanelHeader title="Hierarchy Explorer" />` removed entirely; `p-3` gap on hierarchy wrapper removed
+- `triage-workspace.tsx`: `PanelHeader` function removed (no remaining callers)
+- `triage-workspace.test.tsx`: "keeps staging zones and the hierarchy explorer visible" test updated — inverted `Hierarchy Explorer` assertion, added `Breakdown / Scribble` negative assertion
+- `hierarchy-explorer.test.tsx`: new file (codex-b), 11 behavioral tests covering all T100 acceptance criteria
+
+**Deferred issues resolved:**
+- `ISSUE-18-21` Hierarchy Explorer search bar missing → closed. Scoped active-section search delivered with persistent filter indicator.
+
+**Verification:** 22 tests passed (11 triage-workspace.test.tsx + 11 hierarchy-explorer.test.tsx), build passed, no whitespace errors.

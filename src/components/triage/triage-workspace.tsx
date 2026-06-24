@@ -68,14 +68,6 @@ const snapDragTokenToCursor: Modifier = ({
   };
 };
 
-function PanelHeader({ title }: { title: string }) {
-  return (
-    <div className="flex h-8 items-center justify-between border-b border-border bg-muted/30 px-3 py-1.5 font-sans text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80">
-      <span>{title}</span>
-    </div>
-  );
-}
-
 function TriageRemoveDropTarget({
   activeDragItem,
   overTargetId,
@@ -155,7 +147,10 @@ export function TriageWorkspace({ node }: { node: Node }) {
         >
           <div className="flex min-h-0 basis-3/5 border-b border-border">
             <div className="flex min-w-0 basis-3/5 flex-col border-r border-border bg-card">
-              <PanelHeader title="Breakdown / Scribble" />
+              <div
+                className="flex h-8 items-center border-b border-border bg-muted/30 px-3 py-1.5"
+                aria-hidden="true"
+              />
               <div className="min-h-0 flex-1 overflow-hidden">
                 <BreakdownPanel />
               </div>
@@ -203,8 +198,7 @@ export function TriageWorkspace({ node }: { node: Node }) {
           </DragOverlay>
 
           <div className="flex min-h-0 basis-2/5 flex-col bg-background">
-            <PanelHeader title="Hierarchy Explorer" />
-            <div className="flex min-h-0 flex-1 overflow-hidden p-3">
+            <div className="flex min-h-0 flex-1 overflow-hidden">
               <HierarchyExplorer
                 activeDragItem={activeDragItem}
                 overTargetId={overTargetId}
