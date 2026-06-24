@@ -32,7 +32,8 @@ export const useTriageStore = create<TriageState>((set) => ({
   scratchPoolManualExpandedForId: null,
   stagedCandidates: {},
   selectScratch: (id) => set({ selectedScratchId: id }),
-  clearSelection: () => set({ selectedScratchId: null }),
+  clearSelection: () =>
+    set({ selectedScratchId: null, scratchPoolManualExpandedForId: null }),
   setScratchPoolExpanded: (expanded) =>
     set(
       expanded

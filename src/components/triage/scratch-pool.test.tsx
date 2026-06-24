@@ -378,4 +378,36 @@ describe("ScratchPool", () => {
     expect(searchInput).toHaveClass("focus-visible:ring-2");
     expect(searchInput).toHaveClass("focus-visible:ring-ring");
   });
+
+  it("manual expand records selectedScratchId in scratchPoolManualExpandedForId", () => {
+    useTriageStore.setState({ selectedScratchId: "scratch-1", scratchPoolExpanded: false });
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [createBit({ id: "scratch-1", title: "Scratch one" })],
+    });
+
+    render(<ScratchPool />);
+
+    fireEvent.click(screen.getByLabelText("Expand Scratch Pool"));
+
+    expect(useTriageStore.getState().scratchPoolManualExpandedForId).toBe("scratch-1");
+  });
+
+  it("changing selectedScratchId resets scratchPoolManualExpandedForId to null", () => {
+    useTriageStore.setState({
+      selectedScratchId: "scratch-1",
+      scratchPoolManualExpandedForId: "scratch-1",
+    });
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "scratch-1", title: "Scratch one" }),
+        createBit({ id: "scratch-2", title: "Scratch two" }),
+      ],
+    });
+
+    render(<ScratchPool />);
+
+    useTriageStore.setState({ selectedScratchId: "scratch-2" });
+
+    expect(useTriageStore.getState().scratchPoolManualExpandedForId).toBeNull();
+  });
 });
