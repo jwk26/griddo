@@ -36,7 +36,7 @@
 |-------|-------|--------|--------|
 | B1 | T93 — Shared calendar view header | `[x]` Complete (approved) | `bffb0c8` |
 | B2 | T94 + T95 — Monthly grid + weekly day column theme visuals | `[x]` Complete (approved) | T94: `7a2e9ae`, T95: `f133d58` |
-| B3 | T96 — Calendar a11y polish and theme smoke | `Implemented` | pending approval |
+| B3 | T96 — Calendar a11y polish and theme smoke | `[x]` Complete (approved) | `9497d38`, `a664cf9` |
 
 ### B1 — T93: Shared calendar view header
 
@@ -137,6 +137,6 @@
 | terminal | light | ✅ | ✅ | bright green, today emphasis visible; out-of-month dates near-zero contrast — recipe `opacity-40 grayscale` on bright green, not T96 regression |
 | neumorphism | light | — | ✅ | today column black border, rounded card style |
 
-**Smoke findings:** No new issues. ISSUE-21-03 (weekly header date range) not a severe usability finding — remains deferred. ISSUE-21-04 (DayColumn internal card buttons missing focus-visible) identified and recorded; out of T96 scope.
+**Smoke findings:** No new issues. ISSUE-21-03 (weekly header date range) not a severe usability finding — remains deferred. ISSUE-21-04 (DayColumn internal card buttons missing focus-visible) initially identified during smoke, then resolved in follow-up commit `a664cf9` within T96 — Closed.
 
 **ISSUE-21-04 resolved in follow-up commit:** After checkpoint, user directed T96 to resolve ISSUE-21-04 within the same task. Added `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1` to `CompactNodeItem`, `PlacedNodeCard`, and `PlacedBitCard` open/unschedule buttons in `day-column.tsx`. Added regression assertions to the single-node-card, single-bit-card, and compact-node-rows tests in `day-column.test.tsx`. 22/22 tests pass, build clean.

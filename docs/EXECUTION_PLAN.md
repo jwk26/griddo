@@ -137,7 +137,7 @@ These apply across all phases:
 
 ### Task 96: Calendar a11y polish and theme smoke
 
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Dependencies:** Tasks 94 and 95.
 - **Files:** `src/app/calendar/monthly/_components/date-cell-popover.tsx` (update), `src/components/calendar/compact-bit-item.tsx` (update as needed), `src/components/calendar/compact-bit-item.test.tsx` (update), `src/components/calendar/day-column.test.tsx` (update as needed)
 - **Recipe:** `docs/recipes/calendar-batch2-visual-recipe.md`
