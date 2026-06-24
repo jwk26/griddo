@@ -347,7 +347,7 @@ export function BreakdownPanel() {
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
         <div
           aria-label={`Selected Scratch: ${selectedScratch?.title ?? "Unknown Scratch"}`}
-          className="mx-3 mt-2 flex min-w-0 items-center gap-2 rounded-lg border border-border/70 bg-muted/30 px-2.5 py-1.5"
+          className="mt-2 flex min-w-0 items-center gap-2 rounded-lg border border-border/70 bg-muted/30 px-2.5 py-1.5"
         >
           <Inbox
             aria-hidden="true"
