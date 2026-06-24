@@ -15,6 +15,7 @@
 
 | # | Question | Resolution | Status |
 |---|----------|------------|--------|
+| Q1 | T93 plan listed `monthly/page.tsx` in Files but actual implementation touched `monthly/_components/month-grid.tsx` (header lives in MonthGrid, not the page shell). `calendar-store.ts` / `calendar-store.test.ts` also added out-of-plan for `goToToday`. | EXECUTION_PLAN.md T93 Files corrected post-approval to match actual write set. Implementation was correct; plan entry was imprecise. | Reflected |
 
 ---
 

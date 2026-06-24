@@ -82,7 +82,7 @@ These apply across all phases:
 
 - **Status:** `[x]`
 - **Dependencies:** Phase 20 complete.
-- **Files:** `src/components/calendar/calendar-view-header.tsx` (create), `src/app/calendar/weekly/page.tsx` (update), `src/app/calendar/monthly/page.tsx` (update), `src/app/calendar/calendar-navigation.test.tsx` (update)
+- **Files:** `src/components/calendar/calendar-view-header.tsx` (create), `src/stores/calendar-store.ts` (update), `src/app/calendar/weekly/page.tsx` (update), `src/app/calendar/monthly/_components/month-grid.tsx` (update), `src/app/calendar/calendar-navigation.test.tsx` (update), `src/stores/calendar-store.test.ts` (update)
 - **Recipe:** `docs/recipes/calendar-batch2-visual-recipe.md`
 - **Actions:**
   - `src/components/calendar/calendar-view-header.tsx`: create the shared header with title + muted subtitle, Weekly/Monthly segmented control, previous/today/next controls, and visible focus states.
