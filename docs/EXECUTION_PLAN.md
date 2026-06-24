@@ -38,7 +38,7 @@ Execution plan mode: scaled
 | 17 | ✅ done | Inbox / Triage Workspace — Routing, Layout, Scratch & Breakdown | [archive](execution-plan/archive/phase-17.md) |
 | 18 | ✅ done | Inbox / Triage — Staging & Placement DnD (compact-token, partial Grid DnD) | [archive](execution-plan/archive/phase-18.md) |
 | 19 | ✅ done | Archive View & Direct Archive | [archive](execution-plan/archive/phase-19.md) |
-| 20 | 🔲 active | Batch 2 Theme System & Themed Grid | — |
+| 20 | ✅ done | Batch 2 Theme System & Themed Grid | [archive](execution-plan/archive/phase-20.md) |
 | 21 | 🔲 active | Batch 2 Calendar Visual Alignment | — |
 | 22 | 🔲 active | Batch 2 Inbox / Triage Visual & Interaction Polish | — |
 
@@ -68,87 +68,6 @@ These apply across all phases:
 - **BFS origin rule:** Node creation: BFS from `(0, 0)` (top-left corner). Bit creation: BFS from `(GRID_COLS-1, 0)` (top-right corner). Empty-cell `+` click: BFS from `(clickedX, clickedY)` regardless of type — returns the clicked cell if empty, nearest fallback if occupied.
 - **Non-features (PRD Section 26):** Do NOT implement: Mascot System, Labs, AI-Powered Search, Responsive Design, Onboarding Enhancement. These are explicitly deferred.
 - **Doc authority:** SCHEMA.md = data model source of truth. SPEC.md = architecture/routes/components. DESIGN_TOKENS.md = visual values. This file = execution order. PRD = historical context, non-authoritative for implementation.
-
----
-
-## Phase 20: Batch 2 Theme System & Themed Grid
-
-> **Purpose:** Add the Batch 2 color-theme axis, exact theme tokens, theme picker, and grid theme consumption. This phase lays the CSS/runtime foundation that Calendar and Inbox/Triage polish consume later.
-> **Canonical refs:** SPEC.md Architecture Decision 17; DESIGN_TOKENS.md Color Theme System; `docs/recipes/theme-system-and-grid-batch2-visual-recipe.md`
-> **Policy:** Patch the current Phase 19 app. Do not wholesale-copy prototype files. Dark/light remains owned by `next-themes`; color theme is an orthogonal `data-color-theme` axis.
-
-### Task 89: Color theme runtime axis
-
-- **Status:** `[ ]`
-- **Dependencies:** Phase 19 complete; Batch 2 canonical docs and recipes approved.
-- **Files:** `src/stores/color-theme-store.ts` (create), `src/components/layout/color-theme-provider.tsx` (create), `src/app/providers.tsx` (update), `src/app/layout.tsx` (update), `src/stores/color-theme-store.test.ts` (create)
-- **Recipe:** `docs/recipes/theme-system-and-grid-batch2-visual-recipe.md`
-- **Actions:**
-  - `src/stores/color-theme-store.ts`: export `COLOR_THEMES`, `ColorThemeId`, default `griddo`, persistence key `griddo-color-theme`, validation helper, and Zustand persisted state for the selected color theme.
-  - `src/components/layout/color-theme-provider.tsx`: client component that reads the color-theme store and sets `document.documentElement.dataset.colorTheme`; it must not replace `ThemeProvider` from `next-themes`.
-  - `src/app/providers.tsx`: mount `ColorThemeProvider` inside the existing `ThemeProvider` so the dark/light class and color-theme attribute can coexist.
-  - `src/app/layout.tsx`: add the no-flash initialization script that validates `localStorage["griddo-color-theme"]` and sets `<html data-color-theme>` before hydration; load/register Inter, Playfair Display, Space Mono, and VT323 through the current font-loading approach. If a font cannot be added without build/network risk, record the conflict and documented fallback in the task handoff instead of silently collapsing all themes to the default font.
-  - `src/stores/color-theme-store.test.ts`: cover validation fallback to `griddo`, allowed theme ids, persistence key, and store setter behavior.
-- **Acceptance:**
-  - On first load, `<html>` has `data-color-theme="griddo"` before React hydration.
-  - Selecting another color theme persists `griddo-color-theme` and survives refresh.
-  - Switching dark/light mode still works through `next-themes`; it does not overwrite `data-color-theme`.
-  - Invalid persisted values fall back to `griddo`.
-  - Theme font fidelity is verified: `terminal` uses VT323, `tiny-desk` uses Playfair Display, `origami` / `retro-mac` use Space Mono, and `neumorphism` / `claymorphism` / `graphite` use Inter, or the task handoff records the exact blocker and fallback.
-  - `pnpm test --run src/stores/color-theme-store.test.ts` passes.
-- **Commit:** `feat(phase-20): add color theme runtime axis`
-
-### Task 90: Exact theme values and shared theme classes
-
-- **Status:** `[x]`
-- **Dependencies:** Task 89.
-- **Files:** `src/app/globals.css` (update), `src/app/theme-transition.test.ts` (update as needed)
-- **Recipe:** `docs/recipes/theme-system-and-grid-batch2-visual-recipe.md`
-- **Actions:**
-  - `src/app/globals.css`: add the Batch 2 base/default layer from the recipe's `Exact Theme Values` section, including `--theme-*`, `--calendar-*`, swatches, `.dark` base shadows, and shared `.theme-*` component classes.
-  - `src/app/globals.css`: add the 7 non-default override theme blocks exactly from the recipe; preserve cascade/inheritance and do not expand omitted variables by guessing.
-  - `src/app/globals.css`: define `.theme-node-card`, `.theme-grid-line`, `.theme-surface`, and hover styles using CSS variables only.
-  - `src/app/theme-transition.test.ts`: adjust or add assertions so theme-related global CSS and transition assumptions still pass with `data-color-theme`.
-- **Acceptance:**
-  - All 8 user-facing theme ids are represented: `griddo` through the base layer, plus 7 override themes.
-  - `--theme-shadow`, `--theme-shadow-hover`, `--calendar-today-*`, and swatch values match the recipe's exact source-of-record values.
-  - No component-specific hardcoded per-theme colors are introduced outside `globals.css`.
-  - `pnpm test --run src/app/theme-transition.test.ts` passes.
-- **Commit:** `feat(phase-20): add exact Batch 2 theme values`
-
-### Task 91: Sidebar color theme picker
-
-- **Status:** `[x]`
-- **Dependencies:** Task 89.
-- **Files:** `src/components/layout/color-theme-toggle.tsx` (create), `src/components/layout/sidebar.tsx` (update), `src/components/layout/sidebar.test.tsx` (update)
-- **Recipe:** `docs/recipes/theme-system-and-grid-batch2-visual-recipe.md`
-- **Actions:**
-  - `src/components/layout/color-theme-toggle.tsx`: create an icon-only `Palette` trigger with `aria-label="Change color theme"`, `PopoverContent align="end" side="right" sideOffset={12}`, swatch + label + selected check rows, and accessible keyboard/focus behavior.
-  - `src/components/layout/sidebar.tsx`: render the color theme picker in the sidebar without disturbing existing sidebar actions, system Node buttons, Quick Capture, Search, Calendar, Trash, Inbox badge, or existing dark/light `ThemeToggle`.
-  - `src/components/layout/sidebar.test.tsx`: verify picker trigger visibility, opening behavior, selected check, and store update when a theme is selected.
-- **Acceptance:**
-  - Opening the sidebar theme picker shows all 8 labels and swatches.
-  - Selecting `terminal` changes `<html data-color-theme>` to `terminal`; selecting `griddo` returns to the base theme.
-  - Existing sidebar buttons and Inbox badge still render and navigate as before.
-  - `pnpm test --run src/components/layout/sidebar.test.tsx` passes.
-- **Commit:** `feat(phase-20): add color theme picker`
-
-### Task 92: Grid theme consumption
-
-- **Status:** `[x]`
-- **Dependencies:** Task 90.
-- **Files:** `src/components/grid/grid-cell.tsx` (update), `src/components/grid/node-card.tsx` (update), `src/components/grid/grid-cell.test.tsx` (update), `src/components/grid/node-card.test.tsx` (update)
-- **Recipe:** `docs/recipes/theme-system-and-grid-batch2-visual-recipe.md`
-- **Actions:**
-  - `src/components/grid/grid-cell.tsx`: add `theme-grid-line` to grid cell borders without changing grid dimensions, DnD drop indicators, edit-mode add affordance, or lifecycle filtering behavior.
-  - `src/components/grid/node-card.tsx`: add `theme-node-card` to NodeCard while preserving Phase 19 Archive menu trigger, system-node guard, drag behavior, and icon/title layout.
-  - Tests: assert theme classes are present and existing grid/node-card behavior remains intact.
-- **Acceptance:**
-  - Grid lines visually respond to active color theme through `.theme-grid-line`.
-  - Node cards visually respond through `.theme-node-card` while the Archive `⋯` menu still appears only for non-system Nodes.
-  - No theme id conditional branches are added to grid components.
-  - `pnpm test --run src/components/grid/grid-cell.test.tsx src/components/grid/node-card.test.tsx` passes.
-- **Commit:** `feat(phase-20): apply theme classes to grid surfaces`
 
 ---
 

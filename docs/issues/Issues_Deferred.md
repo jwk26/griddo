@@ -31,6 +31,10 @@ It is **not** the source of truth for issue details. The source remains each `do
 | `Issues_Phase_18.md` | ISSUE-18-21 | Hierarchy Explorer | Search bar may be missing; canonical requirement still needs confirmation. | Check `DECISION.md`, `SPEC.md`, and planning docs before scoping. |
 | `Issues_Phase_18.md` | ISSUE-18-22 | Product policy | Duplicate Node/Bit titles are allowed globally; policy is undecided. | Decide global title uniqueness policy before implementing validation. |
 | `Issues_Phase_19.md` | ISSUE-19-01 | UX follow-up | Archive menu trigger (`⋯`) on NodeCard/BitCard is too subtle and hard to click. | User to rethink interaction model before implementation. |
+| `Issues_Phase_20.md` | ISSUE-20-01 | Deferred/Low | `no-flash` script in `layout.tsx` duplicates the 8-theme id list and persistence key from `color-theme-store.ts`. | Refactor to a shared non-client constants module in a future phase. |
+| `Issues_Phase_20.md` | ISSUE-20-02 | Brainstorming/Visual | BitCard does not yet consume Batch 2 color-theme surface/font/depth treatment. Needs separate design pass before implementation. | Add to brainstorming before implementation. |
+| `Issues_Phase_20.md` | ISSUE-20-03 | Deferred/Low | `borderOpacity` prop in `GridCellProps` and `levelOpacityMap` in `grid-view.tsx` are now dead code, superseded by theme CSS variable system. | Candidate for cleanup in a future phase. |
+| `Issues_Phase_20.md` | ISSUE-20-04 | Deferred/Behavior | Inbox and Archive system Nodes should not receive normal NodeCard aging visual treatment. | Exclude `systemRole !== null` Nodes from aging filter in a focused behavior fix. |
 
 ## Resolved Historical Deferrals
 
@@ -41,4 +45,3 @@ These are listed so future sessions do not re-open already handled carryovers.
 | `Issues_Phase_5.md` | Issue 6 | Urgency hooks bypassing DataStore facade was deferred to Phase 5.5 and handled there. |
 | `Issues_Phase_15.md` | ISSUE-15-01 | Runtime Dexie v3 migration verification was carried to Phase 16 and resolved with `fake-indexeddb` real migration tests. |
 | `Issues_Phase_15.md` | Phase-local Q6 | Phase 19 kickoff: EXECUTION_PLAN T87 corrected to `unarchiveNode`/`unarchiveBit`; Issues_Phase_15.md Q6 marked Resolved. |
-
