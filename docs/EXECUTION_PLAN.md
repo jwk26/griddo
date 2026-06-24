@@ -80,7 +80,7 @@ These apply across all phases:
 
 ### Task 93: Shared calendar view header
 
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Dependencies:** Phase 20 complete.
 - **Files:** `src/components/calendar/calendar-view-header.tsx` (create), `src/app/calendar/weekly/page.tsx` (update), `src/app/calendar/monthly/page.tsx` (update), `src/app/calendar/calendar-navigation.test.tsx` (update)
 - **Recipe:** `docs/recipes/calendar-batch2-visual-recipe.md`

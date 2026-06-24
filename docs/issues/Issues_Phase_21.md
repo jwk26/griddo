@@ -22,6 +22,9 @@
 
 | ID | Category | Description | Status |
 |----|----------|-------------|--------|
+| ISSUE-21-01 | Process/Low | Sequential Codex A→B execution: B's scope verification relied on `git status` alone after A left uncommitted changes — cannot distinguish B's writes from A's. Future batches: save `git diff --name-only` baseline before B launches, or commit A before B. | Deferred — process improvement for B2 onwards |
+| ISSUE-21-02 | Test/Low | Monthly Today button test verifies `goToToday` is called but does not assert `setSelectedDate(null)` side-effect (open popover should close). Non-blocking; current implementation is correct. T96 focus polish pass could add this regression guard. | Deferred — T96 candidate |
+| ISSUE-21-03 | UX/Low | Weekly header now shows `"April / 2026"` instead of `"Apr 27 – May 3, 2026"`. Recipe canonical, intentional tradeoff. Cross-month weeks lose date-range information. Track for UX review after T96 visual smoke. | Deferred — post-T96 UX review candidate |
 
 ---
 
@@ -29,7 +32,7 @@
 
 | Batch | Tasks | Status | Commit |
 |-------|-------|--------|--------|
-| B1 | T93 — Shared calendar view header | `Implemented` | — |
+| B1 | T93 — Shared calendar view header | `[x]` Complete (approved) | `bffb0c8` |
 | B2 | T94 + T95 — Monthly grid + weekly day column theme visuals | `Pending` | — |
 | B3 | T96 — Calendar a11y polish and theme smoke | `Pending` | — |
 
