@@ -22,7 +22,7 @@
 | B1 | T97 | Scratch Pool identity, search, sort, collapsed switcher | Complete ✅ |
 | B2 | T98 | Breakdown selected context and first-keystroke collapse | Implemented ✅ |
 | B3 | T99 | Staging and triage DnD visual states | Complete ✅ |
-| B4 | T100 | Hierarchy search, label removal, workspace integration | Pending |
+| B4 | T100 | Hierarchy search, label removal, workspace integration | In Progress |
 
 ---
 
@@ -51,6 +51,13 @@ Issues deferred from Phase 18/19 that are resolved by this phase:
 ### ISSUE-22-D02: Visual classification (T97)
 - **Decision:** T97 is ui-heavy (ScratchPool surface redesign). Gemini skip is justified because the recipe fully constrains structural direction and pill sizing constants (selected `h-8` / inactive `h-2.5`) are user-approved. Not "logic-heavy" — skipping Gemini on the basis of recipe-bound + user-approved constants.
 - **Status:** Closed
+
+### ISSUE-22-D03: Hierarchy search scope indicator (T100)
+- **Question:** Should the hierarchy search filter pill visibly include section text such as `Home`, `L1`, `L2`, or `L3`?
+- **Decision:** No. The visible filter pill should show only the active query, result count, and clear affordance. The active search scope should be communicated visually by emphasizing the active hierarchy section and de-emphasizing inactive sections.
+- **Accessibility/Test contract:** The scoped section must remain available through `aria-label` or sr-only text, for example `aria-label="Filtering L2 for alpha, 2 results"`.
+- **Canonical Impact:** None. This satisfies the existing scoped-section requirement through visual + accessible indication rather than visible developer-style level text.
+- **Status:** Reflected in T100 prompt.
 
 ---
 
