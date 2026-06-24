@@ -146,7 +146,7 @@ These apply across all phases:
 
 ### Task 100: Hierarchy search, label removal, and workspace integration
 
-- **Status:** `[ ]`
+- **Status:** `[x]`
 - **Dependencies:** Tasks 97, 98, and 99.
 - **Files:** `src/components/triage/hierarchy-explorer.tsx` (update), `src/components/triage/triage-workspace.tsx` (update), `src/components/triage/triage-workspace.test.tsx` (update), `src/components/triage/hierarchy-explorer.test.tsx` (create if needed)
 - **Recipe:** `docs/recipes/inbox-triage-batch2-visual-recipe.md`
