@@ -311,6 +311,32 @@ describe("calendar navigation rows", () => {
     expect(screen.getByText("2026")).toBeInTheDocument();
   });
 
+  it("applies the monthly grid visual target styles", () => {
+    usePathnameMock.mockReturnValue("/calendar/monthly");
+
+    render(<MonthGrid />);
+
+    const firstOfMonthCell = screen.getByRole("group", {
+      name: "Wednesday, April 1, 2026, 0 items",
+    });
+    const dateGrid = firstOfMonthCell.parentElement;
+
+    expect(dateGrid).toHaveClass("gap-px");
+    expect(dateGrid).toHaveAttribute(
+      "style",
+      expect.stringContaining("background-color: var(--calendar-grid-line-color)"),
+    );
+    expect(firstOfMonthCell).toHaveAttribute(
+      "style",
+      expect.stringContaining("background: var(--calendar-cell-bg)"),
+    );
+    expect(
+      within(firstOfMonthCell).getByRole("button", {
+        name: "Open details for Wednesday, April 1, 2026, 0 items",
+      }),
+    ).toHaveTextContent("Apr 1");
+  });
+
   it("weekly and monthly share the same Calendar navigation header landmark", () => {
     usePathnameMock.mockReturnValue("/calendar/weekly");
 
