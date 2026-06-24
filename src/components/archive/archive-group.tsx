@@ -1,5 +1,6 @@
 "use client";
 
+import { createElement } from "react";
 import { format } from "date-fns";
 import { Archive, Check, ListTodo, RotateCcw } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -77,7 +78,6 @@ function ItemRow({
   onUnarchive: (type: "node" | "bit", id: string) => Promise<void>;
   restoringIds: Set<string>;
 }) {
-  const ItemIcon = getIcon(item.icon);
   const isBit = item.type === "bit";
 
   return (
@@ -97,10 +97,10 @@ function ItemRow({
             className="w-[3px] self-stretch rounded-sm opacity-75 saturate-[70%]"
             style={{ backgroundColor: item.color ?? "hsl(var(--border))" }}
           />
-          <ItemIcon
-            aria-hidden="true"
-            className="h-4 w-4 flex-shrink-0 text-muted-foreground/80"
-          />
+          {createElement(getIcon(item.icon), {
+            "aria-hidden": true,
+            className: "h-4 w-4 flex-shrink-0 text-muted-foreground/80",
+          })}
         </>
       ) : (
         <span className="flex-shrink-0 rounded-sm border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-secondary-foreground">
