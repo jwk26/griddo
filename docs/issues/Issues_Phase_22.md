@@ -21,7 +21,7 @@
 |-------|------|-------|--------|
 | B1 | T97 | Scratch Pool identity, search, sort, collapsed switcher | Complete ✅ |
 | B2 | T98 | Breakdown selected context and first-keystroke collapse | Implemented ✅ |
-| B3 | T99 | Staging and triage DnD visual states | Pending |
+| B3 | T99 | Staging and triage DnD visual states | In Progress |
 | B4 | T100 | Hierarchy search, label removal, workspace integration | Pending |
 
 ---
@@ -55,6 +55,21 @@ Issues deferred from Phase 18/19 that are resolved by this phase:
 ---
 
 ## Issues
+
+### B3/T99 Execution Log
+
+**Classification:** logic-heavy (Gemini skipped — recipe fully constrains all visual decisions: "muted/unavailable, not destructive-red" + "no visible staging headers"; no design judgment needed beyond existing semantic tokens)
+
+**Scope note — T99 vs T100 hierarchy styling boundary:**
+EXECUTION_PLAN T99 action says "Replace invalid staging/hierarchy drop red styling." However, `hierarchy-explorer.tsx` is T100-owned. T99 is scoped to:
+- `staging-zone.tsx`: invalid drop state styling (was `border-destructive`; replaced with muted language)
+- `triage-workspace.tsx`: remove target hover state (was `border-destructive/bg-destructive`; replaced with neutral)
+
+Hierarchy invalid drop styling (in `hierarchy-explorer.tsx`) is deferred to T100. This is a deliberate split to preserve T100's file ownership boundary.
+
+**In Progress** — implementation pending.
+
+---
 
 ### B2/T98 Execution Log
 
