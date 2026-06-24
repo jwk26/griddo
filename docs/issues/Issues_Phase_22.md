@@ -67,7 +67,18 @@ EXECUTION_PLAN T99 action says "Replace invalid staging/hierarchy drop red styli
 
 Hierarchy invalid drop styling (in `hierarchy-explorer.tsx`) is deferred to T100. This is a deliberate split to preserve T100's file ownership boundary.
 
-**In Progress** — implementation pending.
+**Changes delivered:**
+- `staging-zone.tsx`: `invalid` drop state class changed from `border-destructive` to `border-muted bg-muted/10 text-muted-foreground/50 cursor-not-allowed` — muted/unavailable language, not destructive-red
+- `triage-workspace.tsx`: `<PanelHeader title="Staging: Nodes" />` and `<PanelHeader title="Staging: Bits" />` replaced with `aria-hidden` structural spacer divs (preserves 32px vertical rhythm)
+- `triage-workspace.tsx`: `TriageRemoveDropTarget` hover state changed from `border-destructive bg-destructive/10 text-destructive` to `border-border bg-muted text-foreground`
+- `staging-zone.test.tsx`: 3 assertion updates (destructive → muted class checks)
+- `triage-workspace.test.tsx`: removed 2 stale label assertions, renamed hover test, updated class assertion
+
+**Scope note recorded above** — hierarchy invalid styling left for T100.
+
+**Deferred issue resolved:** `ISSUE-18-20` invalid drop reads as destructive → muted/unavailable visual language delivered.
+
+**Verification:** 44 tests passed (staging-zone.test.tsx + triage-workspace.test.tsx + use-triage-dnd.test.ts), build passed, no whitespace errors.
 
 ---
 

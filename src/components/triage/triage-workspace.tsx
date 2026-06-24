@@ -103,7 +103,7 @@ function TriageRemoveDropTarget({
       className={cn(
         "flex h-12 w-full items-center justify-center gap-2 border-t bg-transparent px-3 text-xs font-medium transition-[background-color,border-color,color] motion-reduce:transition-none",
         isOver
-          ? "border-solid border-destructive bg-destructive/10 text-destructive"
+          ? "border-solid border-border bg-muted text-foreground"
           : "border-dashed border-border text-muted-foreground motion-safe:animate-jiggle",
       )}
     >
@@ -164,7 +164,10 @@ export function TriageWorkspace({ node }: { node: Node }) {
             <div className="flex min-w-0 basis-2/5 flex-col bg-card">
               <div className="flex min-h-0 flex-1">
                 <div className="flex min-w-0 basis-[35%] flex-col">
-                  <PanelHeader title="Staging: Nodes" />
+                  <div
+                    className="flex h-8 items-center border-b border-border bg-muted/30 px-3 py-1.5"
+                    aria-hidden="true"
+                  />
                   <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
                     <StagingZone
                       activeDragItem={activeDragItem}
@@ -175,7 +178,10 @@ export function TriageWorkspace({ node }: { node: Node }) {
                 </div>
 
                 <div className="flex min-w-0 basis-[65%] flex-col border-l border-dashed border-border/80">
-                  <PanelHeader title="Staging: Bits" />
+                  <div
+                    className="flex h-8 items-center border-b border-border bg-muted/30 px-3 py-1.5"
+                    aria-hidden="true"
+                  />
                   <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
                     <StagingZone
                       activeDragItem={activeDragItem}

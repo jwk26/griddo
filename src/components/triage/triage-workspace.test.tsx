@@ -124,8 +124,6 @@ describe("TriageWorkspace", () => {
   it("keeps staging zones and the hierarchy explorer visible", () => {
     render(<TriageWorkspace node={createNode()} />);
 
-    expect(screen.getByText("Staging: Nodes")).toBeInTheDocument();
-    expect(screen.getByText("Staging: Bits")).toBeInTheDocument();
     expect(screen.getByText("Hierarchy Explorer")).toBeInTheDocument();
     expect(screen.getByTestId("hierarchy-explorer")).toBeInTheDocument();
     expect(screen.getByTestId("node-staging-zone")).toBeInTheDocument();
@@ -158,7 +156,7 @@ describe("TriageWorkspace", () => {
     ).toHaveClass("h-12", "motion-safe:animate-jiggle");
   });
 
-  it("applies destructive styling while the staged remove target is hovered", () => {
+  it("applies neutral hover styling while the staged remove target is hovered", () => {
     useTriageDndMock.mockReturnValue(
       createDndState({
         activeDragItem: {
@@ -177,7 +175,7 @@ describe("TriageWorkspace", () => {
       document.querySelector(
         '[aria-label="Drop staged item here to remove from staging"]',
       ),
-    ).toHaveClass("bg-destructive/10", "text-destructive", "border-solid");
+    ).toHaveClass("bg-muted", "border-solid");
   });
 
   it("shows hierarchy cells as valid while a breakdown row is dragged", () => {

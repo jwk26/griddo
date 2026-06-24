@@ -186,7 +186,7 @@ describe("StagingZone — drop zone state classes", () => {
       />,
     );
     const zone = screen.getByTestId("bit-staging-zone");
-    expect(zone).toHaveClass("border-destructive");
+    expect(zone).toHaveClass("border-muted");
     expect(zone).toHaveClass("cursor-not-allowed");
   });
 
@@ -199,7 +199,7 @@ describe("StagingZone — drop zone state classes", () => {
       />,
     );
     const zone = screen.getByTestId("node-staging-zone");
-    expect(zone).toHaveClass("border-destructive");
+    expect(zone).toHaveClass("border-muted");
     expect(zone).toHaveClass("cursor-not-allowed");
   });
 
@@ -226,6 +226,6 @@ describe("StagingZone — drop zone state classes", () => {
     );
     const zone = screen.getByTestId("bit-staging-zone");
     expect(zone).not.toHaveClass("border-dashed");
-    expect(zone).not.toHaveClass("border-destructive");
+    expect(zone).not.toHaveClass("border-muted");
   });
 });

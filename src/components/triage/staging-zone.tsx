@@ -34,7 +34,7 @@ const DROP_ZONE_STATE_CLASSES: Record<DropZoneState, string> = {
   "idle-invalid": "",
   valid: "border-solid border-primary bg-accent ring-1 ring-primary",
   invalid:
-    "border-solid border-destructive bg-background text-muted-foreground cursor-not-allowed [&_*]:!text-muted-foreground",
+    "border-solid border-muted bg-muted/10 text-muted-foreground/50 cursor-not-allowed [&_*]:!text-muted-foreground/50",
   "pending-confirmation": "animate-pulse border-dashed border-ring bg-popover",
 };
 
