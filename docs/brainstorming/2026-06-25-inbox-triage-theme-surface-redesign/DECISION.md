@@ -36,7 +36,8 @@ production-quality 구조로 다시 구현한다.
 - 현재 `SPEC.md`, `DESIGN_TOKENS.md`,
   `docs/recipes/inbox-triage-batch2-visual-recipe.md`에 남은 label 제거 및 compact
   context 지시는 amendment 과정에서 이 문서에 맞게 갱신한다.
-- `PROTOTYPE_FUNCTION_GAP_2_4.md`와 `PROTOTYPE_TO_MAIN_HANDOFF.md`는 근거 자료다.
+- `PROTOTYPE_FUNCTION_GAP_2_4.md`와 `PROTOTYPE_TO_MAIN_HANDOFF.md`의 과거 내용은
+  각각 Git commit `48af728`, `25ffe0d`에 보존되어 있으며 현재 authority가 아니다.
   실제 최종 2-3 시안 또는 이 문서와 충돌하면 이 문서가 우선한다.
 
 ## Promotion Boundary

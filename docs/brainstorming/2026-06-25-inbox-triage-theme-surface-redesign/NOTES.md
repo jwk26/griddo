@@ -32,8 +32,8 @@ component architecture, mock mutation의 완성도는 평가하지 않았다. �
 |---|---|---|---|
 | `2026-04-28-inbox-triage-workspace/DECISION.md` | Product Decision | 4영역 layout, data lifecycle, placement/archive 기반 | `griddo2-claude` repository |
 | `2026-05-28-inbox-triage-theme-variants/DECISION.md` | Prior Product/Design Decision | superseded conflict 추적 | `Readiness: draft` |
-| `PROTOTYPE_FUNCTION_GAP_2_4.md` | Exploratory/Translation Source | 2-4에서 누적한 UX 변경 후보 | topic folder, tracked at functional baseline |
-| `PROTOTYPE_TO_MAIN_HANDOFF.md` | Exploratory Handoff | main 재구현 관점과 누적 ledger | main working tree의 untracked draft |
+| `PROTOTYPE_FUNCTION_GAP_2_4.md` (historical) | Exploratory/Translation Source | 2-4에서 누적한 UX 변경 후보 | removed from working tree; Git commit `48af728` |
+| `PROTOTYPE_TO_MAIN_HANDOFF.md` (historical) | Exploratory Handoff | main 재구현 관점과 누적 ledger | removed from working tree; Git commit `25ffe0d` |
 | `griddo2-claude` | Functional Source | 현재 production behavior와 architecture | commit `48af728` |
 | `griddo2-claude-themes2-3` | Mixed Design Source | adopted structure, interaction, 8-theme visual realization | clean commit `4f39709` |
 
@@ -141,7 +141,8 @@ main에서는 다음 production source와 tests를 읽었다.
 
 ### Placed Item Model
 
-기존 `PROTOTYPE_TO_MAIN_HANDOFF.md`의 다음 설명은 최종 2-3 기준으로 낡았다.
+Git commit `25ffe0d`에 보존된 기존 `PROTOTYPE_TO_MAIN_HANDOFF.md`의 다음 설명은
+최종 2-3 기준으로 낡았다.
 
 - `placedItemsByScratch`가 현재도 `Node: ...`, `Bit: ...` 문자열 배열이라는 설명
 - Confirm 결과가 문자열 parsing에만 의존한다는 설명
@@ -744,8 +745,8 @@ selection record다. Structure/Interaction row는 모두 `DECISION.md`에 반영
 
 - `docs/brainstorming/2026-04-28-inbox-triage-workspace/DECISION.md`
 - `docs/brainstorming/2026-05-28-inbox-triage-theme-variants/DECISION.md`
-- `docs/brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROTOTYPE_FUNCTION_GAP_2_4.md`
-- `docs/brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROTOTYPE_TO_MAIN_HANDOFF.md`
+- `git show 48af728:docs/brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROTOTYPE_FUNCTION_GAP_2_4.md`
+- `git show 25ffe0d:docs/brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROTOTYPE_TO_MAIN_HANDOFF.md`
 - `docs/brainstorming/2026-07-14-cross-surface-text-capacity-and-overflow/DECISION.md`
 - `docs/SPEC.md`
 - `docs/DESIGN_TOKENS.md`
