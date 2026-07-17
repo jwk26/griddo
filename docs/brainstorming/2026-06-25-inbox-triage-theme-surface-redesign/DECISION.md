@@ -3,8 +3,8 @@
 ## Metadata
 
 - Created: 2026-07-13
-- Updated: 2026-07-14
-- Readiness: review-ready — second-pass local user-flow audit complete
+- Updated: 2026-07-17
+- Readiness: code-ready
 - Category: product decision, interaction decision, visual-reference adoption
 - Source project: `griddo2-claude`
 - Source topic: `2026-06-25-inbox-triage-theme-surface-redesign`
