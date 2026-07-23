@@ -57,13 +57,15 @@ Three tiers:
 
 ### Code-Readiness Invariant
 
-Three rules govern what may appear in an active execution plan:
+Four rules govern what may appear in an active execution plan:
 
-1. **Code-ready only.** Every task in EXECUTION_PLAN.md must be implementable from the task spec alone, without requiring additional product, design, or policy decisions. If a task needs a decision that hasn't been made, it is not code-ready and must not be in the plan.
+1. **Code-ready by default.** Every implementation task in EXECUTION_PLAN.md must be implementable from the task spec alone, without requiring additional product, design, or policy decisions.
 
-2. **No unresolved blockers.** Unresolved decisions, open questions, design dependencies, and policy choices must not appear as blockers in the active plan. Either resolve them before the task enters the plan, or move the task to `docs/brainstorming/future_ideas/`.
+2. **Decision prerequisites are narrow, owned gates.** An active plan may include a non-code `Decision prerequisite` only when product scope and behavior are already fixed but one user-visible realization still requires explicit approval. The prerequisite must name its output artifact and approval gate, precede every dependent implementation task, and be listed as their dependency. No dependent implementation may start before approval. A prerequisite may not hide unresolved product policy, architecture, persistence, or scope.
 
-3. **Future work lives in future_ideas.** Deferred features, blocked tasks, and unscheduled work live in `docs/brainstorming/future_ideas/`, not in the execution plan. The plan contains only active, schedulable work.
+3. **No unowned unresolved blockers.** Open questions, design dependencies, and policy choices may not remain implicit in implementation tasks. Resolve them before planning, express the permitted case as an owned `Decision prerequisite`, or move the work out of the active plan.
+
+4. **Future work lives in future_ideas.** Deferred features, blocked tasks, and unscheduled work live in `docs/brainstorming/future_ideas/`, not in the execution plan. The plan contains only active, schedulable work.
 
 **Enforcement:** The `execute-next-phase` skill runs a mechanical readiness scan before branch creation. The `execute-task` skill runs a batch-level readiness check before prompt preparation. Both halt on violations.
 
@@ -163,6 +165,8 @@ This checklist is **project-specific**. It is derived from the project's SPEC an
 
 Violations of core architectural invariants. **Must be fixed before close-out / merge**, or the standard itself must be explicitly amended/deferred by the user.
 
+#### Core Project Architecture
+
 - [ ] **DataStore facade:** No component or hook imports `dexie` directly for data access. All data access goes through `DataStore` interface methods. Only `src/lib/db/indexeddb.ts` imports Dexie — exception: `src/hooks/*.ts` may import `liveQuery` from `dexie` for reactive subscriptions (this is the intended reactive-layer pattern).
 - [ ] **Reactive reads:** All data reads that feed UI use `liveQuery` for reactivity. No one-time fetches for data that should be live (parent nodes, breadcrumbs, calendar items).
 - [ ] **URL-driven navigation:** Routes follow canonical pattern: `/` (L0), `/grid/[id]` (L1+), `?bit=[id]` (popup). No programmatic state-based routing that bypasses URL.
@@ -173,16 +177,35 @@ Violations of core architectural invariants. **Must be fixed before close-out / 
 - [ ] **System-managed field guard:** `createNodeSchema` / `createBitSchema` never accept `systemRole`, `hiddenFromGrid`, or `archivedAt`. These are set only by system seeding (internal full-schema path) or the archive hooks — never from a user-facing create path. (Added Batch 1.)
 - [ ] **System node lifecycle exclusion:** System nodes (`systemRole !== null`) are never soft-deleted/trashed or archived (Hooks 4 and 10). "Remove from grid" uses `hiddenFromGrid = true`; the sidebar still lists them. (Added Batch 1.)
 
+#### Inbox/Triage Data And Mutation Conformance
+
+- [ ] **Durable candidate boundary:** Breakdown rows live in `scratchBreakdowns`; staged Node/Bit candidates live in `triageStagedCandidates`. Zustand may hold disposable selection, pending presentation, search interruption, and page-session placement metadata, but it must not duplicate durable candidate lifecycle. Breakdown rows and candidates do not participate in Bit auto-completion.
+- [ ] **Bit revision coverage:** Every Bit create path initializes `version = 1`. Every repository write that changes an existing Bit's content, position, completion, or lifecycle increments `version` exactly once for the logical mutation, including direct writes and Hook 1, Hook 3, Hook 10, Hook 11, or other cascade-driven writes. Closing review must detect both missing and double increments. User-facing schemas cannot set `version`; general Node records remain outside this revision scope.
+- [ ] **Conditional-write contract:** Scratch-title, Breakdown-row, and candidate mutations compare the captured `version` and required lifecycle predicates inside the authoritative transaction. `mtime` is presentation data, not a concurrency token. Commands return the shared `applied` / `already_applied` / `conflict` / `invalid` / `not_found` result family with authoritative records or state needed for reconciliation.
+- [ ] **Atomic Triage commands:** Stage, Unstage, staged/direct Placement, source-aware Undo, and Archive are repository-owned atomic commands. Components and hooks must not compose partial domain writes. Stable operation and target IDs make retries idempotent; an unknown outcome is resolved from authoritative postconditions before the UI reports success or failure.
+- [ ] **Archive evidence guard:** Inbox/Triage completion and Archive eligibility require an active Scratch, at least one persisted consumed row (`consumedAt !== null`), zero unconsumed rows, and zero staged candidates. Empty history, all-staged rows, or rows removed without consumption never satisfy completion; do not rely on empty-array `every()` behavior.
+
+#### Inbox/Triage Search And Session Projection
+
+- [ ] **Dedicated Explorer query:** Whole-hierarchy Inbox/Triage search uses the dedicated ancestor-chain/breadcrumb result contract. It must not reuse global `searchAll()` or mutate the normal Grid route/path model. Search interruption, result reveal, stale-result handling, and normal-column restoration follow SPEC.md.
+- [ ] **Page-session Newly Placed boundary:** Newly Placed styling, pinning, provenance, and Undo eligibility are transient projections owned by the mounted Inbox/Triage page. Scratch, Grid-column, theme, and locale changes preserve them; route exit or reload ends them. No `newlyPlaced` field is persisted on Node, Bit, Breakdown, or candidate records.
+- [ ] **Source-aware Undo:** Undo validates the created result and dependencies before mutation. A staging-source Undo atomically restores the durable candidate and source row; a direct-source Undo restores only the source row. Non-reversible results remain ordinary records and lose only the temporary Undo affordance.
+
+#### Theme Realization And Prototype Promotion
+
+- [ ] **Shared production ownership:** Inbox/Triage uses shared production components and one semantic state contract. Do not promote duplicated prototype routes, mock stores, variant switchers, test toggles, separate candidate drag handles, or route-local mutation logic.
+- [ ] **Theme id non-branching:** Components do not branch on `data-color-theme` except the theme picker. Theme differences flow through semantic CSS variables, shared `.theme-*` classes, and documented surface hooks; display aliases remain centralized copy rather than design tokens.
+- [ ] **Recipe and token fidelity:** Theme-aware surfaces consume `DESIGN_TOKENS.md` and the approved Inbox/Triage surface recipe for their owned state. Prototype magic values are not copied into component branches. Selected, staged, invalid, pending confirmation, Newly Placed, and completed remain visually distinguishable through non-color cues; repeated blink, pulse, or flicker is prohibited.
+- [ ] **Eight-theme verification:** User-visible Inbox/Triage work is checked in all eight themes at the required desktop/mobile and light/dark coverage, including contrast, `focus-visible`, reduced motion, hidden-scrollbar keyboard scrolling, section-scoped overlays, and recipe-specific visual facts. Browser evidence and flow tests use the repeatable paths defined in SPEC.md and EXECUTION_PLAN.md.
+- [ ] **Centralized copy boundary:** Shared English product labels, status text, accessible names, and theme-specific display aliases are owned centrally rather than duplicated across theme realizations. KR resources, the EN/KR toggle, and Korean typography remain separate deferred work until their own approved plan.
+
 ### Tier: Advisory
 
 Important issues that should be surfaced and recorded, but do not automatically block closing. Closing continues with explicit acknowledgement.
 
 - [ ] **Optimistic UI:** No loading states, spinners, or skeleton screens for local data operations. Local-first means zero-latency.
 - [ ] **File organization:** New files follow key path conventions from CLAUDE.md (utils in `src/lib/utils/`, hooks in `src/hooks/`, stores in `src/stores/`). New Batch 1 component domains: `src/components/quick-capture/`, `src/components/triage/`, `src/components/archive/`.
-- [ ] **scratchBreakdowns store boundary:** Breakdown rows live in the dedicated `scratchBreakdowns` store (not Chunks) and must not participate in Hook 3 (Bit Auto-Completion). Triage staging is UI-state-only; real Node/Bit records are created only on confirmed placement (when `consumedAt` is set). (Added Batch 1.)
-- [ ] **Theme id non-branching (Batch 2+):** Components must not branch on color-theme id (`data-color-theme`) except the theme picker. Theme differences flow through CSS variables and shared `.theme-*` classes, not per-theme conditionals. (Added Batch 2.)
-- [ ] **Theme class CSS-var consumption (Batch 2+):** Theme-aware surfaces consume CSS variables (`--theme-*`, `--calendar-*`) via the shared `.theme-*` classes; no hard-coded per-theme colors or shadows in components. (Added Batch 2.)
-- [ ] **8-theme smoke (Batch 2+):** After theme work, smoke-check contrast and `focus-visible` across all 8 themes in light/dark — at minimum one high-contrast theme (`terminal` or `retro-mac`), where opacity-muted text (`text-muted-foreground/50` etc.) can fail. (Added Batch 2.)
+- [ ] **Local-first presentation:** Pending and reconciliation states should preserve usable local content rather than replace whole surfaces with generic loading UI. Any waiting indicator must correspond to a real unresolved command, not routine Dexie latency.
 
 ### Updating this checklist
 
