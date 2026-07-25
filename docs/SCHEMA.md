@@ -12,6 +12,10 @@
   - [nodes](#nodes)
   - [bits](#bits)
   - [chunks](#chunks)
+  - [scratchBreakdowns](#scratchbreakdowns)
+  - [triageStagedCandidates](#triagestagedcandidates)
+  - [Dexie v4 Migration](#dexie-v4-migration)
+  - [Non-persistent Inbox/Triage State](#non-persistent-inboxtriage-state)
 - [Zod Validation Schemas](#zod-validation-schemas)
 - [Application Hooks](#application-hooks)
 - [Key Queries](#key-queries)
@@ -62,6 +66,12 @@ Category/container items displayed as mobile app-style icons on the grid. Nodes 
 
 **Unique constraint:** No two active items (Nodes or Bits) may occupy the same `(parentId, x, y)` cell. Enforced at application level before insert/move.
 
+**Revision scope:** This amendment does not add a `version` field to Nodes. Inbox/Triage
+compare-and-set editing covers Scratch Bits, Breakdown rows, and staged candidates. Placement
+result creation is idempotent through a preallocated result ID; a created Bit additionally starts
+under the Bit revision contract. General Node-title edit conflicts require a separate product
+decision and schema amendment.
+
 **Default System Nodes:** On first launch / migration, two system Nodes are seeded (seeding behavior in SPEC.md § System Nodes):
 
 | Property | Inbox Node | Archive View Node |
@@ -93,6 +103,7 @@ Actionable tasks displayed as horizontal rectangles on the grid. Bits contain Ch
 | `status` | `string` | NOT NULL, enum: `"active"`, `"complete"` | `"active"` | Completion state |
 | `mtime` | `number` | NOT NULL | `Date.now()` | Last modified timestamp (ms). Drives aging system |
 | `createdAt` | `number` | NOT NULL | `Date.now()` | Creation timestamp (ms) |
+| `version` | `number` | NOT NULL, integer >= 1 | `1` | Monotonic revision used for optimistic concurrency. Incremented once for every successful logical Bit mutation |
 | `parentId` | `string` | NOT NULL, FK → `nodes.id` | — | Parent Node. Bits always belong to a Node |
 | `x` | `number` | NOT NULL, 0–14 | — | Column index on grid |
 | `y` | `number` | NOT NULL, 0–7 | — | Row index on grid |
@@ -118,6 +129,8 @@ Actionable tasks displayed as horizontal rectangles on the grid. Bits contain Ch
 **Progress bar:** Computed at render time from `completedChunks / totalChunks`. Hidden when Chunk count is zero. Not stored.
 
 **Scratch Bits (Inbox):** Bits whose `parentId` is the Inbox system Node ("Scratch") use `x = 0, y = 0` as a sentinel and are exempt from grid-cell uniqueness (Hook 8). The Triage layout renders them ordered by `createdAt`, ignoring `(x, y)`. Scratch Bits default to the `"sparkles"` icon. "Scratch" is product/UI language — there is no separate database type.
+
+**Revision contract:** `version`, not `mtime`, is the compare-and-set token. `mtime` remains presentation data for aging. Every repository write that changes a Bit's content, position, completion, or lifecycle increments `version` exactly once for that logical mutation, including cascade-driven writes. User-facing create/update schemas cannot set `version` directly.
 
 ---
 
@@ -164,7 +177,8 @@ Per-Scratch idea rows created in the Triage Breakdown/Scribble area. A **dedicat
 | `content` | `string` | NOT NULL, min 1 char | — | Idea row text |
 | `order` | `number` | NOT NULL | — | Display sequence within the Scratch |
 | `createdAt` | `number` | NOT NULL | `Date.now()` | Creation timestamp (ms). Drives display ordering |
-| `consumedAt` | `number \| null` | — | `null` | `null` = unconsumed; timestamp = consumed (renders line-through, **not** deleted). Set when the row is placed into the Hierarchy Explorer |
+| `consumedAt` | `number \| null` | — | `null` | `null` = unconsumed; timestamp = consumed. Consumed rows leave the active Breakdown list but remain stored as archive evidence |
+| `version` | `number` | NOT NULL, integer >= 1 | `1` | Monotonic revision for content and lifecycle compare-and-set operations |
 
 **Indexes:**
 
@@ -174,6 +188,72 @@ Per-Scratch idea rows created in the Triage Breakdown/Scribble area. A **dedicat
 | `idx_scratchBreakdowns_scratchBitId` | `scratchBitId` | Bulk delete on Scratch Bit removal |
 
 **Not a Chunk:** Breakdown rows do not participate in Hook 3 (Bit Auto-Completion) and carry their own `createdAt` / `consumedAt`. See Hook 3 note.
+
+`consumedAt` is retained production evidence, not a presentation flag. A staged row keeps
+`consumedAt = null`; its staged state is derived from the existence of a matching
+`triageStagedCandidates.sourceBreakdownId`. Consumed rows remain in this store but are excluded from
+the active Breakdown list.
+
+---
+
+### triageStagedCandidates
+
+Durable Node/Bit candidates created by staging a Breakdown row. Candidates are Scratch-scoped
+domain data and survive route changes and reloads. Their labels are always resolved from the source
+Breakdown row; the candidate does not store a title/content snapshot.
+
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | `string` | PK, UUID | Preallocated by the stage operation | Stable candidate identifier |
+| `scratchBitId` | `string` | NOT NULL, FK → `bits.id` | — | Owning active Scratch Bit |
+| `sourceBreakdownId` | `string` | NOT NULL, FK → `scratchBreakdowns.id`, UNIQUE | — | Authoritative source row. Enforces at most one candidate per row |
+| `type` | `string` | NOT NULL, enum: `"node"`, `"bit"` | — | Result type chosen when the row is staged |
+| `createdAt` | `number` | NOT NULL | `Date.now()` | Candidate creation timestamp; drives newest-first subsection ordering |
+| `version` | `number` | NOT NULL, integer >= 1 | `1` | Candidate compare-and-set revision captured by drag and placement commands |
+
+**Indexes:**
+
+| Index Name | Columns | Purpose |
+|------------|---------|---------|
+| `idx_triageCandidates_scratchBitId` | `scratchBitId` | All candidates for the selected Scratch |
+| `uq_triageCandidates_sourceBreakdownId` | `sourceBreakdownId` (unique) | Prevent duplicate or cross-type candidates for one source row |
+| `idx_triageCandidates_scratch_type_created` | `[scratchBitId, type, createdAt]` | Node/Bit subsection query ordered newest-first, with stable `id` tie-break in memory |
+
+Candidate presence is the persisted `staged` lifecycle. Pending/reconciling presentation is
+operation state and is not stored as a second candidate status. Unstage and successful placement
+delete the candidate inside the same transaction that validates/restores or consumes its source
+row. A candidate may be created only when its `scratchBitId` equals the source row's
+`scratchBitId`, the Scratch is active, and the source row is unconsumed.
+
+---
+
+### Dexie v4 Migration
+
+Canonical migration source: `src/lib/db/indexeddb.ts`.
+
+1. Add `version = 1` to every existing `bits` record that has no version.
+2. Add `version = 1` to every existing `scratchBreakdowns` record that has no version.
+3. Create `triageStagedCandidates` with indexes
+   `id,scratchBitId,&sourceBreakdownId,[scratchBitId+type+createdAt]`.
+4. Start the candidate store empty. The pre-migration Zustand candidates are transient memory and
+   cannot be reconstructed reliably after reload; do not infer durable candidates from
+   unconsumed rows.
+5. Do not add a Dexie operation-log store in v4. Inbox/Triage mutations use preallocated stable
+   target IDs, monotonic versions, one read-write transaction, and authoritative postcondition
+   queries for idempotency and reconciliation. A future BaaS may implement the same command
+   contract with a server-side idempotency table or database function without adding operation
+   fields to these domain records.
+
+### Non-persistent Inbox/Triage State
+
+| State | Ownership | Persistence rule |
+|-------|-----------|------------------|
+| Add/Edit drafts and editor base snapshots | Mounted Inbox/Triage page | Memory only; never `localStorage`, IndexedDB, or remote domain data |
+| Scratch/Breakdown sort preference | Existing device-local preference boundary | Survives reload, but is not stored on Scratch/row records or future shared BaaS content |
+| Scratch/Grid search query, reveal highlight, and DnD-interrupted last query | Mounted Inbox/Triage page | Memory only; route exit clears it |
+| Placement affordance, archive overlay open/Cancel state, and completion blockers | Mounted Inbox/Triage page | Not stored; recompute from authoritative records on reload/re-entry |
+| Newly Placed marker, display pinning, Undo provenance/eligibility | Mounted Inbox/Triage route session | Not stored in domain records; route exit/reload ends the marker and Undo capability |
+| Pending mutation envelope (`operationId`, stable target IDs, intended postcondition) | Page/session transport state | Exists only while unresolved so the client can reconcile; it is not a draft, candidate, or permanent operation record |
 
 ---
 
@@ -186,6 +266,8 @@ import { z } from "zod";
 
 const idSchema = z.string().uuid();
 const timestampSchema = z.number().int().positive();
+const versionSchema = z.number().int().min(1);
+const triageOperationIdSchema = idSchema;
 
 // --- Node ---
 
@@ -237,6 +319,7 @@ export const bitSchema = z.object({
   status: z.enum(["active", "complete"]).default("active"),
   mtime: timestampSchema,
   createdAt: timestampSchema,
+  version: versionSchema.default(1),
   parentId: idSchema,
   x: z.number().int().min(0).max(14),
   y: z.number().int().min(0).max(7),
@@ -249,6 +332,7 @@ export const createBitSchema = bitSchema.omit({
   id: true,
   mtime: true,
   createdAt: true,
+  version: true,
   status: true,
   deletedAt: true,
   archivedAt: true,
@@ -287,16 +371,47 @@ export const scratchBreakdownSchema = z.object({
   order: z.number().int().min(0),
   createdAt: timestampSchema,
   consumedAt: timestampSchema.nullable().default(null),
+  version: versionSchema.default(1),
 });
 
 export const createScratchBreakdownSchema = scratchBreakdownSchema.omit({
-  id: true,
   createdAt: true,
   consumedAt: true,
+  version: true,
 });
 
 export type ScratchBreakdown = z.infer<typeof scratchBreakdownSchema>;
 export type CreateScratchBreakdown = z.infer<typeof createScratchBreakdownSchema>;
+
+// --- Triage Staged Candidate ---
+
+export const triageStagedCandidateSchema = z.object({
+  id: idSchema,
+  scratchBitId: idSchema,
+  sourceBreakdownId: idSchema,
+  type: z.enum(["node", "bit"]),
+  createdAt: timestampSchema,
+  version: versionSchema.default(1),
+});
+
+export const createTriageStagedCandidateSchema =
+  triageStagedCandidateSchema.omit({
+    createdAt: true,
+    version: true,
+  });
+
+// Every mutating Inbox/Triage command carries an operation ID. It is command
+// metadata, not a persisted domain-record field in Dexie v4.
+export const triageMutationEnvelopeSchema = z.object({
+  operationId: triageOperationIdSchema,
+});
+
+export type TriageStagedCandidate = z.infer<
+  typeof triageStagedCandidateSchema
+>;
+export type CreateTriageStagedCandidate = z.infer<
+  typeof createTriageStagedCandidateSchema
+>;
 ```
 
 ---
@@ -319,6 +434,10 @@ When any of these actions occur, reset `mtime = Date.now()` on the affected item
 | Complete or uncomplete a Bit | That Bit **AND** parent Node |
 
 **Does NOT reset mtime:** Opening/viewing an item, repositioning on the grid.
+
+Whenever a Bit write above succeeds, Hook 12 increments that Bit's `version` once even when one
+transaction changes several Bit fields. `mtime` and `version` serve different purposes and must not
+be substituted for one another.
 
 ### 2. Deadline Hierarchy Constraint
 
@@ -411,7 +530,10 @@ When a **Node** is archived:
 3. Chunks become inaccessible via the archived parent Bit (no update needed).
 
 When a **Bit** is archived:
-1. Set `archivedAt = Date.now()` on the Bit.
+1. Set `archivedAt = Date.now()` on the Bit and increment `version` once.
+
+When the Bit is a Scratch archived from Inbox/Triage, run Hook 16 inside the same transaction before
+writing `archivedAt`. A stale completion overlay cannot bypass current row/candidate eligibility.
 
 Completion never triggers this hook — archive is a manual lifecycle action and completion stays purely computed (see nodes/bits Completion notes). Completed-but-unarchived items remain on the grid.
 
@@ -427,10 +549,139 @@ When a **Node** is restored:
 When a **Bit** is restored:
 1. If the parent Node is archived → restore the parent chain (same window rule).
 2. If original `(x, y)` is occupied → BFS auto-placement.
+3. Set `archivedAt = null` and increment `version` once. Restoring a Scratch preserves its
+   Breakdown history; Inbox/Triage recomputes completion from current rows and candidates.
 
 ### Scratch Bit Permanent Deletion
 
-When a Scratch Bit is hard-deleted (after trash retention or explicit purge), all associated `scratchBreakdowns` rows are hard-deleted. **Archiving** a Scratch Bit does not trigger this cleanup — archived Scratch retains its breakdown history for a potential restore.
+When a Scratch Bit is hard-deleted (after trash retention or explicit purge), all associated
+`scratchBreakdowns` rows and `triageStagedCandidates` are hard-deleted in the same transaction.
+**Archiving** a Scratch Bit does not trigger this cleanup — archived Scratch retains its Breakdown
+history for a potential restore. Archive eligibility normally guarantees that no candidate remains,
+but hard-delete cleanup must not rely on that UI invariant.
+
+### 12. Inbox/Triage Revision And Mutation Contract
+
+Scratch title and Breakdown row writes use optimistic concurrency, not last-write-wins.
+
+| Record | Base snapshot | Conditional write predicate | Successful write |
+|--------|---------------|-----------------------------|------------------|
+| Scratch title (`bits`) | `id`, title, `version`, `deletedAt`, `archivedAt` | Same `id` and `version`; Scratch is still active | Update title/`mtime`; increment `version` once |
+| Breakdown row | `id`, content, `version`, `consumedAt`, candidate presence | Same `id` and `version`; `consumedAt = null`; no candidate; parent Scratch active | Update content/order as requested; increment `version` once |
+| Staged candidate | `id`, `version`, source row version and lifecycle | Candidate and source still match the captured versions and remain eligible | Apply the requested stage/unstage/placement transaction or reject without partial writes |
+
+The comparison and write occur inside one Dexie read-write transaction. `mtime` is never accepted
+as a substitute for `version`. Editor base snapshots and conflict drafts remain client memory; they
+are not additional object-store records.
+
+All Inbox/Triage mutation commands carry a UUID `operationId`. Create-like commands also allocate
+their target record IDs before the transaction and retain them while pending. Repository results use
+one shared status contract:
+
+- `applied` — this invocation committed and returns authoritative records/versions.
+- `already_applied` — the same stable target/postcondition already exists; do not repeat UI success
+  effects.
+- `conflict` — the record exists but version, editable value, candidate, or lifecycle differs; return
+  current authoritative state.
+- `invalid` — current domain constraints reject the command, with a stable reason code.
+- `not_found` — the required source or target no longer exists authoritatively.
+
+Transport timeout or connection loss is not converted to one of these final statuses without a
+reconciliation query. The page/session keeps the pending command metadata long enough to query its
+stable target IDs and postconditions. Dexie v4 has no operation-log store; future remote persistence
+may bind `operationId` to a unique server-side idempotency key while preserving this result contract.
+
+### 13. Breakdown Active And Consumed Predicates
+
+For a selected active Scratch:
+
+| Derived state | Persisted predicate | Breakdown presentation |
+|---------------|---------------------|------------------------|
+| Active | Row exists, `consumedAt = null`, no candidate by `sourceBreakdownId` | Normal editable/draggable row |
+| Staged | Row exists, `consumedAt = null`, exactly one candidate by `sourceBreakdownId` | Same row retained with staged treatment; Edit/Trash writes rejected |
+| Consumed | Row exists, `consumedAt != null`, no candidate | Excluded from active row list; retained as completion evidence |
+| Deleted | Row absent | Not rendered and not completion evidence |
+
+Creating a row validates that its Scratch is active, computes the next `order`, and inserts the
+preallocated row ID with `version = 1` in one transaction. A retry with the same operation/row ID and
+matching payload returns `already_applied`; it cannot create a duplicate row.
+
+Deleting a row revalidates `version`, `consumedAt = null`, candidate absence, and active Scratch
+lifecycle before deleting. A staged or consumed row is not made editable/deletable by a stale
+client. `order` and `createdAt` are preserved by stage, unstage, placement, and Undo.
+
+Do not derive completion from `rows.every(...)` alone. Persisted archive eligibility requires an
+explicit consumed-row count greater than zero, unconsumed-row count equal to zero, and candidate
+count equal to zero (Hook 16).
+
+### 14. Durable Staging And Inbox/Triage Atomic Placement
+
+The following operations are repository-owned transactions, never component-level sequences:
+
+| Operation | Stores read/written atomically | Required validation | Committed result |
+|-----------|--------------------------------|---------------------|------------------|
+| Stage row | `bits`, `scratchBreakdowns`, `triageStagedCandidates` | Scratch active; source ID/version unchanged; `consumedAt = null`; no candidate for source | Insert one candidate with `version = 1`; source row remains unconsumed |
+| Unstage | `bits`, `scratchBreakdowns`, `triageStagedCandidates` | Scratch/source active; candidate ID/version and source relation match | Delete candidate; source row remains active with original order/time |
+| Place staged candidate | `nodes` or `bits`, `scratchBreakdowns`, `triageStagedCandidates` | Candidate/source versions and relationship match; source unconsumed; target active/reachable/type-valid; cell available; result title valid | Create actual Node/Bit, set source `consumedAt`, increment source `version`, delete candidate |
+| Place direct row | `nodes` or `bits`, `scratchBreakdowns` | Source ID/version unchanged and active; no candidate; target active/reachable/type-valid; cell available; selected type title limit valid | Create actual Node/Bit, set source `consumedAt`, increment source `version` |
+
+Staged Node placement is valid only where the resulting Node level is 0–2. Staged Bit placement
+requires a non-null parent Node and produces a Bit in the corresponding Level 1–3 column. Direct
+placement applies the same target rules after type selection. Node titles remain limited to 100
+characters and Bit titles to 200; no transaction silently truncates source content.
+
+The Node/Bit result ID is preallocated and reused by reconciliation. If a result with that ID exists,
+the source is consumed, and the candidate postcondition matches, return `already_applied`; any mixed
+state is `conflict` and must not be repaired by an additional create/consume/delete sequence outside
+the transaction.
+
+Candidate queries resolve the source row before producing a card. A missing local-cache row is not
+enough to delete a candidate. Once the authoritative repository confirms an orphan, remove the
+candidate atomically, recompute counts/archive eligibility, and emit the candidate/source IDs to the
+application diagnostic boundary. No placeholder candidate or hidden orphan record is retained.
+
+### 15. Source-Aware Placement Undo
+
+Newly Placed presentation is not persisted. The mounted Inbox/Triage page keeps transient placement
+metadata containing `operationId`, result ID/type and creation fingerprint, Scratch/source row ID,
+source kind (`staging` or `direct`), and the deleted candidate snapshot when the source was Staging.
+Scratch/column/theme/locale changes preserve this metadata; route exit discards it.
+
+Undo revalidates the result record, lifecycle, current parent/position, creation fingerprint, and
+surviving descendants immediately before write. A changed result, archived/deleted result, unknown
+mutation, or non-reversible child dependency returns `invalid` without deleting or restoring
+anything.
+
+- **Staging source:** delete the created result, restore the candidate using its original stable ID,
+  `type`, `createdAt`, and source relation but with `version = previous version + 1`, set the source
+  row `consumedAt = null`, and increment the row `version` once. The increment prevents an old drag
+  snapshot from matching the restored candidate after the delete/recreate cycle.
+- **Direct source:** delete the created result, set the source row `consumedAt = null`, and increment
+  the row `version` once. No candidate is created.
+
+Each rollback is one transaction across the result store, `scratchBreakdowns`, and, when applicable,
+`triageStagedCandidates`. A retry that finds the result absent and the exact source postcondition
+restored returns `already_applied`. Undo never cascades through unrelated descendants and never
+persists a `newlyPlaced` field on Node, Bit, Breakdown, or candidate records.
+
+### 16. Inbox Archive Eligibility
+
+The persisted eligibility query returns true only when all conditions hold in one consistent read:
+
+1. The selected Scratch Bit exists under the Inbox system Node and has `deletedAt = null` and
+   `archivedAt = null`.
+2. At least one associated Breakdown row has `consumedAt != null`.
+3. No associated Breakdown row has `consumedAt = null`.
+4. No `triageStagedCandidates` record exists for the Scratch.
+
+An empty Breakdown array is therefore never archive-ready. Deleting every row without any consumed
+evidence is also not archive-ready. A non-empty Add draft or dirty Scratch-title editor is a
+page-local blocker layered on this persisted result, not a database field.
+
+Inbox/Triage archive Confirm re-runs this query and verifies the Scratch `version` inside the same
+transaction that sets `archivedAt` and increments `version`. If the operation response is unknown,
+reconcile by operation metadata and the authoritative Scratch lifecycle; do not infer success from
+the item disappearing from a client-side list.
 
 ---
 
@@ -452,3 +703,9 @@ When a Scratch Bit is hard-deleted (after trash retention or explicit purge), al
 | Grid occupancy | BFS auto-placement | `nodes`, `bits` | Filter both stores by `parentId = X` AND `deletedAt = null` AND `archivedAt = null`. Collect all `(x, y)` pairs into an occupied-cells set |
 | Aging state | Grid rendering | `nodes`, `bits` | Operates on grid-visible items only (`deletedAt = null` AND `archivedAt = null`; L0 also `hiddenFromGrid = false`). Compute `daysSinceMtime = (Date.now() - item.mtime) / 86400000`. Apply: 0–5 = Fresh, 6–11 = Stagnant, 12+ = Neglected |
 | Trash auto-cleanup | App startup / periodic | `nodes`, `bits` | Filter `deletedAt != null` AND `deletedAt < Date.now() - (30 * 86400000)`. Permanently delete matches (Hook 6) |
+| Scratch Breakdown workspace | Inbox/Triage Breakdown and Staging | `bits`, `scratchBreakdowns`, `triageStagedCandidates` | Read selected active Scratch by ID; read all rows by `scratchBitId`; read candidates by `scratchBitId`; join each candidate to its source row; derive Active/Staged/Consumed with Hook 13. Sort rows by selected view preference and candidates by `createdAt DESC, id ASC` |
+| Staged candidates by type | Inbox/Triage Staging subsection | `triageStagedCandidates`, `scratchBreakdowns` | Use `[scratchBitId, type, createdAt]`, reverse for newest-first, then stable `id` tie-break. Resolve labels from source rows and exclude only authoritatively confirmed orphans |
+| Conditional Scratch/row save | Selected Scratch Context and Breakdown inline editors | `bits` or `scratchBreakdowns`, `triageStagedCandidates` | Primary-key read inside a read-write transaction; compare `version` and lifecycle/candidate predicate; update and increment `version`, or return current record with `conflict`/`invalid` |
+| Candidate and placement reconciliation | Stage/Unstage/Placement pending state | `nodes`, `bits`, `scratchBreakdowns`, `triageStagedCandidates` | Query preallocated candidate/result ID plus source row and candidate postcondition. Return `applied`/`already_applied` only for a complete transaction state; mixed states are conflicts and never repaired by repeating partial writes |
+| Newly Placed Undo eligibility | Grid Explorer actual Node/Bit card | `nodes`, `bits`, `chunks`, `scratchBreakdowns`, `triageStagedCandidates` | Compare result lifecycle, parent/position and creation fingerprint; query descendants/dependencies; combine with page-session placement provenance. Non-reversible results remain normal records and are not deleted |
+| Inbox archive eligibility | Breakdown completion/archive | `bits`, `scratchBreakdowns`, `triageStagedCandidates` | Verify active Scratch; count consumed rows (`> 0`), unconsumed rows (`= 0`), and candidates (`= 0`) in one consistent read. Do not rely on empty-array `every()` |
