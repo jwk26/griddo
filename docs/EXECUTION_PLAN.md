@@ -111,32 +111,37 @@ Next phase: 34 · Next task: 155
 
 - **Status:** `[ ]`
 - **Dependencies:** Tasks 101 and 102.
-- **Files:** `src/lib/db/datastore.ts` (add conditional APIs), `src/lib/db/indexeddb.ts` (implement one-transaction compare-and-set), `src/lib/db/scratch-breakdowns.test.ts` (extend), `src/lib/db/triage-commands.test.ts` (create)
+- **Files:** `src/lib/db/datastore.ts` (add conditional APIs and close public bypasses), `src/lib/db/indexeddb.ts` (implement one-transaction compare-and-set), `src/hooks/use-scratch-breakdowns.ts` (migrate the existing Add/Delete callers without adding Phase 25 presentation state), `src/hooks/use-scratch-breakdowns.test.tsx` (update), `src/hooks/use-bit-detail-actions.ts` and `src/components/bit-detail/bit-detail-popup.tsx` (route Scratch-title saves through the conditional command while preserving ordinary Bit updates), `src/lib/db/scratch-breakdowns.test.ts` (extend), `src/lib/db/triage-commands.test.ts` (create)
 - **Actions:**
   - `src/lib/db/indexeddb.ts`: implement idempotent Scratch-title and Breakdown Add/Edit/Delete commands that re-read ID, version, lifecycle, candidate relation, and stable operation/result ID in one read-write transaction.
   - Increment the successfully changed Bit or Breakdown revision exactly once; return the shared result family rather than throwing expected conflict/invalid outcomes.
   - Add authoritative postcondition lookup so a retry can distinguish `already_applied` from non-execution without a separate operation-log store.
+  - Make these conditional commands the sole public DataStore path for Scratch-title and Breakdown Add/Edit/Delete. Generic `updateBit` must reject a Scratch-title write while remaining valid for ordinary Bit fields, and legacy unconditional Breakdown create/update/delete methods must be removed or narrowed behind implementation-private lifecycle helpers so UI callers cannot bypass compare-and-set.
+  - Migrate the existing Breakdown hook and Bit-detail Scratch-title caller in the same task so closing the legacy methods never breaks the current application between phase commits. The compatibility path supplies stable IDs and captured base versions, treats only `applied`/`already_applied` as success, and leaves richer Scratch-title presentation to Task 109 and Breakdown pending/reconciling/conflict presentation to Task 111.
 - **Acceptance:**
   - Matching base versions apply once and return authoritative records; repeated stable operation IDs return `already_applied` without a duplicate write or revision increase.
   - Stale versions, consumed rows, staged rows, and archived/deleted Scratches reject mutation with no partial write.
   - Unknown-outcome reconciliation can prove whether an Add/Edit/Delete committed from stable IDs and postconditions.
-  - `pnpm test --run src/lib/db/scratch-breakdowns.test.ts src/lib/db/triage-commands.test.ts` passes.
+  - Type and runtime tests prove that generic `updateBit` cannot mutate a Scratch title and that no public unconditional Breakdown Add/Edit/Delete method remains. Existing Breakdown Add/Delete and Bit-detail Scratch-title behavior uses the conditional path without optimistic row removal or silent conflict success.
+  - `pnpm test --run src/lib/db/scratch-breakdowns.test.ts src/lib/db/triage-commands.test.ts src/hooks/use-scratch-breakdowns.test.tsx src/components/bit-detail` passes.
 - **Commit:** `feat(phase-23): add conditional triage edit commands`
 
 ### Task 104: Enforce Bit revision on every write path
 
 - **Status:** `[ ]`
 - **Dependencies:** Task 101.
-- **Files:** `src/lib/db/indexeddb.ts` (audit/update every Bit create and mutation path), `src/lib/db/indexeddb.test.ts`, `src/lib/db/mtime-cascade.test.ts`, `src/lib/db/auto-completion.test.ts`, `src/lib/db/archive.test.ts`, `src/lib/db/cascade-delete.test.ts`, `src/lib/db/cascade-restore.test.ts`, `src/lib/db/promotion.test.ts` (update focused assertions)
+- **Files:** `src/lib/db/indexeddb.ts` (audit/update every Bit create and mutation path plus Scratch hard-delete cleanup), `src/lib/db/indexeddb.test.ts`, `src/lib/db/mtime-cascade.test.ts`, `src/lib/db/auto-completion.test.ts`, `src/lib/db/archive.test.ts`, `src/lib/db/cascade-delete.test.ts`, `src/lib/db/auto-cleanup.test.ts`, `src/lib/db/cascade-restore.test.ts`, `src/lib/db/promotion.test.ts` (update focused assertions)
 - **Actions:**
   - Set `version = 1` on every Bit creation path, including promotion and placement-ready internal creation helpers.
   - Increment an existing Bit exactly once for each successful logical content, position, completion, or lifecycle mutation across direct update/move, Hook 1 ancestor/deadline cascades, Hook 3 auto-completion, soft-delete/restore, and Hook 10/11 archive/restore cascades.
   - Ensure one transaction changing several fields on one Bit produces one revision increment, while separately mutated Bits in a cascade each increment once.
+  - Extend direct `hardDeleteBit` and retention-triggered `cleanupExpiredTrash` so deleting a Scratch atomically removes its Bit, Chunks, ScratchBreakdowns, and `triageStagedCandidates`. Archive must not perform this cleanup, and unrelated candidate records must remain untouched.
 - **Acceptance:**
   - Focused tests cover every create and direct/cascade mutation path named above and fail on both missing and double increments.
   - `mtime` behavior remains intact and is not used as a compare-and-set token.
   - Node writes remain unchanged and no Node revision field is introduced.
-  - `pnpm test --run src/lib/db/indexeddb.test.ts src/lib/db/mtime-cascade.test.ts src/lib/db/auto-completion.test.ts src/lib/db/archive.test.ts src/lib/db/cascade-delete.test.ts src/lib/db/cascade-restore.test.ts src/lib/db/promotion.test.ts` passes.
+  - Direct and retention-triggered Scratch hard-delete leave no Breakdown or candidate orphan; archive preserves both; a transaction fault rolls back the Bit, Chunks, Breakdowns, and candidates together; unrelated Bits, Chunks, Breakdowns, and candidates are unchanged.
+  - `pnpm test --run src/lib/db/indexeddb.test.ts src/lib/db/mtime-cascade.test.ts src/lib/db/auto-completion.test.ts src/lib/db/archive.test.ts src/lib/db/cascade-delete.test.ts src/lib/db/auto-cleanup.test.ts src/lib/db/cascade-restore.test.ts src/lib/db/promotion.test.ts` passes.
 - **Commit:** `feat(phase-23): enforce bit revision invariants`
 
 ### Task 105: Persistence foundation integration gate
