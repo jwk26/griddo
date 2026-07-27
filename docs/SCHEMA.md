@@ -8,8 +8,8 @@
 > is read-only evidence, not canonical authority. Production authority is the
 > approved map content at `114b032` / `06bfaff9...`, its receipt at
 > `90022e7`, and the approved production recipe receipt at `7a15451`.
-> **Inbox/Triage amendment status:** **Proposed / Pending user approval.** The
-> target contracts in this amendment are canonical design targets, not claims
+> **Inbox/Triage amendment status:** **User-approved 2026-07-28.** The exact
+> pre-receipt draft is identified below. These canonical targets are not claims
 > about completed production implementation.
 > **Promotion provenance:** selected topic
 > [`DECISION.md`](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md),
@@ -20,6 +20,30 @@
 > **Baseline locator note:** promotion-map citations into the prior SCHEMA
 > refer to the file at production base `a3c679c` (SHA-256 `57ec5f1d...`). Line
 > numbers are historical locators and are not rewritten after this replacement.
+
+---
+
+## Inbox/Triage SCHEMA Approval Receipt
+
+- **Gate:** the complete production-adapted Inbox/Triage amendment in this
+  document.
+- **User disposition:** approved through the prior detailed Fresh SCHEMA
+  review and the user's 2026-07-28 instruction to carry the Fresh canonical
+  chain through final flow review.
+- **Approved artifact:** commit
+  `6be49f85c16d818752a4d162b96379a2a479e12c`, containing the exact
+  pre-receipt `docs/SCHEMA.md` whose SHA-256 is
+  `0fb1fb17f55a507b2a799d6f485fc764324d0287090b51a025df6248535c47ca`.
+- **Approved scope:** the Dexie v4 target, CAS/ABA protections, durable
+  candidates, narrow orphan-integrity audit, command reconciliation, Archive
+  recovery, queries, migrations, durable/non-durable ownership boundary, and
+  the five explicit production-transfer design deltas.
+- **Preserved constraints:** no general operation log, journal, outbox, or
+  offline queue is approved; `VQ-01`–`VQ-12` remain user-owned visual Decision
+  prerequisites and gain no visual authority from this data approval.
+- **Next legal action:** amend only `docs/SPEC.md`, validate its complete
+  affected consistency surface, and record its owning receipt before deriving
+  `docs/DESIGN_TOKENS.md`.
 
 ---
 
