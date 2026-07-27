@@ -1,153 +1,80 @@
-# Visual Recipe: Inbox / Triage Staging
+# Inbox/Triage Staging — Visual Recipe
 
-> Source: `griddo2-claude-themes2-3` at
-> `4f39709688ceb4cac5e15d4e3502186b1f1c801b`
-> Structural baseline: `DECISION.md` sections `Staging > Node And Bit Structure`,
-> `Candidate Drag Surface And Preview`, `Candidate Lifecycle`, `Stage Reliability`,
-> `Unstage Reliability`, and `Drag Feedback`
-> Date: 2026-07-18
-> Status: Approved
->
-> Scope: Node/Bit subsections, candidate card realization, pending state, counts, and unstage targets.
+> Status: **Proposed — recipe-package user gate pending**
+> Verification: **source-only; no rendered route/state was checked**
+> Production owner: `StagingZone`, candidate hook/repository, and `TriageDragToken` (`LAND-STAGING`)
 
-## Extraction Method
+## Authority And Source Regions
 
-- Extract candidate shapes, subsection ratios, scroll behavior, and theme motion from the pinned
-  prototype.
-- Resolve structural conflicts toward the DECISION: full-card drag, durable candidates, and an
-  overlay unstage target that does not resize Staging.
-- Defer the separate production BitCard redesign; this recipe covers the confirmed Staging visual
-  surface only.
+- Product authority: [`DECISION.md`](../brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md) lines 523–750.
+- Approved boundary: [`PROMOTION_MAP.md`](../brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md) §§10.1, 11.2, and 11.3.
+- Design Source root: `/Users/jwk/Documents/griddo2-claude-themes2-3`.
+- Staging regions: GridDO `page.tsx:1381-1503`; Tiny Desk `:1551-1632`; Neumorphism `:1281-1403`; Claymorphism `:1190-1322`; Origami `:1602-1714`; Terminal `:1205-1328`; Retro Mac `:1242-1369`; Graphite `:1351-1438` at that root.
 
-## Source Files
+## Shared Adopted Contract
 
-| Alias | Card helpers | Staging region |
-|---|---|---|
-| `P-griddo` | `198-279` | `1381-1503` |
-| `P-tiny-desk` | `237-339` | `1551-1632` |
-| `P-neumorphism` | `207-270` | `1281-1403` |
-| `P-claymorphism` | inline | `1190-1322` |
-| `P-origami` | `457-550` | `1602-1714` |
-| `P-terminal` | inline | `1205-1329` |
-| `P-retro-mac` | inline | `1242-1378` |
-| `P-graphite` | `219-291` | `1351-1438` |
+- Keep visible `Staging`, `Nodes`, and `Bits` identity. Nodes are a two-column grid of icon-centered cards; Bits are a vertical list of text rows. Shape/information, not color alone, carries type.
+- Preserve the selected Node/Bit `35/65` split, independent internal scroll containers, hidden scrollbar chrome, stable section height, and quiet empty state with no large placeholder cards.
+- The candidate root is the full drag activator. Production retains the shared compact pointer-centered `TriageDragToken`; no internal handle, native snapshot, primary click, detail, or menu is adopted.
+- During staged drag, the dedicated lower unstage overlay and Breakdown drop-back share one meaning. The overlay must not resize, blur, or move the lists.
+- Base pending, invalid, same-type neutral, opposite-type unavailable, and drop-back meanings remain semantic states. Source mock mutations do not define their lifecycle.
 
-## Visual Facts
+## Decision-Prerequisite Boundary
 
-### Layout Hierarchy
+- `VQ-06` — remote-arrival indicator, orphan/stale alerts, pending/failure details, navigation status, and related section-local statuses may use only the shared semantic-state envelope: state attributes, existing semantic/theme tokens, visible text/icon/non-color cues, and the selected focus/accessibility contract. Exact copy, count placement, alert placement/layout, effect, duration, and per-theme values are a **user-owned non-code Decision prerequisite**. Future owner: Staging recipe/token owner and durable-candidate/reliability phase; resume exact realization only after user receipt.
+- `D-CARD` — common Node/Bit eight-theme card redesign and later Staging reuse are deferred. Current recipe covers Staging shapes without preselecting that future redesign.
 
-```text
-Staging
-  visible section chrome
-  candidate body
-    Nodes subsection (35%)
-      independent hidden-chrome scroll container
-    Bits subsection (65%)
-      independent hidden-chrome scroll container
-  drag-only absolute unstage overlay
-  section-local failure alert overlay
-```
+## Theme Realizations
 
-### Candidate Realizations
+### GridDO
 
-| Theme | Node | Bit | Subsection surface |
-|---|---|---|---|
-| GridDO | square `aspect-square rounded-lg border p-2 shadow-sm`; parent-color translucent fill and `Box` well | `rounded-md border px-3 py-2 shadow-sm`; `FileText` and parent-color tint | thin rounded zones; source is `38fr/62fr`, normalized to structural `35fr/65fr` |
-| Tiny Desk | square yellow paper, torn tape, brown type, physical shadow | yellow paper strip with smaller torn tape and `FileText` | warm paper zones; rotation fixed at `0` |
-| Neumorphism | raised token with inset icon well | raised/inset horizontal token | two radius-`20px` inset wells; no hard border required |
-| Claymorphism | `aspect-square rounded-[20px]` raised clay card | `rounded-[16px] p-3` raised clay row | `rounded-[24px]` tinted Node/Bit zones |
-| Origami | asymmetric square paper with dashed icon well and gradient fold | asymmetric paper row with `FileText` | angular paper wells; Node/Bit cards enter with `rotateY` spring |
-| Terminal | square CLI directory block | horizontal command/executable row | square `border-2` Node/Bit panes with monospace labels |
-| Retro Mac | square System 7 file/folder tile | compact bordered document row | hard black-bordered panes with bitmap-like contrast |
-| Graphite | `aspect-square rounded-lg border-[0.5px] p-2` | `rounded-md border-[0.5px] px-3 py-2.5` | `rounded-lg border-[0.5px] p-3` monochrome zones |
+- Observed source-only: source declares `grid-cols-[38fr_62fr]`, which is not adopted over the selected `35/65`; Nodes use a two-column grid, Bits a vertical list, both with hidden scrollbars. Drop zones use primary/invalid state classes, and a bottom return target is declared.
+- Adopted fact: clean technical zones, compact type cards, and a direct return-to-Breakdown target are supported.
+- Token implication: staging panel, Node well/card, Bit well/row, pending, neutral, invalid, and unstage-target roles are needed.
 
-### Sizing And Scroll
+### Tiny Desk
 
-| Contract | Exact realization |
-|---|---|
-| Split | `grid-cols-[35fr_65fr]` or `flex-[35]` / `flex-[65]` |
-| Node list | two-column grid with `gap-3` |
-| Bit list | vertical flex list with `gap-2` or `gap-3` |
-| Scroll | each list has `overflow-y-auto` and hidden scrollbar chrome utilities |
-| Label | `Nodes` / `Bits`; prepend count only when count is at least two |
-| Parent panel | `min-h-0 overflow-hidden`; candidate growth never expands the section |
+- Observed source-only: cork/paper Staging uses centered brown `Nodes`/`Bits`, two-column paper objects versus text slips, and a wood-wastebasket return target. Internal list scrollbars are hidden.
+- Adopted fact: corkboard regions, paper candidate shapes, and a wastebasket-like transient return affordance are supported.
+- Token implication: cork zone, Node note, Bit slip, and unstage target need Tiny Desk aliases; destructive delete semantics are not implied.
 
-### Pending Candidate Treatment
+### Neumorphism
 
-Pending create/unstage uses the same Node or Bit card markup, dimensions, padding, radius,
-typography, and icon as the normal candidate. Add only a static state layer:
+- Observed source-only: source declares exact `grid-cols-[35fr_65fr]`; both wells use `20px` radius and inset shadows; candidates use raised card shadows. A rounded bottom return target is declared.
+- Adopted fact: inset Node/Bit wells and raised candidate objects are supported.
+- Token implication: reuse named inset/card shadows for zone/candidate roles; source internal handles are excluded.
 
-| Theme | Pending layer |
-|---|---|
-| GridDO | reduce color saturation and add `border-dashed border-primary/30` |
-| Tiny Desk | flatten to `shadow-none`, keep paper/tape, add `border-[#8b5e3c]/30` |
-| Neumorphism | replace raised shadow with `shadow-[var(--theme-shadow-inset-sm)]` |
-| Claymorphism | lower saturation and use `shadow-[var(--theme-shadow-inset-sm)]` |
-| Origami | keep folds, use dashed outer crease and lower paper contrast |
-| Terminal | keep exact CLI card, add static `[SAVING]` status and dim foreground |
-| Retro Mac | keep exact tile/row, add 50% dither overlay and static `SAVING` label |
-| Graphite | keep exact card, add `border-dashed border-zinc-400 bg-zinc-50` |
+### Claymorphism
 
-No pending layer may blink, pulse, change card geometry, or permit drag/placement.
+- Observed source-only: Staging consumes `--clay-staging-bg`; Nodes are square rounded clay objects and Bits rounded list objects. The bottom source target is a `Jelly Basket`; zone and card declarations use clay shadow variables.
+- Adopted fact: tactile type-specific objects and a transient soft basket target are supported.
+- Token implication: clay Node/Bit well and candidate roles should alias existing variables; keyboard activation text in source is not adopted.
 
-### Interaction And Motion
+### Origami
 
-| Interaction | Required realization |
-|---|---|
-| Candidate drag | entire root card is the activator; every grab point yields the same shared `TriageDragToken` |
-| Mouse / touch | retain main sensors: `8px` mouse activation; `250ms` touch delay and `5px` tolerance |
-| Unstage target | appears only during candidate drag as an absolute bottom overlay; scroll content receives temporary bottom padding |
-| Breakdown drop-back | whole Breakdown section is a second target; it does not blur or shift its content |
-| Remote arrival | preserve scroll; show section-label `새 항목 N개` only when user is not at top |
-| Invalid sibling type | keep neutral for same-type subsection; opposite type shows static invalid reason without auto-conversion |
+- Observed source-only: folded paper wells keep Node grid/Bit list shape; dashed/faceted borders and a lower scissors/slit target are declared. The source includes keyboard drop handlers and repeated pulse classes.
+- Adopted fact: paper compartments and a transient slit/cut return affordance are supported.
+- Token implication: paper well/candidate/slit roles are valid; keyboard mechanics and pulse are explicitly removed.
 
-## Realization Decisions
+### Terminal
 
-### Adopted
+- Observed source-only: `Candidate Staging` contains framed `Nodes` and `Bits`; Node candidates appear as directory-like blocks and Bits as `EXEC_` rows. The lower source target is `/DEV/NULL`-like. Internal grip/keyboard handlers are present.
+- Adopted fact: directory/executable shape distinction and a transient console return target are supported.
+- Token implication: terminal status text provides a non-color cue; internal handles and keyboard placement are excluded.
 
-- Preserve the eight Node/Bit card realizations and their intentional shape difference.
-- Preserve the `35/65` semantic split, independent scroll containers, and hidden scrollbar chrome.
-- Preserve theme-specific depth/material cues and direct-manipulation motion where it does not alter
-  layout.
-- Use the same candidate card for pending create/unstage, with only the static pending layer above.
+### Retro Mac
 
-### Removed
+- Observed source-only: `Staging Area` uses black/white folder-like Node tiles and document-like Bit rows, with a lower Trash target labeled as unstage. Hard borders and source drop patterns distinguish states.
+- Adopted fact: classic file/folder shapes and transient Trash-like return target are supported as non-destructive unstage semantics.
+- Token implication: Mac Node/Bit/target roles need explicit semantic naming so Trash imagery does not imply deletion.
 
-- The prototype's separate Grip/drag handle is removed. It is explicitly a wrong prototype detail.
-- Permanent unstage buttons are not added.
-- Layout-growing unstage rows such as source `animate({ height: 40/44/60/72 })` are removed.
-- Repeating pulse, bounce, shake, spin, or blinking on zones, pending cards, and unstage targets is
-  removed.
-- Prototype keyboard placement shortcuts are not promoted in this pointer-drag-only phase.
+### Graphite
 
-### Improved
+- Observed source-only: a subtle panel contains line-separated Node grid and Bit list; a thin lower strip reads `Release Candidate from Staging`. The design uses grayscale borders with a compact X marker.
+- Adopted fact: drafting compartments and an ultra-thin release strip are supported.
+- Token implication: graphite zone/candidate/release roles should use shared grayscale variables plus visible text/icon state.
 
-- GridDO source `38fr/62fr` is normalized to the decided `35fr/65fr` contract.
-- The unstage target becomes an absolute overlay that does not alter subsection height or scroll
-  offset.
-- Candidate counts and remote-arrival counts remain separate signals.
-- Stage/unstage failure uses a Staging-header-local overlay with item title, direct reason, `role`
-  `alert`, and an accessible `X`; it has no retry button and no timed dismissal.
-- Prototype title-based candidate matching becomes stable `sourceBreakdownId` projection.
+## Exclusions And Verification
 
-## Token Contract Implications
-
-| Token / contract area | Required rule | Source evidence |
-|---|---|---|
-| Candidate geometry | Node square and Bit row share material language but keep type-specific shape | eight card pairs |
-| Subsection split | common `35/65` structure with per-theme well/pane surface | Staging regions and DECISION |
-| Pending candidate | theme maps one static pending treatment onto the existing card | table above |
-| Drag preview | one shared type-specific pill, independent of grab point | main `DragOverlay` / `TriageDragToken` contract |
-| Unstage overlay | fixed overlay height and temporary scroll padding; no parent reflow | DECISION lifecycle contract |
-| Section alert | theme-local surface with fixed semantic status and close action | `Unstage Reliability` |
-
-## Execution Handoff
-
-Tasks must test full-card drag, identical drag pill from every grab point, Node/Bit scroll
-independence, pending card lock, successful stage/unstage, failed unstage alert, dedicated unstage
-overlay, Breakdown drop-back, and no section growth.
-
-## Open Questions
-
-- Theme-specific production BitCard typography and icon redesign are deferred to the separate
-  post-promotion BitCard worktree.
+- Excluded: exact `VQ-06` realization beyond the shared envelope, `D-CARD`, internal handles, keyboard-grab/drop mechanics, candidate label snapshots, local mock persistence, large empty placeholders, permanent unstage buttons, repeated pulse/blink/bounce/spin, and route-specific mutations.
+- No drag target, pending candidate, scroll padding, last-item reachability, type distinction, remote arrival, alert, focus, contrast, or light/dark state was rendered or verified.

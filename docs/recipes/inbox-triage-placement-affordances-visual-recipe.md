@@ -1,155 +1,80 @@
-# Visual Recipe: Inbox / Triage Placement Affordances
+# Inbox/Triage Placement Affordances — Visual Recipe
 
-> Source: `griddo2-claude-themes2-3` at
-> `4f39709688ceb4cac5e15d4e3502186b1f1c801b`
-> Structural baseline: `DECISION.md` sections `Grid Explorer And Placement > Placement Targets`,
-> `Placement Keyboard And Focus`, `Staged Candidate Placement`, `Direct Breakdown Row Placement`,
-> `Placement Commit Reliability`, and `Placement Result Title Validation`
-> Date: 2026-07-18
-> Status: Approved
->
-> Scope: drag-start invalid cues, invalid-hover warnings, direct type choice, and Confirm/Cancel
-> placement surfaces inside a target column.
+> Status: **Proposed — recipe-package user gate pending**
+> Verification: **source-only; no rendered route/state was checked**
+> Production owner: decomposed placement state owners coordinated by `TriageWorkspace` (`LAND-PLACEMENT`)
 
-## Extraction Method
+## Authority And Source Regions
 
-- Trace staged and direct-row DnD from drag start through type selection and confirmation.
-- Preserve the final two-stage direct flow and theme-specific affordance surfaces.
-- Reconcile source pulses, icon emoji, glass prelayers, and clipped column content toward explicit
-  user decisions and the DECISION.
+- Product authority: [`DECISION.md`](../brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md) lines 887–1030.
+- Approved boundary: [`PROMOTION_MAP.md`](../brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md) §§10.1, 11.2, and 11.3.
+- Design Source root: `/Users/jwk/Documents/griddo2-claude-themes2-3`.
+- Placement subregions are inside GridDO `page.tsx:1504-1774`; Tiny Desk `:1633-1909`; Neumorphism `:1404-1679`; Claymorphism `:1323-1687`; Origami `:1715-2035`; Terminal `:1329-1710`; Retro Mac `:1370-1756`; Graphite `:1439-1743` at that root.
 
-## Source Files
+## Shared Adopted Contract
 
-All pinned route Grid regions listed in `inbox-triage-visual-recipe-index.md` are source. Key
-realization ranges are the `isDropUnavailable`, `directRowDrop`, and `pendingPlacement` branches in
-each route.
+- Direct flow first shows a Node/Bit and destination-path selection surface, then a visually distinct target-column placement affordance. Staged flow opens the target-column placement affordance directly.
+- The base affordance names source, result type, and destination. Confirm and Cancel are visually distinct. A full target keeps the affordance present, adds a direct warning, disables Confirm, and never suggests an automatic alternate target.
+- Placement stays inside the target column scroll content and cannot expand or clip the column. Its visual shell does not turn into a full-screen modal merely for focus containment.
+- Pointer DnD is the only entry in this promotion. No placement button/menu, keyboard DnD, destination picker, hidden shortcut, or unfinished alternative is added.
+- Source confirmation mutations are mock-only. Atomicity, revalidation, pending/reconciliation, Retry, focus, and navigation guards come from product/canonical behavior authority.
 
-## Visual Facts
+## Decision-Prerequisite Boundary
 
-### Layout Hierarchy
+- `VQ-08` — pending, reconciling, failure, Retry, and stale-source/target appearance beyond the sourced base affordance may use only the shared semantic-state envelope: state attributes, existing semantic/theme tokens, visible text/icon/non-color cues, and selected focus/accessibility behavior. Exact copy, location, layout, effect, duration, and per-theme values remain a **user-owned non-code Decision prerequisite**. Future owner: placement recipe/token owner and reliability phase; resume exact styling only after user receipt.
+- `VQ-09` — staged over-limit Result Title and direct unavailable-limit content states are an absent replacement surface. They are wholly excluded; create dialogs, generic placement dialogs, and prototype type chooser are not fallbacks. **User-owned Decision prerequisite:** approve the direct Result Title/limit realization. Future owner: placement-title phase; no dependent UI task starts until matching receipt.
 
-```text
-drag starts
-  invalid columns receive immediate theme-specific background/depth signal
-pointer enters invalid column
-  clear warning surface appears above that signal
+## Theme Realizations
 
-staged candidate dropped on valid target
-  Placement Affordance: source + result type + destination + Confirm/Cancel
+### GridDO
 
-direct Breakdown row dropped on valid target
-  modal-like type/path choice
-  then separate Placement Affordance: source + chosen type + destination + Confirm/Cancel
-```
+- Observed source-only: direct choice is a card overlay with `DIRECT PLACEMENT`, source title, target path, stacked Node/Bit actions, and Cancel. Base confirmation is a bordered primary-tinted column card with type/title and Confirm/Cancel. Invalid hover declares a direct icon+message overlay.
+- Adopted fact: compact technical step cards and primary target-column confirmation are supported.
+- Token implication: direct-step shell, staged confirmation shell, target path, Confirm, Cancel, full-target warning, and disabled Confirm need semantic roles.
 
-All affordances remain inside the target column and its scrollable content. They do not become a
-page-level dialog.
+### Tiny Desk
 
-### Invalid Target Realizations
+- Observed source-only: direct choice is a cream paper slip with mono label and Folder path; Node/Bit actions read like paper controls. Confirmation is a pinned yellow paper slip with brown Confirm/Cancel; invalid state is a red-marked paper notice.
+- Adopted fact: pinned stationery slips and paper warnings are supported.
+- Token implication: direct slip, pinned confirmation, paper warning, and action roles need Tiny Desk aliases.
 
-| Theme | Drag-start signal | Pointer-inside warning |
-|---|---|---|
-| GridDO | red tint `bg-red-500/[0.03]` with `backdrop-blur-[4px]` | `z-30` card `bg-background/95 border-red-500/80`, `AlertCircle`, direct blocked text |
-| Tiny Desk | faint red paper tint plus `backdrop-blur-[4px]` | red stamped paper, `border-2 border-red-400`, `AlertOctagon`, `STAMP: ... REJECTED` |
-| Neumorphism | flatten to `shadow-none bg-transparent` plus transparent `backdrop-blur-[4px]` | inset soft alert well, red icon and direct `Bit not allowed at L0` / `Node not allowed at L3` text |
-| Claymorphism | red inner clay shadow with radius `24px` and `blur(4px)` | puffy red alert `rounded-[20px] shadow-[var(--clay-card-shadow)]` |
-| Origami | transparent `backdrop-blur-[4px]` over paper | clear white dashed red paper warning with `Scissors` icon |
-| Terminal | `bg-red-950/70`, red glow, red foreground | square `bg-zinc-950 border-red-500` fatal message |
-| Retro Mac | `dither-grayed-out`; no blur | clear System Error dialog, `border-4 border-double`, hard `4px` shadow |
-| Graphite | transparent `backdrop-blur-[4px]` | white thin-line alert, mono uppercase blocked text |
+### Neumorphism
 
-The warning layer is always above the background treatment and must not inherit blur or dimming.
-Column labels remain `Home` / `Level 1-3` while the warning is visible.
+- Observed source-only: direct choice is an `18px` raised soft card with source/path and rounded actions. Confirmation is a `20px` raised plate with rounded Place/Cancel; invalid state is an inset soft status card.
+- Adopted fact: raised step plates and inset warning treatment are supported.
+- Token implication: use existing card/inset shadow variables; do not claim rendered depth or substitute the deferred lens.
 
-### Direct Type Choice
+### Claymorphism
 
-| Theme | Opaque column-scoped surface |
-|---|---|
-| GridDO | `bg-card/95 p-4 border border-stone-200`; primary Node and bordered Bit actions |
-| Tiny Desk | `bg-[#fdfcf5] border-2 border-[#8b5e3c]/30 p-4`; paper folder/path copy |
-| Neumorphism | `bg-[var(--page-bg)] p-4 shadow-[var(--theme-shadow-card)]`; radius `18px` |
-| Claymorphism | puffy clay choice surface with rounded Node/Bit controls |
-| Origami | angular paper choice surface with dashed/creased actions |
-| Terminal | opaque black ASCII-framed choice surface |
-| Retro Mac | opaque white `border-2 border-black` Finder dialog with hard shadow |
-| Graphite | opaque white editorial choice surface with thin black divisions |
+- Observed source-only: direct choice is a blue-tinted `20px` clay plate with bold source/path and rounded actions. Confirmation is an amber `24px` capsule with explicit pending-type label and Confirm/Cancel; invalid state is a rounded clay alert.
+- Adopted fact: distinct cool direct-choice and warm confirmation objects are supported as base step differentiation.
+- Token implication: direct, confirmation, warning, Confirm, and Cancel roles should alias clay variables; reliability variants remain `VQ-08`.
 
-Unavailable type actions stay visible but disabled and include a direct reason. Home allows Node
-only; Level 3 allows Bit only; title limits can disable additional types.
+### Origami
 
-### Placement Confirmation
+- Observed source-only: direct choice is a folded paper card with source/path and faceted Node/Bit actions. Confirmation is a paper tag with an amber left edge and compact actions; invalid state is a dashed cut-paper message.
+- Adopted fact: folded choice sheet, tagged confirmation, and cut-paper warning are supported.
+- Token implication: fold-step, tag-edge, warning seam, and action roles need Origami aliases. Keyboard-grab UI is excluded.
 
-| Theme | Confirm/Cancel surface |
-|---|---|
-| GridDO | compact primary-bordered tag, static status dot, primary Confirm, bordered Cancel |
-| Tiny Desk | pinned memo slip with brass pin, warm Confirm and paper Cancel |
-| Neumorphism | radius-`20px` raised panel; raised Place and Cancel controls |
-| Claymorphism | radius-`24px` amber jelly capsule with rounded actions |
-| Origami | angular folded paper slip with dashed edge |
-| Terminal | square `[SYS: CONFIRM PLACEMENT?]` block; red `[N]`, foreground `[Y]` |
-| Retro Mac | marquee/double-border `OK TO PLACE?` dialog; Cancel and `OK` |
-| Graphite | docked thin-line strip with title and compact actions |
+### Terminal
 
-### Interaction And Motion
+- Observed source-only: direct choice is a black console block with source/path, `[N]`/`[B]` actions, and `[ESC] Cancel`. Confirmation is `[SYS: CONFIRM PLACEMENT?]` with framed Yes/Cancel actions; invalid state is an explicit console error.
+- Adopted fact: command-step and system-confirmation text frames are supported.
+- Token implication: text and icon cues must accompany color; exact route copy is not canonical copy.
 
-| State | Required behavior |
-|---|---|
-| Invalid | no write; pointer release cannot auto-correct to another target |
-| Direct type choice | first step only; type selection opens a visually separate confirmation step |
-| Confirm pending | surface stays mounted, controls lock, visible pending status remains in place |
-| Full target | same affordance shows warning, disables Confirm, leaves Cancel available |
-| Cancel/Escape | source remains unchanged; focus returns to source or section fallback |
-| Success | focus moves to the actual newly created Node/Bit card |
-| Column overflow | affordance participates in column scroll; it must not increase column height or clip actions |
+### Retro Mac
 
-## Realization Decisions
+- Observed source-only: direct choice is a compact white system window with title strip, source/disk path, hard Node/Bit buttons, and Cancel. Confirmation is a black marquee/dotted white card; invalid state is a double-border system alert.
+- Adopted fact: classic modal-like subwindow inside the column and marquee confirmation are supported.
+- Token implication: title strip, hard control, marquee, and alert roles need Retro Mac aliases; the surface remains column-scoped.
 
-### Adopted
+### Graphite
 
-- Preserve the two-level invalid signal: immediate column treatment, then clear warning on entry.
-- Preserve eight theme-specific warning, direct-choice, and confirmation visual languages.
-- Preserve a two-step direct flow and one-step staged confirmation flow.
-- Keep every placement surface scoped to the target column.
-- Keep Confirm/Yes and Cancel/Escape explicit; no write occurs before confirmation.
+- Observed source-only: direct choice is a dark registry card with source/scope and restrained stacked actions. Confirmation is a docked white strip with `Confirm Placement`, source title, and compact controls; invalid state is a monochrome bordered notice.
+- Adopted fact: dark registry choice versus light docked confirmation is supported.
+- Token implication: direct registry, docked confirmation, monochrome warning, and action roles need Graphite aliases.
 
-### Removed
+## Exclusions And Verification
 
-- Source translucent H10 prelayers such as `bg-white/20 backdrop-blur-[3px]` are removed. The type
-  choice itself remains opaque and column-scoped; Glassmorphism is not part of the approved H10
-  realization.
-- Source `animate-pulse`, `animate-ping`, bounce, blink, and rotating borders are removed.
-- Source folder/document emoji in pending rows are removed; use the existing Node/Bit icon language.
-- Prototype keyboard drop shortcuts and hidden placement commands are not promoted in this phase.
-- Full-screen placement dialogs and automatic target correction are not allowed.
-
-### Improved
-
-- Pending indicators become static while retaining each theme's border, depth, marker, and control
-  arrangement.
-- `data-placement-scroll` owns vertical overflow and enough bottom padding to keep Confirm/Cancel
-  reachable without expanding the column.
-- Warning text is locale-owned and remains sharp above any invalid-target background blur.
-- Confirm-time stale/full validation updates the existing affordance rather than replacing it with
-  a generic error dialog.
-- Staged over-limit titles insert the decided Result Title step; direct placement never inserts a
-  hidden title editor.
-
-## Token Contract Implications
-
-| Token / contract area | Required rule | Source evidence |
-|---|---|---|
-| Invalid target | each theme maps background/depth signal separately from the warning surface | eight invalid branches |
-| Column warning | high-contrast static message layer must remain readable above background treatment | `z-30` warning branches |
-| Direct choice | one opaque theme surface with disabled-type treatment | eight `directRowDrop` branches |
-| Confirmation | one theme surface with stable status, Confirm, and Cancel slots | eight `pendingPlacement` branches |
-| Placement scroll | affordance lives in a fixed column scroll viewport | `data-placement-scroll` containers |
-
-## Execution Handoff
-
-Acceptance criteria must cover Home/Level 3 constraints, invalid drag-start and pointer-entry
-states, two-stage direct flow, staged confirmation, full target, stale target, pending, retry,
-Cancel/Escape, focus containment, and reachable actions at every column height.
-
-## Open Questions
-
-- None.
+- Excluded: all `VQ-09`, exact `VQ-08` reliability details beyond the shared envelope, generic/global Dialog fallback, source mutation/timers, keyboard handlers, automatic target fallback, partial writes, repeated pulse/ping/spin/bounce, and source copy as product copy.
+- No target-column containment, clipping, full-target state, disabled action, step distinction, focus containment, scrolling, pointer hit testing, pending/retry state, contrast, or light/dark outcome was rendered or verified.

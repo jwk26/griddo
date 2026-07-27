@@ -1,139 +1,157 @@
-# Inbox / Triage 2-3 Visual Recipe Index
+# Inbox/Triage Visual Recipe Navigation Index
 
-> Source: `griddo2-claude-themes2-3` commit
-> `4f39709688ceb4cac5e15d4e3502186b1f1c801b`
-> Structural baseline:
-> `docs/brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md`
-> Promotion map:
-> `docs/brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md`
-> Date: 2026-07-18
-> Status: Approved
+**Status:** Proposed recipe-package navigation; user gate Pending
 
-This index fixes the prototype provenance, maps source regions to surface recipes, and audits
-the six semantic states across all eight themes. The prototype is a visual and interaction
-reference only; its duplicated state, handlers, mock persistence, and route architecture are not
-production sources.
+**Verification level:** Source-only; no rendered verification performed
 
-## Extraction Method
+**Authority:** Navigation only. Product behavior remains owned by canonical
+documents and the selected topic decision; this index does not create behavior,
+token, layout, or implementation authority.
 
-- Read the pinned source files directly and record exact Tailwind classes, CSS variables, inline
-  values, motion transitions, and component hierarchy.
-- Reconcile every extracted fact against the structural baseline. The decision wins on conflict.
-- Use the durable `1600x1000` captures as visual evidence, not as a substitute for exact source
-  values.
-- Keep whole-hierarchy search-result realization out of recipes. It remains a phase-local
-  `Decision prerequisite` because no final prototype realization exists.
-- Record reusable styling implications for Step 3 `DESIGN_TOKENS.md`; do not turn theme display
-  strings into tokens.
+## Recovery receipt and source boundary
 
-## Source Region Inventory
+- Approved production promotion-map content commit:
+  `114b032e7c958ca722a56842253874f5e363c6e2`.
+- Approved pre-receipt promotion-map SHA-256:
+  `06bfaff9982f59435a112d51a71309803d3c3933dae965a97819f7de9c9aecc8`.
+- Approval receipt commit:
+  `90022e73666857dd6f7906087d8386a85aa73e08`.
+- Current receipt-bearing promotion-map SHA-256:
+  `f564868606cd425c69400306707a021c8294e247c81c736e1451c9b5d3bcea1c`.
+- Package authority and gate order:
+  [approved promotion map](../brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md).
+- Selected product authority:
+  [DECISION.md](../brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md).
+- Historical capture context only:
+  [NOTES.md](../brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/NOTES.md).
+- Every prototype path and `src/app/themes.css` range below is rooted at the
+  separate, read-only Design Source:
+  `/Users/jwk/Documents/griddo2-claude-themes2-3`, at clean commit
+  `4f39709688ceb4cac5e15d4e3502186b1f1c801b` and tree
+  `7b8eb8766a9b57fe2174a948de09cfb7646cf7de`.
+  It is never a production-repository path.
 
-All line ranges refer to the pinned commit above.
+The selected Design Source files were matched to the authorized source
+manifest before extraction. The manifest's `1920x1080` populated-state
+metadata is source context, not a render independently reproduced in this
+package.
 
-| Theme | Alias | Shared helpers / cards | Scratch Pool | Breakdown + archive | Staging | Grid / placement |
-|---|---|---|---|---|---|---|
-| GridDO | `P-griddo` | `page.tsx:151-479` | `page.tsx:1001-1120` | `page.tsx:1128-1380` | `page.tsx:1381-1503` | `page.tsx:1504-1774` |
-| Tiny Desk | `P-tiny-desk` | `page.tsx:179-465` | `page.tsx:1274-1401` | `page.tsx:1402-1550` | `page.tsx:1551-1632` | `page.tsx:1633-1909` |
-| Neumorphism | `P-neumorphism` | `page.tsx:151-392` | `page.tsx:887-1039` | `page.tsx:1040-1280` | `page.tsx:1281-1403` | `page.tsx:1404-1679` |
-| Claymorphism | `P-claymorphism` | `page.tsx:139-254` | `page.tsx:810-942` | `page.tsx:943-1189` | `page.tsx:1190-1322` | `page.tsx:1323-1687` |
-| Origami | `P-origami` | `page.tsx:184-673` | `page.tsx:1279-1404` | `page.tsx:1405-1601` | `page.tsx:1602-1714` | `page.tsx:1715-2035` |
-| Terminal | `P-terminal` | `page.tsx:152-244` | `page.tsx:844-940` | `page.tsx:941-1204` | `page.tsx:1205-1329` | `page.tsx:1330-1710` |
-| Retro Mac | `P-retro-mac` | `page.tsx:154-267` | `page.tsx:856-991` | `page.tsx:992-1241` | `page.tsx:1242-1378` | `page.tsx:1379-1756` |
-| Graphite | `P-graphite` | `page.tsx:152-414` | `page.tsx:979-1102` | `page.tsx:1103-1350` | `page.tsx:1351-1438` | `page.tsx:1439-1743` |
+## Surface-first recipe package
 
-Route prefix for every source file:
-`src/app/prototype/inbox-triage-<theme>/page.tsx`.
+Future task IDs are deliberately `Pending`: they may be assigned only after
+the recipe gate and the later one-document-at-a-time canonical gates. The
+production owners below are navigation back to the approved promotion-map
+landing registry, not implementation authorization.
 
-## Durable Baseline Evidence
+| Recipe | Supported source-first scope | Production owner | Future task ID | Decision trace |
+|---|---|---|---|---|
+| [Shell and section chrome](inbox-triage-shell-section-chrome-visual-recipe.md) | Four-area composition, visible identity/chrome, hidden-scrollbar treatment | `LAND-THEME`; `src/components/triage/triage-workspace.tsx` and owning sections | Pending | Replacement bodies cannot be inferred from chrome |
+| [Scratch Pool](inbox-triage-scratch-pool-visual-recipe.md) | Expanded/collapsed Pool, tools, list, count, base selection/empty states | `LAND-POOL` | Pending | `VQ-01`; Pool subset of `VQ-06` |
+| [Selected Scratch Context](inbox-triage-selected-scratch-context-visual-recipe.md) | Signature Context and base working/complete states | `LAND-BREAKDOWN` | Pending | `VQ-04`, `VQ-11`, `D-LENS` |
+| [Breakdown rows and empty states](inbox-triage-breakdown-row-empty-visual-recipe.md) | Base row lifecycle, grip/actions, Add control, empty/completion prompts | `LAND-BREAKDOWN` | Pending | `VQ-02`, `VQ-03`, `VQ-04`, `VQ-05`, `VQ-11` |
+| [Staging](inbox-triage-staging-visual-recipe.md) | Node-card/Bit-row shapes, base pending/drop-back/invalid grammar, quiet empty state | `LAND-STAGING` | Pending | `VQ-06`, `D-CARD` |
+| [Grid Explorer](inbox-triage-grid-explorer-visual-recipe.md) | Chrome/path/full labels, four-column base, supported target grammar | `LAND-EXPLORER` | Pending | `VQ-06`, `VQ-07` |
+| [Placement affordances](inbox-triage-placement-affordances-visual-recipe.md) | Direct/staged base affordances, target-column placement, full-target warning | `LAND-PLACEMENT` | Pending | `VQ-08`, `VQ-09` |
+| [Newly placed and Undo](inbox-triage-newly-placed-undo-visual-recipe.md) | Actual-card base marker and Undo placement; static or one-shot candidates only | `LAND-NEWLY` | Pending | `VQ-10`, `D-CARD`; repeated motion excluded |
+| [Archive completion](inbox-triage-archive-completion-visual-recipe.md) | Breakdown overlay, base Archive/Cancel, complete Context/reopen state | `LAND-ARCHIVE`, `LAND-BREAKDOWN` | Pending | `VQ-11`, `VQ-12` |
 
-Each image was rendered from the pinned clean worktree at `1600x1000`, device scale factor `1`,
-with visible browser scrollbars hidden. Chrome console/service warnings did not affect page output.
+The existing [Batch 2 recipe](inbox-triage-batch2-visual-recipe.md) remains
+unchanged and is historical/reference-only for this selected topic. It is not
+part of this package and is not a direct execution recipe; canonical reference
+changes remain behind the later canonical-document gates.
 
-| Theme | Evidence | SHA-256 |
+The existing Golden
+[Breakdown recipe](inbox-triage-breakdown-visual-recipe.md) is also
+historical/reference-only and is superseded by
+[Breakdown rows and empty states](inbox-triage-breakdown-row-empty-visual-recipe.md).
+Its exact effect and timing rows are not current visual authority. Active
+canonical and plan references move only at their owning later gates.
+
+## Selected route-region navigation
+
+All ranges are source-only extraction locators under the absolute Design
+Source root above. They do not assert a rendered outcome.
+
+| Theme | Route file under Design Source | Shell / Pool | Breakdown / Context / Archive | Staging | Explorer / Placement / Newly placed |
+|---|---|---:|---:|---:|---:|
+| GridDO | `src/app/prototype/inbox-triage-griddo/page.tsx` | `998-1121` | `1128-1380` | `1381-1503` | `1504-1774`; helpers `362-478` |
+| Tiny Desk | `src/app/prototype/inbox-triage-tiny-desk/page.tsx` | `1271-1395` | `1402-1550` | `1551-1632` | `1633-1909`; helpers `340-465` |
+| Neumorphism | `src/app/prototype/inbox-triage-neumorphism/page.tsx` | `887-1036` | `1040-1280` | `1281-1403` | `1404-1679`; helpers `275-392` |
+| Claymorphism | `src/app/prototype/inbox-triage-claymorphism/page.tsx` | `807-936` | `943-1189` | `1190-1322` | `1323-1687` |
+| Origami | `src/app/prototype/inbox-triage-origami/page.tsx` | `1276-1398` | `1402-1601` | `1602-1714` | `1715-2035`; helpers `554-673` |
+| Terminal | `src/app/prototype/inbox-triage-terminal/page.tsx` | `841-937` | `944-1204` | `1205-1328` | `1329-1710` |
+| Retro Mac | `src/app/prototype/inbox-triage-retro-mac/page.tsx` | `853-985` | `992-1241` | `1242-1369` | `1370-1756` |
+| Graphite | `src/app/prototype/inbox-triage-graphite/page.tsx` | `976-1096` | `1103-1350` | `1351-1438` | `1439-1743`; helpers `298-414` |
+
+Selected shared values are in Design Source `src/app/themes.css`: Tiny Desk
+`1-46`, Neumorphism `47-112`, Claymorphism `113-253`, Origami `254-297`,
+Terminal `298-347`, Retro Mac `348-395`, and Graphite `396-439`. No selected
+GridDO shared-value block exists; missing exact GridDO values are not inferred.
+
+Local data mutations, review locks/variant selectors, internal staged handles,
+keyboard-grab mechanics, focus-collapse handlers, Scratch-switch newly-place
+reset, `triagedScratches`, repeated pulse/blink/bounce/ping, and route
+duplication are outside the adoptable source subranges.
+
+## Visual-question prerequisite register
+
+The approved two-class disposition is preserved. A behavior or semantic-state
+contract is not authority for unsupported appearance.
+
+### Existing-surface state realization
+
+Only the shared semantic-state envelope may proceed: state attributes,
+existing semantic/theme tokens, visible text or icon/non-color cues, and the
+selected accessibility/focus contract. Every unsupported exact effect,
+duration, copy, placement, layout, or per-theme value below remains a named,
+user-owned non-code Decision prerequisite.
+
+| ID | Kept behavior / unresolved visual decision | Future owner | Resume condition |
+|---|---|---|---|
+| `VQ-02` | Breakdown Add success signal; exact theme effect and timing are unresolved | User Decision → Breakdown recipe, `DESIGN_TOKENS.md`, owning phase | Matching user receipt defines the exact realization before its dependent UI task |
+| `VQ-05` | Delete pending/failure/reconciliation states; exact treatment, copy, and placement are unresolved | User Decision → Breakdown recipe and owning phase | Matching user receipt resolves unsupported details before dependent state UI |
+| `VQ-06` | Pool/Staging/Explorer remote, pending, invalid, arrival, and alert states; exact treatments remain unresolved | User Decision → owning Pool, Staging, or Explorer recipe and phase | Matching user receipt for each dependent realization; no per-theme inference |
+| `VQ-08` | Placement pending, failure, authoritative-success, and reconciliation states; exact realization is unresolved | User Decision → Placement recipe and owning phase | Matching user receipt before dependent placement-state UI |
+| `VQ-10` | Newly placed/Undo overlap, ineligible, pending, failure, and retry realization; repeated motion is not an option | User Decision → Newly placed/Undo recipe and owning phase | Matching user receipt before dependent reliability UI |
+| `VQ-11` | Add/editor blockers and eligibility-loss reporting around completion; exact copy and placement are unresolved | User Decision → Context/Breakdown/Archive recipes and owning phase | Matching user receipt before dependent blocker UI |
+| `VQ-12` | Archive pending, failure, uncertain outcome, check-again, and recovery realization; exact treatment is unresolved | User Decision → Archive recipe and owning phase | Matching user receipt before dependent archive-state UI |
+
+### Absent replacement surfaces
+
+These surfaces are wholly excluded from extraction. A nearby dialog, editor,
+card, search view, or theme chrome is not a fallback. Each remains a named,
+user-owned non-code Decision prerequisite whose dependent UI task stays
+blocked.
+
+| ID | Missing replacement surface | Future owner | Resume condition |
+|---|---|---|---|
+| `VQ-01` | External archive/delete lifecycle transition modal for the Pool | User Decision → Pool recipe and owning phase | Matching user receipt supplies the replacement surface before implementation |
+| `VQ-03` | Add-draft continue-writing/discard-and-move confirmation | User Decision → Breakdown recipe and owning phase | Matching user receipt supplies the replacement surface before implementation |
+| `VQ-04` | Scratch/row inline editor saving, validation, conflict, and invalidated-lifecycle surfaces | User Decision → Context/Breakdown recipes and owning phase | Matching user receipt supplies the replacement surfaces before implementation |
+| `VQ-07` | Dedicated full-hierarchy Explorer search mode and result body | User Decision → Explorer recipe and owning phase | Matching user receipt supplies the complete replacement surface before implementation |
+| `VQ-09` | Staged Result Title and direct-placement limit/reason surfaces | User Decision → Placement recipe and owning phase | Matching user receipt supplies the replacement surfaces before implementation |
+
+## Selected deferrals
+
+| ID | Navigation trace | Resume owner |
 |---|---|---|
-| GridDO | `assets/inbox-triage-2-3/griddo-1600x1000.png` | `dd6bac3f330539d81eff7388608c8a902be80553299232ba2f934b517fbbb392` |
-| Tiny Desk | `assets/inbox-triage-2-3/tiny-desk-1600x1000.png` | `a488ee5d59e43024523d59b714551a02f609ecd55da2e6862f6afabc70237c8c` |
-| Neumorphism | `assets/inbox-triage-2-3/neumorphism-1600x1000.png` | `e5588c1fa362f4eaa253e8da9fb7453af3659364d7da7789916e472fcb674475` |
-| Claymorphism | `assets/inbox-triage-2-3/claymorphism-1600x1000.png` | `7ffc4c11c62c674434f633cd8c5be07de7e22053678b4fa54411d047ffa9a9df` |
-| Origami | `assets/inbox-triage-2-3/origami-1600x1000.png` | `26eb01882b0eb4be268576976c29eb1058b4dda8ff7c148e88709593a09ffc24` |
-| Terminal | `assets/inbox-triage-2-3/terminal-1600x1000.png` | `0cbd70add2c96398dabd62f80ce1fa590caada73f09ac937c9576877b64817aa` |
-| Retro Mac | `assets/inbox-triage-2-3/retro-mac-1600x1000.png` | `0707060609a0335c1181c922ead4179ed7170044e52d1df1d86a493edad7fea7` |
-| Graphite | `assets/inbox-triage-2-3/graphite-1600x1000.png` | `2d8d5ffbf7cbb19d626724487ecf778c835e8d3977c669cac75c8be8e7d4a32f` |
+| `D-CARD` | Common BitCard eight-theme redesign; no current Staging/newly-placed fallback | Future brainstorming and approved execution work |
+| `D-LENS` | Neumorphism ASC/DESC water-lens polish; source absent | Future user visual decision |
+| `D-LOCALE` | Locale resources/toggle and Korean QA; core English copy foundation stays in scope | Future canonical amendment |
+| `D-KEYBOARD` | Keyboard/drag-alternative placement entry; no placeholder command | Future accessibility brainstorming |
+| `D-TEXT` | Cross-surface wrapping, line counts, expansion, and IME detail | Named separate topic |
 
-## Surface Recipe Set
+## Verification disclosure and gate
 
-| Surface | Recipe | Structural baseline |
-|---|---|---|
-| Workspace shell and section chrome | `inbox-triage-shell-section-chrome-visual-recipe.md` | `Common Surface Contract` |
-| Scratch Pool | `inbox-triage-scratch-pool-visual-recipe.md` | `Scratch Pool` |
-| Selected Scratch Context | `inbox-triage-selected-scratch-context-visual-recipe.md` | `Breakdown > Selected Scratch Context` |
-| Breakdown | `inbox-triage-breakdown-visual-recipe.md` | `Breakdown` |
-| Staging | `inbox-triage-staging-visual-recipe.md` | `Staging` |
-| Grid Explorer | `inbox-triage-grid-explorer-visual-recipe.md` | `Grid Explorer And Placement` |
-| Placement affordances | `inbox-triage-placement-affordances-visual-recipe.md` | `Grid Explorer And Placement > Placement Targets / Staged Candidate Placement / Direct Breakdown Row Placement` |
-| Newly Placed and Undo | `inbox-triage-newly-placed-undo-visual-recipe.md` | `Grid Explorer And Placement > Newly Placed State / Undo` |
-| Completion and archive | `inbox-triage-archive-completion-visual-recipe.md` | `Completion And Archive` |
+| Evidence class | Package status |
+|---|---|
+| Source identity | Selected route/shared files matched the authorized manifest at the separate Design Source root |
+| Source inspection | Nine surface recipes extracted from the approved ranges; observations, adopted facts, token implications, exclusions, and verification status remain distinct |
+| Rendered verification | Not performed; no server/browser, screenshot, recording, or route/state interaction was used |
+| Unchecked visual dimensions | Contrast, depth, layering, clipping, overflow, rasterized geometry, combined theme outcome, responsive fidelity, motion timing/interruption/retrigger/reduced-motion equivalence, and eight-theme smoke |
+| Unchecked behavior states | External removal, concurrency, offline/realtime, placement, Undo, and archive execution |
 
-## Semantic-State Distinctness Matrix
-
-Cells are populated during each extraction batch. Every final cell must identify the owning recipe,
-the primary non-color cue, and the theme-specific visual mechanism. A state is not conforming when
-it differs from another state only by a shared opacity value.
-
-Legend: `G` = Grid Explorer recipe, `B` = Breakdown recipe, `P` = Placement recipe,
-`N` = Newly Placed recipe, `A` = Archive recipe. Each cell names its primary non-color cue.
-
-| Theme | Selected | Staged | Invalid target | Pending confirmation | Newly placed | Completed |
-|---|---|---|---|---|---|---|
-| GridDO | `G`: primary fill + border | `B`: muted inset row | `P`: veiled column + alert card | `P`: primary confirm tag | `N`: sky dot + `NEW` + Undo | `A`: buffer-cleared stamp |
-| Tiny Desk | `G`: brown paper border/fill | `B`: flattened paper | `P`: veiled paper + rejection stamp | `P`: pinned memo slip | `N`: brass fastener + yellow tab + Undo | `A`: `PROCESSED` paper stamp |
-| Neumorphism | `G`: inset selected well | `B`: sunken row | `P`: flattened column + inset alert | `P`: raised confirmation plate | `N`: blue bulb + raised `NEW` + Undo | `A`: inset completed context |
-| Claymorphism | `G`: primary puffy fill | `B`: squashed low-depth row | `P`: red inner clay surface + alert | `P`: amber jelly capsule | `N`: blue LED + glow + Undo | `A`: finished dough/green clay state |
-| Origami | `G`: folded/inset paper | `B`: flattened dashed paper | `P`: veiled paper + dashed warning | `P`: folded confirmation slip | `N`: folded amber corner + Undo | `A`: folded tag / cleared sheet |
-| Terminal | `G`: foreground inversion | `B`: commented-out row | `P`: red console + fatal block | `P`: `[SYS]` Y/N block | `N`: green `[new]` + `[UNDO]` | `A`: static `SUCCESS` / CLI complete |
-| Retro Mac | `G`: black/white inversion | `B`: ghost/dither row | `P`: dithered column + System Error | `P`: `OK TO PLACE?` dialog | `N`: black `[NEW]` + hard-shadow Undo | `A`: `DISK: TRIAGED` dialog state |
-| Graphite | `G`: black filled row | `B`: faded sketch row | `P`: veiled column + thin-line alert | `P`: docked confirmation strip | `N`: black `NEW` + thin outline + Undo | `A`: dark archived index |
-
-Matrix result: all six states have at least one non-color cue in every theme. No theme collapses
-Staged, Invalid, Pending, Newly Placed, and Completed into a shared opacity-only treatment.
-
-## Known Removed / Improved Seeds
-
-| Surface | Prototype detail | Disposition |
-|---|---|---|
-| Scratch Pool | focus/click immediately collapses the pool | Removed; first printable key and explicit toggle own collapse |
-| Staging | separate candidate Grip/drag handle | Removed; the entire card is the drag activator and uses the shared drag token |
-| Newly Placed | Scratch switch clears the state | Removed; state lasts until Inbox route exit |
-| Newly Placed / warnings | repeated `animate-pulse`, blink, or flicker | Improved to a static theme-specific signal |
-| Sidebar / headers | theme switchers, fold lock, test mode, numbered variant switchers | Removed as prototype review controls |
-| Grid search | prototype active-column search realization | Removed; whole-hierarchy result UI remains a phase-local decision prerequisite |
-
-## Fidelity Escalation Register
-
-| Surface / theme | Status | Reason / required evidence |
-|---|---|---|
-| Neumorphism soft-shadow depth | source-backed; live comparison required in implementation | Exact inset/outset variables and durable baseline agree; implementation must preserve hierarchy when mapped to production tokens |
-| Claymorphism puffy depth and motion | fidelity escalation flag | Shadow stacks are source-backed, but tactile spring feel cannot be proven by a static capture; compare live and do not restore delayed vertical squash |
-| Origami fold geometry | source-backed; browser verification required | Clip-path, SVG fold, and asymmetric radii are exact; verify rasterized seams and z-order in the production browser |
-
-## Extraction Completion
-
-- Batch A: shell, Scratch Pool, Selected Scratch Context — complete.
-- Batch B: Breakdown and Staging — complete.
-- Batch C: Grid Explorer, Placement, Newly Placed/Undo — complete.
-- Batch D: Completion/Archive, semantic-state matrix, fidelity register — complete.
-- Search-result realization remains intentionally absent and is not a missing recipe.
-
-## Canonical Handoff
-
-- Step 1 `SCHEMA.md`: data and persistence implications only.
-- Step 2 `SPEC.md`: surface behavior, ownership, interaction, and accessibility contracts.
-- Step 3 `DESIGN_TOKENS.md`: reusable state, typography, spacing, surface, and motion implications.
-- Step 4 `EXECUTION_PLAN.md`: tasks reference these recipe paths, not prototype route paths.
-- Step 5 `PLANNING_STANDARD.md`: promotion and multi-theme conformance rules.
-
-## Open Questions Guard
-
-Recipe open questions may cover only layout anchor, spacing, motion, or fidelity evidence. They must
-not reopen product policy, command scope, persistence, whole-hierarchy search-result realization,
-the deferred BitCard redesign, EN/KR work, or the Neumorphism water-lens idea.
+All nine recipes and this index remain **Proposed** and the package gate remains
+**Pending**. The next legal action is user approval or rejection of this exact
+checkpoint. Approval does not accept a task or phase; it only permits the
+targeted canonical-document gates to begin in declared authority order.

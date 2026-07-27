@@ -1,129 +1,82 @@
-# Visual Recipe: Inbox / Triage Selected Scratch Context
+# Inbox/Triage Selected Scratch Context — Visual Recipe
 
-> Source: `griddo2-claude-themes2-3` at
-> `4f39709688ceb4cac5e15d4e3502186b1f1c801b`
-> Structural baseline: `DECISION.md` section `Breakdown > Selected Scratch Context` and
-> `Completion And Archive > Cancel And Reopen`
-> Date: 2026-07-18
-> Status: Approved
->
-> Scope: the signature context section above Breakdown rows, including title, time, Edit, sort,
-> and its completed-state handoff.
+> Status: **Proposed — recipe-package user gate pending**
+> Verification: **source-only; no rendered route/state was checked**
+> Production owner: `BreakdownPanel` Context surface (`LAND-BREAKDOWN`, `LAND-THEME`)
 
-## Extraction Method
+## Authority And Source Regions
 
-- Extract the confirmed context realization from each route, not discarded variant concepts.
-- Separate the normal selected context from the completed-state treatment; completed details are
-  cross-referenced to the archive recipe.
-- Preserve the section as a sibling above rows, never as decoration inside a Breakdown row.
+- Product authority: [`DECISION.md`](../brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md) lines 282–296 and 1149–1156.
+- Approved boundary: [`PROMOTION_MAP.md`](../brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md) §§10.1, 11.2, and 11.3.
+- Design Source root: `/Users/jwk/Documents/griddo2-claude-themes2-3`.
+- Context subregions are inside GridDO `page.tsx:1128-1380`; Tiny Desk `:1402-1550`; Neumorphism `:1040-1280`; Claymorphism `:943-1189`; Origami `:1402-1601`; Terminal `:944-1204`; Retro Mac `:992-1241`; Graphite `:1103-1350` at that root.
+- Shared theme values: Design Source `src/app/themes.css:1-439`.
 
-## Source Files
+## Shared Adopted Contract
 
-| Alias | Region |
-|---|---|
-| `P-griddo` | `1135-1192` |
-| `P-tiny-desk` | `1419-1442` |
-| `P-neumorphism` | `1047-1108` |
-| `P-claymorphism` | `950-1002` |
-| `P-origami` | `1412-1464` |
-| `P-terminal` | `950-1017` |
-| `P-retro-mac` | `1000-1075` |
-| `P-graphite` | `1110-1165` |
+- The Context is a standalone signature section above rows, not heading metadata and not a row-like strip.
+- Target roughly `2–2.5×` ordinary row height without breaking section ratios.
+- Always include Scratch title, creation date/time, visible Scratch Edit entry, and Breakdown ASC/DESC sort. Remove duplicate selected title/meta from the Breakdown heading.
+- Working and `Scratch complete` are distinct base presentations of the same semantic surface.
+- Exact source copy is not product authority. Theme labels may express the selected working/complete meaning only after copy ownership is canonical.
 
-## Visual Facts
+## Decision-Prerequisite Boundary
 
-### Layout Hierarchy
+- `VQ-04` — the Scratch inline editor and saving/offline/conflict/lifecycle-invalid/copy states form an absent replacement surface. The no-op source Edit buttons and compact Context are not fallbacks. **User-owned Decision prerequisite:** approve a direct inline realization. Future owner: Context/row editing phase; its dependent UI task resumes only with a matching receipt.
+- Context subset of `VQ-11` — title-editor completion blocker may use only the approved shared semantic-state envelope. Exact blocker copy, position, layout, effect, and per-theme values remain a **user-owned non-code Decision prerequisite**. Future owner: Context recipe/token owner and archive phase; exact UI resumes only after receipt.
+- `D-LENS` — Neumorphism water-lens sort treatment is deferred and excluded.
 
-```text
-Breakdown section header
-Selected Scratch Context
-  identity / theme-specific ornament
-  selected Scratch title
-  created time
-  Edit control
-  row sort control
-Breakdown row list
-```
+## Theme Realizations
 
-The context is deliberately larger than a row and visually separated from the list. Its source
-heights are generally `min-h-[110px]` or equivalent `py-7` composition.
+### GridDO
 
-### Theme Realizations
+- Observed source-only: a `min-h-[110px]` rounded signature plate uses a low primary gradient, primary border, and wide horizontal title/meta/actions layout. It declares a circular Edit control and a distinct sort control.
+- Adopted fact: spacious product/ticket-like Context with technical primary accents is supported.
+- Token implication: Context plate, eyebrow/meta, title, action cluster, and complete-state marker need semantic roles.
 
-| Theme | Context surface | Identity and type | Controls |
-|---|---|---|---|
-| GridDO | `mx-3 my-2 py-7 px-1 min-h-[110px] rounded-lg border border-primary/10`; left-to-right primary tint and `shadow-[0_4px_20px_rgba(var(--primary-rgb),0.03)]` | compact technical label; bold title and created time | right-aligned `size-7` Edit and sort controls |
-| Tiny Desk | `py-7 pr-4 pl-8 bg-[#fdfcf5] border-2 border-[#8b5e3c]/40`; paper shadow | repeating top strip, blue `20px` rule grid, red vertical margin line; italic `text-lg font-black` title; mono date | enlarged desk-themed Edit and sort controls |
-| Neumorphism | `mx-3 my-3 px-4 py-7 min-h-[110px] bg-[var(--page-bg)] shadow-[var(--theme-shadow-inset)]`; radius `30px` | inset identity well; `text-base font-extrabold`; time `text-[10px] uppercase tracking-[0.14em]` | raised circular Edit; `h-8 w-[64px]` inset sort track with raised inner control |
-| Claymorphism | wrapper `px-6 py-3`; inner `p-7`, radius `36px`, pale blue fill, white `border-2`, three-part inset/outset shadow | top white sheen arc; `text-[9px] tracking-[0.25em]`; `text-base font-black` title; mono sculpted time | ghost `Wand2` Edit and `h-9 rounded-[20px]` puffy sort |
-| Origami | `mx-3 my-2 py-7 px-3`; square `borderRadius: 0`; paper border plus dashed lower edge | hanging-tag label, `text-[17px] font-black` title, `FILE_TIME` mono line | asymmetric paper Edit and `h-7` crease-line sort |
-| Terminal | wrapper `p-3`; inner black editor `min-h-[110px] border border-[var(--foreground)]/40 p-3` | numbered source lines, blue comment, yellow title assignment `text-[13.5px]`, purple stamp; editor status row | `[F2_EDIT]` and persistently yellow `[F3_SORT]` command controls |
-| Retro Mac | wrapper `p-4.5`; inner white dialog `p-5 border-[4px] border-black` with `borderStyle: double` | black mini title bar, folder icon, path, `text-[13px]` title, `LAST_STAMP` | `size-5` bordered Paintbrush and yellow classic sort button |
-| Graphite | `mx-3 my-2 p-7 rounded-md border-[0.5px] bg-zinc-50 border-zinc-200` | mono registry label, `font-serif text-base font-black` title, `text-[9px]` timestamp | `size-8` Eraser and `h-6` dark sort with red crosshair |
+### Tiny Desk
 
-### Borders, Radius, Shadows
+- Observed source-only: a paper sheet declares `py-7`, left ruled margin, repeating top binding, blue horizontal rules, a red margin line, paper shadow, title/date, and Edit/sort controls. Complete source state adds a dog-ear/stamp treatment.
+- Adopted fact: ruled-paper memo as the signature work surface is supported; exact source copy and stamp wording are not adopted.
+- Token implication: paper sheet, rule/margin, binding, and complete stamp/dog-ear require Tiny Desk aliases.
 
-| Theme family | Distinguishing construction |
-|---|---|
-| GridDO / Graphite | thin technical border, restrained radius, low-amplitude shadow |
-| Tiny Desk / Retro Mac | physical paper or dialog border with printed rules/stripes |
-| Neumorphism | inset context body plus raised controls; border is subordinate to depth |
-| Claymorphism | `36px` puffy body, white edge, inner highlight and soft outer lift |
-| Origami | square silhouette, asymmetric paper control radii, dashed crease edge |
-| Terminal | zero-radius editor frame and color-coded monospace syntax |
+### Neumorphism
 
-### Interaction And Motion
+- Observed source-only: a `min-h-[110px]` plate with `px-4 py-7`, `30px` radius, inset shadow, title/meta, circular raised controls, and source status marker is declared.
+- Adopted fact: a broad inset identity plate with raised action controls is supported.
+- Token implication: Context well and action button consume named inset/card shadows; the deferred lens is not inferred from the capsule sort.
 
-| State / interaction | Exact source behavior | Adoption note |
-|---|---|---|
-| Edit | theme-specific icon button remains visible | retain; production adds real inline-edit behavior from DECISION |
-| Sort | persistent asc/desc state, not hover-only | retain |
-| Completion | source changes title/meta, dims or strikes title, and adds theme marker | visual mechanism retained; repeated pulse/bounce removed |
-| Context size | fixed padding/minimum height prevents row-like appearance | retain |
+### Claymorphism
 
-## Realization Decisions
+- Observed source-only: a blue-tinted `p-7` Context uses `36px` radius, white border, compound inset/outer shadows, a top highlight, bold title/meta, Wand Edit, and rounded sort.
+- Adopted fact: a large sculpted clay identity object is supported.
+- Token implication: Context-specific clay surface/highlight/action roles should alias shared clay variables rather than preserve literals in JSX.
 
-### Adopted
+### Origami
 
-- Render Selected Scratch Context immediately below the Breakdown chrome and above the row list.
-- Always include selected title, created time, Edit, and row asc/desc control.
-- Preserve each confirmed theme realization and its approximately `2-2.5x` row-level visual
-  prominence.
-- Keep normal and completed states in the same context surface; completed state changes its
-  treatment rather than replacing it with a new generic card.
+- Observed source-only: `py-7` paper Context uses dashed/bottom borders, faceted metadata, fold/stamp geometry, mono title/time, and asymmetric Edit/sort controls.
+- Adopted fact: a folded document/hang-tag signature surface is supported.
+- Token implication: folded Context plate, dashed seam, and tag metadata need Origami aliases.
 
-### Removed
+### Terminal
 
-- Remove selected Scratch title/meta duplicated in the Breakdown section heading.
-- Remove prototype variant switchers and labels such as `V1`, `V2`, or internal ticket IDs.
-- Do not promote decorative emoji from prototype empty/completion states.
+- Observed source-only: a `min-h-[110px]` black editor frame presents line-number-like metadata, title and stamp fields, a status line, Edit trigger, and sort control. The route also declares a pulsing completion stamp.
+- Adopted fact: editor/buffer metadata framing is supported.
+- Token implication: terminal Context editor frame, syntax-role text, status bar, and command actions should be variable-driven. Pulse is excluded.
 
-### Improved
+### Retro Mac
 
-- Source `animate-pulse`, `animate-bounce`, and repeated status animation in completed contexts are
-  replaced by static stamps, labels, line treatment, depth, or contrast from the same theme.
-- Edit controls receive production inline-edit state, validation, save-before-next-action, and
-  accessible names without changing the confirmed visual shell.
-- Context copy is locale-owned; source English strings are evidence, not hard-coded production
-  copy.
+- Observed source-only: a white double-border file window uses a black title strip, folder icon block, mono title/time, compact square Edit and sort controls, and a source complete stamp.
+- Adopted fact: classic file-properties window grammar is supported.
+- Token implication: double frame, title strip, folder identity, hard control, and complete stamp require Retro Mac aliases.
 
-## Token Contract Implications
+### Graphite
 
-| Token / contract area | Required rule | Source evidence |
-|---|---|---|
-| Signature context scale | context padding/min-height must remain visibly larger than a row | `py-7`, `p-7`, `min-h-[110px]` across routes |
-| Context surface | each theme maps fill, border/radius, shadow/depth, and ornament as one recipe | eight confirmed variants |
-| Context typography | label, title, and time use distinct levels; title is the dominant line | source title/meta classes |
-| Context controls | Edit and sort align as one stable right-side control group | all eight contexts |
-| Completion treatment | static theme-specific completion marker layers onto the same context | completed branches in all routes |
+- Observed source-only: a wide editorial/poster Context uses a white or dark field, fine lines, mono timestamp, bold headline, square Edit, and a compact `⊕ ASC/DESC` sort control.
+- Adopted fact: editorial metadata plate and drafting hierarchy are supported.
+- Token implication: headline plate, timestamp, drafting rule, and action cluster need Graphite semantic roles.
 
-## Execution Handoff
+## Exclusions And Verification
 
-Tasks must reference this recipe plus the archive recipe. Acceptance criteria include section
-separation from rows, title/time presence, functional Edit and sort, locale-owned copy, completed
-state continuity, and no repeating attention animation.
-
-## Open Questions
-
-- None. Neumorphism's proposed water-lens sort control has no final source and remains outside this
-  promotion.
+- Excluded: every `VQ-04` editor surface, unsupported `VQ-11` blocker details, `D-LENS`, no-op prototype handlers, review variants, route-local complete latch, repeated pulse/bounce, and source copy as canonical copy.
+- No Context height relative to actual rows, text fit, visual depth, complete/working distinction, focus behavior, light/dark parity, or motion was rendered or verified. Exact declarations remain source-only until this package is approved and later rendered checks occur.
