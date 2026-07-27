@@ -6,6 +6,9 @@
 > **Consumed by:** `$craft-docs`, `$run-phase`, `$run-task`, and `$end-phase`
 > **Owned by:** The project — skills execute the process, this document defines it.
 > **Inbox/Triage amendment status:** **User-approved 2026-07-28.**
+> **Pending canonical-to-production parity amendment:** **Proposed — pending
+> user approval.** The prior approval receipt does not approve this uncommitted
+> maintenance rule.
 > **Production derivation evidence:** reviewed Fresh planning-standard SHA-256
 > `24c2e879bfd006c04da23d80830108a0f85d4693e3367e3825e9841b5bc05119`
 > is read-only evidence, not canonical authority. Production authority is the
@@ -93,7 +96,7 @@ Three tiers:
 
 ### Code-Readiness Invariant
 
-Four rules govern what may appear in an active execution plan:
+Five rules govern what may appear in an active execution plan:
 
 1. **Code-ready runnable tasks.** Every runnable implementation slice must be
    implementable from its task spec and approved canonical authority without
@@ -121,10 +124,26 @@ Four rules govern what may appear in an active execution plan:
    speculation; it exists only when approved active scope depends on the user
    decision.
 
-**Enforcement:** `$run-phase` checks the active plan, prerequisite graph,
-durable receipts, and adapter-declared readiness artifact before branch or
-worktree creation. `$run-task` rechecks the selected task/slice and refuses any
-implementation whose required receipt is missing.
+5. **Canonical-to-production facts are checked, not copied from memory.**
+   Before a canonical draft or execution plan that names a current production
+   constant, path, export/signature, store/index, route, or owner becomes
+   approval-ready, enumerate every affected claim in code examples **and** in
+   prose tables or constraint cells, inspect the exact production source, and
+   record the targeted command and result. Code-like bounds or invariants stay
+   symbol-derived rather than duplicating a current literal. A descriptive
+   current-value literal may remain only when its production symbol/source and
+   parity evidence are explicit. Any mismatch reopens the owning upstream
+   document. Parity evidence may be centralized once in the same canonical
+   document when it unambiguously names every affected literal or section and
+   its production source; it need not be repeated in every table cell. Flow
+   ownership PASS does not substitute for factual parity.
+
+**Enforcement:** `$craft-docs` records the targeted canonical-to-production
+parity evidence before the affected document gate. `$run-phase` checks the
+active plan, prerequisite graph, durable receipts, and adapter-declared
+readiness artifact before branch or worktree creation. `$run-task` rechecks the
+selected task/slice and refuses any implementation whose required receipt is
+missing.
 
 ---
 
