@@ -64,6 +64,22 @@
   the proposed execution plan, rerun its canonical review, and present the
   plan at its user-owned approval gate before regenerating the flow review.
 
+#### Grid Validator Completion Receipt — 2026-07-28
+
+- **Gate:** complete the same approved 18×9 correction in the Node and Bit
+  Zod examples after final review found the stale `max(14)` / `max(7)` bounds.
+- **User disposition:** covered by the user's approved narrow SCHEMA
+  grid-dimension correction; no additional product or scope decision was made.
+- **Approved artifact:** commit
+  `a95d7418a7a16d73f4430e0159e9ddaa466fd4b9`, containing the exact
+  pre-receipt `docs/SCHEMA.md` whose SHA-256 is
+  `85aad2543f7dfbaf33059004487b19e24824c3802b579320eb46f87debbb8374`.
+- **Completed correction:** both field tables and both Zod examples now use
+  `x = 0–17` / `max(17)` and `y = 0–8` / `max(8)`. No stale 15×8 bound
+  remains in this document.
+- **Preserved scope and next action:** the preceding receipt's preserved scope
+  and next legal action remain unchanged.
+
 ---
 
 ## Table of Contents
