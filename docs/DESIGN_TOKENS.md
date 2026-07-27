@@ -1,8 +1,31 @@
 # GridDO — Design Tokens
 
-> **Scope:** Exact visual values — colors, typography, spacing, animations. Architecture lives in SPEC.md.
-> **All values are exact (HSL, px, rem). No prose descriptions.**
-> **Reference:** `docs/design-system-preview.html` | **Audit:** `docs/design-archaeology/DESIGN_AUDIT.md`
+> **Scope:** Exact visual values where explicitly listed, plus canonical shared
+> semantic visual roles and approved theme mappings. Architecture and product
+> behavior live in SPEC.md.
+> **Value honesty:** A numeric value is exact only when this document lists it
+> and approved authority supports it. Semantic role requirements and `VQ-*`
+> placeholders do not imply an absent color, opacity, shadow, size, duration,
+> easing, delay, keyframe, copy string, icon, or layout value.
+> **Inbox/Triage amendment status:** **Proposed / Pending user approval.** It
+> derives only the approved `docs/DESIGN_TOKENS.md` row in the selected topic's
+> [promotion map](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md),
+> after the approved [SCHEMA](SCHEMA.md) and [SPEC](SPEC.md) receipts, and does
+> not authorize planning or production changes. The selected
+> [decision](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md)
+> remains product authority within its declared scope.
+> **Production derivation evidence:** Fresh reviewed DESIGN_TOKENS SHA-256
+> `e07015e9df7e761173fa2547406637854fb0d63b323e3499e3379337740f3574`
+> is read-only evidence, not canonical authority. Production authority is the
+> approved map receipt `90022e7`, recipe receipt `7a15451`, SCHEMA receipt
+> `250a1b5`, and SPEC content at `285e848` / SHA-256
+> `f1157dbba76ad53fc5c6a5d524b7ad74a02099c93ab53b218ae755ebe1024778`
+> with receipt `53c3fe9`.
+> **Baseline locator note:** promotion-map citations into the prior token file
+> refer to production base `a3c679c` (SHA-256 `b99df518...`). The production
+> source tree remains `11e9c0f7ca226fdeee59a23ef164d3baa6823294`.
+> **Reference:** `docs/design-system-preview.html` is a historical/global
+> baseline only; it is not Inbox/Triage rendered authority.
 
 ---
 
@@ -14,6 +37,7 @@ Values that differ from `docs/design-system-preview.html` **on purpose**:
 |---|-------------------|---------------|-----------|--------|
 | 1 | Base font family | Inter (Google Fonts) | Geist Sans by default; Batch 2 color themes may override via `--theme-font` | Geist remains the default app/system font; color themes may opt into their own display fonts |
 | 2 | Sidebar model | `52px` icon strip | `3rem` (48px) fixed icon rail, always visible | Phase 9: sidebar is now a permanent icon rail — no fold/unfold. Closest to the reference's icon strip model |
+| 3 | Inbox/Triage Batch 2 labels, Context, and search | Removed visible section labels; compact Context strip; active-column search | Visible theme chrome; standalone signature Context; dedicated full-hierarchy replacement body remains absent behind `VQ-07` | The approved mature-topic decision supersedes the old Batch 2 direction; adjacent search and chrome are prohibited substitutes |
 
 ---
 
@@ -22,12 +46,13 @@ Values that differ from `docs/design-system-preview.html` **on purpose**:
 - [CSS Variables](#css-variables)
 - [Color Theme System](#color-theme-system)
 - [Calendar Visual Theme Contract](#calendar-visual-theme-contract)
-- [Inbox / Triage Batch 2 Surface Contract](#inbox--triage-batch-2-surface-contract)
+- [Inbox / Triage Surface Contract](#inbox--triage-surface-contract)
 - [Responsive Grid Node Tokens](#responsive-grid-node-tokens)
 - [Tailwind v4 Theme Bridge](#tailwind-v4-theme-bridge)
 - [Motion Language](#motion-language)
 - [Font Loading](#font-loading)
 - [Component Usage Quick Reference](#component-usage-quick-reference)
+- [Surface Recipes](#surface-recipes)
 
 ---
 
@@ -272,13 +297,7 @@ Each color theme may override these variable groups. Components consume these va
 | Shape | `--theme-radius`, `--theme-border-width`, `--theme-border-style`, `--theme-line-style` |
 | Depth | `--theme-card-bg`, `--theme-shadow`, `--theme-shadow-hover` |
 | Calendar | `--calendar-cell-bg`, `--calendar-header-bg`, `--calendar-border-color`, `--calendar-grid-line-color`, `--calendar-cell-radius`, `--calendar-cell-shadow`, `--calendar-today-*` |
-
-Inbox/Triage adds no display-label or theme-name tokens. Its components expose shared semantic
-surface and state slots, then each `[data-color-theme]` realization maps those slots through the
-Typography, Shape, and Depth groups above. Exact per-theme dimensions, ornament, fold, dither,
-shadow stack, and interaction timing remain in
-`docs/recipes/inbox-triage-visual-recipe-index.md` and its linked surface recipes. Components must
-not branch on theme id to reproduce those mappings.
+| Inbox/Triage | Proposed `data-triage-role` bindings and optional `--triage-<role>-*` aliases defined below; this amendment adopts role names and theme-family mappings, not missing values |
 
 ### Required Theme Classes
 
@@ -318,7 +337,82 @@ not branch on theme id to reproduce those mappings.
 }
 ```
 
-**Fidelity rule:** The **exact** per-theme values — all variable groups × 8 themes × light/dark, including the full `--theme-shadow` / `--theme-shadow-hover` / `--calendar-today-*` box-shadow strings — are the **source of record** in `docs/recipes/theme-system-and-grid-batch2-visual-recipe.md` § *Exact Theme Values (source of record)* — a verbatim copy of the prototype **base layer (`globals.css`: theme/calendar contract defaults, swatches, shared `.theme-*` classes) + the 7 override themes (`themes.css`)**, with the cascade/inheritance model documented. Implementation must copy those exact values; the summary tables in this section are navigational only and must not be used to reconstruct values from prose. If an exact value conflicts with accessibility, build constraints, or current app behavior, record the conflict explicitly instead of silently normalizing the theme.
+#### Proposed Inbox/Triage role and state targets
+
+The generic `.theme-*` classes and eight-theme variables above exist in current
+production. The Inbox/Triage bindings below are proposed canonical targets;
+they are not claims that matching selectors, variables, or realization
+components already exist. Product JSX supplies semantic role and state only.
+It must not branch on theme ID or copy recipe literals into components.
+
+The canonical role binding is `data-triage-role="<role>"`. A theme layer may
+realize a role through an existing semantic token, a future
+`--triage-<role>-*` alias, a shared class, or a theme realization component.
+The `*` suffix is a namespace convention, not permission to invent a property
+or value. Each role traces to the approved source-only recipe identified below
+or to promotion-map §11.4's shared implication.
+
+| Family | Canonical `<role>` values | Approved trace |
+|---|---|---|
+| Shell / chrome | `shell-background`, `section-surface`, `section-header`, `section-divider`, `internal-scroll-viewport`, `section-state-overlay` | `R-SHELL` |
+| Scratch Pool | `pool-tools`, `pool-search-field`, `pool-total-count`, `pool-selected-row`, `pool-compact-switcher`, `pool-compact-marker`, `pool-scroll-viewport` | `R-POOL` |
+| Selected Context | `context-signature-plate`, `context-eyebrow-meta`, `context-title`, `context-action-cluster`, `context-complete-marker` | `R-CONTEXT` |
+| Breakdown | `breakdown-active-row`, `breakdown-staged-row`, `breakdown-row-action`, `breakdown-add-field`, `breakdown-add-control`, `breakdown-ordinary-empty`, `breakdown-consumed-completion` | `R-BREAKDOWN` |
+| Staging | `staging-panel`, `staging-node-well`, `staging-node-card`, `staging-bit-well`, `staging-bit-row`, `staging-neutral`, `staging-unavailable`, `staging-invalid`, `staging-pending`, `staging-unstage-target` | `R-STAGING` |
+| Grid Explorer base | `explorer-header`, `explorer-column`, `explorer-full-level-label`, `explorer-node-row`, `explorer-bit-row`, `explorer-eligible-target`, `explorer-hovered-target`, `explorer-invalid-target`, `explorer-unavailable-target` | `R-EXPLORER`; excludes the `VQ-07` body |
+| Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled` | `R-PLACEMENT`; excludes `VQ-08` reliability realization and all `VQ-09` surfaces |
+| Newly Placed / Undo | `newly-marker`, `newly-dot`, `newly-new-badge`, `newly-undo-action` | `R-NEWLY`; composes over the actual Node/Bit card and never replaces it |
+| Archive / completion base | `archive-section-scrim`, `archive-card`, `archive-complete-context`, `archive-reopen`, `archive-action`, `archive-cancel` | `R-ARCHIVE`; excludes `VQ-11/12` gap realization |
+
+The shared state binding is a whitespace-delimited
+`data-triage-state="<state> …"` token list so independent states can coexist.
+Native semantics (`disabled`, `aria-disabled`, `aria-current`,
+`aria-selected`, live-region roles, and focus ownership) remain required where
+appropriate; the data attribute never replaces them.
+
+| `<state>` | Theme-independent meaning and minimum non-color contract |
+|---|---|
+| `working` | The active working presentation; it remains distinguishable from `completed` without inventing a VQ effect |
+| `selected` | Current user selection; pair with the appropriate native selection/current semantic and a visible shape, marker, text, or icon cue |
+| `staged` | Source retained but staged; expose a visible text/icon/shape cue and applicable interaction availability rather than opacity alone |
+| `invalid` | The attempted target cannot accept the operation; keep it distinct from destructive meaning and provide a visible non-color cue |
+| `unavailable` | The affordance is unavailable before a valid attempt; expose an accessible reason when SPEC requires one and do not collapse it into `invalid` |
+| `pending-confirmation` | A valid intent awaits user confirmation before mutation; distinguish it from `pending` |
+| `pending` | An authoritative result is outstanding; preserve the SPEC-owned stable focus target and lock only the conflicting actions named there |
+| `reconciling` | An uncertain outcome is being checked; visible text/icon semantics distinguish it from both `pending` and success |
+| `success` | Authoritative, non-repeating success; use polite status semantics without focus theft and a static distinction under reduced motion; exact `VQ-02` realization remains unresolved |
+| `newly-placed` | Page-session provenance layered on the actual card; use `newly-*` roles and keep Undo separate |
+| `completed` | Complete Context or completion presentation; do not treat it as Archive mutation success |
+| `local-alert` | A section-local status with visible text/icon semantics and the SPEC-selected live/status behavior; it does not become a global toast by default |
+
+Focus-visible treatment continues to use the canonical focus ring and the
+SPEC-owned logical focus destination. Theme or future locale changes may swap
+role realization and copy presentation only: they do not add/remove state
+tokens, reset semantic state, move work to a different lifecycle, or start a
+new mutation.
+
+| Theme family | Approved Inbox/Triage realization mapping; no new literal values |
+|---|---|
+| GridDO | Reuse existing canonical semantic card, border, primary, muted, focus, and text tokens when they support the role. No absent exact GridDO value is inferred from prose or another theme. |
+| Tiny Desk | Map roles through wood, cork, paper, and stationery aliases. |
+| Neumorphism | Reuse the existing named inset/card shadow family for well, plate, card, and control roles. |
+| Claymorphism | Map roles through panel, well, candidate, and action aliases backed by the existing clay family. |
+| Origami | Map roles through paper, fold, facet, seam, and cut/tag aliases. |
+| Terminal | Keep text/icon/non-color status roles variable-driven; product JSX carries no fixed terminal color. |
+| Retro Mac | Map roles through stripe/title-bar, hard-shadow, pane, control, and dither aliases. |
+| Graphite | Map roles through dark/subtle surfaces and restrained grayscale field, rule, and action aliases. |
+
+**Fidelity rule:** For the existing Batch 2 core, page, Grid, typography,
+shape, depth, and Calendar groups, the **exact** per-theme values — all 8
+themes × light/dark, including the full `--theme-shadow` /
+`--theme-shadow-hover` / `--calendar-today-*` strings — remain sourced by
+`docs/recipes/theme-system-and-grid-batch2-visual-recipe.md` § *Exact Theme
+Values (source of record)*. The proposed Inbox/Triage role/state targets above
+have no newly adopted exact values in this amendment. Summary prose and one
+theme's literals must never be used to reconstruct a missing value for another
+theme. If an exact value conflicts with accessibility, build constraints, or
+current app behavior, record the conflict explicitly instead of silently
+normalizing it.
 
 ### Font Loading
 
@@ -382,158 +476,103 @@ Calendar popup item controls must have visible `focus-visible` styling. Recheck 
 
 ---
 
-## Inbox / Triage Batch 2 Surface Contract
+## Inbox / Triage Surface Contract
 
-> Canonical surface index: `docs/recipes/inbox-triage-visual-recipe-index.md`
+> **Amendment status:** **Proposed / Pending user approval**
 >
-> The prior `docs/recipes/inbox-triage-batch2-visual-recipe.md` is superseded history. It remains
-> reference-only because its hidden-label, compact-context, and active-column-search assumptions
-> conflict with the current SPEC.
+> Product behavior, ownership, focus destinations, and lifecycle remain in
+> approved SPEC. The approved nine-recipe package is source-only visual
+> evidence. This document owns only the shared role/state vocabulary, selected
+> source-backed geometry, and approved theme-family mappings.
 
-This section owns reusable Inbox/Triage visual contracts. SPEC.md owns behavior and accessibility;
-the surface-first recipes own exact per-theme classes, values, ornament, and fidelity evidence.
+Current production at base `a3c679c` has the generic `.theme-*`
+classes, eight-theme variable runtime, compact pointer-centered
+`TriageDragToken`, and older Inbox/Triage components. It does not yet implement
+the proposed `data-triage-role` / `data-triage-state` contract or the complete
+surface target below.
 
-### Shared Theme Mapping Hooks
+### Shared shell and surface meaning
 
-Production markup exposes semantic role and state hooks; theme CSS owns their realization. Exact
-selector organization may follow the existing component stylesheet conventions, but it must retain
-these shared meanings:
-
-| Hook | Contract |
-|---|---|
-| `data-triage-surface` | Identifies reusable roles such as panel, section chrome, Scratch item, Context, Breakdown row, candidate Node/Bit, Grid column, Node/Bit card, Placement, and Archive surface |
-| `data-triage-state` | Space-separated state tokens: `selected`, `staged`, `invalid`, `pending`, `newly-placed`, and `completed` |
-
-Using a token list allows composition such as `data-triage-state="selected newly-placed"`. Shared
-components set role/state only; they do not select theme-specific class strings. Per-theme literal
-colors, shadows, radii, clip paths, dither patterns, and ornaments live in theme CSS or recipe-backed
-helpers, never repeated across React branches.
-
-### Visible Section Identity And Shell
-
-| Contract area | Required treatment |
-|---|---|
-| Workspace hierarchy | Preserve the four-area shell and its stable `60/40`, `60/40`, and Staging `35/65` divisions; dynamic status and placement surfaces do not resize it |
-| Workspace spacing | Theme maps a stable shell inset and region gap; exact source values are `16px`, `20px`, or `24px` as recorded in the shell recipe |
-| Panel material | Border, radius, fill, shadow/depth, and ornament form one coherent theme mapping; do not mix isolated values from another theme |
-| Section chrome | `Scratch Pool`, `Breakdown`, `Staging`, and Grid identity remain visible through theme-specific header height, icon treatment, label typography, and divider |
-| Hierarchy labels | Use `Home`, `Level 1`, `Level 2`, and `Level 3`; abbreviated `L1`, `L2`, `L3`, `Home-L3`, and similar metadata are not visual tokens |
-| Scroll regions | Preserve wheel, trackpad, touch, keyboard, and drag-edge scrolling while hiding visible scrollbar chrome in every designated list/column |
-| Overflow containment | Panels and child tracks retain stable dimensions with `min-h-0` and owned overflow; warnings, overlays, and confirmation controls remain reachable without parent growth |
-
-Theme display aliases such as Tiny Desk `Library Index`, Retro Mac `Finder`, and Terminal
-`GRID EXPLORER` are copy realizations, not token names. Their semantic and accessible identity is
-always `Grid Explorer`.
-
-### Semantic State Mapping
-
-The shared component tree exposes six distinct semantic states. Theme CSS maps each state to the
-existing material language; a generic opacity-only treatment is non-conforming.
-
-| State | Required non-color cue | Owning recipe |
+| Surface | Canonical visual contract | Trace |
 |---|---|---|
-| Selected | Fill/depth change plus border, marker, or inversion; selection remains card/path focus | Grid Explorer, Scratch Pool |
-| Staged | Material de-emphasis such as inset, flattening, ghosting, comment treatment, or dashed paper; no strike-through | Breakdown, Staging |
-| Invalid target | Column background/depth signal plus a separate sharp warning layer; warning must not inherit blur or dimming | Placement Affordances |
-| Pending confirmation | Static theme surface with stable status, source/path context, and fixed Confirm/Cancel slots | Staging, Placement Affordances |
-| Newly Placed | Static marker/outline/background/corner/shadow on the actual Node/Bit card plus a stable Undo slot | Newly Placed And Undo |
-| Completed | Theme-specific completion treatment on the existing Context plus a Breakdown-scoped veil/archive surface | Selected Scratch Context, Completion And Archive |
+| Layout | Preserve main work versus Explorer `60/40`, Breakdown versus Staging `60/40`, and Staging Nodes versus Bits `35/65`. These selected ratios are source-backed product geometry, not VQ realization. | `R-SHELL`, `R-STAGING` |
+| Visible identity | Theme chrome visibly identifies `Scratch Pool`, `Breakdown`, `Staging`, and semantic `Grid Explorer`. Only Tiny Desk `Library Index`, Retro Mac `Finder`, and Terminal `GRID EXPLORER` are approved alternate visible Explorer labels. Do not expose `L1`, `L2`, or `L3`; Explorer columns use full `Home`, `Level 1`, `Level 2`, and `Level 3` labels. | `R-SHELL`, `R-EXPLORER` |
+| Internal scrolling | Pool list, Breakdown list, both Staging subsections, and every Explorer column scroll internally with scrollbar chrome hidden while ordinary pointer, touch, and keyboard scrolling remains available. | `R-SHELL`, surface recipes |
+| Scratch Pool | Use the Pool role family for the tools/search region, total count, selected row, compact switcher/marker, and hidden-scroll viewport. Exact product behavior remains in SPEC. | `R-POOL` |
+| Selected Scratch Context | Use the standalone signature plate above ordinary rows, never a compact context strip or heading metadata. Working and complete presentations share the Context role family but remain semantically distinct. | `R-CONTEXT` |
+| Breakdown | Keep active and staged rows distinct, with grip/action, Add, ordinary-empty, and consumed-completion roles. Staged is not strike-through completion, and empty is not an Archive surface. | `R-BREAKDOWN` |
+| Staging | Keep visible `Staging`, `Nodes`, and `Bits`; Node cards and Bit rows use distinct shapes and independent wells. Neutral, unavailable, invalid, pending, and transient unstage-target meanings stay separate and non-destructive. | `R-STAGING` |
+| Explorer base | Use four ordinary progressive columns, full level labels, native Node/Bit row shapes, and eligible/hovered/invalid/unavailable target roles. This base excludes the absent replacement search body. | `R-EXPLORER` |
+| Placement base | Direct and staged shells, target path, Confirm/Cancel, full-target warning, and disabled Confirm use the Placement base roles. The affordance stays inside the target column; unsupported reliability and Result Title/direct-limit bodies remain excluded. | `R-PLACEMENT` |
+| Newly Placed / Undo | Compose a marker/dot or visible `NEW` badge over the actual Node/Bit card and expose Undo as a separate action. Never introduce a replacement indicator card. | `R-NEWLY` |
+| Archive / completion base | Use a Breakdown-scoped scrim/card, complete Context, reopen, Archive, and Cancel base roles. Do not promote the surface into a page-wide overlay or infer its unresolved blocker/reliability variants. | `R-ARCHIVE` |
 
-Selected and Newly Placed may coexist on one card and must remain distinguishable. Status styling
-may use color, but also requires shape, text, marker, depth, line, or control cues. Repeating pulse,
-blink, flicker, bounce, spin, and ambient shake are not semantic-state tokens.
+The shared compact drag preview remains pointer-centered and type-aware rather
+than copying the full source row/card. Invalid and unavailable targets mean a
+non-destructive operation cannot proceed; they must not inherit destructive
+delete styling merely because the current drop is rejected.
 
-### Scratch Pool
+The old active-section/active-column search is superseded and is not fallback
+authority. Under `VQ-07`, the selected full-hierarchy replacement body remains
+absent. Global Search, the old active-column search, ordinary Explorer columns,
+and Explorer chrome are prohibited substitutes for that body.
 
-| Contract area | Required treatment |
-|---|---|
-| Structure | One upper tools region and one lower list/switcher region separated by the theme divider; search and sort share one expanded row |
-| Width | Expanded/collapsed width is a theme mapping with a stable collapsed control column; exact pairs are recorded in the Scratch Pool recipe |
-| Tool density | Search/sort controls use the theme's `24px`, `28px`, or `36px` control height |
-| Selected Scratch | Map surface, foreground, border/depth, and a stable marker together; hover alone and opacity alone are insufficient |
-| Collapsed switcher | Identity/count, expand control, and Scratch switchers stack vertically; marker dimensions cannot shift or obscure their inner dot/bar |
-| Sort state | ASC/DESC modes have a persistent non-hover distinction; icon/text realization follows the theme recipe |
-| Scroll | The list owns overflow and hides scrollbar chrome without hiding content or compact switchers |
+### Existing-surface state gaps — 7 Decision prerequisites
 
-Collapse trigger, preserved query, sorting behavior, and focus lifecycle belong to SPEC.md. The
-recipe supplies exact widths, tool geometry, selected cues, and theme-specific transition timing.
+The shared role/state envelope above is the maximum current authority for
+these gaps. It authorizes semantic state binding, existing supported tokens,
+visible text/icon/non-color cues, and approved accessibility/focus semantics
+only. A matching user-owned non-code Decision receipt is required before any
+dependent exact realization.
 
-### Selected Scratch Context And Breakdown
+| ID | Unresolved boundary; no implied realization | Future owner | Resume condition |
+|---|---|---|---|
+| `VQ-02` | The semantic non-repeating success role may exist and reduced motion requires a static distinction. No success effect, timing, placement, wording, or per-theme value is chosen. | User Decision → Breakdown recipe/token owner and Add/Unstage phase | Receipt defines the exact dependent realization |
+| `VQ-05` | No Add/Delete pending, failure, reconcile, check-again, or in-place deleting visual, copy, action placement, timing, or per-theme realization is chosen. | User Decision → Breakdown recipe/token owner and reliability phase | Receipt resolves each dependent state treatment |
+| `VQ-06` | No Pool/Staging/Explorer pending, invalid, remote, arrival, orphan, stale, alert, count placement, layout, duration, dismissal, copy, effect, or per-theme realization is chosen. | User Decision → owning Pool, Staging, or Explorer recipe/token owner and realtime phase | Receipt resolves the affected surface family before its UI task |
+| `VQ-08` | No placement pending, failure, reconcile, Retry, stale, success, control placement, layout, timing, copy, or per-theme realization is chosen. | User Decision → Placement recipe/token owner and reliability phase | Receipt resolves the dependent placement-state UI |
+| `VQ-10` | No selected+new overlap, unavailable reason, dependency-reenabled, undoing, failure, Undo/retry/conflict treatment, copy, placement, timing, or per-theme realization is chosen; repeated motion is forbidden. | User Decision → Newly Placed/Undo recipe/token owner and rollback phase | Receipt resolves the dependent marker/reliability UI |
+| `VQ-11` | No completion blocker or eligibility-withdrawal copy, effect, placement, layout, timing, or per-theme realization is chosen. | User Decision → Context/Breakdown/Archive recipe/token owner and completion phase | Receipt resolves the dependent blocker UI |
+| `VQ-12` | No Archive pending, reconcile, failure, recovery, check-again, Retry/Cancel visual, copy, control/status placement, layout, timing, or per-theme realization is chosen. | User Decision → Archive recipe/token owner and reliability phase | Receipt resolves the dependent Archive variants |
 
-| Contract area | Required treatment |
-|---|---|
-| Signature Context scale | Context remains visibly larger than a row, approximately `2-2.5x` row prominence; source realizations use `min-height: 110px` or equivalent `28px` vertical padding |
-| Context surface | Theme maps fill, border/radius, shadow/depth, and ornament as one unit; Context is a section between chrome and rows, not a row variant |
-| Context type | Label, title, and created time use distinct levels; title is dominant; Edit and sort form one stable trailing control group |
-| Context completion | Completed styling layers onto the same Context instead of replacing it with a generic card; repeated attention motion is removed |
-| Breakdown row | Active and staged treatments use the same row geometry; staged adds a theme-specific non-color cue and never uses strike-through |
-| Row action slot | Always-visible Edit/Trash controls reserve a stable trailing slot (`24px`, `28px`, or `32px` source sizes) so title width does not shift |
-| Drag activator | Breakdown remains grip-only; the entire row is not a drag surface |
-| Added/restored signal | Add, Unstage, and Undo restoration share one brief theme-specific signal with a reduced-motion static equivalent |
-| Empty prompt | Normal idea-entry prompt and completion/reopen treatment are separate from row cards and remain quieter than active rows |
-| List | The row list scrolls independently above a stable Add footer with hidden scrollbar chrome |
+Existing global color and motion values do not automatically realize any row
+in this table.
 
-### Staging
+### Absent replacement surfaces — 5 Decision prerequisites
 
-| Contract area | Required treatment |
-|---|---|
-| Node/Bit geometry | Node is a square/object card and Bit is a horizontal/list row; both use one theme material family while retaining type-specific shape |
-| Subsection split | Node and Bit tracks use the shared `35/65` structure and independent hidden-scrollbar overflow |
-| Candidate drag | Candidate root is the full drag surface with no inner Grip; every grab point produces the same type-specific compact drag token |
-| Pending candidate | Reuse the existing candidate card with one static pending layer; do not create a replacement card or repeating animation |
-| Unstage overlay | Absolute temporary overlay with fixed height and matching scroll padding; it never changes Staging track height or blurs the section |
-| Section alert | Theme-local, non-expiring status surface with item title, direct reason, accessible close control, and no built-in Retry button |
+These surfaces remain completely outside token realization. Assign no role,
+value, layout, theme mapping, copy, icon, control arrangement, or adjacent
+fallback until a matching user receipt approves the missing surface.
 
-Final production BitCard typography/icon redesign is deferred. This promotion uses the approved
-candidate geometry and current shared card surface rather than inventing a new Bit card system.
+| ID | Missing surface and prohibited fallback | Future owner | Resume condition |
+|---|---|---|---|
+| `VQ-01` | External selected-Scratch archive/delete transition; Pool chrome, generic dialogs, and Archive UI are not substitutes | User Decision → Pool recipe and owning phase | Receipt supplies or explicitly scopes out the replacement surface |
+| `VQ-03` | Add-draft continue-writing/discard-and-move confirmation; generic confirmation and native unload are not the app-internal replacement | User Decision → Breakdown recipe and Add-draft phase | Receipt supplies the replacement surface |
+| `VQ-04` | Scratch/row inline editing across validation, saving, conflict, and invalid lifecycle; existing Edit controls and generic conflict UI are not substitutes | User Decision → Context/Breakdown recipes and editing phase | Receipt supplies the complete inline surfaces |
+| `VQ-07` | Dedicated full-hierarchy Explorer search body; global Search, old active-column search, ordinary columns, and Explorer chrome are prohibited substitutes | User Decision → Explorer recipe and search phase | Receipt supplies the complete replacement body |
+| `VQ-09` | Staged Result Title and direct-limit/reason surfaces; create dialogs and generic placement UI are prohibited substitutes | User Decision → Placement recipe and title/limit phase | Receipt supplies both replacement surfaces |
 
-### Grid Explorer And Search
+### Selected deferrals
 
-| Contract area | Required treatment |
-|---|---|
-| Normal mode | Preserve one theme-mapped header and four column surfaces with full labels, Nodes before Bits, and no duplicate selected-node title metadata |
-| Column state | Selected treatment remains independent from Newly Placed; invalid treatment does not replace or dim the column title beyond legibility |
-| Column scroll | Each column owns a fixed viewport, hidden scrollbar chrome, and stable bottom padding for placement controls |
-| Search mode | Whole-hierarchy search replaces all four columns with one dedicated body; the old active-column filter, inline scoped input, and magnifier decoration are not promoted |
-| Search realization | Exact result layout, density, duplicate indicator placement, loading, and error surfaces remain a phase-local Decision prerequisite requiring user approval |
+These selected boundaries remain outside this amendment. They authorize no
+token, value, recipe fallback, placeholder control, or implementation task.
 
-Normal Explorer chrome and card grammar may inform the future result design, but they are not an
-approved fallback. Display aliases remain locale/copy data rather than theme tokens.
+| ID | Preserved boundary | Future owner / resume condition |
+|---|---|---|
+| `D-CARD` | The common BitCard eight-theme redesign, later Staging/placed-card reuse, and final Korean card QA remain deferred. Current actual cards are retained; no current Inbox recipe is a redesign fallback. | Future brainstorming and separately approved execution work |
+| `D-LENS` | Neumorphism ASC/DESC water-lens polish remains deferred because its source is absent. | Future user visual decision before any realization |
+| `D-LOCALE` | Shared locale resources/provider/toggle, localized date/status/accessibility copy, and Korean typography/text-fit QA remain deferred. The core English copy foundation stays in scope. | Future canonical amendment |
+| `D-KEYBOARD` | Keyboard or other drag-alternative placement entry remains deferred; add no placeholder button, shortcut, command, or hidden action now. | Future accessibility brainstorming and approval |
+| `D-TEXT` | Cross-surface wrapping, line counts, expansion, and editor IME visual details remain with their separate topic. | Resume only through that named topic and its approval |
 
-### DnD States
+### Evidence and fidelity boundary
 
-| Contract area | Required treatment |
-|---|---|
-| Compact drag token | Breakdown Grip and full-card staged candidate both render the same pointer-centered, type-specific token instead of a native row/card snapshot |
-| Invalid background | Theme maps denied state through column fill/depth/material; color may support the state but cannot be its only signal |
-| Invalid warning | Separate high-contrast static layer remains sharp above any blur/dim treatment and names the denied type/path rule directly |
-| Direct type choice | Opaque, column-scoped theme surface with visible disabled type and reason; no translucent Glassmorphism prelayer |
-| Confirmation | Stable source/type/path/status and Confirm/Cancel slots; pending state keeps the same surface mounted |
-| Placement scrolling | Affordance participates in the target column's scroll content and reserves enough bottom space for all actions without column growth |
-
-Full-screen placement dialogs, automatic target correction, emoji type markers, hidden keyboard
-commands, and repeating warning animations are not part of the token contract.
-
-### Newly Placed And Undo
-
-| Contract area | Required treatment |
-|---|---|
-| Base card | Use the existing Node/Bit dimensions, padding, radius, color, icon, and internal grammar; no placed-indicator or wrapper-card geometry |
-| Newly Placed marker | Static per-theme marker independent from selected fill; outline/background/shadow/corner ornament may vary by recipe |
-| Undo slot | Stable trailing control with the same theme material and a clear accessible label; it does not replace card selection/navigation semantics |
-| State composition | Selected, Newly Placed, and selected-plus-Newly-Placed remain visually distinct on both Node and Bit cards |
-| Motion | Focus/reveal may use one direct transition; no repeat pulse or blink, and reduced motion uses the static marker |
-
-### Completion And Archive
-
-| Contract area | Required treatment |
-|---|---|
-| Completion veil | Theme maps one Breakdown-only dim/blur treatment behind a sharp Archive surface; the rest of Inbox remains sharp and usable |
-| Archive surface | Theme maps panel, border/radius, shadow/depth, typography, status, and Cancel/Archive controls as one section-scoped construction |
-| Completed Context | The existing Selected Scratch Context changes status through a static theme treatment; it is not replaced by a generic completion card |
-| Reopen action | One stable `Show archive dialog` control appears only after Cancel or eligible re-entry and is hidden while the overlay is open |
-| Pending/recovery | Archive pending, failure, and reconciliation stay inside the same surface with visible status and accessible announcement |
-| Attention motion | Completion is static; urgency is carried by hierarchy, contrast, copy, and announcement rather than repeating animation |
+The nine current recipes were inspected as source only. This amendment claims
+no server/browser run, screenshot comparison, rendered contrast, depth,
+layering, clipping, overflow, responsive behavior, motion behavior,
+light/dark parity, or combined eight-theme verification. Recipe declarations
+support the role/mapping candidates above; they do not create behavior or turn
+an observed literal into a canonical value without an approved adoption trace.
 
 ---
 
@@ -769,17 +808,20 @@ Runtime motion values live in `src/lib/animations/motion-language.ts`. Component
 | Creation spring | `motionSpring.creation` | `type: "spring"`, `stiffness: 400`, `damping: 25` |
 | Grid snap spring | `motionSpring.gridSnap` | `type: "spring"`, `stiffness: 200`, `damping: 15` |
 
-### Inbox / Triage Motion Mapping
+### Inbox/Triage Motion Boundary
 
-- Scratch Pool width transitions and direct-manipulation lift/press behavior use the exact per-theme
-  timings in the owning surface recipe. Implementation exposes them through named runtime mappings
-  in `src/lib/animations/motion-language.ts`; components do not inline raw spring or duration values.
-- Added/restored Breakdown rows use the recipe's single `500-700ms` transition and `800ms` static
-  reduced-motion equivalent without changing row geometry.
-- Selected, staged, invalid, pending, Newly Placed, and completed status remain legible as static
-  states. Repeating attention animation is prohibited even when the prototype source contains it.
-- Focus/reveal and affordance enter/exit may use direct transitions, but reduced motion resolves
-  immediately to the same final marker, outline, depth, or status surface.
+**Amendment status:** **Proposed / Pending user approval.** This pass adopts no
+new Inbox/Triage duration, easing, delay, keyframe, interruption/retrigger, or
+reduced-motion-equivalence value. The unrelated global motion tokens above
+remain exact and unchanged, but they are not automatic fallbacks for any
+`VQ-*` state or missing replacement surface.
+
+Repeated pulse, blink, ping, bounce, spin, and flicker are excluded from the
+Inbox/Triage target. Newly Placed may use only recipe-supported static or
+one-shot candidates after its remaining `VQ-10` decisions are approved; no
+repeating motion token is adopted. The `success` semantic state requires a
+static reduced-motion distinction, but `VQ-02` still owns its exact appearance,
+trigger realization, timing, placement, and theme mapping.
 
 ---
 
@@ -1039,9 +1081,6 @@ Two-row layout: top row has content, bottom row has progress (only when chunks e
 Blur is applied **to the card content** (`filter: blur(3px)`), not via `backdrop-filter`.
 Buttons are `28×28px` (w-7 h-7). "Done?" text is foreground (not muted), semibold.
 
-This generic card pattern does not define Inbox/Triage completion. The Archive flow uses the
-Breakdown-scoped veil and sharp theme surface in the Completion And Archive recipe.
-
 ```tsx
 {/* Blur + overlay — consistent "needs attention" pattern */}
 <div className="relative">
@@ -1108,25 +1147,49 @@ Active-Scratch count badge on the Inbox system Node. Three-level pressure model 
 
 ### Compact Drag Token (Inbox/Triage)
 
-Inbox/Triage drag previews use a **compact type-specific token**, not the native row/card snapshot
-(SPEC Decision 16; pointer-centered targeting; valid / invalid / pending-confirmation target
-states). Breakdown rows remain Grip-activated, while staged Node/Bit candidate roots are fully
-draggable and have no inner Grip. Every valid grab point renders the same `TriageDragToken` for its
-type. The existing calendar `compact-bit-item.tsx` full-surface preview remains the anti-pattern to
-avoid. Exact theme realization and target-state treatment live in the Staging and Placement visual
-recipes; no component may substitute a theme-specific native-card preview.
+Inbox/Triage drag previews (Breakdown row, staged Node, staged Bit) use a **compact token**, not the full row/card (SPEC Decision 16; pointer-centered targeting; valid / invalid / pending-confirmation target states). The existing calendar `compact-bit-item.tsx` "full drag surface" is the **anti-pattern** to avoid. Batch 1 uses existing GridDO baseline tokens; exact drag-token classes are an implementation detail within the Inbox/Triage phase (no dedicated theme tokens in Batch 1).
 
 ---
 
 ## Surface Recipes
 
-> Surface recipes specify the compositional structure of visually sensitive surfaces.
-> They combine atomic tokens (from CSS Variables above) with layout rules.
-> All values are geometric — no prose descriptions.
-> Reference for verification: the source image listed in each recipe header.
+> Surface recipes own source-extracted composition and supported visual
+> declarations for sensitive surfaces. Product behavior remains in SPEC;
+> shared role/state vocabulary and approved mappings remain in this document.
+> Each recipe states its own provenance and verification level. A source-only
+> recipe is not evidence of a rendered result.
 >
 > Surface recipes are referenced by execution plan tasks via a `Recipe:` field.
 > Larger surface recipes may live as standalone files under `docs/recipes/` and are linked below.
+
+### Current Inbox / Triage Surface Package
+
+The current package is approved as source-only evidence and navigation. The
+index creates no behavior, token, layout, or implementation authority. Each
+current file is linked exactly once here; trace IDs are used by the proposed
+role tables above.
+
+| Trace ID | Navigation target | Source-backed scope |
+|---|---|---|
+| `R-INDEX` | [Inbox/Triage visual recipe navigation index](recipes/inbox-triage-visual-recipe-index.md) | Navigation only across source regions, surfaces, production owners, and future task placeholders |
+| `R-SHELL` | [Shell and section chrome](recipes/inbox-triage-shell-section-chrome-visual-recipe.md) | Four-area composition, visible identity/chrome, hidden-scroll viewports |
+| `R-POOL` | [Scratch Pool](recipes/inbox-triage-scratch-pool-visual-recipe.md) | Tools, count, selected/collapsed base states, and Pool viewport roles |
+| `R-CONTEXT` | [Selected Scratch Context](recipes/inbox-triage-selected-scratch-context-visual-recipe.md) | Standalone signature Context and working/complete base roles |
+| `R-BREAKDOWN` | [Breakdown rows and empty states](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md) | Base row, action, Add, ordinary-empty, and completion-prompt roles |
+| `R-STAGING` | [Staging](recipes/inbox-triage-staging-visual-recipe.md) | Node/Bit wells and shapes, base state grammar, transient unstage target |
+| `R-EXPLORER` | [Grid Explorer](recipes/inbox-triage-grid-explorer-visual-recipe.md) | Base chrome/columns/full labels/rows/target grammar; excludes `VQ-07` |
+| `R-PLACEMENT` | [Placement affordances](recipes/inbox-triage-placement-affordances-visual-recipe.md) | Direct/staged base shells, target-column affordance, and full-target warning |
+| `R-NEWLY` | [Newly Placed and Undo](recipes/inbox-triage-newly-placed-undo-visual-recipe.md) | Actual-card marker and separate Undo base; static/one-shot candidates only |
+| `R-ARCHIVE` | [Archive and completion](recipes/inbox-triage-archive-completion-visual-recipe.md) | Breakdown-scoped base scrim/card, complete Context, reopen, Archive/Cancel |
+
+The old [Batch 2 Inbox/Triage recipe](recipes/inbox-triage-batch2-visual-recipe.md)
+is historical/reference-only for this topic. It is not part of the current
+package and is not a direct execution recipe.
+
+No current package file was rendered in this pass. Server/browser output,
+screenshots, contrast, depth, layering, clipping, overflow, responsive
+behavior, motion, light/dark parity, and combined eight-theme fidelity remain
+unverified.
 
 ### Quick Capture `+` Entry Surface
 
@@ -1151,30 +1214,6 @@ recipes; no component may substitute a theme-specific native-card preview.
 > Recipe file: `docs/recipes/calendar-batch2-visual-recipe.md`
 > Source: `prototype/future-ideas` @ `59ee937`.
 > Scope: shared weekly/monthly header, theme-aware monthly grid, theme-aware weekly day columns, today marker, first-of-month label treatment, and calendar focus-visible polish.
-
-### Batch 2 Inbox / Triage
-
-> Canonical index: `docs/recipes/inbox-triage-visual-recipe-index.md`
-> Source: `griddo2-claude-themes2-3` at `4f39709688ceb4cac5e15d4e3502186b1f1c801b`, reconciled with the current DECISION and production behavior contracts.
->
-> The former `docs/recipes/inbox-triage-batch2-visual-recipe.md` is superseded and must not be used
-> as an execution recipe.
-
-| Surface | Recipe |
-|---|---|
-| Workspace shell and visible section chrome | `docs/recipes/inbox-triage-shell-section-chrome-visual-recipe.md` |
-| Scratch Pool | `docs/recipes/inbox-triage-scratch-pool-visual-recipe.md` |
-| Selected Scratch Context | `docs/recipes/inbox-triage-selected-scratch-context-visual-recipe.md` |
-| Breakdown rows, lifecycle, and empty prompt | `docs/recipes/inbox-triage-breakdown-visual-recipe.md` |
-| Staging candidates and unstage surfaces | `docs/recipes/inbox-triage-staging-visual-recipe.md` |
-| Grid Explorer normal mode | `docs/recipes/inbox-triage-grid-explorer-visual-recipe.md` |
-| Direct/staged placement affordances | `docs/recipes/inbox-triage-placement-affordances-visual-recipe.md` |
-| Newly Placed and Undo | `docs/recipes/inbox-triage-newly-placed-undo-visual-recipe.md` |
-| Completion and Archive | `docs/recipes/inbox-triage-archive-completion-visual-recipe.md` |
-
-Execution tasks reference the smallest owning surface recipe plus the index's semantic-state matrix.
-The exact whole-hierarchy search-result screen is intentionally absent until its user-approved
-Decision prerequisite is complete.
 
 ### Bit Detail Surface
 
