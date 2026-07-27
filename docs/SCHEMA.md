@@ -139,8 +139,8 @@ Category/container items displayed as mobile app-style icons on the grid. Nodes 
 | `version` | `number` | NOT NULL, integer ≥ 1 | `1` | Monotonic direct-record mutation revision. Required so placement Undo can detect later Node mutation without using `mtime` |
 | `parentId` | `string \| null` | FK → `nodes.id` | `null` | Parent Node. `null` = Level 0 (root) |
 | `level` | `number` | NOT NULL, 0–2 | — | Hierarchy depth. Derived from parent chain on creation. Nodes exist at levels 0, 1, 2 only (Level 3 = Bits only) |
-| `x` | `number` | NOT NULL, 0–14 | — | Column index on grid |
-| `y` | `number` | NOT NULL, 0–7 | — | Row index on grid |
+| `x` | `number` | NOT NULL, 0–17 | — | Column index on the production 18-column grid |
+| `y` | `number` | NOT NULL, 0–8 | — | Row index on the production 9-row grid |
 | `deletedAt` | `number \| null` | — | `null` | Soft-delete timestamp. `null` = active. Non-null = trashed |
 | `archivedAt` | `number \| null` | — | `null` | Archive timestamp. `null` = active (on grid). Non-null = archived (hidden from grid, shown in Archive View). Mirrors `deletedAt` semantics |
 | `systemRole` | `string \| null` | enum: `"inbox"`, `"archive_view"` | `null` | System Node role. `null` = regular user Node. Immutable after creation; non-null uniqueness enforced at application level |
@@ -198,8 +198,8 @@ Actionable tasks displayed as horizontal rectangles on the grid. Bits contain Ch
 | `createdAt` | `number` | NOT NULL | `Date.now()` | Creation timestamp (ms) |
 | `version` | `number` | NOT NULL, integer ≥ 1 | `1` | Monotonic direct-record mutation revision. Scratch title CAS and Breakdown collection membership Add/Delete compare this field; each successful Add/Delete increments it. Automatic parent `mtime`-only cascades do not increment it |
 | `parentId` | `string` | NOT NULL, FK → `nodes.id` | — | Parent Node. Bits always belong to a Node |
-| `x` | `number` | NOT NULL, 0–14 | — | Column index on grid |
-| `y` | `number` | NOT NULL, 0–7 | — | Row index on grid |
+| `x` | `number` | NOT NULL, 0–17 | — | Column index on the production 18-column grid |
+| `y` | `number` | NOT NULL, 0–8 | — | Row index on the production 9-row grid |
 | `deletedAt` | `number \| null` | — | `null` | Soft-delete timestamp. `null` = active |
 | `archivedAt` | `number \| null` | — | `null` | Archive timestamp. `null` = active (on grid). Non-null = archived (hidden from grid, shown in Archive View). Mirrors `deletedAt` semantics |
 | `pastDeadlineDismissed` | `boolean` | — | `false` | When `true`, the past-deadline "Done?" overlay is permanently dismissed. Set when user clicks ✗ on the overlay. |
