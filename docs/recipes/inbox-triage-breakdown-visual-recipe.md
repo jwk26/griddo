@@ -5,7 +5,10 @@
 > Structural baseline: `DECISION.md` sections `Breakdown > Breakdown Row`,
 > `Scratch And Row Editing`, `Row Lifecycle`, and `Empty Prompt`
 > Date: 2026-07-18
-> Status: Approved
+> Status: **Superseded — historical/reference-only; not direct execution**
+> Replacement: `inbox-triage-breakdown-row-empty-visual-recipe.md`
+> Authority boundary: exact effect and timing values below are preserved only
+> as historical evidence and are not current visual authority.
 >
 > Scope: Breakdown row, staged de-emphasis, input, empty prompt, and one-time add/restore signal.
 

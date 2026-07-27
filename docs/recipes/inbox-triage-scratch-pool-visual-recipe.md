@@ -1,129 +1,82 @@
-# Visual Recipe: Inbox / Triage Scratch Pool
+# Inbox/Triage Scratch Pool — Visual Recipe
 
-> Source: `griddo2-claude-themes2-3` at
-> `4f39709688ceb4cac5e15d4e3502186b1f1c801b`
-> Structural baseline: `DECISION.md` section `Scratch Pool`, especially `Expanded Structure`,
-> `Collapsed Structure`, `Collapse Interaction`, and `Search Lifecycle`
-> Date: 2026-07-18
-> Status: Approved
->
-> Scope: Scratch tools, list, selection, and collapsed switcher realization.
+> Status: **Proposed — recipe-package user gate pending**
+> Verification: **source-only; no rendered route/state was checked**
+> Production owner: `ScratchPool`, `useInbox`, and session-state owner (`LAND-POOL`, `LAND-SESSION`)
 
-## Extraction Method
+## Authority And Source Regions
 
-- Extract exact widths, tool-row dimensions, list spacing, selection treatments, and motion values.
-- Keep main's selection/collapse lifecycle when it conflicts with prototype focus behavior.
-- Treat search and sort as one tools row above the list; the icon/count/toggle and tools remain one
-  coherent upper section separated from the list by a divider.
+- Product authority: [`DECISION.md`](../brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md) lines 150–278.
+- Approved boundary: [`PROMOTION_MAP.md`](../brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md) §§10.1, 11.2, and 11.3.
+- Design Source root: `/Users/jwk/Documents/griddo2-claude-themes2-3`.
+- Pool regions: GridDO `page.tsx:998-1121`; Tiny Desk `:1271-1395`; Neumorphism `:887-1036`; Claymorphism `:807-936`; Origami `:1276-1398`; Terminal `:841-937`; Retro Mac `:853-985`; Graphite `:976-1096` in their respective Design Source route directories.
+- Shared theme values: Design Source `src/app/themes.css:1-439`.
 
-## Source Files
+## Shared Adopted Contract
 
-All paths use `src/app/prototype/inbox-triage-<theme>/page.tsx` at the pinned commit.
+- Expanded Pool reads as one tools region above one list. Identity, all-active count, collapse, title search, and created-at sort belong together; search and sort share a row.
+- The header/collapsed count always means all active Scratches. Filtered result count is separate and only appears while searching.
+- Expanded rows keep title and created-at metadata. Collapsed controls are vertical in identity/count → toggle → switchers order, with accessible names and non-color-only selected distinction.
+- Search and sort are absent from collapsed presentation, and no hidden filter is applied to compact switchers or total count.
+- Scrollbar chrome is hidden while wheel, trackpad/touch, and keyboard scrolling remain.
+- Pool labels observed as `Scratches` in Claymorphism and Origami are source facts only; the adopted semantic visible identity remains `Scratch Pool` because no alternate Pool name was selected.
 
-| Alias | Region |
-|---|---|
-| `P-griddo` | `1001-1120` |
-| `P-tiny-desk` | `1274-1401` |
-| `P-neumorphism` | `887-1039` |
-| `P-claymorphism` | `810-942` |
-| `P-origami` | `1279-1404` |
-| `P-terminal` | `844-940` |
-| `P-retro-mac` | `856-991` |
-| `P-graphite` | `979-1102` |
+## Decision-Prerequisite Boundary
 
-## Visual Facts
+- `VQ-01` — external Scratch removal modal is an absent replacement surface. It is wholly excluded: generic dialogs, archive UI, and Pool chrome are not fallbacks. **User-owned Decision prerequisite:** supply or approve that realization, or explicitly scope it out. Future owner: the Pool execution phase; resume its dependent UI task only after a matching user receipt.
+- Pool subset of `VQ-06` — hidden-selection and remote/path status appearance may use only the shared semantic-state envelope: state attributes, existing semantic/theme tokens, visible text/icon/non-color cues, and selected focus/accessibility behavior. Exact copy, placement, layout, effect, duration, and per-theme values remain a **user-owned non-code Decision prerequisite**. Future owner: Pool recipe/canonical token owner and Pool execution phase; resume exact styling only after a matching receipt.
 
-### Layout Hierarchy
+## Theme Realizations
 
-```text
-Scratch Pool
-  upper tools section
-    icon + visible count + explicit collapse/expand control
-    expanded only: search + sort on one row
-  divider
-  scratch list / collapsed vertical switcher
-```
+### GridDO
 
-### Theme Realizations
+- Observed source-only: expanded width is `w-72`, collapsed `w-16`; header uses a primary count badge; the search input is `h-7` with joined sort control, and the list hides scrollbar chrome. Selected rows declare a primary-tinted surface and compact collapsed markers.
+- Adopted fact: clean dashboard tools, exact total count, title/time rows, and primary technical selection are supported.
+- Token implication: Pool tool field, count badge, selected row, compact switcher, and hidden-scroll viewport need semantic roles.
 
-| Theme | Header and tools | List / selected item | Collapsed realization |
-|---|---|---|---|
-| GridDO | `p-3 border-b bg-muted/10`; search and sort `h-7`; sort uses `ArrowUpDown` active/inactive treatment | list `p-2 gap-2`; item `rounded-md p-3`; selected `bg-primary/5 border border-primary/20 shadow-sm` | `64px`; icon/count, toggle, then switcher vertically; active bar `h-8 w-1.5` |
-| Tiny Desk | warm paper/wood header; search `h-7`; serif `A-Z` / `Z-A` sort | paper items; selected `bg-[#fdfcf0] shadow-md` | `64px`; `size-8 rounded-full` paper pin control and inner dot `bg-[#8b5e3c]` |
-| Neumorphism | icon/count in inset wells; search `h-9 rounded-full shadow-[var(--theme-shadow-inset)]`; sort track `h-9 w-[112px]` | item radius `18px`; selected is inset, inactive is raised | `w-16`; fixed `size-3` inset dots and one `w-2 h-8` raised active slider |
-| Claymorphism | `p-4 border-b`; search `h-9 rounded-2xl`; puffy sort `h-9 px-4 rounded-[20px]` | list `p-4 gap-4`; items `rounded-[24px] p-4`; selected uses clay primary fill/shadow | `100px`; icon/count and `ClayButton` stack vertically; dot remains inside the existing card |
-| Origami | dashed divider, paper gradient; search `h-7`; asymmetric sort button with text `ASC/DESC` | list `p-2 gap-1.5`; selected white dashed paper with `shadow-sm` | `64px`; icon/count and toggle stack; selected switcher is a rotated square marker |
-| Terminal | bracketed panel header; tool area `p-3`; sort prompt and regex input both `h-6` | list `p-2`; monochrome rows | `80px`; `IN` panel title, icon/count, and `[>]` control form a vertical stack |
-| Retro Mac | striped title bar, `FIND:` input `h-5`; separate `Date Created` sort row `h-6` | list `p-2 gap-1`; selected row is black with white text | `48px`; Inbox/count and bordered Chevron control stack vertically |
-| Graphite | dark header `p-4`; filter `h-6`; sort is `h-6` with red crosshair and `ASC/DESC` | list `p-3 gap-2`; selected `bg-zinc-800 border-zinc-700` | `72px`; icon/count and toggle stack; selected dot `size-1.5 bg-white` |
+### Tiny Desk
 
-### Color And Typography
+- Observed source-only: a dark wood header uses `#5d3a1a`/`#fdfcf0`; search is an inset dark-wood field, rows switch between light paper and wood, and the selected compact marker uses `#8b5e3c`. The route declares title/date rows and scrollbar hiding.
+- Adopted fact: wood-header plus paper-list grammar and pin/bar-like compact selection are supported.
+- Token implication: consume Tiny Desk base variables and add wood-header/paper-row aliases; literal copy and route state are not adopted.
 
-| Theme | Label / count | Search / sort typography |
-|---|---|---|
-| GridDO | `text-sm font-black uppercase tracking-wider`; compact count | search and sort `text-[10px]` to `text-xs` |
-| Tiny Desk | brown `#5d3a1a` / `#8b5e3c`, serif label | compact warm serif/mono controls |
-| Neumorphism | zinc scale, circular inset count | uppercase `text-[9px]` to `text-[10px]` |
-| Claymorphism | black uppercase label, clay token count | `text-[10px] font-black uppercase` sort |
-| Origami | HSL paper neutrals, `tracking-widest` | `text-[9.5px] font-bold` |
-| Terminal | foreground variable on black | `text-[8.5px]` prompt sort, `text-[10px]` regex input |
-| Retro Mac | black/white System 7 contrast | `text-[9px] font-bold uppercase` |
-| Graphite | zinc monochrome, tight tracking | `text-[8.5px] font-mono` sort |
+### Neumorphism
 
-### Interaction And Motion
+- Observed source-only: width transitions between `w-72` and `w-16`; search uses `h-9 rounded-full` with `--theme-shadow-inset`; sort is a two-position `112px` inset capsule with a `50px` raised thumb; rows use `18px` radius and card/inset shadows.
+- Adopted fact: inset tools and raised selected list/switcher surfaces are supported.
+- Token implication: Pool search well, segmented sort, selected row, and compact indicator should consume the existing neumorphic shadow variants.
 
-| Interaction | Exact source behavior | Adoption note |
-|---|---|---|
-| Width transition | GridDO spring `300/30`; Neumorphism `duration-300 ease-out`; Clay `580/38`; Terminal/Retro/Graphite `duration: 0` | retain theme motion character within shared collapse contract |
-| Sort | one explicit click toggles asc/desc and exposes a visible active mode | retain; selected/unselected must not rely only on hover |
-| Search | clear control appears only with a non-empty query | retain |
-| Selection | each theme changes at least background/surface plus a marker, border, or depth cue | retain; do not reduce to one shared opacity |
-| Scroll | every list has `overflow-y-auto` plus hidden scrollbar chrome utilities | retain |
+### Claymorphism
 
-## Realization Decisions
+- Observed source-only: source heading text is `Scratches` (not adopted); search uses `h-9 rounded-2xl`, `--clay-search-bg`, and inset shadow; selected rows use `--clay-primary-*`, unselected rows use `--clay-unselected-*`; the list hides scrollbar chrome.
+- Adopted fact: puffy count badge, soft search well, and shape/weight-based selected distinction are supported.
+- Token implication: use clay primary/unselected roles while retaining canonical `Scratch Pool` semantics.
 
-### Adopted
+### Origami
 
-- Keep tools and list as two structural regions: one upper tools section and one lower list section.
-- Keep search and sort on the same expanded row.
-- Keep icon, item count, explicit open/close control, and conversion switcher vertically ordered in
-  collapsed mode.
-- Preserve theme-specific selected cues and compact counts.
-- Preserve per-theme width and interaction timing values above unless canonical responsive work
-  requires a narrower breakpoint adaptation.
+- Observed source-only: source heading text is `Scratches` (not adopted); header is a paper gradient; search uses a white dashed field, asymmetric fold radius, and the sort control declares `▴ ASC`/`▾ DESC`; rows use asymmetric folded rectangles.
+- Adopted fact: dashed paper controls and folded row/switcher geometry are supported.
+- Token implication: paper field, dashed divider, folded selected row, and compact fold marker need theme aliases.
 
-### Removed
+### Terminal
 
-- `onFocus` or generic click that immediately collapses the pool is removed. Collapse belongs to
-  the explicit control and the DECISION's first-printable-key ownership rule.
-- Sidebar fold-lock/unlock and test controls are development-only and are not promoted.
-- Numbered prototype variant switchers are not promoted.
+- Observed source-only: `TerminalPanel` title is `Scratch Pool` when expanded and `IN` when collapsed; search is a bordered transparent command field; sort is `/O:S ▲` or `/O:-S ▼`; rows are framed terminal records with title/time.
+- Adopted fact: console command/record grammar is supported, while `IN` is only compact source copy and not a new semantic name.
+- Token implication: terminal Pool states should consume foreground/border variables; no hard-coded green/orange is placed in product components.
 
-### Improved
+### Retro Mac
 
-- Collapsed layouts must keep all controls legible and vertically separated; no full-width selected
-  strip may obscure the inner dot or marker.
-- Repeating pulse or blink on the active collapsed marker is replaced by the same static marker,
-  border, or depth treatment.
-- Search collapse preserves query/result state according to the DECISION instead of clearing it as
-  a presentation side effect.
+- Observed source-only: striped Finder-style title bar reads `Scratch Pool`; `FIND:` precedes a `h-5` inverted-on-focus field; a classic column/button row exposes sort; rows use black/white selected inversion and a hard marker.
+- Adopted fact: 1-bit window tools and non-color-only inversion/marker selection are supported.
+- Token implication: striped chrome, field inversion, and hard switcher indicator belong in Retro Mac theme CSS.
 
-## Token Contract Implications
+### Graphite
 
-| Token / contract area | Required rule | Source evidence |
-|---|---|---|
-| Scratch width | expanded and collapsed widths are theme mappings with a stable collapsed control column | eight width pairs above |
-| Tool sizing | compact search/sort heights map to theme density (`24px`, `28px`, or `36px`) | source tool rows |
-| Selected scratch | each theme maps surface, marker, border/depth, and foreground together | selected list classes |
-| Collapsed switcher | stable marker dimensions prevent layout shift | GridDO bar, Tiny pin, Neumorphism slider, theme dots |
-| Sort state | active and inactive states require persistent non-hover distinction | all eight sort controls |
+- Observed source-only: a dark Pool surface reads `Scratch Pool`; `FLTR:` precedes a zinc field; sort displays a red `⊕` plus `ASC`/`DESC`; selected rows use white-on-dark and compact markers.
+- Adopted fact: dense editorial tools, drafting labels, and monochrome selected rows are supported.
+- Token implication: dark Pool header/list, graphite field, and selected marker require shared semantic roles.
 
-## Execution Handoff
+## Exclusions And Verification
 
-Acceptance criteria must cover expanded and collapsed modes, preserved query state, explicit
-collapse ownership, selected-state visibility, one-row search/sort, hidden scrollbar chrome, and
-keyboard/focus equivalence.
-
-## Open Questions
-
-- None.
+- Excluded: `VQ-01`, unsupported Pool statuses beyond the shared `VQ-06` envelope, fold-lock review control, source selection persistence, route-local search/sort behavior, copied strings, and any source behavior conflicting with the selected session lifecycle.
+- No rendered selected/hidden/empty/collapsed state, count meaning, focus path, text fit, contrast, scrolling, or transition was verified. All exact class/color/size statements above are source declarations only.
