@@ -1,6 +1,6 @@
 # Inbox/Triage Visual Recipe Navigation Index
 
-**Status:** Proposed recipe-package navigation; user gate Pending
+**Status:** User-approved production recipe package; targeted SCHEMA derivation permitted
 
 **Verification level:** Source-only; no rendered verification performed
 
@@ -9,6 +9,37 @@ documents and the selected topic decision; this index does not create behavior,
 token, layout, or implementation authority.
 
 ## Recovery receipt and source boundary
+
+### Production recipe-package approval receipt
+
+- Gate: the complete nine-recipe package, this navigation index, and the
+  header-only historical disposition of the superseded Golden Breakdown
+  recipe.
+- User disposition: approved by the user's 2026-07-28 instruction to carry the
+  Fresh canonical chain through final flow review and discard the Golden
+  canonical direction.
+- Approved content commit:
+  `c5111055f683d49ac41c2df1a6d2a154f2a1a7db`.
+- Approved pre-receipt SHA-256 values:
+  - shell/section chrome: `5cc1069a2c72cd4482de0cf17ac033b1b5dc0a0b13fa80606e31ce19a9597add`;
+  - Scratch Pool: `0fdaf03ccdcf1c37589b8318454634eb02419cfeb409c5431b6d3389a7ee9db6`;
+  - selected Scratch Context: `755383af972146e9f76f34d0292a14676bed4ccdcfa755465260886df457334f`;
+  - Breakdown rows/empty: `c5ad89544e95175dab59d02d756e6f728b4733c71eb5f7284f9b3fb500f46d5b`;
+  - Staging: `c893aab138ab87bf6b79ad6889fabe2335faf6d0e318b01f323284601c425b69`;
+  - Grid Explorer: `2fa653832f50c0813eaa8753775ed2707356c86124fecb0ea4cd8a8fae45f282`;
+  - placement affordances: `d5e2584921dcf97a49bb8c890be8a320e5c325823225949c8ab7b6a24de84433`;
+  - newly placed/Undo: `02f446511bbe7199c6f4b1d962e1fc3f6cae542ba3d6da5929d94ab234e18249`;
+  - archive/completion: `324558cc8efdc2883cb4606675f3dc27f61607c6fc1a849e755e6131e230e1f9`;
+  - this pre-receipt index: `66a10b5913c7a6a5348de4878ea2dcc6258f9306905b821d54329faf1a80cb80`;
+  - superseded Golden Breakdown historical marker:
+    `13ea2b7596677b5b752987cd22dd8cb240c5ff2b8f504ed92905a37ce6efac10`.
+- Preserved constraints: source-only/rendered-evidence disclosure,
+  `VQ-01`–`VQ-12`, adjacent-fallback prohibitions, repeated-motion
+  exclusions, selected deferrals, and the prohibition on treating historical
+  Golden timing values as current authority.
+- Next legal action: amend only `docs/SCHEMA.md`, validate its complete
+  affected consistency surface, and record its owning approval receipt before
+  deriving `docs/SPEC.md`.
 
 - Approved production promotion-map content commit:
   `114b032e7c958ca722a56842253874f5e363c6e2`.
@@ -151,7 +182,7 @@ blocked.
 | Unchecked visual dimensions | Contrast, depth, layering, clipping, overflow, rasterized geometry, combined theme outcome, responsive fidelity, motion timing/interruption/retrigger/reduced-motion equivalence, and eight-theme smoke |
 | Unchecked behavior states | External removal, concurrency, offline/realtime, placement, Undo, and archive execution |
 
-All nine recipes and this index remain **Proposed** and the package gate remains
-**Pending**. The next legal action is user approval or rejection of this exact
-checkpoint. Approval does not accept a task or phase; it only permits the
-targeted canonical-document gates to begin in declared authority order.
+All nine recipes and this index are approved only as the exact package named
+in the receipt above. This approval accepts no task or phase. The next legal
+action is the targeted `docs/SCHEMA.md` edit and its own gate; no later
+canonical or planning state may derive from an unapproved SCHEMA draft.
