@@ -45,6 +45,25 @@
   affected consistency surface, and record its owning receipt before deriving
   `docs/DESIGN_TOKENS.md`.
 
+### Grid Dimension Correction Receipt — 2026-07-28
+
+- **Gate:** correct only the stale Node/Bit grid-coordinate bounds discovered
+  while independently re-deriving `docs/EXECUTION_PLAN.md`.
+- **User disposition:** approved the narrow SCHEMA correction on 2026-07-28.
+- **Approved artifact:** commit
+  `8e8ccb40b28ed9a1c7a26111e93f49c93cbc79ab`, containing the exact
+  pre-receipt `docs/SCHEMA.md` whose SHA-256 is
+  `0a38b3b38825a27e85fe6be0e6d729a40776d7cac273956215018e56dcb5084f`.
+- **Correction:** Node and Bit coordinates are `x = 0–17` and `y = 0–8`,
+  matching the canonical 18×9 layout in `docs/SPEC.md` and production
+  `GRID_COLS = 18` / `GRID_ROWS = 9`.
+- **Preserved scope:** every other SCHEMA field, migration, command,
+  prerequisite, deferral, and prior approval remains unchanged. This receipt
+  accepts no implementation, task, phase, branch, or completion marker.
+- **Next legal action:** remove the matching upstream-authority blocker from
+  the proposed execution plan, rerun its canonical review, and present the
+  plan at its user-owned approval gate before regenerating the flow review.
+
 ---
 
 ## Table of Contents
