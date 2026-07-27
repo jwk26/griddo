@@ -7,7 +7,7 @@
 > and approved authority supports it. Semantic role requirements and `VQ-*`
 > placeholders do not imply an absent color, opacity, shadow, size, duration,
 > easing, delay, keyframe, copy string, icon, or layout value.
-> **Inbox/Triage amendment status:** **Proposed / Pending user approval.** It
+> **Inbox/Triage amendment status:** **User-approved 2026-07-28.** It
 > derives only the approved `docs/DESIGN_TOKENS.md` row in the selected topic's
 > [promotion map](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md),
 > after the approved [SCHEMA](SCHEMA.md) and [SPEC](SPEC.md) receipts, and does
@@ -26,6 +26,30 @@
 > source tree remains `11e9c0f7ca226fdeee59a23ef164d3baa6823294`.
 > **Reference:** `docs/design-system-preview.html` is a historical/global
 > baseline only; it is not Inbox/Triage rendered authority.
+
+---
+
+## Inbox/Triage DESIGN_TOKENS Approval Receipt
+
+- **Gate:** the production-adapted Inbox/Triage role/state contract, selected
+  source-backed geometry, theme-family mappings, motion boundary, recipe
+  package table, VQ register, and fidelity disclosure in this document.
+- **User disposition:** approved through the prior detailed Fresh token review
+  and the user's 2026-07-28 instruction to carry every canonical document
+  through the final flow review.
+- **Approved artifact:** commit
+  `80b811ed94b1e28d1e09be5391aa303ca58aa8cd`, containing the exact
+  pre-receipt `docs/DESIGN_TOKENS.md` whose SHA-256 is
+  `ad8cec8b5b353879f613eb554bd370183af00a46664c717d8b143fa68b9d56e2`.
+- **Parent receipts:** promotion map `90022e7`, recipe package `7a15451`,
+  SCHEMA `250a1b5`, and SPEC `53c3fe9`.
+- **Preserved boundary:** the amendment adopts no unsupported Inbox/Triage
+  literal, no rendered-fidelity claim, and no automatic visual fallback for a
+  `VQ-*` gap. The five selected deferrals remain outside this promotion. This
+  receipt accepts no implementation, task, or phase.
+- **Next legal action:** derive the complete replacement
+  `docs/EXECUTION_PLAN.md` across Phase 23–33, then stop at its own durable gate
+  before changing `docs/PLANNING_STANDARD.md`.
 
 ---
 
@@ -478,7 +502,7 @@ Calendar popup item controls must have visible `focus-visible` styling. Recheck 
 
 ## Inbox / Triage Surface Contract
 
-> **Amendment status:** **Proposed / Pending user approval**
+> **Amendment status:** **User-approved 2026-07-28**
 >
 > Product behavior, ownership, focus destinations, and lifecycle remain in
 > approved SPEC. The approved nine-recipe package is source-only visual
@@ -810,7 +834,7 @@ Runtime motion values live in `src/lib/animations/motion-language.ts`. Component
 
 ### Inbox/Triage Motion Boundary
 
-**Amendment status:** **Proposed / Pending user approval.** This pass adopts no
+**Amendment status:** **User-approved 2026-07-28.** This amendment adopts no
 new Inbox/Triage duration, easing, delay, keyframe, interruption/retrigger, or
 reduced-motion-equivalence value. The unrelated global motion tokens above
 remain exact and unchanged, but they are not automatic fallbacks for any
