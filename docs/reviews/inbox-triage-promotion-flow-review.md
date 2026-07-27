@@ -215,3 +215,37 @@ This review is user-approved under the receipt above. The clean execution graph
 has passed its ownership gate, but implementation remains unavailable and no
 task is accepted. The separately authorized SCHEMA and planning-standard
 maintenance drafts do not inherit approval from this receipt.
+
+## Docs Publication Final Close Receipt
+
+- **Gate:** One-time docs-only publication Final Close.
+- **User disposition:** Approved in the Codex thread on 2026-07-28 with
+  `go ahead`.
+- **Approved Candidate A:** commit
+  `89473f97064f9b94873c2ff10210eaa8269bd950`, tree
+  `8b7c07d551e03c0ab1311308f6fcda437bb93a4b`, parent
+  `041497c6b14f08998c4e8ef0bfb784f0285628aa`.
+- **Publication base:** `origin/main` and remote `main` at
+  `a3c679cf7ca09559ecc5e1690fd2a3707d40916c` when the gate was approved.
+- **Approved branch:** `docs/inbox-triage-fresh-map-adoption`.
+- **Approved boundary:** twenty changed paths, all `AGENTS.md` or `docs/**`;
+  Candidate A branch patch SHA-256
+  `1068e9a8610180d2573a80ee2d22a5528cf53d30e40830551b936a9e645cbf4b`.
+- **Approved publication:** commit this receipt as Candidate B; push only the
+  approved feature branch; create one PR titled
+  `docs: adopt clean Inbox/Triage canonical workflow`; verify the exact
+  Candidate B head, `main` base, and documentation-only diff; merge with the
+  exact head pinned; prove remote `main` contains the merged Candidate B tree;
+  then synchronize the declared integration worktree.
+- **Approved cleanup:** only after merge and main proofs, delete the named
+  remote and local feature branch and remove the two clean Codex docs-close
+  worktrees without force. No other branch or worktree is in scope.
+- **Explicit exclusions:** no direct push to `main`, force push, release,
+  deployment, phase archive, implementation code, issue-ledger close, or
+  implementation-task acceptance.
+- **Task acceptance:** zero. Tasks 101–165 remain open and require the future
+  `$run-phase` / `$run-task` onboarding and their own user gates.
+- **Invalidation:** a changed head, base, path boundary, provider target,
+  receipt payload, or dirty worktree requires a new Final Close decision.
+- **Next legal action:** commit this exact receipt as Candidate B, verify it,
+  and execute only the approved publication sequence.
