@@ -1,13 +1,38 @@
 # GridDO Inbox/Triage Implementation Execution Plan
 
-> **Status:** **Proposed — pending user approval**
-> **Approval receipt:** none. This proposal accepts no phase, task, implementation, branch, commit, publication, or completion state.
+> **Status:** **User-approved 2026-07-28 — planning authority only**
+> **Approval receipt:** the user approved the exact pre-receipt plan committed at
+> `c9a2112f8554026510ac1135cfb7c3243d337151`, whose SHA-256 is
+> `052ca15b137fbbc3e9f89d926b4afd0a8eef60c08aa135985f005e6c944eb9db`.
+> This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
+> its supersession rules. It accepts no phase, task, implementation, branch,
+> publication, or completion state.
 > **Task markers:** every task is open (`[ ]`). A task may be checked only after its own observable acceptance and verification evidence is explicitly accepted by the user.
 > **Execution lifecycle:** `run-phase`, `run-task`, and `end-phase` remain unavailable under the current Codex adapter. Approval of this document does not itself authorize implementation, Git lifecycle work, or publication.
 
 ## Goal
 
 Implement the approved Inbox/Triage workspace as one production component tree with a validated Dexie v4 model, monotonic revisions, real all-or-nothing transactions, durable candidates, lifetime-correct UI state, dedicated Explorer search, pointer placement, source-aware Undo, guarded Archive recovery, and source-backed eight-theme presentation without inventing any unresolved visual or content decision.
+
+## Execution Plan Approval Receipt
+
+- **Gate:** the complete clean-room execution graph in this document.
+- **User disposition:** approved on 2026-07-28 after Ultra clean-context
+  derivation and consolidated review.
+- **Approved artifact:** content commit
+  `c9a2112f8554026510ac1135cfb7c3243d337151`, containing the exact
+  pre-receipt `docs/EXECUTION_PLAN.md` whose SHA-256 is
+  `052ca15b137fbbc3e9f89d926b4afd0a8eef60c08aa135985f005e6c944eb9db`.
+- **Approved scope:** active Phases 23–31, open Tasks 101–165, reserved Phases
+  32–33, next numbers Phase 34 / Task 166, fourteen Decision-prerequisite
+  receipts for twelve VQs, and the declared writer/mutex and evidence rules.
+- **Supersession:** the prior open Phase 23–33 / Task 101–154 planning graph is
+  wholly superseded; none of its task meanings remains independently active.
+- **Preserved boundary:** all task markers remain open. This receipt does not
+  onboard `run-phase`, `run-task`, or `end-phase`, authorize code or Git
+  lifecycle work, resolve any `VQ-*`, or mark implementation complete.
+- **Next legal action:** derive a fresh flow review from this approved plan and
+  the approved canonical authority chain, then stop at its user gate.
 
 ## Architecture
 
@@ -1447,4 +1472,6 @@ This register is complete for every exact path declared by two or more tasks. Ev
 - **Next planned phase:** Phase 34. Phases 32 and 33 are reserved and receive no tasks.
 - **Next planned task:** Task 166.
 - Active graph count: 9 implementation phases (23–31), 65 open tasks (101–165), 2 reserved phase numbers (32–33).
-- The document remains **Proposed / pending user approval** with no approval receipt and no accepted task.
+- The document is **user-approved for planning authority** under the receipt at
+  the top of this file; every task remains open and no implementation state is
+  accepted.
