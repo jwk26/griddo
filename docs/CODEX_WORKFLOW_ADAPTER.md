@@ -1,19 +1,24 @@
 # GridDO Codex Workflow Adapter
 
 This profile ports the Gate C-approved adapter from commit `ff84ac8` into the
-Fresh-map adoption worktree. It preserves the validated project roles while
-limiting the current pass to `$craft-docs`. All relative paths resolve from
-`repository_root`.
+Fresh-map adoption worktree. The `$craft-docs` campaign is complete. The only
+additional authority declared here is a one-time docs-only publication close
+candidate for the exact branch and heads below. It is not standard
+`$end-phase` onboarding and does not accept any implementation task. All
+relative paths resolve from `repository_root`.
 
 ```yaml
 repository_root: /Users/jwk/Documents/griddo2-codex-fresh-map-adoption
 
 lifecycle_scope:
   active: [craft-docs]
+  craft_docs_state: complete through approved flow review and canonical-production parity maintenance at 041497c6b14f08998c4e8ef0bfb784f0285628aa
+  one_time_docs_close: candidate only; no external mutation until a separate user Final Close receipt
   unavailable_until_separate_onboarding: [run-phase, run-task, end-phase]
-  onboarding_commit_policy: one user-approved commit containing only AGENTS.md and docs/CODEX_WORKFLOW_ADAPTER.md
-  commit_policy: commit only a user-approved craft-docs artifact together with its durable receipt; no branch creation, branch switch, push, merge, publication, or cleanup
-  checkpoint_policy: after each artifact approval, commit immediately and require a clean worktree before deriving the next artifact
+  onboarding_commit_policy: Candidate A contains only AGENTS.md and docs/CODEX_WORKFLOW_ADAPTER.md on parent 041497c6b14f08998c4e8ef0bfb784f0285628aa
+  commit_policy: before Final Close, only local Candidate A is allowed; after Final Close, only the exact receipt commit Candidate B and the pinned publication sequence are allowed
+  checkpoint_policy: every candidate and receipt must be committed, hash-pinned, and clean before the next action
+  task_acceptance_policy: Tasks 101–165 remain open; this docs close marks no task or phase accepted
 
 canonical_documents:
   authority_order: [schema, spec, design, execution, planning_standard, workflow]
@@ -83,33 +88,48 @@ craft_docs:
     preserved_repository: git-preservation/task14-fresh-repository.bundle@c84cf189b7954caecf787e9551bf6026be77e7f8b5b99cdede68e397702c8af9
 
 git:
-  scope: branch/worktree/publication lifecycle inactive during craft-docs; current-branch onboarding and artifact checkpoint commits follow lifecycle_scope policies
+  scope: one-time docs-only close candidate; external mutation remains inactive until the declared Final Close receipt
   remote: origin
   remote_url: https://github.com/jwk26/griddo.git
   default_branch: main
-  protected_branch: main (workflow-protected; provider policy must be refreshed before reuse)
+  protected_branch: main (workflow-protected by this adapter; provider reported no branch protection or rulesets on 2026-07-28)
   integration_branch: main
   branch_naming: phase-{N}/<lowercase-kebab-description>
+  docs_close_branch: docs/inbox-triage-fresh-map-adoption
+  docs_close_pre_candidate_head: 041497c6b14f08998c4e8ef0bfb784f0285628aa
+  docs_close_pre_candidate_tree: be36acd4b7d15362c18ce819cf8b40baca0f3d50
+  docs_close_base: origin/main at a3c679cf7ca09559ecc5e1690fd2a3707d40916c
+  docs_close_preview: /Users/jwk/Documents/griddo2-codex-docs-close-preview (detached; Candidate A only)
+  docs_close_worktree: /Users/jwk/Documents/griddo2-codex-fresh-map-adoption
   pilot_branch: historical phase-23/inbox-triage-persistence at 52a385d; recovery-only and not an input to this pass
-  reuse_policy: no branch or worktree lifecycle action is authorized in this pass
+  reuse_policy: do not reuse the historical pilot branch or any unrelated worktree; only the pinned docs-close branch and preview may participate
   worktree_root: /Users/jwk/Documents
   pilot_worktree: /Users/jwk/Documents/griddo2-codex-phase-23-pilot (historical; inactive)
-  primary_integration_worktree: /Users/jwk/Documents/griddo2-codex-integration (unverified; inactive)
-  primary_integration_policy: refresh and obtain a separate lifecycle approval before use
+  primary_integration_worktree: /Users/jwk/Documents/griddo2-codex-integration (absent before Final Close)
+  primary_integration_policy: create or synchronize only after merge proof; it must resolve to the proven remote main head before lifecycle onboarding
 
 publication:
-  scope: inactive during craft-docs; retained from ff84ac8 for future re-onboarding
+  scope: one-time docs-only candidate; inactive until the separate Final Close receipt
   provider: GitHub repository jwk26/griddo
   command_or_adapter: gh CLI
-  status_evidence: refresh before any future publication gate
-  pr_create_or_reuse: no action authorized in this pass
+  status_evidence: on 2026-07-28 origin/main and remote main were a3c679cf7ca09559ecc5e1690fd2a3707d40916c; feature ref absent; matching open PR absent; branch protection absent; rulesets 0; Actions workflows 0
+  pr_create_or_reuse: create exactly one PR after Final Close; fail if a remote feature ref or matching PR appears unexpectedly
   pr_base: main
-  pr_head: future separately approved feature branch
-  title_body_draft: future Final Close-approved title and body
+  pr_head: docs/inbox-triage-fresh-map-adoption at the exact Candidate B receipt commit
+  title_body_draft: title `docs: adopt clean Inbox/Triage canonical workflow`; body must summarize the Fresh promotion map, canonical docs and recipes, open VQ prerequisites, parity maintenance, and document-only verification
   merge_method: merge
-  expected_head_pinning: future Final Close receipt
-  required_checks_and_queue: refresh provider evidence before reuse
-  bounded_wait_retry: at most 20 status reads at 15-second intervals after separate approval
+  expected_head_pinning: use `gh pr merge --match-head-commit <Candidate-B-SHA> --merge`; never merge an unpinned or changed head
+  required_checks_and_queue: provider reported none on 2026-07-28; still require PR head/base equality, mergeable state, and no unexpected required check before merge
+  bounded_wait_retry: at most 12 status reads at 10-second intervals after Final Close
+  final_close_receipt: docs/reviews/inbox-triage-promotion-flow-review.md#docs-publication-final-close-receipt
+  allowed_sequence:
+    - fast-forward the named docs worktree branch from the pinned pre-candidate head to Candidate A
+    - append the exact user-approved Final Close receipt and commit it as Candidate B
+    - push only the named feature branch and verify the remote head equals Candidate B
+    - create the declared PR, verify its head/base and diff, then merge with Candidate B head pinning
+    - prove remote main contains the merged Candidate B tree and synchronize the declared integration worktree
+    - only after those proofs, perform the declared non-force cleanup
+  prohibited: force push; direct push to main; auto-acceptance of Tasks 101–165; archive mutation; release or deployment; unrelated branch or worktree mutation
 
 archive:
   scope: inactive during craft-docs; paths retained from ff84ac8
@@ -119,22 +139,24 @@ archive:
   reusable_learnings: docs/execution-plan/LEARNINGS.md
 
 cleanup:
-  scope: inactive during craft-docs; retained from ff84ac8 for future re-onboarding
-  remote_branch: no action authorized in this pass
-  local_branch: no action authorized in this pass
-  worktree: no action authorized in this pass
-  final_close_receipt: docs/issues/Issues_Phase_{N}.md#final-close-receipt
+  scope: inactive before merge proof; one-time non-force cleanup after the declared main synchronization
+  remote_branch: delete only docs/inbox-triage-fresh-map-adoption after remote main is proven to contain Candidate B
+  local_branch: delete only docs/inbox-triage-fresh-map-adoption after its attached worktree is clean and removed
+  worktree: remove only /Users/jwk/Documents/griddo2-codex-fresh-map-adoption and /Users/jwk/Documents/griddo2-codex-docs-close-preview when clean; do not touch any other worktree
+  final_close_receipt: docs/reviews/inbox-triage-promotion-flow-review.md#docs-publication-final-close-receipt
+  recovery: if any proof fails, stop without force and retain branch/worktree state for recovery
 ```
 
-## Runtime boundaries
+## One-time docs publication boundary
 
-- This adapter authorizes no fetch, branch/worktree mutation, push,
-  publication, merge, or cleanup.
-- A `$craft-docs` commit must contain only the user-approved artifact and its
-  receipt. A changed approval hash, scope, source, target, or dirty worktree
-  invalidates the next-step receipt.
+- Candidate A is local-only and may modify only `AGENTS.md` and this adapter.
+  It authorizes no fetch, push, PR, merge, publication, or cleanup by itself.
+- A separate user Final Close must pin Candidate A and the exact receipt
+  payload. Any changed head, base, path set, provider state, payload, or dirty
+  worktree invalidates that approval and requires a new packet.
+- This docs-only close is not `$end-phase`: Tasks 101–165 remain open, no
+  issue ledger is closed, and no phase archive is created.
 - External evidence is read-only and SHA-pinned. Its prior approvals do not
   replace production document gates.
-- Before another lifecycle begins, refresh its current fields and obtain the
-  owning user approval rather than treating the inactive `ff84ac8` values as
-  current authority.
+- After merge and cleanup, refresh from proven `main` and separately onboard
+  `$run-phase` and `$run-task`; do not reuse this one-time authority.

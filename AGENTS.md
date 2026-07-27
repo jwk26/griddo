@@ -18,16 +18,22 @@ This is the Codex entrypoint. It coexists with, and does not replace or modify,
 
 ## Current Codex lifecycle scope
 
-- Only `$craft-docs` is onboarded in the current Fresh-map adoption pass.
-- `$run-phase`, `$run-task`, and `$end-phase` remain unavailable until their
-  Git, branch/worktree, publication, archive, and cleanup fields are refreshed
-  and separately approved.
-- One onboarding commit is allowed for the user-approved `AGENTS.md` and
-  `docs/CODEX_WORKFLOW_ADAPTER.md` port. Afterward, commits are allowed only
-  for the current approved `$craft-docs` artifact and its durable receipt. Do
-  not create or switch branches, push, merge, publish, or clean up.
-- After each canonical artifact is approved, commit it immediately with its
-  receipt and verify a clean worktree before deriving the next artifact.
+- The Fresh-map `$craft-docs` campaign is complete through its approved flow
+  review and canonical-production parity maintenance at
+  `041497c6b14f08998c4e8ef0bfb784f0285628aa`.
+- A one-time **docs-only publication close candidate** is declared in
+  `docs/CODEX_WORKFLOW_ADAPTER.md`. It applies only to
+  `docs/inbox-triage-fresh-map-adoption` at the pinned heads in that profile;
+  it is not reusable lifecycle onboarding.
+- `$run-phase`, `$run-task`, and standard `$end-phase` remain unavailable.
+  This close does not accept or execute Tasks 101–165 and does not convert
+  their open markers to `[x]`.
+- Candidate A may contain only this entrypoint and the adapter. Push, PR
+  creation, merge, publication, branch deletion, and worktree cleanup remain
+  forbidden until a separate user Final Close approval is recorded in the
+  declared receipt.
+- After proven merge and main synchronization, retire the one-time close and
+  separately onboard `$run-phase` and `$run-task` from updated `main`.
 - A task or phase receives `[x]` only after explicit user acceptance.
 - Recover from committed documents, receipts, Git state, and rerun checks—not
   from chat memory or external evidence alone.
