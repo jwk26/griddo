@@ -11,6 +11,10 @@
 > **Inbox/Triage amendment status:** **User-approved 2026-07-28.** The exact
 > pre-receipt draft is identified below. These canonical targets are not claims
 > about completed production implementation.
+> **Pending shared-grid-validator maintenance:** **Proposed — pending user
+> approval.** This draft changes only the Zod example to derive both Node and
+> Bit coordinate validators from the existing production grid constants. The
+> prior receipts do not approve this uncommitted maintenance diff.
 > **Promotion provenance:** selected topic
 > [`DECISION.md`](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md),
 > approved [`PROMOTION_MAP.md`](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md),
@@ -415,12 +419,15 @@ authoritatively absent/tombstoned before cleanup begins.
 
 ```typescript
 import { z } from "zod";
+import { GRID_COLS, GRID_ROWS } from "@/lib/constants";
 
 // --- Shared ---
 
 const idSchema = z.string().uuid();
 const timestampSchema = z.number().int().positive();
 const versionSchema = z.number().int().min(1);
+const gridXSchema = z.number().int().min(0).max(GRID_COLS - 1);
+const gridYSchema = z.number().int().min(0).max(GRID_ROWS - 1);
 
 export const repositoryOperationIdSchema = idSchema;
 export type RepositoryOperationId = z.infer<typeof repositoryOperationIdSchema>;
@@ -439,8 +446,8 @@ export const nodeSchema = z.object({
   version: versionSchema,
   parentId: idSchema.nullable().default(null),
   level: z.number().int().min(0).max(2),
-  x: z.number().int().min(0).max(17),
-  y: z.number().int().min(0).max(8),
+  x: gridXSchema,
+  y: gridYSchema,
   deletedAt: timestampSchema.nullable().default(null),
   archivedAt: timestampSchema.nullable().default(null),
   systemRole: z.enum(["inbox", "archive_view"]).nullable().default(null),
@@ -480,8 +487,8 @@ export const bitSchema = z.object({
   createdAt: timestampSchema,
   version: versionSchema,
   parentId: idSchema,
-  x: z.number().int().min(0).max(17),
-  y: z.number().int().min(0).max(8),
+  x: gridXSchema,
+  y: gridYSchema,
   deletedAt: timestampSchema.nullable().default(null),
   archivedAt: timestampSchema.nullable().default(null),
   pastDeadlineDismissed: z.boolean().default(false),
