@@ -2,11 +2,37 @@
 
 > Route: `$craft-docs` — Brainstorming Route, visual-prototype intake
 > Pass: production-adoption, map-only re-approval pass
-> Status: **Proposed**
-> Approval: **Pending user decision**
+> Status: **Approved for adapter onboarding and downstream re-derivation**
+> Approval: **User-approved 2026-07-28**
 > Selected product authority: `DECISION.md` (`Readiness: code-ready`)
 > Frozen repository write boundary: this file only
-> Downstream state: existing production canonical documents, recipes, reviews, and Phase 23-33 plan remain unchanged; re-derivation from this candidate has not started
+> Approved content commit: `114b032e7c958ca722a56842253874f5e363c6e2`
+> Approved content SHA-256: `06bfaff9982f59435a112d51a71309803d3c3933dae965a97819f7de9c9aecc8`
+> Downstream state at approval: existing production canonical documents, recipes, reviews, and Phase 23-33 plan remain unchanged; re-derivation from this candidate has not started
+
+## Approval Receipt
+
+- Gate: the complete production-adapted Fresh `PROMOTION_MAP.md`, including
+  its obligation inventory, negative constraints, production landings,
+  recipe scope, and two-class `VQ-01`–`VQ-12` disposition.
+- User disposition: approved in this thread on 2026-07-28 as the authority for
+  a clean canonical re-derivation and subsequent clean Task 101
+  reimplementation.
+- Approved artifact: commit
+  `114b032e7c958ca722a56842253874f5e363c6e2`, whose exact map content has
+  SHA-256
+  `06bfaff9982f59435a112d51a71309803d3c3933dae965a97819f7de9c9aecc8`.
+- Preserved constraint: the five absent replacement surfaces
+  (`VQ-01/03/04/07/09`) remain user-owned Decision prerequisites, and the
+  existing-surface visual gaps retain their unresolved exact realization
+  details. No adjacent production UI becomes an automatic fallback.
+- Supersession scope: the unmerged Golden Task 101 branch at `52a385d` is not
+  imported and is recovery-only until the replacement Task 101 is accepted.
+  This receipt accepts no implementation, task, or phase.
+- Next legal action: propose the smallest project-local Codex adapter needed
+  for document authority, paths, verification, and durable receipts. Only
+  after that adapter is user-approved may the recipe package and canonical
+  documents be derived, each at its own user gate.
 
 ## 1. Gate, Scope, And Frozen Boundary
 
@@ -1126,20 +1152,21 @@ dimensions at its gate.
 
 ### 14.3 Scope and status audit
 
-- Intended repository diff: this map only.
+- Preapproval repository diff was this map only.
 - Canonical, recipe/index, plan, standard, ledger, source, selected topic,
   design archive, entrypoint, adapter, and protected legacy files: unchanged.
-- Map status is `Proposed`; approval is `Pending user decision`.
+- The exact map at commit `114b032e7c958ca722a56842253874f5e363c6e2`
+  is user-approved for adapter onboarding and downstream re-derivation.
 - Transfer source is SHA-256 `8780df4b...`; the prior production map remains
   recoverable at commit `1f51ebb`. No Fresh downstream artifact or receipt is
   imported.
-- No approval, task acceptance, phase acceptance, implementation completion,
-  or downstream authorization is asserted.
+- No task acceptance, phase acceptance, implementation completion, or
+  publication authorization is asserted.
 
-## 15. User Gate
+## 15. Promotion Map Approval And Next Gate
 
-This is the Brainstorming Route `PROMOTION_MAP.md` gate. The next legal action
-is user review of the complete map, including:
+The user approved the complete production-adapted Fresh map identified by the
+commit and SHA-256 in the receipt above, including:
 
 1. source classification and provenance distinction;
 2. obligation coverage and negative constraints;
@@ -1150,11 +1177,11 @@ is user review of the complete map, including:
 5. canonical edit regions; and
 6. the nine surface recipes plus navigation index.
 
-Until the user approves this map and its two-class `VQ-*` disposition, no
-recipe extraction or canonical/downstream file may start. After approval,
-shared state contracts may proceed, but every named Decision prerequisite must
-still block its dependent implementation task until a matching user receipt
-resolves the missing visual authority. Before the first downstream canonical
-write, production must also confirm the authority order, verification commands,
-and durable receipt locations that are not declared by an `AGENTS.md` or
-project adapter at base `a3c679c`.
+The map gate is closed. The next gate is the smallest project-local Codex
+adapter needed to confirm authority order, canonical paths, document
+verification, and durable receipt locations. No recipe extraction or
+canonical/downstream edit may start before that adapter is user-approved.
+Afterward, recipes and canonical documents proceed in the approved order and
+at separate user gates. Every named Decision prerequisite must still block its
+dependent implementation task until a matching user receipt resolves the
+missing visual authority.
