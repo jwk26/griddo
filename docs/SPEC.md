@@ -1,7 +1,7 @@
 # GridDO — Technical Specification
 
 > **Scope:** Architecture, routing, file organization, and page layouts. Data model lives in SCHEMA.md. Design values live in DESIGN_TOKENS.md.
-> **Inbox/Triage amendment status:** **Proposed / Pending user approval.**
+> **Inbox/Triage amendment status:** **User-approved 2026-07-28.**
 > **Production derivation evidence:** Fresh reviewed SPEC SHA-256
 > `ec1ee6ac1d4781f332eeab66bcf2a24355c32936f4608c866ed43f651df5ed89`
 > is read-only evidence, not canonical authority. Production authority is the
@@ -21,6 +21,33 @@
 > **Baseline locator note:** promotion-map citations into the prior SPEC refer
 > to the file at production base `a3c679c` (SHA-256 `d6434098...`). Line
 > numbers are historical locators and are not rewritten after this replacement.
+
+---
+
+## Inbox/Triage SPEC Approval Receipt
+
+- **Gate:** the complete production-adapted Inbox/Triage amendment in this
+  document, including its architecture, state ownership, copy boundary, file
+  owners, and `VQ-01`–`VQ-12` non-invention boundary.
+- **User disposition:** approved through the prior detailed Fresh SPEC review
+  and the user's 2026-07-28 instruction to carry every canonical document
+  through the final flow review rather than stopping after SCHEMA.
+- **Approved artifact:** commit
+  `285e84809ba5d06d75a6fd29299f7f816e95874a`, containing the exact
+  pre-receipt `docs/SPEC.md` whose SHA-256 is
+  `f1157dbba76ad53fc5c6a5d524b7ad74a02099c93ab53b218ae755ebe1024778`.
+- **Parent receipts:** promotion map `90022e7`, recipe package `7a15451`, and
+  SCHEMA `250a1b5`.
+- **Resolved naming questions:** `Q-NAME-03` is owned by the exact proposed
+  Explorer and placement paths in this SPEC; `Q-NAME-04` is owned by proposed
+  `src/lib/copy/inbox-triage.ts`. These are target paths, not claims that the
+  files already exist.
+- **Preserved boundary:** the five absent replacement surfaces remain blocked
+  behind user-owned Decision prerequisites, and the seven existing-surface
+  state gaps authorize semantic behavior but no invented exact visual values.
+  This receipt accepts no implementation, task, or phase.
+- **Next legal action:** derive only `docs/DESIGN_TOKENS.md` from the approved
+  SPEC and recipe package, then stop at its own durable gate before planning.
 
 ---
 
