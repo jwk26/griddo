@@ -3,7 +3,7 @@
 Execution plan mode: scaled
 
 > **Guideline:** Check this file first to see the current task before looking into other docs.
-> **Inbox/Triage replacement-plan status:** **Proposed / Pending user approval.**
+> **Inbox/Triage replacement-plan status:** **User-approved 2026-07-28.**
 > This plan re-derives the complete production Phase 23–33 / Task 101–154
 > campaign from the approved Fresh map and production canonical receipts. The
 > reviewed Fresh five-task plan (`0cd16ab3...`) is read-only evidence for the
@@ -19,6 +19,39 @@ Execution plan mode: scaled
 - `[ ]` Not started
 - `[~]` In progress
 - `[x]` Complete
+
+---
+
+## Inbox/Triage EXECUTION_PLAN Approval Receipt
+
+- **Gate:** the complete production Phase 23–33 / Task 101–154 re-derivation,
+  including typed Decision prerequisites, narrow dependency edges, canonical
+  file ownership, verification commands, exclusions, and first executable
+  foundation scope.
+- **User disposition:** approved through the user's 2026-07-28 instruction to
+  complete every canonical document through the final independent flow review.
+- **Approved artifact:** commit
+  `f28196d`, containing the exact pre-receipt `docs/EXECUTION_PLAN.md` whose
+  SHA-256 is
+  `0aca74870a5e82f57f94b925d521df72fb0ffba9d831e2ffcfb38f7a90ab7cba`.
+- **Parent receipts:** promotion map `90022e7`, recipe package `7a15451`,
+  SCHEMA `250a1b5`, SPEC `53c3fe9`, and DESIGN_TOKENS `39ad25b`.
+- **Approved scope:** eleven active phases (`23`–`33`) and fifty-four open
+  tasks (`101`–`154`). Tasks 101–105 are the first fully VQ-independent
+  executable slice; the plan does not pre-implement later commands or UI.
+- **Open readiness boundary:** all twelve `VQ-*`/`DP-VQ-*` prerequisites remain
+  user-owned. Flow ownership may be complete while implementation readiness is
+  `BLOCKED_PENDING_USER_DECISIONS`; no adjacent UI is an automatic fallback.
+- **Review corrections included:** page-mounted hooks retain draft/search/
+  placement/Newly/Archive ownership, `useTriageDnd` remains in `use-dnd.ts`,
+  orphan-audit evidence is retained indefinitely in v4, Task 121 produces its
+  own non-code decision receipt, and VQ edges cannot transitively block
+  unrelated runnable foundations.
+- **Acceptance boundary:** this receipt accepts no implementation, task,
+  phase, issue, branch, publication, or `[x]` marker.
+- **Next legal action:** update only `docs/PLANNING_STANDARD.md`, validate its
+  reusable policy against this approved plan, and record its owning receipt
+  before generating the final independent flow review.
 
 ---
 
