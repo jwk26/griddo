@@ -1,6 +1,26 @@
 # GridDO — Technical Specification
 
 > **Scope:** Architecture, routing, file organization, and page layouts. Data model lives in SCHEMA.md. Design values live in DESIGN_TOKENS.md.
+> **Inbox/Triage amendment status:** **Proposed / Pending user approval.**
+> **Production derivation evidence:** Fresh reviewed SPEC SHA-256
+> `ec1ee6ac1d4781f332eeab66bcf2a24355c32936f4608c866ed43f651df5ed89`
+> is read-only evidence, not canonical authority. Production authority is the
+> approved map content at `114b032` with receipt `90022e7`, the approved recipe
+> package at `c511105` with receipt `7a15451`, and the production SCHEMA content
+> at `6be49f8` / SHA-256
+> `0fb1fb17f55a507b2a799d6f485fc764324d0287090b51a025df6248535c47ca`
+> with receipt `250a1b5`.
+> This draft derives only the approved `docs/SPEC.md` promotion row from the
+> selected topic [decision](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md),
+> approved [promotion map](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md),
+> and approved [SCHEMA](SCHEMA.md). It is not authority for
+> `DESIGN_TOKENS.md`, planning, or production until the SPEC gate passes. The
+> approved recipe [navigation index](recipes/inbox-triage-visual-recipe-index.md)
+> supplies navigation and the `VQ-01`–`VQ-12` non-invention boundary only; it
+> creates no product behavior or visual authority.
+> **Baseline locator note:** promotion-map citations into the prior SPEC refer
+> to the file at production base `a3c679c` (SHA-256 `d6434098...`). Line
+> numbers are historical locators and are not rewritten after this replacement.
 
 ---
 
@@ -11,6 +31,9 @@
 - [Routes](#routes)
 - [File Organization Conventions](#file-organization-conventions)
 - [Page Layouts](#page-layouts)
+- [Inbox/Triage State Ownership](#inboxtriage-state-ownership)
+- [Copy and Localization](#copy-and-localization)
+- [Inbox/Triage Visual Decision Prerequisites](#inboxtriage-visual-decision-prerequisites)
 - [Responsive Breakpoints](#responsive-breakpoints)
 - [Key File Paths](#key-file-paths)
 
@@ -27,7 +50,7 @@
 | Component Library | shadcn/ui (Radix primitives) | latest | Accessible, composable UI primitives |
 | Icons | Lucide React | latest | Icon library for Nodes, Bits, sidebar, and UI elements |
 | Validation | Zod | 3.x | Runtime schema validation at data boundaries |
-| Storage | Dexie.js (IndexedDB) | 4.x | Type-safe IndexedDB wrapper with reactive queries (`useLiveQuery`) |
+| Storage | Dexie.js (IndexedDB) | Dexie library 4.x; DB schema v3 → v4 | Type-safe IndexedDB wrapper with reactive queries (`useLiveQuery`); the database-schema v4 Inbox/Triage migration is specified in SCHEMA and is not yet production reality |
 | Theming | next-themes | latest | Dark/Light mode with system preference detection |
 | Dates | date-fns | 4.x | Date arithmetic — aging, urgency, calendar rendering |
 | State Management | Zustand | 5.x | Lightweight client state — edit mode, sidebar, drag state, calendar view |
@@ -41,9 +64,9 @@
 
 1. **Client Components by default** — GridDO is local-first. All data lives in IndexedDB, accessed from the browser. Server Components are used only for static layout shells (root layout, page skeletons). Any component that reads data or handles interaction is a Client Component.
 
-2. **DataStore abstraction (two-layer)** — Data access has two independent abstraction boundaries. **CRUD layer:** All write operations go through a `DataStore` interface (`src/lib/db/datastore.ts`). v1 implements with Dexie.js/IndexedDB (`src/lib/db/indexeddb.ts`). **Reactive layer:** All read subscriptions go through custom hooks (`src/hooks/use-*.ts`), which internally use Dexie `useLiveQuery` in v1. Components never import DataStore or Dexie directly — they import hooks only. Both layers are independently replaceable for v2 cloud sync. This is a **critical PRD constraint**. See PRD Section 1: Storage Strategy.
+2. **DataStore abstraction (two-layer)** — Data access has two independent abstraction boundaries. **Command/repository layer:** All writes, including the approved Inbox/Triage CAS and atomic commands, go through `DataStore` (`src/lib/db/datastore.ts`) and its Dexie implementation (`src/lib/db/indexeddb.ts`). Components never sequence repository writes. **Reactive layer:** All read subscriptions go through custom hooks (`src/hooks/use-*.ts`), which internally use Dexie `useLiveQuery` in v1. Components import hooks rather than Dexie. Both layers remain independently replaceable for future cloud sync, but a replacement must preserve the approved conditional-write, version, postcondition, and reconciliation semantics in SCHEMA.
 
-3. **Reactive data via custom hooks** — Components subscribe to data through custom hooks (`useGridData`, `useBitDetail`, `useCalendarData`, `useSearch`), which internally use Dexie's `useLiveQuery` in v1. This eliminates manual cache invalidation — write to the store, and all subscribed components update automatically. The hooks are the abstraction boundary; swapping `useLiveQuery` for React Query or SWR in v2 requires no component changes.
+3. **Reactive data via custom hooks** — Components subscribe through custom hooks (`useGridData`, `useBitDetail`, `useCalendarData`, and the global `useSearch`). The Inbox target adds `useStagedCandidates` and `useGridExplorerSearch` under the exact target paths in [Key File Paths](#key-file-paths). Reactive delivery does not prove that a mutation committed, that a source is orphaned, or that a cached value is authoritative. Inbox commands converge only through the typed repository result and command-specific reconciliation contract in SCHEMA. The global `useSearch()` / `searchAll()` pair remains separate and is never extended or reused as Grid Explorer search.
 
 4. **URL-driven grid navigation** — The current grid position is encoded in the URL (`/` for Level 0, `/grid/[nodeId]` for deeper levels). This enables browser back/forward navigation through the grid hierarchy. Breadcrumbs and URL stay in sync.
 
@@ -55,35 +78,25 @@
 
 8. **Domain-grouped shared components** — Shared components are organized by domain (`grid/`, `calendar/`, `bit-detail/`, `layout/`, `trash/`, `quick-capture/`, `triage/`, `archive/`) under `src/components/`. Page-specific components live in `_components/` within their route folder.
 
-9. **Zustand for client-only state** — GridDO has complex presentation state (edit mode, sidebar state, drag intent, calendar drill-down, search mode, inline drafts, and page-session placement metadata). Zustand stores in `src/stores/` own only state that can be discarded or reconstructed. Persistent domain state remains behind the DataStore/reactive-hook boundary. In particular, Inbox/Triage staged candidates are durable Dexie records, not a second candidate truth in `triage-store`; the store may project selection, pending presentation, interrupted search, and Newly Placed provenance but never duplicate persisted candidate lifecycle.
+9. **Client state is split by lifetime, not by convenience** — Zustand remains appropriate for cross-cutting application/session UI state, but it is never a second domain database. Durable Nodes, Bits, Breakdown rows, `StagedCandidate` records, versions, archive state, and narrow orphan-integrity evidence live behind the Dexie/repository boundary defined by SCHEMA. The Inbox target removes candidates and duplicated candidate labels from `triage-store.ts`; candidate display joins the authoritative source Breakdown row. Page-mounted workflow hooks own drafts, placement, archive presentation, and Newly Placed/Undo projections. Only the two Inbox sort directions use a device-local persisted preference store. See [Inbox/Triage State Ownership](#inboxtriage-state-ownership).
 
 10. **next-themes for dark/light theming** — Dark/Light mode via `next-themes` provider in root layout. Theme token switching is handled through CSS custom properties in `globals.css`, referenced by Tailwind classes. No conditional class logic in components.
 
-11. **Local-first feedback with authoritative mutation completion** — Ordinary local mutations may still reflect quickly through IndexedDB and reactive hooks, but the UI must not infer success from low latency. Inbox/Triage Add/Edit/Delete, Stage/Unstage, Placement, Undo, and Archive commands use stable operation metadata, explicit pending/reconciling states, and authoritative postcondition reads. Source or result surfaces change only after the owning transaction is confirmed; failures preserve drafts and domain records and expose recovery instead of relying on optimistic removal or partial rollback.
+11. **Authoritative Inbox/Triage commands; no universal optimistic guarantee** — Existing ordinary local-first paths may still reflect successful Dexie writes reactively, but Inbox/Triage Add, Save, Delete, Stage, Unstage, placement, Undo, confirmed-orphan cleanup, and Scratch Archive follow SCHEMA's atomic command/result contract. Pending source truth remains visible and locked until `applied`/`already_applied`, `not_applied`, `rejected`, or `conflict` is authoritative. An unknown transport outcome retains the same operation ID and reconciles; it is never treated as success, blindly resent, or compensated one side at a time. These flows require meaningful pending, failure, conflict, and recovery states. No general operation log, journal, outbox, or offline mutation queue is introduced.
 
-12. **@dnd-kit for all drag interactions** — Unified drag-and-drop across: grid cell repositioning, drag-into-Node (move with confirmation), calendar pool-to-day scheduling, Chunk timeline reordering, and drag-to-breadcrumb (edit-mode-only). Grid repositioning and drag-to-child are always enabled; breadcrumb drops require edit mode. Custom collision detection (`gridCollisionDetection`) prioritizes node-drop targets over cell targets. Single library, consistent interaction model.
+12. **@dnd-kit with domain-specific input contracts** — Grid, calendar, timeline, and Inbox/Triage use the shared library while preserving domain-specific rules. General Grid DnD retains its existing keyboard support. Inbox placement entry is deliberately Mouse/Touch pointer DnD only in this promotion: Mouse starts after 8px; Touch uses 250ms delay with 5px tolerance. Breakdown rows remain grip-only, while a staged candidate's whole card/row is the activator and uses the pointer-centered `TriageDragToken`. No placement button, keyboard drag mode, destination picker, hidden shortcut, or unfinished alternative is added; keyboard/drag-alternative placement remains deferred.
 
 13. **Motion for all animations** — The PRD specifies jiggle mode, sinking effects, floating animation, vignette transitions, magnet snap, and task-tossing. Motion (Framer Motion) handles all of these declaratively. CSS-only would be insufficient for the interaction-driven animations GridDO requires. Animation variants defined per domain in `src/lib/animations/`.
 
 14. **Pure utility functions for algorithms** — BFS auto-placement, aging state computation, urgency level computation, and Node completion check are pure functions in `src/lib/utils/`. No side effects, independently testable.
 
-15. **System Nodes (lifecycle)** — Two system Nodes (`systemRole: 'inbox' | 'archive_view'`) are seeded at first launch / migration (defaults in SCHEMA.md § Default System Nodes). They use the standard `/grid/[nodeId]` URL but render role-specific surfaces (Inbox → Triage workspace; Archive View → Archive View surface) — **no new routes**. System Nodes cannot be archived or trashed; they are removed from the L0 grid via `hiddenFromGrid` (not trash) and always appear in the sidebar regardless. `systemRole` is immutable; non-null uniqueness is enforced at the application level. Archive is a manual lifecycle action (`archivedAt`, Hooks 10/11); completion never auto-archives.
+15. **System Nodes retain route identity and lifecycle** — Two system Nodes (`systemRole: 'inbox' | 'archive_view'`) are seeded at first launch / migration (defaults in SCHEMA § Default System Nodes). They use `/grid/[nodeId]`; `GridRuntime` dispatches Inbox to the Triage workspace and Archive View to its existing surface. The Inbox amendment adds no route and does not replace this owner. System Nodes cannot be archived or trashed; `hiddenFromGrid` controls L0 visibility and the sidebar still exposes them. Direct Archive and Archive View restore remain separate from Scratch completion. Completion never auto-archives.
 
-16. **Compact-token pointer DnD + pending-confirmation targets (Inbox/Triage)** — Extends Decision 12. Breakdown rows remain grip-activated; staged Node/Bit candidates use the entire candidate card as the activator. Both render the shared pointer-centered `TriageDragToken`, not a native row/card snapshot. Mouse and Touch use the established sensor constraints. Placement entry is pointer DnD only in this promotion: no keyboard drag mode or parallel `Place in Grid` command is added. Drop targets distinguish valid, invalid, and **pending-confirmation** states; no domain write occurs before Confirm. This remains a local adoption of the broader Grid DnD direction (`2026-06-02-grid-dnd-preview-and-drop-targeting`, not promoted in full); existing main-grid, Calendar, and pool DnD are unchanged.
+16. **Inbox/Triage DnD opens a guarded placement state machine** — Drag targets distinguish valid, invalid, and pending-confirmation semantics before any write. Release-time hit testing chooses the actual pointer-under target after edge auto-scroll. Direct placement, optional staged Result Title, target-column confirmation, pending/reconciling, failure, and rollback are distinct states owned by the proposed `useTriagePlacement` hook; `useTriageDnd` remains the pointer/drop-intent coordinator. `TriageWorkspace` composes these owners but owns neither persistence nor sequential writes. Full/stale targets disable or end the current flow without alternate-target selection, partial compensation, or silent retry.
 
-17. **Color theme axis (Batch 2)** — Color theme is a second visual axis layered on top of `next-themes` dark/light mode. Dark/light remains class-based (`.dark`); color theme is stored separately and applied to `<html data-color-theme="...">`. The canonical theme set is `griddo`, `tiny-desk`, `neumorphism`, `claymorphism`, `origami`, `terminal`, `retro-mac`, and `graphite`. Components consume semantic CSS variables and theme surface classes; they must not branch on theme id except in the theme picker. Prototype files are visual/function references only — implementation patches the current app and preserves current behavior.
+17. **Color themes share semantics; presentation changes preserve work** — Color theme remains a second visual axis over dark/light, with the canonical eight-theme set and `<html data-color-theme="...">`. Product components consume semantic variables, state attributes, and theme realization components; they do not duplicate routes or branch on theme ID. A theme or future locale change is presentation only: it preserves selected Scratch, Pool state/query, Add/Edit drafts, Explorer path/search/reveal, open Placement/Archive state, operation IDs and pending/reconciling flows, and Newly Placed/Undo. It neither saves, cancels, refetches, navigates, starts a duplicate mutation, nor translates user-authored text. Moving focus to the toggle is an explicit exception to inline-editor valid-blur save; the draft remains open and focus stays on the toggle.
 
-18. **Inbox/Triage 2-3 promotion supersedes the earlier Batch 2 surface assumptions** — System Node routing, Archive View behavior, direct archive, and unrelated Grid/Calendar behavior remain intact. Within Inbox/Triage, the current promotion deliberately replaces the earlier visible-label removal, compact Selected Scratch Context, active-column search, UI-only Staging, consumed-row line-through, and global archive-dialog assumptions. The resulting surface restores visible theme-specific section chrome, keeps the first-printable-key Scratch Pool collapse trigger, uses durable candidates and whole-hierarchy Explorer search, and scopes completion/archive to Breakdown. Exact 8-theme realization comes from the surface-first Inbox/Triage visual recipes, while accessibility and production behavior in this SPEC remain authoritative.
-
-19. **Optimistic concurrency result contract (Inbox/Triage)** — Scratch-title, Breakdown-row, and staged-candidate mutations use the monotonic revisions and conditional-write predicates defined in SCHEMA.md. Editors capture a page-memory base snapshot and resolve text conflicts inline; `mtime` is not a concurrency token. Repository commands return one shared result family (`applied`, `already_applied`, `conflict`, `invalid`, `not_found`) and reconcile unknown transport outcomes before the UI commits a result. General Node-title editing does not gain CAS in this promotion; placement result creation is idempotent through preallocated IDs, and created Bits enter the shared Bit revision contract.
-
-20. **Durable candidate repository and atomic Triage commands** — Staged Node/Bit candidates are source-linked domain records with one candidate allowed per Breakdown row. Stage, Unstage, staged/direct Placement, source-aware Undo, and Archive are repository-owned transactions; components never compose their writes sequentially. The v1 DataStore implements the contract with Dexie read-write transactions and preallocated stable IDs. A future BaaS keeps the same command and postcondition semantics through server transactions/functions and idempotency keys.
-
-21. **Dedicated Grid Explorer search** — Inbox/Triage search is a mode inside Grid Explorer that traverses the reachable active hierarchy, returns ancestor ID chains and full breadcrumbs, and owns result relevance, reveal, DnD interruption, and stale-result handling. It does not reuse the global `searchAll()` result shape or mutate the normal Grid route. The exact result-screen visual realization is a Decision prerequisite for its implementation phase; this SPEC fixes behavior and information requirements only.
-
-22. **Inbox page-session placement projection** — Confirmed placement creates ordinary Node/Bit records. Newly Placed styling, temporary list pinning, source-aware Undo metadata, and rollback eligibility are page-session projections keyed by operation/result IDs; they are never permanent fields on Node, Bit, Breakdown, or candidate records. Scratch, Grid-column, theme, and locale changes preserve the projection. Leaving or reloading Inbox/Triage ends it without removing the created records.
-
-23. **Shared production ownership and copy boundary** — The eight theme prototypes are realization evidence, not implementation modules. Production uses one `triage/` component domain, shared hooks, DataStore commands, semantic state, theme tokens, and surface recipes; no theme-specific routes or duplicated handlers are introduced. New English Inbox/Triage labels, status, validation, error, and accessibility strings live behind an Inbox-owned copy module so later EN/KR resources can replace the source without rewriting feature components.
+18. **Selected Inbox/Triage promotion supersedes the Phase 22 surface assumptions only in its declared scope** — The four-area ratios, system-node route dispatch, global Search Overlay, Archive View, Direct Archive, Calendar behavior, current card foundations, and unrelated responsive scope are retained. The selected topic supersedes invisible developer-only section labels, compact Selected Scratch Context, UI-only candidates, active-column Explorer search, the combined generic placement dialog, the simple archive bar/global confirmation, consumed-row strike-through, Add-on-blur creation, and the claim that Inbox mutations need no pending/error states. The Pool still auto-collapses only on the first printable Breakdown key and honors the per-Scratch manual-reopen exception. Visual behavior is constrained by [Inbox/Triage Visual Decision Prerequisites](#inboxtriage-visual-decision-prerequisites); source absence never deletes selected behavior or authorizes a nearby fallback.
 
 ---
 
@@ -119,23 +132,22 @@
 |----------|-----------------|---------|
 | Pages | `src/app/{route}/page.tsx` | `src/app/(grid)/grid/[nodeId]/page.tsx` |
 | Layouts | `src/app/{route}/layout.tsx` | `src/app/layout.tsx` |
-| Page Components | `src/app/{route}/_components/{name}.tsx` | `src/app/trash/_components/trash-group.tsx` |
+| Page Components | `src/app/{route}/_components/{name}.tsx` | `src/app/calendar/monthly/_components/month-grid.tsx` |
 | Shared Components (by domain) | `src/components/{domain}/{name}.tsx` | `src/components/grid/node-card.tsx` |
 | UI Primitives (shadcn) | `src/components/ui/{name}.tsx` | `src/components/ui/button.tsx` |
 | Hooks | `src/hooks/use-{name}.ts` | `src/hooks/use-grid-data.ts` |
 | DataStore Interface | `src/lib/db/datastore.ts` | — |
 | DataStore Implementation | `src/lib/db/indexeddb.ts` | — |
 | Validation Schemas | `src/lib/db/schema.ts` | — |
-| Domain Query/Command Helpers | `src/lib/{domain}/{name}.ts` | `src/lib/triage/grid-explorer-search.ts` |
-| Feature Copy Modules | `src/lib/copy/{domain}.ts` | `src/lib/copy/inbox-triage.ts` |
 | Pure Utilities | `src/lib/utils/{name}.ts` | `src/lib/utils/bfs.ts` |
+| Pure Domain Queries / Ranking | `src/lib/utils/{domain}-{purpose}.ts` | proposed `src/lib/utils/grid-explorer-search.ts` |
 | Constants | `src/lib/constants.ts` | — |
+| Core English Copy Resources | `src/lib/copy/{domain}.ts` | proposed `src/lib/copy/inbox-triage.ts` |
 | Animation Variants | `src/lib/animations/{domain}.ts` | `src/lib/animations/grid.ts` |
 | Types | `src/types/{domain}.ts` | `src/types/index.ts` |
 | Zustand Stores | `src/stores/{name}-store.ts` | `src/stores/edit-mode-store.ts`, `src/stores/color-theme-store.ts` |
 | Providers | `src/app/providers.tsx` | — |
 | Unit / Component Tests | co-located `*.test.ts` / `*.test.tsx` | `src/components/triage/triage-workspace.test.tsx` |
-| Browser / E2E Tests | `tests/e2e/{flow}.spec.ts` | `tests/e2e/inbox-triage-workspace.spec.ts` |
 
 **Component location rule:** Used by one page only → co-locate under `_components/` in that route folder. Used by 2+ pages → `src/components/{domain}/`.
 
@@ -149,7 +161,7 @@
 | `layout/` | `sidebar.tsx`, `breadcrumbs.tsx`, `search-overlay.tsx`, `theme-toggle.tsx`, `color-theme-toggle.tsx`, `color-theme-provider.tsx` | All pages |
 | `trash/` | `trash-list.tsx`, `trash-group.tsx` | Trash page only (but may move to shared if trash preview is added elsewhere) |
 | `quick-capture/` | `entry-surface.tsx`, `scratch-modal.tsx`, `command-palette.tsx` | Quick Capture `+` surface + Cmd+K palette (Batch 1) |
-| `triage/` | Workspace shell, Scratch Pool, Selected Scratch Context, Breakdown, Staging, Grid Explorer/search, Placement, Newly Placed/Undo, and Archive-completion surfaces | Inbox/Triage workspace, system node `inbox` |
+| `triage/` | Current coordinators plus proposed `grid-explorer-search-results.tsx` and placement affordance bodies | Inbox/Triage workspace, system node `inbox`; `triage-workspace.tsx` coordinates composition and operation locks but does not own domain persistence |
 | `archive/` | `archive-view.tsx`, `archive-group.tsx` | Archive View surface, system node `archive_view` (Batch 1) |
 
 ---
@@ -264,6 +276,11 @@ Both system Nodes use `/grid/[nodeId]`. `GridRuntime` reads the Node's `systemRo
 
 System Nodes always appear in the sidebar (queried by `systemRole !== null`) regardless of `hiddenFromGrid`. They cannot be archived or trashed; "remove from grid" sets `hiddenFromGrid = true` (retains `x/y`; "Show on Grid" reverses it, BFS-placing if the original cell is occupied).
 
+`GridRuntime` remains the present route/dispatch owner. The proposed Inbox
+architecture replaces only the body rendered for `'inbox'`; it does not add a
+route, move Archive View into Inbox, alter the global Search Overlay, or make
+the Explorer search navigate to the general Grid route.
+
 ### Quick Capture `+` Entry Surface (Modal — not a route)
 
 - **Trigger:** Sidebar `+` button. Anchored popover that slides/fades in next to the `+` (not a centered modal). Visual realization: `docs/recipes/quick-capture-entry-surface-visual-recipe.md`.
@@ -278,332 +295,493 @@ System Nodes always appear in the sidebar (queried by `systemRole !== null`) reg
 
 ### Inbox / Triage Workspace (rendered for `systemRole: 'inbox'`)
 
-A production workspace that turns Scratch Bits into placed Nodes and Bits. It has four persistent
-areas and one shared behavior contract across all eight color themes:
+A processing workspace that turns Scratch Breakdown rows into durable
+Node/Bit hierarchy. The selected product contract is the topic
+[decision](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md#end-to-end-user-flow);
+the approved [SCHEMA repository contract](SCHEMA.md#repository-operation-contract)
+owns entities, versions, transactions, and reconciliation. This section
+connects those authorities to behavior and production owners without
+redefining their fields or stores.
+
+#### Current production versus proposed ownership
+
+The following is an implementation-reality boundary, not a claim that target
+files already exist:
+
+| Area | Present production owner | Proposed target owner |
+|------|--------------------------|-----------------------|
+| Route/body composition | `GridRuntime` dispatches to `TriageWorkspace`; `TriageWorkspace` composes the four areas and a nested DnD context | Retain both coordinators. `TriageWorkspace` coordinates locks, transitions, and owner composition; it never stores candidates or sequences repository writes |
+| Scratch/Pool UI session | `src/stores/triage-store.ts` holds selection, Pool expansion/manual exception, and UI-only candidates; Pool query/sort are component-local | `triage-store.ts` owns only app-session state; proposed `triage-preferences-store.ts` persists only Pool and Breakdown sort directions |
+| Candidate truth | `triage-store.ts` stores candidate arrays and duplicated `label` values | SCHEMA `StagedCandidate` commands/queries in the existing DataStore/Dexie repository boundary; proposed `use-staged-candidates.ts` owns the reactive candidate/source join and dispatches Stage, Unstage, and confirmed-orphan commands without sequencing repository writes in the component |
+| Breakdown writes | `use-scratch-breakdowns.ts` computes order from a render snapshot and calls ordinary create/delete methods | The hook projects SCHEMA Add/Save/Delete command results and CAS; `BreakdownPanel` owns interaction/focus, not transaction sequencing |
+| Placement | `useTriageDnd` in `use-dnd.ts` owns DnD, a combined Dialog state, and sequential create → consume → candidate removal | `useTriageDnd` owns pointer/drop intent only; proposed `use-triage-placement.ts` owns the direct/result-title/confirm/pending/reconcile/failure state machine and calls one atomic repository command |
+| Explorer path/search | `HierarchyExplorer` owns component-local path and active-column title filtering | `HierarchyExplorer` coordinates path, mode, reveal, and scroll; proposed `grid-explorer-search.ts`, `use-grid-explorer-search.ts`, and `grid-explorer-search-results.tsx` own the Inbox-only full-hierarchy query, request lifecycle, and result body |
+| Placement result/Undo | Explorer renders simplified Node/Bit rows and has no Newly Placed/Undo owner | Existing `NodeCard`/`BitCard` are the actual-record base; proposed `use-triage-newly-placed.ts` owns mounted-page provenance, dependency projection, and Undo availability |
+| Completion/Archive | `use-can-archive-scratch.ts` reads UI candidates; `use-archive-scratch.ts` calls `archiveBit`; `BreakdownPanel` clears selection after a simple global confirmation | Existing `use-archive-scratch.ts` becomes the Archive operation coordinator for page-local blocker recheck, fail-closed recovery-descriptor storage, command dispatch, and reload reconciliation; the approved repository owns durable eligibility/mutation and existing Archive View owns restore |
+| Copy | English strings are distributed across components | Proposed `src/lib/copy/inbox-triage.ts` is the one core-English Inbox/Triage resource owner; shared locale infrastructure remains deferred |
+
+`Q-NAME-03` is resolved for this proposed SPEC by the exact Explorer and
+placement owners above. `Q-NAME-04` is resolved by
+`src/lib/copy/inbox-triage.ts`. These are phase-local, project-conventional
+path choices; they preserve the selected obligations and do not assert that
+the absent files already exist.
+
+#### Workspace and section identity
+
+Four visible, semantically named internal areas retain the selected ratios:
 
 ```text
-[ Scratch Pool ] [ Breakdown ] [ Staging       ]
-                 [ Grid Explorer (Home–Level 3) ]
+[ Scratch Pool ] [ Main Work Area                          ]
+                 [ Breakdown          ] [ Staging          ]
+                 [ Grid Explorer (Home through Level 3)    ]
 ```
 
-#### Workspace Structure And Section Identity
-
-- Preserve the established ratios: main work area top/bottom `60/40`, top Breakdown/Staging
-  `60/40`, and Staging Node/Bit `35/65`.
-- `Scratch Pool`, `Breakdown`, `Staging`, and the Grid section all have visible theme-specific
-  labels/header chrome. The default Grid label is `Grid Explorer`; Tiny Desk uses `Library Index`,
-  Retro Mac uses `Finder`, and Terminal uses `GRID EXPLORER`. Their accessible name remains
-  `Grid Explorer`.
-- Column labels are `Home`, `Level 1`, `Level 2`, and `Level 3`. User-facing `L1`, `L2`, `L3`,
-  `Home-L3`, and similar abbreviations are removed.
-- Wheel, trackpad, touch, and keyboard scrolling remain available, but visible scrollbar chrome is
-  hidden in the Scratch list, Breakdown list, Staging Node and Bit subsections, and every Grid
-  column.
-- Selected, staged, pending, invalid, Newly Placed, and completed are separate semantic states.
-  Each theme realizes them through its own existing surface language; one generic opacity/color
-  treatment must not collapse their meaning. Repeated blink, pulse, and flicker are not status
-  requirements.
-- Theme or locale switching changes presentation only. It preserves selection, Pool state/search,
-  drafts, Grid path/search/reveal, open affordances, pending operation IDs, Newly Placed markers,
-  Undo, and Archive eligibility. It does not cause save, cancel, navigation, or duplicate mutation.
-- Exact realization is defined by `docs/recipes/inbox-triage-visual-recipe-index.md` and its surface
-  recipes. Prototype numbering switchers, fold-lock/test controls, and duplicated theme routes are
-  not product UI. Reusable semantic state and theme styling remain governed by DESIGN_TOKENS.md.
-
-#### Scratch Selection
-
-- On same-app-session route re-entry, restore the last selected Scratch if it is still active.
-  Otherwise select the first active Scratch in the current Pool sort order. A reload or new app
-  session starts from that fallback; selection is not persisted to domain data or `localStorage`.
-- If there are no active Scratches, keep selection `null` and show the Inbox empty state. Automatic
-  selection changes data context but does not steal keyboard focus.
-- Scratch switching does not reset the shared Grid path, Grid search, column scroll, Newly Placed
-  state, or eligible Undo. Operation-specific navigation locks still take precedence.
-- If the selected Scratch is externally archived or deleted, stop editing it and show a
-  non-dismissible lifecycle modal with a five-second auto-move countdown, `Move now`, and
-  pause/resume controls. Recompute the next-visible/previous-visible destination against the latest
-  Pool filter and order before moving.
-- When unsaved Add/Edit drafts exist, open that countdown paused and provide per-draft full-text copy
-  controls before discarding page memory. Restoring the same archived Scratch before navigation
-  cancels the modal and preserves surviving drafts; a hard-deleted record is never inferred back
-  into existence.
+- Main Work Area: top 60% / bottom 40%.
+- Top area: Breakdown 60% / Staging 40%.
+- Staging: Nodes 35% / Bits 65%.
+- `Scratch Pool`, `Breakdown`, `Staging`, and the semantic/default
+  `Grid Explorer` identity are visible theme chrome. Tiny Desk may use
+  `Library Index`, Retro Mac `Finder`, and Terminal `GRID EXPLORER`; accessible
+  naming and internal ownership stay `Grid Explorer`.
+- Explorer columns use the full labels `Home`, `Level 1`, `Level 2`, and
+  `Level 3`. Do not expose `L1`, `L2`, `L3`, `Home-L3`, or similar abbreviations
+  or repeat a selected title below every column heading.
+- The Pool list, Breakdown row list, Staging Node/Bit lists, and each Explorer
+  column retain wheel, trackpad/touch, and keyboard scrolling while hiding
+  visible scrollbar chrome. Hiding chrome never removes scrollability.
+- The eight themes share state meaning, interaction, and accessibility but do
+  not collapse into one generic panel/card realization. Exact visual values
+  remain owned by `DESIGN_TOKENS.md` and approved recipes after their gates.
 
 #### Scratch Pool
 
-- Expanded Pool has two regions: one cohesive tools region and the Scratch list. Identity/icon,
-  exact active count, collapse control, search, and sort belong to tools; search and sort share a
-  row. The header count always represents all active Scratches, while an active search reports its
-  filtered count separately.
-- The list shows active Scratch title and `createdAt` metadata. Search matches title only. Sort uses
-  `createdAt` and exposes its state: DESC/newest-first by default or ASC/oldest-first. Sort is a
-  device-local preference shared across Scratches, not server/domain data.
-- Collapsed Pool stacks identity/count, expand control, and Scratch switchers vertically. It omits
-  search and sort; all active Scratches remain available even when an expanded-mode query is
-  preserved. Every icon-only switcher has an accessible Scratch name and the selected item is
-  visibly distinct.
-- Selecting a Scratch or focusing Breakdown does not collapse the Pool. The first printable key in
-  Breakdown collapses it. Manual re-expansion suppresses repeat auto-collapse for that Scratch until
-  selection changes.
-- Expanded/collapsed state, suppression, query, result context, and list scroll survive route
-  re-entry in the same app session, but reset on reload/new session. Collapse does not end search;
-  re-expansion recomputes the same query against current data without moving focus from the expand
-  control.
-- Inbox count pressure remains exact and semantic: `0` hidden, `1–7` neutral, `8–14` warm, `15+`
-  high-pressure.
+- **Selection and re-entry:** On same-app-session Inbox route re-entry, restore
+  the last selected Scratch only if it is still active. On first entry, reload,
+  new app session, or invalid prior selection, choose the first active Scratch
+  in the current persisted Pool sort direction. With no active Scratch,
+  selection is `null`. A search-hidden row is never chosen as a hidden
+  fallback; automatic selection changes data context without stealing focus.
+  Archive success uses its own visible-order rule before this general fallback.
+- **Expanded tools/list:** The tools region contains Inbox identity, all-active
+  exact count, collapse control, title search, and created-at sort; search and
+  sort share one tools row. The header/collapsed count always means all active
+  Scratches, while a separate filtered count appears only during search.
+  Scratch rows keep title plus created-at metadata. Pool sort defaults to
+  newest-first and is independent of Breakdown sort.
+- **Collapsed mode:** Identity/count, expand control, and Scratch switchers are
+  vertical. Search/sort are absent, and a preserved query never silently
+  filters switchers or the all-active count. Every switcher has an accessible
+  Scratch name; selected state has a non-color cue. The prototype fold lock is
+  removed and is not a preference.
+- **Collapse lifecycle:** Selection, click, or simple Breakdown focus does not
+  collapse the Pool. The first printable Breakdown key with a selected Scratch
+  does. Manual re-open suppresses repeat auto-collapse for that Scratch until
+  Scratch selection changes. Collapse preserves Pool query, result context,
+  and list scroll; expand leaves focus on the activating control.
+- **Session search:** Query/result/scroll recompute against current active data
+  on same-app-session route re-entry. A restored selection that no longer
+  matches remains selected and receives a concise hidden-selection status.
+  Reload/new session clears query/scroll and starts expanded; none of this is
+  durable or a device preference.
+- Scratch titles are labels rather than identifiers, so duplicate titles are
+  valid. Search remains strict after a title edit: if the selected Scratch no
+  longer matches, its Pool row leaves the results while Selected Scratch
+  Context remains active and exposes the same hidden-selection status.
+- **External removal:** If the selected Scratch is externally archived or
+  deleted, immediately lock its Edit/Add/Stage/Place/Archive actions and enter
+  the lifecycle-specific transition defined by `VQ-01`. Its authorized controls
+  are a five-second move countdown, move-now, and pause/resume, with no Cancel
+  back to stale work. Destination is next-visible then previous-visible under
+  current search/sort; if none is visible use no-selection search-empty, and if
+  no active Scratch exists use Inbox empty. Destination and lifecycle are
+  revalidated immediately before moving and recomputed if data changes. When
+  the displayed destination changes, a running countdown restarts at five
+  seconds; a user-paused countdown stays paused while its message updates. The
+  status communicates both the archive/delete lifecycle and the current
+  destination, or explicitly names the no-results/empty outcome when no target
+  exists; exact wording and visual treatment remain with `VQ-01`.
+- If non-empty Add or dirty Scratch/row Edit text exists, external removal
+  starts paused and exposes each source-labeled full draft for copy. Copy
+  status preserves focus, never resumes movement, and never persists or moves
+  a draft. Continuing clears only the stale page-local drafts after copy
+  opportunity. If an externally archived Scratch is authoritatively restored
+  while waiting, cancel the transition and retain selection/client-memory
+  drafts; hard deletion has no restoration shortcut. Countdown seconds are not
+  announced every tick; lifecycle/timing is announced once and pause is a
+  stable initial action.
 
-#### Selected Scratch Context And Breakdown Rows
+#### Breakdown and Selected Scratch Context
 
-- Selected Scratch Context is a signature section between the Breakdown header and row list, not
-  header metadata or another draggable row. Its target height is about `2–2.5` normal rows. It
-  always exposes Scratch title, creation date/time, an always-visible Scratch-title Edit control,
-  and Breakdown ASC/DESC sort.
-- Row sort uses `createdAt` (DESC/newest-first by default), then `order`, then stable `id`. It is a
-  device-local preference independent of Scratch Pool sort. Row UI does not show numbering or
-  date/time.
-- Active rows keep grip-only drag activation. Edit and Trash are always visible and do not depend on
-  hover. The whole row must not become a drag activator.
-- The Add input has explicit Add and Enter submission. Blur neither submits nor clears it. A
-  successful Add clears the input, retains focus, scrolls only the row list to the insertion edge
-  selected by sort, announces success with polite live status, and applies one short theme-specific
-  signal with a reduced-motion static equivalent.
-- Add snapshots one draft into one idempotent command and locks duplicate submit while pending.
-  Failure/offline preserves text and focus with Retry; an unknown outcome keeps the input in
-  reconciling state until the stable row ID/postcondition proves success or non-execution. It never
-  displays an optimistic row or queues multiple drafts.
-- Add draft is page memory. It may coexist with one inline editor and survives same-Scratch work and
-  theme/locale changes. Scratch switch or route exit requires `Continue writing` versus `Discard and
-  move`; reload/tab close uses the native unload guard. Add never auto-submits on navigation.
-- A Scratch with no historical consumed row shows an idea-entry prompt when its active list is empty.
-  A Scratch whose rows are all consumed follows the completion flow. Deleting all rows without
-  consumed evidence returns to the entry prompt, not completion.
+- Selected Scratch Context is a standalone signature section above rows, not
+  heading metadata or a compact row-like strip. It contains the selected title,
+  creation date/time, an always-available Scratch-title Edit entry, and the
+  Breakdown sort control. The Breakdown heading does not duplicate title/meta.
+  Completion reuses this semantic Context as `Scratch complete`; exact themed
+  realization remains downstream visual authority.
+- Breakdown rows omit numbering and visible date/time, keep grip-only drag, and
+  keep Edit/Trash controls visible without hover. Sort uses internal
+  `createdAt`, default DESC, then `order`, then stable ID. Its device preference
+  is independent of Pool sort.
+- **Add:** Enter and an explicit Add control are the only creation triggers;
+  blur neither submits nor discards. One submission snapshots one non-empty
+  draft and one operation/record identity, locks duplicate submission, and
+  never clears input or inserts an optimistic row. Confirmed success clears
+  once, keeps input focus, scrolls only the row list to top under DESC or bottom
+  under ASC, emits the `VQ-02` success state, and announces politely. Failure
+  or known-offline non-execution retains draft/focus without success scroll/
+  signal and offers manual Retry with the same snapshotted operation identity.
+  An unknown outcome reconciles before Retry or success; no in-memory Add queue
+  or durable draft recovery is introduced.
+- Add draft and one Scratch/row Edit draft are independent page-session state
+  and may coexist. Same-Scratch work remains usable. Leaving the Scratch/route
+  first resolves a dirty inline Save, then applies the `VQ-03` continue-writing
+  versus discard-and-move decision; no navigation-intent queue accumulates.
+  Browser reload/tab close with dirty text uses the native unload guard.
+- **Inline editing:** Context Edit changes only Scratch title; row Edit changes
+  only row content. Both stay in their source surfaces. Save commits, Cancel or
+  Escape restores base, valid blur saves, empty stays in validation, and an
+  unchanged value exits without a write. Theme/locale toggle activation is the
+  explicit blur-save exception. During Save/reconcile, the editor/draft stays
+  visible and conflicting Edit/Trash/DnD/Cancel actions lock. Failure or offline
+  preserves draft and logical focus; reconnection enables manual Retry but does
+  not auto-save or create an offline queue.
+- Editors capture `{record ID, base value, version, lifecycle}` in client memory
+  and use SCHEMA CAS. A stale write never becomes last-write-wins. Text conflict
+  offers inline use-mine/use-latest semantics against the acknowledged latest
+  version. If another remote change arrives while that resolver is open, update
+  its latest/base authority in place; never stack a second resolver or reset the
+  user's draft. Pristine non-IME input may accept a remote value; dirty or
+  composing input protects its draft. Staged/consumed/deleted rows or archived/
+  deleted Scratches invalidate Save and may expose the draft for review/copy
+  but never resurrect source truth. `VQ-04` owns the absent replacement
+  surfaces.
+- Scratch switch, another Edit, Archive, route exit, and Delete of another row
+  use save-before-action with at most one visible pending intent. The intent may
+  be cancelled independently from the local draft. Edit entry focuses its
+  editor; Save/Cancel returns to source Edit when it survives; conflict and
+  validation retain editor focus; invalidated row removal selects next row or
+  the Add input.
+- **Row lifecycle and Delete:** Active rows permit Edit/Delete/drag. Candidate
+  existence derives staged state; staged rows remain visible, de-emphasized,
+  action-disabled, and not struck through. Consumed rows leave the active list
+  but remain durable. Confirmed Delete is non-optimistic: the row stays in
+  place as deleting/reconciling with locked actions and non-color status until
+  authoritative success. Success removes once and only then recalculates empty
+  and archive state; explicit failure restores Active without a special Retry
+  button; an unknown outcome offers check-again rather than resending. Pending
+  Delete locks Scratch/route navigation without queued navigation and uses the
+  native unload guard.
+- Delete success focuses next-visible then previous-visible under current sort;
+  if neither exists, focus goes to Add for an ordinary empty state or the
+  archive overlay heading when the deletion created completion. Failure returns
+  to Trash and unresolved check-again retains focus. `VQ-05` owns unsupported
+  state realization details.
+- Never-used/all-deleted-without-consumption uses an idea-creation empty prompt.
+  All-consumed completion is distinct and follows the archive flow below; an
+  empty-array `every()` result is never completion evidence.
 
-#### Inline Editing And Concurrent Conflict
+#### Durable Staging
 
-- Context Edit changes only Scratch title. Row Edit changes only that row's content. Both transform
-  their existing surface into an inline editor; Save commits, Cancel/Escape restores, valid blur
-  saves, unchanged values close without a write, and an empty value keeps validation/editor open.
-- Saving keeps the editor and draft visible, locks conflicting controls, and closes only after an
-  authoritative success. Failure/offline preserves the draft and focus. Unknown results enter
-  reconciliation before Retry is offered.
-- Scratch switch, another Edit, Trash, Archive, Undo, or internal route navigation requested during
-  dirty edit becomes one save-before-action pending intent. Save/conflict resolution must complete
-  before it runs; additional intents are not queued. Theme/locale toggle is the explicit exception:
-  it preserves the dirty editor without triggering blur save.
-- Scratch title and row content use optimistic concurrency from SCHEMA.md. An editor captures
-  `{id, editable value, version, lifecycle}` in page memory and conditionally writes against it.
-  Text conflict remains inline with latest-value preview, `Use my edit`, and `Use latest`; it never
-  becomes a global modal or last-write-wins overwrite.
-- External stage/consume/delete/archive is lifecycle invalidation, not text conflict. Save is blocked,
-  the local draft remains available to inspect/copy, and focus moves to the next valid source only
-  when the invalid editor closes.
+- Staging and `Nodes`/`Bits` subsection identity stay visible. Node candidates
+  remain card/grid objects; Bit candidates remain list/rows, distinct through
+  shape and information rather than color alone. Empty Staging stays quiet:
+  no large or repeated placeholder card. Each independently scrollable list
+  sorts `createdAt` DESC then stable ID, has no manual reorder or count cap, and
+  preserves the 35/65 split and panel height.
+- A subsection label is just `Nodes` or `Bits` for zero or one candidate. It
+  receives a numeric prefix only at two or more (`2 Nodes`, `3 Bits`). This
+  total includes visible pending candidates and remains distinct from the
+  subsection-local remote-arrival `new items` projection below.
+- The whole staged candidate root is the primary pointer/touch drag activator;
+  it has no select/detail/menu behavior and no internal grip. Every grab point
+  uses the same pointer-centered, type-specific compact `TriageDragToken` and
+  the selected Mouse/Touch activation thresholds.
+- `StagedCandidate` is durable synchronized domain truth, never Zustand/UI
+  state. It is scoped to one Scratch, survives route/reload/device, and stores
+  no display-label snapshot. `useStagedCandidates` joins
+  `sourceBreakdownId` to authoritative row content. Candidate existence derives
+  staged presentation and enforces one candidate per source stable ID; same-
+  title rows remain independent. Duplicate Stage is a no-op; type change
+  requires authoritative Unstage then a new Stage. This user-visible no-op does
+  not collapse SCHEMA result semantics: the same proved postcondition may be
+  `already_applied`, while a different duplicate/revision is
+  `rejected` or `conflict` and never creates or changes a candidate.
+- A query cache miss, offline state, or delayed subscription never proves an
+  orphan and never renders a broken candidate as normal. Only authoritative
+  deletion/tombstone proof permits the SCHEMA confirmed-orphan command, which
+  atomically removes candidate, appends narrow integrity evidence, recomputes
+  counts/archive eligibility, and exposes the `VQ-06` Staging status. There is
+  no general operation history.
+- Candidate existence blocks staged-source Save/Delete in the repository as
+  well as UI. Rejection never auto-unstages, propagates an edit, or cascades a
+  candidate. Staging does not consume the source row.
+- Stage revalidates source ID/version/lifecycle/uniqueness before one durable
+  command. Pending uses the candidate's semantic final type/shape, locks the
+  source and dependent actions, and is not draggable, unstageable, or
+  placeable. Confirmed success changes to staged. A proved not-applied storage
+  failure removes only the pending projection and restores the unchanged
+  Active source. A rejected/conflict result instead applies returned authority:
+  a modified row refreshes, an already-staged row shows its existing candidate,
+  and a deleted row leaves the list; none is auto-staged from the drag snapshot.
+  An unknown outcome reconciles before a repeat drag. No repeated pulse or
+  layout-changing motion is permitted.
+- A transient drag-time Staging target and the whole Breakdown section drop-
+  back invoke the same Unstage command; there is no permanent unstage button.
+  The Staging target overlays without resizing/blurring lists, and temporary
+  scroll padding disappears with the drag. Same-type Staging drop is a neutral
+  mutation-free cancel; opposite type is invalid and requires Unstage first;
+  release/Escape/browser cancel elsewhere is silent and mutation-free.
+- At staged-candidate drag start, semantically invalid Grid columns expose an
+  invalid signal under the existing Home/Level-3/hierarchy type rules; actual
+  invalid hover adds a direct reason without replacing the column label. The
+  whole Breakdown section simultaneously exposes an Unstage target, strengthens
+  it with a direct return-to-Breakdown reason only on hover, and never obscures,
+  resizes, or relabels existing Breakdown content. These transient signals clear
+  on target exit or drag end and never blink, pulse, or trigger an automatic
+  drop.
+- Unstage keeps candidate/source staged until success. Success removes the
+  candidate, restores the source's original created-at sort position, scrolls
+  only the Breakdown list if needed, restores source focus, and reuses the
+  `VQ-02` one-shot success state. Failure retains candidate/source and is
+  retried through a new drag, not a separate Retry button. Routine success has
+  no toast; selected failure feedback is Staging-local until separately
+  approved toast work.
+- Stage/Unstage failure feedback is a Staging-local alert that preserves focus,
+  identifies the failed item and reason, and has an accessible `X` that closes
+  only the alert. It never auto-dismisses by timer. It clears on `X`, a new
+  operation for that candidate, authoritative candidate disappearance, or a
+  Scratch switch; a later failure replaces the earlier alert. Exact appearance,
+  wording, and placement remain with `VQ-06`.
+- Pending/reconciling Stage or Unstage locks Scratch selection and internal
+  route exit without queuing or auto-running a request. Unrelated same-Scratch
+  row review, Pool use, and Grid exploration remain usable. Browser exit uses
+  native unload; terminal success/failure simply removes the lock.
+- Local Stage scrolls only its subsection to top without moving focus. Remote
+  arrivals preserve scroll; when the user is not already at top they increment
+  a subsection-local new-item projection, cleared on activation or observing
+  the top and excluding hydration/Scratch-switch loads. Remote arrival is
+  politely announced without focus theft. During remote invalidation, an
+  active drag retains its visual snapshot only through release, suppresses the
+  local drop mutation, then applies authority. An open stale placement closes,
+  discards only its invalid Result Title draft, and restores focus to related
+  source or the Staging heading if the source vanished.
 
-#### Breakdown Lifecycle And Delete Reliability
+#### Grid Explorer and dedicated search
 
-| State | Presentation and actions |
-|-------|--------------------------|
-| Active | Normal row; Edit, Trash, and grip drag enabled |
-| Deleting/reconciling | Same row and position with visible pending state; actions and DnD locked |
-| Staged | Row remains in the list with theme-specific de-emphasis; Edit/Trash disabled; no strike-through |
-| Consumed | Removed from the active list but retained as persisted archive evidence |
-| Deleted | Absent and not completion evidence |
+- Explorer path, selected Node chain, open columns, and each column scroll are
+  shared by the mounted Inbox page across Scratch switches; no per-Scratch path
+  map and no automatic Home reset is created. Same-app-session route re-entry
+  restores path/columns/scroll after active/reachable validation and nearest-
+  valid-ancestor fallback. Re-entry restores data context but focuses the page
+  heading/main landmark, not a stale deep control. Full reload/new session
+  starts Home with reset column scroll.
+- Ordinary remote insertions preserve path, selection, and focus. A column
+  anchors its first visible stable ID plus viewport offset rather than a raw
+  `scrollTop` when insertion would shift content. If a path ancestor becomes
+  deleted/archived/unreachable/moved, remove the invalid suffix, fall to the
+  nearest valid ancestor without sibling or ghost substitution, focus that
+  ancestor or column heading, report non-blocking status, and close stale
+  placement without a write.
+- Explorer search is an Inbox-only mode inside the Grid Explorer section. It
+  replaces the four-column body and focuses its input. It does not reuse or
+  extend global `useSearch()`/`searchAll()` and does not change the global
+  Search Overlay. Empty query/pre-search and no-results are distinct; clear is
+  an in-input X. Search is unavailable while a direct/result-title/placement
+  flow is open.
+- The pure proposed `grid-explorer-search.ts` owner traverses every active Node
+  and Bit reachable from every visible Home root. It excludes Chunks,
+  archived/trashed items, system Nodes, hidden roots, and unreachable orphans.
+  Whitespace tokens use AND matching across title and full breadcrumb, with no
+  fuzzy/semantic correction. Rank is title exact, title prefix, title
+  substring, split title/breadcrumb, then breadcrumb-only; ties follow stable
+  Grid hierarchy order.
+- Results are one flat typed Node/Bit list with title, full breadcrumb,
+  ancestor ID chain, existing icon/color identity, hierarchy order, and
+  relevance. Same type/title/breadcrumb duplicates receive visible textual
+  disambiguation rather than exposed coordinates. Loading, no-results, stale
+  refresh, and failure are distinct semantic states, with all results reachable
+  through scrolling or production virtualization; `VQ-07` blocks the absent
+  replacement body from implementation until a matching user decision.
+- `useGridExplorerSearch` owns asynchronous request identity/cancellation,
+  loading/error/stale response, and reactive data updates. Updates retain query,
+  result scroll, and focus without an extra remote alert; if a focused result
+  disappears, focus returns to the input.
+- Click or Enter selection, Arrow Up/Down, and Escape are supported. Selection
+  first revalidates the item and ancestor path as active and reachable. A stale
+  result keeps search/query active, refreshes results, reports a non-blocking
+  status, and performs no reveal or navigation. A valid selection clears
+  active/interrupted query, restores columns, reconstructs the ancestor chain
+  without leaving Inbox, selects a Node or reveals a Bit inside its parent
+  path, and applies an event-ended (never timer-ended) reveal. Other item
+  selection, path change, DnD start, search restart, or route exit ends reveal.
+  Search result rows are not DnD sources.
+- Starting a Breakdown/candidate DnD closes search and immediately restores
+  columns/drop affordances. Only that interruption retains the query as
+  page-local interrupted search; Drop/Cancel never auto-returns. An explicit
+  reopen restores it. Result selection, X, Escape, or Inbox route exit clears
+  interrupted state. Scratch switching preserves current Explorer search,
+  results/scroll, path, column scroll, and reveal without forcing search focus.
+  Route exit clears active/interrupted search and reveal; same-session re-entry
+  starts normal columns rather than restoring search mode.
+- Locally newly placed items enter results immediately. Undo from a result
+  retains query and removes only that result, with source-restoration status and
+  deterministic next-result/input focus.
 
-- Staging alone never sets `consumedAt`. Unstage or Undo restores the original row, `createdAt`, and
-  sort position and uses the same one-time signal as Add.
-- Delete is idempotent and non-optimistic: retain the row until success is known. Failure restores
-  Active state without a dedicated Retry button; an unknown result provides `Check again` while
-  retaining the navigation/unload guard. Successful deletion moves focus by visible sort order and
-  then recalculates empty/completion state.
+#### Pointer placement and commit reliability
 
-#### Staging
+- Placement starts only from Mouse/Touch pointer DnD. Breakdown uses its grip;
+  staged candidates use the whole root. While dragging near a valid column's
+  top/bottom edge, progressively auto-scroll only that column without jumps.
+  Invalid/other columns, the Explorer shell, and page never auto-scroll. Stop
+  on edge exit/end, never change path automatically, and continuously hit-test
+  the pointer-under target. Pointer release determines the final target.
+- Home accepts Node only; Level 3 accepts Bit only; intermediate hierarchy
+  constraints remain. Invalid hover performs no write. A full destination still
+  enters the selected target-column placement affordance with visible full-
+  target reason, disabled Confirm, and Cancel. It never selects a parent,
+  sibling, alternate cell, or different target automatically. Confirm rechecks
+  source/candidate versions and lifecycle, expected ancestor chain, target
+  reachability/type, title limit, and an exact free cell.
+- A staged drop opens its distinct target-column placement step. If source text
+  exceeds the chosen result type's SCHEMA limit, `VQ-09` first requires the
+  separate staged Result Title step; the draft does not edit source content.
+  Direct placement first selects an allowed Node/Bit type plus destination,
+  then advances to a distinct placement step. Direct source length `1–100`
+  permits Node/Bit, `101–200` Bit only, and `201–1000` neither; direct placement
+  has no hidden Result Title editor, truncation, or schema expansion.
+- Each stage has explicit focus entry/containment. Staged confirmation focuses
+  heading or safe Cancel, Result Title focuses its input, and direct type
+  selection focuses its heading. Advancing focuses the new step; unavailable
+  type exposes a non-color disabled reason. Cancel/Escape returns to source
+  grip/card or its section heading if the source vanished. The column-scoped
+  affordance is not converted into a full-screen modal merely for focus
+  containment.
+- Direct type, optional Result Title, confirmation, pending/reconciling, and
+  result are one foreground flow. It locks Scratch switch, Grid path/search,
+  new DnD, internal route exit, Archive, and conflicting Undo without queuing
+  or auto-running an intent. Cancel/Escape mutates nothing and discards only an
+  uncommitted Result Title draft. Reload does not restore an unconfirmed flow;
+  native unload is used only when the draft is dirty.
+- Confirm creates one stable operation/result identity and invokes the SCHEMA
+  atomic command. Staged placement creates the actual result, consumes and
+  advances the source, and deletes the candidate in one transaction. Direct
+  placement creates and consumes together. Validation failure writes nothing;
+  no partial compensation, best-effort one-sided state, alternate target,
+  last-write-wins, silent retry, or title-based success heuristic is allowed.
+- Pending/reconciling keeps source/candidate and affordance visible and locked;
+  it never optimistically adds a result or removes source truth. Explicit
+  failure keeps source state and offers manual Retry/Cancel; unknown outcome
+  retains the operation ID and reconciles complete pre/postconditions before
+  Retry. `VQ-08` owns unsupported reliability-state realization. Success
+  focuses the actual created card and exposes the Newly Placed/Undo semantics.
 
-- Visible `Staging`, `Nodes`, and `Bits` chrome remains. Node candidates use grid/object cards; Bit
-  candidates use list rows. Shape and information structure, not color alone, distinguish them.
-- Candidates are durable, Scratch-scoped records joined to authoritative source Breakdown rows.
-  One source row may own at most one candidate. A candidate stores no duplicate label; a missing
-  source is cleaned only after authoritative confirmation and produces a section-local alert.
-- Node and Bit subsections sort newest-first by candidate `createdAt`, use stable `id` tie-breaks,
-  scroll independently without visible bars, and do not resize the 35/65 section. Their label shows
-  a count only for two or more items (`2 Nodes`, `3 Bits`); remote-arrival `New items` status is a
-  separate indicator.
-- Candidate root surfaces are fully draggable and have no inner Grip. Any point produces the same
-  shared `TriageDragToken`, pointer alignment, and sensor thresholds. Candidate click has no separate
-  select/detail action, and Staging offers no manual reorder or inline edit.
-- Dropping an active row into Node or Bit Staging creates one durable candidate. While pending, show
-  the same candidate card grammar with a non-blinking pending treatment and lock source/candidate
-  actions. Success converts it to normal staged state; failure removes only the pending projection,
-  restores the active row, and shows a dismissible section-local error without auto-retry.
-- A staged candidate can be returned through either the drag-only dedicated unstage overlay or a
-  drop anywhere on the Breakdown section. Both invoke the same atomic command. The overlay is
-  absolute and temporary, does not resize/blur Staging, and adds temporary scroll padding so its
-  controls and the final candidate remain reachable.
-- Unstage keeps candidate and staged source visible until commit succeeds. Failure preserves both
-  and shows a dismissible, non-expiring section-local alert with no Retry button; the user retries by
-  dragging again. Unknown outcomes reconcile before either surface changes.
-- During staged drag, invalid Grid columns signal unavailability immediately and add a direct warning
-  only when entered. Breakdown similarly signals drop-back without replacing its label or obscuring
-  content. Dropping a Node on Bits or a Bit on Nodes is invalid; dropping back on the same subsection
-  is a mutation-free cancel. No drag feedback blinks or auto-drops.
+#### Actual-card Newly Placed and Undo
 
-#### Grid Explorer Context
+- A placement result is a real repository Node/Bit rendered on the existing
+  `NodeCard`/`BitCard` foundation, never a checkbox, string indicator, duplicate
+  card model, or redesigned common card. Newly Placed is a page-session marker
+  layered on that actual card and remains semantically distinct from selection;
+  both may coexist. Repeated blink/pulse/flicker is forbidden.
+- Only placement operations started and confirmed by the currently mounted
+  Inbox page receive marker/Undo provenance. Remote, other-tab, or reloaded
+  records render normally at stored coordinates. Stored `x/y` and Grid order
+  do not change; the page projection temporarily pins locally newly placed
+  Nodes above ordinary Nodes and Bits above ordinary Bits, newest completed
+  operation first. Success reveals the pinned card. Newly placed Nodes retain
+  normal selection/navigation/child-target behavior.
+- Multiple markers coexist across Scratch and column switches. Inbox route
+  exit ends marker, pinning, and Undo but leaves the actual records. Provenance
+  and Undo eligibility are separate: ineligibility never erases the marker.
+  Proposed `use-triage-newly-placed.ts` owns the exact mounted-page operation,
+  dependency, and projection state.
+- Undo atomically removes the unchanged result and unconsumes/advances its
+  source. Staged provenance also restores the same candidate identity/type/
+  creation provenance under SCHEMA; direct provenance restores only the active
+  row. It never cascades or best-effort restores one side.
+- Undo is eligible only while the result's creation snapshot/lifecycle/direct
+  mutation evidence is unchanged and it has no surviving descendants or
+  unknown mutation. Same-session reversible children can be undone child-first;
+  once dependencies disappear, parent eligibility may recover. Non-mutating
+  selection/navigation/search reveal does not revoke eligibility. An
+  unavailable control stays exposed with an accessible non-color reason.
+- The Undo control handles its own activation and never bubbles into the
+  actual card's selection/navigation action.
+- Eligible Undo remains available through completion/Cancel until Archive
+  mutation starts. An open placement or pending Archive disables it with the
+  owning reason and never implicitly cancels/retargets. Undo success restores
+  work, immediately removes completion/overlay/reopen state, and announces the
+  source restoration without cross-section scroll/focus theft.
+- Undo is non-optimistic. The actual card and source remain while pending; one
+  atomic result converges through Retry/reconciliation. Dirty Edit first uses
+  the single save-before-action intent and revalidates Undo after Save. Pending
+  Undo locks Scratch switch, other placement, Archive, route exit, and browser
+  exit under the selected guards. In ordinary columns, post-success focus is
+  next card, previous card, then column heading; in search it is next result,
+  then input. `VQ-10` owns unsupported overlap/ineligible/reliability
+  realization details.
 
-- The four-column hierarchy path, selected Node chain, and column scroll offsets are shared across
-  Scratch selection. Same-app-session route re-entry restores the last valid path and scroll; reload
-  or a new session starts at Home. Invalid external path segments collapse to the nearest valid
-  ancestor without selecting a look-alike sibling.
-- Node cards precede the `Bits` subsection in each column. Selected state lives on cards and path;
-  selected Node titles are not duplicated under column headers.
-- Remote additions preserve focus and the pre-update first-visible-card anchor rather than jumping
-  scroll. Removing/moving a selected path Node falls back to the nearest valid ancestor and provides
-  non-blocking status.
+#### Completion and Archive Scratch
 
-#### Grid Explorer Search
+Durable eligibility is exactly the approved SCHEMA predicate and is never
+implemented as a vacuous `every()`:
 
-- Search is an internal Grid Explorer mode. Opening it replaces all four columns with one dedicated
-  search body and focuses the input; an empty query shows pre-search guidance distinct from a
-  no-results state. Input `X` clears without a separate Clear text button.
-- Scope is every active Node and Bit reachable from visible Home roots. Chunks, system Nodes,
-  hidden roots, archived/trashed items, and unreachable orphans are excluded. Whitespace tokens may
-  match title or breadcrumb; every token must match.
-- Relevance order is exact title, title prefix, title substring, split title/breadcrumb match, then
-  breadcrumb-only, with hierarchy order as tie-break. Results are one flat list and expose type,
-  title, full breadcrumb, and native icon/color. Exact duplicates use direct labels such as
-  `Duplicate item 1/2`, never opaque coordinates.
-- Result click/Enter clears active/interrupted query, restores columns, reconstructs the ancestor ID
-  path, and selects a Node or reveals a Bit without leaving Inbox. Bit reveal has no timer and ends
-  on another selection, path change, DnD, new search, or route exit.
-- Starting Breakdown/candidate DnD closes search so columns can accept the drop and preserves only
-  this interrupted query. Placement completion/cancel does not auto-reopen search; the user's next
-  search restores it. Result selection, `X`, Escape, reload, or route exit clears it.
-- Current query remains while data refreshes. Stale result selection is rejected after path
-  revalidation. Search results are navigation surfaces, not drag sources; a local Newly Placed result
-  may expose its existing Undo.
-- The exact result-screen layout and theme realization is intentionally unresolved and must receive
-  user approval in the Grid Search implementation phase. Existing Grid chrome/card grammar is
-  context, not an automatic fallback design.
+```text
+selected Scratch exists and is active
+AND consumed Breakdown row count >= 1
+AND unconsumed Breakdown row count == 0
+AND staged candidate count == 0
+```
 
-#### Placement Targets And Flow
-
-- Column bodies and active Node cards are placement targets. Home accepts Nodes only; Level 3 accepts
-  Bits only; intermediate targets follow hierarchy limits. Pointer release uses the currently
-  hit-tested destination. Invalid or locked targets never write or silently redirect.
-- Valid column edge hover auto-scrolls only that column, updates hit testing continuously, preserves
-  all ordinary input scrolling, and keeps scrollbar chrome hidden. The affordance lives inside the
-  column's scrollable content so its height, warning, Confirm, and Cancel remain reachable without
-  expanding the column.
-- A full destination still opens the ordinary affordance with source/type/path and a direct
-  `No empty Grid cell` reason. Confirm is disabled; Cancel is available. The app does not choose a
-  parent, sibling, or cell automatically.
-- Placement entry is pointer drag only. Mouse and Touch share the compact drag token and affordances;
-  this promotion adds no keyboard destination picker or action-menu shortcut.
-- **Staged flow:** drop candidate -> optional Result Title editor only when the source exceeds the
-  chosen type limit -> staged Placement affordance -> Confirm creates the real item, consumes the
-  row, and removes the candidate. Cancel preserves the candidate and row.
-- **Direct flow:** drop active row -> distinct modal-like Node/Bit type and path choice -> separate
-  Placement affordance -> Confirm creates the real item and consumes the row. Direct placement has
-  no title editor: `1–100` characters permits Node/Bit, `101–200` permits Bit only, and `201–1000`
-  permits neither until the row is edited outside the flow. Source text is never truncated.
-- Confirm-before-write is retained. The result is an actual existing Node/Bit card, never a checkbox,
-  `Node: ...` indicator, or separate placed-card design.
-- While a direct/staged placement flow is open, block Scratch switch, Grid path/search, new DnD,
-  conflicting Undo, and internal route navigation with a direct reason. Confirm or Cancel ends the
-  task; blocked intents are not queued or auto-run. Focus is contained within the current affordance
-  without converting the column-scoped surface into a full-screen modal.
-
-#### Reliability And Reconciliation
-
-- Add/Edit/Delete, Stage/Unstage, Placement, Undo, and Archive use the operation/result contract in
-  SCHEMA.md. Confirm revalidates source version/lifecycle, candidate relation, target reachability,
-  type rules, and cell availability immediately before its transaction.
-- Staged placement atomically creates the result, consumes the row, and removes the candidate.
-  Direct placement atomically creates the result and consumes the row. No component may issue these
-  as independent best-effort writes.
-- Pending UI retains source and intended result context and locks only conflicting operations.
-  Explicit failure leaves authoritative records unchanged and exposes contextual Retry only where
-  this contract defines it. Unknown outcomes reconcile stable IDs/postconditions before allowing a
-  new command or showing success.
-- Pending Stage/Unstage/Delete/Placement/Undo/Archive locks Scratch switch and internal route exit as
-  specified by the owning flow; unresolved reload/tab close uses native unload confirmation. Once a
-  result resolves, prior navigation requests are not automatically executed.
-- External invalidation during drag keeps the visual drag snapshot until release, then applies the
-  latest authoritative state without executing the stale drop. Invalidation after an affordance
-  opens closes or invalidates that affordance without partial writes.
-- Pending, conflict, failure, reconciliation, restore, and success are visible and announced with
-  suitable `aria-live` or `role="alert"` semantics without stealing focus. Success effects run once
-  for `applied`, not again for `already_applied`.
-
-#### Newly Placed And Undo
-
-- A confirmed result uses the existing Node/Bit component, dimensions, radius, base color, and inner
-  grammar. A static theme-specific marker/outline/background/corner/shadow announces Newly Placed;
-  no separate card or repeated pulse is introduced. Selected and Newly Placed can coexist visibly.
-- Multiple local results may be Newly Placed. In the current Inbox session, Nodes pin above normal
-  Nodes and Bits pin above normal Bits in their target column, newest placement first, while stored
-  Grid coordinates remain unchanged. Confirm scrolls that column to reveal the card.
-- Only placement operations started and confirmed by this mounted page get the marker and Undo.
-  Remote results are ordinary cards. Scratch, column, theme, and locale changes preserve local
-  markers; route exit or reload clears them and returns actual records to ordinary Grid order.
-- Undo is a separate control on the actual card. Staging-source Undo removes the created result and
-  restores candidate plus source row; direct-source Undo removes the result and restores the active
-  row. The rollback is one transaction and is never optimistic.
-- Selection/search reveal does not disable Undo. Mutation of the result, archive/delete, unknown
-  changes, or surviving descendants/dependencies does. The marker remains while Undo is unavailable;
-  the same control stays visible with an accessible reason and can re-enable when reversible local
-  child operations are undone in reverse order.
-- Undo before Archive mutation withdraws completion UI and restores ordinary Breakdown/Staging.
-  Archive or another placement pending state temporarily locks it. Success preserves Grid focus and
-  announces the restored source without automatically scrolling/focusing another section; failure
-  keeps both sides authoritative and offers Retry.
-
-#### Completion And Archive
-
-- Persisted archive eligibility requires an active selected Scratch, at least one consumed row, no
-  unconsumed rows, and no staged candidates. An empty history, all-staged rows, or deleting every row
-  without consumed evidence is not complete.
-- A non-empty Add draft or dirty Scratch-title editor is a page-local completion blocker. It does not
-  alter persisted eligibility, but it prevents automatic completion UI until the draft is cleared or
-  the editor resolves. Completion never auto-submits or cancels text.
-- On the first false-to-true eligible transition in the mounted session, blur/dim only Breakdown and
-  show the Archive Scratch affordance over that section with Cancel and Archive. It is a named
-  non-modal region: it does not cover the page, trap global focus, or steal existing focus. While
-  the overlay is open, a separate `Show archive dialog` control is not rendered.
-- Cancel/Escape removes the overlay, converts Selected Scratch Context to the theme-specific
-  `Scratch complete` state, and shows `Show archive dialog` inside Breakdown. Reopen uses the same
-  section-scoped overlay. A new saved row, restored row, or candidate immediately withdraws all
-  completion UI.
-- Switching away postpones the decision without writing a dismissal flag. Returning in the same
-  session, route re-entry, or reload recomputes eligibility and shows complete Context/reopen rather
-  than auto-opening the overlay. Auto-open occurs only at a new mounted-session eligibility
-  transition.
-- Archive Confirm revalidates eligibility and Scratch version in one idempotent transaction, keeps
-  the overlay as pending/reconciling, and locks Cancel, Undo, Edit, Placement, Scratch switch, and
-  internal route exit until resolved. Failure retains the Scratch and provides Retry/Cancel; unknown
-  outcome reconciles before selection changes.
-- Success sets `archivedAt`, removes the Scratch from active Inbox, and preserves Archive View restore
-  behavior. Select the next visible Scratch, then previous; if the current filter has no result, keep
-  its no-results state rather than selecting a hidden Scratch. If no active Scratch exists, show the
-  Inbox empty state. Never auto-navigate to Archive View.
-
-#### Focus And Accessibility
-
-- Opening Edit, search, direct type choice, title validation, or Placement moves focus to the active
-  step. Cancel returns to the surviving source; Confirm moves to the real Newly Placed card. Removing
-  a focused source uses the next/previous item or section heading/input fallback.
-- Column/search list keyboard navigation and all non-DnD actions remain operable. Current placement
-  itself is the documented pointer-only exception and must not expose a nonfunctional keyboard
-  command.
-- Icon-only controls, collapsed Scratch switchers, status markers, invalid target reasons, unavailable
-  Undo, and theme-specific labels have stable accessible names. Color, blur, and motion are never
-  the only status channel.
-
-#### Copy And Localization Boundary
-
-- This promotion ships the English surface only. New labels, statuses, validation, failure,
-  reconciliation, focus announcements, and accessible descriptions are read from
-  `src/lib/copy/inbox-triage.ts`; feature components do not scatter new hard-coded copy.
-- Later EN/KR support adds a shared locale provider/resources and Sidebar toggle, not eight duplicate
-  routes. Locale switching keeps the same layout and interaction state. Date/time formatting,
-  Korean typography, text fit, ellipsis/wrapping, and IME policy complete in their recorded follow-up
-  work rather than being guessed during this core promotion.
+- All-staged and all-deleted-without-consumption are ineligible. One consumed
+  row plus deliberate deletion of remaining active rows may be eligible.
+  A non-empty Add draft and an open/dirty/saving/conflicted/reconciling Scratch
+  title editor are page-local presentation/dispatch blockers; they do not
+  change the stored formula, are never auto-submitted/discarded/saved, and use
+  `VQ-11` status. Clearing/resolving the blocker reruns eligibility.
+- The first false→true transition in the mounted page opens the authorized
+  Breakdown-scoped completion overlay with Cancel and Archive entry points.
+  It affects Breakdown only, preserves current focus, announces readiness, and
+  is a non-modal region before mutation: other sections and eligible Undo stay
+  reachable. Blurred Breakdown controls are locked. Escape cancels only when
+  focus is inside the overlay. Scratch Context title Edit is blocked while the
+  overlay is open.
+- Cancel closes the overlay, changes Context to complete, exposes reopen, and
+  immediately restores the existing Add entry; the complete Context permits
+  title Edit again until Archive dispatch. It writes no durable dismissal.
+  A successfully added/restored active row or staged candidate removes
+  overlay/complete/reopen immediately and reports lost eligibility; merely
+  typing an Add draft shows its blocker without changing persisted completion.
+  Reopen returns focus to heading/safe Cancel; Cancel returns focus to reopen.
+- Switching Scratch before Archive dispatch defers the decision without a
+  write and closes only that presentation. Returning in the same page session
+  shows complete/reopen if still eligible, never auto-opens. Route exit/reload
+  stores no overlay open/Cancel state. Entry/reload onto an already eligible
+  Scratch shows complete/reopen; only a new mounted-page false→true transition
+  auto-opens.
+- Archive rechecks page blockers immediately before dispatch and rechecks
+  active lifecycle, exact version, consumed count, unconsumed count, and
+  candidate count inside one SCHEMA transaction. It sets only the Scratch
+  `archivedAt`/version lifecycle and retains rows for existing Archive View
+  restore. It is non-optimistic: the Scratch remains selected/in Pool and the
+  overlay remains pending/reconciling until authoritative success. Pending
+  locks Cancel/Escape, Undo, Edit, placement, Scratch switch, internal route
+  exit, and duplicate Archive.
+- Explicit failure leaves the Scratch active and provides manual Retry/Cancel;
+  unknown outcome reconciles before any new operation. The approved, validated
+  `PendingOperationRecovery` identity descriptor is the only Inbox workflow
+  state permitted in `sessionStorage` across forced reload. It is written
+  successfully before dispatch or Archive fails closed, contains no draft/
+  payload/queue, and clears after terminal reconciliation. Reload resolves to
+  archived/removed, not-applied complete/reopen, or unresolved section recovery
+  before the initial Inbox projection. `VQ-12` owns unsupported reliability
+  realization.
+- After confirmed success, preserve current Pool search/sort and select the
+  archived row's next-visible then previous-visible Scratch. If a filtered list
+  has a visible successor, focus its Selected Scratch Context. If a filtered
+  list has no visible result, select no hidden Scratch and focus search
+  input/clear.
+  If no active Scratch exists without a search filter, show true Inbox empty
+  and focus its primary action. Never navigate automatically to Archive View.
 
 ### Archive View Surface (rendered for `systemRole: 'archive_view'`)
 
@@ -617,6 +795,124 @@ A **portal, not a container** — archived items keep their original `parentId`;
 ### Direct Archive (context menu)
 
 Any non-system Node or Bit can be archived from its context menu (no Review Mode required) — sets `archivedAt` with cascade (Hook 10). System Nodes are excluded. **Completion does not auto-archive**; completed-but-unarchived items remain in place on the grid until the user archives them.
+
+---
+
+## Inbox/Triage State Ownership
+
+This lifetime table is normative for the proposed Inbox target. The SCHEMA
+[durable/non-durable boundary](SCHEMA.md#durable--non-durable-ownership-boundary)
+is authoritative when a state might be mistaken for domain storage.
+
+| Lifetime | Owner and state | End/reset rule |
+|----------|-----------------|----------------|
+| Durable domain/integrity | Existing Node/Bit/Scratch Breakdown records and approved versions; `StagedCandidate`; archive/consumed lifecycle; narrow `CandidateOrphanAuditEvent` | Repository lifecycle only. Candidate display joins its source; cache miss is never orphan proof. No general operation log, journal, outbox, or offline queue |
+| App session (survives same-session Inbox route leave/re-entry, not reload) | `src/stores/triage-store.ts`: last active selected Scratch, Pool expanded/collapsed and per-Scratch manual-reopen exception, Pool query/result/scroll context, Explorer hierarchy path/open columns and column scroll | Validate against current data on re-entry; full reload/new session applies the fallback below |
+| Mounted Inbox page session | Add/Edit base snapshots and drafts; one pending intent; deleting/pending/reconciling presentation and operation IDs; Explorer active/interrupted search, result scroll and reveal; placement/type/Result Title state; remote-arrival counts; external-removal transition; completion overlay/Cancel/reopen presentation; proposed `use-triage-newly-placed.ts` markers/pinning/Undo/dependencies | Scratch changes preserve only the states explicitly named in the behavior sections. Inbox route exit clears Explorer search/reveal and Newly Placed/Undo; reload clears all except the Archive recovery identity below |
+| Forced-reload recovery identity | SCHEMA `PendingOperationRecovery` in current-tab `sessionStorage`, owned by the Archive operation coordinator | Archive only; written before dispatch, validated on read, cleared after terminal reconcile; no payload, draft, UI cache, mutation queue, or other workflow kind |
+| Device-local Inbox preference | Proposed `src/stores/triage-preferences-store.ts`, persisted and validated: Pool created-at sort and Breakdown created-at sort only | Survives route/reload/session; defaults independently to DESC when missing/invalid; never enters content records or future remote data |
+
+Within Inbox/Triage work state, **only Pool sort and Breakdown sort are
+device-local persisted preferences**. Existing application-wide theme
+preference is not converted into Inbox workflow storage.
+
+Full reload/new app session has one deterministic reset contract:
+
+1. select the first active Scratch under current Pool sort, or `null` if none;
+2. start the Pool expanded with no manual-reopen exception;
+3. start Grid Explorer at Home with reset column scroll;
+4. clear Pool and Explorer current/interrupted queries and results;
+5. restore no completion open/Cancel presentation and no unconfirmed placement;
+6. restore no Newly Placed marker, pinning, dependency projection, or Undo; and
+7. before the initial Inbox projection, reconcile only a valid pending Archive
+   descriptor when one exists.
+
+Dark/light, color-theme, or future locale presentation changes are not reset
+events. They preserve selected Scratch, Pool/search, drafts/base snapshots,
+Explorer path/search/reveal, placement/archive state, operation IDs and pending
+flows, and Newly Placed/Undo. They trigger no mutation or navigation and do not
+translate user-authored content.
+
+---
+
+## Copy and Localization
+
+Core English Inbox/Triage system copy has one proposed owner:
+`src/lib/copy/inbox-triage.ts`. Components consume typed entries for section
+identity, actions, validation, lifecycle reasons, statuses, live-region text,
+and accessible names instead of adding new distributed string literals. This
+module is a target absent from current production, not a claim of an existing
+file. It resolves `Q-NAME-04` and is included in File Organization and Key File
+Paths.
+
+The core owner does not choose exact wording where a `VQ-*` prerequisite below
+reserves it for the user. It may define keys and approved semantic roles while
+the dependent value remains blocked. User-authored Scratch/row text and drafts
+are never resource strings and are never translated.
+
+Shared locale state/provider, EN/KR resources and toggle, localized date/time,
+Korean accessibility/status copy, and Korean theme typography/text-fit QA are
+deferred. They must use shared state rather than duplicate routes or reload the
+page, and a future locale switch must obey the presentation-preservation
+contract above. Cross-surface wrapping, line-count, expansion, and IME visual
+detail remain with the separately deferred text-capacity topic.
+
+---
+
+## Inbox/Triage Visual Decision Prerequisites
+
+The selected behavior and lifecycle above remain required. Source absence
+does not delete them and does not let SPEC turn behavior prose into a design.
+No entry below authorizes layout, appearance, exact copy, iconography,
+animation, timing, placement, or per-theme treatment beyond the selected
+decision and approved recipe evidence.
+
+### Absent replacement surfaces
+
+Each row is labeled **Decision prerequisite — no automatic fallback**. Its
+entry point, controls/state transitions, authority, focus, accessibility, and
+lifecycle may be implemented only after the named user decision has a matching
+receipt. A nearby Dialog/AlertDialog, editor, global/active-column search body,
+card, create form, or surrounding theme chrome is not a fallback.
+
+| ID | Authorized behavior boundary | Required focus/accessibility boundary | Status |
+|----|------------------------------|---------------------------------------|--------|
+| `VQ-01` | External archive/delete of selected Scratch enters the five-second move/pause/resume/no-Cancel transition, revalidates visible destination, supports source-separated full-draft copy, and cancels only on authoritative archive restore | Announce lifecycle/timing once, not each tick; pause is a stable initial action; copy status preserves focus; stale work stays locked | **Decision prerequisite — no automatic fallback**: user owns replacement surface, wording, layout, appearance, icons, timing treatment, and theme realization |
+| `VQ-03` | Scratch/route departure with a non-empty Add draft offers continue-writing or discard-and-move after any required inline Save; it neither auto-Adds nor queues intents | Continue returns logical focus to Add; discard performs the original action once; native unload remains browser-exit only | **Decision prerequisite — no automatic fallback**: user owns app-internal confirmation realization and copy |
+| `VQ-04` | Scratch-title and row-content editors remain inline in their source surfaces across validation, saving, offline, retry, conflict/use-mine/use-latest, lifecycle invalidation, draft review/copy, Save, Cancel, Escape, and valid blur | Preserve editor/draft and logical focus through nonterminal states; never open generic/global conflict UI or steal IME focus; invalid source uses deterministic next-row/Add fallback | **Decision prerequisite — no automatic fallback**: user owns the complete inline replacement surfaces and content realization |
+| `VQ-07` | Opening dedicated full-hierarchy Explorer search replaces only the Explorer body; it owns pre-search/results/loading/stale/error/duplicates/reveal/Undo feedback and DnD interruption, while global search stays separate | Input/results support arrows, Enter, Escape; removed focused result returns to input; selection rebuilds path inside Inbox; result rows are not DnD sources | **Decision prerequisite — no automatic fallback**: user owns the complete replacement search body; active-column/global search and ordinary columns are prohibited substitutes |
+| `VQ-09` | Over-limit staged placement uses Result Title before confirmation; direct length gates expose allowed/unavailable type reasons and Cancel with no direct editor or truncation | Result Title starts at its input; unavailable types expose accessible reason; Cancel returns to source | **Decision prerequisite — no automatic fallback**: user owns Result Title and direct-limit surfaces; create dialogs and generic placement UI are prohibited substitutes |
+
+### Existing-surface state gaps
+
+These gaps may use only the approved shared semantic-state envelope: state
+attributes, existing semantic/theme tokens, visible text or icon/non-color
+cues, and the selected focus/accessibility contract. Exact effect, duration,
+wording, placement, layout, and per-theme values remain named user-owned
+Decision prerequisites before the dependent UI task.
+
+| ID | Trigger and semantic states | Allowed action/focus/accessibility contract | Remaining Decision prerequisite |
+|----|-----------------------------|---------------------------------------------|---------------------------------|
+| `VQ-02` | Authoritative Add or Unstage success produces one non-repeating success state; reduced motion replaces movement/sparkle with static distinction | Add keeps input focus; Unstage restores source focus; both announce politely without focus theft | Exact effect, duration, wording, placement, and per-theme realization |
+| `VQ-05` | Add pending/failure/reconcile and Delete in-place deleting/failure/check-again remain distinct; success is shown only after authority | Pending locks only conflicting actions; draft/row remains; Delete success/failure/check-again uses the deterministic focus rules in Breakdown | Exact state treatment, copy, action placement, timing, and per-theme realization |
+| `VQ-06` | Pool hidden-selection; Staging pending/invalid/remote-arrival/orphan/stale/failure; and Explorer remote/path states retain their distinct triggers and allowed actions | Never steal focus for remote/status arrival; use polite live status or alert semantics as selected; vanished source/path uses named safe focus fallback | Exact treatments, wording, indicator/alert placement, duration/dismissal appearance, and per-theme realization for each family |
+| `VQ-08` | Placement pending, explicit failure, unknown/reconciling, stale source/target, authoritative success, and Retry/Cancel states preserve the same operation/source/affordance | Contain focus in the active step; failure focuses Retry, stale/validation retains current-step focus, success focuses actual card | Exact status effect, copy, control placement, layout, timing, and per-theme realization |
+| `VQ-10` | Selected+newly overlap, Undo available/ineligible/dependency-reenabled, undoing, failure, retry, and conflict remain separate from marker provenance | Accessible non-color reason is available without hover; pending keeps card; post-Undo Grid/search focus and restoration announcement follow the named rules; repeated motion is forbidden | Exact marker/overlap/control/reason/status treatment, copy, placement, timing, and per-theme realization |
+| `VQ-11` | Non-empty Add draft or title-editor lifecycle blocks completion presentation; eligibility loss withdraws overlay/complete/reopen and reports why | Blocker keeps draft/editor and logical focus; no auto-submit/save; restored work remains reachable | Exact blocker/withdrawal copy, effect, placement, layout, and per-theme realization |
+| `VQ-12` | Archive pending, explicit failure, unknown/reconciling, forced-reload recovery, check-again, Retry/Cancel, and authoritative success are distinct variants of the selected Breakdown-scoped flow | Pending/recovery keeps a stable focus target in the section; failure focuses Retry; success focuses the verified visible-order destination | Exact treatment, wording, control/status placement, layout, timing, and per-theme realization |
+
+### Preserved deferrals and exclusions
+
+- No prototype mock mutation, route duplication, review control, internal staged
+  handle, Scratch-switch marker reset, or local completion latch is promoted.
+- No repeated pulse/blink/flicker, keyboard placement, hidden placement command,
+  BitCard redesign, Korean UI, Neumorphism water-lens polish, cross-surface
+  text/IME design, or toast migration is included.
+- Common BitCard eight-theme redesign and later Staging/placed-card reuse remain
+  deferred; current cards are only the core actual-record foundation.
+- All approved recipe evidence remains source-only. SPEC claims no rendered
+  verification, screenshot, contrast, depth, clipping, motion, responsive, or
+  per-theme outcome.
 
 ---
 
@@ -644,22 +940,15 @@ Infrastructure files that don't follow the File Organization Conventions above.
 | `src/app/layout.tsx` | Root layout — font variables, color-theme no-flash init script, ThemeProvider/DataStore provider shell |
 | `src/app/(grid)/layout.tsx` | Route-group layout — renders GridRuntime for all grid pages |
 | `src/app/providers.tsx` | Client-side providers wrapper — ThemeProvider, ColorThemeProvider, DataStoreProvider. Zustand stores require no provider. |
-| `playwright.config.ts` | Browser/E2E runner configuration and deterministic local web-server ownership for `tests/e2e/` |
 | `src/components/layout/grid-runtime.tsx` | Client wrapper: route state, sidebar, breadcrumb, shared DnD boundary, add-flow orchestration |
 | `src/components/layout/add-flow-context.tsx` | Minimal React context — pages call `useAddFlow().openAddAtCell(x, y)` to trigger add-flow |
 | `src/components/layout/color-theme-provider.tsx` | Applies the persisted color theme to `<html data-color-theme="...">` |
 | `src/components/layout/color-theme-toggle.tsx` | Color theme picker — 8 visual themes, swatches, selected check |
 | `src/components/calendar/calendar-view-header.tsx` | Shared Calendar weekly/monthly header — title/subtitle, view switch, previous/today/next controls |
-| `src/components/triage/triage-workspace.tsx` | Inbox/Triage composition root — four-area shell, DnD context, and page-session coordination |
-| `src/components/triage/selected-scratch-context.tsx` | Signature Scratch context, title editor, row sort, and completed realization host |
-| `src/components/triage/grid-explorer-search.tsx` | Dedicated whole-hierarchy search input/result surface; visual layout requires its phase-local user decision |
-| `src/components/triage/placement-affordance.tsx` | Direct type/path step, staged/direct confirmation, validation, pending, failure, and reconciliation surfaces |
-| `src/components/triage/archive-completion-affordance.tsx` | Breakdown-scoped archive overlay, completed Context/reopen, and archive recovery states |
-| `src/lib/db/datastore.ts` | `DataStore` interface — storage abstraction plus atomic Inbox/Triage command/result contract |
-| `src/lib/db/indexeddb.ts` | Dexie.js implementation — v1 stores, reactive reads, conditional writes, transactions, and reconciliation queries |
+| `src/lib/db/datastore.ts` | `DataStore` interface — the abstraction boundary between app code and storage |
+| `src/lib/db/indexeddb.ts` | Dexie.js IndexedDB implementation of `DataStore` — current local storage backend |
 | `src/lib/db/schema.ts` | Zod validation schemas and TypeScript types (from SCHEMA.md) |
-| `src/lib/triage/grid-explorer-search.ts` | Pure reachable-hierarchy traversal, token matching, relevance, breadcrumb, and duplicate-label model |
-| `src/lib/copy/inbox-triage.ts` | Central English Inbox/Triage visible and accessibility copy; future locale-resource boundary |
+| `src/lib/copy/inbox-triage.ts` *(proposed; absent today)* | `InboxTriageCopy` core-English resource keys/values for visible copy, statuses, reasons, live regions, and accessible names; exact `VQ-*`-reserved wording stays blocked |
 | `src/lib/constants.ts` | Grid dimensions (18×9), aging thresholds (5/11 days), urgency thresholds (3/2/1 days), trash retention (30 days) |
 | `src/lib/utils/bfs.ts` | BFS auto-placement algorithm — finds nearest empty cell from a starting position |
 | `src/lib/utils/aging.ts` | Aging state computation — Fresh/Stagnant/Neglected from mtime |
@@ -670,21 +959,26 @@ Infrastructure files that don't follow the File Organization Conventions above.
 | `src/stores/search-store.ts` | Search query, open/closed state |
 | `src/stores/calendar-store.ts` | Calendar drill-down navigation, pool state |
 | `src/stores/color-theme-store.ts` | Color theme id, validation, and persistence (`griddo-color-theme`) |
+| `src/stores/triage-store.ts` | Present: selection/Pool UI plus obsolete UI candidates. Proposed: app-session selection, Pool/query/scroll, and Explorer path/column state only; no durable candidates or Newly Placed records |
+| `src/stores/triage-preferences-store.ts` *(proposed; absent today)* | Validated device-local persistence for exactly Pool sort and Breakdown sort |
 | `src/lib/animations/grid.ts` | Grid animation variants — jiggle, sinking, creation/deletion, depth transitions |
 | `src/lib/animations/calendar.ts` | Calendar animation variants — vignette expand, magnet snap |
 | `src/lib/grid-dnd.ts` | Grid DnD utilities — `gridCollisionDetection` (prioritizes node-drop over cell) |
+| `src/lib/utils/grid-explorer-search.ts` *(proposed; absent today)* | Pure Inbox Grid Explorer hierarchy traversal, exclusions, AND-token matching, relevance, duplicate disambiguation inputs, and stable result ordering; never global `searchAll()` |
 | `src/lib/constants/color-palette.ts` | Curated 10-color palette for node creation randomization |
 | `src/hooks/use-grid-data.ts` | Reactive hook — subscribes to Nodes + Bits for a given parentId via `useLiveQuery` |
 | `src/hooks/use-bit-detail.ts` | Bit detail popup state — reads `?bit` param, fetches Bit + Chunks |
 | `src/hooks/use-search.ts` | Search state — query string, filtered results across all stores |
 | `src/hooks/use-calendar-data.ts` | Calendar data — all items with deadlines, pool items, drill-down state |
-| `src/hooks/use-dnd.ts` | Existing non-Triage DnD coordination — grid moves, calendar scheduling, timeline reorder, drag-to-child confirmation |
-| `src/hooks/use-triage-dnd.ts` | Inbox pointer sensors, compact drag intent, collision/drop targeting, and DnD interruption; no persistence writes |
-| `src/hooks/use-triage-candidates.ts` | Reactive durable candidate/source projection and Stage/Unstage command coordination |
-| `src/hooks/use-grid-explorer-search.ts` | Async search request identity, cancellation, loading/error/stale-result handling, and reveal handoff |
-| `src/hooks/use-triage-placement.ts` | Direct/staged placement steps, page-session Newly Placed/Undo metadata, command dispatch, and reconciliation |
-| `src/stores/triage-store.ts` | Disposable Inbox/Triage UI state only — selection, Pool/Grid session context, drafts, affordance mode, and operation presentation; no durable candidates |
-| `src/types/triage.ts` | Shared candidate, search-result, placement command/result, page-session operation, and status types |
+| `src/hooks/use-dnd.ts` | Current shared DnD plus combined triage placement/sequential writes. Proposed triage role: Mouse/Touch sensors, drag snapshot, release-time drop intent, and feedback coordination only; general Grid/Calendar behavior stays separate |
+| `src/hooks/use-staged-candidates.ts` *(proposed; absent today)* | Reactive `StagedCandidate` query and authoritative Breakdown-source join plus Stage, Unstage, and confirmed-orphan command dispatch/reconciliation; pending UI is a projection, and unresolved source miss is never a card/orphan proof |
+| `src/hooks/use-grid-explorer-search.ts` *(proposed; absent today)* | Inbox-only full-hierarchy search subscription/request identity, cancellation, loading/error/stale result lifecycle |
+| `src/components/triage/grid-explorer-search-results.tsx` *(proposed; absent today)* | Dedicated Explorer search-mode result body; presentation only, with no global Search Overlay reuse |
+| `src/hooks/use-triage-placement.ts` *(proposed; absent today)* | `Q-NAME-03` placement state machine: direct type, staged Result Title, target confirmation, pending/reconcile/failure, navigation locks, and atomic command dispatch |
+| `src/hooks/use-triage-newly-placed.ts` *(proposed; absent today)* | Mounted-page actual-card marker/pinning, operation provenance, dependency-aware Undo availability, and deterministic restoration projection |
+| `src/hooks/use-archive-scratch.ts` | Present: direct `archiveBit` call. Proposed: Archive operation coordinator for page-local blocker recheck, fail-closed `PendingOperationRecovery` descriptor storage, atomic command dispatch, reload reconciliation, and terminal focus/selection handoff |
+| `src/components/triage/triage-workspace.tsx` | Current four-area/DnD composition. Proposed coordinator for owners and interruption locks only; never candidate or repository persistence |
+| `src/components/triage/hierarchy-explorer.tsx` | Current component-local path/active-column search. Proposed coordinator for shared path/columns, dedicated search mode, reveal, scroll anchoring, target columns, and actual-card projection |
 | `components.json` | shadcn/ui configuration — component output path, Tailwind CSS variables, icon library |
 | `tsconfig.json` | TypeScript config — `@` path alias mapping to `src/` |
 
