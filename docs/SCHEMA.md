@@ -11,10 +11,10 @@
 > **Inbox/Triage amendment status:** **User-approved 2026-07-28.** The exact
 > pre-receipt draft is identified below. These canonical targets are not claims
 > about completed production implementation.
-> **Pending shared-grid-validator maintenance:** **Proposed — pending user
-> approval.** This draft changes only the Zod example to derive both Node and
-> Bit coordinate validators from the existing production grid constants. The
-> prior receipts do not approve this uncommitted maintenance diff.
+> **Shared-grid-validator maintenance:** **User-approved 2026-07-28.** The Zod
+> example derives both Node and Bit coordinate validators from the existing
+> production grid constants; the exact pre-receipt artifact is identified in
+> the maintenance receipt below.
 > **Promotion provenance:** selected topic
 > [`DECISION.md`](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md),
 > approved [`PROMOTION_MAP.md`](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md),
@@ -83,6 +83,28 @@
   remains in this document.
 - **Preserved scope and next action:** the preceding receipt's preserved scope
   and next legal action remain unchanged.
+
+#### Shared Grid Validator Derivation Receipt — 2026-07-28
+
+- **Gate:** replace duplicated current-value coordinate literals in the Zod
+  example with the same shared constant-derived validators used by production.
+- **User disposition:** approved on 2026-07-28 after independent byte/hash and
+  production-structure verification.
+- **Approved artifact:** commit
+  `a53217ff08d5771974036f069e50d7131bcdea12`, containing the exact
+  pre-receipt `docs/SCHEMA.md` whose SHA-256 is
+  `d3b4c8c52a64d5e8c07e27c22fdcbf264c728bb449bcb6c0e9cf099dc0603a5b`.
+- **Correction:** the example imports `GRID_COLS` / `GRID_ROWS`, defines one
+  `gridXSchema` / `gridYSchema` pair from those symbols, and reuses the pair in
+  both Node and Bit schemas, matching `src/lib/db/schema.ts`.
+- **Preserved scope:** coordinate meaning remains 18×9; historical audit
+  literals and descriptive field constraints remain factual records rather
+  than implementation expressions. No product, migration, command, plan,
+  flow, task, or implementation decision changes.
+- **Next legal action:** add the separately approved draft rule that verifies
+  canonical code examples and descriptive constraint cells against production
+  constants, paths, exports/signatures, stores/indexes, routes, and owners;
+  stop at the `docs/PLANNING_STANDARD.md` gate.
 
 ---
 
