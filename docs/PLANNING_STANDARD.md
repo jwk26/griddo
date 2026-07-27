@@ -5,7 +5,7 @@
 >
 > **Consumed by:** `$craft-docs`, `$run-phase`, `$run-task`, and `$end-phase`
 > **Owned by:** The project — skills execute the process, this document defines it.
-> **Inbox/Triage amendment status:** **Proposed / Pending user approval.**
+> **Inbox/Triage amendment status:** **User-approved 2026-07-28.**
 > **Production derivation evidence:** reviewed Fresh planning-standard SHA-256
 > `24c2e879bfd006c04da23d80830108a0f85d4693e3367e3825e9841b5bc05119`
 > is read-only evidence, not canonical authority. Production authority is the
@@ -20,6 +20,36 @@
 4. [Gap Resolution Protocol](#4-gap-resolution-protocol)
 5. [User-Visible Verification](#5-user-visible-verification)
 6. [Architecture Conformance Checklist](#6-architecture-conformance-checklist)
+
+---
+
+## Inbox/Triage PLANNING_STANDARD Approval Receipt
+
+- **Gate:** the reusable planning, typed-prerequisite, flow-review,
+  user-visible verification, and architecture-conformance rules required by
+  the approved Phase 23–33 campaign.
+- **User disposition:** approved through the user's 2026-07-28 instruction to
+  complete every canonical document through the final independent flow review.
+- **Approved artifact:** commit `ddaf116`, containing the exact pre-receipt
+  `docs/PLANNING_STANDARD.md` whose SHA-256 is
+  `0ee0feef14a2f32df7fbc7e3710ae407527f94259f33a47e90e4f22f7fc8c947`.
+- **Parent receipts:** promotion map `90022e7`, recipe package `7a15451`,
+  SCHEMA `250a1b5`, SPEC `53c3fe9`, DESIGN_TOKENS `39ad25b`, and
+  EXECUTION_PLAN `92c6d4a`.
+- **Preserved project rules:** the core GridDO architecture checklist, active
+  lifecycle filters, system-field guards, Phase 8 verification history, and
+  omission-audit origin remain in force.
+- **Fresh reusable additions:** typed Decision-prerequisite edges, separate
+  flow ownership/readiness status, lifetime-correct hook/store ownership,
+  complete atomic postconditions, monotonic CAS/ABA coverage, no general
+  operation log, audit retention, dedicated Explorer search, exact Undo
+  semantics, VQ no-fallback, and source/rendered evidence separation.
+- **Acceptance boundary:** this receipt accepts no implementation, task,
+  phase, issue, branch, publication, VQ decision, or `[x]` marker. All twelve
+  prerequisites remain open and all five selected deferrals remain deferred.
+- **Next legal action:** perform the independent production flow review against
+  the receipt-bearing canonical chain and complete Phase 23–33 plan; record
+  ownership and readiness as separate outcomes.
 
 ---
 
