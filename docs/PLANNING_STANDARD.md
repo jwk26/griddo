@@ -6,14 +6,15 @@
 > **Consumed by:** `$craft-docs`, `$run-phase`, `$run-task`, and `$end-phase`
 > **Owned by:** The project — skills execute the process, this document defines it.
 > **Inbox/Triage amendment status:** **User-approved 2026-07-28.**
-> **Pending canonical-to-production parity amendment:** **Proposed — pending
-> user approval.** The prior approval receipt does not approve this uncommitted
-> maintenance rule.
+> **Canonical-to-production parity amendment:** **User-approved 2026-07-28.**
+> The exact pre-receipt artifact is identified in the maintenance receipt
+> below.
 > **Production derivation evidence:** reviewed Fresh planning-standard SHA-256
 > `24c2e879bfd006c04da23d80830108a0f85d4693e3367e3825e9841b5bc05119`
 > is read-only evidence, not canonical authority. Production authority is the
-> approved map `90022e7`, recipe package `7a15451`, SCHEMA `250a1b5`, SPEC
-> `53c3fe9`, DESIGN_TOKENS `39ad25b`, and EXECUTION_PLAN `92c6d4a` receipts.
+> approved map `90022e7`, recipe package `7a15451`, SCHEMA `8101658`, SPEC
+> `53c3fe9`, DESIGN_TOKENS `39ad25b`, clean EXECUTION_PLAN `dbe5b6b`, and
+> clean flow review `c4e8d29` receipts.
 
 ## Table of Contents
 
@@ -53,6 +54,39 @@
 - **Next legal action:** perform the independent production flow review against
   the receipt-bearing canonical chain and complete Phase 23–33 plan; record
   ownership and readiness as separate outcomes.
+
+### Canonical-To-Production Parity Receipt — 2026-07-28
+
+- **Gate:** add one reusable, blocking pre-approval rule for factual parity
+  between canonical claims and current production source.
+- **User disposition:** approved on 2026-07-28 after independent hash/diff
+  review and an explicit clarification of evidence granularity.
+- **Approved artifact:** commit
+  `e841ab4f49d8daa14f4d1ae3b858b035c3a2b48e`, containing the exact
+  pre-receipt `docs/PLANNING_STANDARD.md` whose SHA-256 is
+  `e9686fd2dcf34db58ad783c4c71265f306761b01f5ec2621ecdde594c011a746`.
+- **Rule:** before an affected canonical gate, `$craft-docs` enumerates current
+  production constants, paths, exports/signatures, stores/indexes, routes, and
+  owners claimed in code examples, prose tables, or constraint cells; it
+  inspects exact source and records the targeted command and result.
+- **Evidence granularity:** one evidence block in the same canonical document
+  may cover multiple explicitly named literals/sections and their production
+  sources. Repetition in every table cell is not required.
+- **Applied evidence:** targeted `rg` inspection of `docs/SCHEMA.md`,
+  `src/lib/constants.ts`, and `src/lib/db/schema.ts` confirmed
+  `GRID_COLS = 18`, `GRID_ROWS = 9`, shared `gridXSchema` / `gridYSchema`
+  derivation, and both Node/Bit uses before the SCHEMA maintenance gate.
+- **Preserved scope:** this rule changes no product meaning, data shape,
+  execution task, flow owner, VQ, deferral, implementation, or acceptance
+  marker. Historical receipts above remain historical evidence; the current
+  authority chain is named in the document header.
+- **Skill follow-up:** the next approved `craft-docs` efficiency/refactor pass
+  should add a low-cost mechanical extractor/checker for production symbols
+  and the canonical code/table claims that cite them. That tool is not part of
+  this project-document gate and is not claimed implemented here.
+- **Next legal action:** the canonical-document campaign is complete. Do not
+  invoke implementation until `run-phase`, `run-task`, and `end-phase` adapter
+  fields are refreshed and separately approved.
 
 ---
 
