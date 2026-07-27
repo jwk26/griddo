@@ -18,22 +18,20 @@ This is the Codex entrypoint. It coexists with, and does not replace or modify,
 
 ## Current Codex lifecycle scope
 
-- The Fresh-map `$craft-docs` campaign is complete through its approved flow
-  review and canonical-production parity maintenance at
-  `041497c6b14f08998c4e8ef0bfb784f0285628aa`.
-- A one-time **docs-only publication close candidate** is declared in
-  `docs/CODEX_WORKFLOW_ADAPTER.md`. It applies only to
-  `docs/inbox-triage-fresh-map-adoption` at the pinned heads in that profile;
-  it is not reusable lifecycle onboarding.
-- `$run-phase`, `$run-task`, and standard `$end-phase` remain unavailable.
-  This close does not accept or execute Tasks 101–165 and does not convert
-  their open markers to `[x]`.
-- Candidate A may contain only this entrypoint and the adapter. Push, PR
-  creation, merge, publication, branch deletion, and worktree cleanup remain
-  forbidden until a separate user Final Close approval is recorded in the
-  declared receipt.
-- After proven merge and main synchronization, retire the one-time close and
-  separately onboard `$run-phase` and `$run-task` from updated `main`.
+- The Fresh-map `$craft-docs` campaign was published by PR #36 and is complete.
+- `$run-phase` is active for the exact Phase 23 Gate C scope declared in
+  `docs/CODEX_WORKFLOW_ADAPTER.md`. `$run-task` is available only from the
+  committed kickoff receipt and only for its exact approved batch.
+- `$end-phase` fields are refreshed for the current feature branch, but the
+  lifecycle remains unavailable until its own user Final Close. The completed
+  docs-publication authority is expired and must never be reused.
+- The first batch is Task 101 only. The historical
+  `phase-23/inbox-triage-persistence` branch and pilot worktree are
+  recovery-only evidence; do not reuse, cherry-pick, reset, delete, or modify
+  them.
+- `$run-phase` owns preparation and the kickoff receipt, then stops.
+  `$run-task` owns implementation and checkpoint evidence; it may not create,
+  switch, delete, rebase, or push a branch or worktree.
 - A task or phase receives `[x]` only after explicit user acceptance.
 - Recover from committed documents, receipts, Git state, and rerun checks—not
   from chat memory or external evidence alone.
