@@ -1,6 +1,9 @@
 import Dexie, { type DexieOptions, type Table } from "dexie";
 import { GRID_COLS, GRID_ROWS, TRASH_RETENTION_DAYS } from "@/lib/constants";
-import type { DataStore } from "@/lib/db/datastore";
+import type {
+  AggregateHardDeleteResult,
+  DataStore,
+} from "@/lib/db/datastore";
 import {
   bitSchema,
   chunkSchema,
@@ -64,6 +67,7 @@ type DatabaseLike = {
   chunks: TableLike<Chunk>;
   settings?: SettingsTableLike;
   scratchBreakdowns?: TableLike<ScratchBreakdown>;
+  stagedCandidates?: TableLike<StagedCandidate>;
 };
 
 type IndexedDBTransactionCheckpointHook = (name: string) => undefined;
@@ -489,61 +493,42 @@ export class IndexedDBDataStore implements DataStore {
     });
   }
 
-  async hardDeleteNode(id: string): Promise<void> {
-    const node = await this.getRequiredNode(id);
-    const { nodeIds, bitIds } = await this.collectNodeSubtreeIds(id);
-    const chunks = await this.database.chunks.toArray();
-    const chunkIds = chunks
-      .filter((chunk) => bitIds.has(chunk.parentId))
-      .map((chunk) => chunk.id);
-    const timestamp = Date.now();
-
-    await this.write(async () => {
-      await this.database.chunks.bulkDelete(chunkIds);
-      await this.database.bits.bulkDelete([...bitIds]);
-      await this.database.nodes.bulkDelete([...nodeIds]);
-
-      if (node.parentId) {
-        await this.touchNodeIds([node.parentId], timestamp);
-      }
+  async hardDeleteNode(id: string): Promise<AggregateHardDeleteResult> {
+    return this.write(async () => {
+      await this.getRequiredNode(id);
+      return this.deletePlannedAggregate(new Set([id]), new Set());
     });
   }
 
-  async cleanupExpiredTrash(): Promise<void> {
-    const expirationCutoff = Date.now() - TRASH_RETENTION_DAYS * 86_400_000;
-    const [nodes, bits] = await Promise.all([
-      this.database.nodes.toArray(),
-      this.database.bits.toArray(),
-    ]);
-    const expiredNodeIds = nodes
-      .filter((node) => node.deletedAt !== null && node.deletedAt < expirationCutoff)
-      .map((node) => node.id);
-    const expiredBitIds = bits
-      .filter((bit) => bit.deletedAt !== null && bit.deletedAt < expirationCutoff)
-      .map((bit) => bit.id);
+  async cleanupExpiredTrash(): Promise<AggregateHardDeleteResult> {
+    return this.write(async () => {
+      const expirationCutoff = Date.now() - TRASH_RETENTION_DAYS * 86_400_000;
+      const [nodes, bits] = await Promise.all([
+        this.database.nodes.toArray(),
+        this.database.bits.toArray(),
+      ]);
+      const nodeIds = new Set(nodes.map(({ id }) => id));
+      const expiredNodeIds = new Set(
+        nodes
+          .filter(
+            (node) =>
+              node.deletedAt !== null && node.deletedAt < expirationCutoff,
+          )
+          .map(({ id }) => id),
+      );
+      const expiredBitIds = new Set(
+        bits
+          .filter(
+            (bit) =>
+              bit.deletedAt !== null &&
+              bit.deletedAt < expirationCutoff &&
+              nodeIds.has(bit.parentId),
+          )
+          .map(({ id }) => id),
+      );
 
-    for (const nodeId of expiredNodeIds) {
-      const existingNode = await this.database.nodes.get(nodeId);
-      if (!existingNode) {
-        continue;
-      }
-
-      await this.hardDeleteNode(nodeId);
-    }
-
-    for (const bitId of expiredBitIds) {
-      const existingBit = await this.database.bits.get(bitId);
-      if (!existingBit) {
-        continue;
-      }
-
-      const parentNode = await this.database.nodes.get(existingBit.parentId);
-      if (!parentNode) {
-        continue;
-      }
-
-      await this.hardDeleteBit(bitId);
-    }
+      return this.deletePlannedAggregate(expiredNodeIds, expiredBitIds);
+    });
   }
 
   async getBit(id: string): Promise<Bit | undefined> {
@@ -727,30 +712,10 @@ export class IndexedDBDataStore implements DataStore {
     });
   }
 
-  async hardDeleteBit(id: string): Promise<void> {
-    const bit = await this.getRequiredBit(id);
-    const chunks = await this.database.chunks.toArray();
-    const chunkIds = chunks
-      .filter((chunk) => chunk.parentId === id)
-      .map((chunk) => chunk.id);
-
-    const scratchRowIds: string[] = [];
-    if (this.database.scratchBreakdowns) {
-      const rows = await this.database.scratchBreakdowns.toArray();
-      for (const row of rows) {
-        if (row.scratchBitId === id) scratchRowIds.push(row.id);
-      }
-    }
-
-    const timestamp = Date.now();
-
-    await this.write(async () => {
-      if (this.database.scratchBreakdowns && scratchRowIds.length > 0) {
-        await this.database.scratchBreakdowns.bulkDelete(scratchRowIds);
-      }
-      await this.database.chunks.bulkDelete(chunkIds);
-      await this.database.bits.delete(id);
-      await this.touchNodeIds([bit.parentId], timestamp);
+  async hardDeleteBit(id: string): Promise<AggregateHardDeleteResult> {
+    return this.write(async () => {
+      await this.getRequiredBit(id);
+      return this.deletePlannedAggregate(new Set(), new Set([id]));
     });
   }
 
@@ -1143,28 +1108,6 @@ export class IndexedDBDataStore implements DataStore {
     }
 
     await table.put(scratchBreakdownSchema.parse(incrementVersion({ ...row, consumedAt: null })));
-  }
-
-  async deleteScratchBreakdownsByScratch(scratchBitId: string): Promise<void> {
-    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
-      return this.write(() => this.deleteScratchBreakdownsByScratch(scratchBitId));
-    }
-
-    const table = this.requireScratchBreakdowns();
-    const all = await table.toArray();
-    const ids = all
-      .filter((row) => row.scratchBitId === scratchBitId)
-      .map((row) => row.id);
-
-    if (ids.length === 0) {
-      return;
-    }
-
-    const owner = await this.getRequiredBit(scratchBitId);
-    await this.write(async () => {
-      await table.bulkDelete(ids);
-      await this.database.bits.put(incrementVersion(owner));
-    });
   }
 
   async deleteScratchBreakdown(id: string): Promise<void> {
@@ -1611,6 +1554,134 @@ export class IndexedDBDataStore implements DataStore {
     return newNode;
   }
 
+  private async deletePlannedAggregate(
+    nodeRootIds: ReadonlySet<string>,
+    bitRootIds: ReadonlySet<string>,
+  ): Promise<AggregateHardDeleteResult> {
+    const [nodes, bits, chunks, scratchBreakdowns, stagedCandidates] =
+      await Promise.all([
+        this.database.nodes.toArray(),
+        this.database.bits.toArray(),
+        this.database.chunks.toArray(),
+        this.database.scratchBreakdowns
+          ? this.database.scratchBreakdowns.toArray()
+          : Promise.resolve([] as ScratchBreakdown[]),
+        this.database.stagedCandidates
+          ? this.database.stagedCandidates.toArray()
+          : Promise.resolve([] as StagedCandidate[]),
+      ]);
+
+    const nodesById = new Map(nodes.map((node) => [node.id, node]));
+    const bitsById = new Map(bits.map((bit) => [bit.id, bit]));
+    const nodeIds = new Set<string>();
+
+    for (const rootId of nodeRootIds) {
+      for (const nodeId of collectDescendantNodeIds(rootId, nodes)) {
+        nodeIds.add(nodeId);
+      }
+    }
+
+    const bitIds = new Set<string>(bitRootIds);
+    for (const bit of bits) {
+      if (nodeIds.has(bit.parentId)) {
+        bitIds.add(bit.id);
+      }
+    }
+
+    const chunkIds = chunks
+      .filter((chunk) => bitIds.has(chunk.parentId))
+      .map(({ id }) => id);
+    const breakdownIds = new Set(
+      scratchBreakdowns
+        .filter((row) => bitIds.has(row.scratchBitId))
+        .map(({ id }) => id),
+    );
+    const breakdownsById = new Map(
+      scratchBreakdowns.map((row) => [row.id, row]),
+    );
+    const impactedCandidates = stagedCandidates.filter((candidate) => {
+      const source = breakdownsById.get(candidate.sourceBreakdownId);
+      return (
+        bitIds.has(candidate.scratchBitId) ||
+        (source !== undefined && breakdownIds.has(source.id))
+      );
+    });
+    const integrityCandidates = impactedCandidates
+      .filter((candidate) => {
+        const source = breakdownsById.get(candidate.sourceBreakdownId);
+        return !source || source.scratchBitId !== candidate.scratchBitId;
+      })
+      .sort((left, right) => left.id.localeCompare(right.id));
+
+    if (integrityCandidates.length > 0) {
+      return {
+        status: "integrity_cleanup_required",
+        candidates: integrityCandidates,
+      };
+    }
+
+    const candidateIds = impactedCandidates.map(({ id }) => id);
+    const parentNodeIds = new Set<string>();
+
+    for (const rootId of nodeRootIds) {
+      const parentId = nodesById.get(rootId)?.parentId;
+      if (parentId !== null && parentId !== undefined) {
+        parentNodeIds.add(parentId);
+      }
+    }
+    for (const rootId of bitRootIds) {
+      const parentId = bitsById.get(rootId)?.parentId;
+      if (parentId !== undefined) {
+        parentNodeIds.add(parentId);
+      }
+    }
+    for (const deletedNodeId of nodeIds) {
+      parentNodeIds.delete(deletedNodeId);
+    }
+
+    const timestamp = Date.now();
+    const survivingParentNodes = nodes
+      .filter((node) => parentNodeIds.has(node.id))
+      .map((node) => ({ ...node, mtime: timestamp }));
+
+    if (
+      candidateIds.length > 0 &&
+      this.database.stagedCandidates !== undefined
+    ) {
+      await this.database.stagedCandidates.bulkDelete(candidateIds);
+      this.emitTransactionCheckpoint(
+        "aggregate-delete.after.stagedCandidates",
+      );
+    }
+    if (
+      breakdownIds.size > 0 &&
+      this.database.scratchBreakdowns !== undefined
+    ) {
+      await this.database.scratchBreakdowns.bulkDelete([...breakdownIds]);
+      this.emitTransactionCheckpoint(
+        "aggregate-delete.after.scratchBreakdowns",
+      );
+    }
+    if (chunkIds.length > 0) {
+      await this.database.chunks.bulkDelete(chunkIds);
+      this.emitTransactionCheckpoint("aggregate-delete.after.chunks");
+    }
+    if (bitIds.size > 0) {
+      await this.database.bits.bulkDelete([...bitIds]);
+      this.emitTransactionCheckpoint("aggregate-delete.after.bits");
+    }
+    if (nodeIds.size > 0) {
+      await this.database.nodes.bulkDelete([...nodeIds]);
+      this.emitTransactionCheckpoint("aggregate-delete.after.nodes");
+    }
+    if (survivingParentNodes.length > 0) {
+      await this.database.nodes.bulkPut(survivingParentNodes);
+      this.emitTransactionCheckpoint("aggregate-delete.after.parentNodes");
+    }
+
+    return { status: "deleted" };
+  }
+
   private async write<T>(scope: () => Promise<T>): Promise<T> {
     if (this.database instanceof GridDODatabase) {
       if (this.hasAmbientWriteTransaction()) {
@@ -1840,16 +1911,6 @@ export class IndexedDBDataStore implements DataStore {
         .map((nodeId) => allNodes.find((node) => node.id === nodeId))
         .filter(isDefined),
       bits: allBits.filter((bit) => nodeIdSet.has(bit.parentId)),
-    };
-  }
-
-  private async collectNodeSubtreeIds(
-    id: string,
-  ): Promise<{ nodeIds: Set<string>; bitIds: Set<string> }> {
-    const { nodes, bits } = await this.collectNodeSubtree(id);
-    return {
-      nodeIds: new Set(nodes.map((node) => node.id)),
-      bitIds: new Set(bits.map((bit) => bit.id)),
     };
   }
 

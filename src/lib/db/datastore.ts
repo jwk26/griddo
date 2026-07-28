@@ -10,7 +10,15 @@ import type {
   ScratchBreakdown,
   CreateScratchBreakdown,
   UpdateScratchBreakdown,
+  StagedCandidate,
 } from "@/lib/db/schema";
+
+export type AggregateHardDeleteResult =
+  | { status: "deleted" }
+  | {
+      status: "integrity_cleanup_required";
+      candidates: StagedCandidate[];
+    };
 
 export interface DataStore {
   // --- Nodes ---
@@ -20,8 +28,8 @@ export interface DataStore {
   updateNode(id: string, data: UpdateNode): Promise<void>;
   softDeleteNode(id: string): Promise<void>;
   restoreNode(id: string): Promise<void>;
-  hardDeleteNode(id: string): Promise<void>;
-  cleanupExpiredTrash(): Promise<void>;
+  hardDeleteNode(id: string): Promise<AggregateHardDeleteResult>;
+  cleanupExpiredTrash(): Promise<AggregateHardDeleteResult>;
 
   getAllActiveNodes(): Promise<Node[]>;
 
@@ -34,7 +42,7 @@ export interface DataStore {
   updateBit(id: string, data: UpdateBit): Promise<void>;
   softDeleteBit(id: string): Promise<void>;
   restoreBit(id: string): Promise<void>;
-  hardDeleteBit(id: string): Promise<void>;
+  hardDeleteBit(id: string): Promise<AggregateHardDeleteResult>;
 
   // --- Lifecycle ---
   archiveNode(id: string): Promise<void>;
@@ -57,7 +65,6 @@ export interface DataStore {
   updateScratchBreakdown(id: string, data: UpdateScratchBreakdown): Promise<void>;
   markScratchBreakdownConsumed(id: string): Promise<void>;
   unconsumeScratchBreakdown(id: string): Promise<void>;
-  deleteScratchBreakdownsByScratch(scratchBitId: string): Promise<void>;
   deleteScratchBreakdown(id: string): Promise<void>;
 
   // --- Chunks ---

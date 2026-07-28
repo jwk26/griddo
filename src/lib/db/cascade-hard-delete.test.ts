@@ -1,6 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Bit, Chunk, Node } from "@/lib/db/schema";
 import { IndexedDBDataStore } from "@/lib/db/indexeddb";
+import {
+  TRANSACTION_TEST_IDS,
+  createSevenStoreSeed,
+  openTransactionTestDatabase,
+  seedSevenStores,
+  snapshotSevenStores,
+} from "@/lib/db/indexeddb.test-utils";
 
 type StoredRecord = { id: string };
 
@@ -159,5 +166,55 @@ describe("cascade hard delete", () => {
 
     const remainingChunks = await tables.chunks.toArray();
     expect(remainingChunks).toEqual([unrelatedChunk]);
+  });
+
+  it("deletes a Node closure's Scratch source and candidate without deleting audit history", async () => {
+    const database = await openTransactionTestDatabase();
+
+    try {
+      await seedSevenStores(database, createSevenStoreSeed());
+      const before = await snapshotSevenStores(database);
+      const store = new IndexedDBDataStore(database);
+
+      const result = await store.hardDeleteNode(
+        TRANSACTION_TEST_IDS.inboxNode,
+      );
+      const after = await snapshotSevenStores(database);
+
+      expect(result).toEqual({ status: "deleted" });
+      expect(after.nodes).toEqual([]);
+      expect(after.bits).toEqual([]);
+      expect(after.chunks).toEqual([]);
+      expect(after.scratchBreakdowns).toEqual([]);
+      expect(after.stagedCandidates).toEqual([]);
+      expect(after.candidateOrphanAuditEvents).toEqual(
+        before.candidateOrphanAuditEvents,
+      );
+      expect(after.settings).toEqual(before.settings);
+    } finally {
+      database.close();
+    }
+  });
+
+  it("rolls the actual hardDeleteNode path back when the Node-store checkpoint throws", async () => {
+    const database = await openTransactionTestDatabase();
+
+    try {
+      await seedSevenStores(database, createSevenStoreSeed());
+      const before = await snapshotSevenStores(database);
+      const store = new IndexedDBDataStore(database, (checkpoint) => {
+        if (checkpoint === "aggregate-delete.after.nodes") {
+          throw new Error(checkpoint);
+        }
+        return undefined;
+      });
+
+      await expect(
+        store.hardDeleteNode(TRANSACTION_TEST_IDS.inboxNode),
+      ).rejects.toThrow("aggregate-delete.after.nodes");
+      expect(await snapshotSevenStores(database)).toEqual(before);
+    } finally {
+      database.close();
+    }
   });
 });

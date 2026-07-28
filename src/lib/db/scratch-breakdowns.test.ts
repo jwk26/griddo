@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { Bit, Chunk, CreateScratchBreakdown, Node, ScratchBreakdown } from "@/lib/db/schema";
 import { IndexedDBDataStore } from "@/lib/db/indexeddb";
+import {
+  TRANSACTION_TEST_IDS,
+  createSevenStoreSeed,
+  openTransactionTestDatabase,
+  seedSevenStores,
+  snapshotSevenStores,
+} from "@/lib/db/indexeddb.test-utils";
 
 type StoredRecord = { id: string };
 type StoredSetting = { key: string; value: unknown };
@@ -302,62 +309,10 @@ describe("IndexedDBDataStore scratchBreakdowns CRUD", () => {
     expect(result.version).toBe(10);
   });
 
-  it("bulk deletes scratch breakdowns by scratch bit", async () => {
-    const scratchBitA = testUuid(106);
-    const scratchBitB = testUuid(107);
-    const ownerA = createBit({
-      id: scratchBitA,
-      parentId: testUuid(308),
-      title: "Scratch A",
-      version: 20,
-    });
-    const ownerB = createBit({
-      id: scratchBitB,
-      parentId: testUuid(309),
-      title: "Scratch B",
-      version: 30,
-    });
-    const rows = [
-      createScratchBreakdown({
-        id: testUuid(108),
-        scratchBitId: scratchBitA,
-        order: 0,
-      }),
-      createScratchBreakdown({
-        id: testUuid(109),
-        scratchBitId: scratchBitA,
-        order: 1,
-      }),
-      createScratchBreakdown({
-        id: testUuid(110),
-        scratchBitId: scratchBitA,
-        order: 2,
-      }),
-      createScratchBreakdown({
-        id: testUuid(111),
-        scratchBitId: scratchBitB,
-        order: 0,
-      }),
-      createScratchBreakdown({
-        id: testUuid(112),
-        scratchBitId: scratchBitB,
-        order: 1,
-      }),
-    ];
-    const { database, store } = createStore({
-      bits: [ownerA, ownerB],
-      scratchBreakdowns: rows,
-    });
+  it("does not expose aggregate Breakdown deletion as a public sequencing API", () => {
+    const { store } = createStore();
 
-    await store.deleteScratchBreakdownsByScratch(scratchBitA);
-
-    expect(await store.getScratchBreakdowns(scratchBitA)).toEqual([]);
-    expect(await store.getScratchBreakdowns(scratchBitB)).toHaveLength(2);
-    expect((await database.bits.get(scratchBitA))?.version).toBe(21);
-    expect((await database.bits.get(scratchBitB))?.version).toBe(30);
-
-    await store.deleteScratchBreakdownsByScratch(scratchBitA);
-    expect((await database.bits.get(scratchBitA))?.version).toBe(21);
+    expect(store).not.toHaveProperty("deleteScratchBreakdownsByScratch");
   });
 
   it("deletes a single scratch breakdown by id without affecting others", async () => {
@@ -484,6 +439,31 @@ describe("IndexedDBDataStore scratchBreakdowns lifecycle integration", () => {
     expect(await store.getScratchBreakdowns(scratchBit.id)).toHaveLength(2);
   });
 
+  it("keeps source rows, staged candidates, and audit history when archiving Scratch", async () => {
+    const database = await openTransactionTestDatabase();
+
+    try {
+      await seedSevenStores(database, createSevenStoreSeed());
+      const before = await snapshotSevenStores(database);
+      const store = new IndexedDBDataStore(database);
+
+      await store.archiveBit(TRANSACTION_TEST_IDS.scratchBit);
+      const after = await snapshotSevenStores(database);
+
+      expect(after.scratchBreakdowns).toEqual(before.scratchBreakdowns);
+      expect(after.stagedCandidates).toEqual(before.stagedCandidates);
+      expect(after.candidateOrphanAuditEvents).toEqual(
+        before.candidateOrphanAuditEvents,
+      );
+      expect(after.bits[0]).toMatchObject({
+        id: TRANSACTION_TEST_IDS.scratchBit,
+        archivedAt: expect.any(Number),
+      });
+    } finally {
+      database.close();
+    }
+  });
+
   it("hard-deletes bits and chunks without a scratchBreakdowns table", async () => {
     const parentNode = createNode({ id: testUuid(124) });
     const bit = createBit({ id: testUuid(125), parentId: parentNode.id });
@@ -503,7 +483,9 @@ describe("IndexedDBDataStore scratchBreakdowns lifecycle integration", () => {
       chunks: [chunk],
     });
 
-    await expect(store.hardDeleteBit(bit.id)).resolves.toBeUndefined();
+    await expect(store.hardDeleteBit(bit.id)).resolves.toEqual({
+      status: "deleted",
+    });
 
     expect(await database.bits.get(bit.id)).toBeUndefined();
     expect(await database.chunks.get(chunk.id)).toBeUndefined();

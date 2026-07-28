@@ -2,6 +2,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { TRASH_RETENTION_DAYS } from "@/lib/constants";
 import type { Bit, Chunk, Node } from "@/lib/db/schema";
 import { IndexedDBDataStore } from "@/lib/db/indexeddb";
+import {
+  createSevenStoreSeed,
+  openTransactionTestDatabase,
+  seedSevenStores,
+  snapshotSevenStores,
+  transactionTestUuid,
+} from "@/lib/db/indexeddb.test-utils";
 
 type StoredRecord = { id: string };
 
@@ -164,7 +171,7 @@ describe("trash cleanup", () => {
       chunks: [expiredNodeChunk, expiredStandaloneChunk, freshChunk],
     });
 
-    await store.cleanupExpiredTrash();
+    const result = await store.cleanupExpiredTrash();
 
     const remainingNodes = await tables.nodes.toArray();
     const remainingBits = await tables.bits.toArray();
@@ -180,5 +187,46 @@ describe("trash cleanup", () => {
     expect(remainingNodes.find((node) => node.id === activeParent.id)?.version).toBe(5);
     expect(remainingNodes.find((node) => node.id === freshNode.id)?.version).toBe(6);
     expect(remainingBits.find((bit) => bit.id === freshBit.id)?.version).toBe(7);
+    expect(result).toEqual({ status: "deleted" });
+  });
+
+  it("rolls every expired closure back when a later Scratch mutation fails", async () => {
+    const database = await openTransactionTestDatabase();
+
+    try {
+      const seed = createSevenStoreSeed();
+      const deletedAt = Date.now() - TRASH_RETENTION_DAYS * DAY - DAY;
+      const plainBit: Bit = {
+        ...seed.bits[0]!,
+        id: transactionTestUuid(201),
+        title: "First expired Bit",
+        x: 1,
+        deletedAt,
+      };
+      const plainChunk: Chunk = {
+        ...seed.chunks[0]!,
+        id: transactionTestUuid(202),
+        parentId: plainBit.id,
+        title: "First expired chunk",
+      };
+      seed.bits[0] = { ...seed.bits[0]!, deletedAt };
+      seed.bits = [plainBit, seed.bits[0]!];
+      seed.chunks = [plainChunk, seed.chunks[0]!];
+      await seedSevenStores(database, seed);
+      const before = await snapshotSevenStores(database);
+      const store = new IndexedDBDataStore(database, (checkpoint) => {
+        if (checkpoint === "aggregate-delete.after.stagedCandidates") {
+          throw new Error(checkpoint);
+        }
+        return undefined;
+      });
+
+      await expect(store.cleanupExpiredTrash()).rejects.toThrow(
+        "aggregate-delete.after.stagedCandidates",
+      );
+      expect(await snapshotSevenStores(database)).toEqual(before);
+    } finally {
+      database.close();
+    }
   });
 });
