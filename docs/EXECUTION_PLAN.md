@@ -329,7 +329,7 @@ Responsive/mobile redesign remains excluded; active implementation targets the d
 
 **Commit contract:** v4 declaration/upgrade plus the v3 preservation and dedicated v4 tests only; `feat(triage): migrate indexeddb atomically to v4`.
 
-### Task 103: [ ] Enforce revisions across every public and repository mutation path
+### Task 103: [x] Enforce revisions across every public and repository mutation path
 
 **Files and actions**
 

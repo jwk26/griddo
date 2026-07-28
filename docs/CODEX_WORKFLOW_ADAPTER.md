@@ -13,13 +13,13 @@ lifecycle_scope:
   active: [run-phase, run-task]
   craft_docs_state: complete and merged by PR #36 at main a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
   run_phase: Gate C-approved Phase 23 preparation is complete
-  run_task: current bounded batch is Task 103 only, after committed Task 102 acceptance
+  run_task: current bounded batch is Task 104 only, after committed Task 103 acceptance
   end_phase: fields refreshed below but lifecycle unavailable until a separate user Final Close
   expired_authority: the one-time docs-publication close is complete and may not be reused
   onboarding_commit_policy: one post-base-green commit containing only AGENTS.md and docs/CODEX_WORKFLOW_ADAPTER.md
   commit_policy: run-phase may commit the approved entrypoint and kickoff receipt; run-task follows its exact task and ledger commit contracts
   checkpoint_policy: require a committed clean receipt before each lifecycle handoff
-  task_acceptance_policy: Tasks 101–102 accepted; Tasks 103–165 remain open; only explicit user acceptance may write `[x]`
+  task_acceptance_policy: Tasks 101–103 accepted; Tasks 104–165 remain open; only explicit user acceptance may write `[x]`
 
 canonical_documents:
   authority_order: [schema, spec, design, execution, planning_standard, workflow]
@@ -53,9 +53,8 @@ verification_gates:
   authoritative_source: package.json scripts plus docs/PLANNING_STANDARD.md
   focused:
     - git diff --check
-    - "Task 103: pnpm exec vitest run src/hooks/use-grid-actions.test.ts src/hooks/use-node-actions.test.ts src/hooks/use-bit-detail-actions.test.ts src/lib/db/revision.test.ts src/lib/db/indexeddb.test.ts src/lib/db/mtime-cascade.test.ts src/lib/db/auto-completion.test.ts src/lib/db/cascade-delete.test.ts src/lib/db/cascade-restore.test.ts src/lib/db/cascade-hard-delete.test.ts src/lib/db/auto-cleanup.test.ts src/lib/db/indexeddb.migration.test.ts src/lib/db/archive.test.ts src/lib/db/system-nodes.test.ts src/lib/db/promotion.test.ts src/lib/db/grid-uniqueness.test.ts src/lib/db/deadline-hierarchy.test.ts src/lib/db/scratch-breakdowns.test.ts"
-    - "Task 103: pnpm typecheck"
-    - "Task 103: pnpm lint"
+    - "Task 104: pnpm exec vitest run src/lib/db/indexeddb.transaction.test.ts"
+    - "Task 104: pnpm typecheck"
   full:
     - pnpm test
     - pnpm lint
@@ -70,8 +69,8 @@ verification_gates:
 phase_execution:
   phase: 23
   phase_tasks: [101, 102, 103, 104, 105]
-  accepted_tasks: [101, 102]
-  current_batch: [103]
+  accepted_tasks: [101, 102, 103]
+  current_batch: [104]
   source_mode: approved clean canonical plan and flow review merged by PR #36
   kickoff_receipt: docs/issues/Issues_Phase_23.md#gate-c-kickoff-receipt
   approved_base: a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
@@ -154,8 +153,8 @@ cleanup:
 
 - Gate C authorized the exact branch/worktree preparation and kickoff receipt;
   later task execution requires the committed prior-task acceptance boundary.
-- `$run-task` requires the committed kickoff and Task 102 acceptance receipts,
-  may execute only Task 103, and never owns branch topology or publication.
+- `$run-task` requires the committed kickoff and Task 103 acceptance receipts,
+  may execute only Task 104, and never owns branch topology or publication.
 - `$end-phase` is not active. Its refreshed fields are future inputs only and
   require their own close audit and user Final Close approval.
 - The completed one-time docs-publication authority is expired and cannot be

@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–102 accepted; Task 103 implemented and awaiting user acceptance
+> State: Tasks 101–103 accepted; Task 104 authorized but not started
 
 ## Status Legend
 
@@ -94,17 +94,17 @@ None at kickoff.
 
 | Field | Durable value |
 | --- | --- |
-| Task | Task 103 — Enforce revisions across every public and repository mutation path |
-| State | `Implemented` at `6b04c61bd8e739494cd3d30db3c0e27d6a71d49a`; Task 103 marker remains open pending user acceptance |
-| Approved scope | Exact Task 103 batch from `docs/EXECUTION_PLAN.md`: revision/public-boundary code and the named mutation-path tests only |
+| Task | Task 104 — Build a real IndexedDB transaction and fault-injection harness |
+| State | `Not started`; authorized by explicit Task 103 acceptance; requires a committed `In Progress` start signal before production writes |
+| Approved scope | Exact Task 104 batch from `docs/EXECUTION_PLAN.md`: real IndexedDB test utility, transaction rollback tests, and the smallest named-checkpoint seam only |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
-| Recovery anchor | Task 102 acceptance commit `c28ea90` on `phase-23/inbox-triage-model-foundation` |
-| Implementation commit | `6b04c61bd8e739494cd3d30db3c0e27d6a71d49a` (`feat(db): enforce monotonic record revisions`) |
-| Canonical impact | `Reflected` — implement the already-approved SCHEMA monotonic revision/CAS boundary without changing canonical policy |
-| Issues / deviations | One necessary derived write-set deviation is included in the implementation but was not separately approved before commit: remove nine caller-owned `mtime` values from `src/hooks/use-dnd.ts` after the Task 103 public update boundary made those inputs invalid. It awaits explicit disposition with the Task 103 checkpoint. |
-| Next legal action | Present the committed Task 103 evidence for explicit user acceptance or rejection; Task 104 must not start first. |
+| Recovery anchor | Accepted Task 103 implementation `6b04c61`, evidence `df7d0d1`, and deviation correction `791a6dd` on `phase-23/inbox-triage-model-foundation` |
+| Implementation commit | Not created |
+| Canonical impact | `Reflected` — implement the already-approved seven-store transaction/rollback boundary without changing canonical policy |
+| Issues / deviations | None open at authorization. Task 104 start must reconcile the Task 103 local real-IDB helper with the planned shared utility and prove all seven stores are in scope. |
+| Next legal action | Commit this acceptance boundary, then record a separate Task 104 `In Progress` start signal and observe the planned real-transaction rollback RED before production writes. |
 
 ## Task 103 Start Receipt
 
@@ -206,10 +206,39 @@ None at kickoff.
 | `pnpm build` | 0 | Production build completed; seven routes generated |
 | `git diff --check` | 0 | No whitespace errors |
 
-The implementation is committed at
-`6b04c61bd8e739494cd3d30db3c0e27d6a71d49a`; user acceptance is still
-pending. Task 103 remains `[ ]`, and Task 104 must not start before that
-acceptance checkpoint closes.
+The checkpointed implementation is committed at
+`6b04c61bd8e739494cd3d30db3c0e27d6a71d49a`. The acceptance receipt below
+records the later user-owned disposition and is the only authority for the
+Task 103 `[x]` marker.
+
+## Task 103 Acceptance Receipt
+
+- **Disposition:** accepted explicitly by the user on 2026-07-28 with the
+  instruction `승인` after the corrected checkpoint made the derived
+  `src/hooks/use-dnd.ts` write-set deviation explicit.
+- **Accepted implementation:** `6b04c61` (`feat(db): enforce monotonic record
+  revisions`).
+- **Evidence receipts:** `df7d0d1` (`docs: record Task 103 implementation
+  evidence`) and `791a6dd` (`docs: correct Task 103 deviation disposition`).
+- **Verification:** 18 focused files / 91 tests, 78 full files / 531 tests,
+  typecheck, lint with 0 errors and the same 11 warnings, production build,
+  and `git diff --check` all exited 0.
+- **Independent review:** blocker count zero. The reviewer directly reran the
+  focused and full tests plus typecheck, confirmed real IndexedDB concurrent
+  update coverage, and verified no Task 104, Task 105, Task 120, or
+  `schema.ts` scope leakage.
+- **Deviation disposition:** this acceptance includes the necessary removal of
+  nine caller-owned `mtime` values from `src/hooks/use-dnd.ts`. No broader
+  write-set expansion is accepted.
+- **Checkpoint buckets:** `Visible now: None — data/repository-only behavior`;
+  `Review now: None`; `Planned later: Task 104 fault-injection harness and Task
+  120 expected-version command/reconciliation behavior`; `Unowned: None`.
+- **Boundary:** this accepts Task 103 only. Task 104 may begin only through its
+  separate committed start signal. No Task 105 work, push, merge, publication,
+  phase acceptance, or visual Decision receipt is granted.
+- **Next legal action:** commit this receipt, then begin Task 104 through the
+  named `$run-task` path with a separate `In Progress` start signal and
+  observed real-transaction rollback RED.
 
 ## Task 102 Start Receipt
 
@@ -384,7 +413,7 @@ correct while still exposing excessive context, repeated checks, adapter
 churn, or discovery/bootstrap failure. Skill code remains frozen during Phase
 23; findings are accumulated here for the post-phase improvement pass.
 
-### Current coverage limitation
+### Coverage status
 
 - The custom `$run-task` skill is installed through the project skill symlink,
   but it was not exposed in this session's available-skill catalog. Tasks 101
@@ -393,9 +422,9 @@ churn, or discovery/bootstrap failure. Skill code remains frozen during Phase
 - Consequently, these tasks are valid tests of scope control, receipts, TDD,
   verification, acceptance markers, and stop boundaries, but they are **not**
   a complete test of `$run-task` invocation or its native context cost.
-- Task 103 should start in a fresh session where `$run-task` is visibly loaded;
-  inability to do so is itself a release-blocking discovery/bootstrap finding
-  for the post-Phase-23 skill audit.
+- Task 103 was executed in a session where `$run-task` was visibly loaded and
+  its required references were read. It is the first complete native
+  discovery/loading trace; Tasks 104–105 must continue that evidence series.
 
 ### Observed task data
 
@@ -403,11 +432,13 @@ churn, or discovery/bootstrap failure. Skill code remains frozen during Phase
 | --- | --- | ---: | --- | --- |
 | 101 | `ee42ff8` → `5fdf9aa` | 18m 37s | Exact commit scope, RED/repair, 505-test full gate, explicit checkpoint | Declared `pnpm test -- <file>` ran the full suite; focused-command normalization is required. Two generic type defects were caught by review after the initial implementation. |
 | 102 | `2e77b46` → `ff56d82` | 9m 06s | Four observed RED clusters, exact three-file scope, atomic rollback proof, 517-test full gate | Advancing one task required a sizable adapter/ledger rewrite. Named-skill loading was unavailable. A second full test was justified only because the final preservation fixture invalidated the first test result; build was not repeated after test-only evidence changes. |
+| 103 | `6bce8ae` → `df7d0d1` | 50m 12s | Named `$run-task` loaded; 23 implementation paths; real-IDB concurrency RED; 91 focused and 531 full tests; explicit checkpoint | A wide invariant sweep lacked internal checkpoints, so late lost-update and Scratch-owner defects reopened the whole batch. Dependency-ready Task 104 was hidden by numeric ordering. One necessary `use-dnd.ts` deviation entered before file-specific approval and required a corrective receipt. |
 
 ### What the pilot has validated
 
-- Exact task scope and commit contracts prevented Task 103 CAS or later command
-  behavior from leaking into Tasks 101–102.
+- Exact task scope and commit contracts prevented Task 104 fault injection,
+  Task 105 aggregate deletion, and Task 120 command/reconciliation behavior
+  from leaking into Task 103.
 - `[x]` remained user-owned; implementation evidence did not silently accept a
   task or start the next one.
 - RED-first testing caught missing versioning, migration, validation, and Zod
@@ -416,6 +447,9 @@ churn, or discovery/bootstrap failure. Skill code remains frozen during Phase
   the active task.
 - Focused tests plus invalidated full gates produced useful confidence without
   rerunning every gate after documentation-only commits.
+- Task 103 produced the first native named-skill trace and exposed concrete
+  checkpoint-granularity, dependency-ordering, and scope-deviation findings
+  for the post-Phase-23 improvement pass.
 
 ### Post-Phase-23 improvement candidates
 
@@ -439,8 +473,8 @@ reads. Do not modify `run-task` until the Phase 23 trace is complete.
 
 ## Run-Task Boundary
 
-Task 102 is accepted. The next lifecycle may execute Task 103 only. Before its
+Task 103 is accepted. The next lifecycle may execute Task 104 only. Before its
 first production write, `$run-task` must verify this branch/worktree/receipt
-and commit an `In Progress` start signal. It must observe the planned
-revision/public-boundary failures before implementation. Task 104, push,
-publication, merge, and `end-phase` remain forbidden.
+and commit an `In Progress` start signal. It must observe the planned real
+IndexedDB rollback/fault-injection failures before implementation. Task 105,
+push, publication, merge, and `end-phase` remain forbidden.
