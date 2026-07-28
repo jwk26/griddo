@@ -995,3 +995,65 @@ Blocking violations: **0**. Advisory violations: **0**.
 A, its diff hash, the future receipt payload, publication metadata, and the
 preserve-local cleanup rule. This audit is not the Final Close receipt and
 grants no push, PR, merge, or deletion authority.
+
+## Final Close Receipt
+
+- **Gate:** Phase 23 Final Close.
+- **User disposition:** explicitly approved on 2026-07-28 for this exact
+  candidate, publication transaction, and cleanup boundary.
+- **Pre-close SHA:** `48e9937986bfa46e4cb5ad1201be8d2e1a67e91c`.
+- **Approved close candidate A:**
+  `63f94f392326106925847413806e69bc325939fa`, tree
+  `bb913558637f5804c863f9dedf97acb449e58c35`, with parent equal to the
+  pre-close SHA.
+- **Candidate diff SHA-256:**
+  `e1b5e921c691299f2b4745d0cd166b4037c39a34d82fc8287e6111190e033cfe`.
+- **Feature identity:** branch
+  `phase-23/inbox-triage-model-foundation`, remote `origin`
+  (`https://github.com/jwk26/griddo.git`), base `main`.
+- **Publication head:** receipt commit B is created only by fast-forwarding the
+  feature branch to candidate A and appending this exact payload to
+  `docs/issues/Issues_Phase_23.md`; B is pinned and reverified after creation.
+- **PR action:** create exactly one new non-draft PR from
+  `phase-23/inbox-triage-model-foundation` to `main`. No matching PR or
+  remote feature ref existed at audit time; stop on any ambiguity or unexpected
+  pre-existing PR.
+- **PR title:** `feat(triage): land Phase 23 model foundation`.
+- **PR body:**
+  > ## Summary
+  >
+  > - land the versioned Inbox/Triage model and exact Dexie v4 migration
+  > - enforce monotonic revisions and real IndexedDB transaction rollback
+  > - make Scratch aggregate hard-delete atomic and reject Scratch promotion
+  > - archive accepted Phase 23 work and preserve its follow-up ownership
+  >
+  > ## Validation
+  >
+  > - `pnpm test` — 80 files / 554 tests
+  > - `pnpm lint` — 0 errors / 11 pre-existing warnings
+  > - `pnpm typecheck`
+  > - `pnpm build` — seven routes
+- **Merge policy:** GitHub merge commit only. Verify the PR head OID equals B
+  and merge with expected-head pinning (`--match-head-commit B`). Do not use
+  force, admin bypass, auto-merge, queueing, implicit branch deletion, squash,
+  or rebase.
+- **Checks policy:** the audit found no branch protection and no repository
+  workflows. Recheck provider state after PR creation; every reported required
+  check must reach terminal success. Poll at most 20 times at 15-second
+  intervals, then preserve the PR/branch as publication pending.
+- **Integration target:** sync the clean
+  `/Users/jwk/Documents/griddo2-codex-integration` worktree on `main`
+  by fetch plus fast-forward-only update, then prove candidate A's tree/change
+  is contained in `origin/main`.
+- **Cleanup:** after exact merge and integration proof, delete only the remote
+  `phase-23/inbox-triage-model-foundation` ref without force. Preserve the
+  local feature branch and
+  `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation` worktree
+  until the separately approved adapter-v2 migration removes machine-local
+  runtime paths; their later cleanup is a separate guarded action.
+- **Boundary:** this closes and publishes Phase 23 only. It does not start
+  Phase 24, approve Tasks 106–165, deploy skill changes, or grant reusable
+  publication authority.
+- **Next legal action after successful merge:** stop production lifecycle work,
+  execute the separately planned workflow-v2 improvement and GridDO adapter
+  migration, verify both, then request a distinct Phase 24 kickoff.
