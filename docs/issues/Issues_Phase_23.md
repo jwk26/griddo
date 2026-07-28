@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–103 accepted; Task 104 `In Progress`
+> State: Tasks 101–103 accepted; Task 104 implemented and awaiting user acceptance
 
 ## Status Legend
 
@@ -95,16 +95,16 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | Task 104 — Build a real IndexedDB transaction and fault-injection harness |
-| State | `In Progress` from the committed Task 103 acceptance boundary; Task 104 marker remains open |
+| State | `Implemented`; Task 104 marker remains open pending explicit user acceptance |
 | Approved scope | Exact Task 104 batch from `docs/EXECUTION_PLAN.md`: real IndexedDB test utility, transaction rollback tests, and the smallest named-checkpoint seam only |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
 | Recovery anchor | Accepted Task 103 implementation `6b04c61`, evidence `df7d0d1`, and deviation correction `791a6dd` on `phase-23/inbox-triage-model-foundation` |
-| Implementation commit | Not created |
+| Implementation commit | `055bff0` (`test(db): prove real indexeddb rollback`) |
 | Canonical impact | `Reflected` — implement the already-approved seven-store transaction/rollback boundary without changing canonical policy |
-| Issues / deviations | None open. The Task 103 local helper remains in `revision.test.ts`; Task 104 creates the planned shared utility for its own transaction tests and does not edit `revision.test.ts` without a separately approved deviation. All seven stores are mandatory scope. |
-| Next legal action | Observe the planned real-transaction rollback RED, then implement only the Task 104 harness and narrow named-checkpoint seam. |
+| Issues / deviations | None open. The Task 103 local helper remains unchanged in `revision.test.ts`. The first checkpoint wrapper exposed and repaired a Dexie async-scope regression before commit. All seven stores are mandatory scope. |
+| Next legal action | Present the Task 104 evidence checkpoint for explicit user acceptance or rejection. Task 105 remains blocked. |
 
 ## Task 104 Start Receipt
 
@@ -140,6 +140,76 @@ None at kickoff.
   transaction and complete-postcondition boundary without changing policy.
 - **Recovery anchor:** Task 103 acceptance commit `169ffa5` on
   `phase-23/inbox-triage-model-foundation`.
+
+## Task 104 Implementation Evidence
+
+### Observed RED and repair sequence
+
+1. The initial real-IDB test had eight failures and one passing control. The
+   five-store production transaction omitted `stagedCandidates` and
+   `candidateOrphanAuditEvents`, so the exact seven-store scope assertion and
+   rollback cases could not pass. The same first-write/throw sequence outside
+   a transaction already exposed the intended partial `conflict` state.
+2. After adding the missing stores and checkpoint injection, seven tests still
+   failed because an asynchronous test hook lost Dexie's ambient transaction
+   context after the first checkpoint. The fault hook was restricted to a
+   synchronous throw-only contract; all nine Task 104 tests then passed.
+3. The first invalidated full suite caught two Task 103 concurrency regressions
+   with `PrematureCommitError`. A generic non-async wrapper had hidden the
+   original async mutation scope from Dexie's transaction-lifetime detection.
+   The accepted private production `write()` shape was restored, and the
+   separate protected test probe now enters through an explicit async scope.
+   Task 103 revision tests and Task 104 rollback tests both returned GREEN.
+
+### Implemented scope
+
+- `indexeddb.test-utils.ts` supplies a deterministic valid UUID factory, a
+  fresh `GridDODatabase` backed by `fake-indexeddb`, valid seven-store seed
+  data, one-transaction seven-store snapshots, and complete
+  precondition/postcondition/conflict classification.
+- `indexeddb.transaction.test.ts` mutates all seven stores through one exact
+  sequence. It injects a synchronous throw after each named store mutation,
+  verifies the real `rw` store set at every checkpoint, and proves byte-for-byte
+  rollback to the complete prestate. The audit ID and unique candidate
+  preconditions are read inside that transaction.
+- The successful path asserts the complete postcondition. The identical
+  sequence outside a transaction stops after its first write and is classified
+  as `conflict`, proving that the control can expose partial persistence.
+- `IndexedDBDataStore` retains its private production `write()` boundary,
+  expands that transaction to the required seven stores, and adds only a
+  protected, synchronous-fault named-checkpoint probe. No generic public
+  transaction API, operation log, journal, outbox, queue, Task 105 aggregate
+  behavior, or Task 120 command/reconciliation behavior was added.
+- `revision.test.ts` and all other accepted Task 103 files remain unchanged.
+
+### GREEN evidence
+
+| Command | Exit | Relevant result |
+| --- | ---: | --- |
+| `pnpm exec vitest run src/lib/db/indexeddb.transaction.test.ts src/lib/db/revision.test.ts` | 0 | 2 files, 16 tests passed; Task 104 atomicity and Task 103 concurrency both GREEN |
+| `pnpm test` | 0 | 79 files, 540 tests passed |
+| `pnpm lint` | 0 | 0 errors; the same 11 pre-existing warnings |
+| `pnpm typecheck` | 0 | Serial final run passed |
+| `pnpm build` | 0 | Production build and seven routes completed |
+| `git diff --check` | 0 | No whitespace errors before the implementation commit |
+
+### Review disposition and workflow trace
+
+- Read-only review found one literal contract gap (no reusable deterministic
+  UUID factory) and three harness advisories (non-atomic snapshots, missing
+  audit precondition read, and unnecessary hook-type export). All were repaired
+  within the exact three-file contract before commit.
+- A second read-only review traced the Task 103 regression to Dexie's
+  async-function detection rather than to the seven-store scope. The repair
+  preserved the accepted production path and isolated the test seam.
+- Start `6b036f5` to implementation `055bff0` took 12m 12s. One focused repair
+  cycle and one full-gate repair cycle were required; no user decision or
+  adapter rewrite was needed.
+- Running `pnpm build` and `pnpm typecheck` concurrently caused a transient
+  `.next/types` race. Build passed, and the required final typecheck passed when
+  rerun serially. Post-Phase-23 gate scheduling should encode this shared-output
+  serialization constraint rather than treating all verification commands as
+  safely parallel.
 
 ## Task 103 Start Receipt
 
@@ -498,6 +568,9 @@ churn, or discovery/bootstrap failure. Skill code remains frozen during Phase
    task does not rescan the full canonical chain.
 5. Define a mechanical invalidation matrix for focused/full gates and record
    why each rerun is required.
+6. Encode verification-output conflicts: commands that share generated state
+   such as `next build` and `tsc` reading `.next/types` must run serially even
+   when their logical checks are independent.
 
 ### Required observations for Tasks 103–105
 
@@ -508,7 +581,6 @@ reads. Do not modify `run-task` until the Phase 23 trace is complete.
 
 ## Run-Task Boundary
 
-Task 104 is `In Progress` and remains `[ ]`. Its writes are limited to the two
-planned test files plus the narrow `indexeddb.ts` checkpoint/scope seam. It
-must observe real IndexedDB rollback/fault-injection RED before implementation.
-Task 105, push, publication, merge, and `end-phase` remain forbidden.
+Task 104 is implemented at `055bff0` and remains `[ ]` pending explicit user
+acceptance. No additional Task 104 code write or Task 105 start is authorized
+at this checkpoint. Push, publication, merge, and `end-phase` remain forbidden.
