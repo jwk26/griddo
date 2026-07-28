@@ -2,8 +2,9 @@
 
 This profile binds the approved GridDO canonical documents to the Phase 23
 execution worktree. The Fresh-map `$craft-docs` campaign is complete and was
-published by PR #36. Gate C authorizes Phase 23 preparation and Task 101 as the
-first bounded batch. All relative paths resolve from `repository_root`.
+published by PR #36. Gate C authorized Phase 23 preparation and the first
+bounded batch; committed task-acceptance receipts advance later batches. All
+relative paths resolve from `repository_root`.
 
 ```yaml
 repository_root: /Users/jwk/Documents/griddo2-codex-phase-23-model-foundation
@@ -11,14 +12,14 @@ repository_root: /Users/jwk/Documents/griddo2-codex-phase-23-model-foundation
 lifecycle_scope:
   active: [run-phase, run-task]
   craft_docs_state: complete and merged by PR #36 at main a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
-  run_phase: Gate C-approved Phase 23 preparation for Task 101 only
-  run_task: available only from the committed Phase 23 kickoff receipt; first batch Task 101 only
+  run_phase: Gate C-approved Phase 23 preparation is complete
+  run_task: current bounded batch is Task 102 only, after committed Task 101 acceptance
   end_phase: fields refreshed below but lifecycle unavailable until a separate user Final Close
   expired_authority: the one-time docs-publication close is complete and may not be reused
   onboarding_commit_policy: one post-base-green commit containing only AGENTS.md and docs/CODEX_WORKFLOW_ADAPTER.md
   commit_policy: run-phase may commit the approved entrypoint and kickoff receipt; run-task follows its exact task and ledger commit contracts
   checkpoint_policy: require a committed clean receipt before each lifecycle handoff
-  task_acceptance_policy: Tasks 101–165 remain open; only explicit user acceptance may write `[x]`
+  task_acceptance_policy: Task 101 accepted; Tasks 102–165 remain open; only explicit user acceptance may write `[x]`
 
 canonical_documents:
   authority_order: [schema, spec, design, execution, planning_standard, workflow]
@@ -52,9 +53,8 @@ verification_gates:
   authoritative_source: package.json scripts plus docs/PLANNING_STANDARD.md
   focused:
     - git diff --check
-    - "Task 101: pnpm test -- src/lib/db/schema.test.ts src/lib/db/indexeddb.test.ts"
-    - "Task 101: pnpm typecheck"
-    - "Task 101 discovery: rg -l 'function (create|make)(Node|Bit)|function createScratchBreakdown' src --glob '*.test.ts' --glob '*.test.tsx'"
+    - "Task 102: pnpm exec vitest run src/lib/db/indexeddb.schema-v3-upgrade.test.ts src/lib/db/indexeddb.schema-v4-upgrade.test.ts"
+    - "Task 102: pnpm typecheck"
   full:
     - pnpm test
     - pnpm lint
@@ -69,7 +69,8 @@ verification_gates:
 phase_execution:
   phase: 23
   phase_tasks: [101, 102, 103, 104, 105]
-  first_batch: [101]
+  accepted_tasks: [101]
+  current_batch: [102]
   source_mode: approved clean canonical plan and flow review merged by PR #36
   kickoff_receipt: docs/issues/Issues_Phase_23.md#gate-c-kickoff-receipt
   approved_base: a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
@@ -150,15 +151,14 @@ cleanup:
 
 ## Runtime boundaries
 
-- Gate C authorizes the exact branch/worktree preparation and kickoff receipt;
-  it does not authorize Task 101 implementation, push, publication, merge, or
-  cleanup.
-- `$run-task` requires the committed kickoff receipt, may execute only Task
-  101, and never owns branch topology or publication.
+- Gate C authorized the exact branch/worktree preparation and kickoff receipt;
+  later task execution requires the committed prior-task acceptance boundary.
+- `$run-task` requires the committed kickoff and Task 101 acceptance receipts,
+  may execute only Task 102, and never owns branch topology or publication.
 - `$end-phase` is not active. Its refreshed fields are future inputs only and
   require their own close audit and user Final Close approval.
 - The completed one-time docs-publication authority is expired and cannot be
   treated as Phase 23 publication permission.
-- The historical pilot remains untouched and is not an implementation input.
+- The historical pilot is retired and is not an implementation input.
 - External evidence is read-only and SHA-pinned. Its prior approvals do not
   replace production document gates.

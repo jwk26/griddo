@@ -94,17 +94,37 @@ None at kickoff.
 
 | Field | Durable value |
 | --- | --- |
-| Task | Task 101 — Land the authoritative model and typecheck-compatible constructors |
-| State | `Accepted` by explicit user disposition on 2026-07-28; execution-plan marker closed |
-| Approved scope | Exact Task 101 batch from the Gate C kickoff receipt; schema/type exports, repository create constructors, schema/constructor tests, and enumerated typed-fixture compatibility only |
+| Task | Task 102 — Install the exact atomic Dexie v4 migration |
+| State | `In Progress`; production implementation is forbidden until the focused v4 test records the expected RED |
+| Approved scope | Exact Task 102 batch: `indexeddb.ts`, the existing v3 upgrade test, and one new v4 upgrade test only |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
-| Recovery anchor | Pre-production Task 101 start at `b22c7a421bf0087e8f0649e66a51ed22bc022259` on `phase-23/inbox-triage-model-foundation` |
-| Implementation commit | `b6bbed8` — `feat(triage): define versioned inbox domain model` |
-| Canonical impact | `Reflected` — Task 101 implements the already-approved `docs/SCHEMA.md` model and `docs/EXECUTION_PLAN.md` scope; no new canonical decision is introduced |
-| Issues / deviations | None open. Read-only review found two defects in the initial generic operation types; compile-time RED evidence reproduced both and the implementation commit repairs them without changing canonical scope. |
-| Next legal action | Start Task 102 only from the accepted Task 101 boundary; do not begin Task 103. |
+| Recovery anchor | Accepted Task 101 boundary at `4a7865a` on `phase-23/inbox-triage-model-foundation` |
+| Implementation commit | Pending; contracted message is `feat(triage): migrate indexeddb atomically to v4` |
+| Canonical impact | `Reflected` — implement the already-approved SCHEMA v4 target without introducing new stores, inferred rows, or migration policy |
+| Issues / deviations | None open at start. The v3 success fixture uses non-UUID IDs that must be corrected or isolated before canonical v4 validation. |
+| Next legal action | Preserve the v3 assertions, create the v4 migration test, and observe the expected RED. Do not begin Task 103. |
+
+## Task 102 Start Receipt
+
+- **Authorized predecessor:** Task 101 acceptance at `4a7865a`.
+- **State:** `In Progress` on 2026-07-28; Task 102 remains `[ ]`.
+- **Write scope:** modify `src/lib/db/indexeddb.ts` and
+  `src/lib/db/indexeddb.schema-v3-upgrade.test.ts`; create
+  `src/lib/db/indexeddb.schema-v4-upgrade.test.ts`. No other production or
+  test file is authorized.
+- **RED order:** first keep the corrected v3 fixture GREEN; then observe v4
+  schema/index/empty-store RED, successful v1/v2/v3 preservation/backfill RED,
+  and structured invalid-row/reference rollback RED before each matching
+  production change.
+- **Forbidden scope:** revision increments/CAS, transaction checkpoint seams,
+  aggregate hard delete, command behavior, UI/hooks, candidate manufacture,
+  operation log/journal/outbox/offline queue, Task 103, and publication.
+- **Focused gate:** `pnpm exec vitest run
+  src/lib/db/indexeddb.schema-v3-upgrade.test.ts
+  src/lib/db/indexeddb.schema-v4-upgrade.test.ts`, then `pnpm typecheck` and
+  `git diff --check`.
 
 ## Task 101 Implementation Evidence
 

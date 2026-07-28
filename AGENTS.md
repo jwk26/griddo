@@ -25,10 +25,11 @@ This is the Codex entrypoint. It coexists with, and does not replace or modify,
 - `$end-phase` fields are refreshed for the current feature branch, but the
   lifecycle remains unavailable until its own user Final Close. The completed
   docs-publication authority is expired and must never be reused.
-- The first batch is Task 101 only. The superseded Golden pilot was compared
+- Task 101 is accepted. The current bounded `$run-task` batch is Task 102 only.
+  The superseded Golden pilot was compared
   without reuse and retired on 2026-07-28. Its final SHA `52a385d` is
   historical audit identity only; do not reconstruct or import it.
-- `$run-phase` owns preparation and the kickoff receipt, then stops.
+- `$run-phase` owns preparation and the phase kickoff receipt, then stops.
   `$run-task` owns implementation and checkpoint evidence; it may not create,
   switch, delete, rebase, or push a branch or worktree.
 - A task or phase receives `[x]` only after explicit user acceptance.
