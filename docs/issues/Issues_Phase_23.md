@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–104 accepted; Task 105 `Implemented` awaiting user acceptance; Task 105A planned and unavailable
+> State: Tasks 101–105 accepted; Task 105A pending its separate SCHEMA gate
 
 ## Status Legend
 
@@ -95,6 +95,7 @@ None at kickoff.
 | ID | Finding | State | Disposition |
 | --- | --- | --- | --- |
 | `P23-01` | SCHEMA Hook 9 predates the dedicated Scratch Breakdown store and does not state whether Inbox-parented Scratch Bits may use Bit-to-Node promotion. | `Promoted to Execution Plan` | The issue was surfaced as `Awaiting User Decision`; on 2026-07-28 the user approved the identity rule that any Bit parented to the Inbox system Node is a Scratch and cannot be promoted. Task 105 remains unchanged. Task 105A owns the separate SCHEMA gate and later repository regression. |
+| `P23-02` | `src/hooks/use-scratch-breakdowns.test.tsx` retains a test-only mock and no-call assertion for the retired `deleteScratchBreakdownsByScratch` API. | `Deferred` | Production interface and implementation are already removed; the stale mock has no runtime effect and is outside Task 105's exact file contract. Task 120's planned hook/command replacement owns its removal. |
 
 ### Task 105 / Task 105A Boundary Decision Receipt
 
@@ -123,17 +124,17 @@ None at kickoff.
 
 | Field | Durable value |
 | --- | --- |
-| Task | Task 105 — Make Scratch aggregate hard-delete atomic and audit-preserving |
-| State | `Implemented` at `9c078d4`; awaiting user acceptance while the Task 105 marker remains open |
-| Approved scope | Exact Task 105 batch from `docs/EXECUTION_PLAN.md`: aggregate hard-delete/cleanup owners and the four named rollback/retention test files only |
+| Task | Task 105 accepted; Task 105A pending its SCHEMA Hook 9 gate |
+| State | Task 105 explicitly accepted on 2026-07-28; no production-code batch is active |
+| Approved scope | No current production write. The next bounded scope may draft only the Task 105A SCHEMA amendment. |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
 | Recovery anchor | Task 104 acceptance `bc9d2d7` plus Task 105/105A boundary decision `f193233` on `phase-23/inbox-triage-model-foundation` |
 | Implementation commit | `9c078d4a74975b0a5a52a800dae795f43210f854` (`feat(db): delete scratch aggregates atomically`) |
 | Canonical impact | `Reflected`: implement SCHEMA Hook 6 and Scratch permanent deletion without changing policy |
-| Issues / deviations | None open. P23-01 is separately promoted to Task 105A and is forbidden in this batch. Adapter/AGENTS current-batch churn is recorded for the post-Phase-23 skill audit. |
-| Next legal action | Present the Task 105 checkpoint and wait for explicit user acceptance or targeted rejection. Do not write `[x]` or begin Task 105A. |
+| Issues / deviations | `P23-01` is promoted to the next Task 105A SCHEMA gate; `P23-02` is deferred to Task 120. Adapter/AGENTS current-batch churn remains recorded for the post-Phase-23 skill audit. |
+| Next legal action | Commit the Task 105 acceptance receipt, then start the Task 105A SCHEMA-only gate before any promotion code or test change. |
 
 ## Task 105 Start Receipt
 
@@ -254,6 +255,32 @@ None at kickoff.
 - Start `f0ca69b` to implementation `9c078d4` took 13m 42s. Task 105 remains
   `[ ]`; Task 105A and its SCHEMA gate remain unavailable until explicit user
   acceptance.
+
+## Task 105 Acceptance Receipt
+
+- **Disposition:** accepted explicitly by the user on 2026-07-28 with
+  `승인합니다 넘어가세요` after independent read-only review reported PASS
+  and blocker count zero.
+- **Accepted implementation:** `9c078d4` (`feat(db): delete scratch aggregates
+  atomically`).
+- **Evidence receipt:** `4f6d416` (`docs: record Task 105 implementation
+  evidence`), including the real-IDB aggregate/rollback matrix, 26 focused
+  tests, 80 files / 552 full tests, typecheck, lint, build, and diff checks.
+- **Independent review:** re-ran the focused tests, full tests, and typecheck;
+  confirmed the exact six-file implementation contract, one-transaction Node/
+  Bit/cleanup convergence, candidate/source integrity stop before the first
+  write, audit-store immutability, public bulk-delete retirement, and unchanged
+  promotion code.
+- **Accepted advisory:** `P23-02` is test-only stale mock residue outside this
+  task's file contract. It changes no production surface and is deferred to
+  Task 120's hook/command replacement rather than expanding Task 105.
+- **Boundary:** this accepts only Task 105 aggregate hard-delete/cleanup and
+  writes its `[x]`. It does not approve the Task 105A SCHEMA draft or code,
+  Task 120/122 commands, push, merge, publication, phase close, or skill
+  rollout.
+- **Next legal action:** commit this receipt. Task 105A may then open a
+  SCHEMA-only start receipt and present the Hook 9 amendment for separate user
+  approval before any implementation.
 
 ## Task 104 Start Receipt
 

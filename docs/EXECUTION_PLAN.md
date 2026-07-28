@@ -366,7 +366,7 @@ Responsive/mobile redesign remains excluded; active implementation targets the d
 
 **Commit contract:** real IndexedDB test utility, transaction test, and smallest named-checkpoint seam only; `test(db): prove real indexeddb rollback`.
 
-### Task 105: [ ] Make Scratch aggregate hard-delete atomic and audit-preserving
+### Task 105: [x] Make Scratch aggregate hard-delete atomic and audit-preserving
 
 **Files and actions:** modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts` to make Node/Bit permanent-delete closures and `cleanupExpiredTrash` use one planned aggregate transaction. When a closure owns a Scratch Bit, delete the Scratch, its Chunks, all owned Breakdown rows, and candidates whose still-present source belongs to the closure; retire/restrict `deleteScratchBreakdownsByScratch` as a public sequencing escape hatch. Never create an orphan event for planned aggregate deletion; retain every pre-existing `candidateOrphanAuditEvents` row indefinitely, including rows naming that Scratch; leave unrelated aggregates untouched. If a candidate already lacks its source before planning, abort the aggregate with a typed integrity-cleanup-required result and leave every store unchanged; Task 122 later consumes that condition through the separately audited confirmed-orphan contract. Create `src/lib/db/scratch-aggregate-hard-delete.test.ts`; update `src/lib/db/cascade-hard-delete.test.ts`, `src/lib/db/auto-cleanup.test.ts`, and `src/lib/db/scratch-breakdowns.test.ts` with real Task 104 checkpoint injection after each store mutation.
 

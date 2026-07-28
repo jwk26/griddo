@@ -13,13 +13,13 @@ lifecycle_scope:
   active: [run-phase, run-task]
   craft_docs_state: complete and merged by PR #36 at main a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
   run_phase: Gate C-approved Phase 23 preparation is complete
-  run_task: current bounded batch is Task 104 only, after committed Task 103 acceptance
+  run_task: Tasks 101–105 accepted; no production-code batch active pending the Task 105A SCHEMA gate
   end_phase: fields refreshed below but lifecycle unavailable until a separate user Final Close
   expired_authority: the one-time docs-publication close is complete and may not be reused
   onboarding_commit_policy: one post-base-green commit containing only AGENTS.md and docs/CODEX_WORKFLOW_ADAPTER.md
   commit_policy: run-phase may commit the approved entrypoint and kickoff receipt; run-task follows its exact task and ledger commit contracts
   checkpoint_policy: require a committed clean receipt before each lifecycle handoff
-  task_acceptance_policy: Tasks 101–103 accepted; Tasks 104–165 remain open; only explicit user acceptance may write `[x]`
+  task_acceptance_policy: Tasks 101–105 accepted; Task 105A and Tasks 106–165 remain open; only explicit user acceptance may write `[x]`
 
 canonical_documents:
   authority_order: [schema, spec, design, execution, planning_standard, workflow]
@@ -68,10 +68,11 @@ verification_gates:
 
 phase_execution:
   phase: 23
-  phase_tasks: [101, 102, 103, 104, 105]
-  accepted_tasks: [101, 102, 103, 104]
-  current_batch: [105]
-  unavailable_followup: [105A]
+  phase_tasks: [101, 102, 103, 104, 105, "105A"]
+  accepted_tasks: [101, 102, 103, 104, 105]
+  current_batch: []
+  next_gate: Task 105A SCHEMA Hook 9 amendment
+  unavailable_followup: ["Task 105A implementation"]
   source_mode: approved clean canonical plan and flow review merged by PR #36
   kickoff_receipt: docs/issues/Issues_Phase_23.md#gate-c-kickoff-receipt
   approved_base: a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
