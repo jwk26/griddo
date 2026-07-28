@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–105 accepted; Task 105A `Implemented` awaiting user acceptance
+> State: Tasks 101–105A accepted; Phase 23 production batch complete; close preparation pending
 
 ## Status Legend
 
@@ -96,6 +96,7 @@ None at kickoff.
 | --- | --- | --- | --- |
 | `P23-01` | SCHEMA Hook 9 predates the dedicated Scratch Breakdown store and does not state whether Inbox-parented Scratch Bits may use Bit-to-Node promotion. | `Promoted to Execution Plan` | The issue was surfaced as `Awaiting User Decision`; on 2026-07-28 the user approved the identity rule that any Bit parented to the Inbox system Node is a Scratch and cannot be promoted. Task 105 remains unchanged. Task 105A owns the separate SCHEMA gate and later repository regression. |
 | `P23-02` | `src/hooks/use-scratch-breakdowns.test.tsx` retains a test-only mock and no-call assertion for the retired `deleteScratchBreakdownsByScratch` API. | `Deferred` | Production interface and implementation are already removed; the stale mock has no runtime effect and is outside Task 105's exact file contract. Task 120's planned hook/command replacement owns its removal. |
+| `P23-03` | A defensive Scratch can currently acquire Chunk rows through the repository, causing the global Bit detail popup's `hasChunks` gate to offer Promote even though Task 105A now rejects the operation safely. | `Promoted to Execution Plan` | The user accepted this as a later UX visibility issue, not Task 105A scope. Task 130 now owns the exact `bit-detail-popup.tsx`/test guard: Inbox-parented Scratch never shows Promote, while ordinary eligible Bits retain it. |
 
 ### Task 105 / Task 105A Boundary Decision Receipt
 
@@ -124,17 +125,17 @@ None at kickoff.
 
 | Field | Durable value |
 | --- | --- |
-| Task | Task 105A — reject Inbox-parented Scratch promotion |
-| State | `Implemented` at `45cfec5`; awaiting user acceptance while the Task 105A marker remains open |
-| Approved scope | No current production write. Review only the exact `src/lib/db/indexeddb.ts` and `src/lib/db/promotion.test.ts` Task 105A implementation plus its evidence. |
+| Task | None; Tasks 101–105A are accepted |
+| State | Phase 23 production batch complete; close preparation pending; no production write active |
+| Approved scope | No current `$run-task` production scope. Phase-close and post-phase workflow improvements require their own declared lifecycle/work order. |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
-| Recovery anchor | Approved SCHEMA content `67dbe521c875d5b7f0f870de39fe840e91977ccc` on `phase-23/inbox-triage-model-foundation` |
+| Recovery anchor | Task 105A implementation `45cfec5` plus evidence `76f04f7` on `phase-23/inbox-triage-model-foundation` |
 | Implementation commit | `45cfec5b26d1dca38c0a5588f359116ca57b29c7` (`fix(db): reject Scratch bit promotion`) |
 | Canonical impact | `Reflected`: `P23-01` is now explicit in approved SCHEMA Hook 9 at `67dbe52` |
-| Issues / deviations | `P23-01` is the exact amendment owner; `P23-02` remains deferred to Task 120. No other issue or deviation is open. |
-| Next legal action | Present the Task 105A checkpoint and wait for explicit user acceptance or targeted rejection. Do not write `[x]` or begin Phase 23 close. |
+| Issues / deviations | `P23-01` is reflected and Task 105A accepted; `P23-02` remains deferred to Task 120; `P23-03` is promoted to exact Task 130 ownership. |
+| Next legal action | Commit the Task 105A acceptance receipt, then perform only the separately authorized Phase 23 close-preparation/workflow-audit work. Do not start Task 106, push, merge, publish, or invoke `end-phase`. |
 
 ## Task 105 Start Receipt
 
@@ -313,7 +314,7 @@ None at kickoff.
 - **Approved canonical artifact:** `67dbe521c875d5b7f0f870de39fe840e91977ccc`
   (`docs: amend scratch promotion boundary`), containing the exact reviewed
   pre-receipt SCHEMA SHA-256
-  `d0307b0cea114a7708b9149ff31525cc4cc527e1ae2c3b13d3a73a3dd245cd`.
+  `d0307b0cea114a7708b9149ff31525cc4cc527e1ae2c3b13d3a73a3a3dd245cd`.
 - **Started:** `2026-07-28T16:28:16+0900`; Task 105A remains `[ ]`.
 - **Exact production scope:** modify only `src/lib/db/promotion.test.ts` and
   `src/lib/db/indexeddb.ts`. First prove that an Inbox-parented Bit is rejected
@@ -384,6 +385,32 @@ None at kickoff.
   post-Phase-23 skill/bootstrap audit`; `Unowned: None`.
 - **State:** `Implemented`; Task 105A remains `[ ]`. No push, merge,
   publication, phase close, or next task has started.
+
+## Task 105A Acceptance Receipt
+
+- **Disposition:** accepted explicitly by the user on 2026-07-28 with the
+  instruction “이 의견에 동의. 이대로 진행해.” after independent read-only review
+  reported implementation PASS and blocker count zero.
+- **Accepted canonical artifact:** `67dbe521c875d5b7f0f870de39fe840e91977ccc`
+  with the recomputed 64-character SHA-256
+  `d0307b0cea114a7708b9149ff31525cc4cc527e1ae2c3b13d3a73a3a3dd245cd`.
+  This acceptance commit corrects the two prior receipt copies that omitted
+  the penultimate `a3`; the commit identity always remained unambiguous.
+- **Accepted implementation:** `45cfec5b26d1dca38c0a5588f359116ca57b29c7`
+  (`fix(db): reject Scratch bit promotion`) and evidence receipt `76f04f7`.
+- **Independent review:** reran the focused seven promotion tests, all 80 files
+  / 554 tests, and typecheck; confirmed the exact two-file contract, guard
+  ordering before grid checks/UUIDs/writes, empty and defensive aggregate
+  rejection, ordinary promotion preservation, and no UI or data-policy drift.
+- **Accepted follow-up:** `P23-03` records the non-blocking popup visibility
+  rough edge and promotes its exact UI guard/test to Task 130. It does not
+  retroactively enter Task 105A or weaken the repository backstop.
+- **Boundary:** this accepts Task 105A and writes only its `[x]`. It does not
+  accept Phase 23 Final Close, Tasks 106–165, skill changes, push, merge,
+  publication, cleanup, or `end-phase`.
+- **Next legal action:** commit this receipt and stop `$run-task`. Phase 23
+  close preparation and the approved post-phase skill/adapter audit proceed
+  only under their own bounded lifecycle/work order.
 
 ## Task 104 Start Receipt
 
@@ -882,6 +909,9 @@ churn, or discovery/bootstrap failure. Skill code remains frozen during Phase
 6. Encode verification-output conflicts: commands that share generated state
    such as `next build` and `tsc` reading `.next/types` must run serially even
    when their logical checks are independent.
+7. Validate every receipt hash mechanically before commit: require exactly 64
+   hexadecimal characters and recompute the SHA-256 from the referenced Git
+   blob so a malformed pin cannot enter canonical or ledger receipts.
 
 ### Required observations for Tasks 103–105
 
@@ -892,6 +922,6 @@ reads. Do not modify `run-task` until the Phase 23 trace is complete.
 
 ## Run-Task Boundary
 
-Task 105A is `Implemented` at `45cfec5` and remains `[ ]` pending explicit user
-acceptance. No production write is active. UI changes, Tasks 106–165, push,
-publication, merge, and `end-phase` remain forbidden.
+Tasks 101–105A are accepted and no `$run-task` production write is active.
+`P23-03` is owned by future Task 130. Tasks 106–165, push, publication, merge,
+and `end-phase` remain unavailable until their own approved lifecycle gates.

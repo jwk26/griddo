@@ -25,9 +25,9 @@ This is the Codex entrypoint. It coexists with, and does not replace or modify,
 - `$end-phase` fields are refreshed for the current feature branch, but the
   lifecycle remains unavailable until its own user Final Close. The completed
   docs-publication authority is expired and must never be reused.
-- Tasks 101–105 are accepted. Task 105A's SCHEMA Hook 9 amendment is approved
-  at `67dbe52`, and its exact repository implementation at `45cfec5` awaits
-  explicit user acceptance. No production-code batch is active. The
+- Tasks 101–105A are accepted. Phase 23 has no active production-code batch;
+  its close preparation and the separately planned post-phase workflow audit
+  do not activate `$end-phase`, publication, or any later task. The
   superseded Golden pilot was compared without reuse and retired on 2026-07-28.
   Its final SHA `52a385d` is
   historical audit identity only; do not reconstruct or import it.

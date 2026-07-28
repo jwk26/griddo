@@ -13,13 +13,13 @@ lifecycle_scope:
   active: [run-phase, run-task]
   craft_docs_state: complete and merged by PR #36 at main a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
   run_phase: Gate C-approved Phase 23 preparation is complete
-  run_task: Task 105A implementation 45cfec5 awaits explicit user acceptance; no production write is active
+  run_task: Tasks 101–105A are accepted; no production write is active
   end_phase: fields refreshed below but lifecycle unavailable until a separate user Final Close
   expired_authority: the one-time docs-publication close is complete and may not be reused
   onboarding_commit_policy: one post-base-green commit containing only AGENTS.md and docs/CODEX_WORKFLOW_ADAPTER.md
   commit_policy: run-phase may commit the approved entrypoint and kickoff receipt; run-task follows its exact task and ledger commit contracts
   checkpoint_policy: require a committed clean receipt before each lifecycle handoff
-  task_acceptance_policy: Tasks 101–105 accepted; Task 105A and Tasks 106–165 remain open; only explicit user acceptance may write `[x]`
+  task_acceptance_policy: Tasks 101–105A accepted; Tasks 106–165 remain open; only explicit user acceptance may write `[x]`
 
 canonical_documents:
   authority_order: [schema, spec, design, execution, planning_standard, workflow]
@@ -70,9 +70,9 @@ verification_gates:
 phase_execution:
   phase: 23
   phase_tasks: [101, 102, 103, 104, 105, "105A"]
-  accepted_tasks: [101, 102, 103, 104, 105]
+  accepted_tasks: [101, 102, 103, 104, 105, "105A"]
   current_batch: []
-  next_gate: Task 105A implementation checkpoint and user acceptance
+  next_gate: Phase 23 close-preparation audit; end-phase still requires separate user Final Close
   unavailable_followup: ["Tasks 106–165", "end-phase"]
   source_mode: approved clean canonical plan and flow review merged by PR #36
   kickoff_receipt: docs/issues/Issues_Phase_23.md#gate-c-kickoff-receipt
@@ -156,10 +156,10 @@ cleanup:
 
 - Gate C authorized the exact branch/worktree preparation and kickoff receipt;
   later task execution requires the committed prior-task acceptance boundary.
-- `$run-task` produced the exact Task 105A implementation at `45cfec5` from the
-  approved SCHEMA artifact at `67dbe52`. No further production write is active;
-  user acceptance is the next gate. `$run-task` never owns branch topology or
-  publication.
+- `$run-task` produced the accepted Task 105A implementation at `45cfec5` from
+  the approved SCHEMA artifact at `67dbe52`. Tasks 101–105A are accepted and no
+  further production write is active. `$run-task` never owns branch topology
+  or publication.
 - `$end-phase` is not active. Its refreshed fields are future inputs only and
   require their own close audit and user Final Close approval.
 - The completed one-time docs-publication authority is expired and cannot be

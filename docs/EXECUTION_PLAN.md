@@ -382,7 +382,7 @@ Responsive/mobile redesign remains excluded; active implementation targets the d
 
 **Commit contract:** aggregate hard-delete/cleanup owners and their exact rollback/retention tests only; `feat(db): delete scratch aggregates atomically`.
 
-### Task 105A: [ ] Amend the stale Scratch promotion boundary
+### Task 105A: [x] Amend the stale Scratch promotion boundary
 
 **Files and actions:** first amend `docs/SCHEMA.md` Hook 9 through a separate
 canonical-document gate: a Bit whose parent Node has `systemRole: "inbox"` is
@@ -844,19 +844,19 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 ### Task 130: [ ] Implement Pool selection, tools, collapse, and re-entry
 
-**Files and actions:** modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/hooks/use-inbox.ts` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, and `src/stores/triage-preferences-store.ts` and `.test.ts`. Implement active fallback/null, expanded tools/list, total versus filtered counts, base selected/empty states, persisted sort, session query/scroll, vertical collapsed switchers, hidden-query independence, first-printable Breakdown key collapse once, per-Scratch manual-reopen exception, same-session re-entry, and deterministic focus restoration using Task 128 copy. Do not implement `VQ-01` or Pool `VQ-06` states.
+**Files and actions:** modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/hooks/use-inbox.ts` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, and `src/stores/triage-preferences-store.ts` and `.test.ts`. Implement active fallback/null, expanded tools/list, total versus filtered counts, base selected/empty states, persisted sort, session query/scroll, vertical collapsed switchers, hidden-query independence, first-printable Breakdown key collapse once, per-Scratch manual-reopen exception, same-session re-entry, and deterministic focus restoration using Task 128 copy. Also modify `src/components/bit-detail/bit-detail-popup.tsx` and `.test.tsx` so the globally mounted detail surface never offers Promote to Node for an Inbox-parented Scratch, even when defensive Chunk data exists; the Task 105A repository guard remains the safety backstop and ordinary Chunk-backed Bit promotion remains available. Do not implement `VQ-01` or Pool `VQ-06` states.
 
-**Dependencies:** Tasks 127–129.
+**Dependencies:** Task 105A and Tasks 127–129.
 
-**Authority / flows:** `UF-02`–`UF-04`; `NEG-05`, `NEG-17`.
+**Authority / flows:** `P23-03`, SCHEMA Hook 9; `UF-02`–`UF-04`; `NEG-05`, `NEG-17`.
 
 **Recipe:** [`Scratch Pool`](recipes/inbox-triage-scratch-pool-visual-recipe.md).
 
-**Observable acceptance:** auto-selection never chooses a hidden mismatch or steals focus; counts differ correctly; collapsed controls ignore hidden query; first-printable collapse/manual reopen/re-entry/reload follow the exact lifetime contract.
+**Observable acceptance:** auto-selection never chooses a hidden mismatch or steals focus; counts differ correctly; collapsed controls ignore hidden query; first-printable collapse/manual reopen/re-entry/reload follow the exact lifetime contract. A defensive Inbox-parented Scratch with Chunks exposes no Promote action, while an ordinary eligible Bit with Chunks still does.
 
-**Verification:** focused Pool/Inbox/store tests; run canonical route with populated/filtered/collapsed/re-entry/true-empty seeds and record keyboard/focus/count/capture evidence at 1024px and 1920×1080 in `docs/verification/inbox-triage/task-130.md`; `pnpm typecheck`.
+**Verification:** focused Pool/Inbox/store and `bit-detail-popup.test.tsx` tests; run canonical route with populated/filtered/collapsed/re-entry/true-empty seeds and record keyboard/focus/count/capture evidence at 1024px and 1920×1080 in `docs/verification/inbox-triage/task-130.md`; `pnpm typecheck`.
 
-**Commit contract:** Pool/Inbox/state-owner integration, tests, and Task 130 evidence only; `feat(triage): implement scratch pool base flow`.
+**Commit contract:** Pool/Inbox/state-owner integration, the exact P23-03 popup visibility guard, tests, and Task 130 evidence only; `feat(triage): implement scratch pool base flow`.
 
 ### Task 131: [ ] Add the durable candidate reactive boundary
 

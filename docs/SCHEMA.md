@@ -119,7 +119,7 @@
 - **Approved artifact:** commit
   `67dbe521c875d5b7f0f870de39fe840e91977ccc`, containing the exact
   pre-receipt `docs/SCHEMA.md` whose SHA-256 is
-  `d0307b0cea114a7708b9149ff31525cc4cc527e1ae2c3b13d3a73a3dd245cd`.
+  `d0307b0cea114a7708b9149ff31525cc4cc527e1ae2c3b13d3a73a3a3dd245cd`.
 - **Approved scope:** `parentNode.systemRole === "inbox"` identifies a Scratch;
   that identity cannot use Bit-to-Node promotion regardless of current
   Breakdown, candidate, or Chunk presence, and rejection precedes result-ID
