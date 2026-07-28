@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–103 accepted; Task 104 authorized but not started
+> State: Tasks 101–103 accepted; Task 104 `In Progress`
 
 ## Status Legend
 
@@ -95,7 +95,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | Task 104 — Build a real IndexedDB transaction and fault-injection harness |
-| State | `Not started`; authorized by explicit Task 103 acceptance; requires a committed `In Progress` start signal before production writes |
+| State | `In Progress` from the committed Task 103 acceptance boundary; Task 104 marker remains open |
 | Approved scope | Exact Task 104 batch from `docs/EXECUTION_PLAN.md`: real IndexedDB test utility, transaction rollback tests, and the smallest named-checkpoint seam only |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
@@ -103,8 +103,43 @@ None at kickoff.
 | Recovery anchor | Accepted Task 103 implementation `6b04c61`, evidence `df7d0d1`, and deviation correction `791a6dd` on `phase-23/inbox-triage-model-foundation` |
 | Implementation commit | Not created |
 | Canonical impact | `Reflected` — implement the already-approved seven-store transaction/rollback boundary without changing canonical policy |
-| Issues / deviations | None open at authorization. Task 104 start must reconcile the Task 103 local real-IDB helper with the planned shared utility and prove all seven stores are in scope. |
-| Next legal action | Commit this acceptance boundary, then record a separate Task 104 `In Progress` start signal and observe the planned real-transaction rollback RED before production writes. |
+| Issues / deviations | None open. The Task 103 local helper remains in `revision.test.ts`; Task 104 creates the planned shared utility for its own transaction tests and does not edit `revision.test.ts` without a separately approved deviation. All seven stores are mandatory scope. |
+| Next legal action | Observe the planned real-transaction rollback RED, then implement only the Task 104 harness and narrow named-checkpoint seam. |
+
+## Task 104 Start Receipt
+
+- **Authorized predecessor:** Task 103 acceptance at `169ffa5`.
+- **Started:** `2026-07-28T15:03:51+0900`; Task 104 remains `[ ]`.
+- **Named-skill path:** `$run-task` and all required workflow, adapter, task,
+  verification, checkpoint, and domain-routing references were loaded before
+  this start signal.
+- **Write scope:** create `src/lib/db/indexeddb.test-utils.ts` and
+  `src/lib/db/indexeddb.transaction.test.ts`; modify
+  `src/lib/db/indexeddb.ts` only for the smallest injectable named-checkpoint
+  seam and the seven-store `rw` scope required by the approved task.
+- **Existing-helper reconciliation:** `src/lib/db/revision.test.ts` remains
+  unchanged in this batch. Its local real-IDB helper may inform the new shared
+  utility, but extracting or rewriting that accepted Task 103 test requires a
+  separately surfaced deviation.
+- **Seven-store contract:** every real transaction and snapshot covers
+  `nodes`, `bits`, `chunks`, `settings`, `scratchBreakdowns`,
+  `stagedCandidates`, and `candidateOrphanAuditEvents`.
+- **RED order:** first prove the current five-store scope and absent checkpoint
+  seam cannot satisfy rollback across all seven stores; then add a control
+  showing the same first-write/throw sequence exposes partial state outside a
+  transaction. Implement only enough seam/scope to turn those exact failures
+  GREEN.
+- **Forbidden scope:** Task 105 aggregate deletion, Task 120 command/result or
+  reconciliation APIs, operation log/journal/outbox/queue, UI, canonical
+  policy changes, push, merge, publication, and `end-phase`.
+- **Verification:** run `pnpm exec vitest run
+  src/lib/db/indexeddb.transaction.test.ts`, `pnpm typecheck`, and
+  `git diff --check`; rerun only additionally invalidated gates. This is a
+  data/nonvisual task, so rendered evidence is not used.
+- **Canonical impact:** `Reflected`; this implements the existing SCHEMA
+  transaction and complete-postcondition boundary without changing policy.
+- **Recovery anchor:** Task 103 acceptance commit `169ffa5` on
+  `phase-23/inbox-triage-model-foundation`.
 
 ## Task 103 Start Receipt
 
@@ -473,8 +508,7 @@ reads. Do not modify `run-task` until the Phase 23 trace is complete.
 
 ## Run-Task Boundary
 
-Task 103 is accepted. The next lifecycle may execute Task 104 only. Before its
-first production write, `$run-task` must verify this branch/worktree/receipt
-and commit an `In Progress` start signal. It must observe the planned real
-IndexedDB rollback/fault-injection failures before implementation. Task 105,
-push, publication, merge, and `end-phase` remain forbidden.
+Task 104 is `In Progress` and remains `[ ]`. Its writes are limited to the two
+planned test files plus the narrow `indexeddb.ts` checkpoint/scope seam. It
+must observe real IndexedDB rollback/fault-injection RED before implementation.
+Task 105, push, publication, merge, and `end-phase` remain forbidden.
