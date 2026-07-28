@@ -75,7 +75,7 @@ phase_execution:
   approved_base: a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
   feature_branch: phase-23/inbox-triage-model-foundation
   worktree: /Users/jwk/Documents/griddo2-codex-phase-23-model-foundation
-  historical_pilot: phase-23/inbox-triage-persistence at 52a385d601a6394f2e140078be1ca7b5242e5ca9; recovery-only and not an input
+  historical_pilot: retired on 2026-07-28 at 52a385d601a6394f2e140078be1ca7b5242e5ca9; audit identity only and not an input
 
 craft_docs:
   selected_route: Brainstorming Route with visual-prototype intake
@@ -111,10 +111,10 @@ git:
   active_phase_branch: phase-23/inbox-triage-model-foundation
   active_phase_worktree: /Users/jwk/Documents/griddo2-codex-phase-23-model-foundation
   approved_base: origin/main at a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
-  pilot_branch: historical phase-23/inbox-triage-persistence at 52a385d; recovery-only and not an input to this pass
-  reuse_policy: reuse only the exact Gate C branch/worktree when receipt, ancestry, and cleanliness match; never reuse or mutate the historical pilot
+  pilot_branch: not used; the superseded phase-23/inbox-triage-persistence branch was retired at 52a385d
+  reuse_policy: reuse only the exact Gate C branch/worktree when receipt, ancestry, and cleanliness match; never reconstruct or import the retired pilot
   worktree_root: /Users/jwk/Documents
-  pilot_worktree: /Users/jwk/Documents/griddo2-codex-phase-23-pilot (historical; inactive)
+  pilot_worktree: not used; retired on 2026-07-28
   primary_integration_worktree: /Users/jwk/Documents/griddo2-codex-integration
   primary_integration_policy: keep clean on main and refresh origin/main before integration or close; never repurpose another worktree
 

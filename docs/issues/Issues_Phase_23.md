@@ -57,10 +57,10 @@
 - The plan's factory discovery command returns exactly 36 declared test files.
   `src/hooks/use-can-archive-scratch.test.ts` separately contains the planned
   incomplete cast cleanup.
-- Historical branch `phase-23/inbox-triage-persistence` and worktree
-  `/Users/jwk/Documents/griddo2-codex-phase-23-pilot` remain clean at
-  `52a385d601a6394f2e140078be1ca7b5242e5ca9`. They are recovery-only and were
-  not reused, cherry-picked, reset, deleted, or modified.
+- The superseded Golden pilot was verified clean at
+  `52a385d601a6394f2e140078be1ca7b5242e5ca9`, compared read-only, and yielded
+  no code or test transplant. Its local branch and worktree were retired on
+  2026-07-28; the SHA remains historical audit identity only.
 
 ## Full Base Gate
 
@@ -95,7 +95,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | Task 101 — Land the authoritative model and typecheck-compatible constructors |
-| State | `Implemented`; awaiting explicit user review, distinct from acceptance, and the execution-plan marker remains open |
+| State | `Accepted` by explicit user disposition on 2026-07-28; execution-plan marker closed |
 | Approved scope | Exact Task 101 batch from the Gate C kickoff receipt; schema/type exports, repository create constructors, schema/constructor tests, and enumerated typed-fixture compatibility only |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
@@ -104,7 +104,7 @@ None at kickoff.
 | Implementation commit | `b6bbed8` — `feat(triage): define versioned inbox domain model` |
 | Canonical impact | `Reflected` — Task 101 implements the already-approved `docs/SCHEMA.md` model and `docs/EXECUTION_PLAN.md` scope; no new canonical decision is introduced |
 | Issues / deviations | None open. Read-only review found two defects in the initial generic operation types; compile-time RED evidence reproduced both and the implementation commit repairs them without changing canonical scope. |
-| Next legal action | Present the Task 101 checkpoint for explicit user acceptance or rejection. Do not start Task 102. |
+| Next legal action | Start Task 102 only from the accepted Task 101 boundary; do not begin Task 103. |
 
 ## Task 101 Implementation Evidence
 
@@ -160,14 +160,31 @@ None at kickoff.
   monotonic version increments and CAS enforcement. Task 101 does not claim
   either behavior early.
 - There is no current user-visible surface change. No visual Decision receipt
-  is consumed, no task is accepted, and no publication authority is granted.
+  is consumed and no publication authority is granted.
+
+## Task 101 Acceptance Receipt
+
+- **Disposition:** accepted explicitly by the user on 2026-07-28, with direct
+  authorization to continue to Task 102.
+- **Accepted implementation:** `b6bbed8` (`feat(triage): define versioned
+  inbox domain model`).
+- **Evidence receipt:** `5fdf9aa` (`docs: record Task 101 implementation
+  evidence`), including 73 files / 505 tests, typecheck, lint, build, factory
+  ownership, and diff checks.
+- **Independent review:** blocker count zero. The superseded Golden pilot and
+  Task 14 Fresh implementation were compared read-only; neither contributed a
+  code or test transplant to the accepted implementation.
+- **Boundary:** this accepts Task 101 only. Task 102 still owns Dexie v4 and
+  legacy backfill; Task 103 still owns revision increments and CAS. No push,
+  merge, publication, phase acceptance, or visual Decision receipt is granted.
+- **Next legal action:** commit this receipt and begin Task 102 with its own
+  `In Progress` start signal and observed migration RED.
 
 ## Run-Task Boundary
 
-The next lifecycle may execute Task 101 only. Before its first production
+The next lifecycle may execute Task 102 only. Before its first production
 write, `$run-task` must verify this branch/worktree/receipt and commit an
-`In Progress` start signal. It must observe the planned schema/fixture failure
-before implementation, then repair only evidence-backed Task 101 scope. It may
-not pre-emptively bulk-edit all factories, remove the transitional Zustand
-`StagedCandidate`, write a task acceptance marker, begin Task 102, push,
+`In Progress` start signal. It must observe the planned v4 migration failures
+before implementation, then repair only evidence-backed Task 102 scope. It may
+not begin Task 103, remove the transitional Zustand `StagedCandidate`, push,
 publish, merge, or invoke `end-phase`.

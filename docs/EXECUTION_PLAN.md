@@ -293,7 +293,7 @@ Responsive/mobile redesign remains excluded; active implementation targets the d
 
 ## Phase 23 — Model, Migration, Transactions, And Retention
 
-### Task 101: [ ] Land the authoritative model and typecheck-compatible constructors
+### Task 101: [x] Land the authoritative model and typecheck-compatible constructors
 
 **Files and actions**
 
