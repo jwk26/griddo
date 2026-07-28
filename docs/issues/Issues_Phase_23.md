@@ -90,6 +90,35 @@
 
 None at kickoff.
 
+## Phase 23 Findings And Decisions
+
+| ID | Finding | State | Disposition |
+| --- | --- | --- | --- |
+| `P23-01` | SCHEMA Hook 9 predates the dedicated Scratch Breakdown store and does not state whether Inbox-parented Scratch Bits may use Bit-to-Node promotion. | `Promoted to Execution Plan` | The issue was surfaced as `Awaiting User Decision`; on 2026-07-28 the user approved the identity rule that any Bit parented to the Inbox system Node is a Scratch and cannot be promoted. Task 105 remains unchanged. Task 105A owns the separate SCHEMA gate and later repository regression. |
+
+### Task 105 / Task 105A Boundary Decision Receipt
+
+- **Observed canonical state:** SCHEMA Hook 9 already defines ordinary
+  Bit-to-Node promotion through Chunks, but it predates the dedicated
+  `scratchBreakdowns` store. This is stale canonical scope, not an absent
+  product policy.
+- **Identity decision:** `parentNode.systemRole === "inbox"` determines a
+  Scratch. Promotion is forbidden for that identity regardless of current
+  Breakdown, candidate, or Chunk presence. Empty Scratch is not promotable.
+- **Rejected alternatives:** Task 105 does not silently delete Breakdown/
+  candidate data during promotion and does not invent a migration of that data
+  into the promoted Node.
+- **Task boundary:** Task 105 retains its exact approved hard-delete and trash-
+  cleanup contract. Task 105A follows it as a separate canonical amendment and
+  implementation gate; neither commit may be folded into Task 105.
+- **Checkpoint seam:** Task 105 actual deletion methods may invoke the existing
+  private synchronous checkpoint emitter after named store mutations. The
+  protected Task 104 probe and public API surface are not widened.
+- **User disposition:** approved explicitly on 2026-07-28 by `go ahead` after
+  the alternatives and recommended boundary were presented.
+- **Next legal action:** commit this plan amendment, then begin Task 105 only
+  through its own bounded `$run-task` start receipt.
+
 ## Active Task
 
 | Field | Durable value |

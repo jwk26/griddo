@@ -124,7 +124,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 
 | Phase | Status | Scope | Tasks | Dependency-aware readiness |
 |---|---|---|---|---|
-| Phase 23 | Proposed | Model, v4 migration, revisions, real transaction harness, aggregate deletion | 101–105 | Code root after plan and lifecycle approval. |
+| Phase 23 | Proposed | Model, v4 migration, revisions, real transaction harness, aggregate deletion, stale Scratch-promotion guard | 101–105 + 105A | Code root after plan and lifecycle approval; 105A is an approved maintenance insertion that does not renumber downstream tasks. |
 | Phase 24 | Proposed | Fourteen user-owned DP receipts covering twelve VQs | 106–119 | Logical parallelism; shared document writes use one mutex and create no cross-VQ dependency. |
 | Phase 25 | Proposed | Eleven authoritative commands plus Archive recovery | 120–126 | Follows the exact independent data DAG, not Phase 24 completion. |
 | Phase 26 | Proposed | Lifetime/copy/theme foundations and source-backed base surfaces | 127–135 | Individual data dependencies only. |
@@ -174,7 +174,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 
 | ID | Architecture flow | Owning task(s) |
 |---|---|---|
-| `AF-01` | DataStore and Zod write boundary remain the only command/storage boundary. | 101–105, 120–126, 163 |
+| `AF-01` | DataStore and Zod write boundary remain the only command/storage boundary. | 101–105, 105A, 120–126, 163 |
 | `AF-02` | UI reads stay reactive; components do not import Dexie. | 131, 135, 163 |
 | `AF-03` | Canonical URL/system-node routing is retained; only Inbox body dispatch changes. | 129, 163, 164 |
 | `AF-04` | Lifecycle filters, retention, and unrelated Archive/Trash behavior remain intact. | 102, 105, 122, 125, 165 |
@@ -381,6 +381,40 @@ Responsive/mobile redesign remains excluded; active implementation targets the d
 **Verification:** `pnpm test -- src/lib/db/scratch-aggregate-hard-delete.test.ts src/lib/db/cascade-hard-delete.test.ts src/lib/db/auto-cleanup.test.ts src/lib/db/scratch-breakdowns.test.ts`; expected zero failures, then `pnpm typecheck`.
 
 **Commit contract:** aggregate hard-delete/cleanup owners and their exact rollback/retention tests only; `feat(db): delete scratch aggregates atomically`.
+
+### Task 105A: [ ] Amend the stale Scratch promotion boundary
+
+**Files and actions:** first amend `docs/SCHEMA.md` Hook 9 through a separate
+canonical-document gate: a Bit whose parent Node has `systemRole: "inbox"` is
+a Scratch and cannot be promoted to a Node, regardless of whether it currently
+has Breakdown rows, staged candidates, or Chunks. After that amendment is
+explicitly approved, modify `src/lib/db/indexeddb.ts` and
+`src/lib/db/promotion.test.ts` so `promoteBitToNode` rejects the Inbox-parented
+Bit before allocating IDs or writing any store. Do not infer a Breakdown/
+candidate deletion or migration policy, and do not change the visual surface.
+
+**Dependencies:** Task 105 and explicit approval of the Task 105A SCHEMA
+amendment. Task 105 must not absorb this work.
+
+**Authority / flows:** SCHEMA dedicated `scratchBreakdowns` ownership and the
+stale Hook 9 Bit-to-Node Promotion contract; the explicit 2026-07-28 user
+decision recorded in `docs/issues/Issues_Phase_23.md`.
+
+**Recipe:** Not applicable — repository constraint; the intended Scratch UI
+already exposes no promotion action under its normal no-Chunk state.
+
+**Observable acceptance:** Inbox-parented Bits reject promotion before any
+Node/Bit/Chunk/Breakdown/candidate/audit write, including a defensive fixture
+that contains Chunks; ordinary non-Inbox Bits preserve current promotion
+behavior. Data presence never toggles the rule.
+
+**Verification:** run `pnpm exec vitest run src/lib/db/promotion.test.ts`,
+`pnpm typecheck`, `pnpm lint`, and `git diff --check`; expected zero failures
+or errors and no new warning.
+
+**Commit contract:** the approved Hook 9 amendment/receipt is one documentation
+commit; the repository guard and exact promotion regression are a later narrow
+code commit; `fix(db): reject Scratch bit promotion`.
 
 ---
 
