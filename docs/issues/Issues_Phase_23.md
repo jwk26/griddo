@@ -103,7 +103,7 @@ None at kickoff.
 | Recovery anchor | Task 102 acceptance commit `c28ea90` on `phase-23/inbox-triage-model-foundation` |
 | Implementation commit | `6b04c61bd8e739494cd3d30db3c0e27d6a71d49a` (`feat(db): enforce monotonic record revisions`) |
 | Canonical impact | `Reflected` — implement the already-approved SCHEMA monotonic revision/CAS boundary without changing canonical policy |
-| Issues / deviations | One derived write-set deviation approved on 2026-07-28: remove nine caller-owned `mtime` values from `src/hooks/use-dnd.ts` after the Task 103 public update boundary made those inputs invalid. |
+| Issues / deviations | One necessary derived write-set deviation is included in the implementation but was not separately approved before commit: remove nine caller-owned `mtime` values from `src/hooks/use-dnd.ts` after the Task 103 public update boundary made those inputs invalid. It awaits explicit disposition with the Task 103 checkpoint. |
 | Next legal action | Present the committed Task 103 evidence for explicit user acceptance or rejection; Task 104 must not start first. |
 
 ## Task 103 Start Receipt
@@ -159,7 +159,7 @@ None at kickoff.
    injection and Task 120's `expectedVersion`/operation-result APIs remain
    unimplemented.
 
-### Scope reconciliation and approved deviation
+### Scope reconciliation and deviation awaiting checkpoint disposition
 
 - `src/hooks/use-grid-actions.ts` already accepted only `CreateNode` and
   `CreateBit` at Task 103 start, so no production edit was needed; its new test
@@ -168,10 +168,12 @@ None at kickoff.
   `mtime` properties in `src/hooks/use-dnd.ts` invalid. Removing them is a
   derived compatibility repair: the Task 101 update schemas already stripped
   `mtime`, and the repository remains the sole owner of whether each patch
-  updates it. This path was not named in the start receipt; after the deviation
-  was surfaced, the user instructed the session to continue and finish Task
-  103 on 2026-07-28. That instruction approves this single derived path for the
-  implementation commit and no broader write-set expansion.
+  updates it. This path was not named in the start receipt and entered the
+  implementation commit before receiving a file-specific user approval. The
+  prior instruction to continue Task 103 was not itself a precise approval of
+  this deviation. The current checkpoint therefore asks the user to accept or
+  reject Task 103 with this single derived path stated explicitly; no broader
+  write-set expansion is implied.
 - No `schema.ts`, Task 104 checkpoint seam/harness, Task 105 aggregate
   candidate/audit behavior, or Task 120 command/reconciliation behavior is in
   the Task 103 diff.
