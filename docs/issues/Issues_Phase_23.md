@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Ready for `$run-task`; Task 101 remains open and not started
+> State: Task 101 `In Progress`; implementation has not yet begun
 
 ## Status Legend
 
@@ -89,6 +89,21 @@
 ## Active Issues
 
 None at kickoff.
+
+## Active Task
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 101 — Land the authoritative model and typecheck-compatible constructors |
+| State | `In Progress`; distinct from user acceptance, and the execution-plan marker remains open |
+| Approved scope | Exact Task 101 batch from the Gate C kickoff receipt; schema/type exports, repository create constructors, schema/constructor tests, and enumerated typed-fixture compatibility only |
+| Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
+| Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
+| Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
+| Recovery anchor | Pre-production Task 101 start at `b22c7a421bf0087e8f0649e66a51ed22bc022259` on `phase-23/inbox-triage-model-foundation` |
+| Canonical impact | `Reflected` — Task 101 implements the already-approved `docs/SCHEMA.md` model and `docs/EXECUTION_PLAN.md` scope; no new canonical decision is introduced |
+| Issues / deviations | None at start |
+| Next legal action | Observe the planned Task 101 schema/fixture failure before any production implementation |
 
 ## Run-Task Boundary
 
