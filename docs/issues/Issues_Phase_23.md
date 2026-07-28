@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–102 accepted; Task 103 authorized but not started
+> State: Tasks 101–102 accepted; Task 103 `In Progress`
 
 ## Status Legend
 
@@ -95,16 +95,40 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | Task 103 — Enforce revisions across every public and repository mutation path |
-| State | `Not started`; authorized by explicit Task 102 acceptance; requires a committed `In Progress` start signal before production writes |
+| State | `In Progress` from the committed Task 102 acceptance boundary; Task 103 marker remains open |
 | Approved scope | Exact Task 103 batch from `docs/EXECUTION_PLAN.md`: revision/public-boundary code and the named mutation-path tests only |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
-| Recovery anchor | Accepted Task 102 implementation `dcdc74d` and evidence `ff56d82` on `phase-23/inbox-triage-model-foundation` |
+| Recovery anchor | Task 102 acceptance commit `c28ea90` on `phase-23/inbox-triage-model-foundation` |
 | Implementation commit | Not created |
 | Canonical impact | `Reflected` — implement the already-approved SCHEMA monotonic revision/CAS boundary without changing canonical policy |
 | Issues / deviations | None open at authorization. |
-| Next legal action | Commit this acceptance boundary, then record a separate Task 103 `In Progress` start signal and observe the planned revision/public-boundary RED before production writes. |
+| Next legal action | Observe the planned revision/public-boundary RED, then implement only Task 103 and stop at its user checkpoint. |
+
+## Task 103 Start Receipt
+
+- **Authorized predecessor:** Task 102 acceptance at `c28ea90`.
+- **Started:** `2026-07-28T13:59:00+0900`; Task 103 remains `[ ]`.
+- **Named-skill path:** `$run-task` is present in this session and its full
+  skill plus required references were loaded before this start signal. This is
+  the first Phase 23 task that can measure the named-skill discovery/loading
+  path rather than a manual contract emulation.
+- **Write scope:** `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, the
+  three named public-action hooks and their new tests, `revision.test.ts`, and
+  only the exact existing database regression owners listed by Task 103.
+- **RED order:** first add compile-time public-boundary failures and focused
+  direct revision assertions; then add one failing behavior cluster at a time
+  for no-op/rejection, mtime-only touches, cascades, restore, archive,
+  normalization, relocation, promotion, and legacy Breakdown mutation before
+  each matching production repair.
+- **Forbidden scope:** Task 104 transaction checkpoint seams, Task 105
+  aggregate hard-delete behavior, command behavior, UI realization, canonical
+  policy changes, push, merge, publication, and `end-phase`.
+- **Verification:** run the three new action tests and the exact database tests
+  listed by Task 103, then `pnpm typecheck`, `pnpm lint`, and
+  `git diff --check`. Broader gates are rerun only when invalidated and the
+  reason is recorded.
 
 ## Task 102 Start Receipt
 
