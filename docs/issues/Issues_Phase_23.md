@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Task 101 `In Progress`; implementation has not yet begun
+> State: Task 101 `Implemented`; awaiting explicit user review and acceptance
 
 ## Status Legend
 
@@ -95,15 +95,72 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | Task 101 — Land the authoritative model and typecheck-compatible constructors |
-| State | `In Progress`; distinct from user acceptance, and the execution-plan marker remains open |
+| State | `Implemented`; awaiting explicit user review, distinct from acceptance, and the execution-plan marker remains open |
 | Approved scope | Exact Task 101 batch from the Gate C kickoff receipt; schema/type exports, repository create constructors, schema/constructor tests, and enumerated typed-fixture compatibility only |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
 | Recovery anchor | Pre-production Task 101 start at `b22c7a421bf0087e8f0649e66a51ed22bc022259` on `phase-23/inbox-triage-model-foundation` |
+| Implementation commit | `b6bbed8` — `feat(triage): define versioned inbox domain model` |
 | Canonical impact | `Reflected` — Task 101 implements the already-approved `docs/SCHEMA.md` model and `docs/EXECUTION_PLAN.md` scope; no new canonical decision is introduced |
-| Issues / deviations | None at start |
-| Next legal action | Observe the planned Task 101 schema/fixture failure before any production implementation |
+| Issues / deviations | None open. Read-only review found two defects in the initial generic operation types; compile-time RED evidence reproduced both and the implementation commit repairs them without changing canonical scope. |
+| Next legal action | Present the Task 101 checkpoint for explicit user acceptance or rejection. Do not start Task 102. |
+
+## Task 101 Implementation Evidence
+
+### RED and repair history
+
+- Before production implementation, the declared focused command
+  `pnpm test -- src/lib/db/schema.test.ts` exposed four intended Task 101
+  failure clusters while the prior 499 tests remained green: required model
+  versions, public update schemas, durable candidate schemas, and narrow
+  audit/recovery schemas.
+- The declared command includes `--` and therefore ran the full Vitest suite
+  instead of only the named file. This is a non-blocking verification-efficiency
+  finding for the post-Phase-23 workflow improvement pass; it did not broaden
+  implementation scope.
+- Read-only review then found that the first generic operation wrapper made
+  payload-free values uninhabitable and erased discriminated-union evidence.
+  Compile-time fixtures reproduced both failures. The final wrapper uses an
+  empty payload without a string index signature and distributes over result
+  variants, preserving status-specific evidence for later command tasks.
+
+### Implemented scope
+
+- Node, Bit, and Scratch Breakdown stored models require integer `version >= 1`;
+  Node and Bit default `pastDeadlineDismissed` to `false`.
+- Public create/update schemas omit repository-owned IDs, creation/lifecycle
+  metadata, and versions while retaining current user-owned update fields.
+- `StagedCandidate`, `CandidateOrphanAuditEvent`,
+  `PendingOperationRecovery`, operation identity/status/base command-result
+  types, and all public type exports match the approved Task 101 boundary.
+- All six current production constructor sites explicitly initialize the new
+  fields. The approved discovery sweep found 36 test files containing 59 typed
+  factories; every one is compatible, and the incomplete Scratch Breakdown
+  cast was replaced with a complete fixture.
+- Command-specific request/result variants remain owned by Tasks 120–126. The
+  Task 101 base types preserve future discriminated variants without choosing
+  command-specific payload fields early.
+
+### GREEN evidence
+
+| Command | Exit | Relevant result |
+| --- | ---: | --- |
+| `pnpm exec vitest run src/lib/db/schema.test.ts src/lib/db/indexeddb.test.ts` | 0 | 2 files, 20 tests passed |
+| `pnpm test` | 0 | 73 files, 505 tests passed; baseline 499 plus six Task 101 tests |
+| `pnpm typecheck` | 0 | TypeScript check passed, including base and discriminated operation-type fixtures |
+| `pnpm lint` | 0 | 0 errors; the same 11 pre-existing warnings as the base gate |
+| `pnpm build` | 0 | Next.js production build and seven routes completed |
+| Factory ownership sweep | 0 | 36 files, 59 factory functions, zero missing changed files |
+| `git diff --check` | 0 | No whitespace errors before the implementation commit |
+
+### Remaining planned risk
+
+- Task 102 owns Dexie v4 stores and the legacy-data backfill. Task 103 owns
+  monotonic version increments and CAS enforcement. Task 101 does not claim
+  either behavior early.
+- There is no current user-visible surface change. No visual Decision receipt
+  is consumed, no task is accepted, and no publication authority is granted.
 
 ## Run-Task Boundary
 
