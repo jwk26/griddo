@@ -25,7 +25,7 @@ This is the Codex entrypoint. It coexists with, and does not replace or modify,
 - `$end-phase` fields are refreshed for the current feature branch, but the
   lifecycle remains unavailable until its own user Final Close. The completed
   docs-publication authority is expired and must never be reused.
-- Task 101 is accepted. The current bounded `$run-task` batch is Task 102 only.
+- Tasks 101–102 are accepted. The current bounded `$run-task` batch is Task 103 only.
   The superseded Golden pilot was compared
   without reuse and retired on 2026-07-28. Its final SHA `52a385d` is
   historical audit identity only; do not reconstruct or import it.

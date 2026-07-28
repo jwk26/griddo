@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Task 101 `Implemented`; awaiting explicit user review and acceptance
+> State: Tasks 101–102 accepted; Task 103 authorized but not started
 
 ## Status Legend
 
@@ -94,17 +94,17 @@ None at kickoff.
 
 | Field | Durable value |
 | --- | --- |
-| Task | Task 102 — Install the exact atomic Dexie v4 migration |
-| State | `Implemented`; awaiting explicit user review and acceptance; Task 102 marker remains open |
-| Approved scope | Exact Task 102 batch: `indexeddb.ts`, the existing v3 upgrade test, and one new v4 upgrade test only |
+| Task | Task 103 — Enforce revisions across every public and repository mutation path |
+| State | `Not started`; authorized by explicit Task 102 acceptance; requires a committed `In Progress` start signal before production writes |
+| Approved scope | Exact Task 103 batch from `docs/EXECUTION_PLAN.md`: revision/public-boundary code and the named mutation-path tests only |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
-| Recovery anchor | Accepted Task 101 boundary at `4a7865a` on `phase-23/inbox-triage-model-foundation` |
-| Implementation commit | `dcdc74d` — `feat(triage): migrate indexeddb atomically to v4` |
-| Canonical impact | `Reflected` — implement the already-approved SCHEMA v4 target without introducing new stores, inferred rows, or migration policy |
-| Issues / deviations | None open. The v3 success fixture IDs were corrected without changing its assertions; independent review found one preservation-evidence advisory, repaired before commit. |
-| Next legal action | Present the Task 102 checkpoint for explicit user acceptance or rejection. Do not begin Task 103. |
+| Recovery anchor | Accepted Task 102 implementation `dcdc74d` and evidence `ff56d82` on `phase-23/inbox-triage-model-foundation` |
+| Implementation commit | Not created |
+| Canonical impact | `Reflected` — implement the already-approved SCHEMA monotonic revision/CAS boundary without changing canonical policy |
+| Issues / deviations | None open at authorization. |
+| Next legal action | Commit this acceptance boundary, then record a separate Task 103 `In Progress` start signal and observe the planned revision/public-boundary RED before production writes. |
 
 ## Task 102 Start Receipt
 
@@ -177,6 +177,25 @@ None at kickoff.
 - The sole advisory requested explicit preservation coverage for existing Bit
   and Breakdown revisions/booleans. The final fixture now preserves nondefault
   values and unknown fields for Node, Bit, and Breakdown.
+
+## Task 102 Acceptance Receipt
+
+- **Disposition:** accepted explicitly by the user on 2026-07-28 with the
+  instruction `승인. 진행해`.
+- **Accepted implementation:** `dcdc74d` (`feat(triage): migrate indexeddb
+  atomically to v4`).
+- **Evidence receipt:** `ff56d82` (`docs: record Task 102 implementation
+  evidence`), including 16 focused migration tests, 74 files / 517 tests,
+  typecheck, lint, build, and diff checks.
+- **Independent review:** blocker count zero. The review directly re-ran the
+  focused migration tests, full tests, and typecheck and confirmed the exact
+  three-file commit contract.
+- **Boundary:** this accepts Task 102 only. Task 103 owns revision increments,
+  CAS, and public update boundaries. No Task 104 work, push, merge,
+  publication, phase acceptance, or visual Decision receipt is granted.
+- **Next legal action:** commit this receipt, then begin Task 103 through the
+  named `$run-task` path with its own committed `In Progress` start signal and
+  observed revision/public-boundary RED.
 
 ## Task 101 Implementation Evidence
 
@@ -315,6 +334,8 @@ reads. Do not modify `run-task` until the Phase 23 trace is complete.
 
 ## Run-Task Boundary
 
-Task 102 is implemented but not accepted. No further production write is
-legal until the user explicitly accepts or rejects this checkpoint. Task 103,
-push, publication, merge, and `end-phase` remain forbidden.
+Task 102 is accepted. The next lifecycle may execute Task 103 only. Before its
+first production write, `$run-task` must verify this branch/worktree/receipt
+and commit an `In Progress` start signal. It must observe the planned
+revision/public-boundary failures before implementation. Task 104, push,
+publication, merge, and `end-phase` remain forbidden.
