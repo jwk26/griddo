@@ -1,6 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Bit, Chunk, Node } from "@/lib/db/schema";
 import { IndexedDBDataStore } from "@/lib/db/indexeddb";
+import {
+  TRANSACTION_TEST_IDS,
+  createSevenStoreSeed,
+  openTransactionTestDatabase,
+  seedSevenStores,
+  snapshotSevenStores,
+} from "@/lib/db/indexeddb.test-utils";
 
 type StoredRecord = { id: string };
 
@@ -51,6 +58,48 @@ function makeStore(nodes: Node[], bits: Bit[], chunks: Chunk[] = []): { store: I
 }
 
 describe("Hook 9 — bit-to-node promotion", () => {
+  it("rejects an empty Inbox-parented Scratch without writing any store", async () => {
+    const database = await openTransactionTestDatabase();
+
+    try {
+      const seed = createSevenStoreSeed();
+      seed.chunks = [];
+      seed.scratchBreakdowns = [];
+      seed.stagedCandidates = [];
+      seed.candidateOrphanAuditEvents = [];
+      await seedSevenStores(database, seed);
+      const before = await snapshotSevenStores(database);
+      const store = new IndexedDBDataStore(database);
+
+      await expect(
+        store.promoteBitToNode(TRANSACTION_TEST_IDS.scratchBit),
+      ).rejects.toThrow(/scratch.*promot|promot.*scratch/i);
+      expect(await snapshotSevenStores(database)).toEqual(before);
+    } finally {
+      database.close();
+    }
+  });
+
+  it("rejects a defensive Scratch aggregate before allocating IDs or writing stores", async () => {
+    const database = await openTransactionTestDatabase();
+    const randomUuid = vi.spyOn(crypto, "randomUUID");
+
+    try {
+      await seedSevenStores(database, createSevenStoreSeed());
+      const before = await snapshotSevenStores(database);
+      const store = new IndexedDBDataStore(database);
+
+      await expect(
+        store.promoteBitToNode(TRANSACTION_TEST_IDS.scratchBit),
+      ).rejects.toThrow(/scratch.*promot|promot.*scratch/i);
+      expect(randomUuid).not.toHaveBeenCalled();
+      expect(await snapshotSevenStores(database)).toEqual(before);
+    } finally {
+      randomUuid.mockRestore();
+      database.close();
+    }
+  });
+
   it("promotes a Bit with 3 chunks to a new Node with 3 child Bits", async () => {
     const nId = crypto.randomUUID();
     const bId = crypto.randomUUID();

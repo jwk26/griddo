@@ -1485,6 +1485,10 @@ export class IndexedDBDataStore implements DataStore {
       throw new Error(`Parent node not found for bit: ${bitId}`);
     }
 
+    if (parent.systemRole === "inbox") {
+      throw new Error("Cannot promote Scratch Bit to Node");
+    }
+
     await this.ensureGridCellAvailable(bit.parentId, bit.x, bit.y, {
       excludedBitIds: new Set([bit.id]),
     });
