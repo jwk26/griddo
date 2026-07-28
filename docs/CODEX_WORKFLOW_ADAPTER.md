@@ -99,7 +99,6 @@ craft_docs:
     execution: planning/EXECUTION_PLAN.reviewed-0cd16ab3.md@0cd16ab3daf4b0fbce5a014bae055acb48db8f70d19f9dcd5fa2ca043c1b6b00
     planning_standard: planning/PLANNING_STANDARD.reviewed-24c2e879.md@24c2e879bfd006c04da23d80830108a0f85d4693e3367e3825e9841b5bc05119
     flow_review: flow-review/phase-23-flow-review.reviewed-418b613d.md@418b613d45685ecaf9fae374b49b370813042e73ecdc71e2ae92bea08ed1e625
-    preserved_repository: git-preservation/task14-fresh-repository.bundle@c84cf189b7954caecf787e9551bf6026be77e7f8b5b99cdede68e397702c8af9
 
 git:
   scope: Gate C-approved Phase 23 branch/worktree preparation and receipt-gated task execution; no publication authority
