@@ -15,6 +15,9 @@
 > example derives both Node and Bit coordinate validators from the existing
 > production grid constants; the exact pre-receipt artifact is identified in
 > the maintenance receipt below.
+> **Scratch-promotion amendment status:** **Proposed; pending explicit user
+> approval.** Prior SCHEMA receipts do not approve the current Hook 9 draft,
+> and no promotion implementation is authorized until its separate gate passes.
 > **Promotion provenance:** selected topic
 > [`DECISION.md`](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md),
 > approved [`PROMOTION_MAP.md`](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md),
@@ -893,6 +896,17 @@ Before inserting or moving a Node/Bit to `(parentId, x, y)`:
 3. **Exception:** Bits whose `parentId` is the Inbox system Node ("Scratch") are exempt — they use the `x = 0, y = 0` sentinel and are not subject to cell uniqueness. The Triage layout orders them by `createdAt`.
 
 ### 9. Bit-to-Node Promotion
+
+This hook applies only to ordinary, non-Scratch Bits. A Bit whose parent Node
+has `systemRole: "inbox"` is a Scratch and **cannot** be promoted to a Node,
+regardless of whether it currently has Breakdown rows, staged candidates, or
+Chunks. The repository rejects that identity before allocating result IDs or
+writing any Node, Bit, Chunk, Breakdown, candidate, or audit store.
+
+Scratch uses the dedicated `scratchBreakdowns` store rather than Chunk reuse,
+so Hook 9's Chunk-to-child-Bit expansion has no defined Scratch meaning. The
+rejection does not delete or migrate Breakdown rows or candidates, and data
+presence never enables or disables the rule.
 
 When a Bit is promoted to a Node:
 1. Create a new Node with the Bit's `title`, `icon`, `deadline`. Assign default `color`. Set `level = parentNode.level + 1` (same level as the Bit's grid position).
