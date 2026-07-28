@@ -34,6 +34,8 @@ function createBit(overrides: Partial<Bit> = {}): Bit {
     y: overrides.y ?? 0,
     deletedAt: overrides.deletedAt ?? null,
     archivedAt: overrides.archivedAt ?? null,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 

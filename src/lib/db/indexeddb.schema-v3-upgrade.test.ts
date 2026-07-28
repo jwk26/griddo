@@ -20,8 +20,13 @@ class GridDOV2 extends Dexie {
   }
 }
 
+const NODE_MISSING_ID = "00000000-0000-4000-8000-000000000001";
+const BIT_MISSING_ID = "00000000-0000-4000-8000-000000000002";
+const NODE_ARCHIVED_ID = "00000000-0000-4000-8000-000000000003";
+const BIT_ARCHIVED_ID = "00000000-0000-4000-8000-000000000004";
+
 const v2NodeMissing = {
-  id: "node-missing",
+  id: NODE_MISSING_ID,
   title: "Node Missing Fields",
   color: "hsl(210, 80%, 55%)",
   icon: "folder",
@@ -37,7 +42,7 @@ const v2NodeMissing = {
 };
 
 const v2BitMissing = {
-  id: "bit-missing",
+  id: BIT_MISSING_ID,
   title: "Bit Missing Fields",
   description: "",
   icon: "circle",
@@ -47,7 +52,7 @@ const v2BitMissing = {
   status: "active",
   mtime: 1700000000000,
   createdAt: 1700000000000,
-  parentId: "node-missing",
+  parentId: NODE_MISSING_ID,
   x: 0,
   y: 0,
   deletedAt: null,
@@ -65,7 +70,7 @@ describe("GridDO IndexedDB schema version 3 upgrade", () => {
     const db = new GridDODatabase(options);
     await db.open();
 
-    const node = await db.nodes.get("node-missing");
+    const node = await db.nodes.get(NODE_MISSING_ID);
 
     expect(node?.archivedAt).toBeNull();
     expect(node?.systemRole).toBeNull();
@@ -85,7 +90,7 @@ describe("GridDO IndexedDB schema version 3 upgrade", () => {
     const db = new GridDODatabase(options);
     await db.open();
 
-    const bit = await db.bits.get("bit-missing");
+    const bit = await db.bits.get(BIT_MISSING_ID);
 
     expect(bit?.archivedAt).toBeNull();
 
@@ -100,15 +105,15 @@ describe("GridDO IndexedDB schema version 3 upgrade", () => {
     const seederDb = new GridDOV2(options);
     await seederDb.nodes.put({
       ...v2NodeMissing,
-      id: "node-archived",
+      id: NODE_ARCHIVED_ID,
       archivedAt,
       systemRole: "inbox",
       hiddenFromGrid: true,
     });
     await seederDb.bits.put({
       ...v2BitMissing,
-      id: "bit-archived",
-      parentId: "node-archived",
+      id: BIT_ARCHIVED_ID,
+      parentId: NODE_ARCHIVED_ID,
       archivedAt,
     });
     seederDb.close();
@@ -116,8 +121,8 @@ describe("GridDO IndexedDB schema version 3 upgrade", () => {
     const db = new GridDODatabase(options);
     await db.open();
 
-    const node = await db.nodes.get("node-archived");
-    const bit = await db.bits.get("bit-archived");
+    const node = await db.nodes.get(NODE_ARCHIVED_ID);
+    const bit = await db.bits.get(BIT_ARCHIVED_ID);
 
     expect(node?.archivedAt).toBe(archivedAt);
     expect(node?.systemRole).toBe("inbox");

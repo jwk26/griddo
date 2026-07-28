@@ -2,15 +2,16 @@
 
 import { useCallback } from "react";
 import { getDataStore } from "@/lib/db/datastore";
-import type { Bit, Node } from "@/types";
+import type { UpdateBit, UpdateNode } from "@/lib/db/schema";
+import type { Node } from "@/types";
 
 export function useBitDetailActions() {
-  const updateBit = useCallback(async (id: string, data: Partial<Bit>): Promise<void> => {
+  const updateBit = useCallback(async (id: string, data: UpdateBit): Promise<void> => {
     const dataStore = await getDataStore();
     await dataStore.updateBit(id, data);
   }, []);
 
-  const updateNode = useCallback(async (id: string, data: Partial<Node>): Promise<void> => {
+  const updateNode = useCallback(async (id: string, data: UpdateNode): Promise<void> => {
     const dataStore = await getDataStore();
     await dataStore.updateNode(id, data);
   }, []);

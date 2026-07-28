@@ -38,6 +38,7 @@ function createScratchBreakdown(
     order: overrides.order ?? 0,
     createdAt: overrides.createdAt ?? 1,
     consumedAt: overrides.consumedAt ?? null,
+    version: overrides.version ?? 1,
   };
 }
 

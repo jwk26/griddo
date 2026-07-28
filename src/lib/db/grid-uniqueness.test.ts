@@ -18,10 +18,16 @@ class FakeTable<T extends StoredRecord> {
 const BASE_TS = 1_700_000_000_000;
 
 function makeNode(id: string, overrides: Partial<Node> = {}): Node {
-  return { id, title: "Node", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null, archivedAt: null, systemRole: null, hiddenFromGrid: false, ...overrides };
+  return { id, title: "Node", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null, archivedAt: null, systemRole: null, hiddenFromGrid: false, ...overrides,
+  version: overrides.version ?? 1,
+  pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
+  };
 }
 function makeBit(id: string, parentId: string, overrides: Partial<Bit> = {}): Bit {
-  return { id, title: "Bit", description: "", icon: "Box", deadline: null, deadlineAllDay: false, priority: null, status: "active", mtime: BASE_TS, createdAt: BASE_TS, parentId, x: 0, y: 0, deletedAt: null, archivedAt: null, ...overrides } as Bit;
+  return { id, title: "Bit", description: "", icon: "Box", deadline: null, deadlineAllDay: false, priority: null, status: "active", mtime: BASE_TS, createdAt: BASE_TS, parentId, x: 0, y: 0, deletedAt: null, archivedAt: null, ...overrides,
+  version: overrides.version ?? 1,
+  pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
+  } as Bit;
 }
 function makeStore(nodes: Node[], bits: Bit[]) {
   return new IndexedDBDataStore({ nodes: new FakeTable(nodes), bits: new FakeTable(bits), chunks: new FakeTable([]) });
@@ -35,19 +41,21 @@ describe("Hook 8 — grid cell uniqueness", () => {
 
     const store = makeStore(
       [makeNode(nId)],
-      [makeBit(aId, nId, { x: 0, y: 0 }), makeBit(bId, nId, { x: 1, y: 0 })],
+      [makeBit(aId, nId, { x: 0, y: 0 }), makeBit(bId, nId, { x: 1, y: 0, version: 6 })],
     );
 
     await expect(store.updateBit(bId, { x: 0, y: 0 })).rejects.toThrow();
+    expect((await store.getBit(bId))?.version).toBe(6);
   });
 
   it("moving a Bit to its own cell succeeds (excluded from occupancy check)", async () => {
     const nId = crypto.randomUUID();
     const bId = crypto.randomUUID();
 
-    const store = makeStore([makeNode(nId)], [makeBit(bId, nId, { x: 0, y: 0 })]);
+    const store = makeStore([makeNode(nId)], [makeBit(bId, nId, { x: 0, y: 0, version: 4 })]);
 
     await expect(store.updateBit(bId, { x: 0, y: 0 })).resolves.toBeUndefined();
+    expect((await store.getBit(bId))?.version).toBe(4);
   });
 
   it("creating a Bit at an occupied cell throws", async () => {
@@ -63,11 +71,13 @@ describe("Hook 8 — grid cell uniqueness", () => {
 
   it("creating a Bit at an empty cell succeeds", async () => {
     const nId = crypto.randomUUID();
-    const store = makeStore([makeNode(nId)], []);
+    const store = makeStore([makeNode(nId, { version: 7 })], []);
 
     const bit = await store.createBit({ title: "New", description: "", icon: "Box", parentId: nId, x: 0, y: 0, deadline: null, deadlineAllDay: false, priority: null });
     expect(bit.x).toBe(0);
     expect(bit.y).toBe(0);
+    expect(bit.version).toBe(1);
+    expect((await store.getNode(nId))?.version).toBe(7);
   });
 
   it("allows multiple Inbox Scratch Bits at the 0,0 sentinel cell", async () => {

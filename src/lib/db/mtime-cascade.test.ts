@@ -18,10 +18,16 @@ class FakeTable<T extends StoredRecord> {
 const BASE_TS = 1_700_000_000_000;
 
 function makeNode(id: string, overrides: Partial<Node> = {}): Node {
-  return { id, title: "Node", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null, archivedAt: null, systemRole: null, hiddenFromGrid: false, ...overrides };
+  return { id, title: "Node", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null, archivedAt: null, systemRole: null, hiddenFromGrid: false, ...overrides,
+  version: overrides.version ?? 1,
+  pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
+  };
 }
 function makeBit(id: string, parentId: string, overrides: Partial<Bit> = {}): Bit {
-  return { id, title: "Bit", description: "", icon: "Box", deadline: null, deadlineAllDay: false, priority: null, status: "active", mtime: BASE_TS, createdAt: BASE_TS, parentId, x: 0, y: 0, deletedAt: null, archivedAt: null, ...overrides } as Bit;
+  return { id, title: "Bit", description: "", icon: "Box", deadline: null, deadlineAllDay: false, priority: null, status: "active", mtime: BASE_TS, createdAt: BASE_TS, parentId, x: 0, y: 0, deletedAt: null, archivedAt: null, ...overrides,
+  version: overrides.version ?? 1,
+  pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
+  } as Bit;
 }
 function makeChunk(id: string, parentId: string, overrides: Partial<Chunk> = {}): Chunk {
   return { id, title: "Chunk", description: "", time: null, timeAllDay: false, status: "incomplete", order: 0, parentId, ...overrides } as Chunk;
@@ -36,8 +42,8 @@ describe("Hook 1 — mtime cascade", () => {
     const bId = crypto.randomUUID();
     const cId = crypto.randomUUID();
 
-    const node = makeNode(nId, { mtime: BASE_TS });
-    const bit = makeBit(bId, nId, { mtime: BASE_TS });
+    const node = makeNode(nId, { mtime: BASE_TS, version: 7 });
+    const bit = makeBit(bId, nId, { mtime: BASE_TS, version: 4 });
     const chunk = makeChunk(cId, bId, { status: "incomplete" });
 
     const store = makeStore([node], [bit], [chunk]);
@@ -53,6 +59,8 @@ describe("Hook 1 — mtime cascade", () => {
     expect(updatedBit!.mtime).toBeLessThanOrEqual(after);
     expect(updatedNode.mtime).toBeGreaterThanOrEqual(before);
     expect(updatedNode.mtime).toBeLessThanOrEqual(after);
+    expect(updatedBit!.version).toBe(5);
+    expect(updatedNode.version).toBe(7);
   });
 
   it("grid reposition does NOT update mtime", async () => {
@@ -60,21 +68,22 @@ describe("Hook 1 — mtime cascade", () => {
     const bId = crypto.randomUUID();
 
     const node = makeNode(nId);
-    const bit = makeBit(bId, nId, { x: 0, y: 0, mtime: BASE_TS });
+    const bit = makeBit(bId, nId, { x: 0, y: 0, mtime: BASE_TS, version: 3 });
 
     const store = makeStore([node], [bit], []);
     await store.updateBit(bId, { x: 0, y: 1 });
 
     const updatedBit = await store.getBit(bId);
     expect(updatedBit!.mtime).toBe(BASE_TS);
+    expect(updatedBit!.version).toBe(4);
   });
 
   it("bit change cascades mtime to parent Node", async () => {
     const nId = crypto.randomUUID();
     const bId = crypto.randomUUID();
 
-    const node = makeNode(nId, { mtime: BASE_TS });
-    const bit = makeBit(bId, nId, { mtime: BASE_TS });
+    const node = makeNode(nId, { mtime: BASE_TS, version: 9 });
+    const bit = makeBit(bId, nId, { mtime: BASE_TS, version: 2 });
 
     const store = makeStore([node], [bit], []);
     const before = Date.now();
@@ -85,5 +94,7 @@ describe("Hook 1 — mtime cascade", () => {
     const updatedNode = updatedNodes.find((n) => n.id === nId)!;
     expect(updatedNode.mtime).toBeGreaterThanOrEqual(before);
     expect(updatedNode.mtime).toBeLessThanOrEqual(after);
+    expect((await store.getBit(bId))?.version).toBe(3);
+    expect(updatedNode.version).toBe(9);
   });
 });

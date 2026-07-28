@@ -99,6 +99,8 @@ function createNode(overrides: Partial<Node> = {}): Node {
     archivedAt: overrides.archivedAt ?? null,
     systemRole: overrides.systemRole ?? null,
     hiddenFromGrid: overrides.hiddenFromGrid ?? false,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 
@@ -340,6 +342,7 @@ describe("system node seeding", () => {
       deletedAt,
       x: 0,
       y: 0,
+      version: 3,
     });
     const { database, store } = createStore({ nodes: [inbox] });
 
@@ -353,6 +356,10 @@ describe("system node seeding", () => {
     expect(storedInbox.title).toBe("My Work");
     expect(storedInbox.icon).toBe("star");
     expect(storedInbox.color).toBe("hsl(0,0%,50%)");
+    expect(storedInbox.version).toBe(4);
+
+    await store.ensureSystemNodes();
+    expect(expectSingleSystemNode(await database.nodes.toArray(), "inbox").version).toBe(4);
   });
 
   it("normalizes partial archived lifecycle drift while leaving clean Inbox unchanged", async () => {
@@ -361,6 +368,7 @@ describe("system node seeding", () => {
       systemRole: "inbox",
       x: 1,
       y: 0,
+      version: 5,
     });
     const archive = createNode({
       id: testUuid(9),
@@ -368,6 +376,7 @@ describe("system node seeding", () => {
       archivedAt: 1_700_000_100_000,
       x: 2,
       y: 0,
+      version: 7,
     });
     const { database, store } = createStore({ nodes: [inbox, archive] });
 
@@ -379,6 +388,8 @@ describe("system node seeding", () => {
     expect(storedArchive.id).toBe(archive.id);
     expect(storedArchive.archivedAt).toBeNull();
     expect(storedArchive.deletedAt).toBeNull();
+    expect(expectSingleSystemNode(nodes, "inbox").version).toBe(5);
+    expect(storedArchive.version).toBe(8);
   });
 
   it("relocates a drifted system node when its previous cell is now occupied", async () => {
@@ -388,6 +399,7 @@ describe("system node seeding", () => {
       deletedAt: 1_700_000_100_000,
       x: 0,
       y: 0,
+      version: 11,
     });
     const occupant = createNode({
       id: testUuid(11),
@@ -405,6 +417,7 @@ describe("system node seeding", () => {
     expect(storedInbox.deletedAt).toBeNull();
     expect(storedInbox.archivedAt).toBeNull();
     expect(`${storedInbox.x},${storedInbox.y}`).not.toBe("0,0");
+    expect(storedInbox.version).toBe(12);
 
     const activeCoordinates = activeVisibleRootNodes(nodes).map((node) => `${node.x},${node.y}`);
     expect(new Set(activeCoordinates).size).toBe(activeCoordinates.length);

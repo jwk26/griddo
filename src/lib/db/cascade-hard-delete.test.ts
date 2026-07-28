@@ -1,6 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Bit, Chunk, Node } from "@/lib/db/schema";
 import { IndexedDBDataStore } from "@/lib/db/indexeddb";
+import {
+  TRANSACTION_TEST_IDS,
+  createSevenStoreSeed,
+  openTransactionTestDatabase,
+  seedSevenStores,
+  snapshotSevenStores,
+} from "@/lib/db/indexeddb.test-utils";
 
 type StoredRecord = { id: string };
 
@@ -64,6 +71,8 @@ function makeNode(id: string, overrides: Partial<Node> = {}): Node {
     systemRole: null,
     hiddenFromGrid: false,
     ...overrides,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 
@@ -85,6 +94,8 @@ function makeBit(id: string, parentId: string, overrides: Partial<Bit> = {}): Bi
     deletedAt: null,
     archivedAt: null,
     ...overrides,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 
@@ -119,12 +130,12 @@ describe("cascade hard delete", () => {
   it("hardDeleteNode removes descendant nodes, their bits, and all related chunks", async () => {
     vi.useRealTimers();
 
-    const root = makeNode("root");
+    const root = makeNode("root", { version: 9 });
     const child = makeNode("child", { parentId: root.id, level: 1, x: 1 });
     const grandchild = makeNode("grandchild", { parentId: child.id, level: 2, x: 2 });
     const childBit = makeBit("child-bit", child.id);
     const grandchildBit = makeBit("grandchild-bit", grandchild.id, { x: 1 });
-    const unrelatedBit = makeBit("unrelated-bit", root.id, { x: 3 });
+    const unrelatedBit = makeBit("unrelated-bit", root.id, { x: 3, version: 7 });
     const childChunk = makeChunk("child-chunk", childBit.id);
     const grandchildChunk = makeChunk("grandchild-chunk", grandchildBit.id);
     const unrelatedChunk = makeChunk("unrelated-chunk", unrelatedBit.id);
@@ -144,14 +155,66 @@ describe("cascade hard delete", () => {
       id: root.id,
       title: root.title,
       deletedAt: null,
+      version: 9,
     });
     expect(await store.getBit(unrelatedBit.id)).toMatchObject({
       id: unrelatedBit.id,
       title: unrelatedBit.title,
       deletedAt: null,
+      version: 7,
     });
 
     const remainingChunks = await tables.chunks.toArray();
     expect(remainingChunks).toEqual([unrelatedChunk]);
+  });
+
+  it("deletes a Node closure's Scratch source and candidate without deleting audit history", async () => {
+    const database = await openTransactionTestDatabase();
+
+    try {
+      await seedSevenStores(database, createSevenStoreSeed());
+      const before = await snapshotSevenStores(database);
+      const store = new IndexedDBDataStore(database);
+
+      const result = await store.hardDeleteNode(
+        TRANSACTION_TEST_IDS.inboxNode,
+      );
+      const after = await snapshotSevenStores(database);
+
+      expect(result).toEqual({ status: "deleted" });
+      expect(after.nodes).toEqual([]);
+      expect(after.bits).toEqual([]);
+      expect(after.chunks).toEqual([]);
+      expect(after.scratchBreakdowns).toEqual([]);
+      expect(after.stagedCandidates).toEqual([]);
+      expect(after.candidateOrphanAuditEvents).toEqual(
+        before.candidateOrphanAuditEvents,
+      );
+      expect(after.settings).toEqual(before.settings);
+    } finally {
+      database.close();
+    }
+  });
+
+  it("rolls the actual hardDeleteNode path back when the Node-store checkpoint throws", async () => {
+    const database = await openTransactionTestDatabase();
+
+    try {
+      await seedSevenStores(database, createSevenStoreSeed());
+      const before = await snapshotSevenStores(database);
+      const store = new IndexedDBDataStore(database, (checkpoint) => {
+        if (checkpoint === "aggregate-delete.after.nodes") {
+          throw new Error(checkpoint);
+        }
+        return undefined;
+      });
+
+      await expect(
+        store.hardDeleteNode(TRANSACTION_TEST_IDS.inboxNode),
+      ).rejects.toThrow("aggregate-delete.after.nodes");
+      expect(await snapshotSevenStores(database)).toEqual(before);
+    } finally {
+      database.close();
+    }
   });
 });

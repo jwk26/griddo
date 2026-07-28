@@ -66,6 +66,8 @@ function makeNode(id: string, overrides: Partial<Node> = {}): Node {
     systemRole: null,
     hiddenFromGrid: false,
     ...overrides,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 
@@ -87,6 +89,8 @@ function makeBit(id: string, parentId: string, overrides: Partial<Bit> = {}): Bi
     deletedAt: null,
     archivedAt: null,
     ...overrides,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 
@@ -109,6 +113,7 @@ describe("cascade restore", () => {
       deletedAt: CASCADE_TS,
       x: 0,
       y: 0,
+      version: 2,
     });
     const trashedChild = makeNode("00000000-0000-4000-8000-000000000003", {
       parentId: trashedParent.id,
@@ -116,12 +121,14 @@ describe("cascade restore", () => {
       deletedAt: CASCADE_TS,
       x: 0,
       y: 0,
+      version: 3,
     });
     const activeBitInChildGrid = makeBit("00000000-0000-4000-8000-000000000004", trashedChild.id, { x: 0, y: 0 });
     const trashedBit = makeBit("00000000-0000-4000-8000-000000000005", trashedChild.id, {
       deletedAt: CASCADE_TS,
       x: 0,
       y: 0,
+      version: 4,
     });
     const independentlyDeletedDescendant = makeNode("00000000-0000-4000-8000-000000000006", {
       parentId: trashedChild.id,
@@ -129,6 +136,7 @@ describe("cascade restore", () => {
       deletedAt: CASCADE_TS + 10_000,
       x: 1,
       y: 0,
+      version: 5,
     });
     const store = makeStore({
       nodes: [
@@ -155,6 +163,19 @@ describe("cascade restore", () => {
     expect(restoredBit?.x).toBe(1);
     expect(restoredBit?.y).toBe(0);
     expect(untouchedDescendant?.deletedAt).toBe(CASCADE_TS + 10_000);
+    expect(restoredParent?.version).toBe(3);
+    expect(restoredChild?.version).toBe(4);
+    expect(restoredBit?.version).toBe(5);
+    expect(untouchedDescendant?.version).toBe(5);
+
+    await store.restoreNode(trashedChild.id);
+    expect((await store.getNode(trashedParent.id))?.version).toBe(3);
+    expect((await store.getNode(trashedChild.id))?.version).toBe(4);
+    expect((await store.getBit(trashedBit.id))?.version).toBe(5);
+    expect(await store.getNode(independentlyDeletedDescendant.id)).toMatchObject({
+      deletedAt: CASCADE_TS + 10_000,
+      version: 5,
+    });
   });
 
   it("restoreBit auto-restores its trashed parent chain", async () => {
@@ -163,11 +184,13 @@ describe("cascade restore", () => {
       deletedAt: CASCADE_TS,
       x: 0,
       y: 0,
+      version: 2,
     });
     const trashedBit = makeBit("00000000-0000-4000-8000-000000000013", trashedParent.id, {
       deletedAt: CASCADE_TS,
       x: 0,
       y: 0,
+      version: 3,
     });
     const store = makeStore({
       nodes: [activeOccupant, trashedParent],
@@ -182,6 +205,12 @@ describe("cascade restore", () => {
     expect(restoredParent?.deletedAt).toBeNull();
     expect(restoredParent?.x).toBe(1);
     expect(restoredBit?.deletedAt).toBeNull();
+    expect(restoredParent?.version).toBe(3);
+    expect(restoredBit?.version).toBe(4);
+
+    await store.restoreBit(trashedBit.id);
+    expect((await store.getNode(trashedParent.id))?.version).toBe(3);
+    expect((await store.getBit(trashedBit.id))?.version).toBe(4);
   });
 
   it("restoreNode throws GRID_FULL when no cell is available in the target grid", async () => {
@@ -195,6 +224,7 @@ describe("cascade restore", () => {
       deletedAt: CASCADE_TS,
       x: 0,
       y: 0,
+      version: 8,
     });
     const store = makeStore({
       nodes: [...occupiedNodes, trashedNode],
@@ -202,5 +232,6 @@ describe("cascade restore", () => {
     });
 
     await expect(store.restoreNode(trashedNode.id)).rejects.toThrow("GRID_FULL");
+    expect((await store.getNode(trashedNode.id))?.version).toBe(8);
   });
 });

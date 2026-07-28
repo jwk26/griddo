@@ -1,6 +1,9 @@
 import Dexie, { type DexieOptions, type Table } from "dexie";
 import { GRID_COLS, GRID_ROWS, TRASH_RETENTION_DAYS } from "@/lib/constants";
-import type { DataStore } from "@/lib/db/datastore";
+import type {
+  AggregateHardDeleteResult,
+  DataStore,
+} from "@/lib/db/datastore";
 import {
   bitSchema,
   chunkSchema,
@@ -10,7 +13,11 @@ import {
   createNodeSchema,
   nodeSchema,
   scratchBreakdownSchema,
+  updateBitSchema,
+  updateNodeSchema,
+  updateScratchBreakdownSchema,
   type Bit,
+  type CandidateOrphanAuditEvent,
   type Chunk,
   type CreateBit,
   type CreateChunk,
@@ -18,6 +25,10 @@ import {
   type CreateScratchBreakdown,
   type Node,
   type ScratchBreakdown,
+  type StagedCandidate,
+  type UpdateBit,
+  type UpdateNode,
+  type UpdateScratchBreakdown,
 } from "@/lib/db/schema";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import { findItemsInBlockedZone } from "@/lib/utils/breadcrumb-zone";
@@ -56,7 +67,10 @@ type DatabaseLike = {
   chunks: TableLike<Chunk>;
   settings?: SettingsTableLike;
   scratchBreakdowns?: TableLike<ScratchBreakdown>;
+  stagedCandidates?: TableLike<StagedCandidate>;
 };
+
+type IndexedDBTransactionCheckpointHook = (name: string) => undefined;
 
 const ROOT_PARENT_KEY = "__root__";
 const DEFAULT_PROMOTED_NODE_COLOR = "hsl(221, 83%, 53%)";
@@ -90,12 +104,27 @@ export class DeadlineConflictError extends Error {
   }
 }
 
-const nodeUpdateSchema = nodeSchema
-  .omit({ id: true, createdAt: true, deletedAt: true, mtime: true })
-  .partial();
-const bitUpdateSchema = bitSchema
-  .omit({ id: true, createdAt: true, deletedAt: true, mtime: true })
-  .partial();
+type IndexedDBMigrationStore = "nodes" | "bits" | "scratchBreakdowns";
+type IndexedDBMigrationReason =
+  | "invalid_row"
+  | "missing_scratch_owner"
+  | "scratch_owner_not_in_inbox";
+
+export class IndexedDBMigrationError extends Error {
+  constructor(
+    public readonly store: IndexedDBMigrationStore,
+    public readonly id: string,
+    public readonly reason: IndexedDBMigrationReason,
+  ) {
+    super(`IndexedDB v4 migration failed for ${store}/${id}: ${reason}`);
+    this.name = "IndexedDBMigrationError";
+  }
+}
+
+const NODE_PERSISTED_FIELDS = nodeSchema.keyof().options;
+const BIT_PERSISTED_FIELDS = bitSchema.keyof().options;
+const BREAKDOWN_PERSISTED_FIELDS = scratchBreakdownSchema.keyof().options;
+
 const chunkUpdateSchema = chunkSchema.omit({ id: true, parentId: true }).partial();
 
 export class GridDODatabase extends Dexie {
@@ -103,6 +132,8 @@ export class GridDODatabase extends Dexie {
   bits!: Table<Bit, string>;
   chunks!: Table<Chunk, string>;
   scratchBreakdowns!: Table<ScratchBreakdown, string>;
+  stagedCandidates!: Table<StagedCandidate, string>;
+  candidateOrphanAuditEvents!: Table<CandidateOrphanAuditEvent, string>;
   settings!: Table<{ key: string; value: unknown }, string>;
 
   constructor(options?: DexieOptions) {
@@ -134,11 +165,120 @@ export class GridDODatabase extends Dexie {
           if (bit.archivedAt === undefined) bit.archivedAt = null;
         });
       });
+
+    this.version(4)
+      .stores({
+        nodes:
+          "id,parentId,deletedAt,[parentId+deletedAt],level,systemRole,archivedAt,[parentId+deletedAt+archivedAt]",
+        bits:
+          "id,parentId,deletedAt,[parentId+deletedAt],status,deadline,[parentId+status],archivedAt,[parentId+deletedAt+archivedAt]",
+        chunks: "id,parentId,[parentId+order],time,status",
+        settings: "key",
+        scratchBreakdowns:
+          "id,scratchBitId,[scratchBitId+order],[scratchBitId+createdAt]",
+        stagedCandidates:
+          "id,&sourceBreakdownId,scratchBitId,lifecycle,[scratchBitId+lifecycle],[scratchBitId+resultType+createdAt]",
+        candidateOrphanAuditEvents:
+          "id,&candidateId,sourceBreakdownId,scratchBitId,occurredAt,[scratchBitId+occurredAt]",
+      })
+      .upgrade(async (tx) => {
+        await tx.table("nodes").toCollection().modify((node) => {
+          if (node.version === undefined) node.version = 1;
+          if (node.pastDeadlineDismissed === undefined) {
+            node.pastDeadlineDismissed = false;
+          }
+        });
+        await tx.table("bits").toCollection().modify((bit) => {
+          if (bit.version === undefined) bit.version = 1;
+          if (bit.pastDeadlineDismissed === undefined) {
+            bit.pastDeadlineDismissed = false;
+          }
+        });
+        await tx.table("scratchBreakdowns").toCollection().modify((breakdown) => {
+          if (breakdown.version === undefined) breakdown.version = 1;
+        });
+
+        const nodes = await tx.table("nodes").toArray();
+        const bits = await tx.table("bits").toArray();
+        const breakdowns = await tx.table("scratchBreakdowns").toArray();
+
+        for (const node of nodes) {
+          const parsed = nodeSchema.safeParse(node);
+          if (!hasPersistedFields(node, NODE_PERSISTED_FIELDS) || !parsed.success) {
+            throw new IndexedDBMigrationError("nodes", migrationRowId(node), "invalid_row");
+          }
+        }
+        for (const bit of bits) {
+          const parsed = bitSchema.safeParse(bit);
+          if (!hasPersistedFields(bit, BIT_PERSISTED_FIELDS) || !parsed.success) {
+            throw new IndexedDBMigrationError("bits", migrationRowId(bit), "invalid_row");
+          }
+        }
+
+        const nodeById = new Map(nodes.map((node) => [migrationRowId(node), node]));
+        const bitById = new Map(bits.map((bit) => [migrationRowId(bit), bit]));
+
+        for (const breakdown of breakdowns) {
+          const parsed = scratchBreakdownSchema.safeParse(breakdown);
+          const breakdownId = migrationRowId(breakdown);
+          if (
+            !hasPersistedFields(breakdown, BREAKDOWN_PERSISTED_FIELDS) ||
+            !parsed.success
+          ) {
+            throw new IndexedDBMigrationError(
+              "scratchBreakdowns",
+              breakdownId,
+              "invalid_row",
+            );
+          }
+
+          const owner = bitById.get(parsed.data.scratchBitId);
+          if (!owner) {
+            throw new IndexedDBMigrationError(
+              "scratchBreakdowns",
+              breakdownId,
+              "missing_scratch_owner",
+            );
+          }
+          const ownerParentId = typeof owner.parentId === "string" ? owner.parentId : "";
+          const ownerParent = nodeById.get(ownerParentId);
+          if (!ownerParent || ownerParent.systemRole !== "inbox") {
+            throw new IndexedDBMigrationError(
+              "scratchBreakdowns",
+              breakdownId,
+              "scratch_owner_not_in_inbox",
+            );
+          }
+        }
+      });
   }
 }
 
+function migrationRowId(row: unknown): string {
+  if (
+    typeof row === "object" &&
+    row !== null &&
+    "id" in row &&
+    typeof row.id === "string"
+  ) {
+    return row.id;
+  }
+  return "<unknown>";
+}
+
+function hasPersistedFields(row: unknown, fields: readonly string[]): boolean {
+  return (
+    typeof row === "object" &&
+    row !== null &&
+    fields.every((field) => Object.prototype.hasOwnProperty.call(row, field))
+  );
+}
+
 export class IndexedDBDataStore implements DataStore {
-  constructor(private readonly database: DatabaseLike) {}
+  constructor(
+    private readonly database: DatabaseLike,
+    private readonly onTransactionCheckpoint?: IndexedDBTransactionCheckpointHook,
+  ) {}
 
   async getNode(id: string): Promise<Node | undefined> {
     return this.database.nodes.get(id);
@@ -172,7 +312,9 @@ export class IndexedDBDataStore implements DataStore {
       id: crypto.randomUUID(),
       mtime: timestamp,
       createdAt: timestamp,
+      version: 1,
       deletedAt: null,
+      pastDeadlineDismissed: false,
     });
 
     await this.write(async () => {
@@ -186,30 +328,38 @@ export class IndexedDBDataStore implements DataStore {
     return node;
   }
 
-  async updateNode(id: string, data: Partial<Node>): Promise<void> {
-    const existing = await this.getRequiredNode(id);
-    const parsed = nodeUpdateSchema.parse(data);
-    const next = {
-      ...existing,
-      ...parsed,
-    };
-
-    if (
-      next.parentId !== existing.parentId ||
-      next.x !== existing.x ||
-      next.y !== existing.y
-    ) {
-      await this.ensureGridCellAvailable(next.parentId, next.x, next.y, {
-        excludedNodeIds: new Set([existing.id]),
-      });
-    }
-
-    const timestamp = Date.now();
-    if (touchesNodeMtime(parsed)) {
-      next.mtime = timestamp;
-    }
+  async updateNode(id: string, data: UpdateNode): Promise<void> {
+    const parsed = updateNodeSchema.parse(data);
 
     await this.write(async () => {
+      const existing = await this.getRequiredNode(id);
+      const delta = recordDelta(existing, parsed);
+
+      if (Object.keys(delta).length === 0) {
+        return;
+      }
+
+      const next = {
+        ...existing,
+        ...delta,
+      };
+
+      if (
+        next.parentId !== existing.parentId ||
+        next.x !== existing.x ||
+        next.y !== existing.y
+      ) {
+        await this.ensureGridCellAvailable(next.parentId, next.x, next.y, {
+          excludedNodeIds: new Set([existing.id]),
+        });
+      }
+
+      const timestamp = Date.now();
+      if (touchesNodeMtime(delta)) {
+        next.mtime = timestamp;
+      }
+      next.version += 1;
+
       await this.database.nodes.put(nodeSchema.parse(next));
 
       if (next.parentId !== existing.parentId) {
@@ -222,22 +372,35 @@ export class IndexedDBDataStore implements DataStore {
   }
 
   async softDeleteNode(id: string): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.softDeleteNode(id));
+    }
+
     const node = await this.getRequiredNode(id);
+
+    if (node.deletedAt !== null) {
+      return;
+    }
+
     const { nodes, bits } = await this.collectNodeSubtree(id);
     const timestamp = Date.now();
 
     await this.write(async () => {
       await this.saveNodes(
-        nodes.map((item) => ({
-          ...item,
-          deletedAt: timestamp,
-        })),
+        nodes
+          .filter((item) => item.deletedAt === null)
+          .map((item) => incrementVersion({
+            ...item,
+            deletedAt: timestamp,
+          })),
       );
       await this.saveBits(
-        bits.map((item) => ({
-          ...item,
-          deletedAt: timestamp,
-        })),
+        bits
+          .filter((item) => item.deletedAt === null)
+          .map((item) => incrementVersion({
+            ...item,
+            deletedAt: timestamp,
+          })),
       );
 
       if (node.parentId) {
@@ -247,6 +410,10 @@ export class IndexedDBDataStore implements DataStore {
   }
 
   async restoreNode(id: string): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.restoreNode(id));
+    }
+
     const node = await this.getRequiredNode(id);
 
     if (node.parentId) {
@@ -296,10 +463,10 @@ export class IndexedDBDataStore implements DataStore {
         continue;
       }
 
-      const restored = placeRestoredGridItem(
+      const restored = incrementVersion(placeRestoredGridItem(
         { ...current, deletedAt: null },
         occupiedByParent,
-      );
+      ));
       restoredNodes.push(restored);
       restorableNodeIds.add(restored.id);
     }
@@ -312,7 +479,9 @@ export class IndexedDBDataStore implements DataStore {
           isWithinRestoreWindow(bit.deletedAt, restoreAnchor) &&
           restorableNodeIds.has(bit.parentId),
       ),
-    ).map((bit) => placeRestoredGridItem({ ...bit, deletedAt: null }, occupiedByParent));
+    ).map((bit) => incrementVersion(
+      placeRestoredGridItem({ ...bit, deletedAt: null }, occupiedByParent),
+    ));
 
     await this.write(async () => {
       await this.saveNodes(restoredNodes);
@@ -324,61 +493,42 @@ export class IndexedDBDataStore implements DataStore {
     });
   }
 
-  async hardDeleteNode(id: string): Promise<void> {
-    const node = await this.getRequiredNode(id);
-    const { nodeIds, bitIds } = await this.collectNodeSubtreeIds(id);
-    const chunks = await this.database.chunks.toArray();
-    const chunkIds = chunks
-      .filter((chunk) => bitIds.has(chunk.parentId))
-      .map((chunk) => chunk.id);
-    const timestamp = Date.now();
-
-    await this.write(async () => {
-      await this.database.chunks.bulkDelete(chunkIds);
-      await this.database.bits.bulkDelete([...bitIds]);
-      await this.database.nodes.bulkDelete([...nodeIds]);
-
-      if (node.parentId) {
-        await this.touchNodeIds([node.parentId], timestamp);
-      }
+  async hardDeleteNode(id: string): Promise<AggregateHardDeleteResult> {
+    return this.write(async () => {
+      await this.getRequiredNode(id);
+      return this.deletePlannedAggregate(new Set([id]), new Set());
     });
   }
 
-  async cleanupExpiredTrash(): Promise<void> {
-    const expirationCutoff = Date.now() - TRASH_RETENTION_DAYS * 86_400_000;
-    const [nodes, bits] = await Promise.all([
-      this.database.nodes.toArray(),
-      this.database.bits.toArray(),
-    ]);
-    const expiredNodeIds = nodes
-      .filter((node) => node.deletedAt !== null && node.deletedAt < expirationCutoff)
-      .map((node) => node.id);
-    const expiredBitIds = bits
-      .filter((bit) => bit.deletedAt !== null && bit.deletedAt < expirationCutoff)
-      .map((bit) => bit.id);
+  async cleanupExpiredTrash(): Promise<AggregateHardDeleteResult> {
+    return this.write(async () => {
+      const expirationCutoff = Date.now() - TRASH_RETENTION_DAYS * 86_400_000;
+      const [nodes, bits] = await Promise.all([
+        this.database.nodes.toArray(),
+        this.database.bits.toArray(),
+      ]);
+      const nodeIds = new Set(nodes.map(({ id }) => id));
+      const expiredNodeIds = new Set(
+        nodes
+          .filter(
+            (node) =>
+              node.deletedAt !== null && node.deletedAt < expirationCutoff,
+          )
+          .map(({ id }) => id),
+      );
+      const expiredBitIds = new Set(
+        bits
+          .filter(
+            (bit) =>
+              bit.deletedAt !== null &&
+              bit.deletedAt < expirationCutoff &&
+              nodeIds.has(bit.parentId),
+          )
+          .map(({ id }) => id),
+      );
 
-    for (const nodeId of expiredNodeIds) {
-      const existingNode = await this.database.nodes.get(nodeId);
-      if (!existingNode) {
-        continue;
-      }
-
-      await this.hardDeleteNode(nodeId);
-    }
-
-    for (const bitId of expiredBitIds) {
-      const existingBit = await this.database.bits.get(bitId);
-      if (!existingBit) {
-        continue;
-      }
-
-      const parentNode = await this.database.nodes.get(existingBit.parentId);
-      if (!parentNode) {
-        continue;
-      }
-
-      await this.hardDeleteBit(bitId);
-    }
+      return this.deletePlannedAggregate(expiredNodeIds, expiredBitIds);
+    });
   }
 
   async getBit(id: string): Promise<Bit | undefined> {
@@ -426,7 +576,9 @@ export class IndexedDBDataStore implements DataStore {
       status: "active",
       mtime: timestamp,
       createdAt: timestamp,
+      version: 1,
       deletedAt: null,
+      pastDeadlineDismissed: false,
     });
 
     await this.write(async () => {
@@ -437,40 +589,48 @@ export class IndexedDBDataStore implements DataStore {
     return bit;
   }
 
-  async updateBit(id: string, data: Partial<Bit>): Promise<void> {
-    const existing = await this.getRequiredBit(id);
-    const parsed = bitUpdateSchema.parse(data);
-    const next = {
-      ...existing,
-      ...parsed,
-    };
-
-    if (
-      next.parentId !== existing.parentId ||
-      next.x !== existing.x ||
-      next.y !== existing.y
-    ) {
-      await this.ensureGridCellAvailable(next.parentId, next.x, next.y, {
-        excludedBitIds: new Set([existing.id]),
-      });
-    }
-
-    await this.assertBitDeadlineFitsParent(
-      next.parentId,
-      next.deadline,
-      next.deadlineAllDay,
-      existing.id,
-    );
-
-    const timestamp = Date.now();
-    const statusChanged = parsed.status !== undefined && parsed.status !== existing.status;
-    if (touchesBitMtime(parsed)) {
-      next.mtime = timestamp;
-    }
-
-    const mtimeTouched = touchesBitMtime(parsed);
+  async updateBit(id: string, data: UpdateBit): Promise<void> {
+    const parsed = updateBitSchema.parse(data);
 
     await this.write(async () => {
+      const existing = await this.getRequiredBit(id);
+      const delta = recordDelta(existing, parsed);
+
+      if (Object.keys(delta).length === 0) {
+        return;
+      }
+
+      const next = {
+        ...existing,
+        ...delta,
+      };
+
+      if (
+        next.parentId !== existing.parentId ||
+        next.x !== existing.x ||
+        next.y !== existing.y
+      ) {
+        await this.ensureGridCellAvailable(next.parentId, next.x, next.y, {
+          excludedBitIds: new Set([existing.id]),
+        });
+      }
+
+      await this.assertBitDeadlineFitsParent(
+        next.parentId,
+        next.deadline,
+        next.deadlineAllDay,
+        existing.id,
+      );
+
+      const timestamp = Date.now();
+      const statusChanged = delta.status !== undefined;
+      if (touchesBitMtime(delta)) {
+        next.mtime = timestamp;
+      }
+      next.version += 1;
+
+      const mtimeTouched = touchesBitMtime(delta);
+
       await this.database.bits.put(bitSchema.parse(next));
 
       const parentIds = new Set<string>();
@@ -490,19 +650,32 @@ export class IndexedDBDataStore implements DataStore {
   }
 
   async softDeleteBit(id: string): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.softDeleteBit(id));
+    }
+
     const bit = await this.getRequiredBit(id);
+
+    if (bit.deletedAt !== null) {
+      return;
+    }
+
     const timestamp = Date.now();
 
     await this.write(async () => {
-      await this.database.bits.put({
+      await this.database.bits.put(incrementVersion({
         ...bit,
         deletedAt: timestamp,
-      });
+      }));
       await this.touchNodeIds([bit.parentId], timestamp);
     });
   }
 
   async restoreBit(id: string): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.restoreBit(id));
+    }
+
     const bit = await this.getRequiredBit(id);
     const parentNode = await this.getRequiredNode(bit.parentId);
 
@@ -528,10 +701,10 @@ export class IndexedDBDataStore implements DataStore {
       ),
       allBits.filter((item) => item.deletedAt === null && item.archivedAt === null),
     );
-    const restoredBit = placeRestoredGridItem(
+    const restoredBit = incrementVersion(placeRestoredGridItem(
       { ...refreshedBit, deletedAt: null },
       occupiedByParent,
-    );
+    ));
 
     await this.write(async () => {
       await this.database.bits.put(bitSchema.parse(restoredBit));
@@ -539,47 +712,34 @@ export class IndexedDBDataStore implements DataStore {
     });
   }
 
-  async hardDeleteBit(id: string): Promise<void> {
-    const bit = await this.getRequiredBit(id);
-    const chunks = await this.database.chunks.toArray();
-    const chunkIds = chunks
-      .filter((chunk) => chunk.parentId === id)
-      .map((chunk) => chunk.id);
-
-    const scratchRowIds: string[] = [];
-    if (this.database.scratchBreakdowns) {
-      const rows = await this.database.scratchBreakdowns.toArray();
-      for (const row of rows) {
-        if (row.scratchBitId === id) scratchRowIds.push(row.id);
-      }
-    }
-
-    const timestamp = Date.now();
-
-    await this.write(async () => {
-      if (this.database.scratchBreakdowns && scratchRowIds.length > 0) {
-        await this.database.scratchBreakdowns.bulkDelete(scratchRowIds);
-      }
-      await this.database.chunks.bulkDelete(chunkIds);
-      await this.database.bits.delete(id);
-      await this.touchNodeIds([bit.parentId], timestamp);
+  async hardDeleteBit(id: string): Promise<AggregateHardDeleteResult> {
+    return this.write(async () => {
+      await this.getRequiredBit(id);
+      return this.deletePlannedAggregate(new Set(), new Set([id]));
     });
   }
 
   async archiveNode(id: string): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.archiveNode(id));
+    }
+
     const node = await this.getRequiredNode(id);
 
     if (node.systemRole !== null) {
       throw new Error("Cannot archive a system node");
     }
+    if (node.archivedAt !== null) {
+      return;
+    }
 
     const { nodes, bits } = await this.collectNodeSubtree(id);
     const archiveTimestamp = Date.now();
-    const updatedNodes = nodes.map((item) => ({
+    const updatedNodes = nodes.map((item) => incrementVersion({
       ...item,
       archivedAt: archiveTimestamp,
     }));
-    const updatedBits = bits.map((item) => ({
+    const updatedBits = bits.map((item) => incrementVersion({
       ...item,
       archivedAt: archiveTimestamp,
     }));
@@ -595,16 +755,29 @@ export class IndexedDBDataStore implements DataStore {
   }
 
   async archiveBit(id: string): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.archiveBit(id));
+    }
+
     const bit = await this.getRequiredBit(id);
+
+    if (bit.archivedAt !== null) {
+      return;
+    }
+
     const archivedAt = Date.now();
 
     await this.write(async () => {
-      await this.database.bits.put(bitSchema.parse({ ...bit, archivedAt }));
+      await this.database.bits.put(bitSchema.parse(incrementVersion({ ...bit, archivedAt })));
       await this.touchNodeIds([bit.parentId], archivedAt);
     });
   }
 
   async unarchiveNode(id: string): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.unarchiveNode(id));
+    }
+
     const node = await this.getRequiredNode(id);
 
     if (node.parentId) {
@@ -655,10 +828,10 @@ export class IndexedDBDataStore implements DataStore {
         continue;
       }
 
-      const restored = placeRestoredGridItem(
+      const restored = incrementVersion(placeRestoredGridItem(
         { ...current, archivedAt: null },
         occupiedByParent,
-      );
+      ));
       restoredNodes.push(restored);
       restorableNodeIds.add(restored.id);
     }
@@ -671,7 +844,9 @@ export class IndexedDBDataStore implements DataStore {
           isWithinRestoreWindow(bit.archivedAt, restoreAnchor) &&
           restorableNodeIds.has(bit.parentId),
       ),
-    ).map((bit) => placeRestoredGridItem({ ...bit, archivedAt: null }, occupiedByParent));
+    ).map((bit) => incrementVersion(
+      placeRestoredGridItem({ ...bit, archivedAt: null }, occupiedByParent),
+    ));
 
     await this.write(async () => {
       await this.saveNodes(restoredNodes);
@@ -684,6 +859,10 @@ export class IndexedDBDataStore implements DataStore {
   }
 
   async unarchiveBit(id: string): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.unarchiveBit(id));
+    }
+
     const bit = await this.getRequiredBit(id);
 
     if (bit.parentId) {
@@ -706,10 +885,10 @@ export class IndexedDBDataStore implements DataStore {
       allNodes.filter((item) => item.deletedAt === null && item.archivedAt === null),
       allBits.filter((item) => item.deletedAt === null && item.archivedAt === null),
     );
-    const restoredBit = placeRestoredGridItem(
+    const restoredBit = incrementVersion(placeRestoredGridItem(
       { ...refreshedBit, archivedAt: null },
       occupiedByParent,
-    );
+    ));
 
     await this.write(async () => {
       await this.database.bits.put(bitSchema.parse(restoredBit));
@@ -718,6 +897,10 @@ export class IndexedDBDataStore implements DataStore {
   }
 
   async ensureSystemNodes(): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.ensureSystemNodes());
+    }
+
     const allNodes = await this.database.nodes.toArray();
     const missingRoles: SystemNodeRole[] = [];
     const driftedRows: Array<{ role: SystemNodeRole; node: Node }> = [];
@@ -793,6 +976,7 @@ export class IndexedDBDataStore implements DataStore {
         id: crypto.randomUUID(),
         mtime: seedTimestamp,
         createdAt: seedTimestamp,
+        version: 1,
         title: SYSTEM_NODE_SEEDS[role].title,
         icon: SYSTEM_NODE_SEEDS[role].icon,
         color: SYSTEM_NODE_SEEDS[role].color,
@@ -806,6 +990,7 @@ export class IndexedDBDataStore implements DataStore {
         y,
         deadline: null,
         deadlineAllDay: false,
+        pastDeadlineDismissed: false,
       }),
     );
 
@@ -813,14 +998,14 @@ export class IndexedDBDataStore implements DataStore {
 
     await this.write(async () => {
       for (const { node, x, y } of normalizePlan) {
-        await this.database.nodes.put({
+        await this.database.nodes.put(incrementVersion({
           ...node,
           x,
           y,
           deletedAt: null,
           archivedAt: null,
           mtime: timestamp,
-        });
+        }));
       }
 
       if (seedNodes.length > 0) {
@@ -830,16 +1015,25 @@ export class IndexedDBDataStore implements DataStore {
   }
 
   async createScratchBreakdown(data: CreateScratchBreakdown): Promise<ScratchBreakdown> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.createScratchBreakdown(data));
+    }
+
     const table = this.requireScratchBreakdowns();
     const parsed = createScratchBreakdownSchema.parse(data);
+    const owner = await this.getRequiredBit(parsed.scratchBitId);
     const row = scratchBreakdownSchema.parse({
       ...parsed,
       id: crypto.randomUUID(),
       createdAt: Date.now(),
       consumedAt: null,
+      version: 1,
     });
 
-    await table.put(row);
+    await this.write(async () => {
+      await table.put(row);
+      await this.database.bits.put(incrementVersion(owner));
+    });
 
     return row;
   }
@@ -854,8 +1048,12 @@ export class IndexedDBDataStore implements DataStore {
 
   async updateScratchBreakdown(
     id: string,
-    data: Partial<Pick<ScratchBreakdown, "content" | "order">>,
+    data: UpdateScratchBreakdown,
   ): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.updateScratchBreakdown(id, data));
+    }
+
     const table = this.requireScratchBreakdowns();
     const row = await table.get(id);
 
@@ -863,44 +1061,72 @@ export class IndexedDBDataStore implements DataStore {
       throw new Error(`Scratch breakdown not found: ${id}`);
     }
 
-    await table.put(scratchBreakdownSchema.parse({ ...row, ...data }));
+    const parsed = updateScratchBreakdownSchema.parse(data);
+    const delta = recordDelta(row, parsed);
+
+    if (Object.keys(delta).length === 0) {
+      return;
+    }
+
+    await table.put(scratchBreakdownSchema.parse(incrementVersion({ ...row, ...delta })));
   }
 
   async markScratchBreakdownConsumed(id: string): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.markScratchBreakdownConsumed(id));
+    }
+
     const table = this.requireScratchBreakdowns();
     const row = await table.get(id);
 
     if (!row) {
       throw new Error(`Scratch breakdown not found: ${id}`);
     }
+    if (row.consumedAt !== null) {
+      return;
+    }
 
-    await table.put(scratchBreakdownSchema.parse({ ...row, consumedAt: Date.now() }));
+    await table.put(scratchBreakdownSchema.parse(incrementVersion({
+      ...row,
+      consumedAt: Date.now(),
+    })));
   }
 
   async unconsumeScratchBreakdown(id: string): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.unconsumeScratchBreakdown(id));
+    }
+
     const table = this.requireScratchBreakdowns();
     const row = await table.get(id);
 
     if (!row) {
       throw new Error(`Scratch breakdown not found: ${id}`);
     }
+    if (row.consumedAt === null) {
+      return;
+    }
 
-    await table.put(scratchBreakdownSchema.parse({ ...row, consumedAt: null }));
-  }
-
-  async deleteScratchBreakdownsByScratch(scratchBitId: string): Promise<void> {
-    const table = this.requireScratchBreakdowns();
-    const all = await table.toArray();
-    const ids = all
-      .filter((row) => row.scratchBitId === scratchBitId)
-      .map((row) => row.id);
-
-    await table.bulkDelete(ids);
+    await table.put(scratchBreakdownSchema.parse(incrementVersion({ ...row, consumedAt: null })));
   }
 
   async deleteScratchBreakdown(id: string): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.deleteScratchBreakdown(id));
+    }
+
     const table = this.requireScratchBreakdowns();
-    await table.delete(id);
+    const row = await table.get(id);
+
+    if (!row) {
+      return;
+    }
+
+    const owner = await this.getRequiredBit(row.scratchBitId);
+    await this.write(async () => {
+      await table.delete(id);
+      await this.database.bits.put(incrementVersion(owner));
+    });
   }
 
   async getChunks(bitId: string): Promise<Chunk[]> {
@@ -909,6 +1135,10 @@ export class IndexedDBDataStore implements DataStore {
   }
 
   async createChunk(data: CreateChunk): Promise<Chunk> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.createChunk(data));
+    }
+
     const parsed = createChunkSchema.parse(data);
     const bit = await this.getRequiredBit(parsed.parentId);
 
@@ -923,18 +1153,17 @@ export class IndexedDBDataStore implements DataStore {
 
     await this.write(async () => {
       await this.database.chunks.put(chunk);
-      await this.database.bits.put({
-        ...bit,
-        status: "active",
-        mtime: timestamp,
-      });
-      await this.touchNodeIds([bit.parentId], timestamp);
+      await this.updateBitCompletionAndCascade(bit.id, timestamp);
     });
 
     return chunk;
   }
 
   async updateChunk(id: string, data: Partial<Chunk>): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.updateChunk(id, data));
+    }
+
     const existing = await this.getRequiredChunk(id);
     const parsed = chunkUpdateSchema.parse(data);
     const bit = await this.getRequiredBit(existing.parentId);
@@ -955,6 +1184,10 @@ export class IndexedDBDataStore implements DataStore {
   }
 
   async deleteChunk(id: string): Promise<void> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.deleteChunk(id));
+    }
+
     const chunk = await this.getRequiredChunk(id);
     const timestamp = Date.now();
 
@@ -1130,6 +1363,10 @@ export class IndexedDBDataStore implements DataStore {
     parentId: string | null,
     blockedCells: Set<string>,
   ): Promise<{ relocated: number }> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.runBreadcrumbZoneMigration(parentId, blockedCells));
+    }
+
     if (!this.database.settings) {
       return { relocated: 0 };
     }
@@ -1217,9 +1454,9 @@ export class IndexedDBDataStore implements DataStore {
       }
 
       if (entry.kind === "node") {
-        relocatedNodes.push({ ...entry.item, x: cell.x, y: cell.y });
+        relocatedNodes.push(incrementVersion({ ...entry.item, x: cell.x, y: cell.y }));
       } else {
-        relocatedBits.push({ ...entry.item, x: cell.x, y: cell.y });
+        relocatedBits.push(incrementVersion({ ...entry.item, x: cell.x, y: cell.y }));
       }
     }
 
@@ -1248,6 +1485,10 @@ export class IndexedDBDataStore implements DataStore {
       throw new Error(`Parent node not found for bit: ${bitId}`);
     }
 
+    if (parent.systemRole === "inbox") {
+      throw new Error("Cannot promote Scratch Bit to Node");
+    }
+
     await this.ensureGridCellAvailable(bit.parentId, bit.x, bit.y, {
       excludedBitIds: new Set([bit.id]),
     });
@@ -1267,11 +1508,13 @@ export class IndexedDBDataStore implements DataStore {
       deadlineAllDay: bit.deadlineAllDay,
       mtime: timestamp,
       createdAt: timestamp,
+      version: 1,
       parentId: bit.parentId,
       level: promotedLevel,
       x: bit.x,
       y: bit.y,
       deletedAt: null,
+      pastDeadlineDismissed: false,
     });
 
     const occupancy = new Set<string>();
@@ -1295,10 +1538,12 @@ export class IndexedDBDataStore implements DataStore {
         status: chunk.status === "complete" ? "complete" : "active",
         mtime: timestamp,
         createdAt: timestamp,
+        version: 1,
         parentId: newNode.id,
         x: position.x,
         y: position.y,
         deletedAt: null,
+        pastDeadlineDismissed: false,
       });
     });
 
@@ -1313,8 +1558,140 @@ export class IndexedDBDataStore implements DataStore {
     return newNode;
   }
 
+  private async deletePlannedAggregate(
+    nodeRootIds: ReadonlySet<string>,
+    bitRootIds: ReadonlySet<string>,
+  ): Promise<AggregateHardDeleteResult> {
+    const [nodes, bits, chunks, scratchBreakdowns, stagedCandidates] =
+      await Promise.all([
+        this.database.nodes.toArray(),
+        this.database.bits.toArray(),
+        this.database.chunks.toArray(),
+        this.database.scratchBreakdowns
+          ? this.database.scratchBreakdowns.toArray()
+          : Promise.resolve([] as ScratchBreakdown[]),
+        this.database.stagedCandidates
+          ? this.database.stagedCandidates.toArray()
+          : Promise.resolve([] as StagedCandidate[]),
+      ]);
+
+    const nodesById = new Map(nodes.map((node) => [node.id, node]));
+    const bitsById = new Map(bits.map((bit) => [bit.id, bit]));
+    const nodeIds = new Set<string>();
+
+    for (const rootId of nodeRootIds) {
+      for (const nodeId of collectDescendantNodeIds(rootId, nodes)) {
+        nodeIds.add(nodeId);
+      }
+    }
+
+    const bitIds = new Set<string>(bitRootIds);
+    for (const bit of bits) {
+      if (nodeIds.has(bit.parentId)) {
+        bitIds.add(bit.id);
+      }
+    }
+
+    const chunkIds = chunks
+      .filter((chunk) => bitIds.has(chunk.parentId))
+      .map(({ id }) => id);
+    const breakdownIds = new Set(
+      scratchBreakdowns
+        .filter((row) => bitIds.has(row.scratchBitId))
+        .map(({ id }) => id),
+    );
+    const breakdownsById = new Map(
+      scratchBreakdowns.map((row) => [row.id, row]),
+    );
+    const impactedCandidates = stagedCandidates.filter((candidate) => {
+      const source = breakdownsById.get(candidate.sourceBreakdownId);
+      return (
+        bitIds.has(candidate.scratchBitId) ||
+        (source !== undefined && breakdownIds.has(source.id))
+      );
+    });
+    const integrityCandidates = impactedCandidates
+      .filter((candidate) => {
+        const source = breakdownsById.get(candidate.sourceBreakdownId);
+        return !source || source.scratchBitId !== candidate.scratchBitId;
+      })
+      .sort((left, right) => left.id.localeCompare(right.id));
+
+    if (integrityCandidates.length > 0) {
+      return {
+        status: "integrity_cleanup_required",
+        candidates: integrityCandidates,
+      };
+    }
+
+    const candidateIds = impactedCandidates.map(({ id }) => id);
+    const parentNodeIds = new Set<string>();
+
+    for (const rootId of nodeRootIds) {
+      const parentId = nodesById.get(rootId)?.parentId;
+      if (parentId !== null && parentId !== undefined) {
+        parentNodeIds.add(parentId);
+      }
+    }
+    for (const rootId of bitRootIds) {
+      const parentId = bitsById.get(rootId)?.parentId;
+      if (parentId !== undefined) {
+        parentNodeIds.add(parentId);
+      }
+    }
+    for (const deletedNodeId of nodeIds) {
+      parentNodeIds.delete(deletedNodeId);
+    }
+
+    const timestamp = Date.now();
+    const survivingParentNodes = nodes
+      .filter((node) => parentNodeIds.has(node.id))
+      .map((node) => ({ ...node, mtime: timestamp }));
+
+    if (
+      candidateIds.length > 0 &&
+      this.database.stagedCandidates !== undefined
+    ) {
+      await this.database.stagedCandidates.bulkDelete(candidateIds);
+      this.emitTransactionCheckpoint(
+        "aggregate-delete.after.stagedCandidates",
+      );
+    }
+    if (
+      breakdownIds.size > 0 &&
+      this.database.scratchBreakdowns !== undefined
+    ) {
+      await this.database.scratchBreakdowns.bulkDelete([...breakdownIds]);
+      this.emitTransactionCheckpoint(
+        "aggregate-delete.after.scratchBreakdowns",
+      );
+    }
+    if (chunkIds.length > 0) {
+      await this.database.chunks.bulkDelete(chunkIds);
+      this.emitTransactionCheckpoint("aggregate-delete.after.chunks");
+    }
+    if (bitIds.size > 0) {
+      await this.database.bits.bulkDelete([...bitIds]);
+      this.emitTransactionCheckpoint("aggregate-delete.after.bits");
+    }
+    if (nodeIds.size > 0) {
+      await this.database.nodes.bulkDelete([...nodeIds]);
+      this.emitTransactionCheckpoint("aggregate-delete.after.nodes");
+    }
+    if (survivingParentNodes.length > 0) {
+      await this.database.nodes.bulkPut(survivingParentNodes);
+      this.emitTransactionCheckpoint("aggregate-delete.after.parentNodes");
+    }
+
+    return { status: "deleted" };
+  }
+
   private async write<T>(scope: () => Promise<T>): Promise<T> {
     if (this.database instanceof GridDODatabase) {
+      if (this.hasAmbientWriteTransaction()) {
+        return scope();
+      }
+
       return this.database.transaction(
         "rw",
         [
@@ -1323,12 +1700,47 @@ export class IndexedDBDataStore implements DataStore {
           this.database.chunks,
           this.database.settings,
           this.database.scratchBreakdowns,
+          this.database.stagedCandidates,
+          this.database.candidateOrphanAuditEvents,
         ],
         scope,
       );
     }
 
     return scope();
+  }
+
+  /** @internal Narrow test seam for proving named rollback checkpoints. */
+  protected async runTransactionCheckpointProbe<T>(
+    scope: (checkpoint: IndexedDBTransactionCheckpointHook) => Promise<T>,
+  ): Promise<T> {
+    return this.write(async () =>
+      scope((name) => this.emitTransactionCheckpoint(name)),
+    );
+  }
+
+  private emitTransactionCheckpoint(name: string): undefined {
+    if (!this.onTransactionCheckpoint) {
+      return undefined;
+    }
+    if (
+      !(this.database instanceof GridDODatabase) ||
+      !this.hasAmbientWriteTransaction()
+    ) {
+      throw new Error(
+        `IndexedDB transaction checkpoint reached outside a real rw transaction: ${name}`,
+      );
+    }
+    this.onTransactionCheckpoint(name);
+    return undefined;
+  }
+
+  private hasAmbientWriteTransaction(): boolean {
+    return (
+      this.database instanceof GridDODatabase &&
+      Dexie.currentTransaction?.db === this.database &&
+      Dexie.currentTransaction.mode === "readwrite"
+    );
   }
 
   private async getRequiredNode(id: string): Promise<Node> {
@@ -1506,16 +1918,6 @@ export class IndexedDBDataStore implements DataStore {
     };
   }
 
-  private async collectNodeSubtreeIds(
-    id: string,
-  ): Promise<{ nodeIds: Set<string>; bitIds: Set<string> }> {
-    const { nodes, bits } = await this.collectNodeSubtree(id);
-    return {
-      nodeIds: new Set(nodes.map((node) => node.id)),
-      bitIds: new Set(bits.map((bit) => bit.id)),
-    };
-  }
-
   private async updateBitCompletionAndCascade(
     bitId: string,
     timestamp: number,
@@ -1548,7 +1950,14 @@ export class IndexedDBDataStore implements DataStore {
       nextStatus = "active";
     }
 
-    await this.database.bits.put({ ...bit, status: nextStatus, mtime: timestamp });
+    const nextBit = {
+      ...bit,
+      status: nextStatus,
+      mtime: timestamp,
+    };
+    await this.database.bits.put(
+      nextStatus === bit.status ? nextBit : incrementVersion(nextBit),
+    );
     await this.touchNodeIds([bit.parentId], timestamp);
   }
 }
@@ -1567,6 +1976,22 @@ function touchesNodeMtime(update: Partial<MutableNodeInput>): boolean {
 
 function touchesBitMtime(update: Partial<MutableBitInput>): boolean {
   return Object.keys(update).some((key) => !["parentId", "x", "y"].includes(key));
+}
+
+function recordDelta<T extends object>(record: T, update: Partial<T>): Partial<T> {
+  const delta: Partial<T> = {};
+
+  for (const key of Object.keys(update) as Array<keyof T>) {
+    if (!Object.is(record[key], update[key])) {
+      delta[key] = update[key];
+    }
+  }
+
+  return delta;
+}
+
+function incrementVersion<T extends { version: number }>(record: T): T {
+  return { ...record, version: record.version + 1 };
 }
 
 function gridKey(x: number, y: number): string {

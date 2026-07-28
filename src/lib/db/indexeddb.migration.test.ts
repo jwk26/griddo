@@ -86,6 +86,8 @@ function createNode(overrides: Partial<Node> = {}): Node {
     archivedAt: overrides.archivedAt ?? null,
     systemRole: overrides.systemRole ?? null,
     hiddenFromGrid: overrides.hiddenFromGrid ?? false,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 
@@ -108,6 +110,8 @@ function createBit(overrides: Partial<Bit> = {}): Bit {
     y: overrides.y ?? 0,
     deletedAt: overrides.deletedAt ?? null,
     archivedAt: overrides.archivedAt ?? null,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 
@@ -133,15 +137,15 @@ function createStore(seed?: {
 describe("IndexedDBDataStore breadcrumb zone migration", () => {
   it("writes the marker and leaves items untouched when there is no overlap", async () => {
     const parentId = "parent-1";
-    const node = createNode({ id: "node-1", parentId, level: 1, x: 4, y: 4 });
-    const bit = createBit({ id: "bit-1", parentId, x: 5, y: 4 });
+    const node = createNode({ id: "node-1", parentId, level: 1, x: 4, y: 4, version: 2 });
+    const bit = createBit({ id: "bit-1", parentId, x: 5, y: 4, version: 3 });
     const { database, store } = createStore({ nodes: [node], bits: [bit] });
 
     const result = await store.runBreadcrumbZoneMigration(parentId, new Set(["0,0", "1,0"]));
 
     expect(result).toEqual({ relocated: 0 });
-    expect(await database.nodes.get(node.id)).toMatchObject({ x: 4, y: 4 });
-    expect(await database.bits.get(bit.id)).toMatchObject({ x: 5, y: 4 });
+    expect(await database.nodes.get(node.id)).toMatchObject({ x: 4, y: 4, version: 2 });
+    expect(await database.bits.get(bit.id)).toMatchObject({ x: 5, y: 4, version: 3 });
     expect(await database.settings.get(`bzMigration_${parentId}`)).toEqual({
       key: `bzMigration_${parentId}`,
       value: true,
@@ -157,6 +161,7 @@ describe("IndexedDBDataStore breadcrumb zone migration", () => {
       level: 1,
       x: 0,
       y: 0,
+      version: 2,
     });
     const overlappingBit = createBit({
       id: "bit-overlap",
@@ -164,6 +169,7 @@ describe("IndexedDBDataStore breadcrumb zone migration", () => {
       parentId,
       x: 1,
       y: 0,
+      version: 4,
     });
     const occupant = createNode({
       id: "node-occupant",
@@ -172,6 +178,7 @@ describe("IndexedDBDataStore breadcrumb zone migration", () => {
       level: 1,
       x: 0,
       y: 1,
+      version: 6,
     });
     const { database, store } = createStore({
       nodes: [overlappingNode, occupant],
@@ -182,8 +189,9 @@ describe("IndexedDBDataStore breadcrumb zone migration", () => {
     const result = await store.runBreadcrumbZoneMigration(parentId, blockedCells);
 
     expect(result).toEqual({ relocated: 2 });
-    expect(await database.nodes.get(overlappingNode.id)).toMatchObject({ x: 1, y: 1 });
-    expect(await database.bits.get(overlappingBit.id)).toMatchObject({ x: 2, y: 0 });
+    expect(await database.nodes.get(overlappingNode.id)).toMatchObject({ x: 1, y: 1, version: 3 });
+    expect(await database.bits.get(overlappingBit.id)).toMatchObject({ x: 2, y: 0, version: 5 });
+    expect((await database.nodes.get(occupant.id))?.version).toBe(6);
     expect(blockedCells.has("1,1")).toBe(false);
     expect(blockedCells.has("2,0")).toBe(false);
     expect(await database.settings.get(`bzMigration_${parentId}`)).toEqual({
@@ -200,6 +208,7 @@ describe("IndexedDBDataStore breadcrumb zone migration", () => {
       level: 1,
       x: 0,
       y: 0,
+      version: 9,
     });
     const { database, store } = createStore({ nodes: [overlappingNode] });
     const blockedCells = new Set(["0,0"]);
@@ -212,6 +221,7 @@ describe("IndexedDBDataStore breadcrumb zone migration", () => {
     expect(first).toEqual({ relocated: 1 });
     expect(second).toEqual({ relocated: 0 });
     expect(afterFirst).toEqual(afterSecond);
+    expect(afterSecond?.version).toBe(10);
     expect(await database.settings.get(`bzMigration_${parentId}`)).toEqual({
       key: `bzMigration_${parentId}`,
       value: true,
@@ -226,6 +236,7 @@ describe("IndexedDBDataStore breadcrumb zone migration", () => {
       level: 1,
       x: 0,
       y: 0,
+      version: 7,
     });
     const occupiedNodes: Node[] = [];
 
@@ -253,7 +264,7 @@ describe("IndexedDBDataStore breadcrumb zone migration", () => {
     const result = await store.runBreadcrumbZoneMigration(parentId, new Set(["0,0"]));
 
     expect(result).toEqual({ relocated: 0 });
-    expect(await database.nodes.get(overlappingNode.id)).toMatchObject({ x: 0, y: 0 });
+    expect(await database.nodes.get(overlappingNode.id)).toMatchObject({ x: 0, y: 0, version: 7 });
     expect(await database.settings.get(`bzMigration_${parentId}`)).toBeUndefined();
   });
 
@@ -265,6 +276,7 @@ describe("IndexedDBDataStore breadcrumb zone migration", () => {
       parentId,
       x: 0,
       y: 1,
+      version: 2,
     });
     const node = createNode({
       id: "node-overlap",
@@ -273,6 +285,7 @@ describe("IndexedDBDataStore breadcrumb zone migration", () => {
       level: 1,
       x: 1,
       y: 1,
+      version: 4,
     });
     const occupied = [
       createNode({ id: "occ-0-0", parentId, level: 1, x: 0, y: 0 }),
@@ -289,8 +302,8 @@ describe("IndexedDBDataStore breadcrumb zone migration", () => {
     );
 
     expect(result).toEqual({ relocated: 2 });
-    expect(await database.bits.get(bit.id)).toMatchObject({ x: 1, y: 0 });
-    expect(await database.nodes.get(node.id)).toMatchObject({ x: 2, y: 1 });
+    expect(await database.bits.get(bit.id)).toMatchObject({ x: 1, y: 0, version: 3 });
+    expect(await database.nodes.get(node.id)).toMatchObject({ x: 2, y: 1, version: 5 });
   });
 
   it("uses the root marker key when parentId is null", async () => {

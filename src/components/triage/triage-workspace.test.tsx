@@ -46,6 +46,8 @@ function createNode(overrides: Partial<Node> = {}): Node {
     archivedAt: overrides.archivedAt ?? null,
     systemRole: overrides.systemRole ?? "inbox",
     hiddenFromGrid: overrides.hiddenFromGrid ?? false,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 

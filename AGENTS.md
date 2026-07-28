@@ -18,25 +18,27 @@ This is the Codex entrypoint. It coexists with, and does not replace or modify,
 
 ## Current Codex lifecycle scope
 
-- The Fresh-map `$craft-docs` campaign is complete through its approved flow
-  review and canonical-production parity maintenance at
-  `041497c6b14f08998c4e8ef0bfb784f0285628aa`.
-- A one-time **docs-only publication close candidate** is declared in
-  `docs/CODEX_WORKFLOW_ADAPTER.md`. It applies only to
-  `docs/inbox-triage-fresh-map-adoption` at the pinned heads in that profile;
-  it is not reusable lifecycle onboarding.
-- `$run-phase`, `$run-task`, and standard `$end-phase` remain unavailable.
-  This close does not accept or execute Tasks 101–165 and does not convert
-  their open markers to `[x]`.
-- Candidate A may contain only this entrypoint and the adapter. Push, PR
-  creation, merge, publication, branch deletion, and worktree cleanup remain
-  forbidden until a separate user Final Close approval is recorded in the
-  declared receipt.
-- After proven merge and main synchronization, retire the one-time close and
-  separately onboard `$run-phase` and `$run-task` from updated `main`.
+- The Fresh-map `$craft-docs` campaign was published by PR #36 and is complete.
+- Phase 23 Tasks 101–105A are accepted and archived. No implementation
+  lifecycle is active; Phase 24 requires its own approved `$run-phase` kickoff
+  after the post-Phase-23 workflow-v2 rollout and GridDO adapter migration.
+- Phase 23 publication/merge is authorized only by its exact one-time Final
+  Close receipt. It creates no standing `$end-phase` or later publication
+  authority, and the completed docs-publication authority remains expired.
+- Phase 23 has no active production-code batch. The separately planned
+  post-phase workflow audit does not activate any later task. The
+  superseded Golden pilot was compared without reuse and retired on 2026-07-28.
+  Its final SHA `52a385d` is
+  historical audit identity only; do not reconstruct or import it.
+- `$run-phase` owns preparation and the phase kickoff receipt, then stops.
+  `$run-task` owns implementation and checkpoint evidence; it may not create,
+  switch, delete, rebase, or push a branch or worktree.
 - A task or phase receives `[x]` only after explicit user acceptance.
 - Recover from committed documents, receipts, Git state, and rerun checks—not
   from chat memory or external evidence alone.
+- Preserve the merged Phase 23 local feature branch/worktree until the
+  adapter-v2 migration removes machine-local runtime paths. Any later cleanup
+  is a separate guarded action; do not start Phase 24 first.
 
 External Task 14 evidence is SHA-pinned as read-only reference material in the
 adapter. It is not canonical authority and may not be copied without

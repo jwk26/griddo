@@ -92,3 +92,9 @@
 **Audit docs without close-out steps become debt.** Audit action items are plan tasks — give each a status and owner before the session ends. An audit left without follow-up tracks has zero execution value. *(Phase 4.5)*
 
 **Scope drift detection at phase close: diff content, not file path.** Classify dirty files by `git diff` content and plan cross-reference, not by path proximity to the phase work. Phase N+1 changes can accumulate in directories adjacent to Phase N work. *(Phase 9)*
+
+**Verify a claim with the real execution modality it depends on.** A structural fake can prove arithmetic or shape, but it cannot prove IndexedDB/Dexie serialization and rollback. Match the test harness to the claimed invariant; keep a control that demonstrates the failure would be visible without the protection. *(Phase 23, Task 104)*
+
+**Use runner-native focused commands.** With Vitest, `pnpm test -- <files>` may still run the whole suite depending on the package script. Use `pnpm exec vitest run <files>` when evidence must prove a genuinely focused run, and record the actual file/test counts. *(Phase 23 pilot)*
+
+**Serialize gates that share generated output.** Logically independent checks are not operationally independent when they read or write the same generated tree. In this project, `next build` and `tsc` can contend through `.next/types`; run them serially unless isolated outputs are configured. *(Phase 23 pilot)*

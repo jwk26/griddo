@@ -22,10 +22,16 @@ const CHILD_DEADLINE_OK = BASE_TS + 5 * 86_400_000;
 const CHILD_DEADLINE_OVER = BASE_TS + 10 * 86_400_000;
 
 function makeNode(id: string, overrides: Partial<Node> = {}): Node {
-  return { id, title: "Node", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null, archivedAt: null, systemRole: null, hiddenFromGrid: false, ...overrides };
+  return { id, title: "Node", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null, archivedAt: null, systemRole: null, hiddenFromGrid: false, ...overrides,
+  version: overrides.version ?? 1,
+  pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
+  };
 }
 function makeBit(id: string, parentId: string, overrides: Partial<Bit> = {}): Bit {
-  return { id, title: "Bit", description: "", icon: "Box", deadline: null, deadlineAllDay: false, priority: null, status: "active", mtime: BASE_TS, createdAt: BASE_TS, parentId, x: 0, y: 0, deletedAt: null, archivedAt: null, ...overrides } as Bit;
+  return { id, title: "Bit", description: "", icon: "Box", deadline: null, deadlineAllDay: false, priority: null, status: "active", mtime: BASE_TS, createdAt: BASE_TS, parentId, x: 0, y: 0, deletedAt: null, archivedAt: null, ...overrides,
+  version: overrides.version ?? 1,
+  pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
+  } as Bit;
 }
 function makeStore(nodes: Node[], bits: Bit[], chunks: Chunk[] = []) {
   return new IndexedDBDataStore({ nodes: new FakeTable(nodes), bits: new FakeTable(bits), chunks: new FakeTable(chunks) });
@@ -35,21 +41,24 @@ describe("Hook 2 — deadline hierarchy", () => {
   it("setting child deadline within parent deadline succeeds", async () => {
     const nId = crypto.randomUUID();
     const bId = crypto.randomUUID();
-    const node = makeNode(nId, { deadline: PARENT_DEADLINE });
-    const bit = makeBit(bId, nId);
+    const node = makeNode(nId, { deadline: PARENT_DEADLINE, version: 8 });
+    const bit = makeBit(bId, nId, { version: 3 });
     const store = makeStore([node], [bit]);
 
     await expect(store.updateBit(bId, { deadline: CHILD_DEADLINE_OK })).resolves.toBeUndefined();
+    expect((await store.getBit(bId))?.version).toBe(4);
+    expect((await store.getNode(nId))?.version).toBe(8);
   });
 
   it("child deadline past parent deadline throws DeadlineConflictError", async () => {
     const nId = crypto.randomUUID();
     const bId = crypto.randomUUID();
     const node = makeNode(nId, { deadline: PARENT_DEADLINE });
-    const bit = makeBit(bId, nId);
+    const bit = makeBit(bId, nId, { version: 5 });
     const store = makeStore([node], [bit]);
 
     await expect(store.updateBit(bId, { deadline: CHILD_DEADLINE_OVER })).rejects.toBeInstanceOf(DeadlineConflictError);
+    expect((await store.getBit(bId))?.version).toBe(5);
   });
 
   it("allows a timed child on the same day when the parent deadline is all-day", async () => {
@@ -74,6 +83,7 @@ describe("Hook 2 — deadline hierarchy", () => {
     const bit = makeBit(bId, nId, {
       deadline: bitDeadline,
       deadlineAllDay: false,
+      version: 6,
     });
     const store = makeStore([node], [bit]);
 
@@ -87,6 +97,7 @@ describe("Hook 2 — deadline hierarchy", () => {
         parentId: bId,
       }),
     ).rejects.toThrow("Chunk time cannot exceed parent bit deadline");
+    expect((await store.getBit(bId))?.version).toBe(6);
   });
 
   it("DeadlineConflictError carries conflictType and conflictingIds", async () => {

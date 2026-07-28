@@ -18,10 +18,16 @@ class FakeTable<T extends StoredRecord> {
 const BASE_TS = 1_700_000_000_000;
 
 function makeNode(id: string): Node {
-  return { id, title: "Node", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null, archivedAt: null, systemRole: null, hiddenFromGrid: false };
+  return { id, title: "Node", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null, archivedAt: null, systemRole: null, hiddenFromGrid: false,
+  version: 1,
+  pastDeadlineDismissed: false,
+  };
 }
 function makeBit(id: string, parentId: string, overrides: Partial<Bit> = {}): Bit {
-  return { id, title: "Bit", description: "", icon: "Box", deadline: null, deadlineAllDay: false, priority: null, status: "active", mtime: BASE_TS, createdAt: BASE_TS, parentId, x: 0, y: 0, deletedAt: null, archivedAt: null, ...overrides } as Bit;
+  return { id, title: "Bit", description: "", icon: "Box", deadline: null, deadlineAllDay: false, priority: null, status: "active", mtime: BASE_TS, createdAt: BASE_TS, parentId, x: 0, y: 0, deletedAt: null, archivedAt: null, ...overrides,
+  version: overrides.version ?? 1,
+  pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
+  } as Bit;
 }
 function makeChunk(id: string, parentId: string, overrides: Partial<Chunk> = {}): Chunk {
   return { id, title: "Chunk", description: "", time: null, timeAllDay: false, status: "incomplete", order: 0, parentId, ...overrides } as Chunk;
@@ -39,13 +45,14 @@ describe("Hook 3 — auto-completion", () => {
 
     const store = makeStore(
       [makeNode(nId)],
-      [makeBit(bId, nId, { status: "active" })],
+      [makeBit(bId, nId, { status: "active", version: 3 })],
       [makeChunk(c1Id, bId, { status: "complete" }), makeChunk(c2Id, bId, { status: "incomplete", order: 1 })],
     );
 
     await store.updateChunk(c2Id, { status: "complete" });
     const updated = await store.getBit(bId);
     expect(updated!.status).toBe("complete");
+    expect(updated!.version).toBe(4);
   });
 
   it("unchecking a chunk reverts an auto-completed Bit to active", async () => {
@@ -56,13 +63,14 @@ describe("Hook 3 — auto-completion", () => {
 
     const store = makeStore(
       [makeNode(nId)],
-      [makeBit(bId, nId, { status: "complete" })],
+      [makeBit(bId, nId, { status: "complete", version: 5 })],
       [makeChunk(c1Id, bId, { status: "complete" }), makeChunk(c2Id, bId, { status: "complete", order: 1 })],
     );
 
     await store.updateChunk(c2Id, { status: "incomplete" });
     const updated = await store.getBit(bId);
     expect(updated!.status).toBe("active");
+    expect(updated!.version).toBe(6);
   });
 
   it("sticky force-complete: unchecking does NOT revert a force-completed Bit (2+ incomplete)", async () => {
@@ -74,7 +82,7 @@ describe("Hook 3 — auto-completion", () => {
     // c1 was already incomplete when the bit was force-completed
     const store = makeStore(
       [makeNode(nId)],
-      [makeBit(bId, nId, { status: "complete" })],
+      [makeBit(bId, nId, { status: "complete", version: 7 })],
       [makeChunk(c1Id, bId, { status: "incomplete" }), makeChunk(c2Id, bId, { status: "complete", order: 1 })],
     );
 
@@ -82,6 +90,7 @@ describe("Hook 3 — auto-completion", () => {
     await store.updateChunk(c2Id, { status: "incomplete" });
     const updated = await store.getBit(bId);
     expect(updated!.status).toBe("complete");
+    expect(updated!.version).toBe(7);
   });
 
   it("completing all chunks via the last incomplete chunk auto-completes the Bit", async () => {
@@ -91,12 +100,13 @@ describe("Hook 3 — auto-completion", () => {
 
     const store = makeStore(
       [makeNode(nId)],
-      [makeBit(bId, nId, { status: "active" })],
+      [makeBit(bId, nId, { status: "active", version: 11 })],
       [makeChunk(c1Id, bId, { status: "incomplete" })],
     );
 
     await store.updateChunk(c1Id, { status: "complete" });
     const updated = await store.getBit(bId);
     expect(updated!.status).toBe("complete");
+    expect(updated!.version).toBe(12);
   });
 });

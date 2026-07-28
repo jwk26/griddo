@@ -68,6 +68,7 @@ function createScratchBreakdown(
     createdAt:
       overrides.createdAt ?? new Date(2026, 5, 17, 11, 15, 0).getTime(),
     consumedAt: overrides.consumedAt ?? null,
+    version: overrides.version ?? 1,
   };
 }
 
@@ -88,6 +89,8 @@ function createBit(overrides: Partial<Bit> = {}): Bit {
     y: overrides.y ?? 0,
     deletedAt: overrides.deletedAt ?? null,
     archivedAt: overrides.archivedAt ?? null,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 

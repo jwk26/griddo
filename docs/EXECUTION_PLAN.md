@@ -7,8 +7,13 @@
 > This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
 > its supersession rules. It accepts no phase, task, implementation, branch,
 > publication, or completion state.
-> **Task markers:** every task is open (`[ ]`). A task may be checked only after its own observable acceptance and verification evidence is explicitly accepted by the user.
-> **Execution lifecycle:** `run-phase`, `run-task`, and `end-phase` remain unavailable under the current Codex adapter. Approval of this document does not itself authorize implementation, Git lifecycle work, or publication.
+> **Task markers:** Tasks 101–105A were explicitly accepted and are archived as
+> Phase 23. Tasks 106–165 remain open (`[ ]`) and may be checked only after
+> their own observable acceptance and verification evidence is explicitly
+> accepted by the user.
+> **Execution lifecycle:** Phase 23 execution is complete. Phase 24 still
+> requires its own approved kickoff; this planning receipt alone does not
+> authorize later implementation, Git lifecycle work, or publication.
 
 ## Goal
 
@@ -84,13 +89,13 @@ The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were exclu
 
 | Area | Current status | Smallest blocker / next condition |
 |---|---|---|
-| Document approval | `PENDING_USER_APPROVAL` | User approves this exact proposal and a durable receipt is recorded separately. |
-| Execution lifecycle | `BLOCKED_OTHER` | Separately onboard and approve `run-phase`, `run-task`, and `end-phase`. |
-| Data foundations | Dependency-ready after document and lifecycle gates | Task 101 is the first code root after plan approval and separately approved execution lifecycle onboarding. |
+| Document approval | `APPROVED` | The approval receipt above remains the planning authority. |
+| Execution lifecycle | Phase 23 complete; Phase 24 not started | Phase 24 requires a separate `run-phase` kickoff after the post-Phase-23 workflow rollout. |
+| Data foundations | `COMPLETED` | Tasks 101–105A are accepted and recorded in the Phase 23 archive. |
 | Decision prerequisites | Runnable non-code lane after plan approval | Tasks 106–119 collect 14 independently executable DP receipts for 12 VQs. |
 | Headless/base UI | Dependency-ready after document and lifecycle gates | Tasks 127–137, 139, 142, 145–146, 149, 152, 155–156, 159, and 161 follow only their named data/headless prerequisites. |
 | VQ realization | `BLOCKED_PENDING_USER_DECISIONS` | Each realization task resumes only from its exact DP receipt. |
-| Full close | Not ready | Tasks 101–164 complete, all required DP receipts accepted, then Task 165 passes. |
+| Full close | Not ready | Tasks 106–164 complete, all required DP receipts accepted, then Task 165 passes on top of the archived Phase 23 foundation. |
 
 ## Dependency Graph
 
@@ -124,7 +129,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 
 | Phase | Status | Scope | Tasks | Dependency-aware readiness |
 |---|---|---|---|---|
-| Phase 23 | Proposed | Model, v4 migration, revisions, real transaction harness, aggregate deletion | 101–105 | Code root after plan and lifecycle approval. |
+| Phase 23 | Completed | [Model, v4 migration, revisions, real transaction harness, aggregate deletion, and Scratch-promotion guard](execution-plan/archive/phase-23.md) | 101–105 + 105A | Accepted and archived; downstream tasks consume this completed foundation. |
 | Phase 24 | Proposed | Fourteen user-owned DP receipts covering twelve VQs | 106–119 | Logical parallelism; shared document writes use one mutex and create no cross-VQ dependency. |
 | Phase 25 | Proposed | Eleven authoritative commands plus Archive recovery | 120–126 | Follows the exact independent data DAG, not Phase 24 completion. |
 | Phase 26 | Proposed | Lifetime/copy/theme foundations and source-backed base surfaces | 127–135 | Individual data dependencies only. |
@@ -174,7 +179,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 
 | ID | Architecture flow | Owning task(s) |
 |---|---|---|
-| `AF-01` | DataStore and Zod write boundary remain the only command/storage boundary. | 101–105, 120–126, 163 |
+| `AF-01` | DataStore and Zod write boundary remain the only command/storage boundary. | 101–105, 105A, 120–126, 163 |
 | `AF-02` | UI reads stay reactive; components do not import Dexie. | 131, 135, 163 |
 | `AF-03` | Canonical URL/system-node routing is retained; only Inbox body dispatch changes. | 129, 163, 164 |
 | `AF-04` | Lifecycle filters, retention, and unrelated Archive/Trash behavior remain intact. | 102, 105, 122, 125, 165 |
@@ -291,9 +296,14 @@ Responsive/mobile redesign remains excluded; active implementation targets the d
 
 ---
 
-## Phase 23 — Model, Migration, Transactions, And Retention
+## Phase 23 — Model, Migration, Transactions, And Retention (Completed)
 
-### Task 101: [ ] Land the authoritative model and typecheck-compatible constructors
+> **Archived:** completion-time truth is recorded in
+> [`docs/execution-plan/archive/phase-23.md`](execution-plan/archive/phase-23.md).
+> The accepted task detail remains inline in this approved multi-phase plan for
+> receipt continuity and is historical, not an active task surface.
+
+### Task 101: [x] Land the authoritative model and typecheck-compatible constructors
 
 **Files and actions**
 
@@ -313,7 +323,7 @@ Responsive/mobile redesign remains excluded; active implementation targets the d
 
 **Commit contract:** only the schema/type exports, repository constructors, schema/constructor tests, and enumerated typed-fixture compatibility edits; `feat(triage): define versioned inbox domain model`.
 
-### Task 102: [ ] Install the exact atomic Dexie v4 migration
+### Task 102: [x] Install the exact atomic Dexie v4 migration
 
 **Files and actions:** modify `src/lib/db/indexeddb.ts` and `src/lib/db/indexeddb.schema-v3-upgrade.test.ts`; create `src/lib/db/indexeddb.schema-v4-upgrade.test.ts`. Preserve every v3 assertion while converting its intended-success legacy IDs to valid UUIDs (or isolating its v3-only opener) so canonical v4 validation does not turn a v3 fixture artifact into a false migration failure. Declare v4 after v1→v2→v3 with exact stores/indexes: `nodes: "id,parentId,deletedAt,[parentId+deletedAt],level,systemRole,archivedAt,[parentId+deletedAt+archivedAt]"`; `bits: "id,parentId,deletedAt,[parentId+deletedAt],status,deadline,[parentId+status],archivedAt,[parentId+deletedAt+archivedAt]"`; `scratchBreakdowns: "id,scratchBitId,[scratchBitId+order],[scratchBitId+createdAt]"`; `stagedCandidates: "id,&sourceBreakdownId,scratchBitId,lifecycle,[scratchBitId+lifecycle],[scratchBitId+resultType+createdAt]"`; and `candidateOrphanAuditEvents: "id,&candidateId,sourceBreakdownId,scratchBitId,occurredAt,[scratchBitId+occurredAt]"`; retain chunks/settings declarations. In one upgrade transaction, start both new stores empty with no inference; backfill only missing versions to 1 and missing `pastDeadlineDismissed` to false; preserve valid ≥1 revisions, booleans, IDs/content/order/timestamps/lifecycle, and tolerated unknown fields; validate target Zod fields and that each Breakdown owner is a Bit parented by the Inbox system Node. Throw a structured store/id/reason migration error for any invalid required row/reference so the whole upgrade rolls back and reopens at v3 without quarantine, deletion, guessed value, consumption, or candidate manufacture.
 
@@ -329,7 +339,7 @@ Responsive/mobile redesign remains excluded; active implementation targets the d
 
 **Commit contract:** v4 declaration/upgrade plus the v3 preservation and dedicated v4 tests only; `feat(triage): migrate indexeddb atomically to v4`.
 
-### Task 103: [ ] Enforce revisions across every public and repository mutation path
+### Task 103: [x] Enforce revisions across every public and repository mutation path
 
 **Files and actions**
 
@@ -350,7 +360,7 @@ Responsive/mobile redesign remains excluded; active implementation targets the d
 
 **Commit contract:** revision/public-boundary code and the exact mutation-path tests above only; `feat(db): enforce monotonic record revisions`.
 
-### Task 104: [ ] Build a real IndexedDB transaction and fault-injection harness
+### Task 104: [x] Build a real IndexedDB transaction and fault-injection harness
 
 **Files and actions:** create `src/lib/db/indexeddb.test-utils.ts` and `src/lib/db/indexeddb.transaction.test.ts`; modify `src/lib/db/indexeddb.ts` only for a narrow injectable named-checkpoint test seam. Each test uses a fresh real `GridDODatabase` backed by `fake-indexeddb` `IDBFactory`/`IDBKeyRange`, valid UUID factories, and snapshots of nodes, bits, chunks, settings, scratchBreakdowns, stagedCandidates, and candidateOrphanAuditEvents. Inject a throw after each named store mutation inside the real `rw` Dexie transaction and prove every store matches the prestate. Require every validation and closure read to occur inside the same transaction. Structural FakeTable/FakeDatabase tests may remain unit coverage but cannot satisfy atomic acceptance.
 
@@ -366,7 +376,7 @@ Responsive/mobile redesign remains excluded; active implementation targets the d
 
 **Commit contract:** real IndexedDB test utility, transaction test, and smallest named-checkpoint seam only; `test(db): prove real indexeddb rollback`.
 
-### Task 105: [ ] Make Scratch aggregate hard-delete atomic and audit-preserving
+### Task 105: [x] Make Scratch aggregate hard-delete atomic and audit-preserving
 
 **Files and actions:** modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts` to make Node/Bit permanent-delete closures and `cleanupExpiredTrash` use one planned aggregate transaction. When a closure owns a Scratch Bit, delete the Scratch, its Chunks, all owned Breakdown rows, and candidates whose still-present source belongs to the closure; retire/restrict `deleteScratchBreakdownsByScratch` as a public sequencing escape hatch. Never create an orphan event for planned aggregate deletion; retain every pre-existing `candidateOrphanAuditEvents` row indefinitely, including rows naming that Scratch; leave unrelated aggregates untouched. If a candidate already lacks its source before planning, abort the aggregate with a typed integrity-cleanup-required result and leave every store unchanged; Task 122 later consumes that condition through the separately audited confirmed-orphan contract. Create `src/lib/db/scratch-aggregate-hard-delete.test.ts`; update `src/lib/db/cascade-hard-delete.test.ts`, `src/lib/db/auto-cleanup.test.ts`, and `src/lib/db/scratch-breakdowns.test.ts` with real Task 104 checkpoint injection after each store mutation.
 
@@ -381,6 +391,51 @@ Responsive/mobile redesign remains excluded; active implementation targets the d
 **Verification:** `pnpm test -- src/lib/db/scratch-aggregate-hard-delete.test.ts src/lib/db/cascade-hard-delete.test.ts src/lib/db/auto-cleanup.test.ts src/lib/db/scratch-breakdowns.test.ts`; expected zero failures, then `pnpm typecheck`.
 
 **Commit contract:** aggregate hard-delete/cleanup owners and their exact rollback/retention tests only; `feat(db): delete scratch aggregates atomically`.
+
+### Task 105A: [x] Amend the stale Scratch promotion boundary
+
+**Files and actions:** first amend `docs/SCHEMA.md` Hook 9 through a separate
+canonical-document gate: a Bit whose parent Node has `systemRole: "inbox"` is
+a Scratch and cannot be promoted to a Node, regardless of whether it currently
+has Breakdown rows, staged candidates, or Chunks. After that amendment is
+explicitly approved, modify `src/lib/db/indexeddb.ts` and
+`src/lib/db/promotion.test.ts` so `promoteBitToNode` rejects the Inbox-parented
+Bit before allocating IDs or writing any store. Do not infer a Breakdown/
+candidate deletion or migration policy, and do not change the visual surface.
+
+**Dependencies:** Task 105 and explicit approval of the Task 105A SCHEMA
+amendment. Task 105 must not absorb this work.
+
+**Authority / flows:** SCHEMA dedicated `scratchBreakdowns` ownership and the
+stale Hook 9 Bit-to-Node Promotion contract; the explicit 2026-07-28 user
+decision recorded in `docs/issues/Issues_Phase_23.md`.
+
+**Recipe:** Not applicable — repository constraint; the intended Scratch UI
+already exposes no promotion action under its normal no-Chunk state.
+
+**Observable acceptance:** Inbox-parented Bits reject promotion before any
+Node/Bit/Chunk/Breakdown/candidate/audit write, including a defensive fixture
+that contains Chunks; ordinary non-Inbox Bits preserve current promotion
+behavior. Data presence never toggles the rule.
+
+**Verification:** run `pnpm exec vitest run src/lib/db/promotion.test.ts`,
+`pnpm typecheck`, `pnpm lint`, and `git diff --check`; expected zero failures
+or errors and no new warning.
+
+**Commit contract:** the approved Hook 9 amendment/receipt is one documentation
+commit; the repository guard and exact promotion regression are a later narrow
+code commit; `fix(db): reject Scratch bit promotion`.
+
+#### Phase 23 Notes
+
+- Integrate Tasks 101–105A as one phase unit; Task 102 closes Task 101's
+  temporary legacy-row migration risk, so intermediate cherry-picks are not a
+  supported release state.
+- `P23-02` is deferred to exact Task 136 hook/test ownership; `P23-03` is
+  promoted to Task 130's defensive Bit-detail visibility guard.
+- The real-project lifecycle trace is retained for the post-merge workflow-v2
+  pass. Phase 24 must not start until that rollout and GridDO adapter migration
+  are verified.
 
 ---
 
@@ -810,19 +865,19 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 ### Task 130: [ ] Implement Pool selection, tools, collapse, and re-entry
 
-**Files and actions:** modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/hooks/use-inbox.ts` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, and `src/stores/triage-preferences-store.ts` and `.test.ts`. Implement active fallback/null, expanded tools/list, total versus filtered counts, base selected/empty states, persisted sort, session query/scroll, vertical collapsed switchers, hidden-query independence, first-printable Breakdown key collapse once, per-Scratch manual-reopen exception, same-session re-entry, and deterministic focus restoration using Task 128 copy. Do not implement `VQ-01` or Pool `VQ-06` states.
+**Files and actions:** modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/hooks/use-inbox.ts` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, and `src/stores/triage-preferences-store.ts` and `.test.ts`. Implement active fallback/null, expanded tools/list, total versus filtered counts, base selected/empty states, persisted sort, session query/scroll, vertical collapsed switchers, hidden-query independence, first-printable Breakdown key collapse once, per-Scratch manual-reopen exception, same-session re-entry, and deterministic focus restoration using Task 128 copy. Also modify `src/components/bit-detail/bit-detail-popup.tsx` and `.test.tsx` so the globally mounted detail surface never offers Promote to Node for an Inbox-parented Scratch, even when defensive Chunk data exists; the Task 105A repository guard remains the safety backstop and ordinary Chunk-backed Bit promotion remains available. Do not implement `VQ-01` or Pool `VQ-06` states.
 
-**Dependencies:** Tasks 127–129.
+**Dependencies:** Task 105A and Tasks 127–129.
 
-**Authority / flows:** `UF-02`–`UF-04`; `NEG-05`, `NEG-17`.
+**Authority / flows:** `P23-03`, SCHEMA Hook 9; `UF-02`–`UF-04`; `NEG-05`, `NEG-17`.
 
 **Recipe:** [`Scratch Pool`](recipes/inbox-triage-scratch-pool-visual-recipe.md).
 
-**Observable acceptance:** auto-selection never chooses a hidden mismatch or steals focus; counts differ correctly; collapsed controls ignore hidden query; first-printable collapse/manual reopen/re-entry/reload follow the exact lifetime contract.
+**Observable acceptance:** auto-selection never chooses a hidden mismatch or steals focus; counts differ correctly; collapsed controls ignore hidden query; first-printable collapse/manual reopen/re-entry/reload follow the exact lifetime contract. A defensive Inbox-parented Scratch with Chunks exposes no Promote action, while an ordinary eligible Bit with Chunks still does.
 
-**Verification:** focused Pool/Inbox/store tests; run canonical route with populated/filtered/collapsed/re-entry/true-empty seeds and record keyboard/focus/count/capture evidence at 1024px and 1920×1080 in `docs/verification/inbox-triage/task-130.md`; `pnpm typecheck`.
+**Verification:** focused Pool/Inbox/store and `bit-detail-popup.test.tsx` tests; run canonical route with populated/filtered/collapsed/re-entry/true-empty seeds and record keyboard/focus/count/capture evidence at 1024px and 1920×1080 in `docs/verification/inbox-triage/task-130.md`; `pnpm typecheck`.
 
-**Commit contract:** Pool/Inbox/state-owner integration, tests, and Task 130 evidence only; `feat(triage): implement scratch pool base flow`.
+**Commit contract:** Pool/Inbox/state-owner integration, the exact P23-03 popup visibility guard, tests, and Task 130 evidence only; `feat(triage): implement scratch pool base flow`.
 
 ### Task 131: [ ] Add the durable candidate reactive boundary
 
@@ -910,11 +965,11 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 ### Task 136: [ ] Connect headless Add and Delete interaction behavior
 
-**Files and actions:** create mounted-page `src/hooks/use-triage-operation-lock.ts` and `.test.tsx`; modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/scratch-pool.tsx` and `.test.tsx`, and `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx`. The Workspace-mounted owner exposes synchronous `acquire(kind, operationId)`, `activeOperation`, and terminal `release` for `add|delete|edit|stage|unstage|placement|undo|archive`; acquisition occurs before any asynchronous gap, rejects a duplicate or competing owner, queues nothing, survives pending/unknown/reconciling, and releases only on terminal `applied|not_applied|rejected|conflict`. Its single signal locks Scratch switch, internal route/browser exit, Edit, Placement, Undo, Archive, Cancel/Escape, and duplicate action. Wire Add/Delete acquisition plus base Breakdown Cancel/Escape/duplicate gating and Pool Scratch-switch gating here; Tasks 137, 139, 145, 152, 156, and 161 wire the remaining exact consumers. Dispatch Task 120 Add/Delete commands, retain authoritative rows/drafts through pending or unknown outcomes, submit Add only by Enter or explicit Add, scroll a confirmed row into view, and restore focus after confirmed Delete in the order next row → previous row → Add input → Context. Expose typed operation state slots without choosing `VQ-05` appearance.
+**Files and actions:** create mounted-page `src/hooks/use-triage-operation-lock.ts` and `.test.tsx`; modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/scratch-pool.tsx` and `.test.tsx`, and `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx`. Remove the retired test-only `deleteScratchBreakdownsByScratch` mock and its now-vacuous no-call assertion from `src/hooks/use-scratch-breakdowns.test.tsx` (`P23-02`) while replacing that hook's legacy mutation surface. The Workspace-mounted owner exposes synchronous `acquire(kind, operationId)`, `activeOperation`, and terminal `release` for `add|delete|edit|stage|unstage|placement|undo|archive`; acquisition occurs before any asynchronous gap, rejects a duplicate or competing owner, queues nothing, survives pending/unknown/reconciling, and releases only on terminal `applied|not_applied|rejected|conflict`. Its single signal locks Scratch switch, internal route/browser exit, Edit, Placement, Undo, Archive, Cancel/Escape, and duplicate action. Wire Add/Delete acquisition plus base Breakdown Cancel/Escape/duplicate gating and Pool Scratch-switch gating here; Tasks 137, 139, 145, 152, 156, and 161 wire the remaining exact consumers. Dispatch Task 120 Add/Delete commands, retain authoritative rows/drafts through pending or unknown outcomes, submit Add only by Enter or explicit Add, scroll a confirmed row into view, and restore focus after confirmed Delete in the order next row → previous row → Add input → Context. Expose typed operation state slots without choosing `VQ-05` appearance.
 
 **Dependencies:** Tasks 120, 128, 130, and 132.
 
-**Authority / flows:** `UF-07`, `UF-11`, `UF-12`; `AF-02`, `AF-07`; `NEG-09`.
+**Authority / flows:** `P23-02`; `UF-07`, `UF-11`, `UF-12`; `AF-02`, `AF-07`; `NEG-09`.
 
 **Recipe:** [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md).
 
@@ -922,7 +977,7 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 **Verification:** focused operation-lock/Breakdown/Workspace/Pool/hook tests; assert every operation kind against the complete mutual-exclusion matrix and terminal release contract, then run Enter/Add, blur, duplicate/competing intent, Scratch switch, Cancel/Escape, unknown reconcile, failed Delete, and confirmed focus paths in the canonical route and record interactions/focus in `docs/verification/inbox-triage/task-136.md`; `pnpm typecheck`.
 
-**Commit contract:** mounted-page operation lock, headless Add/Delete adapter, exact owner tests, and Task 136 evidence only; `feat(triage): connect locked breakdown commands`.
+**Commit contract:** mounted-page operation lock, headless Add/Delete adapter, the exact `P23-02` stale-test cleanup, owner tests, and Task 136 evidence only; `feat(triage): connect locked breakdown commands`.
 
 ### Task 137: [ ] Build headless conditional editor and blocker state
 
@@ -1471,7 +1526,9 @@ This register is complete for every exact path declared by two or more tasks. Ev
 
 - **Next planned phase:** Phase 34. Phases 32 and 33 are reserved and receive no tasks.
 - **Next planned task:** Task 166.
-- Active graph count: 9 implementation phases (23–31), 65 open tasks (101–165), 2 reserved phase numbers (32–33).
+- Active graph count: 8 open implementation phases (24–31), 60 open tasks
+  (106–165), 1 completed archive (Phase 23 with Tasks 101–105A), and 2
+  reserved phase numbers (32–33).
 - The document is **user-approved for planning authority** under the receipt at
-  the top of this file; every task remains open and no implementation state is
-  accepted.
+  the top of this file; Tasks 101–105A are accepted and archived, while Tasks
+  106–165 remain open.

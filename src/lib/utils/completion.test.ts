@@ -21,6 +21,8 @@ function createBit(status: Bit["status"]): Bit {
     y: 0,
     deletedAt: null,
     archivedAt: null,
+    version: 1,
+    pastDeadlineDismissed: false,
   };
 }
 

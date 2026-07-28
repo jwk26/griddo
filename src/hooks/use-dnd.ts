@@ -472,7 +472,6 @@ export function useDnd(getBlockedCells: () => Set<string>): {
         parentId,
         x: position.x,
         y: position.y,
-        mtime: Date.now(),
       });
     }
 
@@ -485,7 +484,6 @@ export function useDnd(getBlockedCells: () => Set<string>): {
         parentId,
         x: position.x,
         y: position.y,
-        mtime: Date.now(),
       });
     }
   }
@@ -533,7 +531,6 @@ export function useDnd(getBlockedCells: () => Set<string>): {
           await dataStore.updateNode(dragItem.id, {
             x: dropData.x,
             y: dropData.y,
-            mtime: Date.now(),
           });
         }
 
@@ -541,7 +538,6 @@ export function useDnd(getBlockedCells: () => Set<string>): {
           await dataStore.updateBit(dragItem.id, {
             x: dropData.x,
             y: dropData.y,
-            mtime: Date.now(),
           });
         }
 
@@ -615,7 +611,6 @@ export function useDnd(getBlockedCells: () => Set<string>): {
         await dataStore.updateNode(dragItem.id, {
           deadline: null,
           deadlineAllDay: false,
-          mtime: Date.now(),
         });
       }
 
@@ -623,7 +618,6 @@ export function useDnd(getBlockedCells: () => Set<string>): {
         await dataStore.updateBit(dragItem.id, {
           deadline: null,
           deadlineAllDay: false,
-          mtime: Date.now(),
         });
       }
 
@@ -637,7 +631,6 @@ export function useDnd(getBlockedCells: () => Set<string>): {
     if (dragItem.type === "node") {
       await dataStore.updateNode(dragItem.id, {
         deadline: dropData.timestamp,
-        mtime: Date.now(),
       });
       return;
     }
@@ -645,7 +638,6 @@ export function useDnd(getBlockedCells: () => Set<string>): {
     if (dragItem.type === "bit") {
       await dataStore.updateBit(dragItem.id, {
         deadline: dropData.timestamp,
-        mtime: Date.now(),
       });
       return;
     }
@@ -692,7 +684,6 @@ export function useDnd(getBlockedCells: () => Set<string>): {
     const dataStore = await getDataStore();
     await dataStore.updateBit(conflictState.parentBitId, {
       deadline: conflictState.pendingTimestamp,
-      mtime: Date.now(),
     });
     await dataStore.updateChunk(conflictState.pendingChunkId, {
       time: conflictState.pendingTimestamp,
