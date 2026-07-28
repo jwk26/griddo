@@ -64,6 +64,8 @@ function makeNode(id: string, overrides: Partial<Node> = {}): Node {
     systemRole: null,
     hiddenFromGrid: false,
     ...overrides,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 
@@ -85,6 +87,8 @@ function makeBit(id: string, parentId: string, overrides: Partial<Bit> = {}): Bi
     deletedAt: null,
     archivedAt: null,
     ...overrides,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 

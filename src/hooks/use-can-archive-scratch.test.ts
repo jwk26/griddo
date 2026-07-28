@@ -25,7 +25,15 @@ function createBreakdown(
   id: string,
   consumedAt: ScratchBreakdown["consumedAt"],
 ): ScratchBreakdown {
-  return { id, consumedAt } as ScratchBreakdown;
+  return {
+    id,
+    scratchBitId: "scratch-1",
+    content: "Breakdown row",
+    order: 0,
+    createdAt: 1,
+    consumedAt,
+    version: 1,
+  };
 }
 
 describe("useCanArchiveScratch", () => {

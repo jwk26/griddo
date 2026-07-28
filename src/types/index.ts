@@ -1,5 +1,26 @@
 // Re-export all schema types
-export type { Node, CreateNode, Bit, CreateBit, Chunk, CreateChunk } from "@/lib/db/schema";
+export type {
+  Bit,
+  CandidateOrphanAuditEvent,
+  Chunk,
+  CreateBit,
+  CreateChunk,
+  CreateNode,
+  CreateScratchBreakdown,
+  CreateStagedCandidate,
+  Node,
+  PendingOperationRecovery,
+  RepositoryOperationCommand,
+  RepositoryOperationId,
+  RepositoryOperationResult,
+  RepositoryOperationStatus,
+  ScratchBreakdown,
+  StagedCandidate,
+  UnknownRepositoryOperationOutcome,
+  UpdateBit,
+  UpdateNode,
+  UpdateScratchBreakdown,
+} from "@/lib/db/schema";
 
 // Computed types — never stored, derived at render time
 export type AgingState = "fresh" | "stagnant" | "neglected";

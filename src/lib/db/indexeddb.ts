@@ -10,6 +10,9 @@ import {
   createNodeSchema,
   nodeSchema,
   scratchBreakdownSchema,
+  updateBitSchema,
+  updateNodeSchema,
+  updateScratchBreakdownSchema,
   type Bit,
   type Chunk,
   type CreateBit,
@@ -90,12 +93,6 @@ export class DeadlineConflictError extends Error {
   }
 }
 
-const nodeUpdateSchema = nodeSchema
-  .omit({ id: true, createdAt: true, deletedAt: true, mtime: true })
-  .partial();
-const bitUpdateSchema = bitSchema
-  .omit({ id: true, createdAt: true, deletedAt: true, mtime: true })
-  .partial();
 const chunkUpdateSchema = chunkSchema.omit({ id: true, parentId: true }).partial();
 
 export class GridDODatabase extends Dexie {
@@ -172,7 +169,9 @@ export class IndexedDBDataStore implements DataStore {
       id: crypto.randomUUID(),
       mtime: timestamp,
       createdAt: timestamp,
+      version: 1,
       deletedAt: null,
+      pastDeadlineDismissed: false,
     });
 
     await this.write(async () => {
@@ -188,7 +187,7 @@ export class IndexedDBDataStore implements DataStore {
 
   async updateNode(id: string, data: Partial<Node>): Promise<void> {
     const existing = await this.getRequiredNode(id);
-    const parsed = nodeUpdateSchema.parse(data);
+    const parsed = updateNodeSchema.parse(data);
     const next = {
       ...existing,
       ...parsed,
@@ -426,7 +425,9 @@ export class IndexedDBDataStore implements DataStore {
       status: "active",
       mtime: timestamp,
       createdAt: timestamp,
+      version: 1,
       deletedAt: null,
+      pastDeadlineDismissed: false,
     });
 
     await this.write(async () => {
@@ -439,7 +440,7 @@ export class IndexedDBDataStore implements DataStore {
 
   async updateBit(id: string, data: Partial<Bit>): Promise<void> {
     const existing = await this.getRequiredBit(id);
-    const parsed = bitUpdateSchema.parse(data);
+    const parsed = updateBitSchema.parse(data);
     const next = {
       ...existing,
       ...parsed,
@@ -793,6 +794,7 @@ export class IndexedDBDataStore implements DataStore {
         id: crypto.randomUUID(),
         mtime: seedTimestamp,
         createdAt: seedTimestamp,
+        version: 1,
         title: SYSTEM_NODE_SEEDS[role].title,
         icon: SYSTEM_NODE_SEEDS[role].icon,
         color: SYSTEM_NODE_SEEDS[role].color,
@@ -806,6 +808,7 @@ export class IndexedDBDataStore implements DataStore {
         y,
         deadline: null,
         deadlineAllDay: false,
+        pastDeadlineDismissed: false,
       }),
     );
 
@@ -837,6 +840,7 @@ export class IndexedDBDataStore implements DataStore {
       id: crypto.randomUUID(),
       createdAt: Date.now(),
       consumedAt: null,
+      version: 1,
     });
 
     await table.put(row);
@@ -863,7 +867,8 @@ export class IndexedDBDataStore implements DataStore {
       throw new Error(`Scratch breakdown not found: ${id}`);
     }
 
-    await table.put(scratchBreakdownSchema.parse({ ...row, ...data }));
+    const parsed = updateScratchBreakdownSchema.parse(data);
+    await table.put(scratchBreakdownSchema.parse({ ...row, ...parsed }));
   }
 
   async markScratchBreakdownConsumed(id: string): Promise<void> {
@@ -1267,11 +1272,13 @@ export class IndexedDBDataStore implements DataStore {
       deadlineAllDay: bit.deadlineAllDay,
       mtime: timestamp,
       createdAt: timestamp,
+      version: 1,
       parentId: bit.parentId,
       level: promotedLevel,
       x: bit.x,
       y: bit.y,
       deletedAt: null,
+      pastDeadlineDismissed: false,
     });
 
     const occupancy = new Set<string>();
@@ -1295,10 +1302,12 @@ export class IndexedDBDataStore implements DataStore {
         status: chunk.status === "complete" ? "complete" : "active",
         mtime: timestamp,
         createdAt: timestamp,
+        version: 1,
         parentId: newNode.id,
         x: position.x,
         y: position.y,
         deletedAt: null,
+        pastDeadlineDismissed: false,
       });
     });
 

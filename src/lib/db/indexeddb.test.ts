@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Bit, Chunk, Node } from "@/lib/db/schema";
+import type { Bit, Chunk, Node, ScratchBreakdown } from "@/lib/db/schema";
 import { DeadlineConflictError, IndexedDBDataStore } from "@/lib/db/indexeddb";
 
 type StoredRecord = { id: string };
@@ -64,6 +64,8 @@ function createNode(overrides: Partial<Node> = {}): Node {
     archivedAt: overrides.archivedAt ?? null,
     systemRole: overrides.systemRole ?? null,
     hiddenFromGrid: overrides.hiddenFromGrid ?? false,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 
@@ -86,6 +88,8 @@ function createBit(overrides: Partial<Bit> = {}): Bit {
     y: overrides.y ?? 0,
     deletedAt: overrides.deletedAt ?? null,
     archivedAt: overrides.archivedAt ?? null,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
   };
 }
 
@@ -102,11 +106,17 @@ function createChunk(overrides: Partial<Chunk> = {}): Chunk {
   };
 }
 
-function createStore(seed?: { nodes?: Node[]; bits?: Bit[]; chunks?: Chunk[] }) {
+function createStore(seed?: {
+  nodes?: Node[];
+  bits?: Bit[];
+  chunks?: Chunk[];
+  scratchBreakdowns?: ScratchBreakdown[];
+}) {
   const database = {
     nodes: new FakeTable<Node>(seed?.nodes),
     bits: new FakeTable<Bit>(seed?.bits),
     chunks: new FakeTable<Chunk>(seed?.chunks),
+    scratchBreakdowns: new FakeTable<ScratchBreakdown>(seed?.scratchBreakdowns),
   };
 
   return {
@@ -137,9 +147,70 @@ describe("IndexedDBDataStore", () => {
     expect(node.deletedAt).toBeNull();
     expect(node.createdAt).toBeGreaterThan(0);
     expect(node.mtime).toBeGreaterThan(0);
+    expect(node.version).toBe(1);
+    expect(node.pastDeadlineDismissed).toBe(false);
 
     const occupancy = await store.getGridOccupancy(null);
     expect(occupancy.has("2,3")).toBe(true);
+  });
+
+  it("initializes every ordinary repository-created model explicitly", async () => {
+    const { store } = createStore();
+    const node = await store.createNode({
+      title: "Inbox",
+      color: "hsl(210, 80%, 55%)",
+      icon: "inbox",
+      deadline: null,
+      deadlineAllDay: false,
+      parentId: null,
+      level: 0,
+      x: 0,
+      y: 0,
+    });
+    const bit = await store.createBit({
+      title: "Scratch",
+      description: "",
+      icon: "circle",
+      deadline: null,
+      deadlineAllDay: false,
+      priority: null,
+      parentId: node.id,
+      x: 0,
+      y: 0,
+    });
+    const breakdown = await store.createScratchBreakdown({
+      scratchBitId: bit.id,
+      content: "Plan first pass",
+      order: 0,
+    });
+
+    expect(bit).toMatchObject({ version: 1, pastDeadlineDismissed: false });
+    expect(breakdown).toMatchObject({ version: 1, consumedAt: null });
+  });
+
+  it("initializes seeded system nodes explicitly", async () => {
+    const { database, store } = createStore();
+
+    await store.ensureSystemNodes();
+
+    const systemNodes = (await database.nodes.toArray()).filter(
+      (node) => node.systemRole !== null,
+    );
+    expect(systemNodes).toHaveLength(2);
+    expect(systemNodes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          systemRole: "inbox",
+          version: 1,
+          pastDeadlineDismissed: false,
+        }),
+        expect.objectContaining({
+          systemRole: "archive_view",
+          version: 1,
+          pastDeadlineDismissed: false,
+        }),
+      ]),
+    );
   });
 
   it("rejects child node creation when the deadline exceeds the parent deadline", async () => {
@@ -286,6 +357,8 @@ describe("IndexedDBDataStore", () => {
     expect(promotedNode.level).toBe(parent.level + 1);
     expect(promotedNode.x).toBe(4);
     expect(promotedNode.y).toBe(2);
+    expect(promotedNode.version).toBe(1);
+    expect(promotedNode.pastDeadlineDismissed).toBe(false);
     expect(childBits).toHaveLength(2);
     expect(childBits.map((item) => item.title)).toEqual([
       "Write changelog",
@@ -293,6 +366,8 @@ describe("IndexedDBDataStore", () => {
     ]);
     expect(childBits[0]?.deadline).toBe(1_700_000_050_000);
     expect(childBits[0]?.deadlineAllDay).toBe(true);
+    expect(childBits.every((item) => item.version === 1)).toBe(true);
+    expect(childBits.every((item) => item.pastDeadlineDismissed === false)).toBe(true);
     expect(await store.getBit(bit.id)).toBeUndefined();
     expect(await store.getChunks(bit.id)).toEqual([]);
   });

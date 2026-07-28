@@ -18,10 +18,16 @@ class FakeTable<T extends StoredRecord> {
 const BASE_TS = 1_700_000_000_000;
 
 function makeNode(id: string, overrides: Partial<Node> = {}): Node {
-  return { id, title: "Node", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null, archivedAt: null, systemRole: null, hiddenFromGrid: false, ...overrides };
+  return { id, title: "Node", color: "hsl(210, 80%, 55%)", icon: "Folder", deadline: null, deadlineAllDay: false, mtime: BASE_TS, createdAt: BASE_TS, parentId: null, level: 0, x: 0, y: 0, deletedAt: null, archivedAt: null, systemRole: null, hiddenFromGrid: false, ...overrides,
+  version: overrides.version ?? 1,
+  pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
+  };
 }
 function makeBit(id: string, parentId: string, overrides: Partial<Bit> = {}): Bit {
-  return { id, title: "Bit", description: "", icon: "Box", deadline: null, deadlineAllDay: false, priority: null, status: "active", mtime: BASE_TS, createdAt: BASE_TS, parentId, x: 0, y: 0, deletedAt: null, archivedAt: null, ...overrides } as Bit;
+  return { id, title: "Bit", description: "", icon: "Box", deadline: null, deadlineAllDay: false, priority: null, status: "active", mtime: BASE_TS, createdAt: BASE_TS, parentId, x: 0, y: 0, deletedAt: null, archivedAt: null, ...overrides,
+  version: overrides.version ?? 1,
+  pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
+  } as Bit;
 }
 function makeStore(nodes: Node[], bits: Bit[]) {
   return new IndexedDBDataStore({ nodes: new FakeTable(nodes), bits: new FakeTable(bits), chunks: new FakeTable([]) });
