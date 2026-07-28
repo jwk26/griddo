@@ -41,21 +41,24 @@ describe("Hook 2 — deadline hierarchy", () => {
   it("setting child deadline within parent deadline succeeds", async () => {
     const nId = crypto.randomUUID();
     const bId = crypto.randomUUID();
-    const node = makeNode(nId, { deadline: PARENT_DEADLINE });
-    const bit = makeBit(bId, nId);
+    const node = makeNode(nId, { deadline: PARENT_DEADLINE, version: 8 });
+    const bit = makeBit(bId, nId, { version: 3 });
     const store = makeStore([node], [bit]);
 
     await expect(store.updateBit(bId, { deadline: CHILD_DEADLINE_OK })).resolves.toBeUndefined();
+    expect((await store.getBit(bId))?.version).toBe(4);
+    expect((await store.getNode(nId))?.version).toBe(8);
   });
 
   it("child deadline past parent deadline throws DeadlineConflictError", async () => {
     const nId = crypto.randomUUID();
     const bId = crypto.randomUUID();
     const node = makeNode(nId, { deadline: PARENT_DEADLINE });
-    const bit = makeBit(bId, nId);
+    const bit = makeBit(bId, nId, { version: 5 });
     const store = makeStore([node], [bit]);
 
     await expect(store.updateBit(bId, { deadline: CHILD_DEADLINE_OVER })).rejects.toBeInstanceOf(DeadlineConflictError);
+    expect((await store.getBit(bId))?.version).toBe(5);
   });
 
   it("allows a timed child on the same day when the parent deadline is all-day", async () => {
@@ -80,6 +83,7 @@ describe("Hook 2 — deadline hierarchy", () => {
     const bit = makeBit(bId, nId, {
       deadline: bitDeadline,
       deadlineAllDay: false,
+      version: 6,
     });
     const store = makeStore([node], [bit]);
 
@@ -93,6 +97,7 @@ describe("Hook 2 — deadline hierarchy", () => {
         parentId: bId,
       }),
     ).rejects.toThrow("Chunk time cannot exceed parent bit deadline");
+    expect((await store.getBit(bId))?.version).toBe(6);
   });
 
   it("DeadlineConflictError carries conflictType and conflictingIds", async () => {

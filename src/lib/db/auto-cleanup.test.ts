@@ -139,7 +139,7 @@ describe("trash cleanup", () => {
     });
     const expiredNodeChunk = makeChunk("expired-node-chunk", expiredNodeBit.id);
 
-    const activeParent = makeNode("active-parent");
+    const activeParent = makeNode("active-parent", { version: 5 });
     const expiredStandaloneBit = makeBit("expired-standalone-bit", activeParent.id, {
       deletedAt: expirationThreshold - DAY,
       x: 1,
@@ -149,10 +149,12 @@ describe("trash cleanup", () => {
     const freshNode = makeNode("fresh-node", {
       deletedAt: expirationThreshold + DAY,
       x: 2,
+      version: 6,
     });
     const freshBit = makeBit("fresh-bit", activeParent.id, {
       deletedAt: expirationThreshold + DAY,
       x: 3,
+      version: 7,
     });
     const freshChunk = makeChunk("fresh-chunk", freshBit.id);
 
@@ -175,5 +177,8 @@ describe("trash cleanup", () => {
       [freshBit.id].sort(),
     );
     expect(remainingChunks.map((chunk) => chunk.id)).toEqual([freshChunk.id]);
+    expect(remainingNodes.find((node) => node.id === activeParent.id)?.version).toBe(5);
+    expect(remainingNodes.find((node) => node.id === freshNode.id)?.version).toBe(6);
+    expect(remainingBits.find((bit) => bit.id === freshBit.id)?.version).toBe(7);
   });
 });

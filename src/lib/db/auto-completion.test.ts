@@ -45,13 +45,14 @@ describe("Hook 3 — auto-completion", () => {
 
     const store = makeStore(
       [makeNode(nId)],
-      [makeBit(bId, nId, { status: "active" })],
+      [makeBit(bId, nId, { status: "active", version: 3 })],
       [makeChunk(c1Id, bId, { status: "complete" }), makeChunk(c2Id, bId, { status: "incomplete", order: 1 })],
     );
 
     await store.updateChunk(c2Id, { status: "complete" });
     const updated = await store.getBit(bId);
     expect(updated!.status).toBe("complete");
+    expect(updated!.version).toBe(4);
   });
 
   it("unchecking a chunk reverts an auto-completed Bit to active", async () => {
@@ -62,13 +63,14 @@ describe("Hook 3 — auto-completion", () => {
 
     const store = makeStore(
       [makeNode(nId)],
-      [makeBit(bId, nId, { status: "complete" })],
+      [makeBit(bId, nId, { status: "complete", version: 5 })],
       [makeChunk(c1Id, bId, { status: "complete" }), makeChunk(c2Id, bId, { status: "complete", order: 1 })],
     );
 
     await store.updateChunk(c2Id, { status: "incomplete" });
     const updated = await store.getBit(bId);
     expect(updated!.status).toBe("active");
+    expect(updated!.version).toBe(6);
   });
 
   it("sticky force-complete: unchecking does NOT revert a force-completed Bit (2+ incomplete)", async () => {
@@ -80,7 +82,7 @@ describe("Hook 3 — auto-completion", () => {
     // c1 was already incomplete when the bit was force-completed
     const store = makeStore(
       [makeNode(nId)],
-      [makeBit(bId, nId, { status: "complete" })],
+      [makeBit(bId, nId, { status: "complete", version: 7 })],
       [makeChunk(c1Id, bId, { status: "incomplete" }), makeChunk(c2Id, bId, { status: "complete", order: 1 })],
     );
 
@@ -88,6 +90,7 @@ describe("Hook 3 — auto-completion", () => {
     await store.updateChunk(c2Id, { status: "incomplete" });
     const updated = await store.getBit(bId);
     expect(updated!.status).toBe("complete");
+    expect(updated!.version).toBe(7);
   });
 
   it("completing all chunks via the last incomplete chunk auto-completes the Bit", async () => {
@@ -97,12 +100,13 @@ describe("Hook 3 — auto-completion", () => {
 
     const store = makeStore(
       [makeNode(nId)],
-      [makeBit(bId, nId, { status: "active" })],
+      [makeBit(bId, nId, { status: "active", version: 11 })],
       [makeChunk(c1Id, bId, { status: "incomplete" })],
     );
 
     await store.updateChunk(c1Id, { status: "complete" });
     const updated = await store.getBit(bId);
     expect(updated!.status).toBe("complete");
+    expect(updated!.version).toBe(12);
   });
 });

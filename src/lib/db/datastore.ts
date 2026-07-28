@@ -1,12 +1,15 @@
 import type {
   Node,
   CreateNode,
+  UpdateNode,
   Bit,
   CreateBit,
+  UpdateBit,
   Chunk,
   CreateChunk,
   ScratchBreakdown,
   CreateScratchBreakdown,
+  UpdateScratchBreakdown,
 } from "@/lib/db/schema";
 
 export interface DataStore {
@@ -14,7 +17,7 @@ export interface DataStore {
   getNode(id: string): Promise<Node | undefined>;
   getNodes(parentId: string | null): Promise<Node[]>;
   createNode(data: CreateNode): Promise<Node>;
-  updateNode(id: string, data: Partial<Node>): Promise<void>;
+  updateNode(id: string, data: UpdateNode): Promise<void>;
   softDeleteNode(id: string): Promise<void>;
   restoreNode(id: string): Promise<void>;
   hardDeleteNode(id: string): Promise<void>;
@@ -28,7 +31,7 @@ export interface DataStore {
   getBitsForNode(nodeId: string): Promise<Bit[]>;
   getAllActiveBits(): Promise<Bit[]>;
   createBit(data: CreateBit): Promise<Bit>;
-  updateBit(id: string, data: Partial<Bit>): Promise<void>;
+  updateBit(id: string, data: UpdateBit): Promise<void>;
   softDeleteBit(id: string): Promise<void>;
   restoreBit(id: string): Promise<void>;
   hardDeleteBit(id: string): Promise<void>;
@@ -51,7 +54,7 @@ export interface DataStore {
   // --- Scratch Breakdowns ---
   createScratchBreakdown(data: CreateScratchBreakdown): Promise<ScratchBreakdown>;
   getScratchBreakdowns(scratchBitId: string): Promise<ScratchBreakdown[]>;
-  updateScratchBreakdown(id: string, data: Partial<Pick<ScratchBreakdown, "content" | "order">>): Promise<void>;
+  updateScratchBreakdown(id: string, data: UpdateScratchBreakdown): Promise<void>;
   markScratchBreakdownConsumed(id: string): Promise<void>;
   unconsumeScratchBreakdown(id: string): Promise<void>;
   deleteScratchBreakdownsByScratch(scratchBitId: string): Promise<void>;

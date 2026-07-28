@@ -121,12 +121,12 @@ function makeStore(seed: { nodes?: Node[]; bits?: Bit[]; chunks?: Chunk[] }) {
 
 describe("cascade delete", () => {
   it("softDeleteNode marks descendant nodes and their bits as trashed", async () => {
-    const root = makeNode("root");
-    const child = makeNode("child", { parentId: root.id, level: 1, x: 1 });
-    const grandchild = makeNode("grandchild", { parentId: child.id, level: 2, x: 2 });
-    const childBit = makeBit("child-bit", child.id, { x: 3 });
-    const grandchildBit = makeBit("grandchild-bit", grandchild.id, { x: 4 });
-    const unrelatedBit = makeBit("unrelated-bit", root.id, { x: 5 });
+    const root = makeNode("root", { version: 10 });
+    const child = makeNode("child", { parentId: root.id, level: 1, x: 1, version: 2 });
+    const grandchild = makeNode("grandchild", { parentId: child.id, level: 2, x: 2, version: 3 });
+    const childBit = makeBit("child-bit", child.id, { x: 3, version: 4 });
+    const grandchildBit = makeBit("grandchild-bit", grandchild.id, { x: 4, version: 5 });
+    const unrelatedBit = makeBit("unrelated-bit", root.id, { x: 5, version: 6 });
     const { store } = makeStore({
       nodes: [root, child, grandchild],
       bits: [childBit, grandchildBit, unrelatedBit],
@@ -147,14 +147,38 @@ describe("cascade delete", () => {
     expect(deletedGrandchildBit?.deletedAt).toBe(deletedChild?.deletedAt);
     expect(untouchedRoot?.deletedAt).toBeNull();
     expect(untouchedBit?.deletedAt).toBeNull();
+    expect(deletedChild?.version).toBe(3);
+    expect(deletedGrandchild?.version).toBe(4);
+    expect(deletedChildBit?.version).toBe(5);
+    expect(deletedGrandchildBit?.version).toBe(6);
+    expect(untouchedRoot?.version).toBe(10);
+    expect(untouchedBit?.version).toBe(6);
+
+    await store.softDeleteNode(child.id);
+    expect(await store.getNode(child.id)).toMatchObject({
+      deletedAt: deletedChild?.deletedAt,
+      version: 3,
+    });
+    expect(await store.getNode(grandchild.id)).toMatchObject({
+      deletedAt: deletedGrandchild?.deletedAt,
+      version: 4,
+    });
+    expect(await store.getBit(childBit.id)).toMatchObject({
+      deletedAt: deletedChildBit?.deletedAt,
+      version: 5,
+    });
+    expect(await store.getBit(grandchildBit.id)).toMatchObject({
+      deletedAt: deletedGrandchildBit?.deletedAt,
+      version: 6,
+    });
   });
 
   it("softDeleteBit only trashes the target bit and leaves its chunks intact", async () => {
     vi.useRealTimers();
 
-    const parent = makeNode("parent");
-    const targetBit = makeBit("bit-1", parent.id);
-    const siblingBit = makeBit("bit-2", parent.id, { x: 1 });
+    const parent = makeNode("parent", { version: 10 });
+    const targetBit = makeBit("bit-1", parent.id, { version: 7 });
+    const siblingBit = makeBit("bit-2", parent.id, { x: 1, version: 9 });
     const targetChunk = makeChunk("chunk-1", targetBit.id);
     const { store, tables } = makeStore({
       nodes: [parent],
@@ -171,5 +195,15 @@ describe("cascade delete", () => {
     expect(deletedBit?.deletedAt).toBeTypeOf("number");
     expect(untouchedBit?.deletedAt).toBeNull();
     expect(remainingChunks).toEqual([targetChunk]);
+    expect(deletedBit?.version).toBe(8);
+    expect(untouchedBit?.version).toBe(9);
+    expect((await store.getNode(parent.id))?.version).toBe(10);
+
+    const firstDeletedAt = deletedBit?.deletedAt;
+    await store.softDeleteBit(targetBit.id);
+    expect(await store.getBit(targetBit.id)).toMatchObject({
+      deletedAt: firstDeletedAt,
+      version: 8,
+    });
   });
 });

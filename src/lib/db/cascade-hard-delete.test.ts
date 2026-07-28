@@ -123,12 +123,12 @@ describe("cascade hard delete", () => {
   it("hardDeleteNode removes descendant nodes, their bits, and all related chunks", async () => {
     vi.useRealTimers();
 
-    const root = makeNode("root");
+    const root = makeNode("root", { version: 9 });
     const child = makeNode("child", { parentId: root.id, level: 1, x: 1 });
     const grandchild = makeNode("grandchild", { parentId: child.id, level: 2, x: 2 });
     const childBit = makeBit("child-bit", child.id);
     const grandchildBit = makeBit("grandchild-bit", grandchild.id, { x: 1 });
-    const unrelatedBit = makeBit("unrelated-bit", root.id, { x: 3 });
+    const unrelatedBit = makeBit("unrelated-bit", root.id, { x: 3, version: 7 });
     const childChunk = makeChunk("child-chunk", childBit.id);
     const grandchildChunk = makeChunk("grandchild-chunk", grandchildBit.id);
     const unrelatedChunk = makeChunk("unrelated-chunk", unrelatedBit.id);
@@ -148,11 +148,13 @@ describe("cascade hard delete", () => {
       id: root.id,
       title: root.title,
       deletedAt: null,
+      version: 9,
     });
     expect(await store.getBit(unrelatedBit.id)).toMatchObject({
       id: unrelatedBit.id,
       title: unrelatedBit.title,
       deletedAt: null,
+      version: 7,
     });
 
     const remainingChunks = await tables.chunks.toArray();

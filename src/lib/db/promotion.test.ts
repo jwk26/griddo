@@ -59,7 +59,7 @@ describe("Hook 9 — bit-to-node promotion", () => {
     const c3Id = crypto.randomUUID();
 
     const { store, tables } = makeStore(
-      [makeNode(nId)],
+      [makeNode(nId, { version: 8 })],
       [makeBit(bId, nId, { title: "My Bit", icon: "Star" })],
       [
         makeChunk(c1Id, bId, { title: "Step A", time: CHUNK_TIME, timeAllDay: false, order: 0 }),
@@ -77,6 +77,7 @@ describe("Hook 9 — bit-to-node promotion", () => {
     expect(newNode.level).toBe(1);
     expect(newNode.x).toBe(2);
     expect(newNode.y).toBe(3);
+    expect(newNode.version).toBe(1);
 
     // Original bit deleted
     expect(await store.getBit(bId)).toBeUndefined();
@@ -88,6 +89,8 @@ describe("Hook 9 — bit-to-node promotion", () => {
     // 3 new bits created inside new node
     const promotedBits = await store.getBits(newNode.id);
     expect(promotedBits).toHaveLength(3);
+    expect(promotedBits.every((promotedBit) => promotedBit.version === 1)).toBe(true);
+    expect((await store.getNode(nId))?.version).toBe(8);
 
     // Titles match chunk titles
     const titles = promotedBits.map((b) => b.title).sort();

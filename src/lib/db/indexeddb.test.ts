@@ -213,6 +213,61 @@ describe("IndexedDBDataStore", () => {
     );
   });
 
+  it("keeps parent revisions neutral while direct child mutations advance once", async () => {
+    const parent = createNode({ version: 10 });
+    const { store } = createStore({ nodes: [parent] });
+
+    const childNode = await store.createNode({
+      title: "Child",
+      color: "hsl(210, 80%, 55%)",
+      icon: "folder",
+      deadline: null,
+      deadlineAllDay: false,
+      parentId: parent.id,
+      level: 1,
+      x: 1,
+      y: 0,
+    });
+    expect(childNode.version).toBe(1);
+    expect((await store.getNode(parent.id))?.version).toBe(10);
+
+    await store.updateNode(childNode.id, { title: "Renamed child", color: "hsl(220, 70%, 50%)" });
+    expect((await store.getNode(childNode.id))?.version).toBe(2);
+    expect((await store.getNode(parent.id))?.version).toBe(10);
+
+    const bit = await store.createBit({
+      title: "Child bit",
+      description: "",
+      icon: "circle",
+      deadline: null,
+      deadlineAllDay: false,
+      priority: null,
+      parentId: parent.id,
+      x: 2,
+      y: 0,
+    });
+    expect(bit.version).toBe(1);
+    expect((await store.getNode(parent.id))?.version).toBe(10);
+
+    await store.updateBit(bit.id, { title: "Renamed bit", priority: "high" });
+    expect((await store.getBit(bit.id))?.version).toBe(2);
+
+    const chunk = await store.createChunk({
+      title: "Child chunk",
+      description: "",
+      time: null,
+      timeAllDay: false,
+      order: 0,
+      parentId: bit.id,
+    });
+    expect((await store.getBit(bit.id))?.version).toBe(2);
+    expect((await store.getNode(parent.id))?.version).toBe(10);
+
+    await store.deleteChunk(chunk.id);
+    expect((await store.getBit(bit.id))?.version).toBe(2);
+    expect((await store.getNode(parent.id))?.version).toBe(10);
+  });
+
   it("rejects child node creation when the deadline exceeds the parent deadline", async () => {
     const parent = createNode({
       deadline: new Date(2026, 3, 20, 0, 0).getTime(),

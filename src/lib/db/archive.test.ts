@@ -140,10 +140,10 @@ function testUuid(index: number): string {
 
 describe("IndexedDBDataStore archive lifecycle", () => {
   it("archives a node with one shared timestamp across descendant nodes and bits", async () => {
-    const rootNode = createNode({ id: testUuid(1) });
-    const childNode = createNode({ id: testUuid(2), parentId: rootNode.id, level: 1 });
-    const bit1 = createBit({ id: testUuid(3), parentId: childNode.id });
-    const bit2 = createBit({ id: testUuid(4), parentId: childNode.id });
+    const rootNode = createNode({ id: testUuid(1), version: 2 });
+    const childNode = createNode({ id: testUuid(2), parentId: rootNode.id, level: 1, version: 3 });
+    const bit1 = createBit({ id: testUuid(3), parentId: childNode.id, version: 4 });
+    const bit2 = createBit({ id: testUuid(4), parentId: childNode.id, version: 5 });
     const { database, store } = createStore({
       nodes: [rootNode, childNode],
       bits: [bit1, bit2],
@@ -166,22 +166,42 @@ describe("IndexedDBDataStore archive lifecycle", () => {
       archivedBit1.deletedAt,
       archivedBit2.deletedAt,
     ]).toEqual([null, null, null, null]);
+    expect([archivedRoot.version, archivedChild.version, archivedBit1.version, archivedBit2.version]).toEqual([3, 4, 5, 6]);
+
+    await store.archiveNode(rootNode.id);
+    expect(await database.nodes.get(rootNode.id)).toMatchObject({
+      archivedAt: archivedRoot.archivedAt,
+      version: 3,
+    });
+    expect(await database.nodes.get(childNode.id)).toMatchObject({
+      archivedAt: archivedChild.archivedAt,
+      version: 4,
+    });
+    expect(await database.bits.get(bit1.id)).toMatchObject({
+      archivedAt: archivedBit1.archivedAt,
+      version: 5,
+    });
+    expect(await database.bits.get(bit2.id)).toMatchObject({
+      archivedAt: archivedBit2.archivedAt,
+      version: 6,
+    });
   });
 
   it("rejects archiving system nodes and leaves archivedAt unchanged", async () => {
-    const inboxNode = createNode({ id: testUuid(5), systemRole: "inbox" });
+    const inboxNode = createNode({ id: testUuid(5), systemRole: "inbox", version: 7 });
     const { database, store } = createStore({ nodes: [inboxNode] });
 
     await expect(store.archiveNode(inboxNode.id)).rejects.toThrow();
 
     const unchangedNode = expectRecord(await database.nodes.get(inboxNode.id));
     expect(unchangedNode.archivedAt).toBeNull();
+    expect(unchangedNode.version).toBe(7);
   });
 
   it("archives only the target bit", async () => {
-    const node = createNode({ id: testUuid(6) });
-    const bit1 = createBit({ id: testUuid(7), parentId: node.id });
-    const bit2 = createBit({ id: testUuid(8), parentId: node.id });
+    const node = createNode({ id: testUuid(6), version: 8 });
+    const bit1 = createBit({ id: testUuid(7), parentId: node.id, version: 2 });
+    const bit2 = createBit({ id: testUuid(8), parentId: node.id, version: 3 });
     const { database, store } = createStore({ nodes: [node], bits: [bit1, bit2] });
 
     await store.archiveBit(bit1.id);
@@ -194,33 +214,46 @@ describe("IndexedDBDataStore archive lifecycle", () => {
     expect(untouchedBit.archivedAt).toBeNull();
     expect(untouchedNode.archivedAt).toBeNull();
     expect(archivedBit.deletedAt).toBeNull();
+    expect(archivedBit.version).toBe(3);
+    expect(untouchedBit.version).toBe(3);
+    expect(untouchedNode.version).toBe(8);
+
+    await store.archiveBit(bit1.id);
+    expect(await database.bits.get(bit1.id)).toMatchObject({
+      archivedAt: archivedBit.archivedAt,
+      version: 3,
+    });
   });
 
   it("unarchives a node with same-window descendants and keeps independently archived descendants archived", async () => {
     const archiveTimestamp = 1_700_000_100_000;
     const independentArchiveTimestamp = archiveTimestamp - 10_000;
-    const rootNode = createNode({ id: testUuid(9), archivedAt: archiveTimestamp });
+    const rootNode = createNode({ id: testUuid(9), archivedAt: archiveTimestamp, version: 2 });
     const childNode = createNode({
       id: testUuid(10),
       parentId: rootNode.id,
       level: 1,
       archivedAt: archiveTimestamp,
+      version: 3,
     });
     const independentNode = createNode({
       id: testUuid(11),
       parentId: childNode.id,
       level: 2,
       archivedAt: independentArchiveTimestamp,
+      version: 4,
     });
     const bit1 = createBit({
       id: testUuid(12),
       parentId: childNode.id,
       archivedAt: archiveTimestamp,
+      version: 5,
     });
     const bit2 = createBit({
       id: testUuid(13),
       parentId: independentNode.id,
       archivedAt: independentArchiveTimestamp,
+      version: 6,
     });
     const { database, store } = createStore({
       nodes: [rootNode, childNode, independentNode],
@@ -253,15 +286,30 @@ describe("IndexedDBDataStore archive lifecycle", () => {
       bit1.deletedAt,
       bit2.deletedAt,
     ]);
+    expect([restoredRoot.version, restoredChild.version, stillArchivedNode.version, restoredBit.version, stillArchivedBit.version]).toEqual([3, 4, 4, 6, 6]);
+
+    await store.unarchiveNode(rootNode.id);
+    expect((await database.nodes.get(rootNode.id))?.version).toBe(3);
+    expect((await database.nodes.get(childNode.id))?.version).toBe(4);
+    expect(await database.nodes.get(independentNode.id)).toMatchObject({
+      archivedAt: independentArchiveTimestamp,
+      version: 4,
+    });
+    expect((await database.bits.get(bit1.id))?.version).toBe(6);
+    expect(await database.bits.get(bit2.id)).toMatchObject({
+      archivedAt: independentArchiveTimestamp,
+      version: 6,
+    });
   });
 
   it("unarchives an archived bit and its archived parent chain", async () => {
     const archiveTimestamp = 1_700_000_100_000;
-    const parentNode = createNode({ id: testUuid(14), archivedAt: archiveTimestamp });
+    const parentNode = createNode({ id: testUuid(14), archivedAt: archiveTimestamp, version: 9 });
     const bit = createBit({
       id: testUuid(15),
       parentId: parentNode.id,
       archivedAt: archiveTimestamp,
+      version: 11,
     });
     const { database, store } = createStore({ nodes: [parentNode], bits: [bit] });
 
@@ -274,6 +322,12 @@ describe("IndexedDBDataStore archive lifecycle", () => {
     expect(restoredBit.archivedAt).toBeNull();
     expect(restoredParent.deletedAt).toBe(parentNode.deletedAt);
     expect(restoredBit.deletedAt).toBe(bit.deletedAt);
+    expect(restoredParent.version).toBe(10);
+    expect(restoredBit.version).toBe(12);
+
+    await store.unarchiveBit(bit.id);
+    expect((await database.nodes.get(parentNode.id))?.version).toBe(10);
+    expect((await database.bits.get(bit.id))?.version).toBe(12);
   });
 
   it("does not set deletedAt when archiving nodes or bits", async () => {

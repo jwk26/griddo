@@ -2,10 +2,11 @@
 
 import { useCallback } from "react";
 import { getDataStore } from "@/lib/db/datastore";
-import type { Bit, Node } from "@/types";
+import type { UpdateNode } from "@/lib/db/schema";
+import type { Bit } from "@/types";
 
 export function useNodeActions() {
-  const updateNode = useCallback(async (id: string, data: Partial<Node>): Promise<void> => {
+  const updateNode = useCallback(async (id: string, data: UpdateNode): Promise<void> => {
     const dataStore = await getDataStore();
     await dataStore.updateNode(id, data);
   }, []);
