@@ -252,6 +252,67 @@ None at kickoff.
 - **Next legal action:** commit this receipt and begin Task 102 with its own
   `In Progress` start signal and observed migration RED.
 
+## `run-task` Live Pilot Audit
+
+This Phase 23 implementation is also the real-project pilot for `run-task`.
+Correctness evidence and workflow cost are separate axes: a task may be
+correct while still exposing excessive context, repeated checks, adapter
+churn, or discovery/bootstrap failure. Skill code remains frozen during Phase
+23; findings are accumulated here for the post-phase improvement pass.
+
+### Current coverage limitation
+
+- The custom `$run-task` skill is installed through the project skill symlink,
+  but it was not exposed in this session's available-skill catalog. Tasks 101
+  and 102 therefore exercised the approved local `run-task` contract manually,
+  not the named-skill discovery/loading path.
+- Consequently, these tasks are valid tests of scope control, receipts, TDD,
+  verification, acceptance markers, and stop boundaries, but they are **not**
+  a complete test of `$run-task` invocation or its native context cost.
+- Task 103 should start in a fresh session where `$run-task` is visibly loaded;
+  inability to do so is itself a release-blocking discovery/bootstrap finding
+  for the post-Phase-23 skill audit.
+
+### Observed task data
+
+| Task | Start → evidence | Elapsed wall time | Workflow result | Cost / friction signal |
+| --- | --- | ---: | --- | --- |
+| 101 | `ee42ff8` → `5fdf9aa` | 18m 37s | Exact commit scope, RED/repair, 505-test full gate, explicit checkpoint | Declared `pnpm test -- <file>` ran the full suite; focused-command normalization is required. Two generic type defects were caught by review after the initial implementation. |
+| 102 | `2e77b46` → `ff56d82` | 9m 06s | Four observed RED clusters, exact three-file scope, atomic rollback proof, 517-test full gate | Advancing one task required a sizable adapter/ledger rewrite. Named-skill loading was unavailable. A second full test was justified only because the final preservation fixture invalidated the first test result; build was not repeated after test-only evidence changes. |
+
+### What the pilot has validated
+
+- Exact task scope and commit contracts prevented Task 103 CAS or later command
+  behavior from leaking into Tasks 101–102.
+- `[x]` remained user-owned; implementation evidence did not silently accept a
+  task or start the next one.
+- RED-first testing caught missing versioning, migration, validation, and Zod
+  default masking before production code was accepted.
+- Independent review found real type/evidence gaps and repairs stayed within
+  the active task.
+- Focused tests plus invalidated full gates produced useful confidence without
+  rerunning every gate after documentation-only commits.
+
+### Post-Phase-23 improvement candidates
+
+1. Make explicit `$run-task` invocation discoverable from a fresh project
+   session; skill invocation itself must be the bootstrap path.
+2. Separate stable adapter policy from runtime-detected facts and user approval
+   receipts so advancing a task does not rewrite broad project configuration.
+3. Normalize runner-specific focused commands; for Vitest use `pnpm exec vitest
+   run <files>` rather than `pnpm test -- <files>`.
+4. Build a compact task context packet with exact authority ranges so each
+   task does not rescan the full canonical chain.
+5. Define a mechanical invalidation matrix for focused/full gates and record
+   why each rerun is required.
+
+### Required observations for Tasks 103–105
+
+Record named-skill availability, start/evidence timestamps, files changed,
+observed RED clusters, verification commands and invalidation reasons, review
+defects, user decision count, adapter/receipt churn, and any repeated canonical
+reads. Do not modify `run-task` until the Phase 23 trace is complete.
+
 ## Run-Task Boundary
 
 Task 102 is implemented but not accepted. No further production write is
