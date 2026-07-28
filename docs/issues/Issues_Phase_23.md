@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–104 accepted; Task 105 `In Progress`; Task 105A planned and unavailable
+> State: Tasks 101–104 accepted; Task 105 `Implemented` awaiting user acceptance; Task 105A planned and unavailable
 
 ## Status Legend
 
@@ -124,16 +124,16 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | Task 105 — Make Scratch aggregate hard-delete atomic and audit-preserving |
-| State | `In Progress` from the committed Task 104 acceptance boundary; Task 105 marker remains open |
+| State | `Implemented` at `9c078d4`; awaiting user acceptance while the Task 105 marker remains open |
 | Approved scope | Exact Task 105 batch from `docs/EXECUTION_PLAN.md`: aggregate hard-delete/cleanup owners and the four named rollback/retention test files only |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
 | Recovery anchor | Task 104 acceptance `bc9d2d7` plus Task 105/105A boundary decision `f193233` on `phase-23/inbox-triage-model-foundation` |
-| Implementation commit | Not created |
+| Implementation commit | `9c078d4a74975b0a5a52a800dae795f43210f854` (`feat(db): delete scratch aggregates atomically`) |
 | Canonical impact | `Reflected`: implement SCHEMA Hook 6 and Scratch permanent deletion without changing policy |
 | Issues / deviations | None open. P23-01 is separately promoted to Task 105A and is forbidden in this batch. Adapter/AGENTS current-batch churn is recorded for the post-Phase-23 skill audit. |
-| Next legal action | Observe real aggregate-delete RED through the Task 104 seam, then implement only Task 105. |
+| Next legal action | Present the Task 105 checkpoint and wait for explicit user acceptance or targeted rejection. Do not write `[x]` or begin Task 105A. |
 
 ## Task 105 Start Receipt
 
@@ -173,6 +173,87 @@ None at kickoff.
   change. This task is data/nonvisual, so rendered evidence is `None`.
 - **Next legal action:** commit this start signal, then write the failing real-
   IDB aggregate tests before production behavior.
+
+## Task 105 Implementation Evidence
+
+### RED and repair sequence
+
+1. `scratch-aggregate-hard-delete.test.ts` first produced seven expected
+   failures: hard delete returned no typed result, retained the staged
+   candidate, did not stop for a missing source, and never reached any actual-
+   method rollback checkpoint.
+2. The expanded four-file RED set produced fourteen behavior failures. One
+   real-IDB cleanup case initially timed out because Vitest fake timers paused
+   IndexedDB scheduling; the test was corrected to use a real clock with an
+   already-expired timestamp, after which it failed for the intended reason
+   (the checkpoint was not reached and cleanup resolved).
+3. One repository repair introduced a typed aggregate result and one private
+   planned-delete executor. Focused verification then passed without a second
+   production repair cycle.
+
+### Implemented scope
+
+- `AggregateHardDeleteResult` distinguishes `{ status: "deleted" }` from
+  `integrity_cleanup_required` carrying the exact affected candidate records.
+  Node delete, Bit delete, and trash cleanup now expose that result; existing
+  UI callers remain unchanged and Task 122 retains ownership of confirmed-
+  orphan command consumption.
+- Every closure read, candidate/source validation, delete plan, and write runs
+  inside one seven-store `rw` transaction. Trash cleanup unions and deduplicates
+  all expired Node/Bit roots before its first mutation rather than committing
+  one expired item at a time.
+- A candidate is deleted only with its still-present source in the planned
+  closure. A targeted missing source, or a source/Scratch owner mismatch that
+  violates SCHEMA Staged Candidate Integrity rule 1, returns
+  `integrity_cleanup_required` before any write. An unrelated pre-existing
+  orphan neither blocks nor changes the target aggregate.
+- Successful aggregate deletion removes candidates, Breakdown rows, Chunks,
+  Bits, and Nodes child-first, then performs one version-neutral surviving-
+  parent `mtime` touch. The actual methods emit private synchronous checkpoints
+  after each non-empty store mutation. Existing audit rows and settings are
+  never mutated.
+- The public `deleteScratchBreakdownsByScratch` sequencing escape hatch was
+  removed from both `DataStore` and `IndexedDBDataStore`. Single-row Breakdown
+  deletion remains available under its existing owner/version contract.
+- Real-IDB tests cover Bit and Node closure success, byte-for-byte audit and
+  unrelated retention, targeted and unrelated orphan states, every actual Bit
+  mutation checkpoint, Node-store rollback, whole-cleanup rollback across two
+  expired roots, and Archive retention of source/candidate/audit truth.
+
+### GREEN evidence
+
+| Command | Exit | Relevant result |
+| --- | ---: | --- |
+| `pnpm exec vitest run src/lib/db/scratch-aggregate-hard-delete.test.ts src/lib/db/cascade-hard-delete.test.ts src/lib/db/auto-cleanup.test.ts src/lib/db/scratch-breakdowns.test.ts` | 0 | 4 files, 26 tests passed |
+| `pnpm exec eslint` on the six Task 105 implementation/test paths | 0 | No warnings or errors in the changed paths |
+| `pnpm test` | 0 | 80 files, 552 tests passed |
+| `pnpm lint` | 0 | 0 errors; the same 11 pre-existing warnings |
+| `pnpm typecheck` | 0 | TypeScript check passed |
+| `pnpm build` | 0 | Next.js production build and seven routes completed |
+| `git diff --check` | 0 | No whitespace errors before the implementation commit |
+
+### Review disposition and `$run-task` pilot trace
+
+- Pre-implementation read-only review identified the previously untested
+  surviving-parent checkpoint, whole-cleanup transaction boundary, unrelated-
+  orphan retention, Archive candidate retention, and stale public bulk-delete
+  escape hatch. Each became focused evidence in the exact approved files.
+- Diff review found no Task 105A promotion work, Task 120/122 command API,
+  audit append, UI change, general transaction API, operation log, journal,
+  outbox, or queue. `candidateOrphanAuditEvents` remains transaction-scoped for
+  rollback but is never written by aggregate deletion.
+- Named `$run-task` scope/start/checkpoint rules were loaded from the installed
+  project skill. The task used RED before production, one focused GREEN set,
+  one final full gate, one implementation commit, and a separate evidence
+  receipt; no repeated full gate was needed.
+- Two parallel final-review workers did not return within the bounded review
+  window and were interrupted to avoid further cost. Their output is not
+  claimed as completion evidence; the recorded disposition is based on direct
+  contract/diff review plus the real-IDB and full-gate evidence above. This is
+  retained as Phase-close input for bounded reviewer timing in `run-task`.
+- Start `f0ca69b` to implementation `9c078d4` took 13m 42s. Task 105 remains
+  `[ ]`; Task 105A and its SCHEMA gate remain unavailable until explicit user
+  acceptance.
 
 ## Task 104 Start Receipt
 
