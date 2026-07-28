@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–103 accepted; Task 104 implemented and awaiting user acceptance
+> State: Tasks 101–104 accepted; Task 105 not started
 
 ## Status Legend
 
@@ -95,7 +95,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | Task 104 — Build a real IndexedDB transaction and fault-injection harness |
-| State | `Implemented`; Task 104 marker remains open pending explicit user acceptance |
+| State | `Closed` by explicit user acceptance; Task 104 marker is `[x]` |
 | Approved scope | Exact Task 104 batch from `docs/EXECUTION_PLAN.md`: real IndexedDB test utility, transaction rollback tests, and the smallest named-checkpoint seam only |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
@@ -104,7 +104,7 @@ None at kickoff.
 | Implementation commit | `055bff0` (`test(db): prove real indexeddb rollback`) |
 | Canonical impact | `Reflected` — implement the already-approved seven-store transaction/rollback boundary without changing canonical policy |
 | Issues / deviations | None open. The Task 103 local helper remains unchanged in `revision.test.ts`. The first checkpoint wrapper exposed and repaired a Dexie async-scope regression before commit. All seven stores are mandatory scope. |
-| Next legal action | Present the Task 104 evidence checkpoint for explicit user acceptance or rejection. Task 105 remains blocked. |
+| Next legal action | Commit this acceptance receipt. A separate `$run-task` start may then authorize Task 105 only. |
 
 ## Task 104 Start Receipt
 
@@ -210,6 +210,32 @@ None at kickoff.
   rerun serially. Post-Phase-23 gate scheduling should encode this shared-output
   serialization constraint rather than treating all verification commands as
   safely parallel.
+
+## Task 104 Acceptance Receipt
+
+- **Disposition:** accepted explicitly by the user on 2026-07-28 with the
+  instruction `승인` after independent read-only review reported blocker count
+  zero.
+- **Accepted implementation:** `055bff0` (`test(db): prove real indexeddb
+  rollback`).
+- **Evidence receipt:** `88bc19a` (`docs: record Task 104 implementation
+  evidence`), including the real seven-store rollback matrix, outside-
+  transaction partial-state control, 16 focused tests, 79 files / 540 tests,
+  typecheck, lint, build, and diff checks.
+- **Independent review:** re-ran the focused tests, full tests, and typecheck;
+  confirmed the exact three-file commit contract, unchanged Task 103 tests,
+  the narrow protected test seam, and no Task 105/120 behavior.
+- **Boundary:** this accepts the Task 104 probe harness and seven-store
+  transaction scope only. It does not claim that existing repository methods
+  are all atomic; Task 105 must apply named checkpoints to the actual Scratch
+  aggregate deletion paths. No push, merge, publication, phase acceptance, or
+  visual Decision receipt is granted.
+- **Operational note:** every current production write transaction includes
+  all seven stores as required by Task 104. This is accepted for the local
+  single-tab phase and remains an explicit Phase-close observation.
+- **Next legal action:** commit this receipt. Task 105 may start only through a
+  separate bounded `$run-task` start receipt that resolves promotion-path
+  ownership before implementation.
 
 ## Task 103 Start Receipt
 
@@ -538,6 +564,7 @@ churn, or discovery/bootstrap failure. Skill code remains frozen during Phase
 | 101 | `ee42ff8` → `5fdf9aa` | 18m 37s | Exact commit scope, RED/repair, 505-test full gate, explicit checkpoint | Declared `pnpm test -- <file>` ran the full suite; focused-command normalization is required. Two generic type defects were caught by review after the initial implementation. |
 | 102 | `2e77b46` → `ff56d82` | 9m 06s | Four observed RED clusters, exact three-file scope, atomic rollback proof, 517-test full gate | Advancing one task required a sizable adapter/ledger rewrite. Named-skill loading was unavailable. A second full test was justified only because the final preservation fixture invalidated the first test result; build was not repeated after test-only evidence changes. |
 | 103 | `6bce8ae` → `df7d0d1` | 50m 12s | Named `$run-task` loaded; 23 implementation paths; real-IDB concurrency RED; 91 focused and 531 full tests; explicit checkpoint | A wide invariant sweep lacked internal checkpoints, so late lost-update and Scratch-owner defects reopened the whole batch. Dependency-ready Task 104 was hidden by numeric ordering. One necessary `use-dnd.ts` deviation entered before file-specific approval and required a corrective receipt. |
+| 104 | `6b036f5` → `88bc19a` | 13m 17s | Named `$run-task` loaded; exact three-file scope; seven real-IDB rollback checkpoints; 540-test full gate | Review caught the UUID/snapshot/audit gaps before commit. One production regression exposed Dexie's async-scope sensitivity. Parallel build/typecheck shared-output contention required one serial typecheck rerun. |
 
 ### What the pilot has validated
 
@@ -581,6 +608,7 @@ reads. Do not modify `run-task` until the Phase 23 trace is complete.
 
 ## Run-Task Boundary
 
-Task 104 is implemented at `055bff0` and remains `[ ]` pending explicit user
-acceptance. No additional Task 104 code write or Task 105 start is authorized
-at this checkpoint. Push, publication, merge, and `end-phase` remain forbidden.
+Task 104 is accepted at implementation `055bff0` with evidence `88bc19a` and
+is marked `[x]`. Task 105 has not started; its writes require a separate
+bounded start receipt. Push, publication, merge, and `end-phase` remain
+forbidden.

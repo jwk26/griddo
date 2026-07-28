@@ -350,7 +350,7 @@ Responsive/mobile redesign remains excluded; active implementation targets the d
 
 **Commit contract:** revision/public-boundary code and the exact mutation-path tests above only; `feat(db): enforce monotonic record revisions`.
 
-### Task 104: [ ] Build a real IndexedDB transaction and fault-injection harness
+### Task 104: [x] Build a real IndexedDB transaction and fault-injection harness
 
 **Files and actions:** create `src/lib/db/indexeddb.test-utils.ts` and `src/lib/db/indexeddb.transaction.test.ts`; modify `src/lib/db/indexeddb.ts` only for a narrow injectable named-checkpoint test seam. Each test uses a fresh real `GridDODatabase` backed by `fake-indexeddb` `IDBFactory`/`IDBKeyRange`, valid UUID factories, and snapshots of nodes, bits, chunks, settings, scratchBreakdowns, stagedCandidates, and candidateOrphanAuditEvents. Inject a throw after each named store mutation inside the real `rw` Dexie transaction and prove every store matches the prestate. Require every validation and closure read to occur inside the same transaction. Structural FakeTable/FakeDatabase tests may remain unit coverage but cannot satisfy atomic acceptance.
 
