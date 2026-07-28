@@ -25,9 +25,9 @@ This is the Codex entrypoint. It coexists with, and does not replace or modify,
 - `$end-phase` fields are refreshed for the current feature branch, but the
   lifecycle remains unavailable until its own user Final Close. The completed
   docs-publication authority is expired and must never be reused.
-- Tasks 101–105 are accepted. The current bounded `$run-task` batch is Task
-  105A's SCHEMA Hook 9 draft only; its promotion implementation remains
-  unavailable until that draft is explicitly approved. The
+- Tasks 101–105 are accepted. Task 105A's SCHEMA Hook 9 amendment is approved
+  at `67dbe52`; the current bounded `$run-task` batch is only its repository
+  guard and exact `promotion.test.ts` regression, with no UI change. The
   superseded Golden pilot was compared without reuse and retired on 2026-07-28.
   Its final SHA `52a385d` is
   historical audit identity only; do not reconstruct or import it.

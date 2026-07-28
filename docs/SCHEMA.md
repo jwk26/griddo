@@ -15,9 +15,9 @@
 > example derives both Node and Bit coordinate validators from the existing
 > production grid constants; the exact pre-receipt artifact is identified in
 > the maintenance receipt below.
-> **Scratch-promotion amendment status:** **Proposed; pending explicit user
-> approval.** Prior SCHEMA receipts do not approve the current Hook 9 draft,
-> and no promotion implementation is authorized until its separate gate passes.
+> **Scratch-promotion amendment status:** **User-approved 2026-07-28.** The
+> exact pre-receipt draft is identified in the approval receipt below. Task
+> 105A production implementation remains pending.
 > **Promotion provenance:** selected topic
 > [`DECISION.md`](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/DECISION.md),
 > approved [`PROMOTION_MAP.md`](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md),
@@ -108,6 +108,30 @@
   canonical code examples and descriptive constraint cells against production
   constants, paths, exports/signatures, stores/indexes, routes, and owners;
   stop at the `docs/PLANNING_STANDARD.md` gate.
+
+### Scratch Promotion Boundary Approval Receipt — 2026-07-28
+
+- **Gate:** amend only Hook 9's stale applicability boundary for an
+  Inbox-parented Scratch Bit.
+- **User disposition:** approved explicitly on 2026-07-28 with `go ahead`
+  after independent read-only review and a scope review of the proposed UI
+  follow-up.
+- **Approved artifact:** commit
+  `67dbe521c875d5b7f0f870de39fe840e91977ccc`, containing the exact
+  pre-receipt `docs/SCHEMA.md` whose SHA-256 is
+  `d0307b0cea114a7708b9149ff31525cc4cc527e1ae2c3b13d3a73a3dd245cd`.
+- **Approved scope:** `parentNode.systemRole === "inbox"` identifies a Scratch;
+  that identity cannot use Bit-to-Node promotion regardless of current
+  Breakdown, candidate, or Chunk presence, and rejection precedes result-ID
+  allocation and every store write.
+- **Preserved boundaries:** this approval creates no Breakdown/candidate
+  deletion or migration policy and adopts no UI or visual-surface change. The
+  reviewed suggestion to add a separate UI hiding rule is not part of this
+  amendment because Task 105A owns only the repository guard and its exact
+  regression.
+- **Next legal action:** implement only the Task 105A repository guard and
+  `promotion.test.ts` regression, then stop at the Task 105A user checkpoint
+  with its `[ ]` marker unchanged.
 
 ---
 

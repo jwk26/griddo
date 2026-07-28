@@ -13,7 +13,7 @@ lifecycle_scope:
   active: [run-phase, run-task]
   craft_docs_state: complete and merged by PR #36 at main a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
   run_phase: Gate C-approved Phase 23 preparation is complete
-  run_task: Task 105A SCHEMA Hook 9 draft only after committed Task 105 acceptance 0faaa70; promotion code remains unavailable
+  run_task: Task 105A repository guard and exact promotion regression after approved SCHEMA content 67dbe52
   end_phase: fields refreshed below but lifecycle unavailable until a separate user Final Close
   expired_authority: the one-time docs-publication close is complete and may not be reused
   onboarding_commit_policy: one post-base-green commit containing only AGENTS.md and docs/CODEX_WORKFLOW_ADAPTER.md
@@ -53,8 +53,9 @@ verification_gates:
   authoritative_source: package.json scripts plus docs/PLANNING_STANDARD.md
   focused:
     - git diff --check
-    - "Task 105A SCHEMA gate: rg -n 'Bit-to-Node Promotion|systemRole|Scratch|Chunk' docs/SCHEMA.md src/lib/db/indexeddb.ts"
-    - "Task 105A SCHEMA gate: git diff --name-only 0faaa70 -- docs/SCHEMA.md"
+    - pnpm exec vitest run src/lib/db/promotion.test.ts
+    - pnpm typecheck
+    - pnpm lint
   full:
     - pnpm test
     - pnpm lint
@@ -62,7 +63,7 @@ verification_gates:
     - pnpm build
   document_validator: not configured; craft-docs owns citation, provenance, traceability, contradiction, link, and flow checks
   application_gate_scope: full gate at run-phase base; focused plus every invalidated full gate during run-task
-  user_visible_evidence: required for user-facing implementation tasks per docs/PLANNING_STANDARD.md; not used for Phase 23 data-only Tasks 101–105
+  user_visible_evidence: required for user-facing implementation tasks per docs/PLANNING_STANDARD.md; not used for Phase 23 data-only Tasks 101–105A
   conformance_tiers: Blocking violations stop close; Advisory findings are surfaced and recorded, per docs/PLANNING_STANDARD.md
   readiness_review: docs/reviews/inbox-triage-promotion-flow-review.md
 
@@ -70,9 +71,9 @@ phase_execution:
   phase: 23
   phase_tasks: [101, 102, 103, 104, 105, "105A"]
   accepted_tasks: [101, 102, 103, 104, 105]
-  current_batch: ["Task 105A SCHEMA amendment"]
-  next_gate: Task 105A SCHEMA draft user approval
-  unavailable_followup: ["Task 105A promotion implementation"]
+  current_batch: ["Task 105A repository guard and promotion regression"]
+  next_gate: Task 105A implementation checkpoint and user acceptance
+  unavailable_followup: ["Tasks 106–165", "end-phase"]
   source_mode: approved clean canonical plan and flow review merged by PR #36
   kickoff_receipt: docs/issues/Issues_Phase_23.md#gate-c-kickoff-receipt
   approved_base: a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
@@ -155,8 +156,10 @@ cleanup:
 
 - Gate C authorized the exact branch/worktree preparation and kickoff receipt;
   later task execution requires the committed prior-task acceptance boundary.
-- `$run-task` requires the committed kickoff and Task 103 acceptance receipts,
-  may execute only Task 104, and never owns branch topology or publication.
+- `$run-task` requires the committed kickoff, accepted Tasks 101–105, and the
+  approved Task 105A SCHEMA artifact at `67dbe52`; it may execute only the Task
+  105A repository guard and exact promotion regression, and never owns branch
+  topology or publication.
 - `$end-phase` is not active. Its refreshed fields are future inputs only and
   require their own close audit and user Final Close approval.
 - The completed one-time docs-publication authority is expired and cannot be

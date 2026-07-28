@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–105 accepted; Task 105A SCHEMA gate `In Progress`; promotion implementation unavailable
+> State: Tasks 101–105 accepted; Task 105A SCHEMA approved and repository implementation `In Progress`
 
 ## Status Legend
 
@@ -124,17 +124,17 @@ None at kickoff.
 
 | Field | Durable value |
 | --- | --- |
-| Task | Task 105A — SCHEMA Hook 9 amendment gate only |
-| State | `In Progress`; Task 105A marker remains open and promotion implementation is unavailable |
-| Approved scope | Modify only `docs/SCHEMA.md` for the approved Inbox-parented Scratch promotion prohibition; lifecycle state may change only in `AGENTS.md`, the adapter, and this ledger. |
+| Task | Task 105A — reject Inbox-parented Scratch promotion |
+| State | SCHEMA amendment approved at `67dbe52`; repository implementation `In Progress`; Task 105A marker remains open |
+| Approved scope | Modify only `src/lib/db/indexeddb.ts` and `src/lib/db/promotion.test.ts` for the pre-allocation/pre-write identity guard and exact regression; lifecycle state may change only in `AGENTS.md`, the adapter, and this ledger. |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
-| Recovery anchor | Task 105 acceptance `0faaa70302928a28521e49b7e9c3747033d58cdd` on `phase-23/inbox-triage-model-foundation` |
-| Implementation commit | Not authorized until the SCHEMA draft is explicitly approved |
-| Canonical impact | `In Progress`: resolve `P23-01` in SCHEMA Hook 9 without changing any code |
+| Recovery anchor | Approved SCHEMA content `67dbe521c875d5b7f0f870de39fe840e91977ccc` on `phase-23/inbox-triage-model-foundation` |
+| Implementation commit | Not yet created |
+| Canonical impact | `Reflected`: `P23-01` is now explicit in approved SCHEMA Hook 9 at `67dbe52` |
 | Issues / deviations | `P23-01` is the exact amendment owner; `P23-02` remains deferred to Task 120. No other issue or deviation is open. |
-| Next legal action | Draft and validate only the Hook 9 amendment, present its exact diff, and stop for user approval. |
+| Next legal action | Add the failing `promotion.test.ts` regression, observe RED, implement the minimum repository guard, and stop at the Task 105A checkpoint. |
 
 ## Task 105 Start Receipt
 
@@ -304,6 +304,36 @@ None at kickoff.
   canonical draft before its gate.
 - **Next legal action:** commit this start signal, draft `docs/SCHEMA.md`, then
   stop for explicit user approval before any promotion implementation.
+
+## Task 105A SCHEMA Approval And Implementation Start Receipt
+
+- **User disposition:** the user approved the unchanged Hook 9 draft on
+  2026-07-28 with `go ahead` after independent review and Codex's scope
+  recommendation.
+- **Approved canonical artifact:** `67dbe521c875d5b7f0f870de39fe840e91977ccc`
+  (`docs: amend scratch promotion boundary`), containing the exact reviewed
+  pre-receipt SCHEMA SHA-256
+  `d0307b0cea114a7708b9149ff31525cc4cc527e1ae2c3b13d3a73a3dd245cd`.
+- **Started:** `2026-07-28T16:28:16+0900`; Task 105A remains `[ ]`.
+- **Exact production scope:** modify only `src/lib/db/promotion.test.ts` and
+  `src/lib/db/indexeddb.ts`. First prove that an Inbox-parented Bit is rejected
+  even with defensive Chunk data and that all stores remain unchanged; then
+  add the minimum identity guard immediately after resolving the parent and
+  before grid checks, result-ID allocation, or any store write.
+- **Preserved behavior:** ordinary non-Inbox Bit promotion retains its current
+  behavior. Breakdown, candidate, and Chunk presence never toggles the rule.
+- **Explicitly unadopted review suggestion:** no UI-hiding rule or visual
+  change enters this batch. That would require a separately owned UI surface
+  and is not implied by repository safety.
+- **Forbidden scope:** every other code/test/UI file, Breakdown/candidate
+  deletion or migration, Task 120/122 commands, `[x]`, push, publication,
+  merge, phase close, and skill modification.
+- **Verification:** `pnpm exec vitest run src/lib/db/promotion.test.ts`,
+  `pnpm typecheck`, `pnpm lint`, and `git diff --check`; run any additionally
+  invalidated gate only with a recorded reason.
+- **Next legal action:** commit this approval/start receipt before the first
+  production write, then execute RED → minimum implementation → focused
+  and relevant full verification.
 
 ## Task 104 Start Receipt
 
@@ -807,6 +837,7 @@ reads. Do not modify `run-task` until the Phase 23 trace is complete.
 
 ## Run-Task Boundary
 
-Task 105 is `In Progress` and remains `[ ]`. Its writes are limited to the two
-repository files and four exact tests named in its start receipt. Task 105A,
-push, publication, merge, and `end-phase` remain forbidden.
+Task 105A is `In Progress` and remains `[ ]`. Its writes are limited to
+`src/lib/db/indexeddb.ts` and `src/lib/db/promotion.test.ts` after approved
+SCHEMA content `67dbe52`. UI changes, Tasks 106–165, push, publication, merge,
+and `end-phase` remain forbidden.
