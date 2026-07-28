@@ -14,6 +14,7 @@ import {
   updateNodeSchema,
   updateScratchBreakdownSchema,
   type Bit,
+  type CandidateOrphanAuditEvent,
   type Chunk,
   type CreateBit,
   type CreateChunk,
@@ -21,6 +22,7 @@ import {
   type CreateScratchBreakdown,
   type Node,
   type ScratchBreakdown,
+  type StagedCandidate,
 } from "@/lib/db/schema";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import { findItemsInBlockedZone } from "@/lib/utils/breadcrumb-zone";
@@ -93,6 +95,27 @@ export class DeadlineConflictError extends Error {
   }
 }
 
+type IndexedDBMigrationStore = "nodes" | "bits" | "scratchBreakdowns";
+type IndexedDBMigrationReason =
+  | "invalid_row"
+  | "missing_scratch_owner"
+  | "scratch_owner_not_in_inbox";
+
+export class IndexedDBMigrationError extends Error {
+  constructor(
+    public readonly store: IndexedDBMigrationStore,
+    public readonly id: string,
+    public readonly reason: IndexedDBMigrationReason,
+  ) {
+    super(`IndexedDB v4 migration failed for ${store}/${id}: ${reason}`);
+    this.name = "IndexedDBMigrationError";
+  }
+}
+
+const NODE_PERSISTED_FIELDS = nodeSchema.keyof().options;
+const BIT_PERSISTED_FIELDS = bitSchema.keyof().options;
+const BREAKDOWN_PERSISTED_FIELDS = scratchBreakdownSchema.keyof().options;
+
 const chunkUpdateSchema = chunkSchema.omit({ id: true, parentId: true }).partial();
 
 export class GridDODatabase extends Dexie {
@@ -100,6 +123,8 @@ export class GridDODatabase extends Dexie {
   bits!: Table<Bit, string>;
   chunks!: Table<Chunk, string>;
   scratchBreakdowns!: Table<ScratchBreakdown, string>;
+  stagedCandidates!: Table<StagedCandidate, string>;
+  candidateOrphanAuditEvents!: Table<CandidateOrphanAuditEvent, string>;
   settings!: Table<{ key: string; value: unknown }, string>;
 
   constructor(options?: DexieOptions) {
@@ -131,7 +156,113 @@ export class GridDODatabase extends Dexie {
           if (bit.archivedAt === undefined) bit.archivedAt = null;
         });
       });
+
+    this.version(4)
+      .stores({
+        nodes:
+          "id,parentId,deletedAt,[parentId+deletedAt],level,systemRole,archivedAt,[parentId+deletedAt+archivedAt]",
+        bits:
+          "id,parentId,deletedAt,[parentId+deletedAt],status,deadline,[parentId+status],archivedAt,[parentId+deletedAt+archivedAt]",
+        chunks: "id,parentId,[parentId+order],time,status",
+        settings: "key",
+        scratchBreakdowns:
+          "id,scratchBitId,[scratchBitId+order],[scratchBitId+createdAt]",
+        stagedCandidates:
+          "id,&sourceBreakdownId,scratchBitId,lifecycle,[scratchBitId+lifecycle],[scratchBitId+resultType+createdAt]",
+        candidateOrphanAuditEvents:
+          "id,&candidateId,sourceBreakdownId,scratchBitId,occurredAt,[scratchBitId+occurredAt]",
+      })
+      .upgrade(async (tx) => {
+        await tx.table("nodes").toCollection().modify((node) => {
+          if (node.version === undefined) node.version = 1;
+          if (node.pastDeadlineDismissed === undefined) {
+            node.pastDeadlineDismissed = false;
+          }
+        });
+        await tx.table("bits").toCollection().modify((bit) => {
+          if (bit.version === undefined) bit.version = 1;
+          if (bit.pastDeadlineDismissed === undefined) {
+            bit.pastDeadlineDismissed = false;
+          }
+        });
+        await tx.table("scratchBreakdowns").toCollection().modify((breakdown) => {
+          if (breakdown.version === undefined) breakdown.version = 1;
+        });
+
+        const nodes = await tx.table("nodes").toArray();
+        const bits = await tx.table("bits").toArray();
+        const breakdowns = await tx.table("scratchBreakdowns").toArray();
+
+        for (const node of nodes) {
+          const parsed = nodeSchema.safeParse(node);
+          if (!hasPersistedFields(node, NODE_PERSISTED_FIELDS) || !parsed.success) {
+            throw new IndexedDBMigrationError("nodes", migrationRowId(node), "invalid_row");
+          }
+        }
+        for (const bit of bits) {
+          const parsed = bitSchema.safeParse(bit);
+          if (!hasPersistedFields(bit, BIT_PERSISTED_FIELDS) || !parsed.success) {
+            throw new IndexedDBMigrationError("bits", migrationRowId(bit), "invalid_row");
+          }
+        }
+
+        const nodeById = new Map(nodes.map((node) => [migrationRowId(node), node]));
+        const bitById = new Map(bits.map((bit) => [migrationRowId(bit), bit]));
+
+        for (const breakdown of breakdowns) {
+          const parsed = scratchBreakdownSchema.safeParse(breakdown);
+          const breakdownId = migrationRowId(breakdown);
+          if (
+            !hasPersistedFields(breakdown, BREAKDOWN_PERSISTED_FIELDS) ||
+            !parsed.success
+          ) {
+            throw new IndexedDBMigrationError(
+              "scratchBreakdowns",
+              breakdownId,
+              "invalid_row",
+            );
+          }
+
+          const owner = bitById.get(parsed.data.scratchBitId);
+          if (!owner) {
+            throw new IndexedDBMigrationError(
+              "scratchBreakdowns",
+              breakdownId,
+              "missing_scratch_owner",
+            );
+          }
+          const ownerParentId = typeof owner.parentId === "string" ? owner.parentId : "";
+          const ownerParent = nodeById.get(ownerParentId);
+          if (!ownerParent || ownerParent.systemRole !== "inbox") {
+            throw new IndexedDBMigrationError(
+              "scratchBreakdowns",
+              breakdownId,
+              "scratch_owner_not_in_inbox",
+            );
+          }
+        }
+      });
   }
+}
+
+function migrationRowId(row: unknown): string {
+  if (
+    typeof row === "object" &&
+    row !== null &&
+    "id" in row &&
+    typeof row.id === "string"
+  ) {
+    return row.id;
+  }
+  return "<unknown>";
+}
+
+function hasPersistedFields(row: unknown, fields: readonly string[]): boolean {
+  return (
+    typeof row === "object" &&
+    row !== null &&
+    fields.every((field) => Object.prototype.hasOwnProperty.call(row, field))
+  );
 }
 
 export class IndexedDBDataStore implements DataStore {
