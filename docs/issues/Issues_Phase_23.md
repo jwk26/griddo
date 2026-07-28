@@ -95,16 +95,16 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | Task 102 — Install the exact atomic Dexie v4 migration |
-| State | `In Progress`; production implementation is forbidden until the focused v4 test records the expected RED |
+| State | `Implemented`; awaiting explicit user review and acceptance; Task 102 marker remains open |
 | Approved scope | Exact Task 102 batch: `indexeddb.ts`, the existing v3 upgrade test, and one new v4 upgrade test only |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
 | Recovery anchor | Accepted Task 101 boundary at `4a7865a` on `phase-23/inbox-triage-model-foundation` |
-| Implementation commit | Pending; contracted message is `feat(triage): migrate indexeddb atomically to v4` |
+| Implementation commit | `dcdc74d` — `feat(triage): migrate indexeddb atomically to v4` |
 | Canonical impact | `Reflected` — implement the already-approved SCHEMA v4 target without introducing new stores, inferred rows, or migration policy |
-| Issues / deviations | None open at start. The v3 success fixture uses non-UUID IDs that must be corrected or isolated before canonical v4 validation. |
-| Next legal action | Preserve the v3 assertions, create the v4 migration test, and observe the expected RED. Do not begin Task 103. |
+| Issues / deviations | None open. The v3 success fixture IDs were corrected without changing its assertions; independent review found one preservation-evidence advisory, repaired before commit. |
+| Next legal action | Present the Task 102 checkpoint for explicit user acceptance or rejection. Do not begin Task 103. |
 
 ## Task 102 Start Receipt
 
@@ -125,6 +125,58 @@ None at kickoff.
   src/lib/db/indexeddb.schema-v3-upgrade.test.ts
   src/lib/db/indexeddb.schema-v4-upgrade.test.ts`, then `pnpm typecheck` and
   `git diff --check`.
+
+## Task 102 Implementation Evidence
+
+### RED and repair history
+
+1. The first v4 schema test failed with `expected 3 to be 4`; the minimal
+   repair added only the exact v4 stores, indexes, and typed tables.
+2. The v1/v2/v3 preservation matrix then failed because Bit `version` and
+   `pastDeadlineDismissed` were absent; the repair added only the allowed
+   undefined-only Node/Bit/Breakdown backfills.
+3. Five invalid row/reference cases then failed because migration incorrectly
+   succeeded; the repair added structured `IndexedDBMigrationError` failures,
+   raw-row Zod validation, and Inbox Scratch-owner validation inside the same
+   Dexie upgrade transaction.
+4. Three persisted fields with Zod defaults then exposed false success. The
+   repair requires every persisted key after the two authorized backfills, so
+   defaults cannot silently manufacture other missing data.
+
+### Implemented scope
+
+- v4 declares the exact seven-store schema, including both new unique indexes;
+  both new stores start empty and no candidate or audit row is inferred.
+- v1/v2/v3 upgrades backfill only missing versions and missing Node/Bit
+  `pastDeadlineDismissed`; existing revisions, booleans, unknown fields, IDs,
+  content, order, timestamps, chunks, and settings remain unchanged.
+- Node, Bit, and Breakdown rows are validated without writing parsed output.
+  Every Breakdown must resolve to a Bit whose parent is the Inbox system Node.
+- Invalid rows and ownership references throw `{name, store, id, reason}` from
+  the upgrade transaction. Reopening through a v3 inspector proves the failed
+  upgrade leaves byte/row-equivalent legacy snapshots and no v4 stores.
+- No Task 103 revision increment, CAS, command, UI, or publication scope was
+  implemented.
+
+### GREEN evidence
+
+| Command | Exit | Relevant result |
+| --- | ---: | --- |
+| `pnpm exec vitest run src/lib/db/indexeddb.schema-v3-upgrade.test.ts src/lib/db/indexeddb.schema-v4-upgrade.test.ts` | 0 | 2 files, 16 tests passed |
+| `pnpm test` | 0 | 74 files, 517 tests passed |
+| `pnpm typecheck` | 0 | TypeScript check passed after the final preservation fixture |
+| Focused ESLint on all three Task 102 files | 0 | No warnings or errors |
+| `pnpm lint` | 0 | 0 errors; the same 11 pre-existing warnings |
+| `pnpm build` | 0 | Production build and seven routes completed; production code was unchanged after this run |
+| `git diff --check` | 0 | No whitespace errors before the implementation commit |
+
+### Review disposition
+
+- Two independent read-only reviews found no implementation blocker or Task
+  103 scope leakage.
+- The sole advisory requested explicit preservation coverage for existing Bit
+  and Breakdown revisions/booleans. The final fixture now preserves nondefault
+  values and unknown fields for Node, Bit, and Breakdown.
 
 ## Task 101 Implementation Evidence
 
@@ -202,9 +254,6 @@ None at kickoff.
 
 ## Run-Task Boundary
 
-The next lifecycle may execute Task 102 only. Before its first production
-write, `$run-task` must verify this branch/worktree/receipt and commit an
-`In Progress` start signal. It must observe the planned v4 migration failures
-before implementation, then repair only evidence-backed Task 102 scope. It may
-not begin Task 103, remove the transitional Zustand `StagedCandidate`, push,
-publish, merge, or invoke `end-phase`.
+Task 102 is implemented but not accepted. No further production write is
+legal until the user explicitly accepts or rejects this checkpoint. Task 103,
+push, publication, merge, and `end-phase` remain forbidden.
