@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–104 accepted; Task 105 not started
+> State: Tasks 101–104 accepted; Task 105 `In Progress`; Task 105A planned and unavailable
 
 ## Status Legend
 
@@ -123,17 +123,56 @@ None at kickoff.
 
 | Field | Durable value |
 | --- | --- |
-| Task | Task 104 — Build a real IndexedDB transaction and fault-injection harness |
-| State | `Closed` by explicit user acceptance; Task 104 marker is `[x]` |
-| Approved scope | Exact Task 104 batch from `docs/EXECUTION_PLAN.md`: real IndexedDB test utility, transaction rollback tests, and the smallest named-checkpoint seam only |
+| Task | Task 105 — Make Scratch aggregate hard-delete atomic and audit-preserving |
+| State | `In Progress` from the committed Task 104 acceptance boundary; Task 105 marker remains open |
+| Approved scope | Exact Task 105 batch from `docs/EXECUTION_PLAN.md`: aggregate hard-delete/cleanup owners and the four named rollback/retention test files only |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
-| Recovery anchor | Accepted Task 103 implementation `6b04c61`, evidence `df7d0d1`, and deviation correction `791a6dd` on `phase-23/inbox-triage-model-foundation` |
-| Implementation commit | `055bff0` (`test(db): prove real indexeddb rollback`) |
-| Canonical impact | `Reflected` — implement the already-approved seven-store transaction/rollback boundary without changing canonical policy |
-| Issues / deviations | None open. The Task 103 local helper remains unchanged in `revision.test.ts`. The first checkpoint wrapper exposed and repaired a Dexie async-scope regression before commit. All seven stores are mandatory scope. |
-| Next legal action | Commit this acceptance receipt. A separate `$run-task` start may then authorize Task 105 only. |
+| Recovery anchor | Task 104 acceptance `bc9d2d7` plus Task 105/105A boundary decision `f193233` on `phase-23/inbox-triage-model-foundation` |
+| Implementation commit | Not created |
+| Canonical impact | `Reflected`: implement SCHEMA Hook 6 and Scratch permanent deletion without changing policy |
+| Issues / deviations | None open. P23-01 is separately promoted to Task 105A and is forbidden in this batch. Adapter/AGENTS current-batch churn is recorded for the post-Phase-23 skill audit. |
+| Next legal action | Observe real aggregate-delete RED through the Task 104 seam, then implement only Task 105. |
+
+## Task 105 Start Receipt
+
+- **Authorized predecessor:** Task 104 acceptance at `bc9d2d7`; approved
+  Task 105/105A scope split at `f193233`.
+- **Started:** `2026-07-28T15:36:46+0900`; Task 105 remains `[ ]`.
+- **Named-skill path:** the installed `$run-task` symlink resolves to the live
+  `codex-workflow/skills/run-task` package. Its full contract and required
+  references were loaded earlier in this same Phase 23 session and remain the
+  active execution boundary.
+- **Write scope:** modify `src/lib/db/datastore.ts` and
+  `src/lib/db/indexeddb.ts`; create
+  `src/lib/db/scratch-aggregate-hard-delete.test.ts`; update only
+  `src/lib/db/cascade-hard-delete.test.ts`,
+  `src/lib/db/auto-cleanup.test.ts`, and
+  `src/lib/db/scratch-breakdowns.test.ts` for the exact Task 105 behavior.
+- **Atomic boundary:** compute and validate each complete delete closure inside
+  one real seven-store `rw` transaction before the first write. A pre-existing
+  candidate/source integrity gap returns the typed
+  `integrity_cleanup_required` result and writes nothing. Planned aggregate
+  deletion removes present source/candidate pairs without creating audit rows;
+  every pre-existing audit and unrelated aggregate remains byte-for-byte.
+- **Checkpoint boundary:** actual hard-delete and trash-cleanup methods invoke
+  the existing private synchronous checkpoint emitter after named mutations.
+  The protected Task 104 probe and public transaction surface are not widened.
+- **RED order:** first use the real Task 104 database/snapshot harness to show
+  current hard-delete leaves candidates or partial state and cannot roll back
+  after injected failures. Then prove the orphan precondition, audit retention,
+  unrelated retention, Archive exclusion, and one-transaction cleanup before
+  the minimal production repair.
+- **Forbidden scope:** SCHEMA Hook 9, `promoteBitToNode`, Task 105A, Task 120/
+  122 command or reconciliation APIs, UI, operation log/journal/outbox/queue,
+  push, merge, publication, and `end-phase`.
+- **Verification:** run the four Task 105 focused test files through
+  `pnpm exec vitest run`, then `pnpm typecheck`, `pnpm lint`,
+  `git diff --check`, and only full gates invalidated by the shared repository
+  change. This task is data/nonvisual, so rendered evidence is `None`.
+- **Next legal action:** commit this start signal, then write the failing real-
+  IDB aggregate tests before production behavior.
 
 ## Task 104 Start Receipt
 
@@ -637,7 +676,6 @@ reads. Do not modify `run-task` until the Phase 23 trace is complete.
 
 ## Run-Task Boundary
 
-Task 104 is accepted at implementation `055bff0` with evidence `88bc19a` and
-is marked `[x]`. Task 105 has not started; its writes require a separate
-bounded start receipt. Push, publication, merge, and `end-phase` remain
-forbidden.
+Task 105 is `In Progress` and remains `[ ]`. Its writes are limited to the two
+repository files and four exact tests named in its start receipt. Task 105A,
+push, publication, merge, and `end-phase` remain forbidden.

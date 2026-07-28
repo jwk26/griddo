@@ -53,8 +53,8 @@ verification_gates:
   authoritative_source: package.json scripts plus docs/PLANNING_STANDARD.md
   focused:
     - git diff --check
-    - "Task 104: pnpm exec vitest run src/lib/db/indexeddb.transaction.test.ts"
-    - "Task 104: pnpm typecheck"
+    - "Task 105: pnpm exec vitest run src/lib/db/scratch-aggregate-hard-delete.test.ts src/lib/db/cascade-hard-delete.test.ts src/lib/db/auto-cleanup.test.ts src/lib/db/scratch-breakdowns.test.ts"
+    - "Task 105: pnpm typecheck"
   full:
     - pnpm test
     - pnpm lint
@@ -69,8 +69,9 @@ verification_gates:
 phase_execution:
   phase: 23
   phase_tasks: [101, 102, 103, 104, 105]
-  accepted_tasks: [101, 102, 103]
-  current_batch: [104]
+  accepted_tasks: [101, 102, 103, 104]
+  current_batch: [105]
+  unavailable_followup: [105A]
   source_mode: approved clean canonical plan and flow review merged by PR #36
   kickoff_receipt: docs/issues/Issues_Phase_23.md#gate-c-kickoff-receipt
   approved_base: a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
