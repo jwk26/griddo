@@ -66,6 +66,8 @@ type DatabaseLike = {
   scratchBreakdowns?: TableLike<ScratchBreakdown>;
 };
 
+type IndexedDBTransactionCheckpointHook = (name: string) => undefined;
+
 const ROOT_PARENT_KEY = "__root__";
 const DEFAULT_PROMOTED_NODE_COLOR = "hsl(221, 83%, 53%)";
 const SYSTEM_NODE_ROLES = ["inbox", "archive_view"] as const satisfies readonly SystemNodeRole[];
@@ -269,7 +271,10 @@ function hasPersistedFields(row: unknown, fields: readonly string[]): boolean {
 }
 
 export class IndexedDBDataStore implements DataStore {
-  constructor(private readonly database: DatabaseLike) {}
+  constructor(
+    private readonly database: DatabaseLike,
+    private readonly onTransactionCheckpoint?: IndexedDBTransactionCheckpointHook,
+  ) {}
 
   async getNode(id: string): Promise<Node | undefined> {
     return this.database.nodes.get(id);
@@ -1620,12 +1625,39 @@ export class IndexedDBDataStore implements DataStore {
           this.database.chunks,
           this.database.settings,
           this.database.scratchBreakdowns,
+          this.database.stagedCandidates,
+          this.database.candidateOrphanAuditEvents,
         ],
         scope,
       );
     }
 
     return scope();
+  }
+
+  /** @internal Narrow test seam for proving named rollback checkpoints. */
+  protected async runTransactionCheckpointProbe<T>(
+    scope: (checkpoint: IndexedDBTransactionCheckpointHook) => Promise<T>,
+  ): Promise<T> {
+    return this.write(async () =>
+      scope((name) => this.emitTransactionCheckpoint(name)),
+    );
+  }
+
+  private emitTransactionCheckpoint(name: string): undefined {
+    if (!this.onTransactionCheckpoint) {
+      return undefined;
+    }
+    if (
+      !(this.database instanceof GridDODatabase) ||
+      !this.hasAmbientWriteTransaction()
+    ) {
+      throw new Error(
+        `IndexedDB transaction checkpoint reached outside a real rw transaction: ${name}`,
+      );
+    }
+    this.onTransactionCheckpoint(name);
+    return undefined;
   }
 
   private hasAmbientWriteTransaction(): boolean {
