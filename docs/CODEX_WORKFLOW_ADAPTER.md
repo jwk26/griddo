@@ -13,7 +13,7 @@ lifecycle_scope:
   active: [run-phase, run-task]
   craft_docs_state: complete and merged by PR #36 at main a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
   run_phase: Gate C-approved Phase 23 preparation is complete
-  run_task: Tasks 101–105 accepted; no production-code batch active pending the Task 105A SCHEMA gate
+  run_task: Task 105A SCHEMA Hook 9 draft only after committed Task 105 acceptance 0faaa70; promotion code remains unavailable
   end_phase: fields refreshed below but lifecycle unavailable until a separate user Final Close
   expired_authority: the one-time docs-publication close is complete and may not be reused
   onboarding_commit_policy: one post-base-green commit containing only AGENTS.md and docs/CODEX_WORKFLOW_ADAPTER.md
@@ -53,8 +53,8 @@ verification_gates:
   authoritative_source: package.json scripts plus docs/PLANNING_STANDARD.md
   focused:
     - git diff --check
-    - "Task 105: pnpm exec vitest run src/lib/db/scratch-aggregate-hard-delete.test.ts src/lib/db/cascade-hard-delete.test.ts src/lib/db/auto-cleanup.test.ts src/lib/db/scratch-breakdowns.test.ts"
-    - "Task 105: pnpm typecheck"
+    - "Task 105A SCHEMA gate: rg -n 'Bit-to-Node Promotion|systemRole|Scratch|Chunk' docs/SCHEMA.md src/lib/db/indexeddb.ts"
+    - "Task 105A SCHEMA gate: git diff --name-only 0faaa70 -- docs/SCHEMA.md"
   full:
     - pnpm test
     - pnpm lint
@@ -70,9 +70,9 @@ phase_execution:
   phase: 23
   phase_tasks: [101, 102, 103, 104, 105, "105A"]
   accepted_tasks: [101, 102, 103, 104, 105]
-  current_batch: []
-  next_gate: Task 105A SCHEMA Hook 9 amendment
-  unavailable_followup: ["Task 105A implementation"]
+  current_batch: ["Task 105A SCHEMA amendment"]
+  next_gate: Task 105A SCHEMA draft user approval
+  unavailable_followup: ["Task 105A promotion implementation"]
   source_mode: approved clean canonical plan and flow review merged by PR #36
   kickoff_receipt: docs/issues/Issues_Phase_23.md#gate-c-kickoff-receipt
   approved_base: a532d9e3becd5b333da8bb9ae7e1d0c6f442666f

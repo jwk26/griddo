@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–105 accepted; Task 105A pending its separate SCHEMA gate
+> State: Tasks 101–105 accepted; Task 105A SCHEMA gate `In Progress`; promotion implementation unavailable
 
 ## Status Legend
 
@@ -124,17 +124,17 @@ None at kickoff.
 
 | Field | Durable value |
 | --- | --- |
-| Task | Task 105 accepted; Task 105A pending its SCHEMA Hook 9 gate |
-| State | Task 105 explicitly accepted on 2026-07-28; no production-code batch is active |
-| Approved scope | No current production write. The next bounded scope may draft only the Task 105A SCHEMA amendment. |
+| Task | Task 105A — SCHEMA Hook 9 amendment gate only |
+| State | `In Progress`; Task 105A marker remains open and promotion implementation is unavailable |
+| Approved scope | Modify only `docs/SCHEMA.md` for the approved Inbox-parented Scratch promotion prohibition; lifecycle state may change only in `AGENTS.md`, the adapter, and this ledger. |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
-| Recovery anchor | Task 104 acceptance `bc9d2d7` plus Task 105/105A boundary decision `f193233` on `phase-23/inbox-triage-model-foundation` |
-| Implementation commit | `9c078d4a74975b0a5a52a800dae795f43210f854` (`feat(db): delete scratch aggregates atomically`) |
-| Canonical impact | `Reflected`: implement SCHEMA Hook 6 and Scratch permanent deletion without changing policy |
-| Issues / deviations | `P23-01` is promoted to the next Task 105A SCHEMA gate; `P23-02` is deferred to Task 120. Adapter/AGENTS current-batch churn remains recorded for the post-Phase-23 skill audit. |
-| Next legal action | Commit the Task 105 acceptance receipt, then start the Task 105A SCHEMA-only gate before any promotion code or test change. |
+| Recovery anchor | Task 105 acceptance `0faaa70302928a28521e49b7e9c3747033d58cdd` on `phase-23/inbox-triage-model-foundation` |
+| Implementation commit | Not authorized until the SCHEMA draft is explicitly approved |
+| Canonical impact | `In Progress`: resolve `P23-01` in SCHEMA Hook 9 without changing any code |
+| Issues / deviations | `P23-01` is the exact amendment owner; `P23-02` remains deferred to Task 120. No other issue or deviation is open. |
+| Next legal action | Draft and validate only the Hook 9 amendment, present its exact diff, and stop for user approval. |
 
 ## Task 105 Start Receipt
 
@@ -281,6 +281,29 @@ None at kickoff.
 - **Next legal action:** commit this receipt. Task 105A may then open a
   SCHEMA-only start receipt and present the Hook 9 amendment for separate user
   approval before any implementation.
+
+## Task 105A SCHEMA Gate Start Receipt
+
+- **Authorized predecessor:** Task 105 acceptance at `0faaa70`.
+- **Started:** `2026-07-28T16:02:29+09:00`; Task 105A remains `[ ]`.
+- **User authority:** the user approved the identity rule and separate-gate
+  sequence with `go ahead`, then instructed the workflow to move on after
+  accepting Task 105. This authorizes drafting, not approving, the SCHEMA
+  amendment.
+- **Exact draft scope:** amend only SCHEMA Hook 9 to state that a Bit whose
+  parent Node has `systemRole: "inbox"` is a Scratch and cannot be promoted,
+  regardless of Breakdown, candidate, or Chunk presence. Explain that Scratch
+  uses the dedicated Breakdown store rather than Hook 9's Chunk-based ordinary
+  promotion meaning.
+- **Forbidden scope:** `src/lib/db/indexeddb.ts`, `promotion.test.ts`, any other
+  code/test/UI file, inferred Breakdown/candidate deletion or migration,
+  `[x]`, push, merge, publication, and `end-phase`.
+- **Verification:** `git diff --check`; inspect the exact Hook 9 diff; compare
+  the current `systemRole`/Scratch and `promoteBitToNode` production facts;
+  require `git diff --name-only 0faaa70 -- docs/SCHEMA.md` to identify only the
+  canonical draft before its gate.
+- **Next legal action:** commit this start signal, draft `docs/SCHEMA.md`, then
+  stop for explicit user approval before any promotion implementation.
 
 ## Task 104 Start Receipt
 
