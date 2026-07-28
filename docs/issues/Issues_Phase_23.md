@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–102 accepted; Task 103 `In Progress`
+> State: Tasks 101–102 accepted; Task 103 implemented and awaiting user acceptance
 
 ## Status Legend
 
@@ -95,16 +95,16 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | Task 103 — Enforce revisions across every public and repository mutation path |
-| State | `In Progress` from the committed Task 102 acceptance boundary; Task 103 marker remains open |
+| State | `Implemented` at `6b04c61bd8e739494cd3d30db3c0e27d6a71d49a`; Task 103 marker remains open pending user acceptance |
 | Approved scope | Exact Task 103 batch from `docs/EXECUTION_PLAN.md`: revision/public-boundary code and the named mutation-path tests only |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
 | Recovery anchor | Task 102 acceptance commit `c28ea90` on `phase-23/inbox-triage-model-foundation` |
-| Implementation commit | Not created |
+| Implementation commit | `6b04c61bd8e739494cd3d30db3c0e27d6a71d49a` (`feat(db): enforce monotonic record revisions`) |
 | Canonical impact | `Reflected` — implement the already-approved SCHEMA monotonic revision/CAS boundary without changing canonical policy |
-| Issues / deviations | None open at authorization. |
-| Next legal action | Observe the planned revision/public-boundary RED, then implement only Task 103 and stop at its user checkpoint. |
+| Issues / deviations | One derived write-set deviation approved on 2026-07-28: remove nine caller-owned `mtime` values from `src/hooks/use-dnd.ts` after the Task 103 public update boundary made those inputs invalid. |
+| Next legal action | Present the committed Task 103 evidence for explicit user acceptance or rejection; Task 104 must not start first. |
 
 ## Task 103 Start Receipt
 
@@ -129,6 +129,85 @@ None at kickoff.
   listed by Task 103, then `pnpm typecheck`, `pnpm lint`, and
   `git diff --check`. Broader gates are rerun only when invalidated and the
   reason is recorded.
+
+## Task 103 Implementation Evidence
+
+### Observed RED and repair sequence
+
+1. Compile-time public-action assertions initially reported unused
+   `@ts-expect-error` directives because the hooks still exposed broad
+   `Partial<Node>` / `Partial<Bit>` inputs. The public repository and hook
+   inputs were narrowed to the approved update schemas.
+2. Direct Node and Bit revision tests showed unchanged versions after durable
+   patches. Later clusters exposed no-op delta handling, Chunk-driven status
+   transitions, lifecycle cascades/restores, system-node normalization,
+   breadcrumb relocation, and legacy Breakdown row transitions.
+3. The first focused implementation reached 18 files / 91 tests GREEN, but
+   independent review found that Node, Bit, and Breakdown read/version/write
+   sequences began outside the Dexie transaction. Deterministic real IndexedDB
+   tests then reproduced three lost-update failures: two concurrent disjoint
+   patches ended at `vN+1` and lost one field instead of retaining both at
+   `vN+2`.
+4. Independent review also found that legacy Breakdown Add/Delete changed
+   collection membership without advancing the surviving Scratch Bit. RED
+   tests reproduced Add→Delete with no owner revision advance and non-empty
+   bulk delete with no owner advance.
+5. The repair moves every surviving-record read, delta/no-op decision, version
+   derivation, and write owned by Task 103 into the same Dexie `rw`
+   transaction. Breakdown Add/Delete changes the owner revision without
+   changing its `mtime`; missing/empty repeats remain no-ops. Task 104's fault
+   injection and Task 120's `expectedVersion`/operation-result APIs remain
+   unimplemented.
+
+### Scope reconciliation and approved deviation
+
+- `src/hooks/use-grid-actions.ts` already accepted only `CreateNode` and
+  `CreateBit` at Task 103 start, so no production edit was needed; its new test
+  records that pre-existing narrow boundary rather than creating a dummy diff.
+- Narrowing `DataStore.updateNode` / `updateBit` made nine caller-owned
+  `mtime` properties in `src/hooks/use-dnd.ts` invalid. Removing them is a
+  derived compatibility repair: the Task 101 update schemas already stripped
+  `mtime`, and the repository remains the sole owner of whether each patch
+  updates it. This path was not named in the start receipt; after the deviation
+  was surfaced, the user instructed the session to continue and finish Task
+  103 on 2026-07-28. That instruction approves this single derived path for the
+  implementation commit and no broader write-set expansion.
+- No `schema.ts`, Task 104 checkpoint seam/harness, Task 105 aggregate
+  candidate/audit behavior, or Task 120 command/reconciliation behavior is in
+  the Task 103 diff.
+
+### `run-task` pilot findings from the sweep
+
+- Named-skill discovery/loading succeeded for Task 103, unlike Tasks 101–102.
+- A sweep-style invariant task can touch a small production surface but a wide
+  regression surface. Task 103 reached 23 changed paths before its final
+  review, so one late concurrency defect left the whole batch unconfirmed.
+  Future `run-task` planning should offer internal acceptance checkpoints for
+  sweep tasks without turning each checkpoint into a separate user gate.
+- The dependency graph made Tasks 103 and 104 parallel after Task 102, but the
+  numeric next-task path did not surface that choice. Task 104 first would have
+  provided a reusable real-IDB harness, while switching after Task 103 became
+  dirty would have mixed two commit contracts. Future task selection should
+  present all dependency-ready siblings before work begins.
+- Sequential FakeTable tests proved arithmetic but could not prove Dexie
+  serialization. The late real-IDB RED is a concrete signal that verification
+  selection must follow the claimed invariant, not only the named file list.
+
+### Verification evidence
+
+| Command | Exit | Relevant result |
+| --- | ---: | --- |
+| Exact Task 103 focused set | 0 | 18 files, 91 tests passed after both blocker repairs |
+| `pnpm typecheck` | 0 | Public update boundaries and production types passed |
+| `pnpm lint` | 0 | 0 errors; the same 11 pre-existing warnings |
+| `pnpm test` | 0 | 78 files, 531 tests passed |
+| `pnpm build` | 0 | Production build completed; seven routes generated |
+| `git diff --check` | 0 | No whitespace errors |
+
+The implementation is committed at
+`6b04c61bd8e739494cd3d30db3c0e27d6a71d49a`; user acceptance is still
+pending. Task 103 remains `[ ]`, and Task 104 must not start before that
+acceptance checkpoint closes.
 
 ## Task 102 Start Receipt
 
