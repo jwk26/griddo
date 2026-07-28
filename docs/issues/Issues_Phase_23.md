@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–105A accepted; Phase 23 production batch complete; close preparation pending
+> State: Tasks 101–105A accepted; Phase 23 close candidate audited; explicit Final Close pending
 
 ## Status Legend
 
@@ -95,7 +95,7 @@ None at kickoff.
 | ID | Finding | State | Disposition |
 | --- | --- | --- | --- |
 | `P23-01` | SCHEMA Hook 9 predates the dedicated Scratch Breakdown store and does not state whether Inbox-parented Scratch Bits may use Bit-to-Node promotion. | `Promoted to Execution Plan` | The issue was surfaced as `Awaiting User Decision`; on 2026-07-28 the user approved the identity rule that any Bit parented to the Inbox system Node is a Scratch and cannot be promoted. Task 105 remains unchanged. Task 105A owns the separate SCHEMA gate and later repository regression. |
-| `P23-02` | `src/hooks/use-scratch-breakdowns.test.tsx` retains a test-only mock and no-call assertion for the retired `deleteScratchBreakdownsByScratch` API. | `Deferred` | Production interface and implementation are already removed; the stale mock has no runtime effect and is outside Task 105's exact file contract. Task 120's planned hook/command replacement owns its removal. |
+| `P23-02` | `src/hooks/use-scratch-breakdowns.test.tsx` retains a test-only mock and no-call assertion for the retired `deleteScratchBreakdownsByScratch` API. | `Deferred` | Production interface and implementation are already removed; the stale mock has no runtime effect and is outside Task 105's exact file contract. Task 136 is the first future task that owns this hook/test and now explicitly owns its removal. |
 | `P23-03` | A defensive Scratch can currently acquire Chunk rows through the repository, causing the global Bit detail popup's `hasChunks` gate to offer Promote even though Task 105A now rejects the operation safely. | `Promoted to Execution Plan` | The user accepted this as a later UX visibility issue, not Task 105A scope. Task 130 now owns the exact `bit-detail-popup.tsx`/test guard: Inbox-parented Scratch never shows Promote, while ordinary eligible Bits retain it. |
 
 ### Task 105 / Task 105A Boundary Decision Receipt
@@ -126,7 +126,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | None; Tasks 101–105A are accepted |
-| State | Phase 23 production batch complete; close preparation pending; no production write active |
+| State | Phase 23 close candidate audited; explicit Final Close pending; no production write active |
 | Approved scope | No current `$run-task` production scope. Phase-close and post-phase workflow improvements require their own declared lifecycle/work order. |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
@@ -134,8 +134,8 @@ None at kickoff.
 | Recovery anchor | Task 105A implementation `45cfec5` plus evidence `76f04f7` on `phase-23/inbox-triage-model-foundation` |
 | Implementation commit | `45cfec5b26d1dca38c0a5588f359116ca57b29c7` (`fix(db): reject Scratch bit promotion`) |
 | Canonical impact | `Reflected`: `P23-01` is now explicit in approved SCHEMA Hook 9 at `67dbe52` |
-| Issues / deviations | `P23-01` is reflected and Task 105A accepted; `P23-02` remains deferred to Task 120; `P23-03` is promoted to exact Task 130 ownership. |
-| Next legal action | Commit the Task 105A acceptance receipt, then perform only the separately authorized Phase 23 close-preparation/workflow-audit work. Do not start Task 106, push, merge, publish, or invoke `end-phase`. |
+| Issues / deviations | `P23-01` is reflected and Task 105A accepted; `P23-02` is deferred to exact Task 136 ownership; `P23-03` is promoted to exact Task 130 ownership. |
+| Next legal action | Present the exact detached close candidate and publication transaction for explicit user Final Close. Do not start Task 106, push, merge, publish, or clean any branch/worktree before that approval. |
 
 ## Task 105 Start Receipt
 
@@ -274,7 +274,8 @@ None at kickoff.
   promotion code.
 - **Accepted advisory:** `P23-02` is test-only stale mock residue outside this
   task's file contract. It changes no production surface and is deferred to
-  Task 120's hook/command replacement rather than expanding Task 105.
+  Task 136, the first owner of the hook/test replacement, rather than
+  expanding Task 105. (The close audit corrected the earlier Task 120 pointer.)
 - **Boundary:** this accepts only Task 105 aggregate hard-delete/cleanup and
   writes its `[x]`. It does not approve the Task 105A SCHEMA draft or code,
   Task 120/122 commands, push, merge, publication, phase close, or skill
@@ -381,7 +382,7 @@ None at kickoff.
   improvement rather than modifying the skill during the phase.
 - **Checkpoint buckets:** `Visible now: None` (repository-only guard under a UI
   state that normally has no promotion action); `Review now: Task 105A exact
-  repository behavior and evidence`; `Planned later: P23-02 at Task 120 plus
+  repository behavior and evidence`; `Planned later: P23-02 at Task 136 plus
   post-Phase-23 skill/bootstrap audit`; `Unowned: None`.
 - **State:** `Implemented`; Task 105A remains `[ ]`. No push, merge,
   publication, phase close, or next task has started.
@@ -925,3 +926,72 @@ reads. Do not modify `run-task` until the Phase 23 trace is complete.
 Tasks 101–105A are accepted and no `$run-task` production write is active.
 `P23-03` is owned by future Task 130. Tasks 106–165, push, publication, merge,
 and `end-phase` remain unavailable until their own approved lifecycle gates.
+
+## Phase 23 Close Audit
+
+### Identity, ownership, and acceptance
+
+- **Pinned pre-close SHA:**
+  `48e9937986bfa46e4cb5ad1201be8d2e1a67e91c` on
+  `phase-23/inbox-triage-model-foundation`, with parent base
+  `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` from `origin/main`.
+- Tasks 101, 102, 103, 104, 105, and 105A each have a user-owned `[x]`, an
+  implementation/evidence boundary, and an acceptance receipt. No Task
+  106–165 marker changed and no later production task started.
+- The base-to-head diff is owned by the approved Phase 23 data/repository
+  implementation and tests, the approved SCHEMA Hook 9 amendment, and its
+  workflow/receipt documents. No unrelated or future implementation is mixed
+  into the phase.
+- User-visible evidence is not applicable: Tasks 101–105A change persistence,
+  migration, transaction, retention, and repository safety only. They change
+  no rendered surface.
+
+### Fresh terminal evidence
+
+| Command | Exit | Result |
+| --- | ---: | --- |
+| `pnpm test` | 0 | 80 test files / 554 tests passed |
+| `pnpm lint` | 0 | 0 errors; the same 11 pre-existing warnings |
+| `pnpm typecheck` | 0 | TypeScript check passed |
+| `pnpm build` | 0 | Production build passed; seven routes generated |
+| `git diff --check` | 0 | No whitespace errors |
+
+### Architecture conformance
+
+| Governing rule | Affected evidence | Tier | Disposition |
+| --- | --- | --- | --- |
+| DataStore facade and hook boundary | Production Dexie access remains in `src/lib/db/indexeddb.ts`; hook imports remain `liveQuery` only. New direct Dexie imports are test harnesses. | Blocking | Pass |
+| Zod write boundary and system-managed fields | `schema.ts`, public create/update types, repository constructors, and schema/type tests exclude caller-owned revision/system fields and validate repository writes. | Blocking | Pass |
+| Monotonic CAS / ABA protection | Task 103 revision sweep and real IndexedDB concurrency tests cover direct, cascade, migration, promotion, and Breakdown-owner paths. | Blocking | Pass |
+| Atomic complete postconditions | Task 104 proves seven-store rollback with real IndexedDB; Task 105 uses one planned aggregate transaction and preserves audit evidence. Commands intentionally owned by Tasks 120–126 remain explicit future scope, not an early Phase 23 claim. | Blocking | Pass for Phase 23-owned foundation; future commands remain assigned |
+| No general operation-log shortcut | No operation log, journal, outbox, offline queue, or general mutation history was added. `candidateOrphanAuditEvents` remains narrow integrity evidence. | Blocking | Pass |
+| Durable staging and Scratch ownership | Dexie v4 lands exact `stagedCandidates`, `candidateOrphanAuditEvents`, and dedicated `scratchBreakdowns`; migration starts new stores empty and rejects invalid ownership. | Blocking | Pass |
+| Scratch promotion boundary | Approved SCHEMA Hook 9 and `promoteBitToNode` reject Inbox-parented Scratch before ID allocation or writes. | Blocking | Pass |
+| Future command, Explorer, mounted-session, decision-prerequisite, and theme rules | Exact owning Tasks 120–165 remain open and no Phase 23 diff claims or implements those surfaces. | Blocking | Explicitly assigned; not a Phase 23 violation |
+| File organization | New schema, database, harness, and regression files remain with their declared owners. | Advisory | Pass |
+| Local-first presentation | No presentation behavior changed. | Advisory | Not applicable |
+
+Blocking violations: **0**. Advisory violations: **0**.
+
+### Issue and handoff reconciliation
+
+- `P23-01` is reflected in approved SCHEMA Hook 9 and implemented by accepted
+  Task 105A.
+- `P23-02` is deferred to Task 136, the first task that modifies
+  `use-scratch-breakdowns.ts` and its test; both the active plan and central
+  follow-up index carry the same owner.
+- `P23-03` is promoted to Task 130's exact Bit-detail visibility guard and is
+  also discoverable from the central follow-up index.
+- The adapter's machine-local absolute paths and named-skill discovery findings
+  are retained for the separately planned post-merge workflow-v2 pass. Phase
+  24 must not start until that rollout and the GridDO adapter migration are
+  verified.
+- Because the committed adapter still points at the Phase 23 feature worktree,
+  Final Close must preserve the local feature branch/worktree until adapter-v2
+  migration. The remote feature ref may be deleted after merge proof. Local
+  cleanup becomes a later separately guarded operation.
+
+**Next legal action:** present one exact Final Close packet pinning candidate
+A, its diff hash, the future receipt payload, publication metadata, and the
+preserve-local cleanup rule. This audit is not the Final Close receipt and
+grants no push, PR, merge, or deletion authority.

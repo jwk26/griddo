@@ -37,6 +37,8 @@ It is **not** the source of truth for issue details. The source remains each `do
 | `Issues_Phase_20.md` | ISSUE-20-04 | Deferred/Behavior | Inbox and Archive system Nodes should not receive normal NodeCard aging visual treatment. | Exclude `systemRole !== null` Nodes from aging filter in a focused behavior fix. |
 | `Issues_Phase_21.md` | ISSUE-21-01 | Process/Low | Sequential Codex A→B execution: B's scope verification relied on `git status` alone after A left uncommitted changes — cannot distinguish B's writes from A's. | Save `git diff --name-only` baseline before B launches, or commit A before B. |
 | `Issues_Phase_21.md` | ISSUE-21-03 | UX/Low | Weekly header now shows `"June 2026"` instead of date range; cross-month weeks lose date-range information. Recipe canonical, intentional tradeoff. | Post-Phase 21 UX review — assess whether date-range label is needed alongside month name. |
+| `Issues_Phase_23.md` | P23-02 | Test maintenance | `use-scratch-breakdowns.test.tsx` retains a mock/no-call assertion for the retired `deleteScratchBreakdownsByScratch` API. | Remove it in Task 136, the first task that owns the hook and test replacement. |
+| `Issues_Phase_23.md` | P23-03 | Inbox/Triage UX | A defensive Inbox-parented Scratch with Chunk data can expose Promote in the global Bit detail popup even though the repository safely rejects it. | Task 130 owns the exact popup visibility guard while preserving ordinary Bit promotion. |
 
 ## Resolved Historical Deferrals
 

@@ -7,8 +7,13 @@
 > This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
 > its supersession rules. It accepts no phase, task, implementation, branch,
 > publication, or completion state.
-> **Task markers:** every task is open (`[ ]`). A task may be checked only after its own observable acceptance and verification evidence is explicitly accepted by the user.
-> **Execution lifecycle:** `run-phase`, `run-task`, and `end-phase` remain unavailable under the current Codex adapter. Approval of this document does not itself authorize implementation, Git lifecycle work, or publication.
+> **Task markers:** Tasks 101–105A were explicitly accepted and are archived as
+> Phase 23. Tasks 106–165 remain open (`[ ]`) and may be checked only after
+> their own observable acceptance and verification evidence is explicitly
+> accepted by the user.
+> **Execution lifecycle:** Phase 23 execution is complete. Phase 24 still
+> requires its own approved kickoff; this planning receipt alone does not
+> authorize later implementation, Git lifecycle work, or publication.
 
 ## Goal
 
@@ -84,13 +89,13 @@ The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were exclu
 
 | Area | Current status | Smallest blocker / next condition |
 |---|---|---|
-| Document approval | `PENDING_USER_APPROVAL` | User approves this exact proposal and a durable receipt is recorded separately. |
-| Execution lifecycle | `BLOCKED_OTHER` | Separately onboard and approve `run-phase`, `run-task`, and `end-phase`. |
-| Data foundations | Dependency-ready after document and lifecycle gates | Task 101 is the first code root after plan approval and separately approved execution lifecycle onboarding. |
+| Document approval | `APPROVED` | The approval receipt above remains the planning authority. |
+| Execution lifecycle | Phase 23 complete; Phase 24 not started | Phase 24 requires a separate `run-phase` kickoff after the post-Phase-23 workflow rollout. |
+| Data foundations | `COMPLETED` | Tasks 101–105A are accepted and recorded in the Phase 23 archive. |
 | Decision prerequisites | Runnable non-code lane after plan approval | Tasks 106–119 collect 14 independently executable DP receipts for 12 VQs. |
 | Headless/base UI | Dependency-ready after document and lifecycle gates | Tasks 127–137, 139, 142, 145–146, 149, 152, 155–156, 159, and 161 follow only their named data/headless prerequisites. |
 | VQ realization | `BLOCKED_PENDING_USER_DECISIONS` | Each realization task resumes only from its exact DP receipt. |
-| Full close | Not ready | Tasks 101–164 complete, all required DP receipts accepted, then Task 165 passes. |
+| Full close | Not ready | Tasks 106–164 complete, all required DP receipts accepted, then Task 165 passes on top of the archived Phase 23 foundation. |
 
 ## Dependency Graph
 
@@ -124,7 +129,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 
 | Phase | Status | Scope | Tasks | Dependency-aware readiness |
 |---|---|---|---|---|
-| Phase 23 | Proposed | Model, v4 migration, revisions, real transaction harness, aggregate deletion, stale Scratch-promotion guard | 101–105 + 105A | Code root after plan and lifecycle approval; 105A is an approved maintenance insertion that does not renumber downstream tasks. |
+| Phase 23 | Completed | [Model, v4 migration, revisions, real transaction harness, aggregate deletion, and Scratch-promotion guard](execution-plan/archive/phase-23.md) | 101–105 + 105A | Accepted and archived; downstream tasks consume this completed foundation. |
 | Phase 24 | Proposed | Fourteen user-owned DP receipts covering twelve VQs | 106–119 | Logical parallelism; shared document writes use one mutex and create no cross-VQ dependency. |
 | Phase 25 | Proposed | Eleven authoritative commands plus Archive recovery | 120–126 | Follows the exact independent data DAG, not Phase 24 completion. |
 | Phase 26 | Proposed | Lifetime/copy/theme foundations and source-backed base surfaces | 127–135 | Individual data dependencies only. |
@@ -291,7 +296,12 @@ Responsive/mobile redesign remains excluded; active implementation targets the d
 
 ---
 
-## Phase 23 — Model, Migration, Transactions, And Retention
+## Phase 23 — Model, Migration, Transactions, And Retention (Completed)
+
+> **Archived:** completion-time truth is recorded in
+> [`docs/execution-plan/archive/phase-23.md`](execution-plan/archive/phase-23.md).
+> The accepted task detail remains inline in this approved multi-phase plan for
+> receipt continuity and is historical, not an active task surface.
 
 ### Task 101: [x] Land the authoritative model and typecheck-compatible constructors
 
@@ -415,6 +425,17 @@ or errors and no new warning.
 **Commit contract:** the approved Hook 9 amendment/receipt is one documentation
 commit; the repository guard and exact promotion regression are a later narrow
 code commit; `fix(db): reject Scratch bit promotion`.
+
+#### Phase 23 Notes
+
+- Integrate Tasks 101–105A as one phase unit; Task 102 closes Task 101's
+  temporary legacy-row migration risk, so intermediate cherry-picks are not a
+  supported release state.
+- `P23-02` is deferred to exact Task 136 hook/test ownership; `P23-03` is
+  promoted to Task 130's defensive Bit-detail visibility guard.
+- The real-project lifecycle trace is retained for the post-merge workflow-v2
+  pass. Phase 24 must not start until that rollout and GridDO adapter migration
+  are verified.
 
 ---
 
@@ -944,11 +965,11 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 ### Task 136: [ ] Connect headless Add and Delete interaction behavior
 
-**Files and actions:** create mounted-page `src/hooks/use-triage-operation-lock.ts` and `.test.tsx`; modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/scratch-pool.tsx` and `.test.tsx`, and `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx`. The Workspace-mounted owner exposes synchronous `acquire(kind, operationId)`, `activeOperation`, and terminal `release` for `add|delete|edit|stage|unstage|placement|undo|archive`; acquisition occurs before any asynchronous gap, rejects a duplicate or competing owner, queues nothing, survives pending/unknown/reconciling, and releases only on terminal `applied|not_applied|rejected|conflict`. Its single signal locks Scratch switch, internal route/browser exit, Edit, Placement, Undo, Archive, Cancel/Escape, and duplicate action. Wire Add/Delete acquisition plus base Breakdown Cancel/Escape/duplicate gating and Pool Scratch-switch gating here; Tasks 137, 139, 145, 152, 156, and 161 wire the remaining exact consumers. Dispatch Task 120 Add/Delete commands, retain authoritative rows/drafts through pending or unknown outcomes, submit Add only by Enter or explicit Add, scroll a confirmed row into view, and restore focus after confirmed Delete in the order next row → previous row → Add input → Context. Expose typed operation state slots without choosing `VQ-05` appearance.
+**Files and actions:** create mounted-page `src/hooks/use-triage-operation-lock.ts` and `.test.tsx`; modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/scratch-pool.tsx` and `.test.tsx`, and `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx`. Remove the retired test-only `deleteScratchBreakdownsByScratch` mock and its now-vacuous no-call assertion from `src/hooks/use-scratch-breakdowns.test.tsx` (`P23-02`) while replacing that hook's legacy mutation surface. The Workspace-mounted owner exposes synchronous `acquire(kind, operationId)`, `activeOperation`, and terminal `release` for `add|delete|edit|stage|unstage|placement|undo|archive`; acquisition occurs before any asynchronous gap, rejects a duplicate or competing owner, queues nothing, survives pending/unknown/reconciling, and releases only on terminal `applied|not_applied|rejected|conflict`. Its single signal locks Scratch switch, internal route/browser exit, Edit, Placement, Undo, Archive, Cancel/Escape, and duplicate action. Wire Add/Delete acquisition plus base Breakdown Cancel/Escape/duplicate gating and Pool Scratch-switch gating here; Tasks 137, 139, 145, 152, 156, and 161 wire the remaining exact consumers. Dispatch Task 120 Add/Delete commands, retain authoritative rows/drafts through pending or unknown outcomes, submit Add only by Enter or explicit Add, scroll a confirmed row into view, and restore focus after confirmed Delete in the order next row → previous row → Add input → Context. Expose typed operation state slots without choosing `VQ-05` appearance.
 
 **Dependencies:** Tasks 120, 128, 130, and 132.
 
-**Authority / flows:** `UF-07`, `UF-11`, `UF-12`; `AF-02`, `AF-07`; `NEG-09`.
+**Authority / flows:** `P23-02`; `UF-07`, `UF-11`, `UF-12`; `AF-02`, `AF-07`; `NEG-09`.
 
 **Recipe:** [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md).
 
@@ -956,7 +977,7 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 **Verification:** focused operation-lock/Breakdown/Workspace/Pool/hook tests; assert every operation kind against the complete mutual-exclusion matrix and terminal release contract, then run Enter/Add, blur, duplicate/competing intent, Scratch switch, Cancel/Escape, unknown reconcile, failed Delete, and confirmed focus paths in the canonical route and record interactions/focus in `docs/verification/inbox-triage/task-136.md`; `pnpm typecheck`.
 
-**Commit contract:** mounted-page operation lock, headless Add/Delete adapter, exact owner tests, and Task 136 evidence only; `feat(triage): connect locked breakdown commands`.
+**Commit contract:** mounted-page operation lock, headless Add/Delete adapter, the exact `P23-02` stale-test cleanup, owner tests, and Task 136 evidence only; `feat(triage): connect locked breakdown commands`.
 
 ### Task 137: [ ] Build headless conditional editor and blocker state
 
@@ -1505,7 +1526,9 @@ This register is complete for every exact path declared by two or more tasks. Ev
 
 - **Next planned phase:** Phase 34. Phases 32 and 33 are reserved and receive no tasks.
 - **Next planned task:** Task 166.
-- Active graph count: 9 implementation phases (23–31), 65 open tasks (101–165), 2 reserved phase numbers (32–33).
+- Active graph count: 8 open implementation phases (24–31), 60 open tasks
+  (106–165), 1 completed archive (Phase 23 with Tasks 101–105A), and 2
+  reserved phase numbers (32–33).
 - The document is **user-approved for planning authority** under the receipt at
-  the top of this file; every task remains open and no implementation state is
-  accepted.
+  the top of this file; Tasks 101–105A are accepted and archived, while Tasks
+  106–165 remain open.

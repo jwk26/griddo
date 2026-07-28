@@ -10,16 +10,17 @@ relative paths resolve from `repository_root`.
 repository_root: /Users/jwk/Documents/griddo2-codex-phase-23-model-foundation
 
 lifecycle_scope:
-  active: [run-phase, run-task]
+  active: []
   craft_docs_state: complete and merged by PR #36 at main a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
-  run_phase: Gate C-approved Phase 23 preparation is complete
-  run_task: Tasks 101–105A are accepted; no production write is active
-  end_phase: fields refreshed below but lifecycle unavailable until a separate user Final Close
+  run_phase: Phase 23 preparation and execution are complete; Phase 24 requires a separate kickoff
+  run_task: Tasks 101–105A are accepted and archived; no production write is active
+  end_phase: no standing authority; the receipt-pinned Phase 23 Final Close transaction is one-time only
   expired_authority: the one-time docs-publication close is complete and may not be reused
   onboarding_commit_policy: one post-base-green commit containing only AGENTS.md and docs/CODEX_WORKFLOW_ADAPTER.md
   commit_policy: run-phase may commit the approved entrypoint and kickoff receipt; run-task follows its exact task and ledger commit contracts
   checkpoint_policy: require a committed clean receipt before each lifecycle handoff
-  task_acceptance_policy: Tasks 101–105A accepted; Tasks 106–165 remain open; only explicit user acceptance may write `[x]`
+  task_acceptance_policy: Tasks 101–105A accepted and archived; Tasks 106–165 remain open; only explicit user acceptance may write `[x]`
+  post_close_adapter_migration: required before Phase 24; move machine-local runtime facts out of the committed adapter and verify workflow-v2 bootstrap
 
 canonical_documents:
   authority_order: [schema, spec, design, execution, planning_standard, workflow]
@@ -72,8 +73,8 @@ phase_execution:
   phase_tasks: [101, 102, 103, 104, 105, "105A"]
   accepted_tasks: [101, 102, 103, 104, 105, "105A"]
   current_batch: []
-  next_gate: Phase 23 close-preparation audit; end-phase still requires separate user Final Close
-  unavailable_followup: ["Tasks 106–165", "end-phase"]
+  next_gate: post-merge workflow-v2 rollout and GridDO adapter migration, then a separate Phase 24 kickoff
+  unavailable_followup: ["Tasks 106–165", "Phase 24 run-phase"]
   source_mode: approved clean canonical plan and flow review merged by PR #36
   kickoff_receipt: docs/issues/Issues_Phase_23.md#gate-c-kickoff-receipt
   approved_base: a532d9e3becd5b333da8bb9ae7e1d0c6f442666f
@@ -105,7 +106,7 @@ craft_docs:
     flow_review: flow-review/phase-23-flow-review.reviewed-418b613d.md@418b613d45685ecaf9fae374b49b370813042e73ecdc71e2ae92bea08ed1e625
 
 git:
-  scope: Gate C-approved Phase 23 branch/worktree preparation and receipt-gated task execution; no publication authority
+  scope: completed Phase 23 execution identity; publication exists only through the one-time receipt-pinned Final Close transaction
   remote: origin
   remote_url: https://github.com/jwk26/griddo.git
   default_branch: main
@@ -123,10 +124,10 @@ git:
   primary_integration_policy: keep clean on main and refresh origin/main before integration or close; never repurpose another worktree
 
 publication:
-  scope: refreshed for the current feature branch but inactive until a separate end-phase Final Close
+  scope: one-time Phase 23 Final Close only; no reusable publication authority
   provider: GitHub repository jwk26/griddo
   command_or_adapter: gh CLI
-  status_evidence: refresh fetched refs and GitHub PR/check policy during future end-phase; Gate C observed no remote feature ref
+  status_evidence: 2026-07-28 refresh found origin/main at a532d9e3, no remote feature ref, no matching PR, no branch protection, and no repository workflows
   pr_create_or_reuse: after Final Close, reuse exactly one matching open PR only when approved head/base match; otherwise create one and stop on ambiguity
   pr_base: main
   pr_head: phase-23/inbox-triage-model-foundation at the future receipt-pinned head
@@ -144,26 +145,28 @@ archive:
   reusable_learnings: docs/execution-plan/LEARNINGS.md
 
 cleanup:
-  scope: refreshed for future end-phase but inactive until merge and integration proofs
+  scope: remote cleanup only in Phase 23 Final Close; preserve local identity until adapter-v2 migration
   remote_branch: after Final Close and proven merge, delete only phase-23/inbox-triage-model-foundation without force
-  local_branch: from the clean integration worktree, delete only the proven merged active phase branch with `git branch -d`
-  worktree: remove only /Users/jwk/Documents/griddo2-codex-phase-23-model-foundation when clean and proven merged; preserve it on any guard failure
+  local_branch: preserve phase-23/inbox-triage-model-foundation until the post-merge adapter-v2 migration is complete; later cleanup requires a separate guarded action
+  worktree: preserve /Users/jwk/Documents/griddo2-codex-phase-23-model-foundation until the post-merge adapter-v2 migration is complete; later removal must be clean, proven merged, and non-force
   final_close_receipt: docs/issues/Issues_Phase_23.md#final-close-receipt
   recovery: preserve successful merge and all unsafe cleanup targets if any cleanup proof fails
 ```
 
 ## Runtime boundaries
 
-- Gate C authorized the exact branch/worktree preparation and kickoff receipt;
-  later task execution requires the committed prior-task acceptance boundary.
-- `$run-task` produced the accepted Task 105A implementation at `45cfec5` from
-  the approved SCHEMA artifact at `67dbe52`. Tasks 101–105A are accepted and no
-  further production write is active. `$run-task` never owns branch topology
-  or publication.
-- `$end-phase` is not active. Its refreshed fields are future inputs only and
-  require their own close audit and user Final Close approval.
+- Gate C and `$run-task` produced the accepted Phase 23 implementation through
+  Task 105A at `45cfec5`, using the approved SCHEMA artifact at `67dbe52`.
+  Tasks 101–105A are archived and no production write is active.
+- Phase 23 Final Close is a one-time receipt-pinned transaction, not standing
+  `$end-phase` authority. Phase 24 remains unavailable until workflow-v2 and
+  the GridDO adapter migration are verified and a separate kickoff is approved.
 - The completed one-time docs-publication authority is expired and cannot be
   treated as Phase 23 publication permission.
 - The historical pilot is retired and is not an implementation input.
 - External evidence is read-only and SHA-pinned. Its prior approvals do not
   replace production document gates.
+- The committed adapter still contains machine-local runtime paths from this
+  pilot. Preserve the named local feature worktree/branch after merge; migrate
+  those facts to runtime discovery before Phase 24, then perform any local
+  cleanup under a separate proof.

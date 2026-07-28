@@ -1,5 +1,15 @@
 # Flow-Trace Review — Phase 23: Inbox / Triage Persistence & Atomic Command Foundation
 
+> **Historical / superseded review.** This file reviewed the retired pre-Fresh
+> Phase 23 plan and must not be used as current canonical or conformance
+> evidence. In particular, its unversioned-Node and old Task 101–105 ownership
+> statements conflict with the approved SCHEMA and the completed clean plan.
+> Current planning-flow authority is
+> [`inbox-triage-promotion-flow-review.md`](inbox-triage-promotion-flow-review.md);
+> completion-time Phase 23 conformance is recorded in
+> [`Issues_Phase_23.md#phase-23-close-audit`](../issues/Issues_Phase_23.md#phase-23-close-audit)
+> and the [Phase 23 archive](../execution-plan/archive/phase-23.md).
+
 **Reviewed:** 2026-07-25  
 **Reviewer:** Fresh read-only Codex review, with the findings independently checked against source by the primary Codex session  
 **Inputs:** `docs/PLANNING_STANDARD.md` §§3–4; `docs/SCHEMA.md`; `docs/SPEC.md`; Phase 23 / Tasks 101–105 in `docs/EXECUTION_PLAN.md`; current source and focused tests named by those tasks
