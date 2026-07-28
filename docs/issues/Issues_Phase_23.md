@@ -3,7 +3,7 @@
 > Branch: `phase-23/inbox-triage-model-foundation`  
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-23-model-foundation`  
 > Kickoff date: 2026-07-28  
-> State: Tasks 101–105 accepted; Task 105A SCHEMA approved and repository implementation `In Progress`
+> State: Tasks 101–105 accepted; Task 105A `Implemented` awaiting user acceptance
 
 ## Status Legend
 
@@ -125,16 +125,16 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | Task 105A — reject Inbox-parented Scratch promotion |
-| State | SCHEMA amendment approved at `67dbe52`; repository implementation `In Progress`; Task 105A marker remains open |
-| Approved scope | Modify only `src/lib/db/indexeddb.ts` and `src/lib/db/promotion.test.ts` for the pre-allocation/pre-write identity guard and exact regression; lifecycle state may change only in `AGENTS.md`, the adapter, and this ledger. |
+| State | `Implemented` at `45cfec5`; awaiting user acceptance while the Task 105A marker remains open |
+| Approved scope | No current production write. Review only the exact `src/lib/db/indexeddb.ts` and `src/lib/db/promotion.test.ts` Task 105A implementation plus its evidence. |
 | Kickoff receipt | [`Gate C Kickoff Receipt`](#gate-c-kickoff-receipt) at commit `b22c7a421bf0087e8f0649e66a51ed22bc022259` |
 | Approved base | `a532d9e3becd5b333da8bb9ae7e1d0c6f442666f` |
 | Entrypoint SHA | `5b43539986b2f857570f77b1ee153ff6b2341845` |
 | Recovery anchor | Approved SCHEMA content `67dbe521c875d5b7f0f870de39fe840e91977ccc` on `phase-23/inbox-triage-model-foundation` |
-| Implementation commit | Not yet created |
+| Implementation commit | `45cfec5b26d1dca38c0a5588f359116ca57b29c7` (`fix(db): reject Scratch bit promotion`) |
 | Canonical impact | `Reflected`: `P23-01` is now explicit in approved SCHEMA Hook 9 at `67dbe52` |
 | Issues / deviations | `P23-01` is the exact amendment owner; `P23-02` remains deferred to Task 120. No other issue or deviation is open. |
-| Next legal action | Add the failing `promotion.test.ts` regression, observe RED, implement the minimum repository guard, and stop at the Task 105A checkpoint. |
+| Next legal action | Present the Task 105A checkpoint and wait for explicit user acceptance or targeted rejection. Do not write `[x]` or begin Phase 23 close. |
 
 ## Task 105 Start Receipt
 
@@ -334,6 +334,56 @@ None at kickoff.
 - **Next legal action:** commit this approval/start receipt before the first
   production write, then execute RED → minimum implementation → focused
   and relevant full verification.
+
+## Task 105A Implementation Evidence
+
+- **Implementation commit:** `45cfec5b26d1dca38c0a5588f359116ca57b29c7`
+  (`fix(db): reject Scratch bit promotion`). The commit changes exactly
+  `src/lib/db/indexeddb.ts` and `src/lib/db/promotion.test.ts`.
+- **Implemented behavior:** after resolving the source Bit's parent and before
+  grid checks or result construction, `promoteBitToNode` rejects when
+  `parent.systemRole === "inbox"`. Ordinary non-Inbox promotion is unchanged.
+- **RED evidence:** the first focused run executed seven promotion tests and
+  failed exactly the two new Scratch cases. Both promises resolved to newly
+  created Nodes instead of rejecting; the five existing ordinary/depth tests
+  passed. This directly reproduced the stale Hook 9 behavior.
+- **GREEN evidence:** one real-IDB regression removes all related
+  Chunk/Breakdown/candidate/audit data from the fixture to prove empty Scratch
+  remains blocked. A second retains the complete defensive seven-store
+  aggregate, asserts `crypto.randomUUID` is never called, and compares all
+  seven stores byte-for-byte before and after rejection.
+- **Verification results:**
+
+| Command | Exit | Result |
+| --- | ---: | --- |
+| `pnpm exec vitest run src/lib/db/promotion.test.ts` (RED) | 1 | 1 file; 2 expected failures, 5 passes; both failures were missing Scratch rejection |
+| `pnpm exec vitest run src/lib/db/promotion.test.ts` (GREEN) | 0 | 1 file; 7/7 tests passed |
+| `pnpm test` | 0 | 80 files; 554/554 tests passed |
+| `pnpm typecheck` | 0 | TypeScript completed with no error |
+| `pnpm lint` | 0 | 0 errors; unchanged baseline of 11 warnings in unrelated files |
+| `git diff --check` | 0 | No whitespace error |
+
+- **Gate selection:** the exact Task 105A plan requires focused promotion
+  tests, typecheck, lint, and diff checks. The shared repository mutation also
+  invalidated the full test suite, so it was run once. `pnpm build` was not
+  rerun because this data-only guard changes no route, bundle, generated type,
+  or UI surface and the approved task does not require that gate.
+- **Diff review:** the guard precedes `ensureGridCellAvailable`, timestamp and
+  UUID creation, and the transaction write. No UI file, schema type, command
+  API, candidate/Breakdown policy, Task 120/122 scope, or acceptance marker
+  changed. No scope deviation or unowned product decision was found.
+- **Workflow audit:** this session's skill catalog again did not expose the
+  installed `$run-task` name even though the live package exists at the project
+  symlink target. The full local contract and references were loaded directly,
+  so scope/receipt/TDD/checkpoint behavior was exercised, but native named-skill
+  discovery was not. Preserve this as evidence for the post-Phase-23 bootstrap
+  improvement rather than modifying the skill during the phase.
+- **Checkpoint buckets:** `Visible now: None` (repository-only guard under a UI
+  state that normally has no promotion action); `Review now: Task 105A exact
+  repository behavior and evidence`; `Planned later: P23-02 at Task 120 plus
+  post-Phase-23 skill/bootstrap audit`; `Unowned: None`.
+- **State:** `Implemented`; Task 105A remains `[ ]`. No push, merge,
+  publication, phase close, or next task has started.
 
 ## Task 104 Start Receipt
 
@@ -782,9 +832,12 @@ churn, or discovery/bootstrap failure. Skill code remains frozen during Phase
 - Consequently, these tasks are valid tests of scope control, receipts, TDD,
   verification, acceptance markers, and stop boundaries, but they are **not**
   a complete test of `$run-task` invocation or its native context cost.
-- Task 103 was executed in a session where `$run-task` was visibly loaded and
-  its required references were read. It is the first complete native
-  discovery/loading trace; Tasks 104–105 must continue that evidence series.
+- Tasks 103–105 executed from sessions where the installed `$run-task`
+  contract was available or already loaded and continued the native evidence
+  series. Task 105A's implementation session again lacked the named skill in
+  its available-skill catalog; the live package and every required reference
+  were loaded directly, so lifecycle behavior was exercised but native
+  discovery was not.
 
 ### Observed task data
 
@@ -794,6 +847,8 @@ churn, or discovery/bootstrap failure. Skill code remains frozen during Phase
 | 102 | `2e77b46` → `ff56d82` | 9m 06s | Four observed RED clusters, exact three-file scope, atomic rollback proof, 517-test full gate | Advancing one task required a sizable adapter/ledger rewrite. Named-skill loading was unavailable. A second full test was justified only because the final preservation fixture invalidated the first test result; build was not repeated after test-only evidence changes. |
 | 103 | `6bce8ae` → `df7d0d1` | 50m 12s | Named `$run-task` loaded; 23 implementation paths; real-IDB concurrency RED; 91 focused and 531 full tests; explicit checkpoint | A wide invariant sweep lacked internal checkpoints, so late lost-update and Scratch-owner defects reopened the whole batch. Dependency-ready Task 104 was hidden by numeric ordering. One necessary `use-dnd.ts` deviation entered before file-specific approval and required a corrective receipt. |
 | 104 | `6b036f5` → `88bc19a` | 13m 17s | Named `$run-task` loaded; exact three-file scope; seven real-IDB rollback checkpoints; 540-test full gate | Review caught the UUID/snapshot/audit gaps before commit. One production regression exposed Dexie's async-scope sensitivity. Parallel build/typecheck shared-output contention required one serial typecheck rerun. |
+| 105 | `f0ca69b` → `4f6d416` | 14m 30s | Loaded `$run-task` contract; exact six-file scope; real aggregate rollback/retention coverage; 552-test full gate | The task stayed bounded when review found stale Hook 9 promotion authority; the decision became separate Task 105A instead of leaking into aggregate deletion. |
+| 105A | `0bbc902` → `45cfec5` | 28m 46s | Separate canonical approval, two expected RED failures, exact two-file implementation, and 554-test full gate | Most wall time was the user-owned SCHEMA/review gate. Named-skill discovery disappeared again, and the adapter still contained a stale Task-104-only runtime sentence that had to be corrected during the receipt update. |
 
 ### What the pilot has validated
 
@@ -837,7 +892,6 @@ reads. Do not modify `run-task` until the Phase 23 trace is complete.
 
 ## Run-Task Boundary
 
-Task 105A is `In Progress` and remains `[ ]`. Its writes are limited to
-`src/lib/db/indexeddb.ts` and `src/lib/db/promotion.test.ts` after approved
-SCHEMA content `67dbe52`. UI changes, Tasks 106–165, push, publication, merge,
-and `end-phase` remain forbidden.
+Task 105A is `Implemented` at `45cfec5` and remains `[ ]` pending explicit user
+acceptance. No production write is active. UI changes, Tasks 106–165, push,
+publication, merge, and `end-phase` remain forbidden.
