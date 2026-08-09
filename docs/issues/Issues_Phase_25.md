@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Gate C kickoff prepared; no product task started
+> State: Task 120 In Progress; durable start signal committed before product changes
 
 ## Status Legend
 
@@ -105,9 +105,15 @@ None at kickoff.
 
 | Field | Durable value |
 | --- | --- |
-| Task | None; implementation has not started |
-| Next task | Task 120 only |
-| Next lifecycle | Fresh `$run-task` session pinned to candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` |
+| Task | Task 120 — Implement Add, Scratch Save, row Save, and row Delete commands |
+| Approved scope | Typed command/reconcile inputs and results in `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; Task-owned real-transaction evidence in `src/lib/db/scratch-breakdowns.test.ts` and new `src/lib/db/inbox-operations.test.ts`; no UI and no Task 121 work |
+| State | In Progress; distinct from user acceptance |
+| Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`) |
+| Start base | Approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; run-task entrypoint `93d5d9dbcf71d4b8a7268683f9b892902bfcb037` |
+| Recovery anchor | Resume from the committed Task 120 durable start signal whose parent is the run-task entrypoint above; reconcile Git status/diff before any continuation |
+| Issues / deviations | None |
+| Canonical impact | None — Task 120 is implementation-local to the already-approved SCHEMA/SPEC/execution contract |
 | Production changes | None |
 | Task markers | Tasks 120–126 remain `[ ]` |
-| Forbidden here | Do not invoke `$run-task`, implement product code, push, create a PR, merge, rebase, cherry-pick, clean up, or modify Phase 24 scope |
+| Next legal action | Add and run the failing Task 120 command/reconciliation tests, then implement Task 120 only |
+| Forbidden here | Do not start Task 121, write `[x]`, push, create a PR, merge, rebase, cherry-pick, clean up, or modify Phase 24 scope |
