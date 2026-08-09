@@ -3,94 +3,176 @@
   "receipt_kind": "lifecycle-approval",
   "gate": "gate-c",
   "approved_repository": "jwk26/griddo",
-  "approved_base": "54405de6aa9d1b42d1b58b19cbb68ee45a6a900e",
+  "approved_base": "06344a75ef1efd9335e4e771a893d269feae3d61",
   "approved_branch": "phase-25/authoritative-command-dag",
   "approved_scope": {
     "lifecycle": "run-phase",
     "phase": 25,
     "worktree_role": "feature",
     "task_batch": [
-      124
+      125,
+      126
     ],
     "task_order": [
-      124
+      125,
+      126
     ],
-    "execution_mode": "sequential"
+    "execution_mode": "sequential",
+    "next_task": 125
   },
   "user_disposition": "approved",
   "next_legal_action": "$run-task",
-  "source_mode": "approved canonical plan + accepted Phase 25 Tasks 120–123 on the existing Phase 25 continuation",
+  "source_mode": "approved canonical plan + accepted Phase 25 Tasks 120-124 on the existing Phase 25 continuation",
   "issue_ledger": "docs/issues/Issues_Phase_25.md",
   "integration": {
     "branch": "main",
     "remote": "origin",
-    "post_fetch_sha": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28"
+    "post_fetch_sha": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+    "local_matches_remote": true
   },
   "continuation": {
-    "entrypoint": "54405de6aa9d1b42d1b58b19cbb68ee45a6a900e",
-    "entrypoint_subject": "docs: accept Task 123",
+    "entrypoint": "06344a75ef1efd9335e4e771a893d269feae3d61",
+    "entrypoint_subject": "docs: accept Task 124",
     "original_phase_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
-    "commits_above_integration": 18,
-    "base_exception": "explicitly approved same-phase 18-commit continuation reuse",
+    "commits_above_integration": 22,
+    "base_exception": "explicitly approved same-phase 22-commit continuation reuse",
     "history_action": "preserve; no reset, rebase, merge, or cherry-pick"
   },
   "dependency_evidence": {
-    "task_124": {
+    "task_125": {
       "dependencies": [
-        123
+        120,
+        121
       ],
       "accepted_commits": [
-        "54405de6aa9d1b42d1b58b19cbb68ee45a6a900e"
+        "9d7a6361fb0bdb52891f8253757d8088abbd3aac",
+        "a01c854aa82e1303550e19b915dd09af1acd9d81"
+      ],
+      "state_at_gate": "ready"
+    },
+    "task_126": {
+      "dependencies": [
+        125
+      ],
+      "state_at_gate": "held_pending_explicit_task_125_user_acceptance",
+      "durable_start_allowed": false,
+      "release_condition": "Task 125 implementation checkpoint is explicitly accepted by the user and recorded in a separate acceptance commit",
+      "same_receipt_does_not_preaccept_dependency": true
+    },
+    "phase_24_completion_required": false
+  },
+  "task_scope": {
+    "task_125": {
+      "modify": [
+        "src/lib/db/datastore.ts",
+        "src/lib/db/indexeddb.ts",
+        "src/lib/db/archive.test.ts"
+      ],
+      "create": [
+        "src/lib/db/archive-scratch-command.test.ts"
+      ],
+      "behavior": [
+        "authoritative Archive eligibility query",
+        "typed guarded Archive command",
+        "active Inbox-owned Scratch",
+        "consumed count at least one",
+        "unconsumed count zero",
+        "candidate count zero",
+        "exact Scratch version",
+        "required clear Add-draft and title-blocker caller assertion",
+        "generic archiveBit Inbox Scratch bypass rejection",
+        "ordinary Bit Archive and Archive View restore preservation"
+      ],
+      "excluded": [
+        "UI, hook, and store changes",
+        "sessionStorage",
+        "Task 126 recovery classification",
+        "Task 161 recovery coordinator ownership",
+        "Phase 24",
+        "Shelf"
       ]
     },
-    "task_123_implementation": "c1b62eff6e35b740bc693b48ad080380cdd0241f",
-    "task_123_acceptance": "54405de6aa9d1b42d1b58b19cbb68ee45a6a900e",
-    "phase_24_completion_required": false
+    "task_126": {
+      "modify": [
+        "src/lib/db/datastore.ts",
+        "src/lib/db/indexeddb.ts"
+      ],
+      "create": [
+        "src/lib/db/archive-scratch-recovery.test.ts"
+      ],
+      "behavior": [
+        "schema-validated PendingOperationRecovery read-only classification",
+        "applied",
+        "not_applied",
+        "conflict",
+        "unknown",
+        "invalid, foreign, and stale descriptor fail-closed behavior",
+        "zero mutation"
+      ],
+      "excluded": [
+        "Archive mutation",
+        "operation journal, log, or index",
+        "queue or outbox",
+        "sessionStorage implementation",
+        "recovery descriptor creation or ownership",
+        "Task 161 scope",
+        "Phase 24",
+        "Shelf"
+      ]
+    }
   },
   "worktree_reuse": {
     "approved": true,
     "same_phase_continuation": true,
     "branch_registered_once": true,
     "integration_worktree_registered_once": true,
-    "clean_at_gate": true
+    "clean_at_gate": true,
+    "remote_feature_branch_exists": false
   },
   "writer_mutex": {
     "mode": "sequential",
-    "shared_mutexes": [
+    "shared_between_tasks": [
       "db-implementation",
-      "db-interface",
-      "db-command-harness"
+      "db-interface"
     ],
-    "concurrent_implementation_allowed": false
+    "task_125_additional": [
+      "db-archive-regression"
+    ],
+    "concurrent_implementation_allowed": false,
+    "single_production_writer": "Codex"
+  },
+  "checkpoint_policy": {
+    "task_125_implementation_checkpoint_separate_from_acceptance_commit": true,
+    "task_126_implementation_checkpoint_separate_from_acceptance_commit": true,
+    "task_126_cannot_start_at_task_125_checkpoint": true,
+    "task_126_requires_task_125_acceptance_commit": true
   },
   "readiness": {
     "plan_code_drift": "none",
     "open_decision_receipts_for_batch": [],
-    "downstream_tasks_held": [
-      125,
-      126
-    ],
-    "task_124_started": false,
+    "active_blocking_issues": [],
+    "task_125_started": false,
+    "task_126_started": false,
     "production_implementation_started": false,
-    "baseline_gate_src_tree": "5feb3fae627d0a7e6c0adf2b770f289c6a6978c1"
+    "baseline_gate_src_tree": "49f6971d6ad1971773bbe23addb56b97d4aa342d"
   },
   "verification": {
     "baseline_reuse": {
       "approved": true,
-      "source_commit": "c1b62eff6e35b740bc693b48ad080380cdd0241f",
-      "source_context": "fresh serial full gate after Task 123 implementation and final repair",
-      "source_src_tree": "5feb3fae627d0a7e6c0adf2b770f289c6a6978c1",
-      "current_src_tree": "5feb3fae627d0a7e6c0adf2b770f289c6a6978c1",
+      "source_commit": "19dc391b4f08f02249abc817c74e3dc1019a40f4",
+      "source_context": "fresh serial full gate after Task 124 implementation",
+      "source_src_tree": "49f6971d6ad1971773bbe23addb56b97d4aa342d",
+      "current_src_tree": "49f6971d6ad1971773bbe23addb56b97d4aa342d",
       "post_gate_changes": [
-        "docs/EXECUTION_PLAN.md Task 123 acceptance marker only",
-        "docs/issues/Issues_Phase_25.md Task 123 acceptance evidence only"
+        "docs/EXECUTION_PLAN.md Task 124 acceptance marker only",
+        "docs/issues/Issues_Phase_25.md Task 124 acceptance evidence only"
       ]
     },
     "baseline_full_gate": [
       {
         "command": "pnpm test",
         "exit": 0,
-        "result": "84 test files and 629 tests passed"
+        "result": "85 test files and 648 tests passed"
       },
       {
         "command": "pnpm lint",
@@ -108,34 +190,52 @@
         "result": "Next.js 16.2.1 production build passed and seven routes generated"
       }
     ],
-    "task_124_focused": [
-      "pnpm exec vitest run src/lib/db/triage-undo.test.ts src/lib/db/inbox-operations.test.ts",
+    "gate_c_low_cost_checks": {
+      "git_fetch_origin": 0,
+      "git_diff_check": 0,
+      "dependency_ancestry": "passed",
+      "source_tree_equality": "passed",
+      "adapter_resolver": "contract_ready"
+    },
+    "task_125_focused": [
+      "pnpm exec vitest run src/lib/db/archive-scratch-command.test.ts src/lib/db/archive.test.ts",
       "pnpm typecheck",
       "git diff --check"
     ],
-    "task_124_mutex_regression": "pnpm exec vitest run src/lib/db/triage-placement.test.ts src/lib/db/triage-undo.test.ts src/lib/db/inbox-operations.test.ts",
-    "task_124_post_implementation_full_gate": {
-      "required_runs": 1,
-      "commands": [
-        "pnpm test",
-        "pnpm lint",
-        "pnpm typecheck",
-        "pnpm build"
-      ]
-    }
+    "task_125_mutex_regression": "pnpm exec vitest run src/lib/db/triage-undo.test.ts src/lib/db/inbox-operations.test.ts src/lib/db/archive-scratch-command.test.ts src/lib/db/archive.test.ts",
+    "task_125_post_implementation_full_gate": [
+      "pnpm test",
+      "pnpm lint",
+      "pnpm typecheck",
+      "pnpm build"
+    ],
+    "task_126_focused": [
+      "pnpm exec vitest run src/lib/db/archive-scratch-recovery.test.ts",
+      "pnpm typecheck",
+      "git diff --check"
+    ],
+    "task_126_mutex_regression": "pnpm exec vitest run src/lib/db/archive-scratch-command.test.ts src/lib/db/archive-scratch-recovery.test.ts src/lib/db/archive.test.ts",
+    "task_126_post_implementation_full_gate": [
+      "pnpm test",
+      "pnpm lint",
+      "pnpm typecheck",
+      "pnpm build"
+    ]
   },
   "workflow_candidate": {
-    "branch": "post-v1/workflow-candidate-low-cost",
     "commit": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
-    "run_phase_skill": "skills/run-phase/SKILL.md",
-    "run_task_skill": "skills/run-task/SKILL.md",
+    "run_phase_skill_absolute_path": "/Users/jwk/Documents/codex-workflow-clean-design-mode-implementation/skills/run-phase/SKILL.md",
+    "run_phase_skill_sha256": "6b45762f2d291c006deb50b4caba9aa518e558af1c5a80db3c040073c6822e46",
     "run_task_skill_absolute_path": "/Users/jwk/Documents/codex-workflow-clean-design-mode-implementation/skills/run-task/SKILL.md",
     "run_task_skill_sha256": "614631c56866549feb298d995ea0cf1311caa1cacaaefc2ba2ca753e43910531",
+    "global_live_run_phase_allowed": false,
     "global_live_run_task_allowed": false
   },
   "kickoff_state": {
     "clean_start": true,
     "approved_base_to_head_commits_before_receipt": 0,
+    "task_125_durable_start_recorded": false,
+    "task_126_durable_start_recorded": false,
     "production_implementation_started": false,
     "run_task_invoked": false
   }

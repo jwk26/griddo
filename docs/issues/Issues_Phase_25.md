@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–124 accepted; Tasks 125–126 are not approved
+> State: Tasks 120–124 accepted; Tasks 125–126 Gate C approved; Task 125 next and not started; Task 126 held
 
 ## Status Legend
 
@@ -296,3 +296,30 @@ None at kickoff.
 | Task markers | Tasks 120–124 are `[x]`; Tasks 125–126 remain `[ ]` |
 | Next legal action | Stop after the Task 124 acceptance commit; Task 125/126 and any next Gate C packet remain unapproved |
 | Forbidden here | Do not start Task 125/126, prepare a next Gate C packet, modify product/test code, push, create a PR, merge, rebase, or perform branch/worktree cleanup |
+
+## Tasks 125 → 126 Gate C Handoff
+
+| Field | Durable value |
+| --- | --- |
+| Batch | Exact batch `[125,126]`; serial order `[125,126]`; next task Task 125 |
+| State | Gate C approved by the user on 2026-08-10; Tasks 125 and 126 are not started and both markers remain `[ ]` |
+| Whole-file receipt | `docs/issues/Issues_Phase_25.gate-c.json`, updated to `task_batch` / `task_order` `[125,126]`, `execution_mode` `sequential`, and `next_task` `125` |
+| Branch / worktree | Existing same-phase reuse explicitly approved for `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag` |
+| Integration / remote | `main`; post-fetch `origin/main` `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; local `main` matches |
+| Continuation approved base | `06344a75ef1efd9335e4e771a893d269feae3d61` (`docs: accept Task 124`) |
+| Base exception | User explicitly approved preserving the existing 22-commit same-phase continuation above `origin/main`; no reset, rebase, merge, or cherry-pick |
+| Task 125 scope | Modify `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, and `src/lib/db/archive.test.ts`; create `src/lib/db/archive-scratch-command.test.ts`; implement only authoritative eligibility, typed guarded Archive, active Inbox Scratch + consumed≥1 + unconsumed=0 + candidate=0 + exact-version checks, mandatory clear Add-draft/title-blocker assertion, generic `archiveBit` bypass rejection, and ordinary Bit Archive/Archive View restore preservation |
+| Task 125 exclusions | No UI/hook/store, sessionStorage, Task 126 recovery classifier, Task 161 recovery coordinator, Phase 24, or Shelf work |
+| Task 126 scope | After Task 125 acceptance only, modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/archive-scratch-recovery.test.ts`; implement only schema-validated `PendingOperationRecovery` read-only `applied`/`not_applied`/`conflict`/`unknown` classification with invalid/foreign/stale fail-closed and zero writes |
+| Task 126 exclusions | No Archive mutation, operation journal/log/index, queue/outbox, sessionStorage implementation, recovery-descriptor creation/ownership, Task 161 scope, Phase 24, or Shelf work |
+| Dependencies | Task 125 dependencies Tasks 120 and 121 are accepted at `9d7a6361fb0bdb52891f8253757d8088abbd3aac` and `a01c854aa82e1303550e19b915dd09af1acd9d81`; Task 126 depends on Task 125 and remains held until explicit user acceptance plus a separate Task 125 acceptance commit |
+| Acceptance boundary | Inclusion in this receipt does not pre-accept Task 125 or pre-satisfy Task 126. Each task has a separate durable start, implementation checkpoint, explicit user acceptance, and acceptance commit; Task 126 cannot start from Task 125 implementation/checkpoint evidence alone |
+| Writer mutex | Strict serial single writer. Both tasks acquire `db-implementation` and `db-interface`; Task 125 additionally acquires `db-archive-regression`; no concurrent implementation or commit |
+| Authority / readiness | SCHEMA Archive Scratch matrix/eligibility and forced-Archive recovery; SPEC coordinator/Archive View boundary; EXECUTION_PLAN Tasks 125/126, `UF-26`, `UF-28`, `AF-04`–`AF-08`, `NEG-17`, and `NEG-20`; no recipe, open Decision prerequisite, active blocking issue, or path/API drift |
+| Baseline gate reuse | User approved reuse of Task 124's fresh serial full gate at implementation commit `19dc391b4f08f02249abc817c74e3dc1019a40f4`; its `src` tree and this continuation base `src` tree are both `49f6971d6ad1971773bbe23addb56b97d4aa342d`; later changes are only Task 124 plan-marker and ledger acceptance evidence |
+| Baseline full gate | `pnpm test` exit 0 (85 files, 648 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js 16.2.1 production build, seven routes) |
+| Gate C verification | Candidate resolver contract-ready; Git identity/ancestry/source-tree equality/path/API inspection and `git diff --check` passed; no install/test/lint/typecheck/build rerun at Gate C |
+| Workflow candidate | Candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`; candidate `run-phase` SHA-256 `6b45762f2d291c006deb50b4caba9aa518e558af1c5a80db3c040073c6822e46`; next lifecycle uses candidate `/Users/jwk/Documents/codex-workflow-clean-design-mode-implementation/skills/run-task/SKILL.md` SHA-256 `614631c56866549feb298d995ea0cf1311caa1cacaaefc2ba2ca753e43910531`; global live run-phase/run-task forbidden |
+| Canonical impact | None at kickoff; both tasks remain implementation-local to approved SCHEMA/SPEC/execution authority unless run-task discovers and records otherwise |
+| Next legal action | Close this run-phase session after its receipt/ledger-only kickoff commit; in a fresh session invoke only the candidate-pinned `$run-task` for Task 125, using that kickoff commit as the recovery anchor |
+| Forbidden here | Do not record Task 125/126 durable start, modify product/test files or task markers, run install/test/lint/typecheck/build, invoke run-task, push, create a PR, merge, rebase, clean branch/worktree, or modify Phase 24/Shelf |
