@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–111 accepted; Task 112 is In Progress for `DP-VQ06-STAGING` choice A; Task 113 remains unavailable
+> State: Tasks 106–111 accepted; Task 112 implemented with `DP-VQ06-STAGING` choice A awaiting user checkpoint acceptance; Task 113 remains unavailable
 
 ## Status Legend
 
@@ -212,16 +212,18 @@ canonical document update, and commit remain Task-local and sequential.
 | Field | Durable value |
 | --- | --- |
 | Task | 112 — record `DP-VQ06-STAGING` Staging-status decision |
-| State | In Progress; user acceptance remains pending and the Task 112 plan marker stays `[ ]` |
+| State | Implemented / awaiting user review; user acceptance remains pending and the Task 112 plan marker stays `[ ]` |
 | Approved scope | Choice A candidate-attached pending/unknown/reconciling status, subsection-local remote-arrival count/action, Staging-title-attached terminal alert, exact Stage/Unstage/invalid/stale/orphan/failure copy, focus, dismissal/lifetime, reduced-motion, and eight-theme treatment; update only the Staging recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ06-STAGING` receipt; no product code or Pool/Explorer authority |
 | User decision | On 2026-08-10 the user selected `DP-VQ06-STAGING=A` |
 | Predecessor | Task 111 accepted at `36a034ce42cced070a0bb27b6a4945a315210b83`; its exact release remains Task 144 only |
 | Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `15be56007b0290622bd907cbb3a02d78684a15f6`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
-| Entrypoint / recovery anchor | Task 111 acceptance `36a034ce42cced070a0bb27b6a4945a315210b83`; this ledger commit is the Task 112 durable start anchor |
-| Decision receipt target | `docs/issues/Issues_Phase_24.Task_112.dp-vq06-staging.json` |
+| Entrypoint / recovery anchor | Task 111 acceptance `36a034ce42cced070a0bb27b6a4945a315210b83`; Task 112 durable start `1b48c6b0bf0cb61100f44f76744fca71a330116d`; Task 112 decision commit `b8f9b1905d09b090b03984740e38ea3589a94ad7` |
+| Durable receipt | `docs/issues/Issues_Phase_24.Task_112.dp-vq06-staging.json`; candidate resolver returned `ready` for gate `dp-vq06-staging` and next action `task-112-user-checkpoint` |
 | Issue / deviation | None |
-| Canonical impact | None — Choice A is selected but has not yet been reflected in Task 112's three canonical documents |
-| Next legal action | Commit this ledger-only durable start, then record only `DP-VQ06-STAGING=A`; Task 113 remains unavailable |
+| Canonical impact | Reflected — Choice A is recorded in the Staging recipe, `docs/DESIGN_TOKENS.md`, and Task 112 execution authority |
+| Verification | `git diff --check` exit 0 across the Task 112 commits; `pnpm typecheck` exit 0; exact four-path Task decision commit; Tasks 106–111 remain `[x]` and Tasks 112–113 remain `[ ]`; no product code or Task 113 decision was recorded; test/lint/build omitted because this Task is documentation-only |
+| Review | No concrete blocking finding; candidate-attached pending/unknown/reconciling placement, exact Stage/Unstage result copy, subsection-local remote count/action, unresolved-source versus confirmed-orphan boundary, transient neutral/invalid reasons, single Staging-title alert and `X` lifetime/focus, static reduced-motion parity, eight-theme mapping, and Task 147-only edge are present with no global rail, toast, dialog, event history, permanent Retry/Unstage, prototype, adjacent-surface, Pool, Explorer, or theme-ID fallback |
+| Next legal action | Stop at the Task 112 user checkpoint. Do not write Task 112 `[x]` or start Task 113 without new explicit user acceptance |
 
 ## Readiness Evidence
 
