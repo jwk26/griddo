@@ -380,6 +380,7 @@ or to promotion-map §11.4's shared implication.
 |---|---|---|
 | Shell / chrome | `shell-background`, `section-surface`, `section-header`, `section-divider`, `internal-scroll-viewport`, `section-state-overlay` | `R-SHELL` |
 | Scratch Pool | `pool-tools`, `pool-search-field`, `pool-total-count`, `pool-selected-row`, `pool-compact-switcher`, `pool-compact-marker`, `pool-scroll-viewport` | `R-POOL` |
+| External Scratch removal | `external-removal-scrim`, `external-removal-panel`, `external-removal-title`, `external-removal-destination`, `external-removal-countdown-track`, `external-removal-countdown-fill`, `external-removal-draft-card`, `external-removal-copy-status`, `external-removal-primary-action`, `external-removal-secondary-action` | `DP-VQ01`; Task 141 only |
 | Selected Context | `context-signature-plate`, `context-eyebrow-meta`, `context-title`, `context-action-cluster`, `context-complete-marker` | `R-CONTEXT` |
 | Breakdown | `breakdown-active-row`, `breakdown-staged-row`, `breakdown-row-action`, `breakdown-add-field`, `breakdown-add-control`, `breakdown-ordinary-empty`, `breakdown-consumed-completion` | `R-BREAKDOWN` |
 | Staging | `staging-panel`, `staging-node-well`, `staging-node-card`, `staging-bit-well`, `staging-bit-row`, `staging-neutral`, `staging-unavailable`, `staging-invalid`, `staging-pending`, `staging-unstage-target` | `R-STAGING` |
@@ -404,6 +405,10 @@ appropriate; the data attribute never replaces them.
 | `pending-confirmation` | A valid intent awaits user confirmation before mutation; distinguish it from `pending` |
 | `pending` | An authoritative result is outstanding; preserve the SPEC-owned stable focus target and lock only the conflicting actions named there |
 | `reconciling` | An uncertain outcome is being checked; visible text/icon semantics distinguish it from both `pending` and success |
+| `external-removal` | The selected Scratch is authoritatively archived or deleted elsewhere; stale work is inert and the dedicated `DP-VQ01` transition owns the workspace until restore or terminal handoff |
+| `paused` | The `DP-VQ01` countdown is frozen at its exact remainder; destination changes update content without resuming it |
+| `draft-copy-ready` | One full source-labeled page-memory draft remains available for copying before the external-removal handoff |
+| `copied` | The matching full draft was copied once; preserve button focus and never infer persistence, countdown resume, or movement |
 | `success` | Authoritative, non-repeating success; use polite status semantics without focus theft and a static distinction under reduced motion; exact `VQ-02` realization remains unresolved |
 | `newly-placed` | Page-session provenance layered on the actual card; use `newly-*` roles and keep Undo separate |
 | `completed` | Complete Context or completion presentation; do not treat it as Archive mutation success |
@@ -541,6 +546,38 @@ authority. Under `VQ-07`, the selected full-hierarchy replacement body remains
 absent. Global Search, the old active-column search, ordinary Explorer columns,
 and Explorer chrome are prohibited substitutes for that body.
 
+### Approved external-removal realization — `DP-VQ01`
+
+**User-approved 2026-08-09:** Choice A establishes one dedicated central
+blocking transition panel for externally archived/deleted selected Scratches.
+This removes `VQ-01` from the open absent-surface list without authorizing any
+other VQ. The exact copy, geometry, state matrix, timing, controls, focus, and
+theme mapping are owned by the Scratch Pool recipe and consumed only by Task
+141.
+
+| Contract | Exact token requirement |
+|---|---|
+| Geometry | `external-removal-scrim` covers and inerts the Inbox workspace; `external-removal-panel` is centered at `min(35rem, calc(100% - 2rem))` width and `calc(100% - 2rem)` maximum height; only the draft list scrolls |
+| Countdown | `external-removal-countdown-track` is 4px high; `external-removal-countdown-fill` runs once, linearly, from full to empty over `5000ms`, freezes on `paused`, and restarts only when a running destination changes |
+| Actions | Primary `Move now`; secondary `Pause`/`Resume`; text-only controls with the canonical focus ring; no Cancel and no Escape dismissal |
+| Draft state | Source-labeled, selectable, untruncated `external-removal-draft-card`; `Copy full draft` becomes `Copied` in `external-removal-copy-status` without focus movement or countdown change |
+| Accessibility | Dedicated `alertdialog`/modal semantics, inert stale workspace, one polite lifecycle/timing/destination announcement on entry plus one for a changed destination, no tick announcements, and the recipe-owned initial/terminal focus destinations |
+| Theme invariance | Color theme or light/dark changes swap aliases only and never restart, pause, resume, dismiss, or mutate the transition |
+
+The external-removal roles map through existing families without product JSX
+theme branches or copied source literals:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Semantic card/border/primary/muted/text/focus roles |
+| Tiny Desk | Wood frame, paper notice, ruled draft, and stationery action roles |
+| Neumorphism | Named inset track/panel and raised card/control shadow roles |
+| Claymorphism | Panel, inset groove, raised action, and shape-led draft roles |
+| Origami | Paper, fold, seam, facet, and asymmetric control roles |
+| Terminal | Variable-driven editor/frame/block-progress/record/command roles |
+| Retro Mac | Stripe/title-bar, 1-bit double-frame, segmented-progress, pane, and hard-control roles |
+| Graphite | Dark/subtle editorial surface, fine rule, ruled block, and monochrome action roles |
+
 ### Existing-surface state gaps — 7 Decision prerequisites
 
 The shared role/state envelope above is the maximum current authority for
@@ -562,7 +599,7 @@ dependent exact realization.
 Existing global color and motion values do not automatically realize any row
 in this table.
 
-### Absent replacement surfaces — 5 Decision prerequisites
+### Absent replacement surfaces — 4 open Decision prerequisites
 
 These surfaces remain completely outside token realization. Assign no role,
 value, layout, theme mapping, copy, icon, control arrangement, or adjacent
@@ -570,7 +607,6 @@ fallback until a matching user receipt approves the missing surface.
 
 | ID | Missing surface and prohibited fallback | Future owner | Resume condition |
 |---|---|---|---|
-| `VQ-01` | External selected-Scratch archive/delete transition; Pool chrome, generic dialogs, and Archive UI are not substitutes | User Decision → Pool recipe and owning phase | Receipt supplies or explicitly scopes out the replacement surface |
 | `VQ-03` | Add-draft continue-writing/discard-and-move confirmation; generic confirmation and native unload are not the app-internal replacement | User Decision → Breakdown recipe and Add-draft phase | Receipt supplies the replacement surface |
 | `VQ-04` | Scratch/row inline editing across validation, saving, conflict, and invalid lifecycle; existing Edit controls and generic conflict UI are not substitutes | User Decision → Context/Breakdown recipes and editing phase | Receipt supplies the complete inline surfaces |
 | `VQ-07` | Dedicated full-hierarchy Explorer search body; global Search, old active-column search, ordinary columns, and Explorer chrome are prohibited substitutes | User Decision → Explorer recipe and search phase | Receipt supplies the complete replacement body |

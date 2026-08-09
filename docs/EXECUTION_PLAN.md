@@ -241,7 +241,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 
 | Receipt | VQ | Decision task | Exact implementation edge | Resume condition |
 |---|---|---|---|---|
-| `DP-VQ01` | `VQ-01` | 106 | 141 only | Accepted receipt supplies or scopes out the complete external-removal surface. |
+| `DP-VQ01` | `VQ-01` | 106 | 141 only | Choice A central blocking panel recorded at `docs/issues/Issues_Phase_24.Task_106.dp-vq01.json`; Task 106 remains `[ ]` pending its user checkpoint. |
 | `DP-VQ02` | `VQ-02` | 107 | 148 only | Accepted receipt defines complete one-shot/reduced-motion success realization. |
 | `DP-VQ03` | `VQ-03` | 108 | 140 only | Accepted receipt supplies or scopes out the internal departure surface. |
 | `DP-VQ04` | `VQ-04` | 109 | 138 only | Accepted receipt supplies both complete inline-editor surfaces. |
@@ -454,6 +454,24 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 **Authority / flows:** `VQ-01`, `UF-05`, `NEG-21`.
 
 **Recipe:** [`Scratch Pool`](recipes/inbox-triage-scratch-pool-visual-recipe.md).
+
+**Recorded decision — `DP-VQ01`, Choice A (2026-08-09):** use one dedicated
+central blocking `alertdialog` over an inert Inbox workspace, never a generic
+Dialog/AlertDialog, Archive surface, or Pool-chrome fallback. The panel is
+`min(35rem, calc(100% - 2rem))` wide with only its draft list scrollable. It
+uses the exact lifecycle titles `This Scratch was archived elsewhere` and
+`This Scratch was deleted elsewhere`, destination-aware running/paused copy,
+a 4px `5000ms` linear countdown, and text-only `Move now`, `Pause`, and
+`Resume` controls with no Cancel/Escape dismissal. Dirty Add/Scratch-title/row
+drafts start paused in source-labeled full-text cards; `Copy full draft`
+becomes `Copied` without focus movement or countdown resume. A running
+destination change restarts five seconds, a paused change stays paused,
+authoritative archive restore alone cancels the transition, and terminal
+focus moves to the destination Context or the named no-selection/empty status.
+All eight themes keep this semantic tree/copy/timing/focus and consume the
+exact recipe/token role-family mapping. The durable receipt is
+`docs/issues/Issues_Phase_24.Task_106.dp-vq01.json`; it releases no task other
+than Task 141 and does not accept Task 106's `[ ]` marker.
 
 **Observable acceptance:** the receipt lets Task 141 implement every external-removal state without choosing wording, geometry, controls, timing treatment, or theme values.
 
