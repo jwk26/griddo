@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–123 accepted; Task 124 Gate C approved but not started; Tasks 125–126 are not approved
+> State: Tasks 120–123 accepted; Task 124 In Progress; Tasks 125–126 are not approved
 
 ## Status Legend
 
@@ -269,3 +269,21 @@ None at kickoff.
 | Canonical impact | None at kickoff; Task 124 remains implementation-local to the approved SCHEMA/execution contract unless run-task discovers and records otherwise |
 | Next legal action | Close this run-phase session after its receipt-only kickoff commit; in a fresh session invoke only the pinned candidate `$run-task`, using that kickoff commit as the recovery anchor; run-task must create a separate durable Task 124 start commit before any test or production-code write |
 | Forbidden here | Do not start Task 124 or Task 125/126, modify product/test files, write any task marker, run test/lint/typecheck/build, invoke downstream lifecycle work, push, create a PR, merge, rebase, or modify Phase 24 or Shelf |
+
+## Task 124 In Progress
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 124 only — Implement source-aware Undo with candidate-version ABA protection |
+| State | In Progress; implementation is not user acceptance and the Task 124 marker remains `[ ]` |
+| Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-undo.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; no other product/test file, UI, hook, Task 125/126, Phase 24, or Shelf work |
+| Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, Task 124 only), explicitly approved by the user |
+| Start base / entrypoint | Continuation approved base `54405de6aa9d1b42d1b58b19cbb68ee45a6a900e`; run-task entrypoint and Gate C kickoff commit `2128558387a94daf1ec2ee3ed1e612e83d1f75a2` |
+| Recovery anchor | This durable-start commit; its parent must be `2128558387a94daf1ec2ee3ed1e612e83d1f75a2` and it precedes every Task 124 product/test write |
+| Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`; existing same-phase reuse approved; clean at start |
+| Dependencies / mutex | Task 123 accepted; Task 124 exclusively owns `db-implementation`, `db-interface`, and `db-command-harness`; Tasks 125–126 remain held |
+| Lifecycle evidence | Candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` run-phase resolver validated the committed Gate C receipt as `ready`, `contract_ready=true`; receipt-less run-task resolver returned the expected compatibility state `approval_required`, `contract_ready=true`; both returned `writes_allowed=false`, while write authority remains the user-approved Gate C receipt |
+| Issues / deviations | None at start |
+| Canonical impact | None — implementation-local conformance to the approved SCHEMA/SPEC/Task 124 contract |
+| Verification contract | Selected-target RED; focused Undo/inbox tests; three-file placement/Undo/inbox mutex regression; `pnpm typecheck`; `git diff --check`; scope diff review; then exactly one fresh serial full gate after focused green and final repair |
+| Next legal action | Add Task 124 contract tests, capture selected-target RED, implement only the approved repository APIs, verify/review, commit implementation and ledger evidence, then stop at the user checkpoint |
