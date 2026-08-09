@@ -1,0 +1,124 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "gate-c",
+  "approved_repository": "jwk26/griddo",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_branch": "phase-25/authoritative-command-dag",
+  "approved_scope": {
+    "lifecycle": "run-phase",
+    "phase": 25,
+    "worktree_role": "feature",
+    "task_batch": [
+      120,
+      121
+    ],
+    "task_order": [
+      120,
+      121
+    ],
+    "execution_mode": "sequential"
+  },
+  "user_disposition": "approved",
+  "next_legal_action": "$run-task",
+  "source_mode": "approved canonical plan + archived/merged Phase 23 foundation on fetched origin/main",
+  "issue_ledger": "docs/issues/Issues_Phase_25.md",
+  "integration": {
+    "branch": "main",
+    "remote": "origin",
+    "post_fetch_sha": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28"
+  },
+  "dependency_evidence": {
+    "task_120": {
+      "dependencies": [
+        103,
+        104
+      ],
+      "accepted_commits": [
+        "169ffa525a4fc50ecf2b73af21c4976d8d45387c",
+        "bc9d2d7e037cda7f4a3901185b0e805cf308b01b"
+      ]
+    },
+    "task_121": {
+      "dependencies": [
+        103,
+        104
+      ],
+      "accepted_commits": [
+        "169ffa525a4fc50ecf2b73af21c4976d8d45387c",
+        "bc9d2d7e037cda7f4a3901185b0e805cf308b01b"
+      ]
+    },
+    "phase_23_feature_tip": "e5da17d4f988908611d0c63ddb39589fb252aaf3",
+    "phase_23_merge": "8977ffc741abab2707a1c6632cca50324d3101ae",
+    "phase_24_completion_required": false
+  },
+  "writer_mutex": {
+    "mode": "sequential",
+    "shared_mutexes": [
+      "db-implementation",
+      "db-interface",
+      "db-command-harness"
+    ],
+    "concurrent_implementation_allowed": false
+  },
+  "readiness": {
+    "plan_code_drift": "none",
+    "open_decision_receipts_for_batch": [],
+    "downstream_tasks_held": [
+      122,
+      123,
+      124,
+      125,
+      126
+    ],
+    "production_source_changed": false,
+    "production_src_tree": "ecad26328bf8a8b798193e61fe54c4afee4478b0"
+  },
+  "verification": {
+    "setup": {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "result": "lockfile unchanged; 537 packages linked"
+    },
+    "focused_commands": [
+      "git diff --check",
+      "pnpm typecheck"
+    ],
+    "full_gate": [
+      {
+        "command": "pnpm test",
+        "exit": 0,
+        "result": "80 test files and 554 tests passed"
+      },
+      {
+        "command": "pnpm lint",
+        "exit": 0,
+        "result": "0 errors and 11 pre-existing warnings"
+      },
+      {
+        "command": "pnpm typecheck",
+        "exit": 0,
+        "result": "tsc --noEmit passed"
+      },
+      {
+        "command": "pnpm build",
+        "exit": 0,
+        "result": "Next.js 16.2.1 build passed and seven routes generated"
+      }
+    ]
+  },
+  "workflow_candidate": {
+    "branch": "post-v1/workflow-candidate-low-cost",
+    "commit": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
+    "run_phase_skill": "skills/run-phase/SKILL.md",
+    "run_task_skill": "skills/run-task/SKILL.md",
+    "global_live_run_task_allowed": false
+  },
+  "kickoff_state": {
+    "clean_start": true,
+    "base_to_head_commits_before_receipt": 0,
+    "production_implementation_started": false,
+    "run_task_invoked": false
+  }
+}
