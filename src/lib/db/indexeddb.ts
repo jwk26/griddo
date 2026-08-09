@@ -2866,15 +2866,15 @@ export class IndexedDBDataStore implements DataStore {
     const candidates = this.requireStagedCandidates();
     const breakdowns = this.requireScratchBreakdowns();
     const audits = this.requireCandidateOrphanAuditEvents();
-    const [candidate, source, auditById, auditRows] = await Promise.all([
+    const [candidate, source, auditById, auditByCandidate] = await Promise.all([
       candidates.get(command.candidateId),
       breakdowns.get(command.sourceBreakdownId),
       audits.get(command.auditEventId),
-      audits.toArray(),
+      this.findCandidateOrphanAuditByCandidate(
+        audits,
+        command.candidateId,
+      ),
     ]);
-    const auditByCandidate = auditRows.find(
-      (event) => event.candidateId === command.candidateId,
-    );
 
     return {
       candidate,
@@ -2883,6 +2883,21 @@ export class IndexedDBDataStore implements DataStore {
       auditByCandidate,
       authoritativeAudit: auditByCandidate ?? auditById,
     };
+  }
+
+  private async findCandidateOrphanAuditByCandidate(
+    audits: TableLike<CandidateOrphanAuditEvent>,
+    candidateId: string,
+  ): Promise<CandidateOrphanAuditEvent | undefined> {
+    if (this.database instanceof GridDODatabase) {
+      return this.database.candidateOrphanAuditEvents
+        .where("candidateId")
+        .equals(candidateId)
+        .first();
+    }
+
+    const auditRows = await audits.toArray();
+    return auditRows.find((event) => event.candidateId === candidateId);
   }
 
   private async findCandidateBySource(

@@ -286,7 +286,7 @@ describe("confirmed candidate orphan cleanup", () => {
     );
   });
 
-  it("reads candidate, source, and audit from one read-only reconciliation snapshot", async () => {
+  it("reads candidate, source, and audit by unique index from one read-only reconciliation snapshot without a full audit scan", async () => {
     await withStore(orphanSeed, async (database, store) => {
       await expectSingleReconcileSnapshot(database, () =>
         store.reconcileConfirmedCandidateOrphanCleanup(cleanupCommand()),
@@ -396,9 +396,12 @@ async function expectSingleReconcileSnapshot(
   const auditGet = database.candidateOrphanAuditEvents.get.bind(
     database.candidateOrphanAuditEvents,
   );
-  const auditsToArray = database.candidateOrphanAuditEvents.toArray.bind(
-    database.candidateOrphanAuditEvents,
-  );
+  const auditWhere = vi.spyOn(database.candidateOrphanAuditEvents, "where");
+  const auditScan = vi
+    .spyOn(database.candidateOrphanAuditEvents, "toArray")
+    .mockImplementation(() => {
+      throw new Error("production candidate audit full scan");
+    });
   const spies = [
     vi.spyOn(database.scratchBreakdowns, "get").mockImplementation((id) => {
       observeTransaction();
@@ -412,10 +415,8 @@ async function expectSingleReconcileSnapshot(
       observeTransaction();
       return auditGet(id);
     }),
-    vi.spyOn(database.candidateOrphanAuditEvents, "toArray").mockImplementation(() => {
-      observeTransaction();
-      return auditsToArray();
-    }),
+    auditWhere,
+    auditScan,
   ];
 
   try {
@@ -428,6 +429,8 @@ async function expectSingleReconcileSnapshot(
     expect(
       observedTransactions.every((observed) => observed === transaction),
     ).toBe(true);
+    expect(auditWhere).toHaveBeenCalledWith("candidateId");
+    expect(auditScan).not.toHaveBeenCalled();
     expect([...(transaction?.storeNames ?? [])].sort()).toEqual(
       [
         "candidateOrphanAuditEvents",
