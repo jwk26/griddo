@@ -22,9 +22,9 @@
 ## Decision-Prerequisite Boundary
 
 - `VQ-02` — **resolved by `DP-VQ02` on 2026-08-09.** The user selected Choice A, the row-attached confirmation wash/check/text signal specified below. Task 148 is its only realization edge; successful Unstage still has no toast.
+- `VQ-03` — **resolved by `DP-VQ03` on 2026-08-09.** The user selected Choice A, the Add-adjacent inline decision sheet specified below. Task 140 is its only realization edge; Task 139 remains headless and native unload remains browser-owned.
 - `VQ-05` — Add/Delete pending, reconciling, failure, and in-place deleting may use only semantic state attributes, existing theme tokens, visible text/icon/non-color cues, and selected focus/accessibility behavior. Exact copy, location, layout, effect, duration, and per-theme values are a **user-owned non-code Decision prerequisite**. Future owner: Breakdown reliability phase; resume exact state realization after receipt.
 - `VQ-11` — completion-blocker status uses the same limited envelope. Exact why/where/how remains a **user-owned non-code Decision prerequisite** owned by the Breakdown/archive phase.
-- `VQ-03` — Add-draft departure confirmation is an absent replacement surface. It is wholly excluded; generic delete/archive confirmation and native unload UI are not app-internal fallbacks. Future owner: Add-draft phase; resume after a user realization receipt.
 - `VQ-04` — row inline editor/conflict/lifecycle-invalid UI is an absent replacement surface and wholly excluded. Source Edit buttons do not source it. Future owner: editing phase; resume after user receipt.
 
 ## `DP-VQ02` Approved Add/Unstage Success Signal
@@ -102,6 +102,79 @@ timeline, focus, and announcement contract:
 Theme IDs never branch trigger logic or copy, and successful Unstage remains
 row-local with no toast.
 
+## `DP-VQ03` Approved Add-Draft Departure Sheet
+
+`DP-VQ03` gives an app-internal Scratch/path/route departure with a non-empty
+Add draft one dedicated decision sheet beside the source draft. It is not a
+generic confirmation, delete/archive dialog, page-centered modal, toast, or
+browser-unload replacement.
+
+### Trigger, Ordering, And Placement
+
+- Open only for an app-internal Scratch switch, Inbox path change, or route
+  departure that would leave a non-empty Add draft. Same-Scratch work does not
+  trigger the sheet. Any dirty inline Save resolves first; an unresolved Save
+  never opens or bypasses this decision.
+- Browser reload, tab close, and other native unload use only the browser's
+  native guard. They never render, reconstruct, or reuse this sheet.
+- Render `breakdown-departure-sheet` in normal document flow immediately below
+  the complete Add input/control row, aligned to that row's left and right
+  edges inside the Breakdown Add region. It pushes following Breakdown content
+  down; it never uses a portal, scrim, page center, toast lane, row action slot,
+  or borrowed dialog/card chrome.
+- Keep the non-empty draft visible in the Add input above the sheet. While the
+  decision is open, only its two actions are operable; no backdrop, close icon,
+  or outside click dismisses it.
+
+### Exact Copy And Action Hierarchy
+
+- Eyebrow: `Unsaved Add draft`
+- Heading: `Keep writing?`
+- Supporting copy: `Continue writing here, or discard this draft and move.`
+- Primary/default action: `Continue writing`
+- Destructive secondary action: `Discard and move`
+- Do not interpolate a destination name, Scratch title, route, countdown, or
+  draft excerpt. The latest destination remains headless state, so a replaced
+  destination cannot leave stale visible copy.
+
+### Focus, Keyboard, And Lifecycle
+
+- Use a dedicated labelled and described decision surface with alert-dialog
+  semantics. On open, focus `Continue writing`; contain sequential focus within
+  the two actions while the rest of the current workspace is inert.
+- `Continue writing` and `Escape` both close the sheet without changing the
+  draft and restore focus to the Add input at its prior caret/selection.
+  `Enter` activates only the focused action; it never defaults to discard.
+- `Discard and move` clears only the Add draft, performs the latest captured
+  internal destination once, and lets that destination's canonical focus rule
+  own the result. It has no extra confirmation or undo promise.
+- If the headless owner replaces the pending destination before a decision,
+  keep one sheet and the same copy/focus; discard consumes only the latest
+  destination once. Theme or light/dark changes swap visual aliases without
+  closing, retriggering, or moving focus.
+- The sheet appears and clears without animation. Reduced motion uses the same
+  static surface, copy, hierarchy, focus, and lifecycle; it is not a diminished
+  or color-only fallback.
+
+### Eight-Theme Mapping
+
+Every theme keeps the same in-flow position, exact copy, two-action order,
+alert-dialog semantics, and no-motion contract. Mappings use canonical theme
+families only and do not copy prototype literals or adjacent UI:
+
+| Theme | Exact realization mapping |
+|---|---|
+| GridDO | Restrained semantic panel surface and border, compact technical eyebrow, primary Continue control, and destructive text-secondary discard. |
+| Tiny Desk | Attached paper decision slip with ruled separation and stationery actions; it remains an Add-region sheet, not a loose modal note. |
+| Neumorphism | Inset decision well with raised primary control and clearly separate destructive secondary treatment, without floating overlay depth. |
+| Claymorphism | Shape-preserving inset sheet with one raised primary action and restrained destructive secondary, without scale or bounce. |
+| Origami | Inline folded-paper strip with seam hierarchy and asymmetric primary/secondary folds, never a detached dialog card. |
+| Terminal | Variable-driven inline command block with exact copy and bracketed action treatment; no fixed color or blinking cursor/status effect. |
+| Retro Mac | In-flow 1-bit decision pane with hard border and default-button distinction; no window title bar, draggable dialog, or inversion cycling. |
+| Graphite | Inline editorial note bounded by a strengthened rule, with solid primary and text-led destructive secondary actions. |
+
+Theme IDs never branch trigger logic, copy, action order, or focus behavior.
+
 ## Theme Realizations
 
 ### GridDO
@@ -154,5 +227,5 @@ row-local with no toast.
 
 ## Exclusions And Verification
 
-- Excluded: `VQ-03/04` surfaces, unsupported exact `VQ-05/11` details, source mutation behavior, Add-on-blur, mock delete/placement, row dates/numbers, consumed strike-through, repeated pulse/bounce, and route copy as authority.
+- Excluded: the `VQ-04` surface, unsupported exact `VQ-05/11` details, source mutation behavior, Add-on-blur, mock delete/placement, row dates/numbers, consumed strike-through, repeated pulse/bounce, and route copy as authority.
 - No row height, list density, staged distinction, empty/completion distinction, focus-visible action, overflow, scroll, contrast, success effect, deletion state, or reduced-motion equivalence was rendered or verified.

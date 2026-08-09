@@ -611,6 +611,39 @@ semantic tree and exact copy:
 | Retro Mac | 1-bit surface/border and hard-check roles without cycling inversion |
 | Graphite | Restrained grayscale surface and strengthened editorial-rule roles |
 
+### Approved Add-draft departure realization — `DP-VQ03`
+
+**User-approved 2026-08-09:** Choice A establishes one Add-adjacent inline
+decision sheet for app-internal departure with a non-empty Add draft. This
+removes `VQ-03` from the open absent-surface list without changing Task 139,
+native unload, or any other confirmation. Task 140 alone consumes the exact
+recipe realization.
+
+| Contract | Exact token requirement |
+|---|---|
+| Trigger / order | `data-triage-state="departure-decision"` exists only after an internal Scratch/path/route intent meets a non-empty Add draft and any required inline Save has resolved; native unload never binds it |
+| Placement | `breakdown-departure-sheet` is an in-flow surface immediately below and edge-aligned with the complete Add input/control row; no portal, scrim, centered modal, toast lane, or row-action placement |
+| Content roles | `breakdown-departure-eyebrow`, `breakdown-departure-heading`, and `breakdown-departure-description` render exact `Unsaved Add draft`, `Keep writing?`, and `Continue writing here, or discard this draft and move.` copy without dynamic destination text |
+| Actions | `breakdown-departure-actions` orders primary/default `breakdown-departure-continue` (`Continue writing`) before destructive secondary `breakdown-departure-discard` (`Discard and move`); no close, backdrop, or third action |
+| Focus / semantics | Labelled and described alert-dialog semantics; initial focus on Continue, sequential focus contained to two actions; Continue/Escape restore the Add caret while Discard hands focus to the performed destination |
+| State continuity | A replacement headless destination preserves one sheet and static copy; theme/light-dark changes swap aliases only; no queued destination, stale destination copy, retrigger, or focus movement |
+| Motion | Appearance and removal are immediate with no animation; reduced motion keeps the identical static surface, copy, hierarchy, focus, and lifecycle |
+| Scope boundary | Generic Dialog/AlertDialog chrome, delete/archive confirmation, native unload UI, prototype literals, adjacent cards, and theme-ID behavior/copy branches are prohibited |
+
+The departure roles map through the existing theme families while preserving
+one semantic tree and exact copy:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Restrained semantic panel/border/technical-label/primary/destructive-secondary roles |
+| Tiny Desk | Attached paper-slip, ruled-divider, and stationery-action roles |
+| Neumorphism | Inset decision-well and raised-primary roles with separate destructive secondary treatment |
+| Claymorphism | Shape-preserving inset-sheet, raised-primary, and restrained destructive-secondary roles |
+| Origami | In-flow paper-strip, seam, and asymmetric action-fold roles |
+| Terminal | Variable-driven command-block and bracketed-action roles with no blink |
+| Retro Mac | In-flow 1-bit pane, hard-border, and default-button roles without window chrome |
+| Graphite | Editorial-note, strengthened-rule, solid-primary, and text-destructive roles |
+
 ### Existing-surface state gaps — 6 open Decision prerequisites
 
 The shared role/state envelope above is the maximum current authority for
@@ -631,7 +664,7 @@ dependent exact realization.
 Existing global color and motion values do not automatically realize any row
 in this table.
 
-### Absent replacement surfaces — 4 open Decision prerequisites
+### Absent replacement surfaces — 3 open Decision prerequisites
 
 These surfaces remain completely outside token realization. Assign no role,
 value, layout, theme mapping, copy, icon, control arrangement, or adjacent
@@ -639,7 +672,6 @@ fallback until a matching user receipt approves the missing surface.
 
 | ID | Missing surface and prohibited fallback | Future owner | Resume condition |
 |---|---|---|---|
-| `VQ-03` | Add-draft continue-writing/discard-and-move confirmation; generic confirmation and native unload are not the app-internal replacement | User Decision → Breakdown recipe and Add-draft phase | Receipt supplies the replacement surface |
 | `VQ-04` | Scratch/row inline editing across validation, saving, conflict, and invalid lifecycle; existing Edit controls and generic conflict UI are not substitutes | User Decision → Context/Breakdown recipes and editing phase | Receipt supplies the complete inline surfaces |
 | `VQ-07` | Dedicated full-hierarchy Explorer search body; global Search, old active-column search, ordinary columns, and Explorer chrome are prohibited substitutes | User Decision → Explorer recipe and search phase | Receipt supplies the complete replacement body |
 | `VQ-09` | Staged Result Title and direct-limit/reason surfaces; create dialogs and generic placement UI are prohibited substitutes | User Decision → Placement recipe and title/limit phase | Receipt supplies both replacement surfaces |

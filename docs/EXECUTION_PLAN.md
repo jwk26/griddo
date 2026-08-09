@@ -243,7 +243,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 |---|---|---|---|---|
 | `DP-VQ01` | `VQ-01` | 106 | 141 only | Choice A central blocking panel accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_106.dp-vq01.json`; Task 141 only is released. |
 | `DP-VQ02` | `VQ-02` | 107 | 148 only | Choice A row-attached wash/check/text signal accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_107.dp-vq02.json`; Task 148 only is released. |
-| `DP-VQ03` | `VQ-03` | 108 | 140 only | Accepted receipt supplies or scopes out the internal departure surface. |
+| `DP-VQ03` | `VQ-03` | 108 | 140 only | Choice A Add-adjacent inline decision sheet recorded at `docs/issues/Issues_Phase_24.Task_108.dp-vq03.json`; Task 108 remains `[ ]` pending its user checkpoint. |
 | `DP-VQ04` | `VQ-04` | 109 | 138 only | Accepted receipt supplies both complete inline-editor surfaces. |
 | `DP-VQ05` | `VQ-05` | 110 | 143 only | Accepted receipt defines Add/Delete reliability states. |
 | `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Accepted Pool-specific status receipt. |
@@ -530,6 +530,28 @@ checkpoint on 2026-08-09.
 **Authority / flows:** `VQ-03`, `UF-08`, `NEG-21`.
 
 **Recipe:** [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md).
+
+**Recorded decision — `DP-VQ03`, Choice A (2026-08-09):** after any required
+dirty inline Save resolves, an app-internal Scratch switch, Inbox path change,
+or route departure with a non-empty Add draft opens one static decision sheet
+in flow immediately below and edge-aligned with the complete Add input/control
+row. The draft remains visible. Exact copy is eyebrow `Unsaved Add draft`,
+heading `Keep writing?`, body `Continue writing here, or discard this draft and
+move.`, primary/default `Continue writing`, and destructive secondary `Discard
+and move`; there is no destination interpolation or third action. The sheet is
+a labelled/described alert-dialog decision surface: focus enters Continue and
+is contained to the two actions. Continue or Escape preserves the draft and
+restores the Add caret; Enter activates only the focused action. Discard clears
+only the Add draft, performs the latest captured internal destination once,
+and hands focus to that destination. A replaced destination preserves the one
+sheet and static copy; theme/mode changes swap aliases only. The sheet has no
+animation, and reduced motion is identical. It never renders for native unload
+and never borrows generic Dialog/AlertDialog, delete/archive, toast, adjacent
+card, prototype, or centered-overlay chrome. The eight exact theme-family
+mappings are recorded in the recipe and token authority. The durable receipt
+is `docs/issues/Issues_Phase_24.Task_108.dp-vq03.json`; it releases Task 140
+only, leaves Task 139 headless behavior unchanged, and does not accept Task
+108's `[ ]` marker.
 
 **Observable acceptance:** Task 140 needs no inference from delete/archive dialogs or native unload UI, while Task 139 remains independently runnable.
 
