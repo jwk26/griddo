@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–108 accepted; Task 109 is the next legal task
+> State: Tasks 106–108 accepted; Task 109 in progress with `DP-VQ04` choice A approved
 
 ## Status Legend
 
@@ -122,6 +122,21 @@ canonical document update, and commit remain Task-local and sequential.
 | Pre-canonical ownership audit | One stale Task 107 DP edge sentence still said checkpoint pending; corrected alone at `f0537ba` before the Task 108 canonical decision commit |
 | Acceptance boundary | Accepts only Task 108 and its explicit position/copy supersession; releases Task 140 only; does not accept Task 109, another DP receipt, product code, push, PR, merge, or phase close |
 | Next legal action | Commit this acceptance state. Task 109 may then start from the accepted sequential batch; Task 110 remains unavailable |
+
+## Active Task
+
+| Field | Durable value |
+| --- | --- |
+| Task | 109 — record `DP-VQ04` Scratch-title and Breakdown-content inline-editor decision |
+| State | In Progress; user acceptance remains pending and the Task 109 plan marker stays `[ ]` |
+| Approved scope | Choice A direct in-place editors across pristine, dirty, validation, saving, offline/not-applied, reconciling, conflict/use-mine/use-latest, lifecycle invalidation, draft review/copy, focus, and eight themes; update only the Selected Scratch Context recipe, Breakdown rows recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ04` receipt; no product code or Task 137 headless behavior |
+| User decision | On 2026-08-09 the user selected `DP-VQ04=A` |
+| Predecessor | Task 108 accepted at `e3a834ce1f3e11997689b6e2f6e40e94757fa789`; its exact release remains Task 140 only |
+| Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
+| Entrypoint / recovery anchor | Task 108 acceptance commit `e3a834ce1f3e11997689b6e2f6e40e94757fa789`; resume only Task 109 from this committed start signal |
+| Issue / deviation | None |
+| Canonical impact | Tagged — reflect the approved dual in-place editor state matrix in both named recipes, design-token authority, and Task 109 execution authority before checkpoint |
+| Next legal action | Commit this durable start signal, then record only `DP-VQ04` and stop at the Task 109 user checkpoint; Task 110 remains unavailable |
 
 ## Readiness Evidence
 
