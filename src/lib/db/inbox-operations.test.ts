@@ -3,9 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import type {
   AddBreakdownCommand,
   DeleteBreakdownCommand,
+  DirectPlacementCommand,
   SaveBreakdownCommand,
   SaveScratchTitleCommand,
   StageCandidateCommand,
+  StagedPlacementCommand,
   UnstageCandidateCommand,
 } from "@/lib/db/datastore";
 import type { SevenStoreSnapshot } from "@/lib/db/indexeddb.test-utils";
@@ -73,6 +75,16 @@ describe("authoritative Inbox Breakdown commands", () => {
       "reconcileUnstageCandidate",
       (store: IndexedDBDataStore) =>
         store.reconcileUnstageCandidate(unstageSeedCommand()),
+    ],
+    [
+      "reconcileStagedPlacement",
+      (store: IndexedDBDataStore) =>
+        store.reconcileStagedPlacement(stagedPlacementSnapshotCommand()),
+    ],
+    [
+      "reconcileDirectPlacement",
+      (store: IndexedDBDataStore) =>
+        store.reconcileDirectPlacement(directPlacementSnapshotCommand()),
     ],
   ] as const)(
     "%s reads every authoritative store from one read-only transaction snapshot",
@@ -667,6 +679,33 @@ function unstageSeedCommand(): UnstageCandidateCommand {
     candidateExpectedVersion: 2,
     sourceBreakdownId: TRANSACTION_TEST_IDS.sourceBreakdown,
     sourceExpectedVersion: 2,
+  };
+}
+
+function directPlacementSnapshotCommand(): DirectPlacementCommand {
+  return {
+    operationId: transactionTestUuid(12320),
+    resultId: transactionTestUuid(12321),
+    scratchBitId: TRANSACTION_TEST_IDS.scratchBit,
+    sourceBreakdownId: TRANSACTION_TEST_IDS.sourceBreakdown,
+    sourceExpectedVersion: 2,
+    resultType: "node" as const,
+    title: "Placed Node",
+    targetParentId: null,
+    expectedAncestorIds: [] as string[],
+    x: 2,
+    y: 3,
+  };
+}
+
+function stagedPlacementSnapshotCommand(): StagedPlacementCommand {
+  return {
+    ...directPlacementSnapshotCommand(),
+    candidateId: TRANSACTION_TEST_IDS.stagedCandidate,
+    candidateExpectedVersion: 2,
+    resultType: "bit" as const,
+    targetParentId: TRANSACTION_TEST_IDS.inboxNode,
+    expectedAncestorIds: [TRANSACTION_TEST_IDS.inboxNode],
   };
 }
 

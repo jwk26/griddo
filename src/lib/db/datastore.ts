@@ -132,6 +132,33 @@ export type ConfirmedCandidateOrphanCleanupResult = RepositoryOperationResult<{
   auditEvent: CandidateOrphanAuditEvent | null;
 }>;
 
+export type PlacementCommandBase = RepositoryOperationCommand<{
+  resultId: string;
+  scratchBitId: string;
+  sourceBreakdownId: string;
+  sourceExpectedVersion: number;
+  resultType: "node" | "bit";
+  title: string;
+  targetParentId: string | null;
+  expectedAncestorIds: readonly string[];
+  x: number;
+  y: number;
+}>;
+
+export type StagedPlacementCommand = PlacementCommandBase & Readonly<{
+  candidateId: string;
+  candidateExpectedVersion: number;
+}>;
+
+export type DirectPlacementCommand = PlacementCommandBase;
+
+export type PlacementResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  result: Node | Bit | null;
+  source: ScratchBreakdown | null;
+  candidate: StagedCandidate | null;
+}>;
+
 export type AggregateHardDeleteResult =
   | { status: "deleted" }
   | {
@@ -223,6 +250,12 @@ export interface DataStore {
   reconcileConfirmedCandidateOrphanCleanup(
     command: ConfirmedCandidateOrphanCleanupCommand,
   ): Promise<ConfirmedCandidateOrphanCleanupResult>;
+
+  // --- Authoritative Inbox Placement Commands ---
+  placeStagedCandidate(command: StagedPlacementCommand): Promise<PlacementResult>;
+  reconcileStagedPlacement(command: StagedPlacementCommand): Promise<PlacementResult>;
+  placeDirectBreakdown(command: DirectPlacementCommand): Promise<PlacementResult>;
+  reconcileDirectPlacement(command: DirectPlacementCommand): Promise<PlacementResult>;
 
   // --- Chunks ---
   getChunks(bitId: string): Promise<Chunk[]>;

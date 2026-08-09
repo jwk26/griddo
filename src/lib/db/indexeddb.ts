@@ -10,12 +10,16 @@ import type {
   DataStore,
   DeleteBreakdownCommand,
   DeleteBreakdownResult,
+  DirectPlacementCommand,
+  PlacementCommandBase,
+  PlacementResult,
   SaveBreakdownCommand,
   SaveBreakdownResult,
   SaveScratchTitleCommand,
   SaveScratchTitleResult,
   StageCandidateCommand,
   StageCandidateResult,
+  StagedPlacementCommand,
   UnstageCandidateCommand,
   UnstageCandidateResult,
 } from "@/lib/db/datastore";
@@ -96,6 +100,17 @@ type ConfirmedCandidateOrphanState = {
   auditById: CandidateOrphanAuditEvent | undefined;
   auditByCandidate: CandidateOrphanAuditEvent | undefined;
   authoritativeAudit: CandidateOrphanAuditEvent | undefined;
+};
+
+type PlacementState = {
+  resultNode: Node | undefined;
+  resultBit: Bit | undefined;
+  source: ScratchBreakdown | undefined;
+  candidate: StagedCandidate | undefined;
+  sourceCandidate: StagedCandidate | undefined;
+  scratch: Bit | undefined;
+  nodes: Node[];
+  bits: Bit[];
 };
 
 type IndexedDBTransactionCheckpointHook = (name: string) => undefined;
@@ -234,6 +249,28 @@ const confirmedCandidateOrphanCleanupCommandSchema = z.object({
   proof: confirmedCandidateOrphanProofSchema,
 }).strict();
 
+const placementCommandShape = {
+  operationId: repositoryOperationIdSchema,
+  resultId: z.string().uuid(),
+  scratchBitId: z.string().uuid(),
+  sourceBreakdownId: z.string().uuid(),
+  sourceExpectedVersion: commandVersionSchema,
+  resultType: z.enum(["node", "bit"]),
+  title: z.string().min(1).max(1000),
+  targetParentId: z.string().uuid().nullable(),
+  expectedAncestorIds: z.array(z.string().uuid()),
+  x: z.number().int(),
+  y: z.number().int(),
+};
+
+const stagedPlacementCommandSchema = z.object({
+  ...placementCommandShape,
+  candidateId: z.string().uuid(),
+  candidateExpectedVersion: commandVersionSchema,
+}).strict();
+
+const directPlacementCommandSchema = z.object(placementCommandShape).strict();
+
 const addBreakdownResultSchema = z.object({
   operationId: repositoryOperationIdSchema,
   status: repositoryOperationStatusSchema,
@@ -284,6 +321,14 @@ const confirmedCandidateOrphanCleanupResultSchema = z.object({
   candidate: stagedCandidateSchema.nullable(),
   source: scratchBreakdownSchema.nullable(),
   auditEvent: candidateOrphanAuditEventSchema.nullable(),
+}).strict();
+
+const placementResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  result: z.union([nodeSchema, bitSchema]).nullable(),
+  source: scratchBreakdownSchema.nullable(),
+  candidate: stagedCandidateSchema.nullable(),
 }).strict();
 
 export class GridDODatabase extends Dexie {
@@ -2027,6 +2072,183 @@ export class IndexedDBDataStore implements DataStore {
     });
   }
 
+  async placeStagedCandidate(
+    command: StagedPlacementCommand,
+  ): Promise<PlacementResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.placeStagedCandidate(command));
+    }
+
+    const parsed = stagedPlacementCommandSchema.parse(command);
+    const state = await this.readPlacementState(parsed);
+    const result = placementStateResult(state);
+    const authoritativeCandidate = state.candidate ?? state.sourceCandidate;
+
+    if (matchesStagedPlacementPostcondition(parsed, state)) {
+      return placementResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        result,
+        source: state.source ?? null,
+        candidate: null,
+      });
+    }
+
+    const validation = this.validatePlacementPrecondition(parsed, state, true);
+    if (validation !== "valid") {
+      return placementResultSchema.parse({
+        operationId: parsed.operationId,
+        status: validation,
+        result,
+        source: state.source ?? null,
+        candidate: authoritativeCandidate ?? null,
+      });
+    }
+
+    const timestamp = Date.now();
+    const placed = createPlacementResult(parsed, state, timestamp);
+    const source = scratchBreakdownSchema.parse({
+      ...state.source!,
+      consumedAt: timestamp,
+      version: parsed.sourceExpectedVersion + 1,
+    });
+
+    await this.putPlacementResult(placed);
+    if (parsed.targetParentId !== null) {
+      const targetParent = state.nodes.find(({ id }) => id === parsed.targetParentId)!;
+      await this.database.nodes.put({ ...targetParent, mtime: timestamp });
+    }
+    this.emitTransactionCheckpoint("inbox.place-staged.after.result");
+    await this.requireScratchBreakdowns().put(source);
+    this.emitTransactionCheckpoint("inbox.place-staged.after.source");
+    await this.requireStagedCandidates().delete(parsed.candidateId);
+    this.emitTransactionCheckpoint("inbox.place-staged.after.candidate");
+
+    return placementResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      result: placed,
+      source,
+      candidate: null,
+    });
+  }
+
+  async reconcileStagedPlacement(
+    command: StagedPlacementCommand,
+  ): Promise<PlacementResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileStagedPlacement(command),
+      );
+    }
+
+    const parsed = stagedPlacementCommandSchema.parse(command);
+    const state = await this.readPlacementState(parsed);
+    const status = matchesStagedPlacementPostcondition(parsed, state)
+      ? "already_applied"
+      : this.validatePlacementPrecondition(parsed, state, true) === "valid"
+        ? "not_applied"
+        : "conflict";
+
+    return placementResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      result: placementStateResult(state),
+      source: state.source ?? null,
+      candidate: state.candidate ?? state.sourceCandidate ?? null,
+    });
+  }
+
+  async placeDirectBreakdown(
+    command: DirectPlacementCommand,
+  ): Promise<PlacementResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.placeDirectBreakdown(command));
+    }
+
+    const parsed = directPlacementCommandSchema.parse(command);
+    const state = await this.readPlacementState(parsed);
+    const result = placementStateResult(state);
+
+    if (matchesDirectPlacementPostcondition(parsed, state)) {
+      return placementResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        result,
+        source: state.source ?? null,
+        candidate: null,
+      });
+    }
+
+    const validation = this.validatePlacementPrecondition(parsed, state, false);
+    if (validation !== "valid") {
+      return placementResultSchema.parse({
+        operationId: parsed.operationId,
+        status: validation,
+        result,
+        source: state.source ?? null,
+        candidate: state.sourceCandidate ?? null,
+      });
+    }
+
+    const timestamp = Date.now();
+    const placed = createPlacementResult(parsed, state, timestamp);
+    const source = scratchBreakdownSchema.parse({
+      ...state.source!,
+      consumedAt: timestamp,
+      version: parsed.sourceExpectedVersion + 1,
+    });
+
+    await this.putPlacementResult(placed);
+    if (parsed.targetParentId !== null) {
+      const targetParent = state.nodes.find(({ id }) => id === parsed.targetParentId)!;
+      await this.database.nodes.put({ ...targetParent, mtime: timestamp });
+    }
+    this.emitTransactionCheckpoint("inbox.place-direct.after.result");
+    await this.requireScratchBreakdowns().put(source);
+    this.emitTransactionCheckpoint("inbox.place-direct.after.source");
+
+    return placementResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      result: placed,
+      source,
+      candidate: null,
+    });
+  }
+
+  async reconcileDirectPlacement(
+    command: DirectPlacementCommand,
+  ): Promise<PlacementResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileDirectPlacement(command),
+      );
+    }
+
+    const parsed = directPlacementCommandSchema.parse(command);
+    const state = await this.readPlacementState(parsed);
+    const status = matchesDirectPlacementPostcondition(parsed, state)
+      ? "already_applied"
+      : this.validatePlacementPrecondition(parsed, state, false) === "valid"
+        ? "not_applied"
+        : "conflict";
+
+    return placementResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      result: placementStateResult(state),
+      source: state.source ?? null,
+      candidate: state.sourceCandidate ?? null,
+    });
+  }
+
   async createScratchBreakdown(data: CreateScratchBreakdown): Promise<ScratchBreakdown> {
     if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
       return this.write(() => this.createScratchBreakdown(data));
@@ -2928,6 +3150,104 @@ export class IndexedDBDataStore implements DataStore {
     );
   }
 
+  private async readPlacementState(
+    command: PlacementCommandBase & Partial<Pick<StagedPlacementCommand, "candidateId">>,
+  ): Promise<PlacementState> {
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const [resultNode, resultBit, source, candidate, scratch, nodes, bits, allCandidates] =
+      await Promise.all([
+        this.database.nodes.get(command.resultId),
+        this.database.bits.get(command.resultId),
+        breakdowns.get(command.sourceBreakdownId),
+        command.candidateId ? candidates.get(command.candidateId) : Promise.resolve(undefined),
+        this.database.bits.get(command.scratchBitId),
+        this.database.nodes.toArray(),
+        this.database.bits.toArray(),
+        candidates.toArray(),
+      ]);
+
+    return {
+      resultNode,
+      resultBit,
+      source,
+      candidate,
+      sourceCandidate: allCandidates.find(
+        (item) => item.sourceBreakdownId === command.sourceBreakdownId,
+      ),
+      scratch,
+      nodes,
+      bits,
+    };
+  }
+
+  private validatePlacementPrecondition(
+    command: PlacementCommandBase & Partial<Pick<StagedPlacementCommand, "candidateId" | "candidateExpectedVersion">>,
+    state: PlacementState,
+    staged: boolean,
+  ): "valid" | "rejected" | "conflict" {
+    if (state.resultNode || state.resultBit) return "conflict";
+
+    const scratchParent = state.scratch
+      ? state.nodes.find(({ id }) => id === state.scratch!.parentId)
+      : undefined;
+    const scratchIsActive =
+      state.scratch !== undefined &&
+      state.scratch.deletedAt === null &&
+      state.scratch.archivedAt === null &&
+      scratchParent?.systemRole === "inbox" &&
+      scratchParent.deletedAt === null &&
+      scratchParent.archivedAt === null;
+    if (
+      !scratchIsActive ||
+      !state.source ||
+      state.source.scratchBitId !== command.scratchBitId ||
+      state.source.consumedAt !== null
+    ) {
+      return "rejected";
+    }
+    if (state.source.version !== command.sourceExpectedVersion) return "conflict";
+
+    if (staged) {
+      if (
+        !command.candidateId ||
+        !state.candidate ||
+        state.sourceCandidate?.id !== command.candidateId ||
+        state.candidate.sourceBreakdownId !== command.sourceBreakdownId ||
+        state.candidate.scratchBitId !== command.scratchBitId ||
+        state.candidate.lifecycle !== "staged" ||
+        state.candidate.resultType !== command.resultType
+      ) {
+        return "conflict";
+      }
+      if (state.candidate.version !== command.candidateExpectedVersion) return "conflict";
+    } else {
+      if (state.sourceCandidate) return "rejected";
+      if (command.title !== state.source.content) return "rejected";
+    }
+
+    if (!placementTitleIsValid(command.resultType, command.title)) return "rejected";
+    if (!targetIsValid(command, state.nodes)) return "rejected";
+    if (
+      command.x < 0 ||
+      command.x >= GRID_COLS ||
+      command.y < 0 ||
+      command.y >= GRID_ROWS ||
+      placementCellIsOccupied(command, state)
+    ) {
+      return "rejected";
+    }
+
+    return "valid";
+  }
+
+  private putPlacementResult(result: Node | Bit): Promise<unknown> {
+    if ("level" in result) {
+      return this.database.nodes.put(nodeSchema.parse(result));
+    }
+    return this.database.bits.put(bitSchema.parse(result));
+  }
+
   private async saveNodes(nodes: Node[]): Promise<void> {
     if (nodes.length > 0) {
       await this.database.nodes.bulkPut(nodes);
@@ -3325,6 +3645,225 @@ function matchesCandidateOrphanAuditEvent(
     event.candidateId === command.candidateId &&
     event.sourceBreakdownId === command.sourceBreakdownId &&
     event.scratchBitId === command.scratchBitId
+  );
+}
+
+function placementStateResult(state: PlacementState): Node | Bit | null {
+  return state.resultNode ?? state.resultBit ?? null;
+}
+
+function matchesStagedPlacementPostcondition(
+  command: StagedPlacementCommand,
+  state: PlacementState,
+): boolean {
+  const result = matchingPlacementResult(command, state);
+  return (
+    result !== undefined &&
+    state.source?.id === command.sourceBreakdownId &&
+    state.source.scratchBitId === command.scratchBitId &&
+    state.source.version === command.sourceExpectedVersion + 1 &&
+    state.source.consumedAt === result.createdAt &&
+    state.candidate === undefined &&
+    state.sourceCandidate === undefined
+  );
+}
+
+function matchesDirectPlacementPostcondition(
+  command: DirectPlacementCommand,
+  state: PlacementState,
+): boolean {
+  const result = matchingPlacementResult(command, state);
+  return (
+    result !== undefined &&
+    state.source?.id === command.sourceBreakdownId &&
+    state.source.scratchBitId === command.scratchBitId &&
+    state.source.version === command.sourceExpectedVersion + 1 &&
+    state.source.consumedAt === result.createdAt &&
+    state.sourceCandidate === undefined
+  );
+}
+
+function matchingPlacementResult(
+  command: PlacementCommandBase,
+  state: PlacementState,
+): Node | Bit | undefined {
+  if (command.resultType === "node") {
+    const result = state.resultNode;
+    if (
+      !result ||
+      state.resultBit ||
+      result.id !== command.resultId ||
+      result.title !== command.title ||
+      result.parentId !== command.targetParentId ||
+      result.x !== command.x ||
+      result.y !== command.y ||
+      result.version !== 1 ||
+      result.pastDeadlineDismissed !== false ||
+      result.deletedAt !== null ||
+      result.archivedAt !== null ||
+      result.systemRole !== null ||
+      result.hiddenFromGrid !== false ||
+      result.deadline !== null ||
+      result.deadlineAllDay !== false ||
+      result.color !== "hsl(210, 80%, 55%)" ||
+      result.icon !== "Folder" ||
+      result.createdAt !== result.mtime
+    ) {
+      return undefined;
+    }
+    const expectedLevel = command.expectedAncestorIds.length;
+    return result.level === expectedLevel ? result : undefined;
+  }
+
+  const result = state.resultBit;
+  if (
+    !result ||
+    state.resultNode ||
+    command.targetParentId === null ||
+    result.id !== command.resultId ||
+    result.title !== command.title ||
+    result.parentId !== command.targetParentId ||
+    result.x !== command.x ||
+    result.y !== command.y ||
+    result.version !== 1 ||
+    result.pastDeadlineDismissed !== false ||
+    result.deletedAt !== null ||
+    result.archivedAt !== null ||
+    result.description !== "" ||
+    result.icon !== "ListTodo" ||
+    result.deadline !== null ||
+    result.deadlineAllDay !== false ||
+    result.priority !== null ||
+    result.status !== "active" ||
+    result.createdAt !== result.mtime
+  ) {
+    return undefined;
+  }
+  return result;
+}
+
+function createPlacementResult(
+  command: PlacementCommandBase,
+  state: PlacementState,
+  timestamp: number,
+): Node | Bit {
+  if (command.resultType === "node") {
+    const parentLevel = command.targetParentId === null
+      ? -1
+      : state.nodes.find(({ id }) => id === command.targetParentId)!.level;
+    return nodeSchema.parse({
+      id: command.resultId,
+      title: command.title,
+      color: "hsl(210, 80%, 55%)",
+      icon: "Folder",
+      deadline: null,
+      deadlineAllDay: false,
+      mtime: timestamp,
+      createdAt: timestamp,
+      version: 1,
+      parentId: command.targetParentId,
+      level: parentLevel + 1,
+      x: command.x,
+      y: command.y,
+      deletedAt: null,
+      archivedAt: null,
+      systemRole: null,
+      hiddenFromGrid: false,
+      pastDeadlineDismissed: false,
+    });
+  }
+
+  return bitSchema.parse({
+    id: command.resultId,
+    title: command.title,
+    description: "",
+    icon: "ListTodo",
+    deadline: null,
+    deadlineAllDay: false,
+    priority: null,
+    status: "active",
+    mtime: timestamp,
+    createdAt: timestamp,
+    version: 1,
+    parentId: command.targetParentId,
+    x: command.x,
+    y: command.y,
+    deletedAt: null,
+    archivedAt: null,
+    pastDeadlineDismissed: false,
+  });
+}
+
+function placementTitleIsValid(type: "node" | "bit", title: string): boolean {
+  return title.length >= 1 && title.length <= (type === "node" ? 100 : 200);
+}
+
+function targetIsValid(command: PlacementCommandBase, nodes: Node[]): boolean {
+  if (command.targetParentId === null) {
+    return command.resultType === "node" && command.expectedAncestorIds.length === 0;
+  }
+
+  const nodesById = new Map(nodes.map((node) => [node.id, node]));
+  const target = nodesById.get(command.targetParentId);
+  if (!target || target.systemRole !== null) return false;
+
+  const ancestorIds: string[] = [];
+  const visited = new Set<string>();
+  let current: Node | undefined = target;
+  while (current) {
+    if (
+      visited.has(current.id) ||
+      current.deletedAt !== null ||
+      current.archivedAt !== null ||
+      current.systemRole !== null ||
+      current.hiddenFromGrid
+    ) {
+      return false;
+    }
+    visited.add(current.id);
+    ancestorIds.unshift(current.id);
+    if (current.parentId === null) break;
+    const parent = nodesById.get(current.parentId);
+    if (!parent) return false;
+    current = parent;
+  }
+
+  if (
+    ancestorIds.length !== command.expectedAncestorIds.length ||
+    ancestorIds.some((id, index) => id !== command.expectedAncestorIds[index])
+  ) {
+    return false;
+  }
+  const chainIsConsistent = ancestorIds.every(
+    (id, index) => nodesById.get(id)?.level === index,
+  );
+  if (!chainIsConsistent) return false;
+
+  return command.resultType === "bit" || target.level < 2;
+}
+
+function placementCellIsOccupied(
+  command: PlacementCommandBase,
+  state: PlacementState,
+): boolean {
+  return (
+    state.nodes.some(
+      (node) =>
+        node.parentId === command.targetParentId &&
+        node.deletedAt === null &&
+        node.archivedAt === null &&
+        !(command.targetParentId === null && node.hiddenFromGrid) &&
+        node.x === command.x &&
+        node.y === command.y,
+    ) ||
+    state.bits.some(
+      (bit) =>
+        bit.parentId === command.targetParentId &&
+        bit.deletedAt === null &&
+        bit.archivedAt === null &&
+        bit.x === command.x &&
+        bit.y === command.y,
+    )
   );
 }
 

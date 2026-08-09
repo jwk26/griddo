@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–122 accepted; Task 123 In Progress
+> State: Tasks 120–122 accepted; Task 123 Implemented awaiting user review
 
 ## Status Legend
 
@@ -226,15 +226,21 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | Task 123 only — Implement staged and direct Placement commands |
-| State | In Progress; implementation is not user acceptance and the Task 123 marker remains `[ ]` |
+| State | Implemented awaiting user review; implementation is not user acceptance and the Task 123 marker remains `[ ]` |
 | Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-placement.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; no other product/test file, UI, hook, Task 124, Phase 24, or Shelf work |
 | Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, Task 123 only), explicitly approved by the user |
 | Start base / entrypoint | Continuation approved base `dea3d094ae060db17bc1a5870d68267c27f2a3c7`; run-task entrypoint and Gate C kickoff commit `aa28e01dc46280fee58117044fefb292482e409b` |
-| Recovery anchor | This durable-start commit; its parent must be `aa28e01dc46280fee58117044fefb292482e409b` and it precedes every Task 123 product/test write |
+| Recovery anchor | Durable-start commit `1188e3959206182b8b2ca37e96f52eedcc4ef513`; its parent is `aa28e01dc46280fee58117044fefb292482e409b` and it precedes every Task 123 product/test write |
 | Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`; existing same-phase reuse approved; clean at start |
 | Dependencies / mutex | Tasks 120 and 121 accepted; `P25-122-R1` Closed; Task 123 exclusively owns `db-implementation`, `db-interface`, and `db-command-harness`; Tasks 124–126 remain held |
 | Lifecycle evidence | Candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` run-phase resolver validated the committed Gate C receipt as `ready`; receipt-less run-task resolver returned the expected compatibility state `approval_required`, `contract_ready=true`, `writes_allowed=false`; write authority remains the user-approved Gate C receipt |
-| Issues / deviations | None at start |
+| Issues / deviations | None |
 | Canonical impact | None — implementation-local conformance to the approved SCHEMA/SPEC/Task 123 contract |
 | Verification contract | Selected-target RED; focused placement/inbox tests; four-file mutex regression; `pnpm typecheck`; `git diff --check`; then exactly one fresh serial full gate after focused green and final repair |
-| Next legal action | Add Task 123 contract tests, capture selected-target RED, implement only the approved repository APIs, verify/review, commit implementation and ledger evidence, then stop at the user checkpoint |
+| Production changes | Added separate typed staged/direct Placement execute and reconcile APIs. Both carry stable operation/result identity, exact source/candidate revisions, intended type/title, target parent/path, and exact cell; revalidate Scratch/source/candidate lifecycle, hierarchy/reachability/type, title limits, capacity/cell, and versions inside one transaction; construct all four Node/Bit variants with explicit `version: 1` and `pastDeadlineDismissed: false` before full schema parsing; atomically create/touch parent/consume source and, for staged placement, delete the candidate. Reconcile accepts only complete postcondition, exact untouched precondition, or conflict. |
+| TDD evidence | Initial selected-target RED exited 1 with 24 expected missing-method failures and 27 existing passes. The first implementation reduced the failure set to 10 transaction-lifetime failures, the synchronous snapshot validation repair reduced it to one mislabeled test fixture, and the corrected fixture reached 2 files / 51 tests. Review RED then reproduced missing parent `mtime` cascade and committed-Node reconcile drift with three exact failures / 50 passes; the targeted repair reached 2 files / 53 tests. No identical unchanged failure set persisted twice. |
+| Focused verification | Final direct selected-target `pnpm exec vitest run src/lib/db/triage-placement.test.ts src/lib/db/inbox-operations.test.ts` exit 0 (2 files, 53 tests); mutex regression exit 0 (4 files, 75 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0 |
+| Full gate | Exactly one fresh serial post-implementation run: `pnpm test` exit 0 (84 files, 629 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js 16.2.1 production build, successful TypeScript/static generation, seven routes) |
+| Review | No remaining blocking finding. Real-Dexie evidence covers four schema-parsed constructors, complete/untouched/conflict reconciliation, one-snapshot reconcile reads, stale lifecycle/version/path/cell/title rejection, source-candidate exclusion, every staged/direct checkpoint rollback, stable-ID replay, no compensation/alternate target/truncation/heuristic/silent resend, parent `mtime` cascade, and post-commit reconcile independence from later target movement. Diff ownership is exactly the four approved product/test paths plus this ledger. |
+| Task markers | Tasks 120–122 are `[x]`; Task 123 remains `[ ]`; Tasks 124–126 remain `[ ]` |
+| Next legal action | Commit implementation and ledger evidence, audit clean ownership, present the Task 123 user checkpoint, and stop; only explicit user acceptance may later write Task 123 `[x]` |
