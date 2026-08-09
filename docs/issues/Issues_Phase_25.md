@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–123 accepted; Task 124 Implemented awaiting user review; Tasks 125–126 are not approved
+> State: Tasks 120–124 accepted; Tasks 125–126 are not approved
 
 ## Status Legend
 
@@ -270,12 +270,12 @@ None at kickoff.
 | Next legal action | Close this run-phase session after its receipt-only kickoff commit; in a fresh session invoke only the pinned candidate `$run-task`, using that kickoff commit as the recovery anchor; run-task must create a separate durable Task 124 start commit before any test or production-code write |
 | Forbidden here | Do not start Task 124 or Task 125/126, modify product/test files, write any task marker, run test/lint/typecheck/build, invoke downstream lifecycle work, push, create a PR, merge, rebase, or modify Phase 24 or Shelf |
 
-## Task 124 In Progress
+## Accepted Task 124
 
 | Field | Durable value |
 | --- | --- |
 | Task | Task 124 only — Implement source-aware Undo with candidate-version ABA protection |
-| State | Implemented awaiting user review; implementation is not user acceptance and the Task 124 marker remains `[ ]` |
+| State | Accepted by the user on 2026-08-10; Task 124 marker is `[x]` |
 | Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-undo.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; no other product/test file, UI, hook, Task 125/126, Phase 24, or Shelf work |
 | Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, Task 124 only), explicitly approved by the user |
 | Start base / entrypoint | Continuation approved base `54405de6aa9d1b42d1b58b19cbb68ee45a6a900e`; run-task entrypoint and Gate C kickoff commit `2128558387a94daf1ec2ee3ed1e612e83d1f75a2` |
@@ -291,5 +291,8 @@ None at kickoff.
 | Focused verification | Final direct selected-target `pnpm exec vitest run src/lib/db/triage-undo.test.ts src/lib/db/inbox-operations.test.ts` exit 0 (2 files, 48 tests); final mutex regression `pnpm exec vitest run src/lib/db/triage-placement.test.ts src/lib/db/triage-undo.test.ts src/lib/db/inbox-operations.test.ts` exit 0 (3 files, 72 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0 |
 | Full gate | Exactly one fresh serial post-implementation run: `pnpm test` exit 0 (85 files, 648 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js 16.2.1 production build, successful TypeScript/static generation, seven routes) |
 | Review | No remaining blocking finding. Real-Dexie evidence covers staged/direct Node/Bit exact inverse and schema identity, source/candidate revisions, parent `mtime`, result mutation/lifecycle/source-consumption/candidate-ID collision rejection, descendant blocking and child-first re-enable, every staged/direct checkpoint rollback, one-snapshot reconciliation, ABA-3 late Placement/Stage conflict with candidate v+1 preservation, and ambiguous Undo followed by a new confirmed Placement with no deletion/restoration/resurrection. Diff ownership is exactly `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, `src/lib/db/triage-undo.test.ts`, `src/lib/db/inbox-operations.test.ts`, and this ledger; no UI/hook, Task 125/126, Phase 24, or Shelf path is owned. |
-| Task markers | Tasks 120–123 are `[x]`; Task 124 and Tasks 125–126 remain `[ ]` |
-| Next legal action | Commit Task 124 implementation and this evidence, verify clean exact ownership, present the user checkpoint, and stop; only explicit user acceptance may later write Task 124 `[x]` |
+| User acceptance | Task 124 checkpoint explicitly accepted on 2026-08-10; implementation commit `19dc391b4f08f02249abc817c74e3dc1019a40f4` and its recorded focused/mutex/full verification evidence are the durable acceptance basis |
+| Acceptance verification | Reused the recorded Task 124 full gate exactly as instructed; acceptance-only verification is exact two-file write-set inspection plus `git diff --check` |
+| Task markers | Tasks 120–124 are `[x]`; Tasks 125–126 remain `[ ]` |
+| Next legal action | Stop after the Task 124 acceptance commit; Task 125/126 and any next Gate C packet remain unapproved |
+| Forbidden here | Do not start Task 125/126, prepare a next Gate C packet, modify product/test code, push, create a PR, merge, rebase, or perform branch/worktree cleanup |

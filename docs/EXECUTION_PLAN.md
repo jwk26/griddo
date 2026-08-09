@@ -763,7 +763,7 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 **Commit contract:** two placement commands and real transaction tests only; `feat(triage): add atomic placement commands`.
 
-### Task 124: [ ] Implement source-aware Undo with candidate-version ABA protection
+### Task 124: [x] Implement source-aware Undo with candidate-version ABA protection
 
 **Files and actions:** modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-undo.test.ts`; extend `src/lib/db/inbox-operations.test.ts`. Undo carries exact result/source/candidate identities, placement post-state versions/timestamps, creation snapshot, and staged/direct provenance. Inside one transaction validate unchanged result lifecycle/direct revision/creation fields, exact consumed source, candidate uniqueness, and zero surviving descendants/unknown mutation; delete exact result and restore/advance source. Staged Undo recreates the **same candidate ID/type/createdAt** at **prior candidate version + 1** with `updatedAt = now`; direct Undo creates none. Add **ABA-3 Place→Undo**: Stage candidate v1, place it, then confirmed Undo recreates that ID at v2; late original Placement and Stage reconciliation both return `conflict`, keep source restored and candidate v2, keep result absent, and never reconsume source, delete/downgrade/recreate candidate v1, or resurrect result. Also test ambiguous Undo followed by a new confirmed placement: late Undo reconciliation conflicts and cannot remove the new result or restore old source state.
 
