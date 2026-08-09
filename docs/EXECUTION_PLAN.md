@@ -242,7 +242,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | Receipt | VQ | Decision task | Exact implementation edge | Resume condition |
 |---|---|---|---|---|
 | `DP-VQ01` | `VQ-01` | 106 | 141 only | Choice A central blocking panel accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_106.dp-vq01.json`; Task 141 only is released. |
-| `DP-VQ02` | `VQ-02` | 107 | 148 only | Choice A row-attached wash/check/text signal recorded at `docs/issues/Issues_Phase_24.Task_107.dp-vq02.json`; Task 107 remains `[ ]` pending its user checkpoint. |
+| `DP-VQ02` | `VQ-02` | 107 | 148 only | Choice A row-attached wash/check/text signal accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_107.dp-vq02.json`; Task 148 only is released. |
 | `DP-VQ03` | `VQ-03` | 108 | 140 only | Accepted receipt supplies or scopes out the internal departure surface. |
 | `DP-VQ04` | `VQ-04` | 109 | 138 only | Accepted receipt supplies both complete inline-editor surfaces. |
 | `DP-VQ05` | `VQ-05` | 110 | 143 only | Accepted receipt defines Add/Delete reliability states. |
