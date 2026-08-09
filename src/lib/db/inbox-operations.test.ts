@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import Dexie from "dexie";
+import { describe, expect, it, vi } from "vitest";
 import type {
   AddBreakdownCommand,
   DeleteBreakdownCommand,
@@ -30,7 +31,43 @@ const IDS = {
 
 type CheckpointHook = (name: string) => undefined;
 
+const RECONCILE_STORE_NAMES = [
+  "nodes",
+  "bits",
+  "scratchBreakdowns",
+  "stagedCandidates",
+] as const;
+
 describe("authoritative Inbox Breakdown commands", () => {
+  it.each([
+    [
+      "reconcileAddBreakdown",
+      (store: IndexedDBDataStore) => store.reconcileAddBreakdown(addCommand()),
+    ],
+    [
+      "reconcileSaveScratchTitle",
+      (store: IndexedDBDataStore) =>
+        store.reconcileSaveScratchTitle(saveScratchCommand()),
+    ],
+    [
+      "reconcileSaveBreakdown",
+      (store: IndexedDBDataStore) =>
+        store.reconcileSaveBreakdown(saveBreakdownCommand()),
+    ],
+    [
+      "reconcileDeleteBreakdown",
+      (store: IndexedDBDataStore) =>
+        store.reconcileDeleteBreakdown(deleteCommand()),
+    ],
+  ] as const)(
+    "%s reads every authoritative store from one read-only transaction snapshot",
+    async (_name, reconcile) => {
+      await withCommandStore(undefined, async (database, store) => {
+        await expectSingleReconcileSnapshot(database, () => reconcile(store));
+      });
+    },
+  );
+
   describe("Add Breakdown", () => {
     it("classifies the exact precondition, commits one stable row, and recognizes the complete postcondition", async () => {
       await withCommandStore(emptyBreakdownSeed, async (database, store) => {
@@ -416,5 +453,60 @@ async function withCommandStore(
     await run(database, new IndexedDBDataStore(database, onCheckpoint));
   } finally {
     database.close();
+  }
+}
+
+async function expectSingleReconcileSnapshot(
+  database: GridDODatabase,
+  reconcile: () => Promise<unknown>,
+): Promise<void> {
+  const observedTransactions: Array<typeof Dexie.currentTransaction> = [];
+  const observeTransaction = () => {
+    observedTransactions.push(Dexie.currentTransaction);
+  };
+  const nodeGet = database.nodes.get.bind(database.nodes);
+  const bitGet = database.bits.get.bind(database.bits);
+  const breakdownGet = database.scratchBreakdowns.get.bind(
+    database.scratchBreakdowns,
+  );
+  const candidatesToArray = database.stagedCandidates.toArray.bind(
+    database.stagedCandidates,
+  );
+  const spies = [
+    vi.spyOn(database.nodes, "get").mockImplementation((id) => {
+      observeTransaction();
+      return nodeGet(id);
+    }),
+    vi.spyOn(database.bits, "get").mockImplementation((id) => {
+      observeTransaction();
+      return bitGet(id);
+    }),
+    vi.spyOn(database.scratchBreakdowns, "get").mockImplementation((id) => {
+      observeTransaction();
+      return breakdownGet(id);
+    }),
+    vi.spyOn(database.stagedCandidates, "toArray").mockImplementation(() => {
+      observeTransaction();
+      return candidatesToArray();
+    }),
+  ];
+
+  try {
+    await reconcile();
+
+    expect(observedTransactions.length).toBeGreaterThan(0);
+    const transaction = observedTransactions[0];
+    expect(transaction).not.toBeNull();
+    expect(transaction?.mode).toBe("readonly");
+    expect(
+      observedTransactions.every((observed) => observed === transaction),
+    ).toBe(true);
+    expect([...(transaction?.storeNames ?? [])].sort()).toEqual(
+      [...RECONCILE_STORE_NAMES].sort(),
+    );
+  } finally {
+    for (const spy of spies) {
+      spy.mockRestore();
+    }
   }
 }

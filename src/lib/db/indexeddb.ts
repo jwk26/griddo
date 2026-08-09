@@ -1175,6 +1175,15 @@ export class IndexedDBDataStore implements DataStore {
   async reconcileAddBreakdown(
     command: AddBreakdownCommand,
   ): Promise<AddBreakdownResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileAddBreakdown(command),
+      );
+    }
+
     const parsed = addBreakdownCommandSchema.parse(command);
     const breakdowns = this.requireScratchBreakdowns();
     const [currentBreakdown, currentScratch] = await Promise.all([
@@ -1266,6 +1275,15 @@ export class IndexedDBDataStore implements DataStore {
   async reconcileSaveScratchTitle(
     command: SaveScratchTitleCommand,
   ): Promise<SaveScratchTitleResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileSaveScratchTitle(command),
+      );
+    }
+
     const parsed = saveScratchTitleCommandSchema.parse(command);
     const currentScratch = await this.database.bits.get(parsed.scratchBitId);
     const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
@@ -1374,6 +1392,15 @@ export class IndexedDBDataStore implements DataStore {
   async reconcileSaveBreakdown(
     command: SaveBreakdownCommand,
   ): Promise<SaveBreakdownResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileSaveBreakdown(command),
+      );
+    }
+
     const parsed = saveBreakdownCommandSchema.parse(command);
     const breakdowns = this.requireScratchBreakdowns();
     const [currentBreakdown, currentCandidate] = await Promise.all([
@@ -1491,6 +1518,15 @@ export class IndexedDBDataStore implements DataStore {
   async reconcileDeleteBreakdown(
     command: DeleteBreakdownCommand,
   ): Promise<DeleteBreakdownResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileDeleteBreakdown(command),
+      );
+    }
+
     const parsed = deleteBreakdownCommandSchema.parse(command);
     const breakdowns = this.requireScratchBreakdowns();
     const [currentBreakdown, currentCandidate, currentScratch] = await Promise.all([
@@ -2222,6 +2258,28 @@ export class IndexedDBDataStore implements DataStore {
     return scope();
   }
 
+  private async readInboxBreakdownSnapshot<T>(
+    scope: () => Promise<T>,
+  ): Promise<T> {
+    if (!(this.database instanceof GridDODatabase)) {
+      return scope();
+    }
+    if (this.hasAmbientDatabaseTransaction()) {
+      return scope();
+    }
+
+    return this.database.transaction(
+      "r",
+      [
+        this.database.nodes,
+        this.database.bits,
+        this.database.scratchBreakdowns,
+        this.database.stagedCandidates,
+      ],
+      scope,
+    );
+  }
+
   /** @internal Narrow test seam for proving named rollback checkpoints. */
   protected async runTransactionCheckpointProbe<T>(
     scope: (checkpoint: IndexedDBTransactionCheckpointHook) => Promise<T>,
@@ -2252,6 +2310,13 @@ export class IndexedDBDataStore implements DataStore {
       this.database instanceof GridDODatabase &&
       Dexie.currentTransaction?.db === this.database &&
       Dexie.currentTransaction.mode === "readwrite"
+    );
+  }
+
+  private hasAmbientDatabaseTransaction(): boolean {
+    return (
+      this.database instanceof GridDODatabase &&
+      Dexie.currentTransaction?.db === this.database
     );
   }
 
