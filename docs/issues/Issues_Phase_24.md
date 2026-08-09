@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–110 accepted; Tasks 111–113 are the approved active serial batch; Task 111 is not started
+> State: Tasks 106–110 accepted; Task 111 is In Progress for `DP-VQ06-POOL` choice A; Tasks 112–113 remain unavailable
 
 ## Status Legend
 
@@ -185,6 +185,22 @@ canonical document update, and commit remain Task-local and sequential.
 | Next receipt | Task 111 may later create `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json` only after its real user decision; this continuation kickoff does not create it |
 | Durable kickoff anchor | The commit containing this section and the updated whole-file Gate C receipt, with parent `d5770d6987c8b556630e9a0b818872fa7bb2d186` and no other changed path |
 | Next legal action | After that kickoff commit is resolver-valid and the worktree is clean, a fresh session may load only candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` `skills/run-task/SKILL.md` and start Task 111; the live `/Users/jwk/Documents/codex-workflow/skills/run-task` is prohibited |
+
+## Active Task
+
+| Field | Durable value |
+| --- | --- |
+| Task | 111 — record `DP-VQ06-POOL` Pool-status decision |
+| State | In Progress; user acceptance remains pending and the Task 111 plan marker stays `[ ]` |
+| Approved scope | Choice A fixed Pool-local status band directly below the expanded search/sort row, with exact hidden-selection, filtered-count, remote-arrival, lifecycle, action, focus, dismissal/lifetime, reduced-motion, collapsed-indicator, and eight-theme treatment; update only the Scratch Pool recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ06-POOL` receipt; no product code or Staging/Explorer authority |
+| User decision | On 2026-08-10 the user selected `DP-VQ06-POOL=A` and preferred the direct status band because it avoids a panel, event list, Escape handling, and Mark-reviewed state |
+| Predecessor | Task 110 accepted at `d5770d6987c8b556630e9a0b818872fa7bb2d186`; its exact release remains Task 143 only |
+| Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `15be56007b0290622bd907cbb3a02d78684a15f6`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
+| Entrypoint / recovery anchor | Continuation entrypoint `d5770d6987c8b556630e9a0b818872fa7bb2d186`; continuation kickoff `15be56007b0290622bd907cbb3a02d78684a15f6`; this ledger commit is the Task 111 durable start anchor |
+| Decision receipt target | `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json` |
+| Issue / deviation | None |
+| Canonical impact | None — Choice A is selected but has not yet been reflected in Task 111's three canonical documents |
+| Next legal action | Commit this ledger-only durable start, then record only `DP-VQ06-POOL=A`; Tasks 112–113 remain unavailable |
 
 ## Readiness Evidence
 
