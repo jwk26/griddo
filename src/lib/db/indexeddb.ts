@@ -12,6 +12,10 @@ import type {
   SaveBreakdownResult,
   SaveScratchTitleCommand,
   SaveScratchTitleResult,
+  StageCandidateCommand,
+  StageCandidateResult,
+  UnstageCandidateCommand,
+  UnstageCandidateResult,
 } from "@/lib/db/datastore";
 import {
   bitSchema,
@@ -174,6 +178,23 @@ const deleteBreakdownCommandSchema = z.object({
   scratchExpectedVersion: commandVersionSchema,
 }).strict();
 
+const stageCandidateCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  candidateId: z.string().uuid(),
+  scratchBitId: z.string().uuid(),
+  sourceBreakdownId: z.string().uuid(),
+  sourceExpectedVersion: commandVersionSchema,
+  resultType: z.enum(["node", "bit"]),
+}).strict();
+
+const unstageCandidateCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  candidateId: z.string().uuid(),
+  candidateExpectedVersion: commandVersionSchema,
+  sourceBreakdownId: z.string().uuid(),
+  sourceExpectedVersion: commandVersionSchema,
+}).strict();
+
 const addBreakdownResultSchema = z.object({
   operationId: repositoryOperationIdSchema,
   status: repositoryOperationStatusSchema,
@@ -201,6 +222,21 @@ const deleteBreakdownResultSchema = z.object({
   breakdown: scratchBreakdownSchema.nullable(),
   candidate: stagedCandidateSchema.nullable(),
   scratch: bitSchema.nullable(),
+}).strict();
+
+const stageCandidateResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  candidate: stagedCandidateSchema.nullable(),
+  source: scratchBreakdownSchema.nullable(),
+  scratch: bitSchema.nullable(),
+}).strict();
+
+const unstageCandidateResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  candidate: stagedCandidateSchema.nullable(),
+  source: scratchBreakdownSchema.nullable(),
 }).strict();
 
 export class GridDODatabase extends Dexie {
@@ -1562,6 +1598,292 @@ export class IndexedDBDataStore implements DataStore {
     });
   }
 
+  async stageCandidate(
+    command: StageCandidateCommand,
+  ): Promise<StageCandidateResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.stageCandidate(command));
+    }
+
+    const parsed = stageCandidateCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const [currentCandidate, sourceCandidate, currentSource, currentScratch] =
+      await Promise.all([
+        candidates.get(parsed.candidateId),
+        this.findCandidateBySource(parsed.sourceBreakdownId),
+        breakdowns.get(parsed.sourceBreakdownId),
+        this.database.bits.get(parsed.scratchBitId),
+      ]);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+    const authoritativeCandidate = currentCandidate ?? sourceCandidate;
+
+    if (
+      matchesStageCandidatePostcondition(
+        parsed,
+        currentCandidate,
+        sourceCandidate,
+        currentSource,
+        currentScratch,
+        scratchIsActive,
+      )
+    ) {
+      return stageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        candidate: currentCandidate ?? null,
+        source: currentSource ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      !scratchIsActive ||
+      !currentScratch ||
+      !currentSource ||
+      currentSource.scratchBitId !== parsed.scratchBitId ||
+      currentSource.consumedAt !== null
+    ) {
+      return stageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        candidate: authoritativeCandidate ?? null,
+        source: currentSource ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (currentCandidate !== undefined) {
+      return stageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        candidate: currentCandidate,
+        source: currentSource,
+        scratch: currentScratch,
+      });
+    }
+
+    if (sourceCandidate !== undefined) {
+      return stageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        candidate: sourceCandidate,
+        source: currentSource,
+        scratch: currentScratch,
+      });
+    }
+
+    if (currentSource.version !== parsed.sourceExpectedVersion) {
+      return stageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        candidate: null,
+        source: currentSource,
+        scratch: currentScratch,
+      });
+    }
+
+    const timestamp = Date.now();
+    const candidate = stagedCandidateSchema.parse({
+      id: parsed.candidateId,
+      scratchBitId: parsed.scratchBitId,
+      sourceBreakdownId: parsed.sourceBreakdownId,
+      resultType: parsed.resultType,
+      lifecycle: "staged",
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      version: 1,
+    });
+    const source = scratchBreakdownSchema.parse(incrementVersion(currentSource));
+
+    await candidates.put(candidate);
+    this.emitTransactionCheckpoint("inbox.stage.after.candidate");
+    await breakdowns.put(source);
+    this.emitTransactionCheckpoint("inbox.stage.after.source");
+
+    return stageCandidateResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      candidate,
+      source,
+      scratch: currentScratch,
+    });
+  }
+
+  async reconcileStageCandidate(
+    command: StageCandidateCommand,
+  ): Promise<StageCandidateResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileStageCandidate(command),
+      );
+    }
+
+    const parsed = stageCandidateCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const [currentCandidate, sourceCandidate, currentSource, currentScratch] =
+      await Promise.all([
+        candidates.get(parsed.candidateId),
+        this.findCandidateBySource(parsed.sourceBreakdownId),
+        breakdowns.get(parsed.sourceBreakdownId),
+        this.database.bits.get(parsed.scratchBitId),
+      ]);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+    const status = matchesStageCandidatePostcondition(
+      parsed,
+      currentCandidate,
+      sourceCandidate,
+      currentSource,
+      currentScratch,
+      scratchIsActive,
+    )
+      ? "already_applied"
+      : matchesStageCandidatePrecondition(
+            parsed,
+            currentCandidate,
+            sourceCandidate,
+            currentSource,
+            currentScratch,
+            scratchIsActive,
+          )
+        ? "not_applied"
+        : "conflict";
+
+    return stageCandidateResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      candidate: currentCandidate ?? sourceCandidate ?? null,
+      source: currentSource ?? null,
+      scratch: currentScratch ?? null,
+    });
+  }
+
+  async unstageCandidate(
+    command: UnstageCandidateCommand,
+  ): Promise<UnstageCandidateResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.unstageCandidate(command));
+    }
+
+    const parsed = unstageCandidateCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const [currentCandidate, sourceCandidate, currentSource] = await Promise.all([
+      candidates.get(parsed.candidateId),
+      this.findCandidateBySource(parsed.sourceBreakdownId),
+      breakdowns.get(parsed.sourceBreakdownId),
+    ]);
+    const authoritativeCandidate = currentCandidate ?? sourceCandidate;
+
+    if (
+      matchesUnstageCandidatePostcondition(
+        parsed,
+        currentCandidate,
+        sourceCandidate,
+        currentSource,
+      )
+    ) {
+      return unstageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        candidate: null,
+        source: currentSource ?? null,
+      });
+    }
+
+    if (
+      currentCandidate !== undefined &&
+      (currentCandidate.sourceBreakdownId !== parsed.sourceBreakdownId ||
+        (currentSource !== undefined &&
+          currentCandidate.scratchBitId !== currentSource.scratchBitId))
+    ) {
+      return unstageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        candidate: authoritativeCandidate ?? null,
+        source: currentSource ?? null,
+      });
+    }
+
+    if (
+      currentSource === undefined ||
+      !matchesUnstageCandidatePrecondition(
+        parsed,
+        currentCandidate,
+        sourceCandidate,
+        currentSource,
+      )
+    ) {
+      return unstageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        candidate: authoritativeCandidate ?? null,
+        source: currentSource,
+      });
+    }
+
+    const source = scratchBreakdownSchema.parse(incrementVersion(currentSource));
+    await candidates.delete(parsed.candidateId);
+    this.emitTransactionCheckpoint("inbox.unstage.after.candidate");
+    await breakdowns.put(source);
+    this.emitTransactionCheckpoint("inbox.unstage.after.source");
+
+    return unstageCandidateResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      candidate: null,
+      source,
+    });
+  }
+
+  async reconcileUnstageCandidate(
+    command: UnstageCandidateCommand,
+  ): Promise<UnstageCandidateResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileUnstageCandidate(command),
+      );
+    }
+
+    const parsed = unstageCandidateCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const [currentCandidate, sourceCandidate, currentSource] = await Promise.all([
+      candidates.get(parsed.candidateId),
+      this.findCandidateBySource(parsed.sourceBreakdownId),
+      breakdowns.get(parsed.sourceBreakdownId),
+    ]);
+    const status = matchesUnstageCandidatePostcondition(
+      parsed,
+      currentCandidate,
+      sourceCandidate,
+      currentSource,
+    )
+      ? "already_applied"
+      : matchesUnstageCandidatePrecondition(
+            parsed,
+            currentCandidate,
+            sourceCandidate,
+            currentSource,
+          )
+        ? "not_applied"
+        : "conflict";
+
+    return unstageCandidateResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      candidate: currentCandidate ?? sourceCandidate ?? null,
+      source: currentSource ?? null,
+    });
+  }
+
   async createScratchBreakdown(data: CreateScratchBreakdown): Promise<ScratchBreakdown> {
     if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
       return this.write(() => this.createScratchBreakdown(data));
@@ -2665,6 +2987,86 @@ function matchesDeleteBreakdownPostcondition(
     breakdown === undefined &&
     candidate === undefined &&
     scratch?.version === command.scratchExpectedVersion + 1
+  );
+}
+
+function matchesStageCandidatePrecondition(
+  command: StageCandidateCommand,
+  candidate: StagedCandidate | undefined,
+  sourceCandidate: StagedCandidate | undefined,
+  source: ScratchBreakdown | undefined,
+  scratch: Bit | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    candidate === undefined &&
+    sourceCandidate === undefined &&
+    source?.id === command.sourceBreakdownId &&
+    source.scratchBitId === command.scratchBitId &&
+    source.consumedAt === null &&
+    source.version === command.sourceExpectedVersion &&
+    scratch?.id === command.scratchBitId
+  );
+}
+
+function matchesStageCandidatePostcondition(
+  command: StageCandidateCommand,
+  candidate: StagedCandidate | undefined,
+  sourceCandidate: StagedCandidate | undefined,
+  source: ScratchBreakdown | undefined,
+  scratch: Bit | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    candidate?.id === command.candidateId &&
+    sourceCandidate?.id === command.candidateId &&
+    candidate.scratchBitId === command.scratchBitId &&
+    candidate.sourceBreakdownId === command.sourceBreakdownId &&
+    candidate.resultType === command.resultType &&
+    candidate.lifecycle === "staged" &&
+    candidate.version === 1 &&
+    candidate.createdAt === candidate.updatedAt &&
+    source?.id === command.sourceBreakdownId &&
+    source.scratchBitId === command.scratchBitId &&
+    source.consumedAt === null &&
+    source.version === command.sourceExpectedVersion + 1 &&
+    scratch?.id === command.scratchBitId
+  );
+}
+
+function matchesUnstageCandidatePrecondition(
+  command: UnstageCandidateCommand,
+  candidate: StagedCandidate | undefined,
+  sourceCandidate: StagedCandidate | undefined,
+  source: ScratchBreakdown | undefined,
+): boolean {
+  return (
+    candidate?.id === command.candidateId &&
+    sourceCandidate?.id === command.candidateId &&
+    candidate.sourceBreakdownId === command.sourceBreakdownId &&
+    candidate.lifecycle === "staged" &&
+    candidate.version === command.candidateExpectedVersion &&
+    source?.id === command.sourceBreakdownId &&
+    source.scratchBitId === candidate.scratchBitId &&
+    source.consumedAt === null &&
+    source.version === command.sourceExpectedVersion
+  );
+}
+
+function matchesUnstageCandidatePostcondition(
+  command: UnstageCandidateCommand,
+  candidate: StagedCandidate | undefined,
+  sourceCandidate: StagedCandidate | undefined,
+  source: ScratchBreakdown | undefined,
+): boolean {
+  return (
+    candidate === undefined &&
+    sourceCandidate === undefined &&
+    source?.id === command.sourceBreakdownId &&
+    source.consumedAt === null &&
+    source.version === command.sourceExpectedVersion + 1
   );
 }
 

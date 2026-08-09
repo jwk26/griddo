@@ -5,6 +5,8 @@ import type {
   DeleteBreakdownCommand,
   SaveBreakdownCommand,
   SaveScratchTitleCommand,
+  StageCandidateCommand,
+  UnstageCandidateCommand,
 } from "@/lib/db/datastore";
 import type { SevenStoreSnapshot } from "@/lib/db/indexeddb.test-utils";
 import {
@@ -27,6 +29,9 @@ const IDS = {
   saveBreakdownOperation: transactionTestUuid(1204),
   deleteOperation: transactionTestUuid(1205),
   competingOperation: transactionTestUuid(1206),
+  stageOperation: transactionTestUuid(1207),
+  stagedCandidate: transactionTestUuid(1208),
+  unstageOperation: transactionTestUuid(1209),
 } as const;
 
 type CheckpointHook = (name: string) => undefined;
@@ -58,6 +63,16 @@ describe("authoritative Inbox Breakdown commands", () => {
       "reconcileDeleteBreakdown",
       (store: IndexedDBDataStore) =>
         store.reconcileDeleteBreakdown(deleteCommand()),
+    ],
+    [
+      "reconcileStageCandidate",
+      (store: IndexedDBDataStore) =>
+        store.reconcileStageCandidate(stageCommand()),
+    ],
+    [
+      "reconcileUnstageCandidate",
+      (store: IndexedDBDataStore) =>
+        store.reconcileUnstageCandidate(unstageSeedCommand()),
     ],
   ] as const)(
     "%s reads every authoritative store from one read-only transaction snapshot",
@@ -313,6 +328,199 @@ describe("authoritative Inbox Breakdown commands", () => {
     });
   });
 
+  describe("Stage", () => {
+    it("classifies the exact precondition, stages once, and recognizes the complete postcondition", async () => {
+      await withCommandStore((seed) => {
+        seed.stagedCandidates = [];
+      }, async (database, store) => {
+        const command = stageCommand();
+
+        await expect(store.reconcileStageCandidate(command)).resolves.toMatchObject({
+          operationId: command.operationId,
+          status: "not_applied",
+          candidate: null,
+          source: {
+            id: command.sourceBreakdownId,
+            version: command.sourceExpectedVersion,
+          },
+          scratch: { id: command.scratchBitId, version: 4 },
+        });
+        await expect(store.stageCandidate(command)).resolves.toMatchObject({
+          operationId: command.operationId,
+          status: "applied",
+          candidate: {
+            id: command.candidateId,
+            scratchBitId: command.scratchBitId,
+            sourceBreakdownId: command.sourceBreakdownId,
+            resultType: command.resultType,
+            lifecycle: "staged",
+            version: 1,
+          },
+          source: { version: command.sourceExpectedVersion + 1, consumedAt: null },
+        });
+
+        const committed = await snapshotSevenStores(database);
+        await expect(store.stageCandidate(command)).resolves.toMatchObject({
+          status: "already_applied",
+        });
+        await expect(store.reconcileStageCandidate(command)).resolves.toMatchObject({
+          status: "already_applied",
+        });
+        expect(await snapshotSevenStores(database)).toEqual(committed);
+      });
+    });
+
+    it.each([
+      ["an archived Scratch", (seed: SevenStoreSnapshot): void => {
+        seed.stagedCandidates = [];
+        seed.bits[0] = { ...seed.bits[0]!, archivedAt: 200 };
+      }],
+      ["a consumed source", (seed: SevenStoreSnapshot): void => {
+        seed.stagedCandidates = [];
+        seed.scratchBreakdowns[0] = {
+          ...seed.scratchBreakdowns[0]!,
+          consumedAt: 200,
+        };
+      }],
+      ["an existing candidate for the source", (): void => {}],
+    ] as const)("rejects %s without writing", async (_label, configureSeed) => {
+      await withCommandStore(configureSeed, async (database, store) => {
+        const before = await snapshotSevenStores(database);
+        await expect(store.stageCandidate(stageCommand())).resolves.toMatchObject({
+          status: "rejected",
+        });
+        expect(await snapshotSevenStores(database)).toEqual(before);
+      });
+    });
+  });
+
+  describe("Unstage", () => {
+    it("classifies the exact precondition, deletes only the candidate, and advances only the source", async () => {
+      await withCommandStore(undefined, async (database, store) => {
+        const command = unstageSeedCommand();
+        const before = await snapshotSevenStores(database);
+
+        await expect(store.reconcileUnstageCandidate(command)).resolves.toMatchObject({
+          operationId: command.operationId,
+          status: "not_applied",
+          candidate: {
+            id: command.candidateId,
+            version: command.candidateExpectedVersion,
+          },
+          source: {
+            id: command.sourceBreakdownId,
+            version: command.sourceExpectedVersion,
+          },
+        });
+        await expect(store.unstageCandidate(command)).resolves.toMatchObject({
+          status: "applied",
+          candidate: null,
+          source: {
+            version: command.sourceExpectedVersion + 1,
+            consumedAt: null,
+          },
+        });
+
+        const committed = await snapshotSevenStores(database);
+        expect(committed.candidateOrphanAuditEvents).toEqual(
+          before.candidateOrphanAuditEvents,
+        );
+        expect(committed.scratchBreakdowns[0]).toEqual({
+          ...before.scratchBreakdowns[0]!,
+          version: command.sourceExpectedVersion + 1,
+        });
+        await expect(store.unstageCandidate(command)).resolves.toMatchObject({
+          status: "already_applied",
+        });
+        await expect(store.reconcileUnstageCandidate(command)).resolves.toMatchObject({
+          status: "already_applied",
+        });
+        expect(await snapshotSevenStores(database)).toEqual(committed);
+      });
+    });
+
+    it("returns conflict without writing after a later placement consumed the source", async () => {
+      await withCommandStore((seed) => {
+        seed.stagedCandidates = [];
+        seed.scratchBreakdowns[0] = {
+          ...seed.scratchBreakdowns[0]!,
+          consumedAt: 200,
+          version: 3,
+        };
+      }, async (database, store) => {
+        const before = await snapshotSevenStores(database);
+        await expect(store.unstageCandidate(unstageSeedCommand())).resolves.toMatchObject({
+          status: "conflict",
+          candidate: null,
+          source: { consumedAt: 200, version: 3 },
+        });
+        expect(await snapshotSevenStores(database)).toEqual(before);
+      });
+    });
+  });
+
+  it.each([
+    ["late Stage reconciliation before duplicate Unstage", ["reconcile-stage", "unstage", "reconcile-unstage", "stage"]],
+    ["duplicate Unstage before late Stage reconciliation", ["unstage", "reconcile-unstage", "stage", "reconcile-stage"]],
+  ] as const)(
+    "ABA-2 Stage→Unstage: %s returns conflict, preserves candidate absence/final source version, and performs no extra write",
+    async (_label, delayedOrder) => {
+      await withCommandStore((seed) => {
+        seed.stagedCandidates = [];
+      }, async (database, store) => {
+        const stage = stageCommand();
+        await expect(store.stageCandidate(stage)).resolves.toMatchObject({
+          status: "applied",
+          candidate: { id: stage.candidateId, version: 1 },
+          source: { version: stage.sourceExpectedVersion + 1 },
+        });
+
+        const unstage = unstageCommand({
+          candidateId: stage.candidateId,
+          candidateExpectedVersion: 1,
+          sourceBreakdownId: stage.sourceBreakdownId,
+          sourceExpectedVersion: stage.sourceExpectedVersion + 1,
+        });
+        await expect(store.reconcileUnstageCandidate(unstage)).resolves.toMatchObject({
+          status: "not_applied",
+        });
+        await expect(store.unstageCandidate(unstage)).resolves.toMatchObject({
+          status: "applied",
+          candidate: null,
+          source: { version: stage.sourceExpectedVersion + 2 },
+        });
+
+        const afterUnstage = await snapshotSevenStores(database);
+        for (const delayed of delayedOrder) {
+          if (delayed === "reconcile-stage") {
+            await expect(store.reconcileStageCandidate(stage)).resolves.toMatchObject({
+              status: "conflict",
+            });
+          } else if (delayed === "stage") {
+            await expect(store.stageCandidate(stage)).resolves.toMatchObject({
+              status: "conflict",
+            });
+          } else if (delayed === "unstage") {
+            await expect(store.unstageCandidate(unstage)).resolves.toMatchObject({
+              status: "already_applied",
+            });
+          } else {
+            await expect(store.reconcileUnstageCandidate(unstage)).resolves.toMatchObject({
+              status: "already_applied",
+            });
+          }
+        }
+
+        const finalState = await snapshotSevenStores(database);
+        expect(finalState).toEqual(afterUnstage);
+        expect(finalState.stagedCandidates).toEqual([]);
+        expect(finalState.scratchBreakdowns[0]?.version).toBe(
+          stage.sourceExpectedVersion + 2,
+        );
+      });
+    },
+  );
+
   it.each([
     ["late Add reconciliation before duplicate Delete", ["reconcile-add", "delete", "reconcile-delete", "add"]],
     ["duplicate Delete before late Add reconciliation", ["delete", "reconcile-delete", "add", "reconcile-add"]],
@@ -422,6 +630,43 @@ function deleteCommand(
     scratchBitId: TRANSACTION_TEST_IDS.scratchBit,
     scratchExpectedVersion: 4,
     ...overrides,
+  };
+}
+
+function stageCommand(
+  overrides: Partial<StageCandidateCommand> = {},
+): StageCandidateCommand {
+  return {
+    operationId: IDS.stageOperation,
+    candidateId: IDS.stagedCandidate,
+    scratchBitId: TRANSACTION_TEST_IDS.scratchBit,
+    sourceBreakdownId: TRANSACTION_TEST_IDS.sourceBreakdown,
+    sourceExpectedVersion: 2,
+    resultType: "node",
+    ...overrides,
+  };
+}
+
+function unstageCommand(
+  overrides: Partial<UnstageCandidateCommand> = {},
+): UnstageCandidateCommand {
+  return {
+    operationId: IDS.unstageOperation,
+    candidateId: IDS.stagedCandidate,
+    candidateExpectedVersion: 1,
+    sourceBreakdownId: TRANSACTION_TEST_IDS.sourceBreakdown,
+    sourceExpectedVersion: 3,
+    ...overrides,
+  };
+}
+
+function unstageSeedCommand(): UnstageCandidateCommand {
+  return {
+    operationId: IDS.unstageOperation,
+    candidateId: TRANSACTION_TEST_IDS.stagedCandidate,
+    candidateExpectedVersion: 2,
+    sourceBreakdownId: TRANSACTION_TEST_IDS.sourceBreakdown,
+    sourceExpectedVersion: 2,
   };
 }
 

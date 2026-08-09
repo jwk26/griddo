@@ -71,6 +71,34 @@ export type DeleteBreakdownResult = RepositoryOperationResult<{
   scratch: Bit | null;
 }>;
 
+export type StageCandidateCommand = RepositoryOperationCommand<{
+  candidateId: string;
+  scratchBitId: string;
+  sourceBreakdownId: string;
+  sourceExpectedVersion: number;
+  resultType: StagedCandidate["resultType"];
+}>;
+
+export type StageCandidateResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  candidate: StagedCandidate | null;
+  source: ScratchBreakdown | null;
+  scratch: Bit | null;
+}>;
+
+export type UnstageCandidateCommand = RepositoryOperationCommand<{
+  candidateId: string;
+  candidateExpectedVersion: number;
+  sourceBreakdownId: string;
+  sourceExpectedVersion: number;
+}>;
+
+export type UnstageCandidateResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  candidate: StagedCandidate | null;
+  source: ScratchBreakdown | null;
+}>;
+
 export type AggregateHardDeleteResult =
   | { status: "deleted" }
   | {
@@ -142,6 +170,18 @@ export interface DataStore {
   reconcileDeleteBreakdown(
     command: DeleteBreakdownCommand,
   ): Promise<DeleteBreakdownResult>;
+
+  // --- Authoritative Inbox Staging Commands ---
+  stageCandidate(command: StageCandidateCommand): Promise<StageCandidateResult>;
+  reconcileStageCandidate(
+    command: StageCandidateCommand,
+  ): Promise<StageCandidateResult>;
+  unstageCandidate(
+    command: UnstageCandidateCommand,
+  ): Promise<UnstageCandidateResult>;
+  reconcileUnstageCandidate(
+    command: UnstageCandidateCommand,
+  ): Promise<UnstageCandidateResult>;
 
   // --- Chunks ---
   getChunks(bitId: string): Promise<Chunk[]>;
