@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–124 accepted; Tasks 125–126 Gate C approved; Task 125 next and not started; Task 126 held
+> State: Tasks 120–124 accepted; Task 125 In Progress; Task 126 held pending explicit Task 125 user acceptance
 
 ## Status Legend
 
@@ -323,3 +323,21 @@ None at kickoff.
 | Canonical impact | None at kickoff; both tasks remain implementation-local to approved SCHEMA/SPEC/execution authority unless run-task discovers and records otherwise |
 | Next legal action | Close this run-phase session after its receipt/ledger-only kickoff commit; in a fresh session invoke only the candidate-pinned `$run-task` for Task 125, using that kickoff commit as the recovery anchor |
 | Forbidden here | Do not record Task 125/126 durable start, modify product/test files or task markers, run install/test/lint/typecheck/build, invoke run-task, push, create a PR, merge, rebase, clean branch/worktree, or modify Phase 24/Shelf |
+
+## Task 125 In Progress
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 125 only — Implement exact Archive eligibility and guarded Archive command |
+| State | In Progress; implementation is not user acceptance and the Task 125 marker remains `[ ]` |
+| Approved scope | Modify `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, and `src/lib/db/archive.test.ts`; create `src/lib/db/archive-scratch-command.test.ts`; implement only authoritative eligibility, typed guarded Archive, active Inbox-owned Scratch + consumed≥1 + unconsumed=0 + candidate=0 + exact-version checks, mandatory clear Add-draft/title-blocker caller assertion, generic `archiveBit` bypass rejection, and ordinary Bit Archive/Archive View restore preservation; no UI/hook/store, sessionStorage, Task 126, Phase 24, or Shelf work |
+| Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, serial batch `[125,126]`, next Task 125), explicitly approved by the user |
+| Start base / entrypoint | Continuation approved base `06344a75ef1efd9335e4e771a893d269feae3d61`; exact run-task entrypoint and Gate C kickoff commit `77206d8fb00cb7d6a9d62ae9995dd6834618bb70` |
+| Recovery anchor | This durable-start commit; its parent must be `77206d8fb00cb7d6a9d62ae9995dd6834618bb70` and it precedes every Task 125 product/test write |
+| Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`; existing same-phase reuse approved; clean at start |
+| Dependencies / mutex | Tasks 120 and 121 accepted; Task 125 exclusively owns `db-implementation`, `db-interface`, and `db-archive-regression`; Task 126 remains held until explicit Task 125 user acceptance plus its separate acceptance commit |
+| Lifecycle evidence | Candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` run-phase resolver validated the committed Gate C receipt as `ready`, `contract_ready=true`; receipt-less run-task resolver returned the expected compatibility state `approval_required`, `contract_ready=true`; both returned `writes_allowed=false`, while write authority remains the user-approved Gate C receipt |
+| Issues / deviations | None at start; receipt, ledger, Task 125, SCHEMA/SPEC, current Archive API, paths, dependencies, and exclusions agree |
+| Canonical impact | None — implementation-local conformance to the approved SCHEMA/SPEC/Task 125 contract |
+| Verification contract | Selected-target RED; focused Archive Scratch/archive tests; triage/inbox/archive mutex regression; `pnpm typecheck`; `git diff --check`; scope and concrete-risk review with focused repair; then exactly one fresh serial full gate after final code stability |
+| Next legal action | Add Task 125 contract tests, capture selected-target RED, implement only the approved repository APIs, verify/review, commit implementation and ledger evidence, then stop at the user checkpoint |
