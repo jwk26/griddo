@@ -246,7 +246,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ03` | `VQ-03` | 108 | 140 only | Choice A Add-adjacent inline decision sheet, including the checkpoint-approved position/copy supersession, accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_108.dp-vq03.json`; Task 140 only is released. |
 | `DP-VQ04` | `VQ-04` | 109 | 138 only | Choice A dual direct in-place editor system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_109.dp-vq04.json`; Task 138 only is released. |
 | `DP-VQ05` | `VQ-05` | 110 | 143 only | Choice A Add-region/source-row attached reliability system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json`; Task 143 only is released. |
-| `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Choice A fixed Pool-local status band recorded at `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json`; Task 111 remains `[ ]` pending its user checkpoint. |
+| `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Choice A fixed Pool-local status band accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json`; Task 144 only is released. |
 | `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Accepted Staging-specific status receipt. |
 | `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Accepted Explorer-specific status receipt. |
 | `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Accepted receipt supplies or scopes out the complete replacement search body. |
@@ -669,7 +669,7 @@ Task 111 or another batch.
 
 **Commit contract:** the three named documents and `DP-VQ05` receipt only; `docs(triage): record DP-VQ05`.
 
-### Task 111: [ ] Record `DP-VQ06-POOL` Pool-status decision
+### Task 111: [x] Record `DP-VQ06-POOL` Pool-status decision
 
 **Files and actions:** modify `docs/recipes/inbox-triage-scratch-pool-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to specify only Pool hidden-selection, count/indicator, remote/lifecycle status, copy, action, focus, dismissal, and eight-theme treatments; change no Staging/Explorer authority and no code.
 
@@ -703,6 +703,14 @@ once politely. All transitions and reduced-motion behavior are identical and
 immediate with no status animation. The receipt owns the exact eight-theme
 Pool mapping and releases Task 144 only after this Task's user checkpoint;
 Tasks 112/113 and all Staging/Explorer authority remain untouched.
+
+**Checkpoint acceptance (2026-08-10):** the user independently reviewed and
+accepted the fixed status band, Pool-only scope, Task 144-only release, clean
+documentation-only write set, and the added mixed-event/collapsed rules as
+bounded completion of Choice A rather than a panel or event history. This
+acceptance releases Task 144 only. Task 112 may proceed only to its separate
+`DP-VQ06-STAGING` user decision; it accepts no Staging choice, Task 147 work,
+Task 113 work, product code, publication, or phase close.
 
 **Observable acceptance:** Pool status can be implemented independently without borrowing Staging/Explorer or changing selection.
 

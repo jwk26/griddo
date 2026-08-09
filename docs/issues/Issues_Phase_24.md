@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–110 accepted; Task 111 implemented with `DP-VQ06-POOL` choice A awaiting user checkpoint acceptance; Tasks 112–113 remain unavailable
+> State: Tasks 106–111 accepted; Task 112 is the next authorized Task in the approved `111 → 112 → 113` serial batch; Task 113 remains unavailable
 
 ## Status Legend
 
@@ -186,23 +186,26 @@ canonical document update, and commit remain Task-local and sequential.
 | Durable kickoff anchor | The commit containing this section and the updated whole-file Gate C receipt, with parent `d5770d6987c8b556630e9a0b818872fa7bb2d186` and no other changed path |
 | Next legal action | After that kickoff commit is resolver-valid and the worktree is clean, a fresh session may load only candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` `skills/run-task/SKILL.md` and start Task 111; the live `/Users/jwk/Documents/codex-workflow/skills/run-task` is prohibited |
 
-## Active Task
+## Task 111 Acceptance Receipt
 
 | Field | Durable value |
 | --- | --- |
 | Task | 111 — record `DP-VQ06-POOL` Pool-status decision |
-| State | Implemented / awaiting user review; user acceptance remains pending and the Task 111 plan marker stays `[ ]` |
+| State | Accepted by the user on 2026-08-10; the Task 111 plan marker is `[x]` |
 | Approved scope | Choice A fixed Pool-local status band directly below the expanded search/sort row, with exact hidden-selection, filtered-count, remote-arrival, lifecycle, action, focus, dismissal/lifetime, reduced-motion, collapsed-indicator, and eight-theme treatment; update only the Scratch Pool recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ06-POOL` receipt; no product code or Staging/Explorer authority |
 | User decision | On 2026-08-10 the user selected `DP-VQ06-POOL=A` and preferred the direct status band because it avoids a panel, event list, Escape handling, and Mark-reviewed state |
+| User acceptance | `Task 111 / DP-VQ06-POOL=A checkpoint를 수락합니다.` |
+| Accepted edge completion | The mixed-event aggregate and collapsed-marker rules remain bounded Choice A details without adding a panel, event history, Escape path, or Mark-reviewed state |
 | Predecessor | Task 110 accepted at `d5770d6987c8b556630e9a0b818872fa7bb2d186`; its exact release remains Task 143 only |
 | Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `15be56007b0290622bd907cbb3a02d78684a15f6`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
 | Entrypoint / recovery anchor | Continuation entrypoint `d5770d6987c8b556630e9a0b818872fa7bb2d186`; continuation kickoff `15be56007b0290622bd907cbb3a02d78684a15f6`; Task 111 durable start `a88ffaf69446eb31f24f472754fa4c9799a8c98c`; Task 111 decision commit `9dbde807a889487f01e559e3171f2b75bc8f2369` |
-| Durable receipt | `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json`; candidate resolver returned `ready` for gate `dp-vq06-pool` and next action `task-111-user-checkpoint` |
+| Durable receipt | `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json`; its accepted next action is `task-112` |
 | Issue / deviation | None |
 | Canonical impact | Reflected — Choice A is recorded in the Scratch Pool recipe, `docs/DESIGN_TOKENS.md`, and Task 111 execution authority |
 | Verification | `git diff --check` exit 0 across the Task 111 commits; `pnpm typecheck` exit 0; exact four-path Task decision commit; Tasks 106–110 remain `[x]` and Tasks 111–113 remain `[ ]`; no product code or Task 112/113 decision was recorded; test/lint/build omitted because this Task is documentation-only |
 | Review | No concrete blocking finding; fixed Pool-local placement, all-active versus filtered count meaning, hidden-selection preservation, exact remote/lifecycle copy and actions, selected-disappearance `DP-VQ01` handoff, focus/announcement behavior, independent dismissal/lifetime, static reduced-motion parity, collapsed markers, eight-theme mapping, and Task 144-only edge are present with no panel, event list, toast, prototype, adjacent-surface, Staging, Explorer, or theme-ID fallback |
-| Next legal action | Stop at the Task 111 user checkpoint. Do not write Task 111 `[x]` or start Task 112 without new explicit user acceptance |
+| Acceptance boundary | Accepts only Task 111 and `DP-VQ06-POOL=A`; releases Task 144 only; does not select `DP-VQ06-STAGING`, approve Task 147, start Task 113, change product code, publish, or close the phase |
+| Next legal action | Commit this acceptance state. Task 112 may then present only the `DP-VQ06-STAGING` decision gate; Task 113 remains unavailable |
 
 ## Readiness Evidence
 
