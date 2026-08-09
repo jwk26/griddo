@@ -384,7 +384,7 @@ or to promotion-map §11.4's shared implication.
 | Selected Context | `context-signature-plate`, `context-eyebrow-meta`, `context-title`, `context-action-cluster`, `context-complete-marker` | `R-CONTEXT` |
 | Breakdown | `breakdown-active-row`, `breakdown-staged-row`, `breakdown-row-action`, `breakdown-add-field`, `breakdown-add-control`, `breakdown-ordinary-empty`, `breakdown-consumed-completion`, `breakdown-success-wash`, `breakdown-success-status`, `breakdown-success-check` | `R-BREAKDOWN`; success roles from `DP-VQ02` / Task 148 only |
 | Staging | `staging-panel`, `staging-node-well`, `staging-node-card`, `staging-bit-well`, `staging-bit-row`, `staging-neutral`, `staging-unavailable`, `staging-invalid`, `staging-pending`, `staging-unstage-target`, `staging-operation-status`, `staging-arrival-count`, `staging-local-alert`, `staging-alert-action`, `staging-target-reason`, `staging-integrity-status` | `R-STAGING`; status roles from `DP-VQ06-STAGING` / Task 147 only |
-| Grid Explorer base | `explorer-header`, `explorer-column`, `explorer-full-level-label`, `explorer-node-row`, `explorer-bit-row`, `explorer-eligible-target`, `explorer-hovered-target`, `explorer-invalid-target`, `explorer-unavailable-target` | `R-EXPLORER`; excludes the `VQ-07` body |
+| Grid Explorer base | `explorer-header`, `explorer-column`, `explorer-full-level-label`, `explorer-node-row`, `explorer-bit-row`, `explorer-eligible-target`, `explorer-hovered-target`, `explorer-invalid-target`, `explorer-unavailable-target`, `explorer-remote-count`, `explorer-path-status`, `explorer-status-action` | `R-EXPLORER`; status roles from `DP-VQ06-EXPLORER` / Task 150 only; excludes the `VQ-07` body |
 | Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled` | `R-PLACEMENT`; excludes `VQ-08` reliability realization and all `VQ-09` surfaces |
 | Newly Placed / Undo | `newly-marker`, `newly-dot`, `newly-new-badge`, `newly-undo-action` | `R-NEWLY`; composes over the actual Node/Bit card and never replaces it |
 | Archive / completion base | `archive-section-scrim`, `archive-card`, `archive-complete-context`, `archive-reopen`, `archive-action`, `archive-cancel` | `R-ARCHIVE`; excludes `VQ-11/12` gap realization |
@@ -416,6 +416,9 @@ appropriate; the data attribute never replaces them.
 | `source-unresolved` | A durable staged candidate's source join is temporarily unavailable without authoritative orphan proof; render only the type-shaped integrity status and never a normal draggable candidate |
 | `orphan-cleanup` | Authoritative source deletion/tombstone proof completed the atomic candidate cleanup; announce the exact Staging-local result without inventing a missing title snapshot |
 | `stale` | Current authority invalidated a drag, placement, candidate, or source snapshot; suppress stale mutation and expose the exact section-local reason after the applicable visual snapshot release |
+| `explorer-remote-arrival` | One or more ordinary remote insertions first appeared in a currently open Explorer column; preserve path/selection/focus and stable-ID/offset anchoring while exposing only that column's exact count |
+| `path-fallback` | Authority invalidated an Explorer suffix; remove only that suffix, use the nearest valid ancestor/Home without sibling or ghost substitution, and expose the exact affected-column status/focus contract |
+| `selection-cleared` | A selected/revealed Bit disappeared while its parent path remained valid; clear only that selection/reveal and retain the parent path with the exact column-local status |
 | `newly-placed` | Page-session provenance layered on the actual card; use `newly-*` roles and keep Undo separate |
 | `completed` | Complete Context or completion presentation; do not treat it as Archive mutation success |
 | `local-alert` | A section-local status with visible text/icon semantics and the SPEC-selected live/status behavior; it does not become a global toast by default |
@@ -789,7 +792,42 @@ The attached family maps through Staging-native theme roles:
 | Retro Mac | In-place 1-bit candidate footer, hard counter control, and full-width alert pane below the title with no new window |
 | Graphite | Candidate editorial caption, compact index count, and strengthened-rule alert band with restrained monochrome action |
 
-### Existing-surface state gaps — 5 open Decision prerequisites
+### Approved Explorer affected-column status realization — `DP-VQ06-EXPLORER`
+
+**User-approved 2026-08-10:** Choice A establishes per-column remote-insertion
+counts and one affected surviving-column path/fallback strip. It resolves the
+final Explorer slice of `VQ-06`; Task 150 alone consumes it. Pool and Staging
+remain owned by their receipts, and the separate `VQ-07` search body remains
+unresolved and excluded.
+
+| Contract | Exact token requirement |
+|---|---|
+| Remote count | `explorer-remote-count` sits beside only the affected full `Home` / `Level 1` / `Level 2` / `Level 3` label and renders exact `1 new` / `{count} new` with accessible action `Show new in {full level label}`; initial hydration, local placement, and move-between-column do not count |
+| Stable anchoring | Ordinary insertion binds `explorer-remote-arrival` and preserves path, selection, focus, first-visible stable ID, and viewport offset; never restore raw `scrollTop`, jump, select, or change path automatically |
+| Path placement | `explorer-path-status` follows the surviving destination column's full label and precedes only that column's scrolling rows; removed suffix columns leave no ghost status/row/column/label; one later fallback replaces the prior strip |
+| Path copy | Bind `path-fallback` and use the recipe's exact deleted/unavailable, archived, moved, generic invalid-path, and stale-placement sentences with `{destination}` equal to the nearest valid ancestor's visible title/full label or `Home` |
+| Bit disappearance | Bind `selection-cleared`; render exact `“{title}” is no longer available. Selection cleared.` in the valid parent column and clear only Bit selection/reveal |
+| Actions | `explorer-status-action` is only `Dismiss`; remote count is only `Show new in {level}`; no Retry, restore, reveal, Search, sibling choice, undo, navigation, or mutation action |
+| Fallback/focus | Remove only invalid suffix, close stale placement without write, never choose sibling/ghost, then focus surviving nearest-valid ancestor row or destination full-label heading; ordinary arrival/status appearance never steals focus |
+| Show new | Revalidate, scroll only that column to top, clear only its count, and focus the first surviving new row without selection/path change, otherwise its full-label heading; observing top clears without focus movement |
+| Lifetime | Per-column count clears on its action/top observation/column close or path change/route exit or reload; path strip clears on Dismiss/next fallback/explicit user path change/route exit or reload; Scratch/theme/light-dark changes preserve open-column state; no timer or auto-dismiss |
+| Motion | Indicator, strip, suffix removal, fallback, anchoring, scroll, and focus changes are immediate; no fade, slide, scale, spinner, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No path semantics or anchoring algorithm change, product mutation, placement implementation, `VQ-07` search body, Pool/Staging role, abbreviated label, or theme-ID behavior/copy branch |
+
+The affected-column family maps through Explorer-native theme roles:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Compact column-label count chip and restrained technical strip using canonical border, muted, primary, text, action, and focus roles |
+| Tiny Desk | Library-index count tab and catalog-paper status slip below the destination column label |
+| Neumorphism | Named raised count control and shallow inset column notice within the existing shadow family |
+| Claymorphism | Puffy non-color marker and shape-preserving soft ribbon attached to the destination clay column |
+| Origami | Folded count tab and seam-attached paper strip with no ghost fold or repeated motion |
+| Terminal | Variable-driven text count command and static destination-column status record with no fixed JSX color or blink |
+| Retro Mac | Hard counter control and in-pane 1-bit system message below the full label with no new window or ghost pane |
+| Graphite | Compact editorial index and strengthened-rule column note with restrained monochrome action |
+
+### Existing-surface state gaps — 4 open Decision prerequisites
 
 The shared role/state envelope above is the maximum current authority for
 these gaps. It authorizes semantic state binding, existing supported tokens,
@@ -799,7 +837,6 @@ dependent exact realization.
 
 | ID | Unresolved boundary; no implied realization | Future owner | Resume condition |
 |---|---|---|---|
-| `VQ-06` | `DP-VQ06-POOL` and `DP-VQ06-STAGING` resolve their own Pool and Staging families. No Explorer remote/path alert, count, placement, layout, duration, dismissal, copy, effect, or per-theme realization is chosen. | User Decision → Explorer recipe/token owner and realtime phase | `DP-VQ06-EXPLORER` before Task 150 |
 | `VQ-08` | No placement pending, failure, reconcile, Retry, stale, success, control placement, layout, timing, copy, or per-theme realization is chosen. | User Decision → Placement recipe/token owner and reliability phase | Receipt resolves the dependent placement-state UI |
 | `VQ-10` | No selected+new overlap, unavailable reason, dependency-reenabled, undoing, failure, Undo/retry/conflict treatment, copy, placement, timing, or per-theme realization is chosen; repeated motion is forbidden. | User Decision → Newly Placed/Undo recipe/token owner and rollback phase | Receipt resolves the dependent marker/reliability UI |
 | `VQ-11` | No completion blocker or eligibility-withdrawal copy, effect, placement, layout, timing, or per-theme realization is chosen. | User Decision → Context/Breakdown/Archive recipe/token owner and completion phase | Receipt resolves the dependent blocker UI |

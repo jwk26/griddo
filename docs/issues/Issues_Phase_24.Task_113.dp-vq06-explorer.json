@@ -1,0 +1,176 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq06-explorer",
+  "decision_receipt_id": "DP-VQ06-EXPLORER",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 113,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "continuation_entrypoint": "d5770d6987c8b556630e9a0b818872fa7bb2d186",
+  "continuation_kickoff_commit": "15be56007b0290622bd907cbb3a02d78684a15f6",
+  "predecessor_acceptance_commit": "56704f2cc49b345b76fa5b6e562bade77423d792",
+  "durable_start_commit": "bf02fb96ffcdbbab71b5b0ad366546fae6e9687b",
+  "user_decision": {
+    "date": "2026-08-10",
+    "statement": "DP-VQ06-EXPLORER=A",
+    "recorded_scope": "DP-VQ06-EXPLORER=A only",
+    "choice": "A",
+    "label": "Affected-column remote and path status family"
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-grid-explorer-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "surface": {
+      "remote_count": "beside only the affected full Explorer column label",
+      "path_status": "directly below the surviving destination column full label and outside its scrolling rows",
+      "selected_bit_status": "inside the valid current parent column",
+      "stale_placement_status": "inside the same surviving destination-column strip",
+      "single_status": "one current fallback strip; later fallback replaces it without history",
+      "prohibited": [
+        "Explorer-wide status rail",
+        "ghost row, column, suffix, or label",
+        "toast or dialog",
+        "event stack, queue, or history",
+        "VQ-07 Search replacement body or fallback",
+        "Pool or Staging presentation"
+      ]
+    },
+    "remote_count_and_anchoring": {
+      "copy": "1 new or {count} new",
+      "accessible_action": "Show new in {Home|Level 1|Level 2|Level 3}",
+      "scope": "independent count per currently open visible column",
+      "included": "ordinary remote insertion first appearing in that visible column after mounted snapshot or last clear",
+      "excluded": [
+        "initial hydration",
+        "local placement",
+        "existing item moving between columns"
+      ],
+      "automatic_effect": "preserve path, selection, focus, first-visible stable ID, and viewport offset; never restore raw scrollTop, jump, select, or change path",
+      "activation": "revalidate, scroll only that column to top, clear only its count, and focus the first surviving new row without selection or path change",
+      "empty_revalidation": "focus the affected full-label heading when no new row survives",
+      "observed_top": "clear that count without moving focus"
+    },
+    "path_state_matrix": {
+      "deleted_or_unreachable": {
+        "copy": "“{title}” is no longer available. Returned to {destination}.",
+        "action": "Dismiss"
+      },
+      "archived": {
+        "copy": "“{title}” was archived. Returned to {destination}.",
+        "action": "Dismiss"
+      },
+      "moved": {
+        "copy": "“{title}” moved elsewhere. Returned to {destination}.",
+        "action": "Dismiss"
+      },
+      "invalid_suffix_without_title": {
+        "copy": "This path is no longer available. Returned to {destination}.",
+        "action": "Dismiss"
+      },
+      "selected_bit_disappearance": {
+        "copy": "“{title}” is no longer available. Selection cleared.",
+        "action": "Dismiss",
+        "effect": "clear only Bit selection/reveal and preserve valid parent path"
+      },
+      "stale_placement": {
+        "copy": "Placement closed because this Explorer path changed.",
+        "action": "Dismiss",
+        "effect": "close without write under existing placement coordination"
+      }
+    },
+    "destination": {
+      "meaning": "visible title/full label of the exact nearest valid ancestor, or Home",
+      "prohibited": "sibling, ghost, removed suffix, or abbreviated level",
+      "fallback": "remove only invalid suffix and retain the longest valid prefix"
+    },
+    "focus_and_accessibility": {
+      "ordinary_arrival": "remote insertion, count, and status appearance never move focus or selection",
+      "fallback": "focus surviving nearest-valid ancestor row when present/focusable, otherwise destination full-label heading",
+      "selected_bit": "focus surviving parent row when present, otherwise current parent-column heading",
+      "dismiss": "remove only path strip and return focus to surviving fallback ancestor or parent row, otherwise destination column heading",
+      "announcement": "announce each newly changed visible path sentence once through one polite atomic status; never announce rerender, viewport anchoring, theme change, or elapsed time"
+    },
+    "actions": {
+      "allowed": [
+        "Show new in {full level label}",
+        "Dismiss"
+      ],
+      "prohibited": [
+        "Retry",
+        "restore",
+        "reveal",
+        "Search",
+        "sibling choice",
+        "undo",
+        "navigation mutation",
+        "product mutation"
+      ]
+    },
+    "dismissal_and_lifetime": {
+      "remote_count_clear": "its Show new action, authoritative top observation, column close/path change, or Inbox route exit/reload",
+      "path_status_clear": "Dismiss, next authoritative fallback, explicit user path selection/change, or Inbox route exit/reload",
+      "preserved_by": [
+        "Scratch change while the column remains open",
+        "theme change",
+        "light or dark mode"
+      ],
+      "auto_dismiss": "none",
+      "storage": "mounted Inbox-page presentation over app-session Explorer path/scroll owners; never durable domain truth"
+    },
+    "motion": {
+      "ordinary": "all indicator, strip, suffix removal, fallback, anchoring, scroll, and focus changes are immediate",
+      "prohibited": "fade, slide, scale, spinner, pulse, ping, bounce, blink, flicker, and layout-transition animation",
+      "reduced_motion": "identical geometry, copy, controls, timing, focus, anchoring, and lifetime"
+    },
+    "theme_mapping": {
+      "griddo": "compact column-label count chip and restrained technical strip using canonical border, muted, primary, text, action, and focus roles",
+      "tiny-desk": "Library Index count tab and catalog-paper status slip attached below the destination column label",
+      "neumorphism": "named raised count control and shallow inset column notice within the existing column-shadow family",
+      "claymorphism": "puffy non-color marker and shape-preserving soft ribbon attached to the destination clay column",
+      "origami": "folded count tab and seam-attached paper strip with no ghost fold or repeated motion",
+      "terminal": "variable-driven text count command and static destination-column status record with no fixed JSX color or blink",
+      "retro-mac": "hard counter control and in-pane 1-bit system message below the full label with no new window or ghost pane",
+      "graphite": "compact editorial index and strengthened-rule column note with restrained monochrome action"
+    },
+    "implementation_boundary": {
+      "task": 150,
+      "files": [
+        "src/components/triage/hierarchy-explorer.tsx",
+        "src/components/triage/hierarchy-explorer.test.tsx",
+        "src/stores/triage-store.ts",
+        "src/stores/triage-store.test.ts",
+        "src/app/globals.css",
+        "src/lib/copy/inbox-triage.ts",
+        "src/lib/copy/inbox-triage.test.ts",
+        "docs/verification/inbox-triage/task-150.md"
+      ],
+      "prerequisites": [
+        128,
+        134
+      ],
+      "excludes": "path/fallback semantics, stable-ID/offset algorithm, product mutation, placement implementation, VQ-07 search body, product implementation in Task 113, and every Pool/Staging state or realization"
+    }
+  },
+  "exact_release": {
+    "tasks": [
+      150
+    ],
+    "consumption_condition": "Task 113 user checkpoint accepted; its plan marker remains open until then",
+    "all_other_tasks": "unreleased, including Task 114 and the remainder of any later batch"
+  },
+  "task_state": "implemented-awaiting-user-checkpoint",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "task-113-user-checkpoint"
+}
