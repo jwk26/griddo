@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–110 accepted; the approved first decision batch is complete and the next batch awaits separate user approval
+> State: Tasks 106–110 accepted; Tasks 111–113 are the approved active serial batch; Task 111 is not started
 
 ## Status Legend
 
@@ -166,6 +166,26 @@ canonical document update, and commit remain Task-local and sequential.
 | Batch boundary | The approved `106 → 107 → 108 → 109 → 110` first batch is complete. Task 111 belongs to the next batch and requires separate explicit user approval |
 | Next legal action | Commit this acceptance state, verify a clean worktree, and stop awaiting separate next-batch approval |
 
+## Next Batch Gate C Continuation Receipt
+
+| Field | Durable value |
+| --- | --- |
+| Gate | `gate-c`; the user approved the complete revised continuation packet on 2026-08-10 with `위 revised Phase 24 continuation Gate C packet 전체를 정확히 승인합니다.` |
+| Lifecycle | `run-phase` continuation for Phase 24 only |
+| Active decision batch | Tasks 111–113 / `DP-VQ06-POOL`, `DP-VQ06-STAGING`, and `DP-VQ06-EXPLORER` |
+| Serial order | `111 → 112 → 113`; every decision, receipt, canonical update, commit, and checkpoint remains Task-local |
+| Exact release edges | Task 111 releases Task 144 only; Task 112 releases Task 147 only; Task 113 releases Task 150 only, each only after its own user decision and checkpoint acceptance |
+| Continuation entrypoint | `d5770d6987c8b556630e9a0b818872fa7bb2d186` |
+| Branch/worktree reuse | Reuse branch `phase-24/user-owned-decision-prerequisites` and its existing feature worktree `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`; create or switch no branch/worktree |
+| Source mode | Approved canonical authority plus the approved source-only recipe package and fresh user decisions; no prototype, adjacent-surface, existing-token, or inferred fallback |
+| Whole-file receipt | `docs/issues/Issues_Phase_24.gate-c.json`, updated to make `[111, 112, 113]` the active batch and serial order |
+| Baseline reuse | Reuse the recorded full base gate because the production tree and manifests remain unchanged; the continuation kickoff itself runs only receipt/ledger diff checks, candidate resolver validation, exact commit-scope inspection, and clean-status verification |
+| Per-Task minimum | Each later Decision task runs `git diff --check`, `pnpm typecheck`, and exact changed-path, receipt-ID, surface-scope, and release-edge review |
+| Task state | Task 111 is not started; Tasks 111–113 remain `[ ]`; no `DP-VQ06-*` choice, decision receipt, canonical decision, or product change exists |
+| Next receipt | Task 111 may later create `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json` only after its real user decision; this continuation kickoff does not create it |
+| Durable kickoff anchor | The commit containing this section and the updated whole-file Gate C receipt, with parent `d5770d6987c8b556630e9a0b818872fa7bb2d186` and no other changed path |
+| Next legal action | After that kickoff commit is resolver-valid and the worktree is clean, a fresh session may load only candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` `skills/run-task/SKILL.md` and start Task 111; the live `/Users/jwk/Documents/codex-workflow/skills/run-task` is prohibited |
+
 ## Readiness Evidence
 
 - The exact workflow candidate was clean on branch
@@ -222,9 +242,12 @@ None at kickoff.
 
 No Decision task, DP receipt, canonical decision document, product code, DB
 command, Phase 25 document, global/live skill link, push, PR, merge, rebase,
-cherry-pick, or cleanup was performed by this kickoff. The next session must
-load the exact candidate `skills/run-task/SKILL.md` at
+cherry-pick, or cleanup was performed by this continuation kickoff. The fresh
+next session must load only the candidate `skills/run-task/SKILL.md` at
 `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`, revalidate this committed receipt,
-and start with Task 106. It may assemble the Tasks 106–110 review packet, but
-must not write a DP receipt or Task commit without the corresponding real user
-decision.
+and start with Task 111 from the receipt/ledger-only kickoff commit whose parent
+is `d5770d6987c8b556630e9a0b818872fa7bb2d186`. It must not use the live
+`/Users/jwk/Documents/codex-workflow/skills/run-task`, pre-create
+`docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json`, choose a
+`DP-VQ06-POOL` decision, write canonical decision authority, or begin Task 112
+before Task 111's separate user-owned gates permit those actions.

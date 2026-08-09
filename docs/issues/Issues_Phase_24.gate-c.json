@@ -10,20 +10,22 @@
     "lifecycle": "run-phase",
     "phase": 24,
     "worktree_role": "feature",
-    "first_decision_batch": [
-      106,
-      107,
-      108,
-      109,
-      110
+    "active_decision_batch": [
+      111,
+      112,
+      113
+    ],
+    "active_decision_receipts": [
+      "DP-VQ06-POOL",
+      "DP-VQ06-STAGING",
+      "DP-VQ06-EXPLORER"
     ],
     "serial_order": [
-      106,
-      107,
-      108,
-      109,
-      110
+      111,
+      112,
+      113
     ],
+    "next_task": 111,
     "decision_receipts": [
       "DP-VQ01",
       "DP-VQ02",
@@ -40,6 +42,14 @@
       "DP-VQ11",
       "DP-VQ12"
     ]
+  },
+  "continuation": {
+    "entrypoint": "d5770d6987c8b556630e9a0b818872fa7bb2d186",
+    "reuse_existing_branch": true,
+    "approved_branch": "phase-24/user-owned-decision-prerequisites",
+    "reuse_existing_worktree": true,
+    "worktree_role": "feature",
+    "new_branch_or_worktree": false
   },
   "next_legal_action": "$run-task",
   "source_mode": "approved canonical authority plus approved source-only recipes and fresh user decisions; no inferred fallback",
@@ -101,9 +111,31 @@
       }
     ]
   },
+  "continuation_verification": {
+    "reuse_recorded_full_baseline": true,
+    "kickoff_checks": [
+      "git diff --check",
+      "candidate resolver validates the updated gate-c receipt",
+      "kickoff commit contains only the receipt and ledger",
+      "working tree is clean after commit"
+    ],
+    "per_task_focused_checks": [
+      "git diff --check",
+      "pnpm typecheck",
+      "exact changed-path, receipt-ID, surface-scope, and release-edge review"
+    ],
+    "omitted_at_continuation_kickoff": [
+      "pnpm install --frozen-lockfile",
+      "pnpm test",
+      "pnpm lint",
+      "pnpm typecheck",
+      "pnpm build"
+    ]
+  },
   "gate_c_approval": {
-    "date": "2026-08-09",
+    "date": "2026-08-10",
+    "approval_kind": "continuation",
     "exact_scope_confirmed": true,
-    "user_statement": "위 Gate C packet 전체를 정확히 승인합니다."
+    "user_statement": "위 revised Phase 24 continuation Gate C packet 전체를 정확히 승인합니다."
   }
 }
