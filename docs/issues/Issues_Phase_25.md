@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–123 accepted; no later task is approved
+> State: Tasks 120–123 accepted; Task 124 Gate C approved but not started; Tasks 125–126 are not approved
 
 ## Status Legend
 
@@ -247,3 +247,25 @@ None at kickoff.
 | Task markers | Tasks 120–123 are `[x]`; Tasks 124–126 remain `[ ]` |
 | Next legal action | Stop after the Task 123 acceptance commit; Task 124 and any next Gate C packet remain unapproved |
 | Forbidden here | Do not start Task 124, prepare a next Gate C packet, modify product/test code, push, create a PR, merge, rebase, or perform branch/worktree cleanup |
+
+## Task 124 Gate C Handoff
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 124 only — Implement source-aware Undo with candidate-version ABA protection |
+| State | Gate C approved by the user on 2026-08-10; Task 124 is not started and its marker remains `[ ]` |
+| Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-undo.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; implement only typed staged/direct source-aware Undo execute/reconcile, exact atomic inverse, dependency rejection, candidate v+1 restoration, ABA-3 conflict/no-resurrection, and ambiguous-Undo/new-placement protection; no UI and no Task 125/126, Phase 24, or Shelf work |
+| Whole-file receipt | `docs/issues/Issues_Phase_25.gate-c.json`, updated to `task_batch` / `task_order` `[124]` |
+| Branch / worktree | Reuse explicitly approved for `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag` |
+| Integration / remote | `main`; post-fetch `origin/main` `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; local `main` matches |
+| Continuation approved base | `54405de6aa9d1b42d1b58b19cbb68ee45a6a900e` (`docs: accept Task 123`) |
+| Base exception | User explicitly approved preserving the existing 18-commit same-phase continuation above `origin/main`; no reset, rebase, merge, or cherry-pick |
+| Dependency | Task 123 accepted at `54405de6aa9d1b42d1b58b19cbb68ee45a6a900e`; implementation commit `c1b62eff6e35b740bc693b48ad080380cdd0241f` and acceptance commit are ancestors of the continuation base |
+| Authority / readiness | SCHEMA Undo matrix, staged-candidate v+1 restoration, and atomic reconciliation; `docs/EXECUTION_PLAN.md` Task 124, `UF-25`, `AF-06`, `AF-07`, `NEG-18`, and `NEG-20`; no recipe, open Decision prerequisite, active issue, or plan/code drift |
+| Writer mutex | Acquire `db-implementation`, `db-interface`, and `db-command-harness`; Task 124 is the only approved writer and Tasks 125–126 remain held |
+| Baseline gate reuse | User approved reuse of Task 123's fresh serial full gate at implementation commit `c1b62eff6e35b740bc693b48ad080380cdd0241f`; its `src` tree and the continuation base `src` tree are both `5feb3fae627d0a7e6c0adf2b770f289c6a6978c1`; the later changes are only Task 123 plan-marker and ledger acceptance evidence |
+| Task 124 verification | Start from direct selected-target RED; focused `pnpm exec vitest run src/lib/db/triage-undo.test.ts src/lib/db/inbox-operations.test.ts`; mutex regression `pnpm exec vitest run src/lib/db/triage-placement.test.ts src/lib/db/triage-undo.test.ts src/lib/db/inbox-operations.test.ts`; then `pnpm typecheck` and `git diff --check`; after implementation run exactly one fresh serial full gate: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` |
+| Workflow candidate | Use candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`; next lifecycle skill is `/Users/jwk/Documents/codex-workflow-clean-design-mode-implementation/skills/run-task/SKILL.md` with SHA-256 `614631c56866549feb298d995ea0cf1311caa1cacaaefc2ba2ca753e43910531`; the global live `$run-task` is forbidden |
+| Canonical impact | None at kickoff; Task 124 remains implementation-local to the approved SCHEMA/execution contract unless run-task discovers and records otherwise |
+| Next legal action | Close this run-phase session after its receipt-only kickoff commit; in a fresh session invoke only the pinned candidate `$run-task`, using that kickoff commit as the recovery anchor; run-task must create a separate durable Task 124 start commit before any test or production-code write |
+| Forbidden here | Do not start Task 124 or Task 125/126, modify product/test files, write any task marker, run test/lint/typecheck/build, invoke downstream lifecycle work, push, create a PR, merge, rebase, or modify Phase 24 or Shelf |
