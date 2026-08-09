@@ -159,6 +159,24 @@ export type PlacementResult = RepositoryOperationResult<{
   candidate: StagedCandidate | null;
 }>;
 
+export type PlacementUndoCommandBase = RepositoryOperationCommand<{
+  resultSnapshot: Node | Bit;
+  sourceSnapshot: ScratchBreakdown;
+}>;
+
+export type StagedPlacementUndoCommand = PlacementUndoCommandBase & Readonly<{
+  candidateSnapshot: StagedCandidate;
+}>;
+
+export type DirectPlacementUndoCommand = PlacementUndoCommandBase;
+
+export type PlacementUndoResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  result: Node | Bit | null;
+  source: ScratchBreakdown | null;
+  candidate: StagedCandidate | null;
+}>;
+
 export type AggregateHardDeleteResult =
   | { status: "deleted" }
   | {
@@ -256,6 +274,16 @@ export interface DataStore {
   reconcileStagedPlacement(command: StagedPlacementCommand): Promise<PlacementResult>;
   placeDirectBreakdown(command: DirectPlacementCommand): Promise<PlacementResult>;
   reconcileDirectPlacement(command: DirectPlacementCommand): Promise<PlacementResult>;
+
+  // --- Authoritative Inbox Placement Undo Commands ---
+  undoStagedPlacement(command: StagedPlacementUndoCommand): Promise<PlacementUndoResult>;
+  reconcileStagedPlacementUndo(
+    command: StagedPlacementUndoCommand,
+  ): Promise<PlacementUndoResult>;
+  undoDirectPlacement(command: DirectPlacementUndoCommand): Promise<PlacementUndoResult>;
+  reconcileDirectPlacementUndo(
+    command: DirectPlacementUndoCommand,
+  ): Promise<PlacementUndoResult>;
 
   // --- Chunks ---
   getChunks(bitId: string): Promise<Chunk[]>;

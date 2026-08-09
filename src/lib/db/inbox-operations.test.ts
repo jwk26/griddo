@@ -4,10 +4,12 @@ import type {
   AddBreakdownCommand,
   DeleteBreakdownCommand,
   DirectPlacementCommand,
+  DirectPlacementUndoCommand,
   SaveBreakdownCommand,
   SaveScratchTitleCommand,
   StageCandidateCommand,
   StagedPlacementCommand,
+  StagedPlacementUndoCommand,
   UnstageCandidateCommand,
 } from "@/lib/db/datastore";
 import type { SevenStoreSnapshot } from "@/lib/db/indexeddb.test-utils";
@@ -85,6 +87,16 @@ describe("authoritative Inbox Breakdown commands", () => {
       "reconcileDirectPlacement",
       (store: IndexedDBDataStore) =>
         store.reconcileDirectPlacement(directPlacementSnapshotCommand()),
+    ],
+    [
+      "reconcileStagedPlacementUndo",
+      (store: IndexedDBDataStore) =>
+        store.reconcileStagedPlacementUndo(stagedPlacementUndoSnapshotCommand()),
+    ],
+    [
+      "reconcileDirectPlacementUndo",
+      (store: IndexedDBDataStore) =>
+        store.reconcileDirectPlacementUndo(directPlacementUndoSnapshotCommand()),
     ],
   ] as const)(
     "%s reads every authoritative store from one read-only transaction snapshot",
@@ -706,6 +718,26 @@ function stagedPlacementSnapshotCommand(): StagedPlacementCommand {
     resultType: "bit" as const,
     targetParentId: TRANSACTION_TEST_IDS.inboxNode,
     expectedAncestorIds: [TRANSACTION_TEST_IDS.inboxNode],
+  };
+}
+
+function directPlacementUndoSnapshotCommand(): DirectPlacementUndoCommand {
+  const seed = createSevenStoreSeed();
+  return {
+    operationId: transactionTestUuid(12420),
+    resultSnapshot: seed.bits[0]!,
+    sourceSnapshot: {
+      ...seed.scratchBreakdowns[0]!,
+      consumedAt: seed.bits[0]!.createdAt,
+      version: seed.scratchBreakdowns[0]!.version + 1,
+    },
+  };
+}
+
+function stagedPlacementUndoSnapshotCommand(): StagedPlacementUndoCommand {
+  return {
+    ...directPlacementUndoSnapshotCommand(),
+    candidateSnapshot: createSevenStoreSeed().stagedCandidates[0]!,
   };
 }
 

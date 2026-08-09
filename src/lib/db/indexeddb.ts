@@ -11,8 +11,10 @@ import type {
   DeleteBreakdownCommand,
   DeleteBreakdownResult,
   DirectPlacementCommand,
+  DirectPlacementUndoCommand,
   PlacementCommandBase,
   PlacementResult,
+  PlacementUndoResult,
   SaveBreakdownCommand,
   SaveBreakdownResult,
   SaveScratchTitleCommand,
@@ -20,6 +22,7 @@ import type {
   StageCandidateCommand,
   StageCandidateResult,
   StagedPlacementCommand,
+  StagedPlacementUndoCommand,
   UnstageCandidateCommand,
   UnstageCandidateResult,
 } from "@/lib/db/datastore";
@@ -109,6 +112,16 @@ type PlacementState = {
   candidate: StagedCandidate | undefined;
   sourceCandidate: StagedCandidate | undefined;
   scratch: Bit | undefined;
+  nodes: Node[];
+  bits: Bit[];
+};
+
+type PlacementUndoState = {
+  resultNode: Node | undefined;
+  resultBit: Bit | undefined;
+  source: ScratchBreakdown | undefined;
+  candidate: StagedCandidate | undefined;
+  sourceCandidate: StagedCandidate | undefined;
   nodes: Node[];
   bits: Bit[];
 };
@@ -271,6 +284,19 @@ const stagedPlacementCommandSchema = z.object({
 
 const directPlacementCommandSchema = z.object(placementCommandShape).strict();
 
+const placementUndoCommandShape = {
+  operationId: repositoryOperationIdSchema,
+  resultSnapshot: z.union([nodeSchema, bitSchema]),
+  sourceSnapshot: scratchBreakdownSchema,
+};
+
+const stagedPlacementUndoCommandSchema = z.object({
+  ...placementUndoCommandShape,
+  candidateSnapshot: stagedCandidateSchema,
+}).strict();
+
+const directPlacementUndoCommandSchema = z.object(placementUndoCommandShape).strict();
+
 const addBreakdownResultSchema = z.object({
   operationId: repositoryOperationIdSchema,
   status: repositoryOperationStatusSchema,
@@ -330,6 +356,8 @@ const placementResultSchema = z.object({
   source: scratchBreakdownSchema.nullable(),
   candidate: stagedCandidateSchema.nullable(),
 }).strict();
+
+const placementUndoResultSchema = placementResultSchema;
 
 export class GridDODatabase extends Dexie {
   nodes!: Table<Node, string>;
@@ -2249,6 +2277,154 @@ export class IndexedDBDataStore implements DataStore {
     });
   }
 
+  async undoStagedPlacement(
+    command: StagedPlacementUndoCommand,
+  ): Promise<PlacementUndoResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.undoStagedPlacement(command));
+    }
+
+    const parsed = stagedPlacementUndoCommandSchema.parse(command);
+    return this.applyPlacementUndo(parsed, true);
+  }
+
+  async reconcileStagedPlacementUndo(
+    command: StagedPlacementUndoCommand,
+  ): Promise<PlacementUndoResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileStagedPlacementUndo(command),
+      );
+    }
+
+    const parsed = stagedPlacementUndoCommandSchema.parse(command);
+    const state = await this.readPlacementUndoState(parsed);
+    return placementUndoResultSchema.parse({
+      operationId: parsed.operationId,
+      status: matchesPlacementUndoPostcondition(parsed, state, true)
+        ? "already_applied"
+        : matchesPlacementUndoPrecondition(parsed, state, true)
+          ? "not_applied"
+          : "conflict",
+      result: placementUndoStateResult(state),
+      source: state.source ?? null,
+      candidate: state.candidate ?? state.sourceCandidate ?? null,
+    });
+  }
+
+  async undoDirectPlacement(
+    command: DirectPlacementUndoCommand,
+  ): Promise<PlacementUndoResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.undoDirectPlacement(command));
+    }
+
+    const parsed = directPlacementUndoCommandSchema.parse(command);
+    return this.applyPlacementUndo(parsed, false);
+  }
+
+  async reconcileDirectPlacementUndo(
+    command: DirectPlacementUndoCommand,
+  ): Promise<PlacementUndoResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileDirectPlacementUndo(command),
+      );
+    }
+
+    const parsed = directPlacementUndoCommandSchema.parse(command);
+    const state = await this.readPlacementUndoState(parsed);
+    return placementUndoResultSchema.parse({
+      operationId: parsed.operationId,
+      status: matchesPlacementUndoPostcondition(parsed, state, false)
+        ? "already_applied"
+        : matchesPlacementUndoPrecondition(parsed, state, false)
+          ? "not_applied"
+          : "conflict",
+      result: placementUndoStateResult(state),
+      source: state.source ?? null,
+      candidate: state.sourceCandidate ?? null,
+    });
+  }
+
+  private async applyPlacementUndo(
+    command: DirectPlacementUndoCommand | StagedPlacementUndoCommand,
+    staged: boolean,
+  ): Promise<PlacementUndoResult> {
+    const state = await this.readPlacementUndoState(command);
+    const authoritativeCandidate = state.candidate ?? state.sourceCandidate;
+
+    if (matchesPlacementUndoPostcondition(command, state, staged)) {
+      return placementUndoResultSchema.parse({
+        operationId: command.operationId,
+        status: "already_applied",
+        result: null,
+        source: state.source ?? null,
+        candidate: staged ? authoritativeCandidate ?? null : null,
+      });
+    }
+
+    if (!matchesPlacementUndoPrecondition(command, state, staged)) {
+      return placementUndoResultSchema.parse({
+        operationId: command.operationId,
+        status: "conflict",
+        result: placementUndoStateResult(state),
+        source: state.source ?? null,
+        candidate: authoritativeCandidate ?? null,
+      });
+    }
+
+    const timestamp = Date.now();
+    const result = command.resultSnapshot;
+    if ("level" in result) {
+      await this.database.nodes.delete(result.id);
+    } else {
+      await this.database.bits.delete(result.id);
+    }
+    if (result.parentId !== null) {
+      const parent = state.nodes.find(({ id }) => id === result.parentId)!;
+      await this.database.nodes.put({ ...parent, mtime: timestamp });
+    }
+    this.emitTransactionCheckpoint(
+      staged ? "inbox.undo-staged.after.result" : "inbox.undo-direct.after.result",
+    );
+
+    const source = scratchBreakdownSchema.parse({
+      ...command.sourceSnapshot,
+      consumedAt: null,
+      version: command.sourceSnapshot.version + 1,
+    });
+    await this.requireScratchBreakdowns().put(source);
+    this.emitTransactionCheckpoint(
+      staged ? "inbox.undo-staged.after.source" : "inbox.undo-direct.after.source",
+    );
+
+    let candidate: StagedCandidate | null = null;
+    if (staged && "candidateSnapshot" in command) {
+      candidate = stagedCandidateSchema.parse({
+        ...command.candidateSnapshot,
+        updatedAt: timestamp,
+        version: command.candidateSnapshot.version + 1,
+      });
+      await this.requireStagedCandidates().put(candidate);
+      this.emitTransactionCheckpoint("inbox.undo-staged.after.candidate");
+    }
+
+    return placementUndoResultSchema.parse({
+      operationId: command.operationId,
+      status: "applied",
+      result: null,
+      source,
+      candidate,
+    });
+  }
+
   async createScratchBreakdown(data: CreateScratchBreakdown): Promise<ScratchBreakdown> {
     if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
       return this.write(() => this.createScratchBreakdown(data));
@@ -3181,6 +3357,38 @@ export class IndexedDBDataStore implements DataStore {
     };
   }
 
+  private async readPlacementUndoState(
+    command: DirectPlacementUndoCommand | StagedPlacementUndoCommand,
+  ): Promise<PlacementUndoState> {
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const candidateId = "candidateSnapshot" in command
+      ? command.candidateSnapshot.id
+      : undefined;
+    const [resultNode, resultBit, source, candidate, nodes, bits, allCandidates] =
+      await Promise.all([
+        this.database.nodes.get(command.resultSnapshot.id),
+        this.database.bits.get(command.resultSnapshot.id),
+        breakdowns.get(command.sourceSnapshot.id),
+        candidateId ? candidates.get(candidateId) : Promise.resolve(undefined),
+        this.database.nodes.toArray(),
+        this.database.bits.toArray(),
+        candidates.toArray(),
+      ]);
+
+    return {
+      resultNode,
+      resultBit,
+      source,
+      candidate,
+      sourceCandidate: allCandidates.find(
+        (item) => item.sourceBreakdownId === command.sourceSnapshot.id,
+      ),
+      nodes,
+      bits,
+    };
+  }
+
   private validatePlacementPrecondition(
     command: PlacementCommandBase & Partial<Pick<StagedPlacementCommand, "candidateId" | "candidateExpectedVersion">>,
     state: PlacementState,
@@ -3645,6 +3853,130 @@ function matchesCandidateOrphanAuditEvent(
     event.candidateId === command.candidateId &&
     event.sourceBreakdownId === command.sourceBreakdownId &&
     event.scratchBitId === command.scratchBitId
+  );
+}
+
+function placementUndoStateResult(state: PlacementUndoState): Node | Bit | null {
+  return state.resultNode ?? state.resultBit ?? null;
+}
+
+function matchesPlacementUndoPrecondition(
+  command: DirectPlacementUndoCommand | StagedPlacementUndoCommand,
+  state: PlacementUndoState,
+  staged: boolean,
+): boolean {
+  const result = placementUndoStateResult(state);
+  if (
+    !result ||
+    ("level" in command.resultSnapshot ? state.resultBit !== undefined : state.resultNode !== undefined) ||
+    !sameFlatRecord(result, command.resultSnapshot) ||
+    !validPlacementUndoSnapshots(command, staged) ||
+    !state.source ||
+    !sameFlatRecord(state.source, command.sourceSnapshot) ||
+    placementUndoHasDependencies(command.resultSnapshot.id, state)
+  ) {
+    return false;
+  }
+
+  if (
+    command.resultSnapshot.parentId !== null &&
+    !state.nodes.some(({ id }) => id === command.resultSnapshot.parentId)
+  ) {
+    return false;
+  }
+
+  if (staged) {
+    return (
+      "candidateSnapshot" in command &&
+      state.candidate === undefined &&
+      state.sourceCandidate === undefined
+    );
+  }
+  return state.sourceCandidate === undefined;
+}
+
+function matchesPlacementUndoPostcondition(
+  command: DirectPlacementUndoCommand | StagedPlacementUndoCommand,
+  state: PlacementUndoState,
+  staged: boolean,
+): boolean {
+  if (
+    state.resultNode !== undefined ||
+    state.resultBit !== undefined ||
+    placementUndoHasDependencies(command.resultSnapshot.id, state) ||
+    !state.source ||
+    !sameFlatRecord(state.source, {
+      ...command.sourceSnapshot,
+      consumedAt: null,
+      version: command.sourceSnapshot.version + 1,
+    })
+  ) {
+    return false;
+  }
+
+  if (!staged) return state.sourceCandidate === undefined;
+  if (!("candidateSnapshot" in command)) return false;
+
+  const candidate = state.candidate ?? state.sourceCandidate;
+  return (
+    candidate !== undefined &&
+    state.candidate?.id === state.sourceCandidate?.id &&
+    candidate.updatedAt >= candidate.createdAt &&
+    sameFlatRecord(candidate, {
+      ...command.candidateSnapshot,
+      updatedAt: candidate.updatedAt,
+      version: command.candidateSnapshot.version + 1,
+    })
+  );
+}
+
+function validPlacementUndoSnapshots(
+  command: DirectPlacementUndoCommand | StagedPlacementUndoCommand,
+  staged: boolean,
+): boolean {
+  const result = command.resultSnapshot;
+  const source = command.sourceSnapshot;
+  const isNode = "level" in result;
+  if (
+    result.version !== 1 ||
+    result.createdAt !== result.mtime ||
+    result.deletedAt !== null ||
+    result.archivedAt !== null ||
+    source.consumedAt !== result.createdAt
+  ) {
+    return false;
+  }
+  if (isNode && (result.systemRole !== null || result.hiddenFromGrid)) return false;
+
+  if (!staged) return !("candidateSnapshot" in command);
+  if (!("candidateSnapshot" in command)) return false;
+  const candidate = command.candidateSnapshot;
+  return (
+    candidate.scratchBitId === source.scratchBitId &&
+    candidate.sourceBreakdownId === source.id &&
+    candidate.resultType === (isNode ? "node" : "bit") &&
+    candidate.lifecycle === "staged"
+  );
+}
+
+function placementUndoHasDependencies(
+  resultId: string,
+  state: PlacementUndoState,
+): boolean {
+  return (
+    state.nodes.some(({ parentId }) => parentId === resultId) ||
+    state.bits.some(({ parentId }) => parentId === resultId)
+  );
+}
+
+function sameFlatRecord<T extends object>(actual: T, expected: T): boolean {
+  const actualRecord = actual as Record<string, unknown>;
+  const expectedRecord = expected as Record<string, unknown>;
+  const actualKeys = Object.keys(actualRecord);
+  const expectedKeys = Object.keys(expectedRecord);
+  return (
+    actualKeys.length === expectedKeys.length &&
+    expectedKeys.every((key) => actualRecord[key] === expectedRecord[key])
   );
 }
 

@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–123 accepted; Task 124 In Progress; Tasks 125–126 are not approved
+> State: Tasks 120–123 accepted; Task 124 Implemented awaiting user review; Tasks 125–126 are not approved
 
 ## Status Legend
 
@@ -275,7 +275,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | Task 124 only — Implement source-aware Undo with candidate-version ABA protection |
-| State | In Progress; implementation is not user acceptance and the Task 124 marker remains `[ ]` |
+| State | Implemented awaiting user review; implementation is not user acceptance and the Task 124 marker remains `[ ]` |
 | Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-undo.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; no other product/test file, UI, hook, Task 125/126, Phase 24, or Shelf work |
 | Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, Task 124 only), explicitly approved by the user |
 | Start base / entrypoint | Continuation approved base `54405de6aa9d1b42d1b58b19cbb68ee45a6a900e`; run-task entrypoint and Gate C kickoff commit `2128558387a94daf1ec2ee3ed1e612e83d1f75a2` |
@@ -283,7 +283,13 @@ None at kickoff.
 | Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`; existing same-phase reuse approved; clean at start |
 | Dependencies / mutex | Task 123 accepted; Task 124 exclusively owns `db-implementation`, `db-interface`, and `db-command-harness`; Tasks 125–126 remain held |
 | Lifecycle evidence | Candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` run-phase resolver validated the committed Gate C receipt as `ready`, `contract_ready=true`; receipt-less run-task resolver returned the expected compatibility state `approval_required`, `contract_ready=true`; both returned `writes_allowed=false`, while write authority remains the user-approved Gate C receipt |
-| Issues / deviations | None at start |
+| Issues / deviations | None — no scope deviation or new product/design/policy decision |
 | Canonical impact | None — implementation-local conformance to the approved SCHEMA/SPEC/Task 124 contract |
 | Verification contract | Selected-target RED; focused Undo/inbox tests; three-file placement/Undo/inbox mutex regression; `pnpm typecheck`; `git diff --check`; scope diff review; then exactly one fresh serial full gate after focused green and final repair |
-| Next legal action | Add Task 124 contract tests, capture selected-target RED, implement only the approved repository APIs, verify/review, commit implementation and ledger evidence, then stop at the user checkpoint |
+| Production changes | Added typed staged/direct Placement Undo command, result, execute, and reconcile APIs carrying exact result/source snapshots and staged candidate provenance. Undo validates the unchanged full result record, exact consumed source revision/timestamp, candidate ID/source uniqueness, result lifecycle/defaults, parent existence, and zero surviving descendants inside one transaction; it hard-deletes only the exact result, refreshes the surviving parent `mtime` without a version increment, restores/advances the source once, and for staged provenance recreates the same candidate ID/Scratch/source/type/`createdAt` at prior version + 1 with transaction `updatedAt`. Direct Undo creates no candidate. Complete precondition/postcondition/conflict reconciliation uses one authoritative four-store snapshot and performs no compensation or resurrection. |
+| TDD evidence | Initial direct selected-target RED exited 1 with 2 files, 19 expected missing-method failures, and 29 existing passes. The minimum implementation reached 2 files / 48 tests and the first mutex run reached 3 files / 72 tests. Review found two unused test imports and added exact parent-`mtime` evidence; the first test-only repair run exposed three clock-fixture failures because Dexie consumed one-shot `Date.now()` mocks. Replacing call-count mocks with explicit Placement/Undo clock phases reached the final 2 files / 48 tests, with targeted ESLint at 0 errors/0 warnings. No production failure signature repeated and no repair changed the approved behavior or scope. |
+| Focused verification | Final direct selected-target `pnpm exec vitest run src/lib/db/triage-undo.test.ts src/lib/db/inbox-operations.test.ts` exit 0 (2 files, 48 tests); final mutex regression `pnpm exec vitest run src/lib/db/triage-placement.test.ts src/lib/db/triage-undo.test.ts src/lib/db/inbox-operations.test.ts` exit 0 (3 files, 72 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0 |
+| Full gate | Exactly one fresh serial post-implementation run: `pnpm test` exit 0 (85 files, 648 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js 16.2.1 production build, successful TypeScript/static generation, seven routes) |
+| Review | No remaining blocking finding. Real-Dexie evidence covers staged/direct Node/Bit exact inverse and schema identity, source/candidate revisions, parent `mtime`, result mutation/lifecycle/source-consumption/candidate-ID collision rejection, descendant blocking and child-first re-enable, every staged/direct checkpoint rollback, one-snapshot reconciliation, ABA-3 late Placement/Stage conflict with candidate v+1 preservation, and ambiguous Undo followed by a new confirmed Placement with no deletion/restoration/resurrection. Diff ownership is exactly `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, `src/lib/db/triage-undo.test.ts`, `src/lib/db/inbox-operations.test.ts`, and this ledger; no UI/hook, Task 125/126, Phase 24, or Shelf path is owned. |
+| Task markers | Tasks 120–123 are `[x]`; Task 124 and Tasks 125–126 remain `[ ]` |
+| Next legal action | Commit Task 124 implementation and this evidence, verify clean exact ownership, present the user checkpoint, and stop; only explicit user acceptance may later write Task 124 `[x]` |
