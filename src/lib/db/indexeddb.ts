@@ -5,6 +5,8 @@ import type {
   AddBreakdownCommand,
   AddBreakdownResult,
   AggregateHardDeleteResult,
+  ConfirmedCandidateOrphanCleanupCommand,
+  ConfirmedCandidateOrphanCleanupResult,
   DataStore,
   DeleteBreakdownCommand,
   DeleteBreakdownResult,
@@ -19,6 +21,7 @@ import type {
 } from "@/lib/db/datastore";
 import {
   bitSchema,
+  candidateOrphanAuditEventSchema,
   chunkSchema,
   createBitSchema,
   createChunkSchema,
@@ -84,6 +87,15 @@ type DatabaseLike = {
   settings?: SettingsTableLike;
   scratchBreakdowns?: TableLike<ScratchBreakdown>;
   stagedCandidates?: TableLike<StagedCandidate>;
+  candidateOrphanAuditEvents?: TableLike<CandidateOrphanAuditEvent>;
+};
+
+type ConfirmedCandidateOrphanState = {
+  candidate: StagedCandidate | undefined;
+  source: ScratchBreakdown | undefined;
+  auditById: CandidateOrphanAuditEvent | undefined;
+  auditByCandidate: CandidateOrphanAuditEvent | undefined;
+  authoritativeAudit: CandidateOrphanAuditEvent | undefined;
 };
 
 type IndexedDBTransactionCheckpointHook = (name: string) => undefined;
@@ -195,6 +207,33 @@ const unstageCandidateCommandSchema = z.object({
   sourceExpectedVersion: commandVersionSchema,
 }).strict();
 
+const confirmedCandidateOrphanProofSchema = z.discriminatedUnion("status", [
+  z.object({
+    status: z.literal("confirmed"),
+    cause: z.enum(["source_deleted", "source_tombstoned"]),
+    sourceBreakdownId: z.string().uuid(),
+  }).strict(),
+  z.object({
+    status: z.literal("unresolved"),
+    reason: z.enum(["cache_miss", "offline", "delayed_subscription"]),
+  }).strict(),
+  z.object({
+    status: z.literal("planned_aggregate"),
+    sourceBreakdownId: z.string().uuid(),
+  }).strict(),
+]);
+
+const confirmedCandidateOrphanCleanupCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  auditEventId: z.string().uuid(),
+  candidateId: z.string().uuid(),
+  candidateExpectedVersion: commandVersionSchema,
+  sourceBreakdownId: z.string().uuid(),
+  scratchBitId: z.string().uuid(),
+  resultType: z.enum(["node", "bit"]),
+  proof: confirmedCandidateOrphanProofSchema,
+}).strict();
+
 const addBreakdownResultSchema = z.object({
   operationId: repositoryOperationIdSchema,
   status: repositoryOperationStatusSchema,
@@ -237,6 +276,14 @@ const unstageCandidateResultSchema = z.object({
   status: repositoryOperationStatusSchema,
   candidate: stagedCandidateSchema.nullable(),
   source: scratchBreakdownSchema.nullable(),
+}).strict();
+
+const confirmedCandidateOrphanCleanupResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  candidate: stagedCandidateSchema.nullable(),
+  source: scratchBreakdownSchema.nullable(),
+  auditEvent: candidateOrphanAuditEventSchema.nullable(),
 }).strict();
 
 export class GridDODatabase extends Dexie {
@@ -1884,6 +1931,102 @@ export class IndexedDBDataStore implements DataStore {
     });
   }
 
+  async cleanupConfirmedCandidateOrphan(
+    command: ConfirmedCandidateOrphanCleanupCommand,
+  ): Promise<ConfirmedCandidateOrphanCleanupResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.cleanupConfirmedCandidateOrphan(command));
+    }
+
+    const parsed = confirmedCandidateOrphanCleanupCommandSchema.parse(command);
+    const state = await this.readConfirmedCandidateOrphanState(parsed);
+
+    if (matchesConfirmedCandidateOrphanPostcondition(parsed, state)) {
+      return confirmedCandidateOrphanCleanupResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        candidate: null,
+        source: state.source ?? null,
+        auditEvent: state.authoritativeAudit ?? null,
+      });
+    }
+
+    if (parsed.proof.status !== "confirmed") {
+      return confirmedCandidateOrphanCleanupResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        candidate: state.candidate ?? null,
+        source: state.source ?? null,
+        auditEvent: state.authoritativeAudit ?? null,
+      });
+    }
+
+    if (!matchesConfirmedCandidateOrphanPrecondition(parsed, state)) {
+      return confirmedCandidateOrphanCleanupResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        candidate: state.candidate ?? null,
+        source: state.source ?? null,
+        auditEvent: state.authoritativeAudit ?? null,
+      });
+    }
+
+    const candidates = this.requireStagedCandidates();
+    const audits = this.requireCandidateOrphanAuditEvents();
+    const auditEvent = candidateOrphanAuditEventSchema.parse({
+      id: parsed.auditEventId,
+      cause: parsed.proof.cause,
+      candidateId: parsed.candidateId,
+      sourceBreakdownId: parsed.sourceBreakdownId,
+      scratchBitId: parsed.scratchBitId,
+      occurredAt: Date.now(),
+    });
+
+    await candidates.delete(parsed.candidateId);
+    this.emitTransactionCheckpoint("inbox.orphan-cleanup.after.candidate");
+    await audits.put(auditEvent);
+    this.emitTransactionCheckpoint("inbox.orphan-cleanup.after.audit");
+
+    return confirmedCandidateOrphanCleanupResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      candidate: null,
+      source: null,
+      auditEvent,
+    });
+  }
+
+  async reconcileConfirmedCandidateOrphanCleanup(
+    command: ConfirmedCandidateOrphanCleanupCommand,
+  ): Promise<ConfirmedCandidateOrphanCleanupResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readConfirmedCandidateOrphanSnapshot(() =>
+        this.reconcileConfirmedCandidateOrphanCleanup(command),
+      );
+    }
+
+    const parsed = confirmedCandidateOrphanCleanupCommandSchema.parse(command);
+    const state = await this.readConfirmedCandidateOrphanState(parsed);
+    const status = matchesConfirmedCandidateOrphanPostcondition(parsed, state)
+      ? "already_applied"
+      : parsed.proof.status !== "confirmed"
+        ? "rejected"
+        : matchesConfirmedCandidateOrphanPrecondition(parsed, state)
+          ? "not_applied"
+          : "conflict";
+
+    return confirmedCandidateOrphanCleanupResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      candidate: state.candidate ?? null,
+      source: state.source ?? null,
+      auditEvent: state.authoritativeAudit ?? null,
+    });
+  }
+
   async createScratchBreakdown(data: CreateScratchBreakdown): Promise<ScratchBreakdown> {
     if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
       return this.write(() => this.createScratchBreakdown(data));
@@ -2602,6 +2745,27 @@ export class IndexedDBDataStore implements DataStore {
     );
   }
 
+  private async readConfirmedCandidateOrphanSnapshot<T>(
+    scope: () => Promise<T>,
+  ): Promise<T> {
+    if (!(this.database instanceof GridDODatabase)) {
+      return scope();
+    }
+    if (this.hasAmbientDatabaseTransaction()) {
+      return scope();
+    }
+
+    return this.database.transaction(
+      "r",
+      [
+        this.database.scratchBreakdowns,
+        this.database.stagedCandidates,
+        this.database.candidateOrphanAuditEvents,
+      ],
+      scope,
+    );
+  }
+
   /** @internal Narrow test seam for proving named rollback checkpoints. */
   protected async runTransactionCheckpointProbe<T>(
     scope: (checkpoint: IndexedDBTransactionCheckpointHook) => Promise<T>,
@@ -2686,6 +2850,39 @@ export class IndexedDBDataStore implements DataStore {
     }
 
     return this.database.stagedCandidates;
+  }
+
+  private requireCandidateOrphanAuditEvents(): TableLike<CandidateOrphanAuditEvent> {
+    if (!this.database.candidateOrphanAuditEvents) {
+      throw new Error("candidateOrphanAuditEvents store not available");
+    }
+
+    return this.database.candidateOrphanAuditEvents;
+  }
+
+  private async readConfirmedCandidateOrphanState(
+    command: ConfirmedCandidateOrphanCleanupCommand,
+  ): Promise<ConfirmedCandidateOrphanState> {
+    const candidates = this.requireStagedCandidates();
+    const breakdowns = this.requireScratchBreakdowns();
+    const audits = this.requireCandidateOrphanAuditEvents();
+    const [candidate, source, auditById, auditRows] = await Promise.all([
+      candidates.get(command.candidateId),
+      breakdowns.get(command.sourceBreakdownId),
+      audits.get(command.auditEventId),
+      audits.toArray(),
+    ]);
+    const auditByCandidate = auditRows.find(
+      (event) => event.candidateId === command.candidateId,
+    );
+
+    return {
+      candidate,
+      source,
+      auditById,
+      auditByCandidate,
+      authoritativeAudit: auditByCandidate ?? auditById,
+    };
   }
 
   private async findCandidateBySource(
@@ -3067,6 +3264,52 @@ function matchesUnstageCandidatePostcondition(
     source?.id === command.sourceBreakdownId &&
     source.consumedAt === null &&
     source.version === command.sourceExpectedVersion + 1
+  );
+}
+
+function matchesConfirmedCandidateOrphanPrecondition(
+  command: ConfirmedCandidateOrphanCleanupCommand,
+  state: ConfirmedCandidateOrphanState,
+): boolean {
+  return (
+    command.proof.status === "confirmed" &&
+    command.proof.sourceBreakdownId === command.sourceBreakdownId &&
+    state.source === undefined &&
+    state.auditById === undefined &&
+    state.auditByCandidate === undefined &&
+    state.candidate?.id === command.candidateId &&
+    state.candidate.version === command.candidateExpectedVersion &&
+    state.candidate.sourceBreakdownId === command.sourceBreakdownId &&
+    state.candidate.scratchBitId === command.scratchBitId &&
+    state.candidate.resultType === command.resultType &&
+    state.candidate.lifecycle === "staged"
+  );
+}
+
+function matchesConfirmedCandidateOrphanPostcondition(
+  command: ConfirmedCandidateOrphanCleanupCommand,
+  state: ConfirmedCandidateOrphanState,
+): boolean {
+  return (
+    command.proof.status === "confirmed" &&
+    command.proof.sourceBreakdownId === command.sourceBreakdownId &&
+    state.candidate === undefined &&
+    matchesCandidateOrphanAuditEvent(command, state.auditById) &&
+    state.auditByCandidate?.id === state.auditById?.id
+  );
+}
+
+function matchesCandidateOrphanAuditEvent(
+  command: ConfirmedCandidateOrphanCleanupCommand,
+  event: CandidateOrphanAuditEvent | undefined,
+): boolean {
+  return (
+    command.proof.status === "confirmed" &&
+    event?.id === command.auditEventId &&
+    event.cause === command.proof.cause &&
+    event.candidateId === command.candidateId &&
+    event.sourceBreakdownId === command.sourceBreakdownId &&
+    event.scratchBitId === command.scratchBitId
   );
 }
 

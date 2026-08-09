@@ -11,6 +11,7 @@ import type {
   CreateScratchBreakdown,
   UpdateScratchBreakdown,
   StagedCandidate,
+  CandidateOrphanAuditEvent,
   RepositoryOperationCommand,
   RepositoryOperationResult,
   RepositoryOperationStatus,
@@ -99,6 +100,38 @@ export type UnstageCandidateResult = RepositoryOperationResult<{
   source: ScratchBreakdown | null;
 }>;
 
+export type ConfirmedCandidateOrphanProof =
+  | Readonly<{
+      status: "confirmed";
+      cause: CandidateOrphanAuditEvent["cause"];
+      sourceBreakdownId: string;
+    }>
+  | Readonly<{
+      status: "unresolved";
+      reason: "cache_miss" | "offline" | "delayed_subscription";
+    }>
+  | Readonly<{
+      status: "planned_aggregate";
+      sourceBreakdownId: string;
+    }>;
+
+export type ConfirmedCandidateOrphanCleanupCommand = RepositoryOperationCommand<{
+  auditEventId: string;
+  candidateId: string;
+  candidateExpectedVersion: number;
+  sourceBreakdownId: string;
+  scratchBitId: string;
+  resultType: StagedCandidate["resultType"];
+  proof: ConfirmedCandidateOrphanProof;
+}>;
+
+export type ConfirmedCandidateOrphanCleanupResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  candidate: StagedCandidate | null;
+  source: ScratchBreakdown | null;
+  auditEvent: CandidateOrphanAuditEvent | null;
+}>;
+
 export type AggregateHardDeleteResult =
   | { status: "deleted" }
   | {
@@ -182,6 +215,14 @@ export interface DataStore {
   reconcileUnstageCandidate(
     command: UnstageCandidateCommand,
   ): Promise<UnstageCandidateResult>;
+
+  // --- Authoritative Candidate Integrity Commands ---
+  cleanupConfirmedCandidateOrphan(
+    command: ConfirmedCandidateOrphanCleanupCommand,
+  ): Promise<ConfirmedCandidateOrphanCleanupResult>;
+  reconcileConfirmedCandidateOrphanCleanup(
+    command: ConfirmedCandidateOrphanCleanupCommand,
+  ): Promise<ConfirmedCandidateOrphanCleanupResult>;
 
   // --- Chunks ---
   getChunks(bitId: string): Promise<Chunk[]>;
