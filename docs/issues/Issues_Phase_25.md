@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–122 accepted; Task 123 Gate C approved and not started
+> State: Tasks 120–122 accepted; Task 123 In Progress
 
 ## Status Legend
 
@@ -220,3 +220,21 @@ None at kickoff.
 | Canonical impact | None at kickoff; Task 123 remains implementation-local to the approved SCHEMA/SPEC/execution contract unless run-task discovers and records otherwise |
 | Next legal action | In a fresh session, invoke only the pinned candidate `$run-task`; it must first validate this committed Gate C receipt and create a separate durable Task 123 start commit before any test or production-code write |
 | Forbidden here | Do not start Task 123 or Task 124, modify product/test files, write any task marker, run downstream lifecycle work, push, create a PR, merge, rebase, or modify Phase 24 or Shelf |
+
+## Task 123 In Progress
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 123 only — Implement staged and direct Placement commands |
+| State | In Progress; implementation is not user acceptance and the Task 123 marker remains `[ ]` |
+| Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-placement.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; no other product/test file, UI, hook, Task 124, Phase 24, or Shelf work |
+| Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, Task 123 only), explicitly approved by the user |
+| Start base / entrypoint | Continuation approved base `dea3d094ae060db17bc1a5870d68267c27f2a3c7`; run-task entrypoint and Gate C kickoff commit `aa28e01dc46280fee58117044fefb292482e409b` |
+| Recovery anchor | This durable-start commit; its parent must be `aa28e01dc46280fee58117044fefb292482e409b` and it precedes every Task 123 product/test write |
+| Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`; existing same-phase reuse approved; clean at start |
+| Dependencies / mutex | Tasks 120 and 121 accepted; `P25-122-R1` Closed; Task 123 exclusively owns `db-implementation`, `db-interface`, and `db-command-harness`; Tasks 124–126 remain held |
+| Lifecycle evidence | Candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` run-phase resolver validated the committed Gate C receipt as `ready`; receipt-less run-task resolver returned the expected compatibility state `approval_required`, `contract_ready=true`, `writes_allowed=false`; write authority remains the user-approved Gate C receipt |
+| Issues / deviations | None at start |
+| Canonical impact | None — implementation-local conformance to the approved SCHEMA/SPEC/Task 123 contract |
+| Verification contract | Selected-target RED; focused placement/inbox tests; four-file mutex regression; `pnpm typecheck`; `git diff --check`; then exactly one fresh serial full gate after focused green and final repair |
+| Next legal action | Add Task 123 contract tests, capture selected-target RED, implement only the approved repository APIs, verify/review, commit implementation and ledger evidence, then stop at the user checkpoint |
