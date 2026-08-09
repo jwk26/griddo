@@ -23,7 +23,7 @@
 
 - `VQ-02` — **resolved by `DP-VQ02` on 2026-08-09.** The user selected Choice A, the row-attached confirmation wash/check/text signal specified below. Task 148 is its only realization edge; successful Unstage still has no toast.
 - `VQ-03` — **resolved by `DP-VQ03` on 2026-08-09.** The user selected Choice A, the Add-adjacent inline decision sheet specified below. Task 140 is its only realization edge; Task 139 remains headless and native unload remains browser-owned.
-- `VQ-05` — Add/Delete pending, reconciling, failure, and in-place deleting may use only semantic state attributes, existing theme tokens, visible text/icon/non-color cues, and selected focus/accessibility behavior. Exact copy, location, layout, effect, duration, and per-theme values are a **user-owned non-code Decision prerequisite**. Future owner: Breakdown reliability phase; resume exact state realization after receipt.
+- `VQ-05` — **resolved by `DP-VQ05` on 2026-08-09.** The user selected Choice A, the Add-region and source-row-attached reliability system specified below. Task 143 is its only realization edge; Task 136 remains the headless owner.
 - `VQ-11` — completion-blocker status uses the same limited envelope. Exact why/where/how remains a **user-owned non-code Decision prerequisite** owned by the Breakdown/archive phase.
 - `VQ-04` — **resolved by `DP-VQ04` on 2026-08-09.** The user selected Choice A, the direct in-place Scratch-title and Breakdown-content editor system. This recipe owns the Breakdown-row half specified below; Task 138 is the only realization edge and Task 137 remains headless.
 
@@ -252,6 +252,112 @@ Every theme preserves row identity, exact copy, action order, and state logic:
 | Retro Mac | The list row becomes an in-place 1-bit field and hard inline comparison pane, never a new window. |
 | Graphite | The row becomes an editorial text field with labelled manuscript comparison/recovery blocks and strengthened rules. |
 
+## `DP-VQ05` Approved Add/Delete Attached Reliability States
+
+`DP-VQ05` keeps every operation state beside the source that initiated it:
+Add status remains inside the Add region, and Delete status remains inside the
+exact source row. It never substitutes a toast, placeholder row, generic card,
+dialog, global status rail, prototype literal, or adjacent-surface chrome.
+
+### Placement And State Binding
+
+- Bind `data-triage-reliability-surface="add"` to the complete Add region and
+  `data-triage-reliability-surface="delete"` to the exact source row. Bind only
+  headless-authoritative `pending`, `unknown`, `reconciling`, `not-applied`,
+  `rejected`, `conflict`, and terminal confirmed states; theme IDs never
+  branch copy or behavior.
+- Reserve `breakdown-add-reliability` as a full-width second line inside the
+  Add input/control grid, directly below its field and Add control. Status copy
+  is first and the one recovery action is trailing. It does not move the input
+  or control; the `DP-VQ03` departure sheet remains the next sibling below the
+  complete Add region.
+- Reserve `breakdown-delete-reliability` as a full-width second line inside
+  the exact Breakdown row, spanning the content-to-action columns below the
+  ordinary row line. The row may grow vertically but keeps its identity,
+  width, sorted position, content, grip, Edit, and Trash locations. No pending
+  or failed operation inserts a replacement or skeleton row.
+- Both lines use visible copy as the required non-color state cue. Pending and
+  reconciling use no spinner; failure/recovery controls use the canonical
+  focus-visible ring.
+
+### Add Exact State, Copy, And Actions
+
+| Authority state | Exact visible treatment and copy | Reliability action |
+|---|---|---|
+| Pending dispatch | Draft stays visible/read-only; status `Adding…`; ordinary Add is locked | None |
+| Unknown outcome | Draft stays visible/read-only; status `We couldn’t confirm whether it was added.` | `Check again` |
+| Reconciling | Draft stays visible/read-only; status `Checking whether it was added…` | Mounted `Check again`, focusable but `aria-disabled="true"` until the query settles |
+| `not_applied` | Draft becomes editable; status `Not added. Your draft is still here.` | Primary `Retry Add`, reusing the exact operation ID, row ID, and snapshotted content |
+| `rejected` | Draft becomes editable; status `Add unavailable. Your draft is still here.` | No reliability action; ordinary Add starts a new attempt only after review |
+| `conflict` | Draft becomes editable; status `This Scratch changed. Your draft is still here.` | No reliability action; ordinary Add starts a new attempt only from refreshed authority |
+| `applied` / current-operation `already_applied` | Clear the draft once, remove the Add reliability line, scroll only as specified by SPEC, and show `DP-VQ02`'s row `Added.` signal | None |
+
+`Retry Add` exists only for authoritative `not_applied`. Editing the retained
+draft after that result withdraws `Retry Add` and returns to the ordinary Add
+path; a later Add is a new user-confirmed attempt. Transport/offline ambiguity
+uses Unknown and `Check again` until authority is known, never blind Retry.
+
+### Delete Exact State, Copy, And Actions
+
+| Authority state | Exact visible treatment and copy | Reliability action |
+|---|---|---|
+| Pending dispatch | Source row remains in place; status `Deleting…`; grip, Edit, Trash, and conflicting actions are locked | None |
+| Unknown outcome | Source row remains in place; status `We couldn’t confirm whether it was deleted.` | `Check again` |
+| Reconciling | Source row remains in place; status `Checking whether it was deleted…` | Mounted `Check again`, focusable but `aria-disabled="true"` until the query settles |
+| `not_applied` | Row returns to authoritative Active treatment; status `Not deleted. This breakdown is still here.` | `Check again` only; no Delete Retry |
+| `rejected` | Surviving authoritative row remains; status `Delete unavailable. This breakdown is still here.` | `Check again` only; no Delete Retry |
+| `conflict` | Surviving authoritative row remains; status `This breakdown changed. Delete was not completed.` | `Check again` only; no Delete Retry |
+| `applied` / current-operation `already_applied` | Remove the row once, show no in-place success placeholder or toast, then use the SPEC focus/empty/completion handoff | None |
+
+On a terminal known failure, ordinary row actions reflect current authority;
+a later Trash activation is a new Delete attempt, not a dedicated Retry. The
+reliability line never labels any control `Retry`, `Retry Delete`, or `Delete
+again`. `Check again` is a read-only reconciliation of the retained operation
+identity and never resends Delete.
+
+### Timing, Focus, Announcement, And Motion
+
+- Show the pending line in the same synchronous turn as successful operation
+  acquisition and before the first asynchronous gap. Every state change is
+  immediate and persists until another authoritative state replaces it.
+  Unknown and terminal failure do not auto-dismiss; draft edit/new Add,
+  refreshed row action, Scratch/route exit, or terminal confirmed authority
+  clears the applicable line.
+- Add submission keeps logical focus in the mounted Add input. If the user
+  invokes `Check again`, keep that control mounted and focused through
+  reconciling; an unresolved result re-enables it in place, `not_applied`
+  replaces it with focused `Retry Add`, and any other terminal result restores
+  the Add input. `Retry Add` returns focus to the read-only Add input before
+  dispatch.
+- Delete begins from Trash and keeps that control mounted with its visible
+  focus ring while activation is locked. Unknown moves focus to `Check again`;
+  reconciliation keeps it mounted and focused. A terminal failure returns
+  focus to Trash after refreshing the row; confirmed success follows next row
+  → previous row → Add input → Context, with the completion-overlay exception
+  already owned by SPEC.
+- Announce each newly entered state copy once through one polite atomic status.
+  Do not announce renders, elapsed time, or repeated reconciliation results.
+- Use static immediate changes only: no spinner rotation, pulse, ping, bounce,
+  blink, flicker, scale, transform, or layout-transition animation. Reduced
+  motion uses the identical copy, geometry, controls, timing, and focus rules.
+
+### Eight-Theme Mapping
+
+Every theme preserves the same two attached lines, exact copy, action rules,
+focus, and state lifecycle. These mappings use the canonical role families,
+not prototype or adjacent-surface literals:
+
+| Theme | Exact reliability mapping |
+|---|---|
+| GridDO | Compact technical status rule inside Add or row, semantic pending/failure text, canonical action and focus roles. |
+| Tiny Desk | Ruled paper annotation attached to the Add sheet or source-row slip, with stationery `Check again`/`Retry Add` controls. |
+| Neumorphism | Shallow inset status channel inside the existing Add or raised-row depth, with named raised recovery control and stable focus ring. |
+| Claymorphism | Shape-preserving inset status seam inside the source silhouette, with a restrained raised recovery control and no movement. |
+| Origami | Attached seam/fold status strip within the Add paper or exact row, with a fixed recovery fold and no detached card. |
+| Terminal | Variable-driven static status line and bracketed recovery action inside the existing record/command region, with no blink or spinner. |
+| Retro Mac | In-place 1-bit status pane and hard recovery control inside the Add region or list row, with no new window or inversion cycle. |
+| Graphite | Inline editorial status caption bounded by a strengthened rule, with monochrome recovery action and persistent focus cue. |
+
 ## Theme Realizations
 
 ### GridDO
@@ -276,7 +382,7 @@ Every theme preserves row identity, exact copy, action order, and state logic:
 
 - Observed source-only: rows are rounded clay objects with visible Wand/Trash actions; staged state is visually de-emphasized; Add uses a `20px` inset field and clay button. Empty declares balloon/jelly imagery; completion declares a separate green completion prompt.
 - Adopted fact: tactile rows, distinct shape-led actions, and playful but semantically separate empty/completion objects are supported.
-- Token implication: active/staged/deleting envelope must not collapse to color alone; exact reliability states remain `VQ-05`.
+- Token implication: active/staged/deleting envelope must not collapse to color alone; `DP-VQ05` supplies the exact attached reliability contract.
 
 ### Origami
 
@@ -304,5 +410,5 @@ Every theme preserves row identity, exact copy, action order, and state logic:
 
 ## Exclusions And Verification
 
-- Excluded: unsupported exact `VQ-05/11` details, source mutation behavior, Add-on-blur, mock delete/placement, row dates/numbers, consumed strike-through, repeated pulse/bounce, and route copy as authority.
+- Excluded: unsupported exact `VQ-11` details, source mutation behavior, Add-on-blur, mock delete/placement, row dates/numbers, consumed strike-through, repeated pulse/bounce, and route copy as authority.
 - No row height, list density, staged distinction, empty/completion distinction, focus-visible action, overflow, scroll, contrast, success effect, deletion state, or reduced-motion equivalence was rendered or verified.

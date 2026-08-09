@@ -245,7 +245,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ02` | `VQ-02` | 107 | 148 only | Choice A row-attached wash/check/text signal accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_107.dp-vq02.json`; Task 148 only is released. |
 | `DP-VQ03` | `VQ-03` | 108 | 140 only | Choice A Add-adjacent inline decision sheet, including the checkpoint-approved position/copy supersession, accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_108.dp-vq03.json`; Task 140 only is released. |
 | `DP-VQ04` | `VQ-04` | 109 | 138 only | Choice A dual direct in-place editor system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_109.dp-vq04.json`; Task 138 only is released. |
-| `DP-VQ05` | `VQ-05` | 110 | 143 only | Accepted receipt defines Add/Delete reliability states. |
+| `DP-VQ05` | `VQ-05` | 110 | 143 only | Choice A Add-region/source-row attached reliability system recorded at `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json`; Task 110 remains `[ ]` pending its user checkpoint. |
 | `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Accepted Pool-specific status receipt. |
 | `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Accepted Staging-specific status receipt. |
 | `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Accepted Explorer-specific status receipt. |
@@ -630,6 +630,28 @@ headless ownership unchanged.
 **Authority / flows:** `VQ-05`, `UF-07`, `UF-11`, `NEG-21`.
 
 **Recipe:** [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md).
+
+**Recorded decision — `DP-VQ05`, Choice A (2026-08-09):** attach one reserved
+reliability line to each operation source: a full-width second line inside the
+Add input/control grid and a full-width second line inside the exact Delete
+source row. Add uses exact `Adding…`, unknown, reconciling, `not_applied`,
+rejected, and conflict copy; retains its draft; exposes `Check again` only for
+unknown/reconciling; and exposes primary `Retry Add` only for authoritative
+`not_applied` with the same operation/row identity and snapshot. Editing then
+withdraws Retry; rejected/conflict return to a new ordinary Add attempt.
+Delete keeps the authoritative row and its geometry/actions in place across
+`Deleting…`, unknown, reconciling, and terminal failure; its only reliability
+action is read-only `Check again`, never `Retry`, `Retry Delete`, or `Delete
+again`. A later ordinary Trash activation is a new attempt. Add confirmed
+success delegates to `DP-VQ02`'s `Added.` row signal; Delete confirmed success
+removes the row and uses the SPEC focus/empty/completion handoff with no toast
+or placeholder. All state changes are immediate and persistent until replaced,
+use one polite atomic announcement, preserve the exact focus rules, use no
+repeated/status motion, and share the receipt's eight theme-family mappings
+without a prototype, adjacent-surface, or theme-ID branch. The durable receipt
+is `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json`; it releases Task 143
+only after this Task's user checkpoint and leaves Task 136 headless behavior
+unchanged.
 
 **Observable acceptance:** Add pending, unknown, known failure, Check again, Add-only Retry, and confirmed result remain distinct; Delete failure/unknown keeps the row and exposes Check again/reconciliation with no dedicated Retry, toast, or placeholder fallback.
 

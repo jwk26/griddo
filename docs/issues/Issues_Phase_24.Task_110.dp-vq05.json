@@ -1,0 +1,182 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq05",
+  "decision_receipt_id": "DP-VQ05",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 110,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "predecessor_acceptance_commit": "cbc1b72488bce1caf5bb7ae78e1232fc5e09fc76",
+  "durable_start_commit": "17aed2e5c2b78224349433561150ba3392828e3d",
+  "user_decision": {
+    "date": "2026-08-09",
+    "statement": "DP-VQ05=A",
+    "recorded_scope": "DP-VQ05=A only",
+    "choice": "A",
+    "label": "Add-region and source-row attached reliability states"
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-breakdown-row-empty-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "surface_binding": {
+      "attribute": "data-triage-reliability-surface=add or delete",
+      "states": "pending|unknown|reconciling|not-applied|rejected|conflict plus terminal confirmed authority",
+      "headless_source": "Task 136 authoritative operation identity and result classification",
+      "theme_branch": "none"
+    },
+    "placement": {
+      "add": "reserved full-width second line inside the Add input/control grid, directly below the field and Add control, with status first and one trailing recovery action",
+      "departure_relationship": "DP-VQ03 remains the next sibling below the complete Add region and never shares the reliability line",
+      "delete": "reserved full-width second line inside the exact source row below its ordinary content/action line, spanning content-to-action columns",
+      "row_continuity": "keep row identity, width, sorted position, content, grip, Edit, and Trash locations; vertical growth only",
+      "prohibited": [
+        "toast",
+        "placeholder or skeleton row",
+        "generic card or dialog",
+        "global status rail",
+        "prototype literal or realization",
+        "adjacent-surface chrome"
+      ]
+    },
+    "add_state_matrix": {
+      "pending": {
+        "copy": "Adding…",
+        "draft": "visible and read-only",
+        "actions": "ordinary Add locked; no reliability action"
+      },
+      "unknown": {
+        "copy": "We couldn’t confirm whether it was added.",
+        "draft": "visible and read-only",
+        "actions": "Check again"
+      },
+      "reconciling": {
+        "copy": "Checking whether it was added…",
+        "draft": "visible and read-only",
+        "actions": "mounted Check again remains focusable but aria-disabled until the query settles"
+      },
+      "not_applied": {
+        "copy": "Not added. Your draft is still here.",
+        "draft": "editable",
+        "actions": "primary Retry Add only; reuse exact operation ID, row ID, and snapshotted content"
+      },
+      "rejected": {
+        "copy": "Add unavailable. Your draft is still here.",
+        "draft": "editable",
+        "actions": "no reliability action; ordinary Add creates a new attempt after review"
+      },
+      "conflict": {
+        "copy": "This Scratch changed. Your draft is still here.",
+        "draft": "editable",
+        "actions": "no reliability action; ordinary Add creates a new attempt from refreshed authority"
+      },
+      "applied_or_already_applied": {
+        "copy": "no Add-region success copy; delegate visible success to DP-VQ02 Added.",
+        "effects": "clear draft once, remove reliability line, perform SPEC scroll, and trigger the row signal once"
+      }
+    },
+    "add_retry_boundary": {
+      "retry_copy": "Retry Add",
+      "eligibility": "authoritative not_applied only",
+      "same_attempt": "reuse operation ID, preallocated row ID, Scratch version snapshot, and content snapshot",
+      "draft_edit": "withdraw Retry Add and return to the ordinary new-attempt path",
+      "transport_or_offline_ambiguity": "show unknown plus Check again until authority is known; never blind Retry"
+    },
+    "delete_state_matrix": {
+      "pending": {
+        "copy": "Deleting…",
+        "row": "remains in place with grip, Edit, Trash, and conflicting actions locked",
+        "actions": "none"
+      },
+      "unknown": {
+        "copy": "We couldn’t confirm whether it was deleted.",
+        "row": "remains in place",
+        "actions": "Check again"
+      },
+      "reconciling": {
+        "copy": "Checking whether it was deleted…",
+        "row": "remains in place",
+        "actions": "mounted Check again remains focusable but aria-disabled until the query settles"
+      },
+      "not_applied": {
+        "copy": "Not deleted. This breakdown is still here.",
+        "row": "returns to authoritative Active treatment",
+        "actions": "Check again only; no Delete Retry"
+      },
+      "rejected": {
+        "copy": "Delete unavailable. This breakdown is still here.",
+        "row": "surviving authoritative row remains",
+        "actions": "Check again only; no Delete Retry"
+      },
+      "conflict": {
+        "copy": "This breakdown changed. Delete was not completed.",
+        "row": "surviving authoritative row remains",
+        "actions": "Check again only; no Delete Retry"
+      },
+      "applied_or_already_applied": {
+        "copy": "none",
+        "effects": "remove row once, render no success placeholder or toast, and use SPEC focus/empty/completion handoff"
+      }
+    },
+    "delete_retry_boundary": {
+      "reliability_action": "Check again",
+      "semantics": "read-only reconciliation of the retained operation identity; never resend Delete",
+      "prohibited_labels": [
+        "Retry",
+        "Retry Delete",
+        "Delete again"
+      ],
+      "new_attempt": "a later ordinary Trash activation is a new Delete attempt after current authority restores it"
+    },
+    "timing_and_lifetime": {
+      "entry": "pending line appears synchronously after successful operation acquisition and before the first asynchronous gap",
+      "transition": "every state change is immediate and persists until replaced by another authoritative state",
+      "unknown_and_failure": "no auto-dismiss",
+      "clear": "new source interaction, Scratch or route exit, or terminal confirmed authority clears the applicable line",
+      "motion": "no spinner rotation, pulse, ping, bounce, blink, flicker, scale, transform, or layout-transition animation",
+      "reduced_motion": "identical copy, geometry, controls, timing, and focus"
+    },
+    "focus_and_accessibility": {
+      "announcement": "announce each newly entered state copy once through one polite atomic status; do not announce rerenders or elapsed time",
+      "add_base": "submission keeps logical focus in the mounted Add input",
+      "add_check_again": "invocation keeps Check again mounted and focused through reconcile; unresolved re-enables it, not_applied replaces it with focused Retry Add, other terminal results restore the Add input",
+      "add_retry": "Retry Add returns focus to the read-only Add input before dispatch",
+      "delete_base": "Trash remains mounted with visible focus while activation is locked",
+      "delete_check_again": "unknown moves focus to Check again and reconciliation keeps it mounted and focused",
+      "delete_failure": "terminal failure returns focus to Trash after authoritative row refresh",
+      "delete_success": "next row, previous row, Add input, then Context, subject to the SPEC completion-overlay exception"
+    },
+    "theme_mapping": {
+      "griddo": "compact technical rule, semantic status text, and canonical action/focus roles",
+      "tiny-desk": "attached ruled-paper annotation and stationery recovery controls",
+      "neumorphism": "shallow inset status channel and named raised recovery control inside existing depth",
+      "claymorphism": "shape-preserving inset status seam and restrained raised recovery control",
+      "origami": "attached status seam/fold and fixed recovery fold inside source paper",
+      "terminal": "variable-driven static status line and bracketed recovery action with no blink",
+      "retro-mac": "in-place 1-bit status pane and hard recovery control with no new window",
+      "graphite": "editorial status caption, strengthened rule, monochrome action, and persistent focus cue"
+    },
+    "headless_boundary": "Task 136 owns acquisition, locks, drafts/rows, stable identities, authoritative results, reconciliation queries, release, and success focus/scroll behavior unchanged"
+  },
+  "exact_release": {
+    "tasks": [
+      143
+    ],
+    "consumption_condition": "Task 110 user checkpoint accepted; its plan marker remains open until then",
+    "all_other_tasks": "unreleased"
+  },
+  "task_state": "implemented-awaiting-user-checkpoint",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "task-110-user-checkpoint"
+}

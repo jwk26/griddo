@@ -679,7 +679,41 @@ theme families:
 | Retro Mac | In-place 1-bit fields, hard status/comparison panes, and default-button hierarchy without new windows |
 | Graphite | Editorial fields, strengthened status rules, and labelled manuscript comparison/recovery blocks |
 
-### Existing-surface state gaps — 6 open Decision prerequisites
+### Approved Add/Delete attached reliability realization — `DP-VQ05`
+
+**User-approved 2026-08-09:** Choice A binds Add reliability to the Add region
+and Delete reliability to the exact source row. Task 136 remains headless;
+Task 143 alone consumes this copy/visual contract.
+
+| Contract | Exact token requirement |
+|---|---|
+| Surface binding | `data-triage-reliability-surface="add|delete"` with headless-authoritative `pending|unknown|reconciling|not-applied|rejected|conflict`; no theme-ID or copy branch |
+| Add placement | `breakdown-add-reliability` is a reserved full-width second line inside the Add input/control grid; `breakdown-reliability-status` precedes one trailing `breakdown-reliability-action`; `DP-VQ03` stays below the complete Add region |
+| Delete placement | `breakdown-delete-reliability` is a full-width second line inside the exact source row below its ordinary content/action line; width, identity, order, content, grip, Edit, and Trash positions stay stable |
+| Add copy | `Adding…`; `We couldn’t confirm whether it was added.`; `Checking whether it was added…`; `Not added. Your draft is still here.`; `Add unavailable. Your draft is still here.`; `This Scratch changed. Your draft is still here.` |
+| Add recovery | `Check again` only for unknown/reconciling; primary `Retry Add` only for authoritative `not_applied` with the same operation/row identity and snapshotted content; editing withdraws Retry; rejected/conflict return to a new ordinary Add path |
+| Delete copy | `Deleting…`; `We couldn’t confirm whether it was deleted.`; `Checking whether it was deleted…`; `Not deleted. This breakdown is still here.`; `Delete unavailable. This breakdown is still here.`; `This breakdown changed. Delete was not completed.` |
+| Delete recovery | `Check again` is the sole reliability action and performs read-only reconciliation; no `Retry`, `Retry Delete`, or `Delete again`; a later ordinary Trash activation is a new attempt |
+| Confirmed result | Add clears once and delegates visible success to `DP-VQ02`'s row `Added.` signal; Delete removes once with SPEC focus/empty/completion handoff and no placeholder or toast |
+| Timing / lifetime | Pending appears synchronously before the first async gap; all changes are immediate; unknown/failure persist without auto-dismiss until new source interaction, exit, or terminal authority replaces them |
+| Focus / accessibility | One polite atomic announcement per new state; Add input stays logically focused, `Check again` stays mounted/focused through reconcile, `not_applied` may replace it with focused `Retry Add`; Delete retains Trash then uses focused Check again and returns terminal failure to Trash |
+| Motion | Static only; no spinner rotation, pulse, ping, bounce, blink, flicker, scale, transform, or layout-transition animation; reduced motion is identical |
+| Scope boundary | No toast, placeholder row, generic card/dialog, global status rail, prototype literal, adjacent-surface fallback, blind Retry, or theme-specific behavior/copy |
+
+The same semantic tree consumes existing theme families:
+
+| Theme | Reliability-family binding |
+|---|---|
+| GridDO | Compact technical rule, semantic status text, canonical action/focus roles |
+| Tiny Desk | Attached ruled-paper annotation and stationery recovery controls |
+| Neumorphism | Shallow inset status channel and named raised recovery control inside existing depth |
+| Claymorphism | Shape-preserving inset status seam and restrained raised recovery control |
+| Origami | Attached status seam/fold and fixed recovery fold inside source paper |
+| Terminal | Variable-driven static status line and bracketed recovery action with no blink |
+| Retro Mac | In-place 1-bit status pane and hard recovery control with no new window |
+| Graphite | Editorial status caption, strengthened rule, monochrome action, and persistent focus cue |
+
+### Existing-surface state gaps — 5 open Decision prerequisites
 
 The shared role/state envelope above is the maximum current authority for
 these gaps. It authorizes semantic state binding, existing supported tokens,
@@ -689,7 +723,6 @@ dependent exact realization.
 
 | ID | Unresolved boundary; no implied realization | Future owner | Resume condition |
 |---|---|---|---|
-| `VQ-05` | No Add/Delete pending, failure, reconcile, check-again, or in-place deleting visual, copy, action placement, timing, or per-theme realization is chosen. | User Decision → Breakdown recipe/token owner and reliability phase | Receipt resolves each dependent state treatment |
 | `VQ-06` | No Pool/Staging/Explorer pending, invalid, remote, arrival, orphan, stale, alert, count placement, layout, duration, dismissal, copy, effect, or per-theme realization is chosen. | User Decision → owning Pool, Staging, or Explorer recipe/token owner and realtime phase | Receipt resolves the affected surface family before its UI task |
 | `VQ-08` | No placement pending, failure, reconcile, Retry, stale, success, control placement, layout, timing, copy, or per-theme realization is chosen. | User Decision → Placement recipe/token owner and reliability phase | Receipt resolves the dependent placement-state UI |
 | `VQ-10` | No selected+new overlap, unavailable reason, dependency-reenabled, undoing, failure, Undo/retry/conflict treatment, copy, placement, timing, or per-theme realization is chosen; repeated motion is forbidden. | User Decision → Newly Placed/Undo recipe/token owner and rollback phase | Receipt resolves the dependent marker/reliability UI |
