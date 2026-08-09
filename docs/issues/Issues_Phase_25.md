@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–121 accepted; Gate C first batch complete; Task 122 not started
+> State: Tasks 120–121 accepted; Task 122 in progress; Task 123 not started
 
 ## Status Legend
 
@@ -157,3 +157,25 @@ None at kickoff.
 | Batch status | Approved Gate C first batch Task 120 → Task 121 is complete; this acceptance grants no Task 122 write authority |
 | Next legal action | Read-only verification of Task 122 dependencies, exact scope, files, verification, and existing branch/worktree reuse conditions; present a next-batch approval packet and stop |
 | Forbidden here | Do not start Task 122, write Task 122 `[x]`, push, create a PR, merge, rebase, switch or clean up a branch/worktree, or modify Phase 24 scope |
+
+## Active Task 122
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 122 — Implement confirmed-orphan cleanup with exact reconciliation |
+| Approved scope | Add typed confirmed-orphan cleanup command/reconcile inputs and results in `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/candidate-orphan-cleanup.test.ts` on Task 104's real seven-store database; implement only authoritative `source_deleted`/`source_tombstoned` proof, exact candidate/audit reconciliation, unique audit append, and rollback between candidate deletion and audit append; no UI and no Task 123 work |
+| State | In Progress — implementation state is distinct from acceptance and Task 122 remains `[ ]` |
+| Approval | Explicit user approval of the Task 122 next-batch packet on 2026-08-09; approved task is Task 122 only and the existing Phase 25 branch/worktree is explicitly reused |
+| Lifecycle evidence | Candidate-pinned `run-task` resolver at workflow candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned the expected receipt-less compatibility result `approval_required`, `contract_ready=true`; write authority comes from the explicit user-approved bounded work order |
+| Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag` |
+| Start base / entrypoint | Phase approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; Task 122 continuation entrypoint and Task 121 acceptance commit `a01c854aa82e1303550e19b915dd09af1acd9d81` |
+| Remote freshness | User-authorized `git fetch origin` on 2026-08-09 left `origin/main` at `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; no rebase, merge, cherry-pick, or reset was performed |
+| Recovery anchor | Durable start commit with subject `docs: start Task 122`; its parent is the continuation entrypoint `a01c854aa82e1303550e19b915dd09af1acd9d81` |
+| Dependencies | Tasks 104, 105, and 121 are accepted at `bc9d2d7e037cda7f4a3901185b0e805cf308b01b`, `0faaa70302928a28521e49b7e9c3747033d58cdd`, and `a01c854aa82e1303550e19b915dd09af1acd9d81`; all are ancestors of this start point |
+| Authority | `docs/SCHEMA.md` Confirmed candidate orphan cleanup matrix and Staged Candidate Integrity; `docs/SPEC.md` `UF-16`, `AF-04`, `AF-07`, and `AF-08`; `docs/EXECUTION_PLAN.md` Task 122 |
+| Issues / deviations | None; fresh authority/API/harness inspection found no Task 122 drift or new product decision |
+| Canonical impact | None — implementation-local conformance to the already-approved SCHEMA/SPEC/execution contract |
+| Verification plan | RED then direct selected-target `pnpm exec vitest run src/lib/db/candidate-orphan-cleanup.test.ts`; focused `pnpm typecheck` and `git diff --check`; after focused green, one final serial full gate: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` |
+| Task markers | Tasks 120–121 are `[x]`; Tasks 122–126 remain `[ ]` |
+| Next legal action | Add the Task 122 real-Dexie failing test before the first Task 122 production-code write, then implement only the approved command/reconcile/rollback contract |
+| Forbidden here | Do not start Task 123, write Task 122 `[x]`, push, create a PR, merge, rebase, cherry-pick, reset, switch or clean up a branch/worktree, or modify Phase 24 scope |
