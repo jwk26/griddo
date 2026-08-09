@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–109 accepted; Task 110 is the next authorized Task in the approved first decision batch
+> State: Tasks 106–109 accepted; Task 110 is In Progress for `DP-VQ05` choice A
 
 ## Status Legend
 
@@ -143,6 +143,22 @@ canonical document update, and commit remain Task-local and sequential.
 | Review | No concrete blocking finding; both source-surface placements, nine-state copy/action matrices, acknowledged-latest CAS conflict resolution, offline/manual Retry, invalidated full-draft review/copy, save-before-action intent, deterministic focus, mounted-page lifetime, static reduced-motion parity, eight-theme mappings, and Task 138-only edge are present with no generic dialog, prototype, or adjacent-surface fallback |
 | Acceptance boundary | Accepts only Task 109 and its explicit exact-copy supersession; releases Task 138 only; does not accept Task 110, another DP receipt, product code, push, PR, merge, or phase close |
 | Next legal action | Commit this acceptance state. Task 110 may then start from the accepted sequential batch; Task 111 remains unavailable |
+
+## Active Task
+
+| Field | Durable value |
+| --- | --- |
+| Task | 110 — record `DP-VQ05` Add/Delete reliability decision |
+| State | In Progress; user acceptance remains pending and the Task 110 plan marker stays `[ ]` |
+| Approved scope | Choice A status anchored to the Add input/control region and the affected Delete row; specify the complete Add pending/failure/reconcile/Add-only Retry and Delete deleting/failure/check-again/no-Delete-Retry realization in only the Breakdown rows recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ05` receipt; no product code |
+| User decision | On 2026-08-09 the user selected `DP-VQ05=A` |
+| Predecessor | Task 109 accepted at `cbc1b72488bce1caf5bb7ae78e1232fc5e09fc76`; its exact release remains Task 138 only |
+| Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
+| Entrypoint / recovery anchor | Task 109 acceptance `cbc1b72488bce1caf5bb7ae78e1232fc5e09fc76`; this ledger commit is the Task 110 durable start anchor |
+| Decision receipt target | `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json` |
+| Issue / deviation | None |
+| Canonical impact | None — Choice A is selected but has not yet been reflected in Task 110's three canonical documents |
+| Next legal action | Commit this ledger-only durable start, then record only `DP-VQ05=A`; Task 111 remains unavailable |
 
 ## Readiness Evidence
 
