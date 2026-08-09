@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–124 accepted; Task 125 Awaiting User Decision on one stale test consumer; Task 126 held pending explicit Task 125 user acceptance
+> State: Tasks 120–124 accepted; Task 125 In Progress with approved P25-125-R1 test-only deviation; Task 126 held pending explicit Task 125 user acceptance
 
 ## Status Legend
 
@@ -330,27 +330,28 @@ None at kickoff.
 | --- | --- |
 | Task | Task 125 only — Implement exact Archive eligibility and guarded Archive command |
 | State | In Progress; implementation is not user acceptance and the Task 125 marker remains `[ ]` |
-| Approved scope | Modify `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, and `src/lib/db/archive.test.ts`; create `src/lib/db/archive-scratch-command.test.ts`; implement only authoritative eligibility, typed guarded Archive, active Inbox-owned Scratch + consumed≥1 + unconsumed=0 + candidate=0 + exact-version checks, mandatory clear Add-draft/title-blocker caller assertion, generic `archiveBit` bypass rejection, and ordinary Bit Archive/Archive View restore preservation; no UI/hook/store, sessionStorage, Task 126, Phase 24, or Shelf work |
+| Approved scope | Modify `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, and `src/lib/db/archive.test.ts`; create `src/lib/db/archive-scratch-command.test.ts`; by approved `P25-125-R1`, modify only the one stale regression in `src/lib/db/scratch-breakdowns.test.ts`; implement only authoritative eligibility, typed guarded Archive, active Inbox-owned Scratch + consumed≥1 + unconsumed=0 + candidate=0 + exact-version checks, mandatory clear Add-draft/title-blocker caller assertion, generic `archiveBit` bypass rejection, and ordinary Bit Archive/Archive View restore preservation; no UI/hook/store, sessionStorage, Task 126, Phase 24, or Shelf work |
 | Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, serial batch `[125,126]`, next Task 125), explicitly approved by the user |
 | Start base / entrypoint | Continuation approved base `06344a75ef1efd9335e4e771a893d269feae3d61`; exact run-task entrypoint and Gate C kickoff commit `77206d8fb00cb7d6a9d62ae9995dd6834618bb70` |
 | Recovery anchor | This durable-start commit; its parent must be `77206d8fb00cb7d6a9d62ae9995dd6834618bb70` and it precedes every Task 125 product/test write |
 | Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`; existing same-phase reuse approved; clean at start |
-| Dependencies / mutex | Tasks 120 and 121 accepted; Task 125 exclusively owns `db-implementation`, `db-interface`, and `db-archive-regression`; Task 126 remains held until explicit Task 125 user acceptance plus its separate acceptance commit |
+| Dependencies / mutex | Tasks 120 and 121 accepted; Task 125 exclusively owns `db-implementation`, `db-interface`, and `db-archive-regression`, plus temporary `db-breakdown-regression` ownership only for the approved stale test; Task 126 remains held until explicit Task 125 user acceptance plus its separate acceptance commit |
 | Lifecycle evidence | Candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` run-phase resolver validated the committed Gate C receipt as `ready`, `contract_ready=true`; receipt-less run-task resolver returned the expected compatibility state `approval_required`, `contract_ready=true`; both returned `writes_allowed=false`, while write authority remains the user-approved Gate C receipt |
-| Issues / deviations | `P25-125-R1` discovered during consumer review: `src/lib/db/scratch-breakdowns.test.ts` still invokes generic `archiveBit` for a real Inbox Scratch and conflicts with the required bypass guard; test-only write-set expansion awaits explicit user approval |
+| Issues / deviations | `P25-125-R1` approved by the user: test-only write-set expansion adds `src/lib/db/scratch-breakdowns.test.ts` and temporary `db-breakdown-regression` ownership, limited to replacing the one stale generic Inbox Scratch assertion with guarded rejection plus whole-snapshot immutability evidence |
 | Canonical impact | None — implementation-local conformance to the approved SCHEMA/SPEC/Task 125 contract |
 | Verification contract | Selected-target RED; focused Archive Scratch/archive tests; triage/inbox/archive mutex regression; `pnpm typecheck`; `git diff --check`; scope and concrete-risk review with focused repair; then exactly one fresh serial full gate after final code stability |
-| Next legal action | Await user disposition of `P25-125-R1`; if the exact write set is expanded to include the stale test consumer, update only that regression, rerun invalidated focused/mutex checks, review, run the fresh serial full gate exactly once, and stop at the Task 125 checkpoint |
+| Next legal action | Update only the approved stale regression, rerun invalidated focused/mutex checks, review, run the fresh serial full gate exactly once, commit implementation/evidence, and stop at the Task 125 checkpoint |
 
 ## P25-125-R1 — Stale generic Scratch Archive regression consumer
 
 | Field | Durable value |
 | --- | --- |
-| Status | Awaiting User Decision |
+| Status | In Progress — user-approved test-only deviation |
 | Discovered | Task 125 consumer/diff review after focused and mutex green, before the serial full gate |
 | Code path | `src/lib/db/scratch-breakdowns.test.ts` real-Dexie retention case calls `archiveBit(TRANSACTION_TEST_IDS.scratchBit)` for an Inbox-owned Scratch |
 | Trigger | Task 125 correctly makes generic `archiveBit` reject every Inbox-owned Scratch so callers cannot bypass guarded `archiveScratch` eligibility/version/blocker validation |
 | Concrete consequence | Selected-target `pnpm exec vitest run src/lib/db/scratch-breakdowns.test.ts` exits 1 with 1 failure / 12 passes at the required guard; the unrun full gate would therefore fail unless the stale test is updated or the required product guard is weakened |
 | Current evidence | Task 125 focused command passes 2 files / 23 tests; mutex regression passes 4 files / 71 tests; `pnpm typecheck` and `git diff --check` pass. A review RED for foreign ordinary-Bit replay failed as expected and its repair is green. Full gate has not run. |
 | Requested disposition | Expand Task 125's test-only write set to also modify `src/lib/db/scratch-breakdowns.test.ts`, replacing only the stale generic Inbox Scratch call/fixture with Task 125 guarded-command retention evidence. No product/UI/hook/store/sessionStorage/Task 126/Phase 24/Shelf expansion. |
+| User disposition | Approved; add only `src/lib/db/scratch-breakdowns.test.ts`, acquire temporary `db-breakdown-regression` mutex ownership, and change only the failing stale regression to expect guarded `archiveScratch` rejection with the complete seven-store snapshot unchanged |
 | Canonical impact | None — canonical SCHEMA/SPEC already require the guard; this is stale test conformance only |
