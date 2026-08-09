@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–121 accepted; Task 122 targeted repair implemented and awaiting user review; Task 123 not started
+> State: Tasks 120–122 accepted; Task 123 not started
 
 ## Status Legend
 
@@ -117,12 +117,13 @@ None at kickoff.
 
 | Field | Durable value |
 | --- | --- |
-| Status | In Progress — targeted repair implemented and awaiting user review; only user acceptance may close this issue |
+| Status | Closed — targeted repair accepted by the user on 2026-08-10 |
 | Source | User targeted rejection of the Task 122 checkpoint after implementation commit `6c4920414e7aceeb50a5df0eec6fb2c656845f7e` |
 | Affected paths | `readConfirmedCandidateOrphanState` in `src/lib/db/indexeddb.ts`; production-index invariant coverage in `src/lib/db/candidate-orphan-cleanup.test.ts` |
 | Trigger / consequence | Every cleanup and reconciliation calls `candidateOrphanAuditEvents.toArray().find(...)`; because SCHEMA retains the append-only audit indefinitely, lookup cost and memory grow with the complete audit history despite the existing unique `candidateId` index |
 | Approved repair | On the production `GridDODatabase` path, query the existing `&candidateId` index with `where("candidateId").equals(candidateId).first()` inside the same read-only/write transaction; retain a separately bounded compatibility fallback only for non-production `DatabaseLike` implementations; prove production never invokes the audit table's full `toArray()` scan |
 | Repair evidence | Production `GridDODatabase` now uses the unique `candidateId` index inside the existing transaction; the real-Dexie invariant fails immediately on any audit `toArray()` call and asserts `where("candidateId")`; the non-production `DatabaseLike` fallback remains isolated behind the `GridDODatabase` branch |
+| User acceptance | Task 122 repaired checkpoint explicitly accepted on 2026-08-10; repair commit `5d3fb54b2bc5452e6bc2cb3b7932c92119712248` and its focused/full verification evidence are the durable closure basis |
 | Canonical impact | None — this is an implementation-local performance/scalability correction using the already-approved unique index and retention contract |
 
 ## Accepted Task 120
@@ -170,13 +171,13 @@ None at kickoff.
 | Next legal action | Read-only verification of Task 122 dependencies, exact scope, files, verification, and existing branch/worktree reuse conditions; present a next-batch approval packet and stop |
 | Forbidden here | Do not start Task 122, write Task 122 `[x]`, push, create a PR, merge, rebase, switch or clean up a branch/worktree, or modify Phase 24 scope |
 
-## Active Task 122
+## Accepted Task 122
 
 | Field | Durable value |
 | --- | --- |
 | Task | Task 122 — Implement confirmed-orphan cleanup with exact reconciliation |
 | Approved scope | Add typed confirmed-orphan cleanup command/reconcile inputs and results in `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/candidate-orphan-cleanup.test.ts` on Task 104's real seven-store database; implement only authoritative `source_deleted`/`source_tombstoned` proof, exact candidate/audit reconciliation, unique audit append, and rollback between candidate deletion and audit append; no UI and no Task 123 work |
-| State | Implemented — targeted repair awaiting user review; implementation state remains distinct from acceptance and Task 122 stays `[ ]` |
+| State | Accepted by the user on 2026-08-10; Task 122 marker is `[x]` |
 | Approval | Explicit user approval of the Task 122 next-batch packet on 2026-08-09; approved task is Task 122 only and the existing Phase 25 branch/worktree is explicitly reused |
 | Lifecycle evidence | Candidate-pinned `run-task` resolver at workflow candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned the expected receipt-less compatibility result `approval_required`, `contract_ready=true`; write authority comes from the explicit user-approved bounded work order |
 | Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag` |
@@ -185,14 +186,15 @@ None at kickoff.
 | Recovery anchor | Task 122 durable start commit `f6d118f1e1d1f481a75ff9ffe2c0c964c29fc589`; targeted audit-index repair start commit `ef4b219b1f4f2a72f16732125cd105b098d2b4d8`, whose parent is the original implementation commit `6c4920414e7aceeb50a5df0eec6fb2c656845f7e` |
 | Dependencies | Tasks 104, 105, and 121 are accepted at `bc9d2d7e037cda7f4a3901185b0e805cf308b01b`, `0faaa70302928a28521e49b7e9c3747033d58cdd`, and `a01c854aa82e1303550e19b915dd09af1acd9d81`; all are ancestors of this start point |
 | Authority | `docs/SCHEMA.md` Confirmed candidate orphan cleanup matrix and Staged Candidate Integrity; `docs/SPEC.md` `UF-16`, `AF-04`, `AF-07`, and `AF-08`; `docs/EXECUTION_PLAN.md` Task 122 |
-| Issues / deviations | `P25-122-R1` repair implemented but remains In Progress pending user acceptance; no scope deviation or new product decision |
+| Issues / deviations | `P25-122-R1` Closed by explicit user acceptance; no scope deviation or new product decision |
 | Canonical impact | None — implementation-local conformance to the already-approved SCHEMA/SPEC/execution contract |
 | Production changes | Added typed confirmed/unresolved/planned-aggregate proof, cleanup command/result, execute, and reconcile APIs; confirmed cleanup revalidates exact candidate/version/source/Scratch/type and authoritative source absence before atomically deleting the candidate and appending one schema-parsed unique audit event; unresolved/local-miss and planned-aggregate evidence reject without writes; execute uses the existing real seven-store write transaction and reconcile reads candidate/source/audit from one three-store read-only snapshot. Targeted repair replaces the production audit-history scan with `where("candidateId").equals(candidateId).first()` while preserving the isolated non-production `DatabaseLike` fallback. |
 | TDD evidence | Initial RED exited 1 with 17 expected missing-method failures and the existing planned-aggregate invariant passing; the first minimal implementation reduced that set to zero. Targeted-repair RED exited 1 with exactly one production-scan invariant failure and 17 passes; the error was `production candidate audit full scan` at the former `audits.toArray()` call. The minimal indexed lookup reduced the failure set to zero with no repeated error signature or repair cycle. |
 | Focused verification | Final direct selected-target `pnpm exec vitest run src/lib/db/candidate-orphan-cleanup.test.ts` exit 0 (1 file, 18 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0 |
 | Full gate | Fresh serial run after the production indexed-lookup repair: `pnpm test` exit 0 (83 files, 603 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js production build and seven routes) |
-| Review | No remaining blocking finding in the targeted scope. Functional contracts remain unchanged; production execute/reconcile use the existing transaction and unique `candidateId` index without materializing audit history, while the full-scan compatibility fallback is reachable only for a non-`GridDODatabase` implementation. Diff ownership is limited to `src/lib/db/indexeddb.ts`, `src/lib/db/candidate-orphan-cleanup.test.ts`, and this ledger; no Task 123 or UI path is owned. |
-| Targeted rejection | Addressed for re-review: the production `auditByCandidate` lookup no longer calls `toArray().find`; `P25-122-R1` remains In Progress until explicit user acceptance |
-| Task markers | Tasks 120–121 are `[x]`; Tasks 122–126 remain `[ ]` |
-| Next legal action | Present the repaired Task 122 checkpoint for user acceptance or targeted rejection; do not start Task 123 |
-| Forbidden here | Do not start Task 123, write Task 122 `[x]`, push, create a PR, merge, rebase, cherry-pick, reset, switch or clean up a branch/worktree, or modify Phase 24 scope |
+| Review | Accepted after the targeted repair. Functional contracts remain unchanged; production execute/reconcile use the existing transaction and unique `candidateId` index without materializing audit history, while the full-scan compatibility fallback is reachable only for a non-`GridDODatabase` implementation. Diff ownership is limited to `src/lib/db/indexeddb.ts`, `src/lib/db/candidate-orphan-cleanup.test.ts`, and this ledger; no Task 123 or UI path is owned. |
+| Targeted rejection | Resolved and accepted: the production `auditByCandidate` lookup no longer calls `toArray().find`; repair commit `5d3fb54b2bc5452e6bc2cb3b7932c92119712248` passed the recorded focused and fresh full gates |
+| User acceptance | Task 122 repaired checkpoint explicitly accepted on 2026-08-10, including confirmed-orphan correctness, exact reconciliation/rollback, retained audit history, and the indexed production audit lookup |
+| Task markers | Tasks 120–122 are `[x]`; Tasks 123–126 remain `[ ]` |
+| Next legal action | End the current Task 122 session; Task 123 remains not started and this acceptance creates no Task 123 write authority |
+| Forbidden here | Do not start Task 123, write Task 123 `[x]`, push, create a PR, merge, rebase, cherry-pick, reset, switch or clean up a branch/worktree, or modify Phase 24 scope |

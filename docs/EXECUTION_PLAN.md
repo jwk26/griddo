@@ -731,7 +731,7 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 **Commit contract:** Stage/Unstage repository contracts and real transaction tests only; `feat(triage): add durable staging commands`.
 
-### Task 122: [ ] Implement confirmed-orphan cleanup with exact reconciliation
+### Task 122: [x] Implement confirmed-orphan cleanup with exact reconciliation
 
 **Files and actions:** modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/candidate-orphan-cleanup.test.ts` on Task 104's real database. Request contains operation ID, preallocated audit ID, exact candidate ID/version/source/Scratch/type, and authoritative `source_deleted`/`source_tombstoned` proof. In one transaction delete the exact candidate and append the exact unique-candidate audit. Define and test: exact audit plus candidate absence = `applied`/`already_applied`; untouched exact candidate/source precondition and no audit = `not_applied`; changed candidate, different audit, partial state, or mismatched proof = `conflict`; cache/offline/delayed/unproved source = `rejected`/unresolved with no write. Inject failure between delete/append and prove rollback; assert aggregate deletion Task 105 remains audit-free and prior audit rows remain indefinitely.
 
