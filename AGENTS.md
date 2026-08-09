@@ -5,23 +5,32 @@ This is the Codex entrypoint. It coexists with, and does not replace or modify,
 
 ## Authority and discovery
 
-- Read `docs/CODEX_WORKFLOW_ADAPTER.md` before a project-specific write.
+- The explicit Project Adapter v2 pointer is
+  `docs/CODEX_WORKFLOW_ADAPTER.json`. Invoke the selected lifecycle's
+  synchronized resolver before any project-specific claim, Git mutation, or
+  file write. Never guess a conventional adapter path.
 - Read `docs/EXECUTION_PLAN.md` first when an approved execution lifecycle is
   active. In scaled mode, use its Phase Index and active phase detail; archive
   files are historical rather than default instructions.
 - Canonical authority and exact paths are declared only by the adapter.
 - `docs/WORKFLOW.md` owns durable direction-change and issue-recording rules.
   `docs/prd.md` is historical, non-authoritative context.
-- Use `package.json` as the command source for application test, lint,
-  typecheck, build, and development scripts. Do not copy command definitions
-  here.
+- Resolve logical verification commands through the adapter-declared command
+  catalog. Do not copy command bodies here.
 
 ## Current Codex lifecycle scope
 
 - The Fresh-map `$craft-docs` campaign was published by PR #36 and is complete.
-- Phase 23 Tasks 101–105A are accepted and archived. No implementation
-  lifecycle is active; Phase 24 requires its own approved `$run-phase` kickoff
-  after the post-Phase-23 workflow-v2 rollout and GridDO adapter migration.
+- Phase 23 Tasks 101–105A are accepted, merged, and archived. Its former local
+  feature worktree is not a current runtime input and must not be reconstructed
+  as one.
+- No implementation lifecycle is active. Phase 24 and Phase 25 are separately
+  schedulable according to their exact task dependencies in the approved plan;
+  each requires its own approved `$run-phase` Gate C and whole-file JSON
+  receipt. Neither phase inherits authority from the other.
+- A control-tower instruction may pin an isolated workflow candidate for a
+  lifecycle pilot. That does not change global live skill links or grant
+  project write authority.
 - Phase 23 publication/merge is authorized only by its exact one-time Final
   Close receipt. It creates no standing `$end-phase` or later publication
   authority, and the completed docs-publication authority remains expired.
@@ -36,12 +45,12 @@ This is the Codex entrypoint. It coexists with, and does not replace or modify,
 - A task or phase receives `[x]` only after explicit user acceptance.
 - Recover from committed documents, receipts, Git state, and rerun checks—not
   from chat memory or external evidence alone.
-- Preserve the merged Phase 23 local feature branch/worktree until the
-  adapter-v2 migration removes machine-local runtime paths. Any later cleanup
-  is a separate guarded action; do not start Phase 24 first.
+- Adapter resolver compatibility never grants writes. Runtime identity comes
+  from fresh Git discovery; user approval comes only from the exact lifecycle
+  gate and matching tracked receipt.
 
-External Task 14 evidence is SHA-pinned as read-only reference material in the
-adapter. It is not canonical authority and may not be copied without
+Historical external evidence named in Phase 23 records remains read-only and
+non-canonical. It is not stable adapter policy and may not be copied without
 production reconciliation and the owning document gate.
 
 Claude/OMC/provider worker instructions are not Codex execution rules. Codex
