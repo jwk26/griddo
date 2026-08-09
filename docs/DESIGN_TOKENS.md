@@ -382,7 +382,7 @@ or to promotion-map §11.4's shared implication.
 | Scratch Pool | `pool-tools`, `pool-search-field`, `pool-total-count`, `pool-selected-row`, `pool-compact-switcher`, `pool-compact-marker`, `pool-scroll-viewport` | `R-POOL` |
 | External Scratch removal | `external-removal-scrim`, `external-removal-panel`, `external-removal-title`, `external-removal-destination`, `external-removal-countdown-track`, `external-removal-countdown-fill`, `external-removal-draft-card`, `external-removal-copy-status`, `external-removal-primary-action`, `external-removal-secondary-action` | `DP-VQ01`; Task 141 only |
 | Selected Context | `context-signature-plate`, `context-eyebrow-meta`, `context-title`, `context-action-cluster`, `context-complete-marker` | `R-CONTEXT` |
-| Breakdown | `breakdown-active-row`, `breakdown-staged-row`, `breakdown-row-action`, `breakdown-add-field`, `breakdown-add-control`, `breakdown-ordinary-empty`, `breakdown-consumed-completion` | `R-BREAKDOWN` |
+| Breakdown | `breakdown-active-row`, `breakdown-staged-row`, `breakdown-row-action`, `breakdown-add-field`, `breakdown-add-control`, `breakdown-ordinary-empty`, `breakdown-consumed-completion`, `breakdown-success-wash`, `breakdown-success-status`, `breakdown-success-check` | `R-BREAKDOWN`; success roles from `DP-VQ02` / Task 148 only |
 | Staging | `staging-panel`, `staging-node-well`, `staging-node-card`, `staging-bit-well`, `staging-bit-row`, `staging-neutral`, `staging-unavailable`, `staging-invalid`, `staging-pending`, `staging-unstage-target` | `R-STAGING` |
 | Grid Explorer base | `explorer-header`, `explorer-column`, `explorer-full-level-label`, `explorer-node-row`, `explorer-bit-row`, `explorer-eligible-target`, `explorer-hovered-target`, `explorer-invalid-target`, `explorer-unavailable-target` | `R-EXPLORER`; excludes the `VQ-07` body |
 | Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled` | `R-PLACEMENT`; excludes `VQ-08` reliability realization and all `VQ-09` surfaces |
@@ -409,7 +409,7 @@ appropriate; the data attribute never replaces them.
 | `paused` | The `DP-VQ01` countdown is frozen at its exact remainder; destination changes update content without resuming it |
 | `draft-copy-ready` | One full source-labeled page-memory draft remains available for copying before the external-removal handoff |
 | `copied` | The matching full draft was copied once; preserve button focus and never infer persistence, countdown resume, or movement |
-| `success` | Authoritative, non-repeating success; use polite status semantics without focus theft and a static distinction under reduced motion; exact `VQ-02` realization remains unresolved |
+| `success` | Authoritative, non-repeating Add/Unstage success; `DP-VQ02` binds the exact row wash/check/text, polite status, focus preservation, and static reduced-motion equivalent consumed only by Task 148 |
 | `newly-placed` | Page-session provenance layered on the actual card; use `newly-*` roles and keep Undo separate |
 | `completed` | Complete Context or completion presentation; do not treat it as Archive mutation success |
 | `local-alert` | A section-local status with visible text/icon semantics and the SPEC-selected live/status behavior; it does not become a global toast by default |
@@ -578,7 +578,40 @@ theme branches or copied source literals:
 | Retro Mac | Stripe/title-bar, 1-bit double-frame, segmented-progress, pane, and hard-control roles |
 | Graphite | Dark/subtle editorial surface, fine rule, ruled block, and monochrome action roles |
 
-### Existing-surface state gaps — 7 Decision prerequisites
+### Approved Add/Unstage success realization — `DP-VQ02`
+
+**User-approved 2026-08-09:** Choice A establishes one shared row-attached
+success signal for Add and Unstage. This removes `VQ-02` from the open
+existing-surface state gaps without authorizing another reliability state or
+task. Task 148 consumes the exact recipe realization.
+
+| Contract | Exact token requirement |
+|---|---|
+| Trigger identity | One newly observed local `{operation kind, operationId, target Breakdown row ID}`; direct `applied` or the current operation's first authoritative `already_applied` may trigger once |
+| State binding | `data-triage-state="success"` on the exact target row and `data-triage-success-kind="add"` or `"unstage"`; no theme-ID or copy branch |
+| Placement | `breakdown-success-wash` covers the unchanged row surface; the reserved non-interactive `breakdown-success-status` slot sits immediately before the stable action cluster; `breakdown-success-check` is literal `✓` and `aria-hidden` |
+| Copy / announcement | `Added.` or `Returned to Breakdown.` is visible and announced once through a polite atomic status without focus theft |
+| Motion | `--triage-success-wash-duration: 600ms`; `--triage-success-wash-easing: ease-out`; background and border return from success emphasis to active-row values with no transform or layout motion |
+| Visibility | `--triage-success-status-duration: 1600ms`; check/copy remain static for the full interval and disappear without exit animation |
+| Reduced motion | Skip the transition; retain an immediate static success border/surface plus the same check/copy for `1600ms`, then clear in one step |
+| Retrigger / interruption | A different new success replaces the prior target and restarts once; same identity, rerender, hydration, reload, remote arrival, and replay do not trigger; Scratch/route exit clears it |
+| Focus | Add remains in the Add input; Unstage remains on the restored source row; the signal has no focusable control |
+
+The success roles map through the existing theme families while keeping one
+semantic tree and exact copy:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Primary-tinted semantic row surface/border/text roles |
+| Tiny Desk | Paper-row highlight and stationery check-stamp roles |
+| Neumorphism | Named raised success surface/shadow returning to ordinary row depth |
+| Claymorphism | Shape-preserving glossy success surface and raised check roles |
+| Origami | Paper highlight and emphasized seam/fold-edge roles |
+| Terminal | Variable-driven record/background/border/check roles with no fixed JSX color |
+| Retro Mac | 1-bit surface/border and hard-check roles without cycling inversion |
+| Graphite | Restrained grayscale surface and strengthened editorial-rule roles |
+
+### Existing-surface state gaps — 6 open Decision prerequisites
 
 The shared role/state envelope above is the maximum current authority for
 these gaps. It authorizes semantic state binding, existing supported tokens,
@@ -588,7 +621,6 @@ dependent exact realization.
 
 | ID | Unresolved boundary; no implied realization | Future owner | Resume condition |
 |---|---|---|---|
-| `VQ-02` | The semantic non-repeating success role may exist and reduced motion requires a static distinction. No success effect, timing, placement, wording, or per-theme value is chosen. | User Decision → Breakdown recipe/token owner and Add/Unstage phase | Receipt defines the exact dependent realization |
 | `VQ-05` | No Add/Delete pending, failure, reconcile, check-again, or in-place deleting visual, copy, action placement, timing, or per-theme realization is chosen. | User Decision → Breakdown recipe/token owner and reliability phase | Receipt resolves each dependent state treatment |
 | `VQ-06` | No Pool/Staging/Explorer pending, invalid, remote, arrival, orphan, stale, alert, count placement, layout, duration, dismissal, copy, effect, or per-theme realization is chosen. | User Decision → owning Pool, Staging, or Explorer recipe/token owner and realtime phase | Receipt resolves the affected surface family before its UI task |
 | `VQ-08` | No placement pending, failure, reconcile, Retry, stale, success, control placement, layout, timing, copy, or per-theme realization is chosen. | User Decision → Placement recipe/token owner and reliability phase | Receipt resolves the dependent placement-state UI |
@@ -870,18 +902,20 @@ Runtime motion values live in `src/lib/animations/motion-language.ts`. Component
 
 ### Inbox/Triage Motion Boundary
 
-**Amendment status:** **User-approved 2026-07-28.** This amendment adopts no
-new Inbox/Triage duration, easing, delay, keyframe, interruption/retrigger, or
-reduced-motion-equivalence value. The unrelated global motion tokens above
-remain exact and unchanged, but they are not automatic fallbacks for any
-`VQ-*` state or missing replacement surface.
+**Amendment status:** **User-approved 2026-07-28; `DP-VQ02` supplement approved
+2026-08-09.** The original amendment adopted no new Inbox/Triage motion value.
+`DP-VQ02` now adds only the named `600ms` `ease-out` Add/Unstage row wash and
+`1600ms` status visibility with the exact static reduced-motion equivalent
+above. The unrelated global motion tokens remain exact and unchanged and are
+not automatic fallbacks for another `VQ-*` state or missing replacement
+surface.
 
 Repeated pulse, blink, ping, bounce, spin, and flicker are excluded from the
 Inbox/Triage target. Newly Placed may use only recipe-supported static or
 one-shot candidates after its remaining `VQ-10` decisions are approved; no
-repeating motion token is adopted. The `success` semantic state requires a
-static reduced-motion distinction, but `VQ-02` still owns its exact appearance,
-trigger realization, timing, placement, and theme mapping.
+repeating motion token is adopted. `DP-VQ02` owns the exact Add/Unstage
+`success` appearance, trigger, timing, placement, interruption, and theme
+mapping above; no other success or reliability surface inherits it.
 
 ---
 

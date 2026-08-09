@@ -21,11 +21,86 @@
 
 ## Decision-Prerequisite Boundary
 
-- `VQ-02` — Add/Unstage success uses only the shared success-state envelope and a static reduced-motion distinction. Exact effect, duration, timing, and theme value are a **user-owned non-code Decision prerequisite**. Future owner: Breakdown recipe/token owner and Add/Unstage phase; resume exact visual work only after receipt.
+- `VQ-02` — **resolved by `DP-VQ02` on 2026-08-09.** The user selected Choice A, the row-attached confirmation wash/check/text signal specified below. Task 148 is its only realization edge; successful Unstage still has no toast.
 - `VQ-05` — Add/Delete pending, reconciling, failure, and in-place deleting may use only semantic state attributes, existing theme tokens, visible text/icon/non-color cues, and selected focus/accessibility behavior. Exact copy, location, layout, effect, duration, and per-theme values are a **user-owned non-code Decision prerequisite**. Future owner: Breakdown reliability phase; resume exact state realization after receipt.
 - `VQ-11` — completion-blocker status uses the same limited envelope. Exact why/where/how remains a **user-owned non-code Decision prerequisite** owned by the Breakdown/archive phase.
 - `VQ-03` — Add-draft departure confirmation is an absent replacement surface. It is wholly excluded; generic delete/archive confirmation and native unload UI are not app-internal fallbacks. Future owner: Add-draft phase; resume after a user realization receipt.
 - `VQ-04` — row inline editor/conflict/lifecycle-invalid UI is an absent replacement surface and wholly excluded. Source Edit buttons do not source it. Future owner: editing phase; resume after user receipt.
+
+## `DP-VQ02` Approved Add/Unstage Success Signal
+
+`DP-VQ02` gives authoritative Add and Unstage success one shared, non-repeating
+row signal. It never substitutes a toast, Newly marker, repeated animation, or
+generic global status.
+
+### Trigger And Identity
+
+- Trigger only when the mounted Inbox page first observes terminal success for
+  a locally initiated Add or Unstage operation. Direct `applied` and the first
+  `already_applied` confirmation of that still-current operation qualify.
+- The signal identity is `{operation kind, operationId, target Breakdown row
+  ID}`. Add targets the newly committed row; Unstage targets the restored
+  source row. Remember signaled identities only for the current Inbox page
+  mount.
+- Do not trigger from hydration, reload, a remote/other-tab row, rerender, a
+  previously observed terminal result, or `already_applied` without the
+  current local operation identity. Reconciliation may trigger once when it
+  first supplies authority; replay of that result never repeats it.
+
+### Placement, Copy, And Timeline
+
+- Keep the target row's height, content, grip, and Edit/Trash positions stable.
+  Apply `success` to the complete row surface and use one non-interactive
+  trailing status slot immediately before the action cluster. The slot is
+  reserved in the row grid so its appearance creates no layout shift.
+- At `0ms`, show an `aria-hidden="true"` `✓` followed by exact visible copy:
+  `Added.` for Add or `Returned to Breakdown.` for Unstage. The same text is
+  the sole polite, atomic status announcement.
+- At `0ms`, place the row background and border at the theme's approved success
+  emphasis, then transition both back to the ordinary active-row values over
+  `600ms` with CSS `ease-out`. Do not transform, scale, sparkle, pulse, blink,
+  bounce, spin, flicker, or move any content.
+- Keep `✓ Added.` or `✓ Returned to Breakdown.` statically visible through
+  `1600ms`, then remove the status and `success` state without an exit
+  animation. The wash and status do not replay after rerender.
+
+### Interruption, Retrigger, Focus, And Reduced Motion
+
+- If a different qualifying success arrives before `1600ms`, clear the prior
+  row immediately and start one fresh `0ms` timeline on the new target. The
+  same identity is ignored.
+- Scratch switch, Inbox route exit, or page unmount clears the active signal
+  and its remembered identities; reload never reconstructs or replays it.
+  Theme/light-dark changes preserve the current target and remaining time and
+  never retrigger the signal.
+- Add keeps focus in the Add input. Unstage keeps the canonical restored-source
+  focus. The status is not focusable, never steals focus, and uses
+  `role="status"`, `aria-live="polite"`, and `aria-atomic="true"` once per new
+  identity.
+- Under `prefers-reduced-motion: reduce`, skip the 600ms transition entirely.
+  Apply the theme's static success border/surface distinction immediately and
+  keep it with the same `✓` and copy for `1600ms`; then remove all success
+  treatment in one step. This is the equivalent success state, not a shorter
+  or color-only fallback.
+
+### Eight-Theme Mapping
+
+All themes keep the same row geometry, `✓`, exact copy, `600ms`/`1600ms`
+timeline, focus, and announcement contract:
+
+| Theme | Exact realization mapping |
+|---|---|
+| GridDO | Primary-tinted semantic row surface and border wash with canonical text/focus roles. |
+| Tiny Desk | Paper-row highlight and stationery check-stamp treatment, returning to the ordinary paper row. |
+| Neumorphism | Named raised success surface/shadow emphasis returning to the ordinary row shadow; reduced motion uses a static raised border/surface distinction. |
+| Claymorphism | Shape-preserving glossy success wash and raised check treatment with no scale or bounce. |
+| Origami | Paper highlight plus emphasized seam/fold edge returning to the ordinary row paper. |
+| Terminal | Variable-driven record/background and border emphasis with the same literal `✓` and copy; no fixed terminal color in JSX. |
+| Retro Mac | 1-bit selected-style surface/border emphasis and hard check treatment, without blink or inversion cycling. |
+| Graphite | Restrained grayscale row wash and strengthened editorial rule returning to the ordinary row. |
+
+Theme IDs never branch trigger logic or copy, and successful Unstage remains
+row-local with no toast.
 
 ## Theme Realizations
 
@@ -79,5 +154,5 @@
 
 ## Exclusions And Verification
 
-- Excluded: `VQ-03/04` surfaces, unsupported exact `VQ-02/05/11` details, source mutation behavior, Add-on-blur, mock delete/placement, row dates/numbers, consumed strike-through, repeated pulse/bounce, and route copy as authority.
+- Excluded: `VQ-03/04` surfaces, unsupported exact `VQ-05/11` details, source mutation behavior, Add-on-blur, mock delete/placement, row dates/numbers, consumed strike-through, repeated pulse/bounce, and route copy as authority.
 - No row height, list density, staged distinction, empty/completion distinction, focus-visible action, overflow, scroll, contrast, success effect, deletion state, or reduced-motion equivalence was rendered or verified.

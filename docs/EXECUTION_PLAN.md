@@ -242,7 +242,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | Receipt | VQ | Decision task | Exact implementation edge | Resume condition |
 |---|---|---|---|---|
 | `DP-VQ01` | `VQ-01` | 106 | 141 only | Choice A central blocking panel accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_106.dp-vq01.json`; Task 141 only is released. |
-| `DP-VQ02` | `VQ-02` | 107 | 148 only | Accepted receipt defines complete one-shot/reduced-motion success realization. |
+| `DP-VQ02` | `VQ-02` | 107 | 148 only | Choice A row-attached wash/check/text signal recorded at `docs/issues/Issues_Phase_24.Task_107.dp-vq02.json`; Task 107 remains `[ ]` pending its user checkpoint. |
 | `DP-VQ03` | `VQ-03` | 108 | 140 only | Accepted receipt supplies or scopes out the internal departure surface. |
 | `DP-VQ04` | `VQ-04` | 109 | 138 only | Accepted receipt supplies both complete inline-editor surfaces. |
 | `DP-VQ05` | `VQ-05` | 110 | 143 only | Accepted receipt defines Add/Delete reliability states. |
@@ -491,6 +491,27 @@ Task's `[x]` without authorizing any other realization edge.
 **Authority / flows:** `VQ-02`, `UF-07`, `UF-15`, `NEG-11`, `NEG-13`.
 
 **Recipe:** [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md).
+
+**Recorded decision — `DP-VQ02`, Choice A (2026-08-09):** on the first newly
+observed authoritative success of a local Add or Unstage identity, keep the
+target Breakdown row's geometry/actions fixed, apply its theme-owned
+background/border success emphasis, and return to the active-row values over
+`600ms` with CSS `ease-out`. A reserved non-interactive trailing status slot
+shows an `aria-hidden` `✓` plus exact `Added.` or
+`Returned to Breakdown.` copy for `1600ms`, announces that text once through a
+polite atomic status, then clears without exit motion. A different new success
+replaces the prior signal and restarts once; the same identity, rerender,
+hydration, reload, remote arrival, or reconciliation replay never repeats it.
+Scratch/route exit clears it, while theme/mode change preserves the remaining
+timeline. Add focus stays in its input and Unstage focus stays on the restored
+source row. Reduced motion skips the 600ms transition and holds the exact
+static success surface/border plus check/copy for the same `1600ms`. The eight
+theme role-family mappings are exact in the recipe/tokens; there is no toast,
+transform, sparkle, pulse, blink, bounce, spin, flicker, or layout movement.
+The durable receipt is
+`docs/issues/Issues_Phase_24.Task_107.dp-vq02.json`; it releases only Task 148,
+does not change Task 106's Task 141 edge, and does not accept Task 107's `[ ]`
+marker.
 
 **Observable acceptance:** Add and Unstage share one fully specified, non-repeating realization and an equally meaningful reduced-motion state.
 
