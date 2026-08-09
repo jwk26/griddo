@@ -5,6 +5,8 @@ import type {
   AddBreakdownCommand,
   AddBreakdownResult,
   AggregateHardDeleteResult,
+  ArchiveScratchCommand,
+  ArchiveScratchResult,
   ConfirmedCandidateOrphanCleanupCommand,
   ConfirmedCandidateOrphanCleanupResult,
   DataStore,
@@ -19,6 +21,7 @@ import type {
   SaveBreakdownResult,
   SaveScratchTitleCommand,
   SaveScratchTitleResult,
+  ScratchArchiveEligibility,
   StageCandidateCommand,
   StageCandidateResult,
   StagedPlacementCommand,
@@ -124,6 +127,11 @@ type PlacementUndoState = {
   sourceCandidate: StagedCandidate | undefined;
   nodes: Node[];
   bits: Bit[];
+};
+
+type ScratchArchiveState = {
+  eligibility: ScratchArchiveEligibility;
+  activeInboxOwner: boolean;
 };
 
 type IndexedDBTransactionCheckpointHook = (name: string) => undefined;
@@ -297,6 +305,16 @@ const stagedPlacementUndoCommandSchema = z.object({
 
 const directPlacementUndoCommandSchema = z.object(placementUndoCommandShape).strict();
 
+const archiveScratchCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  scratchBitId: z.string().uuid(),
+  expectedVersion: commandVersionSchema,
+  callerAssertion: z.object({
+    addDraftClear: z.literal(true),
+    titleBlockerClear: z.literal(true),
+  }).strict(),
+}).strict();
+
 const addBreakdownResultSchema = z.object({
   operationId: repositoryOperationIdSchema,
   status: repositoryOperationStatusSchema,
@@ -358,6 +376,20 @@ const placementResultSchema = z.object({
 }).strict();
 
 const placementUndoResultSchema = placementResultSchema;
+
+const scratchArchiveEligibilitySchema = z.object({
+  eligible: z.boolean(),
+  scratch: bitSchema.nullable(),
+  consumedCount: z.number().int().min(0),
+  unconsumedCount: z.number().int().min(0),
+  stagedCandidateCount: z.number().int().min(0),
+}).strict();
+
+const archiveScratchResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  scratch: bitSchema.nullable(),
+}).strict();
 
 export class GridDODatabase extends Dexie {
   nodes!: Table<Node, string>;
@@ -993,6 +1025,11 @@ export class IndexedDBDataStore implements DataStore {
 
     const bit = await this.getRequiredBit(id);
 
+    const parent = await this.database.nodes.get(bit.parentId);
+    if (parent?.systemRole === "inbox") {
+      throw new Error("Use archiveScratch for Inbox-owned Scratch Bits");
+    }
+
     if (bit.archivedAt !== null) {
       return;
     }
@@ -1002,6 +1039,92 @@ export class IndexedDBDataStore implements DataStore {
     await this.write(async () => {
       await this.database.bits.put(bitSchema.parse(incrementVersion({ ...bit, archivedAt })));
       await this.touchNodeIds([bit.parentId], archivedAt);
+    });
+  }
+
+  async getScratchArchiveEligibility(
+    scratchBitId: string,
+  ): Promise<ScratchArchiveEligibility> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.getScratchArchiveEligibility(scratchBitId),
+      );
+    }
+
+    const state = await this.readScratchArchiveState(scratchBitId);
+    return scratchArchiveEligibilitySchema.parse(state.eligibility);
+  }
+
+  async archiveScratch(
+    command: ArchiveScratchCommand,
+  ): Promise<ArchiveScratchResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.archiveScratch(command));
+    }
+
+    const parsed = archiveScratchCommandSchema.parse(command);
+    const state = await this.readScratchArchiveState(parsed.scratchBitId);
+    const eligibility = state.eligibility;
+    const currentScratch = eligibility.scratch;
+
+    if (
+      currentScratch &&
+      state.activeInboxOwner &&
+      currentScratch.archivedAt !== null &&
+      currentScratch.version === parsed.expectedVersion + 1
+    ) {
+      return archiveScratchResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        scratch: currentScratch,
+      });
+    }
+
+    if (
+      !currentScratch ||
+      currentScratch.deletedAt !== null ||
+      currentScratch.archivedAt !== null
+    ) {
+      return archiveScratchResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        scratch: currentScratch,
+      });
+    }
+
+    if (currentScratch.version !== parsed.expectedVersion) {
+      return archiveScratchResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        scratch: currentScratch,
+      });
+    }
+
+    if (!eligibility.eligible) {
+      return archiveScratchResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        scratch: currentScratch,
+      });
+    }
+
+    const timestamp = Date.now();
+    const scratch = bitSchema.parse({
+      ...currentScratch,
+      archivedAt: timestamp,
+      mtime: timestamp,
+      version: currentScratch.version + 1,
+    });
+    await this.database.bits.put(scratch);
+    this.emitTransactionCheckpoint("inbox.archive-scratch.after.scratch");
+
+    return archiveScratchResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      scratch,
     });
   }
 
@@ -3324,6 +3447,57 @@ export class IndexedDBDataStore implements DataStore {
       parent.deletedAt === null &&
       parent.archivedAt === null
     );
+  }
+
+  private async readScratchArchiveState(
+    scratchBitId: string,
+  ): Promise<ScratchArchiveState> {
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const [scratch, nodes, allBreakdowns, allCandidates] = await Promise.all([
+      this.database.bits.get(scratchBitId),
+      this.database.nodes.toArray(),
+      breakdowns.toArray(),
+      candidates.toArray(),
+    ]);
+    const scratchBreakdowns = allBreakdowns.filter(
+      (breakdown) => breakdown.scratchBitId === scratchBitId,
+    );
+    const consumedCount = scratchBreakdowns.filter(
+      (breakdown) => breakdown.consumedAt !== null,
+    ).length;
+    const unconsumedCount = scratchBreakdowns.length - consumedCount;
+    const stagedCandidateCount = allCandidates.filter(
+      (candidate) =>
+        candidate.scratchBitId === scratchBitId && candidate.lifecycle === "staged",
+    ).length;
+    const parent = scratch
+      ? nodes.find((node) => node.id === scratch.parentId)
+      : undefined;
+    const activeInboxOwner =
+      parent?.systemRole === "inbox" &&
+      parent.deletedAt === null &&
+      parent.archivedAt === null;
+    const activeInboxScratch =
+      scratch !== undefined &&
+      scratch.deletedAt === null &&
+      scratch.archivedAt === null &&
+      activeInboxOwner;
+
+    return {
+      eligibility: {
+        eligible:
+          activeInboxScratch &&
+          consumedCount >= 1 &&
+          unconsumedCount === 0 &&
+          stagedCandidateCount === 0,
+        scratch: scratch ?? null,
+        consumedCount,
+        unconsumedCount,
+        stagedCandidateCount,
+      },
+      activeInboxOwner,
+    };
   }
 
   private async readPlacementState(

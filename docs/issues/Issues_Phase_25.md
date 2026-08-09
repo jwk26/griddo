@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–124 accepted; Task 125 In Progress with approved P25-125-R1 test-only deviation; Task 126 held pending explicit Task 125 user acceptance
+> State: Tasks 120–124 accepted; Task 125 Implemented awaiting user review; Task 126 held pending explicit Task 125 user acceptance
 
 ## Status Legend
 
@@ -355,3 +355,22 @@ None at kickoff.
 | Requested disposition | Expand Task 125's test-only write set to also modify `src/lib/db/scratch-breakdowns.test.ts`, replacing only the stale generic Inbox Scratch call/fixture with Task 125 guarded-command retention evidence. No product/UI/hook/store/sessionStorage/Task 126/Phase 24/Shelf expansion. |
 | User disposition | Approved; add only `src/lib/db/scratch-breakdowns.test.ts`, acquire temporary `db-breakdown-regression` mutex ownership, and change only the failing stale regression to expect guarded `archiveScratch` rejection with the complete seven-store snapshot unchanged |
 | Canonical impact | None — canonical SCHEMA/SPEC already require the guard; this is stale test conformance only |
+
+## Task 125 Implementation Checkpoint
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 125 only — Implement exact Archive eligibility and guarded Archive command |
+| State | Implemented awaiting user review; implementation is not user acceptance and the Task 125 marker remains `[ ]`; Task 126 remains held |
+| Durable start | `78fcf634f3addc533c76c81adab6c2ab6e957d41`; parent `77206d8fb00cb7d6a9d62ae9995dd6834618bb70`, before every Task 125 product/test write |
+| Approved deviation | `P25-125-R1` ledger record `7ec42863181c1959334d07ae6fbc08217fbcbeb7`; user-approved durable scope/mutex update `030d8b193cb41be83dc89b43eab84c5ad302f2b1` |
+| Implemented behavior | Added a typed authoritative eligibility query and guarded `archiveScratch` command with exact Scratch version and literal clear Add-draft/title-blocker assertion. One read-write transaction independently verifies active Inbox ownership, consumed≥1, unconsumed=0, staged=0, exact version, and replay postcondition; success changes only Scratch `archivedAt`/`mtime`/version. Generic `archiveBit` rejects Inbox-owned Scratch while ordinary Bit Archive and Archive View restore remain intact. |
+| Retention / atomicity | Real-Dexie evidence proves rows and unrelated stores remain byte-for-byte unchanged on success/rejection, durable eligibility/version/candidate races write nothing, same-command replay is `already_applied`, and the named post-write checkpoint rolls the transaction back. The approved stale integration regression now proves its unconsumed row plus active candidate returns `rejected` and preserves the complete seven-store snapshot. |
+| TDD / review evidence | Initial selected-target RED exited 1 with 15 expected failures / 7 existing passes. Minimal implementation reduced the set to six then three transaction-lifetime failures before focused green. Review found foreign ordinary-Bit replay could be misclassified; its focused RED exited 1 with 1 failure / 14 passes, and Inbox-owner postcondition repair reached green. Consumer review found `P25-125-R1`; its standalone RED exited 1 with 1 failure / 12 passes before the approved test-only repair. No unchanged failure set persisted twice. |
+| Focused verification | Final `pnpm exec vitest run src/lib/db/scratch-breakdowns.test.ts` exit 0 (1 file, 13 tests); final `pnpm exec vitest run src/lib/db/archive-scratch-command.test.ts src/lib/db/archive.test.ts` exit 0 (2 files, 23 tests); final mutex regression exit 0 (4 files, 71 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0 |
+| Full gate | Exactly one fresh serial post-implementation run: `pnpm test` exit 0 (86 files, 664 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js 16.2.1 production build, successful TypeScript/static generation, seven routes) |
+| Review | No remaining blocking finding. Reviewed code paths cover malformed caller assertion, active Inbox ownership, empty/unconsumed/staged/consumed counts, exact version, durable races, foreign replay, same-command replay, rollback, generic bypass, ordinary Direct Archive, Archive View restore, and full-store immutability. |
+| Diff ownership | Exactly `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, `src/lib/db/archive.test.ts`, new `src/lib/db/archive-scratch-command.test.ts`, approved deviation `src/lib/db/scratch-breakdowns.test.ts`, and this ledger; no UI/hook/store/sessionStorage/Task 126/Phase 24/Shelf path |
+| Issues / deviations | `P25-125-R1` implemented and verified under explicit user-approved test-only scope; terminal closure remains user-owned. No other issue or deviation. |
+| Canonical impact | None — implementation-local conformance to already-approved SCHEMA/SPEC/Task 125 authority; no canonical amendment required |
+| Next legal action | Present the Task 125 user checkpoint and stop. Only explicit acceptance may later write Task 125 `[x]` in a separate acceptance commit; Task 126 cannot start before that commit. |

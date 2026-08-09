@@ -177,6 +177,28 @@ export type PlacementUndoResult = RepositoryOperationResult<{
   candidate: StagedCandidate | null;
 }>;
 
+export type ScratchArchiveEligibility = Readonly<{
+  eligible: boolean;
+  scratch: Bit | null;
+  consumedCount: number;
+  unconsumedCount: number;
+  stagedCandidateCount: number;
+}>;
+
+export type ArchiveScratchCommand = RepositoryOperationCommand<{
+  scratchBitId: string;
+  expectedVersion: number;
+  callerAssertion: Readonly<{
+    addDraftClear: true;
+    titleBlockerClear: true;
+  }>;
+}>;
+
+export type ArchiveScratchResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  scratch: Bit | null;
+}>;
+
 export type AggregateHardDeleteResult =
   | { status: "deleted" }
   | {
@@ -213,6 +235,10 @@ export interface DataStore {
   archiveBit(id: string): Promise<void>;
   unarchiveNode(id: string): Promise<void>;
   unarchiveBit(id: string): Promise<void>;
+
+  // --- Authoritative Inbox Scratch Archive ---
+  getScratchArchiveEligibility(scratchBitId: string): Promise<ScratchArchiveEligibility>;
+  archiveScratch(command: ArchiveScratchCommand): Promise<ArchiveScratchResult>;
 
   // --- System Node Seeding ---
   /**

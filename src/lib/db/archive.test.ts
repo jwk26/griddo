@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Bit, Chunk, Node, ScratchBreakdown } from "@/lib/db/schema";
+import type { Bit, Chunk, Node, ScratchBreakdown, StagedCandidate } from "@/lib/db/schema";
 import { IndexedDBDataStore } from "@/lib/db/indexeddb";
 
 type StoredRecord = { id: string };
@@ -118,6 +118,7 @@ function createStore(seed?: {
   chunks?: Chunk[];
   settings?: StoredSetting[];
   scratchBreakdowns?: ScratchBreakdown[];
+  stagedCandidates?: StagedCandidate[];
 }) {
   const database = {
     nodes: new FakeTable<Node>(seed?.nodes),
@@ -125,6 +126,7 @@ function createStore(seed?: {
     chunks: new FakeTable<Chunk>(seed?.chunks),
     settings: new FakeSettingsTable(seed?.settings),
     scratchBreakdowns: new FakeTable<ScratchBreakdown>(seed?.scratchBreakdowns),
+    stagedCandidates: new FakeTable<StagedCandidate>(seed?.stagedCandidates),
   };
   return { database, store: new IndexedDBDataStore(database) };
 }
@@ -223,6 +225,19 @@ describe("IndexedDBDataStore archive lifecycle", () => {
       archivedAt: archivedBit.archivedAt,
       version: 3,
     });
+  });
+
+  it("rejects generic archiveBit for an Inbox-owned Scratch without mutation", async () => {
+    const inbox = createNode({ id: testUuid(22), systemRole: "inbox", version: 4 });
+    const scratch = createBit({ id: testUuid(23), parentId: inbox.id, version: 7 });
+    const { database, store } = createStore({ nodes: [inbox], bits: [scratch] });
+
+    await expect(store.archiveBit(scratch.id)).rejects.toThrow(
+      "Use archiveScratch for Inbox-owned Scratch Bits",
+    );
+
+    expect(await database.bits.get(scratch.id)).toEqual(scratch);
+    expect(await database.nodes.get(inbox.id)).toEqual(inbox);
   });
 
   it("unarchives a node with same-window descendants and keeps independently archived descendants archived", async () => {

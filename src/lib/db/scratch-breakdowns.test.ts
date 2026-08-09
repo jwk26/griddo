@@ -479,7 +479,7 @@ describe("IndexedDBDataStore scratchBreakdowns lifecycle integration", () => {
     expect(await store.getScratchBreakdowns(scratchBit.id)).toHaveLength(2);
   });
 
-  it("keeps source rows, staged candidates, and audit history when archiving Scratch", async () => {
+  it("rejects guarded Scratch Archive with active work and leaves all seven stores unchanged", async () => {
     const database = await openTransactionTestDatabase();
 
     try {
@@ -487,18 +487,23 @@ describe("IndexedDBDataStore scratchBreakdowns lifecycle integration", () => {
       const before = await snapshotSevenStores(database);
       const store = new IndexedDBDataStore(database);
 
-      await store.archiveBit(TRANSACTION_TEST_IDS.scratchBit);
-      const after = await snapshotSevenStores(database);
-
-      expect(after.scratchBreakdowns).toEqual(before.scratchBreakdowns);
-      expect(after.stagedCandidates).toEqual(before.stagedCandidates);
-      expect(after.candidateOrphanAuditEvents).toEqual(
-        before.candidateOrphanAuditEvents,
-      );
-      expect(after.bits[0]).toMatchObject({
-        id: TRANSACTION_TEST_IDS.scratchBit,
-        archivedAt: expect.any(Number),
+      await expect(store.archiveScratch({
+        operationId: testUuid(12500),
+        scratchBitId: TRANSACTION_TEST_IDS.scratchBit,
+        expectedVersion: before.bits[0]!.version,
+        callerAssertion: {
+          addDraftClear: true,
+          titleBlockerClear: true,
+        },
+      })).resolves.toMatchObject({
+        status: "rejected",
+        scratch: {
+          id: TRANSACTION_TEST_IDS.scratchBit,
+          archivedAt: null,
+          version: before.bits[0]!.version,
+        },
       });
+      expect(await snapshotSevenStores(database)).toEqual(before);
     } finally {
       database.close();
     }
