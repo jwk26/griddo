@@ -25,7 +25,7 @@
 - `VQ-03` — **resolved by `DP-VQ03` on 2026-08-09.** The user selected Choice A, the Add-adjacent inline decision sheet specified below. Task 140 is its only realization edge; Task 139 remains headless and native unload remains browser-owned.
 - `VQ-05` — Add/Delete pending, reconciling, failure, and in-place deleting may use only semantic state attributes, existing theme tokens, visible text/icon/non-color cues, and selected focus/accessibility behavior. Exact copy, location, layout, effect, duration, and per-theme values are a **user-owned non-code Decision prerequisite**. Future owner: Breakdown reliability phase; resume exact state realization after receipt.
 - `VQ-11` — completion-blocker status uses the same limited envelope. Exact why/where/how remains a **user-owned non-code Decision prerequisite** owned by the Breakdown/archive phase.
-- `VQ-04` — row inline editor/conflict/lifecycle-invalid UI is an absent replacement surface and wholly excluded. Source Edit buttons do not source it. Future owner: editing phase; resume after user receipt.
+- `VQ-04` — **resolved by `DP-VQ04` on 2026-08-09.** The user selected Choice A, the direct in-place Scratch-title and Breakdown-content editor system. This recipe owns the Breakdown-row half specified below; Task 138 is the only realization edge and Task 137 remains headless.
 
 ## `DP-VQ02` Approved Add/Unstage Success Signal
 
@@ -175,6 +175,83 @@ families only and do not copy prototype literals or adjacent UI:
 
 Theme IDs never branch trigger logic, copy, action order, or focus behavior.
 
+## `DP-VQ04` Approved Breakdown-Content Inline Editor
+
+The Breakdown editor replaces only the active source row's content region with
+a labelled `Breakdown content` text control. It stays in that row and never
+uses a Dialog/AlertDialog, popover, detached conflict card, toast, or another
+row's chrome.
+
+### In-Place Structure And Entry
+
+- Keep the row in its current sorted position. The content slot becomes the
+  field; the ordinary Edit/Trash cluster becomes the inline editor action row.
+  The disabled grip remains a stable non-color source cue. The row may grow
+  vertically for status, comparison, or recovery but never changes width or
+  becomes draggable while editing.
+- Place the field first, a persistent status line second, then actions. `Save`
+  is primary and `Cancel` secondary. On entry, focus the field with the caret
+  at the end; do not select all text automatically.
+- `Save` commits, valid blur saves, unchanged content exits without a write,
+  and `Cancel`/`Escape` restores current authoritative content. A surviving
+  row returns focus to Edit. Theme/locale activation and IME composition are
+  explicit no-blur-save boundaries.
+
+### Exact State And Copy Matrix
+
+| State | Exact visible treatment and copy | Available actions |
+|---|---|---|
+| Pristine | Field contains base content; status `No changes.` | Disabled `Save`; `Cancel` |
+| Dirty | Field contains protected draft; status `Unsaved changes.` | `Save`; `Cancel` |
+| Validation | Empty field remains open with inline error `Enter breakdown content.` linked to the field | Disabled `Save`; `Cancel` |
+| Saving | Draft remains visible/read-only; status and disabled primary label `Saving…` | Other edit/row actions locked; optional pending-intent `Stay here` remains available |
+| Offline | Draft remains editable; status `Offline. Your draft is still here.` | Disabled `Retry save` until reconnect; `Cancel` |
+| Not applied | Draft remains editable; status `Not saved. Your draft is still here.` | `Retry save`; `Cancel` |
+| Reconciling | Draft remains visible/read-only; status `Checking whether your changes were saved…` | All mutation/dismiss actions locked; optional pending-intent `Stay here` remains available |
+| Conflict | Field keeps the user's draft; in-row comparison heading `This changed elsewhere.` with `Latest version` and `Your draft` full-value regions | `Use mine`; `Use latest`; `Copy draft` |
+| Lifecycle invalidated | Former row position becomes an inline recovery strip: `Draft not saved`, `This breakdown is no longer editable.`, `Review or copy your draft before closing.`, and full `Your draft` value | `Copy draft`; `Close` |
+
+`Copy draft` reports `Copied.` once in the row's polite atomic status without
+moving focus or changing state. A newer remote value replaces only `Latest
+version`, announces `Latest version updated.` once, and preserves the full
+user draft and composition/focus.
+
+### Conflict, Lifecycle, Focus, And Motion
+
+- `Use mine` is primary and starts one new CAS Save against only the latest
+  version the user acknowledged. `Use latest` is secondary, writes nothing,
+  adopts current truth, exits, and returns focus to Edit if the row survives.
+  `Copy draft` is tertiary.
+- When save-before-action owns one pending intent, replace the saving status
+  with `Saving before continuing…`. `Stay here` cancels only that intent, never
+  the Save or draft. Only an applied Save runs the remaining intent once.
+- A staged, consumed, deleted, remotely invalid, or owner-Scratch-invalid row
+  cannot Save or Use mine. The recovery strip remains at the former row
+  position for review/copy; logical focus follows the canonical next-visible
+  row, then Add input fallback. `Close` removes only the recovery strip.
+- Validation, offline, not-applied, and conflict retain logical field focus.
+  Saving/reconciling keep that field mounted and read-only. Applied Save
+  announces `Saved.` once and returns to surviving Edit unless a pending intent
+  owns the next focus destination.
+- State changes use no spinner rotation, pulse, bounce, blink, scale, or layout
+  transition. Reduced motion is identical. Draft, conflict, copy, and recovery
+  state remain mounted-page memory and never survive reload.
+
+### Eight-Theme Mapping
+
+Every theme preserves row identity, exact copy, action order, and state logic:
+
+| Theme | Exact Breakdown editor mapping |
+|---|---|
+| GridDO | The content slot becomes a restrained semantic field; status/comparison use technical rules within the same product row. |
+| Tiny Desk | The row remains the same paper slip with an editable ruled line and inline margin/status sections. |
+| Neumorphism | The content slot becomes an inset channel inside the existing raised row; comparisons remain embedded in that row. |
+| Claymorphism | The row silhouette remains fixed while an inset field and restrained state seams expose editing and recovery. |
+| Origami | The source paper row opens into inline field/comparison folds without becoming a detached card. |
+| Terminal | The source record becomes one editable variable-driven line with static status/diff blocks and no blinking state. |
+| Retro Mac | The list row becomes an in-place 1-bit field and hard inline comparison pane, never a new window. |
+| Graphite | The row becomes an editorial text field with labelled manuscript comparison/recovery blocks and strengthened rules. |
+
 ## Theme Realizations
 
 ### GridDO
@@ -227,5 +304,5 @@ Theme IDs never branch trigger logic, copy, action order, or focus behavior.
 
 ## Exclusions And Verification
 
-- Excluded: the `VQ-04` surface, unsupported exact `VQ-05/11` details, source mutation behavior, Add-on-blur, mock delete/placement, row dates/numbers, consumed strike-through, repeated pulse/bounce, and route copy as authority.
+- Excluded: unsupported exact `VQ-05/11` details, source mutation behavior, Add-on-blur, mock delete/placement, row dates/numbers, consumed strike-through, repeated pulse/bounce, and route copy as authority.
 - No row height, list density, staged distinction, empty/completion distinction, focus-visible action, overflow, scroll, contrast, success effect, deletion state, or reduced-motion equivalence was rendered or verified.

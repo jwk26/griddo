@@ -644,6 +644,41 @@ one semantic tree and exact copy:
 | Retro Mac | In-flow 1-bit pane, hard-border, and default-button roles without window chrome |
 | Graphite | Editorial-note, strengthened-rule, solid-primary, and text-destructive roles |
 
+### Approved dual inline-editor realization — `DP-VQ04`
+
+**User-approved 2026-08-09:** Choice A replaces the Scratch title and active
+Breakdown content directly inside their source Context/title and row/content
+regions. One common state vocabulary drives both surfaces; Task 137 remains the
+headless owner and Task 138 alone consumes this visual/copy contract.
+
+| Contract | Exact token requirement |
+|---|---|
+| Surface binding | `data-triage-editor-surface="scratch-title"` or `"breakdown-content"`; `context-inline-editor` stays inside Context and `breakdown-inline-editor` inside the exact source/former row position |
+| State binding | `data-triage-editor-state="pristine|dirty|validation|saving|offline|not-applied|reconciling|conflict|invalidated"`; no theme-ID or copy branch |
+| Common roles | `inline-editor-field`, `inline-editor-status`, `inline-editor-actions`, `inline-editor-compare`, `inline-editor-latest`, `inline-editor-draft`, `inline-editor-recovery`, and `inline-editor-copy-status` |
+| Base actions | Primary `Save`, secondary `Cancel`; pristine/validation Save disabled; unchanged Save/valid blur exits without a write; theme/locale activation and IME composition do not blur-save |
+| State copy | `No changes.`, `Unsaved changes.`, surface-specific empty validation, `Saving…`, `Offline. Your draft is still here.`, `Not saved. Your draft is still here.`, and `Checking whether your changes were saved…` |
+| Conflict | `This changed elsewhere.`, full labelled `Latest version` / `Your draft`, primary `Use mine`, secondary `Use latest`, tertiary `Copy draft`; latest refresh copy `Latest version updated.` |
+| Recovery | `Draft not saved`, surface-specific no-longer-editable reason, `Review or copy your draft before closing.`, full `Your draft`, primary `Copy draft`, secondary `Close`; copy status `Copied.` |
+| Pending intent | `Saving before continuing…` replaces ordinary saving copy; `Stay here` cancels only the pending intent, never the in-flight Save or draft |
+| Completion / focus | Applied copy `Saved.` once; surviving Save/Cancel/Use latest returns to Edit; validation/conflict/offline/not-applied retain field focus; invalid row uses next-visible then Add fallback; invalid Scratch uses canonical Pool/selection fallback |
+| Motion / lifetime | Static transitions only; no spinner rotation, pulse, bounce, blink, scale, or layout-transition animation; reduced motion is identical; all drafts/resolvers/recovery are mounted-page memory only |
+| Scope boundary | No generic Dialog/AlertDialog, popover, detached conflict card, toast, prototype literal, adjacent editor, or theme-specific behavior/copy branch |
+
+The two surfaces share one semantic state tree while consuming their existing
+theme families:
+
+| Theme | Shared editor-family binding |
+|---|---|
+| GridDO | In-place semantic fields, technical status rules, labelled comparison blocks, and canonical primary/secondary roles |
+| Tiny Desk | Same-sheet ruled fields, paper status annotations, and labelled paper comparison/recovery sections |
+| Neumorphism | Inset fields/comparison wells inside existing Context/row depth with raised actions |
+| Claymorphism | Shape-preserving inset text channels, restrained seams, and raised actions within source silhouettes |
+| Origami | Inline field, comparison, and recovery folds inside the same source paper geometry |
+| Terminal | Variable-driven editable record lines and static status/diff blocks with no blink |
+| Retro Mac | In-place 1-bit fields, hard status/comparison panes, and default-button hierarchy without new windows |
+| Graphite | Editorial fields, strengthened status rules, and labelled manuscript comparison/recovery blocks |
+
 ### Existing-surface state gaps — 6 open Decision prerequisites
 
 The shared role/state envelope above is the maximum current authority for
@@ -664,7 +699,7 @@ dependent exact realization.
 Existing global color and motion values do not automatically realize any row
 in this table.
 
-### Absent replacement surfaces — 3 open Decision prerequisites
+### Absent replacement surfaces — 2 open Decision prerequisites
 
 These surfaces remain completely outside token realization. Assign no role,
 value, layout, theme mapping, copy, icon, control arrangement, or adjacent
@@ -672,7 +707,6 @@ fallback until a matching user receipt approves the missing surface.
 
 | ID | Missing surface and prohibited fallback | Future owner | Resume condition |
 |---|---|---|---|
-| `VQ-04` | Scratch/row inline editing across validation, saving, conflict, and invalid lifecycle; existing Edit controls and generic conflict UI are not substitutes | User Decision → Context/Breakdown recipes and editing phase | Receipt supplies the complete inline surfaces |
 | `VQ-07` | Dedicated full-hierarchy Explorer search body; global Search, old active-column search, ordinary columns, and Explorer chrome are prohibited substitutes | User Decision → Explorer recipe and search phase | Receipt supplies the complete replacement body |
 | `VQ-09` | Staged Result Title and direct-limit/reason surfaces; create dialogs and generic placement UI are prohibited substitutes | User Decision → Placement recipe and title/limit phase | Receipt supplies both replacement surfaces |
 

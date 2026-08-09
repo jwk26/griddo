@@ -244,7 +244,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ01` | `VQ-01` | 106 | 141 only | Choice A central blocking panel accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_106.dp-vq01.json`; Task 141 only is released. |
 | `DP-VQ02` | `VQ-02` | 107 | 148 only | Choice A row-attached wash/check/text signal accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_107.dp-vq02.json`; Task 148 only is released. |
 | `DP-VQ03` | `VQ-03` | 108 | 140 only | Choice A Add-adjacent inline decision sheet, including the checkpoint-approved position/copy supersession, accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_108.dp-vq03.json`; Task 140 only is released. |
-| `DP-VQ04` | `VQ-04` | 109 | 138 only | Accepted receipt supplies both complete inline-editor surfaces. |
+| `DP-VQ04` | `VQ-04` | 109 | 138 only | Choice A dual direct in-place editor system recorded at `docs/issues/Issues_Phase_24.Task_109.dp-vq04.json`; Task 109 remains `[ ]` pending its user checkpoint. |
 | `DP-VQ05` | `VQ-05` | 110 | 143 only | Accepted receipt defines Add/Delete reliability states. |
 | `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Accepted Pool-specific status receipt. |
 | `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Accepted Staging-specific status receipt. |
@@ -579,6 +579,29 @@ destination exactly once.
 **Authority / flows:** `VQ-04`, `UF-09`, `UF-10`, `NEG-14`, `NEG-21`.
 
 **Recipe:** [`Selected Scratch Context`](recipes/inbox-triage-selected-scratch-context-visual-recipe.md) and [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md).
+
+**Recorded decision — `DP-VQ04`, Choice A (2026-08-09):** Scratch title and
+active Breakdown content replace their source text directly with a labelled
+in-place field inside the existing Context title slot or exact row content
+slot. Both use the same `pristine`, `dirty`, `validation`, `saving`, `offline`,
+`not-applied`, `reconciling`, `conflict`, and `invalidated` state vocabulary,
+exact copy/action matrix, mounted-page lifetime, static motion contract, and
+eight theme-family mappings recorded in the two recipes and design authority.
+Save/Cancel and valid-blur behavior follow SPEC; IME and theme/locale activation
+never blur-save. Unknown outcomes reconcile before Retry. Conflict stays inline
+with full `Latest version` and `Your draft` regions plus `Use mine`, `Use
+latest`, and `Copy draft`; Use mine is a new CAS Save against only the
+acknowledged latest version and Use latest writes nothing. Lifecycle
+invalidation keeps a full draft review/copy recovery block in the source/former
+source position without allowing resurrection. Save-before-action shows one
+`Saving before continuing…` intent and `Stay here` cancels only that intent.
+Focus, copy status, terminal Save, and invalid-source fallbacks are exact in the
+receipt. No generic Dialog/AlertDialog, popover, detached conflict card, toast,
+prototype, adjacent UI, repeated motion, or theme-ID behavior branch is
+allowed. The durable receipt is
+`docs/issues/Issues_Phase_24.Task_109.dp-vq04.json`; it releases Task 138 only,
+leaves Task 137 headless state unchanged, and does not accept Task 109's `[ ]`
+marker.
 
 **Observable acceptance:** Task 138 can implement both complete editors without generic dialogs or invented conflict/offline/copy presentation; Task 137 remains independently runnable.
 

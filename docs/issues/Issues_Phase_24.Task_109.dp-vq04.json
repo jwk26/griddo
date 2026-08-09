@@ -1,0 +1,186 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq04",
+  "decision_receipt_id": "DP-VQ04",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 109,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "predecessor_acceptance_commit": "e3a834ce1f3e11997689b6e2f6e40e94757fa789",
+  "durable_start_commit": "f5f4605ab1d10b31d35194926b6061258ad09bb2",
+  "user_decision": {
+    "date": "2026-08-09",
+    "statement": "DP-VQ04=A",
+    "recorded_scope": "DP-VQ04=A only",
+    "choice": "A",
+    "label": "direct in-place Scratch-title and Breakdown-content editors"
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-selected-scratch-context-visual-recipe.md",
+    "docs/recipes/inbox-triage-breakdown-row-empty-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "surfaces": {
+      "scratch_title": "replace only the title region inside the existing Selected Scratch Context surface with a labelled Scratch title field",
+      "breakdown_content": "replace only the active source row content region with a labelled Breakdown content field in the same sorted row",
+      "shared_structure": "field, persistent inline status, actions, then comparison or recovery content when required",
+      "expansion": "source surface may grow vertically but keeps width, identity, and theme family",
+      "prohibited_containers": [
+        "Dialog or AlertDialog",
+        "popover",
+        "detached conflict card",
+        "toast",
+        "global editor"
+      ]
+    },
+    "state_binding": {
+      "surface_attribute": "data-triage-editor-surface=scratch-title or breakdown-content",
+      "state_attribute": "data-triage-editor-state=pristine|dirty|validation|saving|offline|not-applied|reconciling|conflict|invalidated",
+      "lifetime": "mounted Inbox page only; no durable draft, resolver, or recovery persistence"
+    },
+    "base_interaction": {
+      "entry": "focus the source field with caret at end and do not select all automatically",
+      "actions": [
+        "Save primary",
+        "Cancel secondary"
+      ],
+      "save": "conditional CAS Save of the current non-empty draft",
+      "valid_blur": "Save unless blur is caused by theme or locale activation or occurs during IME composition",
+      "unchanged": "exit without a write",
+      "cancel_or_escape": "restore current authoritative truth and return to surviving source Edit"
+    },
+    "state_matrix": {
+      "pristine": {
+        "copy": "No changes.",
+        "actions": "Save disabled; Cancel enabled"
+      },
+      "dirty": {
+        "copy": "Unsaved changes.",
+        "actions": "Save and Cancel enabled"
+      },
+      "validation": {
+        "scratch_title": "Enter a Scratch title.",
+        "breakdown_content": "Enter breakdown content.",
+        "actions": "Save disabled; Cancel enabled; error linked to field"
+      },
+      "saving": {
+        "copy": "Saving…",
+        "field": "draft visible and read-only",
+        "actions": "mutation and dismissal locked; Stay here only when one pending intent exists"
+      },
+      "offline": {
+        "copy": "Offline. Your draft is still here.",
+        "field": "draft editable",
+        "actions": "Retry save disabled until reconnect; Cancel enabled; no automatic save"
+      },
+      "not_applied": {
+        "copy": "Not saved. Your draft is still here.",
+        "field": "draft editable",
+        "actions": "Retry save primary; Cancel secondary"
+      },
+      "reconciling": {
+        "copy": "Checking whether your changes were saved…",
+        "field": "draft visible and read-only",
+        "actions": "mutation and dismissal locked; Stay here only when one pending intent exists"
+      },
+      "conflict": {
+        "heading": "This changed elsewhere.",
+        "regions": [
+          "Latest version",
+          "Your draft"
+        ],
+        "actions": [
+          "Use mine primary",
+          "Use latest secondary",
+          "Copy draft tertiary"
+        ],
+        "latest_update_status": "Latest version updated."
+      },
+      "invalidated": {
+        "heading": "Draft not saved",
+        "scratch_reason": "This Scratch is no longer editable.",
+        "row_reason": "This breakdown is no longer editable.",
+        "description": "Review or copy your draft before closing.",
+        "draft_label": "Your draft",
+        "actions": [
+          "Copy draft primary",
+          "Close secondary"
+        ]
+      }
+    },
+    "conditional_authority": {
+      "use_mine": "start a new conditional Save against only the latest version the user acknowledged; never last-write-wins",
+      "use_latest": "perform no write, adopt current authoritative truth, close, and return to surviving Edit",
+      "remote_refresh_during_conflict": "update only Latest version in place; preserve draft, one resolver, composition, and focus",
+      "staged_or_invalid_source": "Save and Use mine are unavailable and source truth is never resurrected"
+    },
+    "copy_and_status": {
+      "copy_action": "Copy draft",
+      "copy_success": "Copied.",
+      "copy_behavior": "copy full untruncated draft without state or focus change",
+      "save_success": "Saved.",
+      "announcements": "polite atomic state changes only; never announce each keystroke"
+    },
+    "pending_intent": {
+      "saving_copy": "Saving before continuing…",
+      "cancel_action": "Stay here",
+      "cancel_semantics": "cancel only the one pending intent, never the in-flight Save or draft",
+      "terminal_semantics": "applied Save runs the still-pending intent once; every non-success runs none"
+    },
+    "focus": {
+      "validation_offline_not_applied_conflict": "retain logical field focus",
+      "saving_reconciling": "keep focused field mounted and read-only",
+      "saved_or_cancelled": "return to surviving source Edit unless a pending intent owns the next destination",
+      "invalidated_row": "next visible row, then Add input",
+      "invalidated_scratch": "canonical active-Scratch or Pool fallback",
+      "copy": "preserve current focus"
+    },
+    "motion_and_reduced_motion": {
+      "ordinary": "static immediate state changes with no spinner rotation, pulse, bounce, blink, scale, or layout-transition animation",
+      "reduced": "identical surface, copy, action hierarchy, focus, and lifecycle"
+    },
+    "theme_mapping": {
+      "griddo": "in-place semantic fields, technical status rules, labelled comparison blocks, and canonical actions",
+      "tiny-desk": "same-sheet ruled fields, paper status annotations, and labelled paper comparison/recovery sections",
+      "neumorphism": "inset fields and comparison wells inside existing Context or row depth with raised actions",
+      "claymorphism": "shape-preserving inset text channels, restrained seams, and raised actions within source silhouettes",
+      "origami": "inline field, comparison, and recovery folds inside the same source paper geometry",
+      "terminal": "variable-driven editable record lines and static status/diff blocks with no blink",
+      "retro-mac": "in-place 1-bit fields, hard status/comparison panes, and default-button hierarchy without new windows",
+      "graphite": "editorial fields, strengthened status rules, and labelled manuscript comparison/recovery blocks"
+    },
+    "prohibited_fallbacks": [
+      "generic Dialog or AlertDialog",
+      "popover or detached conflict card",
+      "toast or global editor",
+      "prototype literal or realization",
+      "adjacent editor or card chrome",
+      "automatic offline save or queue",
+      "last-write-wins",
+      "theme-ID behavior or copy branch",
+      "repeated status motion"
+    ],
+    "headless_boundary": "Task 137 owns base snapshots, drafts, operation locks, authoritative result classification, acknowledged latest version, lifecycle invalidation, blocker snapshots, and pending intents unchanged"
+  },
+  "exact_release": {
+    "tasks": [
+      138
+    ],
+    "consumption_condition": "Task 109 user checkpoint accepted; its plan marker remains open until then",
+    "all_other_tasks": "unreleased"
+  },
+  "task_state": "implemented-awaiting-user-checkpoint",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "task-109-user-checkpoint"
+}
