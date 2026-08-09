@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–109 accepted; Task 110 is In Progress for `DP-VQ05` choice A
+> State: Tasks 106–109 accepted; Task 110 implemented with `DP-VQ05` choice A awaiting user checkpoint acceptance
 
 ## Status Legend
 
@@ -149,16 +149,18 @@ canonical document update, and commit remain Task-local and sequential.
 | Field | Durable value |
 | --- | --- |
 | Task | 110 — record `DP-VQ05` Add/Delete reliability decision |
-| State | In Progress; user acceptance remains pending and the Task 110 plan marker stays `[ ]` |
+| State | Implemented / awaiting user review; user acceptance remains pending and the Task 110 plan marker stays `[ ]` |
 | Approved scope | Choice A status anchored to the Add input/control region and the affected Delete row; specify the complete Add pending/failure/reconcile/Add-only Retry and Delete deleting/failure/check-again/no-Delete-Retry realization in only the Breakdown rows recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ05` receipt; no product code |
 | User decision | On 2026-08-09 the user selected `DP-VQ05=A` |
 | Predecessor | Task 109 accepted at `cbc1b72488bce1caf5bb7ae78e1232fc5e09fc76`; its exact release remains Task 138 only |
 | Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
-| Entrypoint / recovery anchor | Task 109 acceptance `cbc1b72488bce1caf5bb7ae78e1232fc5e09fc76`; this ledger commit is the Task 110 durable start anchor |
-| Decision receipt target | `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json` |
+| Entrypoint / recovery anchor | Task 109 acceptance `cbc1b72488bce1caf5bb7ae78e1232fc5e09fc76`; Task 110 durable start `17aed2e5c2b78224349433561150ba3392828e3d`; Task 110 decision commit `63e2ae22361a83af876eae83afe15bf0e9361d6b` |
+| Durable receipt | `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json`; candidate resolver returned `ready` for gate `dp-vq05` and next action `task-110-user-checkpoint` |
 | Issue / deviation | None |
-| Canonical impact | None — Choice A is selected but has not yet been reflected in Task 110's three canonical documents |
-| Next legal action | Commit this ledger-only durable start, then record only `DP-VQ05=A`; Task 111 remains unavailable |
+| Canonical impact | Reflected — Choice A is recorded in the Breakdown rows recipe, `docs/DESIGN_TOKENS.md`, and Task 110 execution authority |
+| Verification | `git diff --check` exit 0 across the Task 110 commits; `pnpm typecheck` exit 0; exact four-path Task decision commit; Tasks 106–109 remain `[x]`, Tasks 110–111 remain `[ ]`; no product code or Task 111 decision was recorded; test/lint/build omitted because this Task is documentation-only |
+| Review | No concrete blocking finding; source-attached Add/Delete placement, complete result/copy/action matrix, Add-only authoritative `not_applied` Retry, Delete Check-again-only recovery, timing, focus, polite status, static reduced-motion parity, eight-theme mappings, and Task 143-only edge are present with no toast, placeholder, prototype, adjacent-surface, or theme-ID fallback |
+| Next legal action | Stop at the Task 110 user checkpoint. Do not write Task 110 `[x]` or start Task 111 without new explicit user acceptance |
 
 ## Readiness Evidence
 
