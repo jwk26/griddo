@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–112 accepted; Task 113 is the next authorized Task in the approved `111 → 112 → 113` serial batch
+> State: Tasks 106–112 accepted; Task 113 is In Progress for `DP-VQ06-EXPLORER` choice A
 
 ## Status Legend
 
@@ -226,6 +226,22 @@ canonical document update, and commit remain Task-local and sequential.
 | Review | No concrete blocking finding; candidate-attached pending/unknown/reconciling placement, exact Stage/Unstage result copy, subsection-local remote count/action, unresolved-source versus confirmed-orphan boundary, transient neutral/invalid reasons, single Staging-title alert and `X` lifetime/focus, static reduced-motion parity, eight-theme mapping, and Task 147-only edge are present with no global rail, toast, dialog, event history, permanent Retry/Unstage, prototype, adjacent-surface, Pool, Explorer, or theme-ID fallback |
 | Acceptance boundary | Accepts only Task 112 and `DP-VQ06-STAGING=A`; releases Task 147 only; does not select `DP-VQ06-EXPLORER`, approve Task 150, change product code, publish, or close the phase |
 | Next legal action | Commit this acceptance state. Task 113 may then present only the `DP-VQ06-EXPLORER` decision gate |
+
+## Active Task
+
+| Field | Durable value |
+| --- | --- |
+| Task | 113 — record `DP-VQ06-EXPLORER` Explorer-status decision |
+| State | In Progress; user acceptance remains pending and the Task 113 plan marker stays `[ ]` |
+| Approved scope | Choice A affected-column-attached remote/path status strip, column-local remote count/action, exact invalid-suffix/selection-disappearance/stale-placement copy, nearest-valid-ancestor focus, dismissal/lifetime, stable-ID/offset preservation, reduced-motion, and eight-theme treatment; update only the Grid Explorer recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ06-EXPLORER` receipt; no product code or Pool/Staging/`VQ-07` search authority |
+| User decision | On 2026-08-10 the user selected `DP-VQ06-EXPLORER=A` |
+| Predecessor | Task 112 accepted at `56704f2cc49b345b76fa5b6e562bade77423d792`; its exact release remains Task 147 only |
+| Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `15be56007b0290622bd907cbb3a02d78684a15f6`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
+| Entrypoint / recovery anchor | Task 112 acceptance `56704f2cc49b345b76fa5b6e562bade77423d792`; this ledger commit is the Task 113 durable start anchor |
+| Decision receipt target | `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json` |
+| Issue / deviation | None |
+| Canonical impact | None — Choice A is selected but has not yet been reflected in Task 113's three canonical documents |
+| Next legal action | Commit this ledger-only durable start, then record only `DP-VQ06-EXPLORER=A`; do not start Task 114 or another batch |
 
 ## Readiness Evidence
 
