@@ -747,7 +747,7 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 **Commit contract:** confirmed-orphan query/command and exact postcondition/conflict tests only; `feat(triage): audit confirmed candidate orphans`.
 
-### Task 123: [ ] Implement staged and direct Placement commands
+### Task 123: [x] Implement staged and direct Placement commands
 
 **Files and actions:** modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-placement.test.ts`; extend `src/lib/db/inbox-operations.test.ts`. Separate staged/direct typed commands carry preallocated result ID, exact source/candidate versions, intended type/title, target parent, expected ancestor IDs/path, and exact cell. Revalidate active reachability, hierarchy/type, title limits, capacity, candidate/source lifecycle, and cell immediately inside one transaction. Each of the four result constructors—staged Node, staged Bit, direct Node, and direct Bit—explicitly initializes `version: 1` and `pastDeadlineDismissed: false`, then parses the complete record with `nodeSchema` or `bitSchema` before any write. Staged atomically creates result, consumes/advances source, and deletes candidate; direct creates result and consumes/advances source. Reconciliation recognizes only complete all-sides postcondition, exact untouched precondition, or conflict; never alternate target, partial compensation, truncation, title heuristic, or silent resend.
 

@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–122 accepted; Task 123 Implemented awaiting user review
+> State: Tasks 120–123 accepted; no later task is approved
 
 ## Status Legend
 
@@ -221,12 +221,12 @@ None at kickoff.
 | Next legal action | In a fresh session, invoke only the pinned candidate `$run-task`; it must first validate this committed Gate C receipt and create a separate durable Task 123 start commit before any test or production-code write |
 | Forbidden here | Do not start Task 123 or Task 124, modify product/test files, write any task marker, run downstream lifecycle work, push, create a PR, merge, rebase, or modify Phase 24 or Shelf |
 
-## Task 123 In Progress
+## Accepted Task 123
 
 | Field | Durable value |
 | --- | --- |
 | Task | Task 123 only — Implement staged and direct Placement commands |
-| State | Implemented awaiting user review; implementation is not user acceptance and the Task 123 marker remains `[ ]` |
+| State | Accepted by the user on 2026-08-10; Task 123 marker is `[x]` |
 | Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-placement.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; no other product/test file, UI, hook, Task 124, Phase 24, or Shelf work |
 | Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, Task 123 only), explicitly approved by the user |
 | Start base / entrypoint | Continuation approved base `dea3d094ae060db17bc1a5870d68267c27f2a3c7`; run-task entrypoint and Gate C kickoff commit `aa28e01dc46280fee58117044fefb292482e409b` |
@@ -242,5 +242,8 @@ None at kickoff.
 | Focused verification | Final direct selected-target `pnpm exec vitest run src/lib/db/triage-placement.test.ts src/lib/db/inbox-operations.test.ts` exit 0 (2 files, 53 tests); mutex regression exit 0 (4 files, 75 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0 |
 | Full gate | Exactly one fresh serial post-implementation run: `pnpm test` exit 0 (84 files, 629 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js 16.2.1 production build, successful TypeScript/static generation, seven routes) |
 | Review | No remaining blocking finding. Real-Dexie evidence covers four schema-parsed constructors, complete/untouched/conflict reconciliation, one-snapshot reconcile reads, stale lifecycle/version/path/cell/title rejection, source-candidate exclusion, every staged/direct checkpoint rollback, stable-ID replay, no compensation/alternate target/truncation/heuristic/silent resend, parent `mtime` cascade, and post-commit reconcile independence from later target movement. Diff ownership is exactly the four approved product/test paths plus this ledger. |
-| Task markers | Tasks 120–122 are `[x]`; Task 123 remains `[ ]`; Tasks 124–126 remain `[ ]` |
-| Next legal action | Commit implementation and ledger evidence, audit clean ownership, present the Task 123 user checkpoint, and stop; only explicit user acceptance may later write Task 123 `[x]` |
+| User acceptance | Task 123 checkpoint explicitly accepted on 2026-08-10; implementation commit `c1b62eff6e35b740bc693b48ad080380cdd0241f` and its recorded focused/mutex/full verification evidence are the durable acceptance basis |
+| Acceptance verification | Reused the recorded Task 123 full gate exactly as instructed; acceptance-only verification is exact two-file write-set inspection plus `git diff --check` |
+| Task markers | Tasks 120–123 are `[x]`; Tasks 124–126 remain `[ ]` |
+| Next legal action | Stop after the Task 123 acceptance commit; Task 124 and any next Gate C packet remain unapproved |
+| Forbidden here | Do not start Task 124, prepare a next Gate C packet, modify product/test code, push, create a PR, merge, rebase, or perform branch/worktree cleanup |
