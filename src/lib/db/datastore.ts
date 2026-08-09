@@ -11,7 +11,65 @@ import type {
   CreateScratchBreakdown,
   UpdateScratchBreakdown,
   StagedCandidate,
+  RepositoryOperationCommand,
+  RepositoryOperationResult,
+  RepositoryOperationStatus,
 } from "@/lib/db/schema";
+
+export type AddBreakdownCommand = RepositoryOperationCommand<{
+  breakdownId: string;
+  scratchBitId: string;
+  scratchExpectedVersion: number;
+  content: string;
+}>;
+
+export type AddBreakdownResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  breakdown: ScratchBreakdown | null;
+  scratch: Bit | null;
+}>;
+
+export type SaveScratchTitleCommand = RepositoryOperationCommand<{
+  scratchBitId: string;
+  expectedVersion: number;
+  baseTitle: string;
+  title: string;
+}>;
+
+export type SaveScratchTitleResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  scratch: Bit | null;
+}>;
+
+export type SaveBreakdownCommand = RepositoryOperationCommand<{
+  breakdownId: string;
+  expectedVersion: number;
+  baseContent: string;
+  baseOrder: number;
+  content: string;
+  order: number;
+}>;
+
+export type SaveBreakdownResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  breakdown: ScratchBreakdown | null;
+  candidate: StagedCandidate | null;
+  scratch: Bit | null;
+}>;
+
+export type DeleteBreakdownCommand = RepositoryOperationCommand<{
+  breakdownId: string;
+  expectedVersion: number;
+  scratchBitId: string;
+  scratchExpectedVersion: number;
+}>;
+
+export type DeleteBreakdownResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  breakdown: ScratchBreakdown | null;
+  candidate: StagedCandidate | null;
+  scratch: Bit | null;
+}>;
 
 export type AggregateHardDeleteResult =
   | { status: "deleted" }
@@ -66,6 +124,24 @@ export interface DataStore {
   markScratchBreakdownConsumed(id: string): Promise<void>;
   unconsumeScratchBreakdown(id: string): Promise<void>;
   deleteScratchBreakdown(id: string): Promise<void>;
+
+  // --- Authoritative Inbox Breakdown Commands ---
+  addBreakdown(command: AddBreakdownCommand): Promise<AddBreakdownResult>;
+  reconcileAddBreakdown(command: AddBreakdownCommand): Promise<AddBreakdownResult>;
+  saveScratchTitle(
+    command: SaveScratchTitleCommand,
+  ): Promise<SaveScratchTitleResult>;
+  reconcileSaveScratchTitle(
+    command: SaveScratchTitleCommand,
+  ): Promise<SaveScratchTitleResult>;
+  saveBreakdown(command: SaveBreakdownCommand): Promise<SaveBreakdownResult>;
+  reconcileSaveBreakdown(
+    command: SaveBreakdownCommand,
+  ): Promise<SaveBreakdownResult>;
+  deleteBreakdown(command: DeleteBreakdownCommand): Promise<DeleteBreakdownResult>;
+  reconcileDeleteBreakdown(
+    command: DeleteBreakdownCommand,
+  ): Promise<DeleteBreakdownResult>;
 
   // --- Chunks ---
   getChunks(bitId: string): Promise<Chunk[]>;

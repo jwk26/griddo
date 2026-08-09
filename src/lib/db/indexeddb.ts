@@ -1,8 +1,17 @@
 import Dexie, { type DexieOptions, type Table } from "dexie";
+import { z } from "zod";
 import { GRID_COLS, GRID_ROWS, TRASH_RETENTION_DAYS } from "@/lib/constants";
 import type {
+  AddBreakdownCommand,
+  AddBreakdownResult,
   AggregateHardDeleteResult,
   DataStore,
+  DeleteBreakdownCommand,
+  DeleteBreakdownResult,
+  SaveBreakdownCommand,
+  SaveBreakdownResult,
+  SaveScratchTitleCommand,
+  SaveScratchTitleResult,
 } from "@/lib/db/datastore";
 import {
   bitSchema,
@@ -12,7 +21,10 @@ import {
   createScratchBreakdownSchema,
   createNodeSchema,
   nodeSchema,
+  repositoryOperationIdSchema,
+  repositoryOperationStatusSchema,
   scratchBreakdownSchema,
+  stagedCandidateSchema,
   updateBitSchema,
   updateNodeSchema,
   updateScratchBreakdownSchema,
@@ -126,6 +138,70 @@ const BIT_PERSISTED_FIELDS = bitSchema.keyof().options;
 const BREAKDOWN_PERSISTED_FIELDS = scratchBreakdownSchema.keyof().options;
 
 const chunkUpdateSchema = chunkSchema.omit({ id: true, parentId: true }).partial();
+const commandVersionSchema = z.number().int().min(1);
+
+const addBreakdownCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  breakdownId: z.string().uuid(),
+  scratchBitId: z.string().uuid(),
+  scratchExpectedVersion: commandVersionSchema,
+  content: z.string().min(1).max(1000),
+}).strict();
+
+const saveScratchTitleCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  scratchBitId: z.string().uuid(),
+  expectedVersion: commandVersionSchema,
+  baseTitle: z.string().min(1).max(200),
+  title: z.string().min(1).max(200),
+}).strict();
+
+const saveBreakdownCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  breakdownId: z.string().uuid(),
+  expectedVersion: commandVersionSchema,
+  baseContent: z.string().min(1).max(1000),
+  baseOrder: z.number().int().min(0),
+  content: z.string().min(1).max(1000),
+  order: z.number().int().min(0),
+}).strict();
+
+const deleteBreakdownCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  breakdownId: z.string().uuid(),
+  expectedVersion: commandVersionSchema,
+  scratchBitId: z.string().uuid(),
+  scratchExpectedVersion: commandVersionSchema,
+}).strict();
+
+const addBreakdownResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  breakdown: scratchBreakdownSchema.nullable(),
+  scratch: bitSchema.nullable(),
+}).strict();
+
+const saveScratchTitleResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  scratch: bitSchema.nullable(),
+}).strict();
+
+const saveBreakdownResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  breakdown: scratchBreakdownSchema.nullable(),
+  candidate: stagedCandidateSchema.nullable(),
+  scratch: bitSchema.nullable(),
+}).strict();
+
+const deleteBreakdownResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  breakdown: scratchBreakdownSchema.nullable(),
+  candidate: stagedCandidateSchema.nullable(),
+  scratch: bitSchema.nullable(),
+}).strict();
 
 export class GridDODatabase extends Dexie {
   nodes!: Table<Node, string>;
@@ -1014,6 +1090,442 @@ export class IndexedDBDataStore implements DataStore {
     });
   }
 
+  async addBreakdown(command: AddBreakdownCommand): Promise<AddBreakdownResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.addBreakdown(command));
+    }
+
+    const parsed = addBreakdownCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const [currentBreakdown, currentScratch] = await Promise.all([
+      breakdowns.get(parsed.breakdownId),
+      this.database.bits.get(parsed.scratchBitId),
+    ]);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+
+    if (
+      matchesAddBreakdownPostcondition(
+        parsed,
+        currentBreakdown,
+        currentScratch,
+        scratchIsActive,
+      )
+    ) {
+      return addBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        breakdown: currentBreakdown ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (!scratchIsActive || !currentScratch) {
+      return addBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        breakdown: currentBreakdown ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      currentBreakdown !== undefined ||
+      currentScratch.version !== parsed.scratchExpectedVersion
+    ) {
+      return addBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        breakdown: currentBreakdown ?? null,
+        scratch: currentScratch,
+      });
+    }
+
+    const authoritativeRows = await breakdowns.toArray();
+    const nextOrder = authoritativeRows.reduce(
+      (maximum, row) =>
+        row.scratchBitId === parsed.scratchBitId
+          ? Math.max(maximum, row.order + 1)
+          : maximum,
+      0,
+    );
+    const breakdown = scratchBreakdownSchema.parse({
+      id: parsed.breakdownId,
+      scratchBitId: parsed.scratchBitId,
+      content: parsed.content,
+      order: nextOrder,
+      createdAt: Date.now(),
+      consumedAt: null,
+      version: 1,
+    });
+    const scratch = bitSchema.parse(incrementVersion(currentScratch));
+
+    await breakdowns.put(breakdown);
+    this.emitTransactionCheckpoint("inbox.add.after.breakdown");
+    await this.database.bits.put(scratch);
+    this.emitTransactionCheckpoint("inbox.add.after.scratch");
+
+    return addBreakdownResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      breakdown,
+      scratch,
+    });
+  }
+
+  async reconcileAddBreakdown(
+    command: AddBreakdownCommand,
+  ): Promise<AddBreakdownResult> {
+    const parsed = addBreakdownCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const [currentBreakdown, currentScratch] = await Promise.all([
+      breakdowns.get(parsed.breakdownId),
+      this.database.bits.get(parsed.scratchBitId),
+    ]);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+    const status = matchesAddBreakdownPostcondition(
+      parsed,
+      currentBreakdown,
+      currentScratch,
+      scratchIsActive,
+    )
+      ? "already_applied"
+      : currentBreakdown === undefined &&
+          scratchIsActive &&
+          currentScratch?.version === parsed.scratchExpectedVersion
+        ? "not_applied"
+        : "conflict";
+
+    return addBreakdownResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      breakdown: currentBreakdown ?? null,
+      scratch: currentScratch ?? null,
+    });
+  }
+
+  async saveScratchTitle(
+    command: SaveScratchTitleCommand,
+  ): Promise<SaveScratchTitleResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.saveScratchTitle(command));
+    }
+
+    const parsed = saveScratchTitleCommandSchema.parse(command);
+    const currentScratch = await this.database.bits.get(parsed.scratchBitId);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+
+    if (
+      matchesSaveScratchTitlePostcondition(
+        parsed,
+        currentScratch,
+        scratchIsActive,
+      )
+    ) {
+      return saveScratchTitleResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (!scratchIsActive || !currentScratch || parsed.baseTitle === parsed.title) {
+      return saveScratchTitleResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      currentScratch.version !== parsed.expectedVersion ||
+      currentScratch.title !== parsed.baseTitle
+    ) {
+      return saveScratchTitleResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        scratch: currentScratch,
+      });
+    }
+
+    const scratch = bitSchema.parse({
+      ...currentScratch,
+      title: parsed.title,
+      mtime: Date.now(),
+      version: currentScratch.version + 1,
+    });
+    await this.database.bits.put(scratch);
+    this.emitTransactionCheckpoint("inbox.save-scratch.after.scratch");
+
+    return saveScratchTitleResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      scratch,
+    });
+  }
+
+  async reconcileSaveScratchTitle(
+    command: SaveScratchTitleCommand,
+  ): Promise<SaveScratchTitleResult> {
+    const parsed = saveScratchTitleCommandSchema.parse(command);
+    const currentScratch = await this.database.bits.get(parsed.scratchBitId);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+    const status = matchesSaveScratchTitlePostcondition(
+      parsed,
+      currentScratch,
+      scratchIsActive,
+    )
+      ? "already_applied"
+      : scratchIsActive &&
+          currentScratch?.version === parsed.expectedVersion &&
+          currentScratch.title === parsed.baseTitle
+        ? "not_applied"
+        : "conflict";
+
+    return saveScratchTitleResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      scratch: currentScratch ?? null,
+    });
+  }
+
+  async saveBreakdown(
+    command: SaveBreakdownCommand,
+  ): Promise<SaveBreakdownResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.saveBreakdown(command));
+    }
+
+    const parsed = saveBreakdownCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const [currentBreakdown, currentCandidate] = await Promise.all([
+      breakdowns.get(parsed.breakdownId),
+      this.findCandidateBySource(parsed.breakdownId),
+    ]);
+    const currentScratch = currentBreakdown
+      ? await this.database.bits.get(currentBreakdown.scratchBitId)
+      : undefined;
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+
+    if (
+      matchesSaveBreakdownPostcondition(
+        parsed,
+        currentBreakdown,
+        currentCandidate,
+        scratchIsActive,
+      )
+    ) {
+      return saveBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        breakdown: currentBreakdown ?? null,
+        candidate: currentCandidate ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      !currentBreakdown ||
+      !scratchIsActive ||
+      currentCandidate !== undefined ||
+      currentBreakdown.consumedAt !== null ||
+      (parsed.baseContent === parsed.content && parsed.baseOrder === parsed.order)
+    ) {
+      return saveBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        breakdown: currentBreakdown ?? null,
+        candidate: currentCandidate ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      currentBreakdown.version !== parsed.expectedVersion ||
+      currentBreakdown.content !== parsed.baseContent ||
+      currentBreakdown.order !== parsed.baseOrder
+    ) {
+      return saveBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        breakdown: currentBreakdown,
+        candidate: null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    const breakdown = scratchBreakdownSchema.parse({
+      ...currentBreakdown,
+      content: parsed.content,
+      order: parsed.order,
+      version: currentBreakdown.version + 1,
+    });
+    await breakdowns.put(breakdown);
+    this.emitTransactionCheckpoint("inbox.save-breakdown.after.breakdown");
+
+    return saveBreakdownResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      breakdown,
+      candidate: null,
+      scratch: currentScratch ?? null,
+    });
+  }
+
+  async reconcileSaveBreakdown(
+    command: SaveBreakdownCommand,
+  ): Promise<SaveBreakdownResult> {
+    const parsed = saveBreakdownCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const [currentBreakdown, currentCandidate] = await Promise.all([
+      breakdowns.get(parsed.breakdownId),
+      this.findCandidateBySource(parsed.breakdownId),
+    ]);
+    const currentScratch = currentBreakdown
+      ? await this.database.bits.get(currentBreakdown.scratchBitId)
+      : undefined;
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+    const status = matchesSaveBreakdownPostcondition(
+      parsed,
+      currentBreakdown,
+      currentCandidate,
+      scratchIsActive,
+    )
+      ? "already_applied"
+      : matchesSaveBreakdownPrecondition(
+            parsed,
+            currentBreakdown,
+            currentCandidate,
+            scratchIsActive,
+          )
+        ? "not_applied"
+        : "conflict";
+
+    return saveBreakdownResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      breakdown: currentBreakdown ?? null,
+      candidate: currentCandidate ?? null,
+      scratch: currentScratch ?? null,
+    });
+  }
+
+  async deleteBreakdown(
+    command: DeleteBreakdownCommand,
+  ): Promise<DeleteBreakdownResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.deleteBreakdown(command));
+    }
+
+    const parsed = deleteBreakdownCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const [currentBreakdown, currentCandidate, currentScratch] = await Promise.all([
+      breakdowns.get(parsed.breakdownId),
+      this.findCandidateBySource(parsed.breakdownId),
+      this.database.bits.get(parsed.scratchBitId),
+    ]);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+
+    if (
+      matchesDeleteBreakdownPostcondition(
+        parsed,
+        currentBreakdown,
+        currentCandidate,
+        currentScratch,
+        scratchIsActive,
+      )
+    ) {
+      return deleteBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        breakdown: null,
+        candidate: null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      !currentBreakdown ||
+      !currentScratch ||
+      !scratchIsActive ||
+      currentCandidate !== undefined ||
+      currentBreakdown.scratchBitId !== parsed.scratchBitId ||
+      currentBreakdown.consumedAt !== null
+    ) {
+      return deleteBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        breakdown: currentBreakdown ?? null,
+        candidate: currentCandidate ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      currentBreakdown.version !== parsed.expectedVersion ||
+      currentScratch.version !== parsed.scratchExpectedVersion
+    ) {
+      return deleteBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        breakdown: currentBreakdown,
+        candidate: null,
+        scratch: currentScratch,
+      });
+    }
+
+    const scratch = bitSchema.parse(incrementVersion(currentScratch));
+    await breakdowns.delete(parsed.breakdownId);
+    this.emitTransactionCheckpoint("inbox.delete.after.breakdown");
+    await this.database.bits.put(scratch);
+    this.emitTransactionCheckpoint("inbox.delete.after.scratch");
+
+    return deleteBreakdownResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      breakdown: null,
+      candidate: null,
+      scratch,
+    });
+  }
+
+  async reconcileDeleteBreakdown(
+    command: DeleteBreakdownCommand,
+  ): Promise<DeleteBreakdownResult> {
+    const parsed = deleteBreakdownCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const [currentBreakdown, currentCandidate, currentScratch] = await Promise.all([
+      breakdowns.get(parsed.breakdownId),
+      this.findCandidateBySource(parsed.breakdownId),
+      this.database.bits.get(parsed.scratchBitId),
+    ]);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+    const status = matchesDeleteBreakdownPostcondition(
+      parsed,
+      currentBreakdown,
+      currentCandidate,
+      currentScratch,
+      scratchIsActive,
+    )
+      ? "already_applied"
+      : matchesDeleteBreakdownPrecondition(
+            parsed,
+            currentBreakdown,
+            currentCandidate,
+            currentScratch,
+            scratchIsActive,
+          )
+        ? "not_applied"
+        : "conflict";
+
+    return deleteBreakdownResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      breakdown: currentBreakdown ?? null,
+      candidate: currentCandidate ?? null,
+      scratch: currentScratch ?? null,
+    });
+  }
+
   async createScratchBreakdown(data: CreateScratchBreakdown): Promise<ScratchBreakdown> {
     if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
       return this.write(() => this.createScratchBreakdown(data));
@@ -1781,6 +2293,42 @@ export class IndexedDBDataStore implements DataStore {
     return this.database.scratchBreakdowns;
   }
 
+  private requireStagedCandidates(): TableLike<StagedCandidate> {
+    if (!this.database.stagedCandidates) {
+      throw new Error("stagedCandidates store not available");
+    }
+
+    return this.database.stagedCandidates;
+  }
+
+  private async findCandidateBySource(
+    sourceBreakdownId: string,
+  ): Promise<StagedCandidate | undefined> {
+    const candidates = await this.requireStagedCandidates().toArray();
+    return candidates.find(
+      (candidate) => candidate.sourceBreakdownId === sourceBreakdownId,
+    );
+  }
+
+  private async isActiveInboxScratch(
+    scratch: Bit | undefined,
+  ): Promise<boolean> {
+    if (
+      !scratch ||
+      scratch.deletedAt !== null ||
+      scratch.archivedAt !== null
+    ) {
+      return false;
+    }
+
+    const parent = await this.database.nodes.get(scratch.parentId);
+    return (
+      parent?.systemRole === "inbox" &&
+      parent.deletedAt === null &&
+      parent.archivedAt === null
+    );
+  }
+
   private async saveNodes(nodes: Node[]): Promise<void> {
     if (nodes.length > 0) {
       await this.database.nodes.bulkPut(nodes);
@@ -1960,6 +2508,99 @@ export class IndexedDBDataStore implements DataStore {
     );
     await this.touchNodeIds([bit.parentId], timestamp);
   }
+}
+
+function matchesAddBreakdownPostcondition(
+  command: AddBreakdownCommand,
+  breakdown: ScratchBreakdown | undefined,
+  scratch: Bit | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    breakdown?.id === command.breakdownId &&
+    breakdown.scratchBitId === command.scratchBitId &&
+    breakdown.content === command.content &&
+    breakdown.consumedAt === null &&
+    breakdown.version === 1 &&
+    scratch?.version === command.scratchExpectedVersion + 1
+  );
+}
+
+function matchesSaveScratchTitlePostcondition(
+  command: SaveScratchTitleCommand,
+  scratch: Bit | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    scratch?.title === command.title &&
+    scratch.version === command.expectedVersion + 1
+  );
+}
+
+function matchesSaveBreakdownPrecondition(
+  command: SaveBreakdownCommand,
+  breakdown: ScratchBreakdown | undefined,
+  candidate: StagedCandidate | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    candidate === undefined &&
+    breakdown?.consumedAt === null &&
+    breakdown.version === command.expectedVersion &&
+    breakdown.content === command.baseContent &&
+    breakdown.order === command.baseOrder
+  );
+}
+
+function matchesSaveBreakdownPostcondition(
+  command: SaveBreakdownCommand,
+  breakdown: ScratchBreakdown | undefined,
+  candidate: StagedCandidate | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    candidate === undefined &&
+    breakdown?.consumedAt === null &&
+    breakdown.version === command.expectedVersion + 1 &&
+    breakdown.content === command.content &&
+    breakdown.order === command.order
+  );
+}
+
+function matchesDeleteBreakdownPrecondition(
+  command: DeleteBreakdownCommand,
+  breakdown: ScratchBreakdown | undefined,
+  candidate: StagedCandidate | undefined,
+  scratch: Bit | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    candidate === undefined &&
+    breakdown?.scratchBitId === command.scratchBitId &&
+    breakdown.consumedAt === null &&
+    breakdown.version === command.expectedVersion &&
+    scratch?.version === command.scratchExpectedVersion
+  );
+}
+
+function matchesDeleteBreakdownPostcondition(
+  command: DeleteBreakdownCommand,
+  breakdown: ScratchBreakdown | undefined,
+  candidate: StagedCandidate | undefined,
+  scratch: Bit | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    breakdown === undefined &&
+    candidate === undefined &&
+    scratch?.version === command.scratchExpectedVersion + 1
+  );
 }
 
 function sortGridItems<T extends { x: number; y: number }>(items: T[]): T[] {
