@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Task 106 implemented; `DP-VQ01` choice A awaiting user checkpoint acceptance
+> State: Task 106 accepted; Task 107 not started
 
 ## Status Legend
 
@@ -62,22 +62,24 @@ The fourteen decisions are semantically independent. The first five may be
 presented as one small user review packet, but a real decision, durable receipt,
 canonical document update, and commit remain Task-local and sequential.
 
-## Active Task
+## Task 106 Acceptance Receipt
 
 | Field | Durable value |
 | --- | --- |
 | Task | 106 — record `DP-VQ01` external-removal decision |
-| State | Implemented / awaiting user review; user acceptance remains pending and the Task 106 plan marker stays `[ ]` |
+| State | Accepted by the user on 2026-08-09; the Task 106 plan marker is `[x]` |
 | Approved scope | Choice A central blocking transition panel; update only the Scratch Pool recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ01` receipt; no product code |
 | User decision | On 2026-08-09 the user selected `DP-VQ01=A` |
+| User acceptance | `Task 106 / DP-VQ01=A checkpoint를 수락합니다.` |
 | Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
 | Entrypoint / recovery anchor | Kickoff `2faf34cc13b4d07a39d40c86b2fc28d8a759ff11`; durable start `ade7c4f76a32c424fac0e599f376d94bc12b8159`; Task 106 decision commit `bf749bee95bf03153c098188a23e031e2c21088b` |
-| Durable receipt | `docs/issues/Issues_Phase_24.Task_106.dp-vq01.json`; candidate resolver returned `ready` for gate `dp-vq01` and next action `task-106-user-checkpoint` |
+| Durable receipt | `docs/issues/Issues_Phase_24.Task_106.dp-vq01.json`; its accepted next action is `task-107` |
 | Issue / deviation | None |
 | Canonical impact | Reflected — Choice A is recorded in the Scratch Pool recipe, `docs/DESIGN_TOKENS.md`, and Task 106 execution authority |
 | Verification | `git diff --check` exit 0; `pnpm typecheck` exit 0; exact four-path Task commit; Tasks 106–110 markers remain `[ ]`; no Task 107–110 decision was recorded |
 | Review | No concrete blocking finding; exact copy/state/focus/theme matrix and Task 141-only edge are present, with no prototype or adjacent-surface fallback |
-| Next legal action | Stop at the Task 106 user checkpoint. Do not start Task 107 until the user accepts this checkpoint |
+| Acceptance boundary | Accepts only Task 106 and releases Task 141 only; it does not accept Task 107, any other DP receipt, product code, push, PR, merge, or phase close |
+| Next legal action | Commit this acceptance state. Task 107 may then start from the accepted sequential batch; Task 108 remains unavailable |
 
 ## Readiness Evidence
 

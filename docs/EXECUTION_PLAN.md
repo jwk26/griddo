@@ -241,7 +241,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 
 | Receipt | VQ | Decision task | Exact implementation edge | Resume condition |
 |---|---|---|---|---|
-| `DP-VQ01` | `VQ-01` | 106 | 141 only | Choice A central blocking panel recorded at `docs/issues/Issues_Phase_24.Task_106.dp-vq01.json`; Task 106 remains `[ ]` pending its user checkpoint. |
+| `DP-VQ01` | `VQ-01` | 106 | 141 only | Choice A central blocking panel accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_106.dp-vq01.json`; Task 141 only is released. |
 | `DP-VQ02` | `VQ-02` | 107 | 148 only | Accepted receipt defines complete one-shot/reduced-motion success realization. |
 | `DP-VQ03` | `VQ-03` | 108 | 140 only | Accepted receipt supplies or scopes out the internal departure surface. |
 | `DP-VQ04` | `VQ-04` | 109 | 138 only | Accepted receipt supplies both complete inline-editor surfaces. |
@@ -443,7 +443,7 @@ code commit; `fix(db): reject Scratch bit promotion`.
 
 Tasks 106–119 are non-code Decision tasks. They have no dependencies on one another; their shared document edits are serialized by the `decision-docs` mutex without creating a semantic VQ dependency.
 
-### Task 106: [ ] Record `DP-VQ01` external-removal decision
+### Task 106: [x] Record `DP-VQ01` external-removal decision
 
 **Files and actions:** modify `docs/recipes/inbox-triage-scratch-pool-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to record the user-approved complete external archive/delete transition realization or explicit scope-out: exact copy, layout, controls, countdown treatment, pause/resume, destination change, draft-copy status, restore, focus, and eight-theme mapping. Record the durable receipt and change no code.
 
@@ -471,7 +471,8 @@ focus moves to the destination Context or the named no-selection/empty status.
 All eight themes keep this semantic tree/copy/timing/focus and consume the
 exact recipe/token role-family mapping. The durable receipt is
 `docs/issues/Issues_Phase_24.Task_106.dp-vq01.json`; it releases no task other
-than Task 141 and does not accept Task 106's `[ ]` marker.
+than Task 141. The separate 2026-08-09 checkpoint acceptance records this
+Task's `[x]` without authorizing any other realization edge.
 
 **Observable acceptance:** the receipt lets Task 141 implement every external-removal state without choosing wording, geometry, controls, timing treatment, or theme values.
 
