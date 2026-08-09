@@ -248,7 +248,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ05` | `VQ-05` | 110 | 143 only | Choice A Add-region/source-row attached reliability system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json`; Task 143 only is released. |
 | `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Choice A fixed Pool-local status band accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json`; Task 144 only is released. |
 | `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Choice A candidate-attached/subsection-indicator/Staging-alert status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_112.dp-vq06-staging.json`; Task 147 only is released. |
-| `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Choice A affected-column remote/path status family recorded at `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`; Task 113 remains `[ ]` pending its user checkpoint. |
+| `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Choice A affected-column remote/path status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`; Task 150 only is released. |
 | `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Accepted receipt supplies or scopes out the complete replacement search body. |
 | `DP-VQ08` | `VQ-08` | 115 | 153 only | Accepted receipt defines placement reliability states. |
 | `DP-VQ09` | `VQ-09` | 116 | 154 only | Accepted receipt supplies both title/limit surfaces. |
@@ -764,7 +764,7 @@ Explorer choice, Task 150 work, product code, publication, or phase close.
 
 **Commit contract:** the three named documents and `DP-VQ06-STAGING` receipt only; `docs(triage): record DP-VQ06 Staging`.
 
-### Task 113: [ ] Record `DP-VQ06-EXPLORER` Explorer-status decision
+### Task 113: [x] Record `DP-VQ06-EXPLORER` Explorer-status decision
 
 **Files and actions:** modify `docs/recipes/inbox-triage-grid-explorer-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to specify only Explorer remote-path/invalid-suffix/selection-disappearance/status/count/alert/action/focus/dismissal and eight-theme treatments; change no Pool/Staging authority and no code.
 
@@ -795,6 +795,14 @@ identically immediate with no status animation. The receipt owns the eight
 Explorer theme mappings and releases Task 150 only after this Task's user
 checkpoint; Pool/Staging, path/anchoring mechanics, placement, product code,
 and the separate `VQ-07` search body remain unchanged.
+
+**Checkpoint acceptance (2026-08-10):** the user accepted the complete Choice
+A affected-column remote-arrival count and path-status family, exact
+copy/action/fallback/focus/lifetime matrix, stable-ID/viewport-offset
+preservation, static reduced-motion parity, eight-theme mapping, and
+Explorer-only/Task 150-only boundary. This acceptance releases Task 150 only.
+It does not start Task 114, prepare another Gate C packet, implement product
+code, publish, or close the phase.
 
 **Observable acceptance:** remote-path statuses can be implemented independently without Search/Pool/Staging fallback or focus theft.
 

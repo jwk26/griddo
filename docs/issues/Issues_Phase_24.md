@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–112 accepted; Task 113 choice A is implemented and awaiting its user checkpoint
+> State: Tasks 106–113 accepted; the approved `111 → 112 → 113` serial batch is complete and no later batch is authorized
 
 ## Status Legend
 
@@ -227,23 +227,26 @@ canonical document update, and commit remain Task-local and sequential.
 | Acceptance boundary | Accepts only Task 112 and `DP-VQ06-STAGING=A`; releases Task 147 only; does not select `DP-VQ06-EXPLORER`, approve Task 150, change product code, publish, or close the phase |
 | Next legal action | Commit this acceptance state. Task 113 may then present only the `DP-VQ06-EXPLORER` decision gate |
 
-## Active Task
+## Task 113 Acceptance Receipt
 
 | Field | Durable value |
 | --- | --- |
 | Task | 113 — record `DP-VQ06-EXPLORER` Explorer-status decision |
-| State | Implemented and awaiting user review; user acceptance remains pending and the Task 113 plan marker stays `[ ]` |
+| State | Accepted by the user on 2026-08-10; the Task 113 plan marker is `[x]` |
 | Approved scope | Choice A affected-column-attached remote/path status strip, column-local remote count/action, exact invalid-suffix/selection-disappearance/stale-placement copy, nearest-valid-ancestor focus, dismissal/lifetime, stable-ID/offset preservation, reduced-motion, and eight-theme treatment; update only the Grid Explorer recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ06-EXPLORER` receipt; no product code or Pool/Staging/`VQ-07` search authority |
 | User decision | On 2026-08-10 the user selected `DP-VQ06-EXPLORER=A` |
+| User acceptance | `Task 113 / DP-VQ06-EXPLORER=A checkpoint를 수락합니다.` |
 | Predecessor | Task 112 accepted at `56704f2cc49b345b76fa5b6e562bade77423d792`; its exact release remains Task 147 only |
 | Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `15be56007b0290622bd907cbb3a02d78684a15f6`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
 | Entrypoint / recovery anchor | Task 112 acceptance `56704f2cc49b345b76fa5b6e562bade77423d792`; Task 113 durable start `bf02fb96ffcdbbab71b5b0ad366546fae6e9687b`; Task 113 decision commit `bb6dd3fa3d884a7e746d9bb221e8a363b1194a64` |
-| Durable receipt | `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`; candidate resolver status is `ready`, with `contract_ready=true`, `writes_allowed=false`, and next action `task-113-user-checkpoint` |
+| Durable receipt | `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`; its accepted next action is `await-next-batch-approval` |
 | Issue / deviation | None |
 | Canonical impact | Reflected — Choice A is recorded in the Grid Explorer recipe, `docs/DESIGN_TOKENS.md`, and Task 113 execution authority |
 | Verification | `git diff --check` exit 0; `pnpm typecheck` exit 0; exact four-path Task decision commit; Tasks 106–112 are `[x]` and Task 113 remains `[ ]`; no product code, Pool/Staging authority, `VQ-07` search authority, or Task 114 decision was changed; test/lint/build omitted because this Task is documentation-only |
 | Review | No concrete blocking finding; independent affected-column counts, exact `Show new in {full level label}` and fallback copy, stable-ID/offset preservation, nearest-valid-ancestor fallback, selected-Bit clearing, focus and lifetime rules, static reduced-motion parity, eight-theme mapping, and Task 150-only edge are present with no Explorer-wide rail, event history, ghost column/suffix, Search fallback, Pool, Staging, or product implementation |
-| Next legal action | Stop at the Task 113 user checkpoint. Do not mark Task 113 `[x]`, release Task 150 for consumption, start Task 114, or begin another batch before explicit acceptance |
+| Acceptance boundary | Accepts only Task 113 and `DP-VQ06-EXPLORER=A`; releases Task 150 only; does not start Task 114, prepare another Gate C packet, change product code, publish, or close the phase |
+| Batch boundary | The approved `111 → 112 → 113` VQ-06 decision batch is complete; Task 114 and every later batch remain unauthorized |
+| Next legal action | Commit this acceptance state, verify a clean worktree, and stop awaiting separate future authority |
 
 ## Readiness Evidence
 
