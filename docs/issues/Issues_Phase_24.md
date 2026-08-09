@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–107 accepted; Task 108 is the next legal task
+> State: Tasks 106–107 accepted; Task 108 in progress with `DP-VQ03` choice A approved
 
 ## Status Legend
 
@@ -100,6 +100,21 @@ canonical document update, and commit remain Task-local and sequential.
 | Review | No concrete blocking finding; exact identity trigger, 600ms/1600ms timeline, copy, placement, focus, interruption, reduced-motion, eight-theme mapping, and Task 148-only edge are present with no toast or repeated-motion fallback |
 | Acceptance boundary | Accepts only Task 107 and releases Task 148 only; it does not accept Task 108, any other DP receipt, product code, push, PR, merge, or phase close |
 | Next legal action | Commit this acceptance state. Task 108 may then start from the accepted sequential batch; Task 109 remains unavailable |
+
+## Active Task
+
+| Field | Durable value |
+| --- | --- |
+| Task | 108 — record `DP-VQ03` Add-draft departure decision |
+| State | In Progress; user acceptance remains pending and the Task 108 plan marker stays `[ ]` |
+| Approved scope | Choice A Add-adjacent inline decision sheet for Continue writing / Discard and move; update only the Breakdown rows recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ03` receipt; no product code or Task 139 headless behavior |
+| User decision | On 2026-08-09 the user selected `DP-VQ03=A` |
+| Predecessor | Task 107 accepted at `9f866a3dafc376e2db37927b4e846664d19e2b5a`; its exact release remains Task 148 only |
+| Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
+| Entrypoint / recovery anchor | Task 107 acceptance commit `9f866a3dafc376e2db37927b4e846664d19e2b5a`; resume only Task 108 from this committed start signal |
+| Issue / deviation | None |
+| Canonical impact | Tagged — reflect the approved inline decision sheet in the named recipe, design-token authority, and Task 108 execution authority before checkpoint |
+| Next legal action | Commit this durable start signal, then record only `DP-VQ03` and stop at the Task 108 user checkpoint; Task 109 remains unavailable |
 
 ## Readiness Evidence
 
