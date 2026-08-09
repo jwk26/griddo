@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: kickoff prepared; no Decision task started and no DP receipt accepted
+> State: Task 106 in progress; `DP-VQ01` choice A approved, receipt not yet recorded
 
 ## Status Legend
 
@@ -61,6 +61,20 @@
 The fourteen decisions are semantically independent. The first five may be
 presented as one small user review packet, but a real decision, durable receipt,
 canonical document update, and commit remain Task-local and sequential.
+
+## Active Task
+
+| Field | Durable value |
+| --- | --- |
+| Task | 106 — record `DP-VQ01` external-removal decision |
+| State | In Progress; user acceptance remains pending and the Task 106 plan marker stays `[ ]` |
+| Approved scope | Choice A central blocking transition panel; update only the Scratch Pool recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ01` receipt; no product code |
+| User decision | On 2026-08-09 the user selected `DP-VQ01=A` |
+| Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
+| Entrypoint / recovery anchor | Kickoff commit `2faf34cc13b4d07a39d40c86b2fc28d8a759ff11`; resume only Task 106 from this committed start signal |
+| Issue / deviation | None |
+| Canonical impact | Tagged — reflect the approved choice in the named recipe, design-token authority, and Task 106 execution authority before checkpoint |
+| Next legal action | Commit this durable start signal, then record only `DP-VQ01` and stop at the Task 106 user checkpoint |
 
 ## Readiness Evidence
 
