@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Task 106 accepted; Task 107 in progress with `DP-VQ02` choice A approved
+> State: Task 106 accepted; Task 107 implemented with `DP-VQ02` choice A awaiting user checkpoint acceptance
 
 ## Status Legend
 
@@ -86,15 +86,18 @@ canonical document update, and commit remain Task-local and sequential.
 | Field | Durable value |
 | --- | --- |
 | Task | 107 — record `DP-VQ02` Add/Unstage success-signal decision |
-| State | In Progress; user acceptance remains pending and the Task 107 plan marker stays `[ ]` |
+| State | Implemented / awaiting user review; user acceptance remains pending and the Task 107 plan marker stays `[ ]` |
 | Approved scope | Choice A row-attached confirmation wash/check/text; update only the Breakdown rows recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ02` receipt; no product code |
 | User decision | On 2026-08-09 the user selected `DP-VQ02=A` |
 | Predecessor | Task 106 accepted at `5bcc507e88f28ce357cff35875b02a24b3856cbd`; its exact release remains Task 141 only |
 | Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
-| Entrypoint / recovery anchor | Task 106 acceptance commit `5bcc507e88f28ce357cff35875b02a24b3856cbd`; resume only Task 107 from this committed start signal |
+| Entrypoint / recovery anchor | Task 106 acceptance `5bcc507e88f28ce357cff35875b02a24b3856cbd`; durable start `88984304dbfbe80e6d3676217abc635b3056229d`; Task 107 decision commit `9f6012623d627745e734d943bac145a21f0c7d83` |
+| Durable receipt | `docs/issues/Issues_Phase_24.Task_107.dp-vq02.json`; candidate resolver returned `ready` for gate `dp-vq02` and next action `task-107-user-checkpoint` |
 | Issue / deviation | None |
-| Canonical impact | Tagged — reflect the approved shared success signal in the named recipe, design-token authority, and Task 107 execution authority before checkpoint |
-| Next legal action | Commit this durable start signal, then record only `DP-VQ02` and stop at the Task 107 user checkpoint; Task 108 remains unavailable |
+| Canonical impact | Reflected — Choice A is recorded in the Breakdown rows recipe, `docs/DESIGN_TOKENS.md`, and Task 107 execution authority |
+| Verification | `git diff --check` exit 0; `pnpm typecheck` exit 0; exact four-path Task commit; Task 106 remains `[x]`, Tasks 107–108 remain `[ ]`; no Task 108–110 decision was recorded |
+| Review | No concrete blocking finding; exact identity trigger, 600ms/1600ms timeline, copy, placement, focus, interruption, reduced-motion, eight-theme mapping, and Task 148-only edge are present with no toast or repeated-motion fallback |
+| Next legal action | Stop at the Task 107 user checkpoint. Do not write Task 107 `[x]` or start Task 108 without new explicit user acceptance |
 
 ## Readiness Evidence
 
