@@ -3,55 +3,57 @@
   "receipt_kind": "lifecycle-approval",
   "gate": "gate-c",
   "approved_repository": "jwk26/griddo",
-  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_base": "dea3d094ae060db17bc1a5870d68267c27f2a3c7",
   "approved_branch": "phase-25/authoritative-command-dag",
   "approved_scope": {
     "lifecycle": "run-phase",
     "phase": 25,
     "worktree_role": "feature",
     "task_batch": [
-      120,
-      121
+      123
     ],
     "task_order": [
-      120,
-      121
+      123
     ],
     "execution_mode": "sequential"
   },
   "user_disposition": "approved",
   "next_legal_action": "$run-task",
-  "source_mode": "approved canonical plan + archived/merged Phase 23 foundation on fetched origin/main",
+  "source_mode": "approved canonical plan + accepted Phase 25 Tasks 120–122 on the existing Phase 25 continuation",
   "issue_ledger": "docs/issues/Issues_Phase_25.md",
   "integration": {
     "branch": "main",
     "remote": "origin",
     "post_fetch_sha": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28"
   },
+  "continuation": {
+    "entrypoint": "dea3d094ae060db17bc1a5870d68267c27f2a3c7",
+    "entrypoint_subject": "docs: accept Task 122",
+    "original_phase_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+    "commits_above_integration": 14,
+    "base_exception": "explicitly approved same-phase 14-commit continuation reuse",
+    "history_action": "preserve; no reset, rebase, merge, or cherry-pick"
+  },
   "dependency_evidence": {
-    "task_120": {
+    "task_123": {
       "dependencies": [
-        103,
-        104
+        120,
+        121
       ],
       "accepted_commits": [
-        "169ffa525a4fc50ecf2b73af21c4976d8d45387c",
-        "bc9d2d7e037cda7f4a3901185b0e805cf308b01b"
+        "9d7a6361fb0bdb52891f8253757d8088abbd3aac",
+        "a01c854aa82e1303550e19b915dd09af1acd9d81"
       ]
     },
-    "task_121": {
-      "dependencies": [
-        103,
-        104
-      ],
-      "accepted_commits": [
-        "169ffa525a4fc50ecf2b73af21c4976d8d45387c",
-        "bc9d2d7e037cda7f4a3901185b0e805cf308b01b"
-      ]
-    },
-    "phase_23_feature_tip": "e5da17d4f988908611d0c63ddb39589fb252aaf3",
-    "phase_23_merge": "8977ffc741abab2707a1c6632cca50324d3101ae",
+    "task_122_acceptance": "dea3d094ae060db17bc1a5870d68267c27f2a3c7",
     "phase_24_completion_required": false
+  },
+  "worktree_reuse": {
+    "approved": true,
+    "same_phase_continuation": true,
+    "branch_registered_once": true,
+    "integration_worktree_registered_once": true,
+    "clean_at_gate": true
   },
   "writer_mutex": {
     "mode": "sequential",
@@ -66,30 +68,31 @@
     "plan_code_drift": "none",
     "open_decision_receipts_for_batch": [],
     "downstream_tasks_held": [
-      122,
-      123,
       124,
       125,
       126
     ],
-    "production_source_changed": false,
-    "production_src_tree": "ecad26328bf8a8b798193e61fe54c4afee4478b0"
+    "task_123_started": false,
+    "production_implementation_started": false,
+    "baseline_gate_src_tree": "7a4b365b5bbd2fc595edb7ce318cd4ef7f896a65"
   },
   "verification": {
-    "setup": {
-      "command": "pnpm install --frozen-lockfile",
-      "exit": 0,
-      "result": "lockfile unchanged; 537 packages linked"
+    "baseline_reuse": {
+      "approved": true,
+      "source_commit": "5d3fb54b2bc5452e6bc2cb3b7932c92119712248",
+      "source_context": "fresh serial full gate after the Task 122 indexed-lookup repair",
+      "source_src_tree": "7a4b365b5bbd2fc595edb7ce318cd4ef7f896a65",
+      "current_src_tree": "7a4b365b5bbd2fc595edb7ce318cd4ef7f896a65",
+      "post_gate_changes": [
+        "docs/EXECUTION_PLAN.md Task 122 acceptance marker only",
+        "docs/issues/Issues_Phase_25.md Task 122 acceptance evidence only"
+      ]
     },
-    "focused_commands": [
-      "git diff --check",
-      "pnpm typecheck"
-    ],
-    "full_gate": [
+    "baseline_full_gate": [
       {
         "command": "pnpm test",
         "exit": 0,
-        "result": "80 test files and 554 tests passed"
+        "result": "83 test files and 603 tests passed"
       },
       {
         "command": "pnpm lint",
@@ -104,9 +107,24 @@
       {
         "command": "pnpm build",
         "exit": 0,
-        "result": "Next.js 16.2.1 build passed and seven routes generated"
+        "result": "Next.js 16.2.1 production build passed and seven routes generated"
       }
-    ]
+    ],
+    "task_123_focused": [
+      "pnpm exec vitest run src/lib/db/triage-placement.test.ts src/lib/db/inbox-operations.test.ts",
+      "pnpm typecheck",
+      "git diff --check"
+    ],
+    "task_123_mutex_regression": "pnpm exec vitest run src/lib/db/candidate-orphan-cleanup.test.ts src/lib/db/staged-candidates.test.ts src/lib/db/triage-placement.test.ts src/lib/db/inbox-operations.test.ts",
+    "task_123_post_implementation_full_gate": {
+      "required_runs": 1,
+      "commands": [
+        "pnpm test",
+        "pnpm lint",
+        "pnpm typecheck",
+        "pnpm build"
+      ]
+    }
   },
   "workflow_candidate": {
     "branch": "post-v1/workflow-candidate-low-cost",
@@ -117,7 +135,7 @@
   },
   "kickoff_state": {
     "clean_start": true,
-    "base_to_head_commits_before_receipt": 0,
+    "approved_base_to_head_commits_before_receipt": 0,
     "production_implementation_started": false,
     "run_task_invoked": false
   }

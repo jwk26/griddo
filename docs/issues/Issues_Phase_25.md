@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–122 accepted; Task 123 not started
+> State: Tasks 120–122 accepted; Task 123 Gate C approved and not started
 
 ## Status Legend
 
@@ -198,3 +198,25 @@ None at kickoff.
 | Task markers | Tasks 120–122 are `[x]`; Tasks 123–126 remain `[ ]` |
 | Next legal action | End the current Task 122 session; Task 123 remains not started and this acceptance creates no Task 123 write authority |
 | Forbidden here | Do not start Task 123, write Task 123 `[x]`, push, create a PR, merge, rebase, cherry-pick, reset, switch or clean up a branch/worktree, or modify Phase 24 scope |
+
+## Task 123 Gate C Handoff
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 123 only — Implement staged and direct Placement commands |
+| State | Gate C approved by the user on 2026-08-10; Task 123 is not started and its marker remains `[ ]` |
+| Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-placement.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; implement only the staged/direct typed Placement command, transaction, schema-default, rollback, and exact reconciliation contract; no UI and no Task 124 work |
+| Whole-file receipt | `docs/issues/Issues_Phase_25.gate-c.json`, updated to `task_batch` / `task_order` `[123]` |
+| Branch / worktree | Reuse explicitly approved for `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag` |
+| Integration / remote | `main`; post-fetch `origin/main` `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; local `main` matched at Gate C |
+| Continuation approved base | `dea3d094ae060db17bc1a5870d68267c27f2a3c7` (`docs: accept Task 122`) |
+| Base exception | User explicitly approved preserving the existing 14-commit same-phase continuation above `origin/main`; no reset, rebase, merge, or cherry-pick |
+| Dependencies | Tasks 120 and 121 are accepted at `9d7a6361fb0bdb52891f8253757d8088abbd3aac` and `a01c854aa82e1303550e19b915dd09af1acd9d81`; both are ancestors of the continuation base |
+| Authority / readiness | SCHEMA staged/direct placement matrix; SPEC pointer-placement and commit-reliability contract; `docs/EXECUTION_PLAN.md` Task 123; no recipe, open Decision prerequisite, active issue, or plan/code drift |
+| Writer mutex | Acquire `db-implementation`, `db-interface`, and `db-command-harness`; Task 123 is the only approved writer and Tasks 124–126 remain held |
+| Baseline gate reuse | User approved reuse of the fresh serial full gate recorded after Task 122 repair commit `5d3fb54b2bc5452e6bc2cb3b7932c92119712248`; its `src` tree and the continuation base `src` tree are both `7a4b365b5bbd2fc595edb7ce318cd4ef7f896a65`; the later changes are only the Task 122 plan marker and ledger acceptance evidence |
+| Task 123 verification | Start from direct selected-target RED; focused `pnpm exec vitest run src/lib/db/triage-placement.test.ts src/lib/db/inbox-operations.test.ts`; mutex regression `pnpm exec vitest run src/lib/db/candidate-orphan-cleanup.test.ts src/lib/db/staged-candidates.test.ts src/lib/db/triage-placement.test.ts src/lib/db/inbox-operations.test.ts`; then `pnpm typecheck` and `git diff --check`; after implementation run exactly one fresh serial full gate: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` |
+| Workflow candidate | Use candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`; next lifecycle skill is `skills/run-task/SKILL.md`; the global live `$run-task` is forbidden |
+| Canonical impact | None at kickoff; Task 123 remains implementation-local to the approved SCHEMA/SPEC/execution contract unless run-task discovers and records otherwise |
+| Next legal action | In a fresh session, invoke only the pinned candidate `$run-task`; it must first validate this committed Gate C receipt and create a separate durable Task 123 start commit before any test or production-code write |
+| Forbidden here | Do not start Task 123 or Task 124, modify product/test files, write any task marker, run downstream lifecycle work, push, create a PR, merge, rebase, or modify Phase 24 or Shelf |
