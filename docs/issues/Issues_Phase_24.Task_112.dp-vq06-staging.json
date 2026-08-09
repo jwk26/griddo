@@ -25,6 +25,21 @@
     "choice": "A",
     "label": "Candidate-attached status, subsection arrivals, and Staging-local alert"
   },
+  "checkpoint_acceptance": {
+    "date": "2026-08-10",
+    "statement": "Task 112 / DP-VQ06-STAGING=A checkpoint를 수락합니다.",
+    "accepted_task": 112,
+    "accepted_decision": "DP-VQ06-STAGING=A",
+    "accepted_contract": [
+      "candidate-attached pending, unknown, and reconciling status",
+      "subsection-local remote-arrival count and action",
+      "single Staging-local terminal and integrity alert",
+      "exact Stage, Unstage, invalid, stale, orphan, failure, focus, dismissal, and lifetime matrix",
+      "static reduced-motion parity and eight-theme mapping",
+      "Staging-only scope and Task 147-only release"
+    ],
+    "serial_boundary": "Task 113 may proceed only to its separate DP-VQ06-EXPLORER user decision"
+  },
   "canonical_record_paths": [
     "docs/recipes/inbox-triage-staging-visual-recipe.md",
     "docs/DESIGN_TOKENS.md",
@@ -203,11 +218,11 @@
     "tasks": [
       147
     ],
-    "consumption_condition": "Task 112 user checkpoint accepted; its plan marker remains open until then",
+    "consumption_condition": "satisfied by Task 112 checkpoint acceptance on 2026-08-10",
     "all_other_tasks": "unreleased, including Tasks 113 and 150"
   },
-  "task_state": "implemented-awaiting-user-checkpoint",
+  "task_state": "accepted",
   "canonical_impact": "Reflected",
   "issue_or_deviation": "None",
-  "next_legal_action": "task-112-user-checkpoint"
+  "next_legal_action": "task-113"
 }

@@ -247,7 +247,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ04` | `VQ-04` | 109 | 138 only | Choice A dual direct in-place editor system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_109.dp-vq04.json`; Task 138 only is released. |
 | `DP-VQ05` | `VQ-05` | 110 | 143 only | Choice A Add-region/source-row attached reliability system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json`; Task 143 only is released. |
 | `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Choice A fixed Pool-local status band accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json`; Task 144 only is released. |
-| `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Choice A candidate-attached/subsection-indicator/Staging-alert status family recorded at `docs/issues/Issues_Phase_24.Task_112.dp-vq06-staging.json`; Task 112 remains `[ ]` pending its user checkpoint. |
+| `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Choice A candidate-attached/subsection-indicator/Staging-alert status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_112.dp-vq06-staging.json`; Task 147 only is released. |
 | `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Accepted Explorer-specific status receipt. |
 | `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Accepted receipt supplies or scopes out the complete replacement search body. |
 | `DP-VQ08` | `VQ-08` | 115 | 153 only | Accepted receipt defines placement reliability states. |
@@ -718,7 +718,7 @@ Task 113 work, product code, publication, or phase close.
 
 **Commit contract:** the three named documents and `DP-VQ06-POOL` receipt only; `docs(triage): record DP-VQ06 Pool`.
 
-### Task 112: [ ] Record `DP-VQ06-STAGING` Staging-status decision
+### Task 112: [x] Record `DP-VQ06-STAGING` Staging-status decision
 
 **Files and actions:** modify `docs/recipes/inbox-triage-staging-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to specify only Staging pending/invalid/remote-arrival/orphan/stale/failure/alert/count/action/focus/dismissal and eight-theme treatments; change no Pool/Explorer authority and no code.
 
@@ -749,6 +749,14 @@ motion are identically immediate with no status animation. The receipt owns
 the eight Staging theme mappings and releases Task 147 only after this Task's
 user checkpoint; Tasks 145–146 remain headless owners and Pool/Explorer
 authority, Task 113, `DP-VQ02`, and `D-CARD` remain unchanged.
+
+**Checkpoint acceptance (2026-08-10):** the user accepted the complete Choice
+A candidate-attached operation status, subsection remote-arrival indicator,
+single Staging-local alert, exact state/copy/action/focus/lifetime matrix,
+static reduced-motion parity, eight-theme mapping, and Staging-only/Task
+147-only boundary. This acceptance releases Task 147 only. Task 113 may
+proceed only to its separate `DP-VQ06-EXPLORER` user decision; it accepts no
+Explorer choice, Task 150 work, product code, publication, or phase close.
 
 **Observable acceptance:** Staging statuses have direct section-local authority, including alert lifetime and non-focus-stealing remote arrival.
 
