@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–107 accepted; Task 108 implemented with `DP-VQ03` choice A awaiting user checkpoint acceptance
+> State: Tasks 106–108 accepted; Task 109 is the next legal task
 
 ## Status Legend
 
@@ -101,24 +101,27 @@ canonical document update, and commit remain Task-local and sequential.
 | Acceptance boundary | Accepts only Task 107 and releases Task 148 only; it does not accept Task 108, any other DP receipt, product code, push, PR, merge, or phase close |
 | Next legal action | Commit this acceptance state. Task 108 may then start from the accepted sequential batch; Task 109 remains unavailable |
 
-## Active Task
+## Task 108 Acceptance Receipt
 
 | Field | Durable value |
 | --- | --- |
 | Task | 108 — record `DP-VQ03` Add-draft departure decision |
-| State | Implemented / awaiting user review; user acceptance remains pending and the Task 108 plan marker stays `[ ]` |
+| State | Accepted by the user on 2026-08-09; the Task 108 plan marker is `[x]` |
 | Approved scope | Choice A Add-adjacent inline decision sheet for Continue writing / Discard and move; update only the Breakdown rows recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ03` receipt; no product code or Task 139 headless behavior |
 | User decision | On 2026-08-09 the user selected `DP-VQ03=A` |
+| User acceptance | `Task 108 / DP-VQ03=A checkpoint를 수락합니다.` |
+| Accepted supersession | Replaces the initial shorthand “immediately above Add” and `Keep writing or discard this draft?` with the final below-Add placement, split eyebrow/heading/description copy, the two recorded actions, and exactly-once use of Task 139's latest captured destination |
 | Predecessor | Task 107 accepted at `9f866a3dafc376e2db37927b4e846664d19e2b5a`; its exact release remains Task 148 only |
 | Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
 | Entrypoint / recovery anchor | Task 107 acceptance `9f866a3dafc376e2db37927b4e846664d19e2b5a`; Task 108 durable start `442d20c180c1d71a4404f214bb65e0a6458f4b77`; Task 107 edge reconciliation `f0537ba`; Task 108 decision commit `3792219291ee4a40c3169c932f2f850d1095a12c` |
-| Durable receipt | `docs/issues/Issues_Phase_24.Task_108.dp-vq03.json`; candidate resolver returned `ready` for gate `dp-vq03` and next action `task-108-user-checkpoint` |
+| Durable receipt | `docs/issues/Issues_Phase_24.Task_108.dp-vq03.json`; its accepted next action is `task-109` |
 | Issue / deviation | None |
 | Canonical impact | Reflected — Choice A is recorded in the Breakdown rows recipe, `docs/DESIGN_TOKENS.md`, and Task 108 execution authority |
-| Verification | `git diff --check` exit 0; `pnpm typecheck` exit 0; exact four-path Task decision commit; Tasks 106–107 remain `[x]`, Tasks 108–109 remain `[ ]`; no product code or Task 109 decision was recorded |
+| Verification | `git diff --check` exit 0; `pnpm typecheck` exit 0; exact four-path Task decision commit; Tasks 106–108 are `[x]`, Task 109 remains `[ ]`; no product code or Task 109 decision was recorded |
 | Review | No concrete blocking finding; exact trigger/order, static Add-adjacent placement, copy, two-action hierarchy, focus/keyboard behavior, destination continuity, native-unload separation, eight-theme mapping, and Task 140-only edge are present with no prototype or adjacent-surface fallback |
 | Pre-canonical ownership audit | One stale Task 107 DP edge sentence still said checkpoint pending; corrected alone at `f0537ba` before the Task 108 canonical decision commit |
-| Next legal action | Stop at the Task 108 user checkpoint. Do not write Task 108 `[x]` or start Task 109 without new explicit user acceptance |
+| Acceptance boundary | Accepts only Task 108 and its explicit position/copy supersession; releases Task 140 only; does not accept Task 109, another DP receipt, product code, push, PR, merge, or phase close |
+| Next legal action | Commit this acceptance state. Task 109 may then start from the accepted sequential batch; Task 110 remains unavailable |
 
 ## Readiness Evidence
 

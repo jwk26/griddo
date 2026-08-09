@@ -243,7 +243,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 |---|---|---|---|---|
 | `DP-VQ01` | `VQ-01` | 106 | 141 only | Choice A central blocking panel accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_106.dp-vq01.json`; Task 141 only is released. |
 | `DP-VQ02` | `VQ-02` | 107 | 148 only | Choice A row-attached wash/check/text signal accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_107.dp-vq02.json`; Task 148 only is released. |
-| `DP-VQ03` | `VQ-03` | 108 | 140 only | Choice A Add-adjacent inline decision sheet recorded at `docs/issues/Issues_Phase_24.Task_108.dp-vq03.json`; Task 108 remains `[ ]` pending its user checkpoint. |
+| `DP-VQ03` | `VQ-03` | 108 | 140 only | Choice A Add-adjacent inline decision sheet, including the checkpoint-approved position/copy supersession, accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_108.dp-vq03.json`; Task 140 only is released. |
 | `DP-VQ04` | `VQ-04` | 109 | 138 only | Accepted receipt supplies both complete inline-editor surfaces. |
 | `DP-VQ05` | `VQ-05` | 110 | 143 only | Accepted receipt defines Add/Delete reliability states. |
 | `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Accepted Pool-specific status receipt. |
@@ -519,7 +519,7 @@ checkpoint on 2026-08-09.
 
 **Commit contract:** the three named documents and `DP-VQ02` receipt only; `docs(triage): record DP-VQ02`.
 
-### Task 108: [ ] Record `DP-VQ03` Add-draft departure decision
+### Task 108: [x] Record `DP-VQ03` Add-draft departure decision
 
 **Files and actions:** modify `docs/recipes/inbox-triage-breakdown-row-empty-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to specify or scope out the app-internal Continue writing / Discard and move surface, exact copy, placement, action hierarchy, focus entry/return, and eight-theme treatment; change no code or Task 139 headless behavior.
 
@@ -550,8 +550,17 @@ and never borrows generic Dialog/AlertDialog, delete/archive, toast, adjacent
 card, prototype, or centered-overlay chrome. The eight exact theme-family
 mappings are recorded in the recipe and token authority. The durable receipt
 is `docs/issues/Issues_Phase_24.Task_108.dp-vq03.json`; it releases Task 140
-only, leaves Task 139 headless behavior unchanged, and does not accept Task
-108's `[ ]` marker.
+only, leaves Task 139 headless behavior unchanged, and was accepted at the Task
+108 user checkpoint on 2026-08-09.
+
+**Checkpoint acceptance and supersession (2026-08-09):** the user explicitly
+replaced the initial review-packet shorthand of placing the sheet immediately
+above Add and using the single prompt `Keep writing or discard this draft?`.
+Final authority is the recorded in-flow position immediately below the complete
+Add input/control row; split exact copy `Unsaved Add draft`, `Keep writing?`,
+and `Continue writing here, or discard this draft and move.`; actions `Continue
+writing` and `Discard and move`; and Discard's use of Task 139's latest captured
+destination exactly once.
 
 **Observable acceptance:** Task 140 needs no inference from delete/archive dialogs or native unload UI, while Task 139 remains independently runnable.
 
