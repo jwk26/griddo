@@ -480,7 +480,7 @@ Task's `[x]` without authorizing any other realization edge.
 
 **Commit contract:** the three named documents and `DP-VQ01` receipt only; `docs(triage): record DP-VQ01`.
 
-### Task 107: [ ] Record `DP-VQ02` success-signal decision
+### Task 107: [x] Record `DP-VQ02` success-signal decision
 
 **Files and actions:** modify `docs/recipes/inbox-triage-breakdown-row-empty-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to record exact shared Add/Unstage one-shot effect, trigger, duration/easing, copy, placement, interruption/retrigger, announcement, static reduced-motion treatment, and eight-theme mapping; change no code.
 
@@ -510,8 +510,8 @@ theme role-family mappings are exact in the recipe/tokens; there is no toast,
 transform, sparkle, pulse, blink, bounce, spin, flicker, or layout movement.
 The durable receipt is
 `docs/issues/Issues_Phase_24.Task_107.dp-vq02.json`; it releases only Task 148,
-does not change Task 106's Task 141 edge, and does not accept Task 107's `[ ]`
-marker.
+does not change Task 106's Task 141 edge, and was accepted at the Task 107 user
+checkpoint on 2026-08-09.
 
 **Observable acceptance:** Add and Unstage share one fully specified, non-repeating realization and an equally meaningful reduced-motion state.
 
