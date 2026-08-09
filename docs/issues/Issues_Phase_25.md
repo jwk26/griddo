@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Task 120 targeted repair implemented; awaiting user re-review; `[ ]` unchanged
+> State: Task 120 accepted by the user; Task 121 is the next approved sequential task
 
 ## Status Legend
 
@@ -105,11 +105,12 @@ None at kickoff.
 
 | Field | Durable value |
 | --- | --- |
-| Status | Awaiting User Decision — repair implemented and verified; acceptance remains user-owned |
+| Status | Closed — targeted repair accepted by the user on 2026-08-09 |
 | Source | User targeted rejection of Task 120 checkpoint after implementation commit `785b9d09b45f25ad50089c00c1f5539a7c4e44de` |
 | Affected paths | `reconcileAddBreakdown`, `reconcileSaveScratchTitle`, `reconcileSaveBreakdown`, and `reconcileDeleteBreakdown` in `src/lib/db/indexeddb.ts`; focused invariant coverage in `src/lib/db/inbox-operations.test.ts` |
 | Trigger / consequence | A concurrent Stage/Unstage/archive/delete transaction may commit between independently opened table reads, mixing Breakdown/Candidate/Scratch/Inbox-parent states and allowing an incorrect authoritative `not_applied` or `already_applied` presentation |
 | Approved repair | Run every reconcile method's authoritative reads inside one Dexie read-only transaction snapshot; add a real-Dexie invariant test and rerun invalidated gates |
+| User acceptance | Task 120 targeted repair checkpoint explicitly accepted on 2026-08-09; Task 120 may receive `[x]` and the Gate C sequential batch may advance to Task 121 |
 | Canonical impact | None — this repairs implementation conformance to the existing SCHEMA reconciliation contract |
 
 ## Active Task
@@ -118,17 +119,17 @@ None at kickoff.
 | --- | --- |
 | Task | Task 120 — Implement Add, Scratch Save, row Save, and row Delete commands |
 | Approved scope | Typed command/reconcile inputs and results in `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; Task-owned real-transaction evidence in `src/lib/db/scratch-breakdowns.test.ts` and new `src/lib/db/inbox-operations.test.ts`; no UI and no Task 121 work |
-| State | Implemented — targeted reconcile snapshot repair awaits user re-review; distinct from user acceptance |
+| State | Accepted by the user on 2026-08-09; Task 120 marker is `[x]` |
 | Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`) |
 | Start base | Approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; run-task entrypoint `93d5d9dbcf71d4b8a7268683f9b892902bfcb037` |
 | Recovery anchor | Original implementation commit `785b9d09b45f25ad50089c00c1f5539a7c4e44de`; targeted-repair start commit `7077cd19910f5dedc307eca52f3e82e5cf067490` |
-| Issues / deviations | `P25-120-R1` Awaiting User Decision; no scope deviation |
+| Issues / deviations | `P25-120-R1` Closed by explicit user acceptance; no scope deviation |
 | Canonical impact | None — Task 120 is implementation-local to the already-approved SCHEMA/SPEC/execution contract |
 | Production changes | Typed Add, Scratch Save, row Save, row Delete command/reconcile APIs in `src/lib/db/datastore.ts`; atomic Dexie implementation in `src/lib/db/indexeddb.ts`, including one read-only four-store snapshot for every authoritative reconcile; compile-time command fixtures in `src/lib/db/scratch-breakdowns.test.ts`; real-transaction, rollback, CAS, candidate-guard, ABA-1, and reconcile-snapshot coverage in `src/lib/db/inbox-operations.test.ts` |
 | TDD / repair evidence | Initial RED: focused command exit 1 with 13 expected missing-method failures while 554 existing tests passed. First implementation reduced the set to two identical ABA fixture conflicts; correcting the fixture's row precondition from legacy v2 to Add v1 reduced the set to zero. Targeted-repair RED: direct selected command exited 1 with four new snapshot-invariant failures and 26 existing selected tests passing; every observed authoritative read had a null transaction. Targeted-repair GREEN: the same command exited 0 with 2 files and 30 tests passing. No production repair cycle repeated the same unchanged failure set. |
 | Focused verification | Direct selected-target `pnpm exec vitest run src/lib/db/scratch-breakdowns.test.ts src/lib/db/inbox-operations.test.ts` exit 0 (2 files, 30 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0. The previous `pnpm test -- ...` result (81 files, 567 tests) remains classified as full-suite rather than focused evidence. |
 | Full gate | Fresh serial rerun after the repair: `pnpm test` exit 0 (81 files, 571 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js production build and seven routes). |
-| Review | No blocking finding in the repair diff: all four reconcile methods enter one read-only Dexie transaction over `nodes`, `bits`, `scratchBreakdowns`, and `stagedCandidates`; invariant coverage observes one non-null transaction identity and exact store set. Repair ownership is limited to `src/lib/db/indexeddb.ts` and `src/lib/db/inbox-operations.test.ts`; canonical impact is none. |
-| Task markers | Tasks 120–126 remain `[ ]` |
-| Next legal action | Present the repaired Task 120 checkpoint for user acceptance or targeted rejection; do not start Task 121 |
-| Forbidden here | Do not start Task 121, write `[x]`, push, create a PR, merge, rebase, cherry-pick, clean up, or modify Phase 24 scope |
+| Review | User accepted the targeted repair checkpoint after all four reconcile methods were verified to enter one read-only Dexie transaction over `nodes`, `bits`, `scratchBreakdowns`, and `stagedCandidates`. |
+| Task markers | Task 120 is `[x]`; Tasks 121–126 remain `[ ]` |
+| Next legal action | Create a separate durable Task 121 start commit before any Task 121 production write, then implement only Stage/Unstage and ABA-2 no-resurrection |
+| Forbidden here | Do not start Task 122, write Task 121 `[x]` without later explicit acceptance, push, create a PR, merge, rebase, cherry-pick, clean up, or modify Phase 24 scope |

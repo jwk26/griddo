@@ -699,7 +699,7 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 ## Phase 25 — Authoritative Command DAG
 
-### Task 120: [ ] Implement Add, Scratch Save, row Save, and row Delete commands
+### Task 120: [x] Implement Add, Scratch Save, row Save, and row Delete commands
 
 **Files and actions:** modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts` with typed command/reconcile inputs and results; modify `src/lib/db/scratch-breakdowns.test.ts` and **create** `src/lib/db/inbox-operations.test.ts` using Task 104's real database. Each command validates lifecycle/version inside one transaction, uses preallocated record/operation identity, increments each required surviving owner exactly once, parses writes/results, and classifies complete precondition/postcondition/conflict. Add the explicit **ABA-1 Add→Delete sequence**: an ambiguous Add commits row v1 and Scratch v+1; a later confirmed Delete removes it and advances Scratch again; late Add reconciliation must return `conflict`, leave the row absent, retain the later Scratch revision, and never recreate/resurrect the row. Delete's inverse checks must likewise never report the original Add as not-applied.
 
