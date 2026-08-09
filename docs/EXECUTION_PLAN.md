@@ -715,7 +715,7 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 **Commit contract:** four Breakdown commands, real transaction/reconcile tests, and no UI; `feat(triage): add authoritative breakdown commands`.
 
-### Task 121: [ ] Implement Stage and Unstage commands
+### Task 121: [x] Implement Stage and Unstage commands
 
 **Files and actions:** modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/staged-candidates.test.ts`; extend `src/lib/db/inbox-operations.test.ts`. Stage requires active Inbox Scratch, exact unconsumed source/version, absent preallocated candidate ID, and unique source; inserts candidate v1 and advances source. Unstage requires exact candidate/source; deletes only candidate and advances source. Add **ABA-2 Stage→Unstage**: ambiguous Stage commits candidate v1/source v+1; confirmed Unstage deletes candidate/source v+2; late Stage reconcile returns `conflict`, leaves candidate absent/source at later version, and never recreates/restages it. Type change remains Unstage then a new candidate ID/operation.
 

@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Task 120 accepted; Task 121 implemented and awaiting user review; Task 122 not started
+> State: Tasks 120–121 accepted; Gate C first batch complete; Task 122 not started
 
 ## Status Legend
 
@@ -134,13 +134,13 @@ None at kickoff.
 | Next legal action | Create a separate durable Task 121 start commit before any Task 121 production write, then implement only Stage/Unstage and ABA-2 no-resurrection |
 | Forbidden here | Do not start Task 122, write Task 121 `[x]` without later explicit acceptance, push, create a PR, merge, rebase, cherry-pick, clean up, or modify Phase 24 scope |
 
-## Active Task
+## Accepted Task 121
 
 | Field | Durable value |
 | --- | --- |
 | Task | Task 121 — Implement Stage and Unstage commands |
 | Approved scope | Typed Stage/Unstage command and reconcile inputs/results in `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/staged-candidates.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; implement ABA-2 Stage→Unstage no-resurrection only; no UI and no Task 122 work |
-| State | Implemented — awaiting user review; implementation state remains distinct from acceptance and Task 121 stays `[ ]` |
+| State | Accepted by the user on 2026-08-09; Task 121 marker is `[x]` |
 | Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, sequential batch Task 120 → Task 121), plus explicit user authorization after Task 120 acceptance |
 | Start base / entrypoint | Approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; Task 121 entrypoint and Task 120 acceptance commit `9d7a6361fb0bdb52891f8253757d8088abbd3aac` |
 | Recovery anchor | Task 121 durable start commit `28fe8dbef84794596f02da21bf8f32677173e339`; its parent is the Task 120 acceptance commit `9d7a6361fb0bdb52891f8253757d8088abbd3aac` |
@@ -152,6 +152,8 @@ None at kickoff.
 | Focused verification | Final direct selected-target `pnpm exec vitest run src/lib/db/staged-candidates.test.ts src/lib/db/inbox-operations.test.ts` exit 0 (2 files, 31 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0 |
 | Full gate | Final serial rerun after the last test-only repair: `pnpm test` exit 0 (82 files, 585 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js production build and seven routes) |
 | Review | No remaining blocking finding. Real-Dexie evidence covers commit/reconcile preconditions and postconditions, unique-source/type-change rejection, durable reopen without copied label, Stage and Unstage rollback, one-snapshot reconciliation, no orphan-audit write, later-placement conflict, and ABA-2 delayed/duplicate orders with exact candidate absence, final source version, and no extra write. Diff ownership is exactly `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, `src/lib/db/staged-candidates.test.ts`, and `src/lib/db/inbox-operations.test.ts`; no Task 122 or UI path is owned. |
-| Task markers | Task 120 is `[x]`; Tasks 121–126 remain `[ ]` |
-| Next legal action | Present the Task 121 implementation checkpoint for user acceptance or targeted rejection; do not start Task 122 |
-| Forbidden here | Do not start Task 122, write Task 121 `[x]`, push, create a PR, merge, rebase, cherry-pick, clean up, or modify Phase 24 scope |
+| User acceptance | Task 121 checkpoint explicitly accepted on 2026-08-09 after direct confirmation of atomic Stage/Unstage, durable candidate truth, one-snapshot reconciliation, and ABA-2 no-resurrection evidence |
+| Task markers | Tasks 120–121 are `[x]`; Tasks 122–126 remain `[ ]` |
+| Batch status | Approved Gate C first batch Task 120 → Task 121 is complete; this acceptance grants no Task 122 write authority |
+| Next legal action | Read-only verification of Task 122 dependencies, exact scope, files, verification, and existing branch/worktree reuse conditions; present a next-batch approval packet and stop |
+| Forbidden here | Do not start Task 122, write Task 122 `[x]`, push, create a PR, merge, rebase, switch or clean up a branch/worktree, or modify Phase 24 scope |
