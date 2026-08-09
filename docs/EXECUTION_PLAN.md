@@ -246,7 +246,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ03` | `VQ-03` | 108 | 140 only | Choice A Add-adjacent inline decision sheet, including the checkpoint-approved position/copy supersession, accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_108.dp-vq03.json`; Task 140 only is released. |
 | `DP-VQ04` | `VQ-04` | 109 | 138 only | Choice A dual direct in-place editor system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_109.dp-vq04.json`; Task 138 only is released. |
 | `DP-VQ05` | `VQ-05` | 110 | 143 only | Choice A Add-region/source-row attached reliability system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json`; Task 143 only is released. |
-| `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Accepted Pool-specific status receipt. |
+| `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Choice A fixed Pool-local status band recorded at `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json`; Task 111 remains `[ ]` pending its user checkpoint. |
 | `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Accepted Staging-specific status receipt. |
 | `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Accepted Explorer-specific status receipt. |
 | `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Accepted receipt supplies or scopes out the complete replacement search body. |
@@ -680,6 +680,29 @@ Task 111 or another batch.
 **Authority / flows:** Pool slice of `VQ-06`, `UF-03`, `NEG-21`.
 
 **Recipe:** [`Scratch Pool`](recipes/inbox-triage-scratch-pool-visual-recipe.md).
+
+**Recorded decision — `DP-VQ06-POOL`, Choice A (2026-08-10):** render one
+fixed Pool-local status band directly below the expanded search/sort row and
+outside the scrolling Scratch list. The total count always means all active
+Scratches; a non-empty query separately renders exact `{visible} of {total}
+Scratches`. A hidden selected row keeps its selection/Context and renders
+`Selected Scratch is hidden by this search.` plus `Clear search`, which clears
+only the query and retains search-field focus. Remote arrivals render exact
+singular/plural counts plus `Review new`; that action revalidates and focuses
+the first surviving unseen row without selecting it. Non-selected external
+archive/delete/restore changes render the exact recipe lifecycle copy plus
+`Dismiss`; mixed changes use one ordered aggregate sentence, never a panel or
+event history. Selected external removal remains exclusively owned by
+`DP-VQ01`. Expanded status has at most one search line and one activity line;
+collapsed mode keeps the all-active count and shows non-control `+{count}` and
+lifecycle markers. Arrival/lifecycle presentation is mounted-page state with
+no timer: selection/sort/collapse/theme changes preserve it, its two actions
+clear their categories independently, and route exit/reload clears both.
+Arrival never steals focus or selection; changed activity copy is announced
+once politely. All transitions and reduced-motion behavior are identical and
+immediate with no status animation. The receipt owns the exact eight-theme
+Pool mapping and releases Task 144 only after this Task's user checkpoint;
+Tasks 112/113 and all Staging/Explorer authority remain untouched.
 
 **Observable acceptance:** Pool status can be implemented independently without borrowing Staging/Explorer or changing selection.
 

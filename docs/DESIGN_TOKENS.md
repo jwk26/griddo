@@ -379,7 +379,7 @@ or to promotion-map §11.4's shared implication.
 | Family | Canonical `<role>` values | Approved trace |
 |---|---|---|
 | Shell / chrome | `shell-background`, `section-surface`, `section-header`, `section-divider`, `internal-scroll-viewport`, `section-state-overlay` | `R-SHELL` |
-| Scratch Pool | `pool-tools`, `pool-search-field`, `pool-total-count`, `pool-selected-row`, `pool-compact-switcher`, `pool-compact-marker`, `pool-scroll-viewport` | `R-POOL` |
+| Scratch Pool | `pool-tools`, `pool-search-field`, `pool-total-count`, `pool-filtered-count`, `pool-selected-row`, `pool-compact-switcher`, `pool-compact-marker`, `pool-scroll-viewport`, `pool-status-band`, `pool-status-line`, `pool-status-action`, `pool-activity-marker` | `R-POOL`; status roles from `DP-VQ06-POOL` / Task 144 only |
 | External Scratch removal | `external-removal-scrim`, `external-removal-panel`, `external-removal-title`, `external-removal-destination`, `external-removal-countdown-track`, `external-removal-countdown-fill`, `external-removal-draft-card`, `external-removal-copy-status`, `external-removal-primary-action`, `external-removal-secondary-action` | `DP-VQ01`; Task 141 only |
 | Selected Context | `context-signature-plate`, `context-eyebrow-meta`, `context-title`, `context-action-cluster`, `context-complete-marker` | `R-CONTEXT` |
 | Breakdown | `breakdown-active-row`, `breakdown-staged-row`, `breakdown-row-action`, `breakdown-add-field`, `breakdown-add-control`, `breakdown-ordinary-empty`, `breakdown-consumed-completion`, `breakdown-success-wash`, `breakdown-success-status`, `breakdown-success-check` | `R-BREAKDOWN`; success roles from `DP-VQ02` / Task 148 only |
@@ -410,6 +410,9 @@ appropriate; the data attribute never replaces them.
 | `draft-copy-ready` | One full source-labeled page-memory draft remains available for copying before the external-removal handoff |
 | `copied` | The matching full draft was copied once; preserve button focus and never infer persistence, countdown resume, or movement |
 | `success` | Authoritative, non-repeating Add/Unstage success; `DP-VQ02` binds the exact row wash/check/text, polite status, focus preservation, and static reduced-motion equivalent consumed only by Task 148 |
+| `hidden-selection` | The selected Scratch remains active but its row does not match the current Pool query; retain selection/Context and expose the `DP-VQ06-POOL` search-context line without a proxy row |
+| `remote-arrival` | One or more active Scratches arrived remotely during the mounted Inbox page; expose the exact aggregate count without auto-selection or focus theft |
+| `lifecycle-update` | One or more non-selected Scratches were externally archived, deleted, or restored; keep lifecycle categories distinct in the exact Pool-local aggregate copy |
 | `newly-placed` | Page-session provenance layered on the actual card; use `newly-*` roles and keep Undo separate |
 | `completed` | Complete Context or completion presentation; do not treat it as Archive mutation success |
 | `local-alert` | A section-local status with visible text/icon semantics and the SPEC-selected live/status behavior; it does not become a global toast by default |
@@ -713,6 +716,41 @@ The same semantic tree consumes existing theme families:
 | Retro Mac | In-place 1-bit status pane and hard recovery control with no new window |
 | Graphite | Editorial status caption, strengthened rule, monochrome action, and persistent focus cue |
 
+### Approved Pool fixed-status realization — `DP-VQ06-POOL`
+
+**User-approved 2026-08-10:** Choice A establishes one fixed Pool-local status
+band directly below the expanded search/sort row and outside the scrolling
+Scratch list. It resolves only the Pool slice of `VQ-06`; Task 144 alone
+consumes it, while the Staging and Explorer slices remain unresolved.
+
+| Contract | Exact token requirement |
+|---|---|
+| Placement | `pool-status-band` follows the complete search/sort row and precedes `pool-scroll-viewport`; it has at most one search-context `pool-status-line` and one aggregate activity line and never becomes a list row, toast, panel, event history, or adjacent-surface status |
+| Count meaning | `pool-total-count` always means all active Scratches; non-empty search alone renders exact `{visible} of {total} Scratches` in `pool-filtered-count`; `pool-activity-marker` means mounted-page unseen remote arrivals or non-selected lifecycle activity and never replaces either count |
+| Hidden selection | Bind `hidden-selection`; render exact `Selected Scratch is hidden by this search.` plus `Clear search`; retain selection/Context, clear only the query, and keep focus in the search field |
+| Remote arrival | Bind `remote-arrival`; render `1 new Scratch arrived.` or `{count} new Scratches arrived.` plus `Review new`; revalidate, scroll/focus the first surviving unseen row without selecting it, and otherwise return focus to the search field |
+| Lifecycle | Bind `lifecycle-update`; render exact archive/delete/restore singular or plural copy from the Pool recipe plus `Dismiss`; selected external archive/delete bypasses this ordinary line and remains owned by `DP-VQ01` |
+| Mixed activity | Use the recipe's one `Pool updated elsewhere: {nonzero clauses}.` sentence in fixed new/archive/delete/restore order; expose `Review new` only for arrivals and `Dismiss` only for lifecycle aggregates; no disclosure or Mark-reviewed state |
+| Compact mode | Search is not applied, so show no hidden/filtered line; keep the all-active count and use literal `+{count}` plus a separate non-color lifecycle marker named `Pool updated elsewhere.`; markers are not controls and the existing expand control reveals the band |
+| Lifetime | Hidden/filter status is condition-bound; arrival/lifecycle aggregates are mounted Inbox-page state, preserved by selection/sort/collapse/theme/light-dark changes, independently cleared by `Review new` / `Dismiss`, and cleared together only by route exit or reload; no timer or auto-dismiss |
+| Accessibility / focus | One polite atomic announcement per newly changed activity sentence, never per rerender; arrival/lifecycle never steals focus or selection; user actions use the exact recipe focus destinations; `DP-VQ01` alone owns blocking selected-disappearance focus |
+| Motion | Every entry, replacement, clear, marker, band-size, scroll, and focus change is immediate; no fade, slide, scale, spinner, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No selection/query meaning/persistence mutation, no repository or lifecycle command, no `DP-VQ01` duplication, and no Staging/Explorer role, copy, action, state, or theme authority |
+
+The fixed status band maps through Pool-native theme families with no product
+JSX theme branch or copied adjacent-surface literal:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Restrained semantic band/marker using canonical border, muted, primary, text, action, and focus roles |
+| Tiny Desk | Ruled-paper strip below wood tools, stationery text/actions, and pin/bar-like compact marker |
+| Neumorphism | Shallow inset status well, named raised action, and raised compact marker within the existing shadow family |
+| Claymorphism | Shape-preserving soft inset ribbon, restrained raised text action, and puffy non-color compact marker |
+| Origami | Attached folded-paper strip, seam-separated lines/actions, and folded-tab compact marker |
+| Terminal | Variable-driven static bordered line, bracketed text action, and text/shape marker with no fixed JSX color or blink |
+| Retro Mac | In-place 1-bit pane below FIND/tools, hard text control, and hard-outline marker with no new window |
+| Graphite | Editorial caption band, strengthened rules, restrained monochrome text action, and index-like compact marker |
+
 ### Existing-surface state gaps — 5 open Decision prerequisites
 
 The shared role/state envelope above is the maximum current authority for
@@ -723,7 +761,7 @@ dependent exact realization.
 
 | ID | Unresolved boundary; no implied realization | Future owner | Resume condition |
 |---|---|---|---|
-| `VQ-06` | No Pool/Staging/Explorer pending, invalid, remote, arrival, orphan, stale, alert, count placement, layout, duration, dismissal, copy, effect, or per-theme realization is chosen. | User Decision → owning Pool, Staging, or Explorer recipe/token owner and realtime phase | Receipt resolves the affected surface family before its UI task |
+| `VQ-06` | `DP-VQ06-POOL` resolves only Pool hidden-selection/count/remote/lifecycle realization. No Staging pending/invalid/remote-arrival/orphan/stale/failure or Explorer remote/path alert, count, placement, layout, duration, dismissal, copy, effect, or per-theme realization is chosen. | User Decision → owning Staging or Explorer recipe/token owner and realtime phase | `DP-VQ06-STAGING` before Task 147; `DP-VQ06-EXPLORER` before Task 150 |
 | `VQ-08` | No placement pending, failure, reconcile, Retry, stale, success, control placement, layout, timing, copy, or per-theme realization is chosen. | User Decision → Placement recipe/token owner and reliability phase | Receipt resolves the dependent placement-state UI |
 | `VQ-10` | No selected+new overlap, unavailable reason, dependency-reenabled, undoing, failure, Undo/retry/conflict treatment, copy, placement, timing, or per-theme realization is chosen; repeated motion is forbidden. | User Decision → Newly Placed/Undo recipe/token owner and rollback phase | Receipt resolves the dependent marker/reliability UI |
 | `VQ-11` | No completion blocker or eligibility-withdrawal copy, effect, placement, layout, timing, or per-theme realization is chosen. | User Decision → Context/Breakdown/Archive recipe/token owner and completion phase | Receipt resolves the dependent blocker UI |

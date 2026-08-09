@@ -24,7 +24,119 @@
 ## Decision-Prerequisite Boundary
 
 - `VQ-01` — **resolved by `DP-VQ01` on 2026-08-09.** The user selected Choice A, the dedicated central blocking transition panel specified below. Task 141 is its only realization edge. Generic dialogs, Archive UI, Pool chrome, and any adjacent surface remain prohibited fallbacks.
-- Pool subset of `VQ-06` — hidden-selection and remote/path status appearance may use only the shared semantic-state envelope: state attributes, existing semantic/theme tokens, visible text/icon/non-color cues, and selected focus/accessibility behavior. Exact copy, placement, layout, effect, duration, and per-theme values remain a **user-owned non-code Decision prerequisite**. Future owner: Pool recipe/canonical token owner and Pool execution phase; resume exact styling only after a matching receipt.
+- Pool subset of `VQ-06` — **resolved by `DP-VQ06-POOL` on 2026-08-10.** The user selected Choice A, the fixed Pool-local status band specified below. Task 144 is its only realization edge. Staging and Explorer retain their separate unresolved `VQ-06` decisions, and neither supplies fallback authority here.
+
+## `DP-VQ06-POOL` Approved Fixed Status Band
+
+`DP-VQ06-POOL` chooses one fixed, section-local status band directly below the
+expanded Pool search/sort row and outside the internally scrolling Scratch
+list. It keeps state immediately visible without a disclosure panel, event
+list, Escape-close path, toast, or Mark-reviewed state. The band never changes
+Scratch selection and never borrows Staging or Explorer presentation.
+
+### Placement, Count, And Compact Form
+
+- Expanded order is identity/all-active count/collapse → search/sort row →
+  fixed status band when applicable → internally scrolling Scratch list.
+  Status appearance may grow only this tools region; it never inserts a fake,
+  proxy, placeholder, or pinned status row into the Scratch list.
+- The identity/header count and collapsed count always equal all currently
+  active Scratches. During a non-empty search, the band separately renders
+  exact `{visible} of {total} Scratches`; neither number changes selection.
+- The band has at most two simultaneous static lines: one search-context line
+  and one Pool-activity line. It is not an event history. Remote/lifecycle
+  events aggregate into the one current activity line by category.
+- Collapsed mode continues to ignore the preserved search for switchers and
+  total count, so it renders no hidden-selection line or filtered count. Beside
+  the total it may render a literal `+{count}` unseen-arrival marker and a
+  separate non-color lifecycle marker with accessible name `Pool updated
+  elsewhere.` Activating the existing expand control reveals the full band;
+  neither compact marker is a new control.
+
+### Exact Copy And State Matrix
+
+| State | Exact visible copy | Allowed action |
+|---|---|---|
+| Search count, selection visible | `{visible} of {total} Scratches` | None |
+| Search count, selection hidden | `{visible} of {total} Scratches` and `Selected Scratch is hidden by this search.` | `Clear search` |
+| One remote arrival | `1 new Scratch arrived.` | `Review new` |
+| Multiple remote arrivals | `{count} new Scratches arrived.` | `Review new` |
+| One non-selected external archive | `A Scratch was archived elsewhere.` | `Dismiss` |
+| One non-selected external delete | `A Scratch was deleted elsewhere.` | `Dismiss` |
+| One external restore | `A Scratch was restored.` | `Dismiss` |
+| Multiple changes in one lifecycle category | `{count} Scratches were archived elsewhere.`, `{count} Scratches were deleted elsewhere.`, or `{count} Scratches were restored.` | `Dismiss` |
+| Mixed unseen activity | `Pool updated elsewhere: {nonzero clauses}.` Clauses appear only when nonzero and in fixed `new`, `archived`, `deleted`, `restored` order, using `1 new`, `{count} new`, `1 archived`, `{count} archived`, `1 deleted`, `{count} deleted`, `1 restored`, or `{count} restored`. | `Review new` when a new-arrival clause exists; `Dismiss` when a lifecycle clause exists |
+
+`Clear search`, `Review new`, and `Dismiss` are the only new actions. There is
+no panel toggle, details/history action, Escape behavior, retry, undo,
+Mark-reviewed action, automatic selection, or lifecycle mutation. Locally
+created Scratches and the initial query snapshot do not increment remote
+arrival counts.
+
+### Selection, Lifecycle, Focus, And Accessibility
+
+- A search-hidden selected Scratch remains selected and its Context remains
+  active. `Clear search` clears only the Pool query, leaves focus in the search
+  field, and makes the selected row ordinarily visible again. If a title/data
+  change makes the selected row match without user action, the line clears
+  without moving focus.
+- `Review new` first revalidates unseen active arrivals under the current sort,
+  clears the reviewed arrival count, scrolls the first surviving unseen row
+  into view, and focuses that row without selecting it. If none survives,
+  clear the count and move focus to the expanded Pool search field.
+- `Dismiss` clears only accumulated non-selected lifecycle messages and moves
+  focus to the expanded Pool search field. It never dismisses or alters an
+  arrival count.
+- An externally archived or deleted selected Scratch is not rendered as this
+  ordinary activity line. Its row/all-active count update from authority and
+  the already-approved `DP-VQ01` blocking transition immediately owns copy,
+  actions, dismissal, and focus. Authoritative restore while that transition
+  waits retains the `DP-VQ01` cancellation contract. This decision adds no
+  duplicate Pool action or competing announcement.
+- Remote arrival or a non-selected lifecycle update never moves focus or
+  selection. Each newly changed visible activity sentence is announced once
+  through one polite atomic status; rerender, sorting, collapsing/expanding,
+  theme change, and elapsed time do not repeat it. The compact markers have
+  accessible names and remain distinguishable without color.
+
+### Dismissal, Lifetime, And Motion
+
+- Hidden-selection and filtered-count presentation lasts exactly while the
+  non-empty query and current data require it. It clears on query resolution,
+  selection/lifecycle resolution, route exit, or reload; it never auto-dismisses.
+- Remote-arrival counts and non-selected lifecycle aggregates are mounted
+  Inbox-page state. Scratch selection, sort, collapse/expand, theme, and
+  light/dark changes preserve them. `Review new` clears only arrivals;
+  `Dismiss` clears only lifecycle aggregates; Inbox route exit or reload clears
+  both. No timer or automatic dismissal exists.
+- Every entry, replacement, clear, band-size change, marker change, scroll
+  request, and focus handoff is immediate. There is no fade, slide, scale,
+  spinner, pulse, ping, bounce, blink, flicker, or layout-transition animation.
+  Reduced motion therefore uses identical geometry, copy, controls, timing,
+  focus, and lifetime.
+
+### Eight-Theme Mapping
+
+All themes share one semantic tree, exact copy, line/action order, counts,
+focus, lifetime, and static motion contract. Only Pool-owned role realization
+changes:
+
+| Theme | Exact realization mapping |
+|---|---|
+| GridDO | A restrained semantic band and compact marker using the canonical border, muted, primary, text, action, and focus roles. |
+| Tiny Desk | A ruled-paper status strip directly below the wood tools, with stationery text/actions and a pin/bar-like compact marker. |
+| Neumorphism | A shallow inset status well below the tools, named raised action treatment, and a raised compact marker within the existing shadow family. |
+| Claymorphism | A shape-preserving soft inset ribbon, restrained raised text action, and puffy but non-color-only compact marker. |
+| Origami | An attached folded-paper strip with seam-separated lines/actions and a small folded-tab compact marker. |
+| Terminal | A variable-driven static bordered status line with bracketed text actions and a text/shape compact marker; no fixed JSX color or blink. |
+| Retro Mac | An in-place 1-bit status pane below the FIND/tools row, hard text controls, and a hard-outline compact marker; no new window. |
+| Graphite | An editorial caption band with strengthened rules, restrained monochrome text actions, and a concise index-like compact marker. |
+
+Task 144 alone consumes this realization in `ScratchPool`, centralized core
+English copy, Pool/copy tests, theme CSS, and its verification artifact. Tasks
+128 and 130 remain the prerequisite lifetime/base owners. Task 144 does not
+change selection, query/count meaning, persistence, repository truth,
+`DP-VQ01`, or any Staging/Explorer behavior or presentation.
 
 ## `DP-VQ01` Approved External-Removal Transition
 
@@ -170,5 +282,5 @@ resume, dismiss, or otherwise mutate the transition.
 
 ## Exclusions And Verification
 
-- Excluded: unsupported Pool statuses beyond the shared `VQ-06` envelope, fold-lock review control, source selection persistence, route-local search/sort behavior, copied source strings outside the exact `DP-VQ01` copy above, and any source behavior conflicting with the selected session lifecycle.
+- Excluded: any Pool status outside `DP-VQ06-POOL`, fold-lock review control, source selection persistence, copied source strings outside the exact approved decision copy above, and any source behavior conflicting with the selected session lifecycle.
 - No rendered selected/hidden/empty/collapsed state, count meaning, focus path, text fit, contrast, scrolling, or transition was verified. All exact class/color/size statements above are source declarations only.

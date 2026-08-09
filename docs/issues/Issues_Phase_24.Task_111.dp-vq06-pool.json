@@ -1,0 +1,157 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq06-pool",
+  "decision_receipt_id": "DP-VQ06-POOL",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 111,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "continuation_entrypoint": "d5770d6987c8b556630e9a0b818872fa7bb2d186",
+  "continuation_kickoff_commit": "15be56007b0290622bd907cbb3a02d78684a15f6",
+  "predecessor_acceptance_commit": "d5770d6987c8b556630e9a0b818872fa7bb2d186",
+  "durable_start_commit": "a88ffaf69446eb31f24f472754fa4c9799a8c98c",
+  "user_decision": {
+    "date": "2026-08-10",
+    "statement": "DP-VQ06-POOL=A",
+    "recorded_scope": "DP-VQ06-POOL=A only",
+    "choice": "A",
+    "label": "Fixed Pool-local status band",
+    "reason": "Direct status avoids a panel, event list, Escape handling, and Mark-reviewed state, reducing accessibility verification and Task 144 implementation scope."
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-scratch-pool-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "surface": {
+      "placement": "fixed Pool-local band directly below the complete expanded search/sort row and outside the internally scrolling Scratch list",
+      "line_limit": "at most one search-context line and one aggregate Pool-activity line",
+      "prohibited": [
+        "Scratch-list proxy, placeholder, or pinned status row",
+        "disclosure panel",
+        "event list or history",
+        "toast or global rail",
+        "Escape-close path",
+        "Mark reviewed state",
+        "Staging or Explorer presentation"
+      ]
+    },
+    "count_and_indicator": {
+      "total": "header and collapsed count always mean all active Scratches",
+      "filtered": "during a non-empty query only, render {visible} of {total} Scratches in the status band",
+      "collapsed": "search does not filter switchers or total; use a non-control +{count} unseen-arrival marker plus a separate non-color lifecycle marker named Pool updated elsewhere.",
+      "remote_count": "mounted-page count of active Scratches arriving remotely after the initial snapshot or last Review new; local creation and the initial snapshot do not count"
+    },
+    "hidden_selection": {
+      "copy": "Selected Scratch is hidden by this search.",
+      "action": "Clear search",
+      "effect": "clear only the Pool query; retain selected Scratch and Context",
+      "focus": "keep focus in the expanded Pool search field",
+      "lifetime": "persist exactly while the current non-empty query and authoritative data hide the selected row; clear without focus movement when resolved"
+    },
+    "remote_arrival": {
+      "singular_copy": "1 new Scratch arrived.",
+      "plural_copy": "{count} new Scratches arrived.",
+      "action": "Review new",
+      "effect": "revalidate unseen active arrivals under current sort, clear the arrival count, scroll and focus the first surviving unseen row without selecting it",
+      "empty_revalidation": "clear the count and focus the expanded Pool search field when no unseen arrival survives",
+      "automatic_effect": "never move focus or selection"
+    },
+    "lifecycle": {
+      "singular_copy": {
+        "archive": "A Scratch was archived elsewhere.",
+        "delete": "A Scratch was deleted elsewhere.",
+        "restore": "A Scratch was restored."
+      },
+      "plural_copy": {
+        "archive": "{count} Scratches were archived elsewhere.",
+        "delete": "{count} Scratches were deleted elsewhere.",
+        "restore": "{count} Scratches were restored."
+      },
+      "action": "Dismiss",
+      "effect": "clear only accumulated non-selected lifecycle categories and focus the expanded Pool search field",
+      "selected_external_removal": "exclude from the ordinary activity line; update row/total from authority and immediately delegate copy, controls, dismissal, focus, and restore cancellation to DP-VQ01"
+    },
+    "mixed_activity": {
+      "copy": "Pool updated elsewhere: {nonzero clauses}.",
+      "clause_order": [
+        "new",
+        "archived",
+        "deleted",
+        "restored"
+      ],
+      "clause_forms": "1 new or {count} new; 1 archived or {count} archived; 1 deleted or {count} deleted; 1 restored or {count} restored",
+      "actions": "Review new only when arrivals exist; Dismiss only when lifecycle aggregates exist"
+    },
+    "dismissal_and_lifetime": {
+      "auto_dismiss": "none",
+      "arrival_clear": "Review new, Inbox route exit, or reload only",
+      "lifecycle_clear": "Dismiss, Inbox route exit, or reload only",
+      "preserved_by": [
+        "Scratch selection",
+        "Pool sort",
+        "collapse or expand",
+        "theme",
+        "light or dark mode"
+      ],
+      "storage": "mounted Inbox-page presentation only; never durable domain truth or device preference"
+    },
+    "focus_and_accessibility": {
+      "arrival": "remote arrival and non-selected lifecycle changes never steal focus or selection",
+      "announcement": "announce each newly changed visible activity sentence once through one polite atomic status; never announce rerender, sort, collapse/expand, theme change, or elapsed time",
+      "compact": "literal +{count} and a separate lifecycle marker provide non-color cues and accessible names but are not controls",
+      "selected_disappearance": "DP-VQ01 exclusively owns the blocking transition and its focus contract"
+    },
+    "motion": {
+      "ordinary": "all entry, replacement, clear, band-size, marker, scroll, and focus changes are immediate",
+      "prohibited": "fade, slide, scale, spinner, pulse, ping, bounce, blink, flicker, and layout-transition animation",
+      "reduced_motion": "identical geometry, copy, controls, timing, focus, and lifetime"
+    },
+    "theme_mapping": {
+      "griddo": "restrained semantic band and marker using canonical border, muted, primary, text, action, and focus roles",
+      "tiny-desk": "ruled-paper strip below wood tools, stationery text and actions, and pin/bar-like compact marker",
+      "neumorphism": "shallow inset status well, named raised action, and raised compact marker within the existing shadow family",
+      "claymorphism": "shape-preserving soft inset ribbon, restrained raised text action, and puffy non-color compact marker",
+      "origami": "attached folded-paper strip, seam-separated lines and actions, and folded-tab compact marker",
+      "terminal": "variable-driven static bordered line, bracketed text action, and text/shape marker with no fixed JSX color or blink",
+      "retro-mac": "in-place 1-bit pane below FIND/tools, hard text control, and hard-outline marker with no new window",
+      "graphite": "editorial caption band, strengthened rules, restrained monochrome text action, and index-like compact marker"
+    },
+    "implementation_boundary": {
+      "task": 144,
+      "files": [
+        "src/components/triage/scratch-pool.tsx",
+        "src/components/triage/scratch-pool.test.tsx",
+        "src/app/globals.css",
+        "src/lib/copy/inbox-triage.ts",
+        "src/lib/copy/inbox-triage.test.ts",
+        "docs/verification/inbox-triage/task-144.md"
+      ],
+      "prerequisites": [
+        128,
+        130
+      ],
+      "excludes": "selection/query semantics, persistence, repository truth, DP-VQ01 changes, product implementation in Task 111, and every Staging/Explorer state or realization"
+    }
+  },
+  "exact_release": {
+    "tasks": [
+      144
+    ],
+    "consumption_condition": "Task 111 user checkpoint accepted; its plan marker remains open until then",
+    "all_other_tasks": "unreleased, including Tasks 112, 113, 147, and 150"
+  },
+  "task_state": "implemented-awaiting-user-checkpoint",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "task-111-user-checkpoint"
+}
