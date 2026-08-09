@@ -245,7 +245,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ02` | `VQ-02` | 107 | 148 only | Choice A row-attached wash/check/text signal accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_107.dp-vq02.json`; Task 148 only is released. |
 | `DP-VQ03` | `VQ-03` | 108 | 140 only | Choice A Add-adjacent inline decision sheet, including the checkpoint-approved position/copy supersession, accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_108.dp-vq03.json`; Task 140 only is released. |
 | `DP-VQ04` | `VQ-04` | 109 | 138 only | Choice A dual direct in-place editor system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_109.dp-vq04.json`; Task 138 only is released. |
-| `DP-VQ05` | `VQ-05` | 110 | 143 only | Choice A Add-region/source-row attached reliability system recorded at `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json`; Task 110 remains `[ ]` pending its user checkpoint. |
+| `DP-VQ05` | `VQ-05` | 110 | 143 only | Choice A Add-region/source-row attached reliability system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json`; Task 143 only is released. |
 | `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Accepted Pool-specific status receipt. |
 | `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Accepted Staging-specific status receipt. |
 | `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Accepted Explorer-specific status receipt. |
@@ -619,7 +619,7 @@ headless ownership unchanged.
 
 **Commit contract:** the four named documents and `DP-VQ04` receipt only; `docs(triage): record DP-VQ04`.
 
-### Task 110: [ ] Record `DP-VQ05` Add/Delete reliability decision
+### Task 110: [x] Record `DP-VQ05` Add/Delete reliability decision
 
 **Files and actions:** modify `docs/recipes/inbox-triage-breakdown-row-empty-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to specify Add pending/failure/reconcile and **Add-only Retry** treatment plus Delete deleting/failure/check-again treatment with no dedicated Delete Retry, exact wording, action placement, timing, focus-visible behavior, and eight-theme mappings; change no code.
 
@@ -650,8 +650,18 @@ use one polite atomic announcement, preserve the exact focus rules, use no
 repeated/status motion, and share the receipt's eight theme-family mappings
 without a prototype, adjacent-surface, or theme-ID branch. The durable receipt
 is `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json`; it releases Task 143
-only after this Task's user checkpoint and leaves Task 136 headless behavior
-unchanged.
+only after this Task's user checkpoint, leaves Task 136 headless behavior
+unchanged, and its canonical decision commit did not itself accept the
+then-open `[ ]` marker.
+
+**Checkpoint acceptance and contract supersession (2026-08-09):** the user
+accepted the receipt's complete Add/Delete exact-copy state matrices,
+authoritative `not_applied`-only `Retry Add` boundary, read-only `Check again`
+and no-Delete-Retry boundary, focus/accessibility rules, and eight-theme
+mappings as the final contract replacing the initial review packet's concise
+wording. This acceptance releases Task 143 only, completes the approved
+`106 → 107 → 108 → 109 → 110` first batch, and grants no authority to start
+Task 111 or another batch.
 
 **Observable acceptance:** Add pending, unknown, known failure, Check again, Add-only Retry, and confirmed result remain distinct; Delete failure/unknown keeps the row and exposes Check again/reconciliation with no dedicated Retry, toast, or placeholder fallback.
 

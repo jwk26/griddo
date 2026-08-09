@@ -23,6 +23,23 @@
     "choice": "A",
     "label": "Add-region and source-row attached reliability states"
   },
+  "checkpoint_acceptance": {
+    "date": "2026-08-09",
+    "statement": "Task 110 / DP‑VQ05=A checkpoint를 수락합니다.",
+    "accepted_task": 110,
+    "accepted_decision": "DP-VQ05=A",
+    "supersedes_initial_review_packet": {
+      "scope": "the receipt's detailed contract replaces the initial review packet's concise wording",
+      "final_contract": [
+        "Add/Delete state-by-state exact copy",
+        "authoritative not_applied-only Retry Add boundary",
+        "read-only Check again and no-Delete-Retry boundary",
+        "focus and accessibility rules",
+        "eight-theme mappings"
+      ]
+    },
+    "batch_boundary": "Tasks 106 through 110 are complete; Task 111 is a separate next batch requiring explicit user approval"
+  },
   "canonical_record_paths": [
     "docs/recipes/inbox-triage-breakdown-row-empty-visual-recipe.md",
     "docs/DESIGN_TOKENS.md",
@@ -172,11 +189,11 @@
     "tasks": [
       143
     ],
-    "consumption_condition": "Task 110 user checkpoint accepted; its plan marker remains open until then",
+    "consumption_condition": "satisfied by Task 110 checkpoint acceptance, including the explicit final-contract supersession, on 2026-08-09",
     "all_other_tasks": "unreleased"
   },
-  "task_state": "implemented-awaiting-user-checkpoint",
+  "task_state": "accepted",
   "canonical_impact": "Reflected",
   "issue_or_deviation": "None",
-  "next_legal_action": "task-110-user-checkpoint"
+  "next_legal_action": "await-next-batch-approval"
 }
