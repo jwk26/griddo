@@ -247,7 +247,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ04` | `VQ-04` | 109 | 138 only | Choice A dual direct in-place editor system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_109.dp-vq04.json`; Task 138 only is released. |
 | `DP-VQ05` | `VQ-05` | 110 | 143 only | Choice A Add-region/source-row attached reliability system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json`; Task 143 only is released. |
 | `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Choice A fixed Pool-local status band accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json`; Task 144 only is released. |
-| `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Accepted Staging-specific status receipt. |
+| `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Choice A candidate-attached/subsection-indicator/Staging-alert status family recorded at `docs/issues/Issues_Phase_24.Task_112.dp-vq06-staging.json`; Task 112 remains `[ ]` pending its user checkpoint. |
 | `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Accepted Explorer-specific status receipt. |
 | `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Accepted receipt supplies or scopes out the complete replacement search body. |
 | `DP-VQ08` | `VQ-08` | 115 | 153 only | Accepted receipt defines placement reliability states. |
@@ -729,6 +729,26 @@ Task 113 work, product code, publication, or phase close.
 **Authority / flows:** Staging slice of `VQ-06`, `UF-14`, `UF-16`, `NEG-21`.
 
 **Recipe:** [`Staging`](recipes/inbox-triage-staging-visual-recipe.md).
+
+**Recorded decision — `DP-VQ06-STAGING`, Choice A (2026-08-10):** attach
+Stage/Unstage pending, unknown, and reconciling copy to one fixed line inside
+the affected final-type Node card or Bit row; keep Unstage candidates durable
+and non-draggable until authority. Preserve base subsection totals while
+placing separate exact `1 new` / `{count} new` actions beside `Nodes` or
+`Bits`; arrival preserves focus/scroll, and `Show new {Nodes|Bits}` alone
+revalidates, scrolls to top, clears the count, and focuses the first surviving
+new candidate without mutation. Place one terminal/integrity alert directly
+below the Staging title with the receipt's exact Stage/Unstage failure,
+unresolved-source, confirmed-orphan, invalidated-drag, and closed-placement
+copy. Its sole action is `X` (`Dismiss Staging alert`); no Retry or permanent
+Unstage control exists, a new drag owns permitted retry, and a later failure
+replaces the prior alert. Neutral/invalid reasons remain target-attached and
+transient. Alerts never auto-dismiss, preserve focus on arrival, and clear only
+through the exact receipt lifetime/fallback rules. All transitions and reduced
+motion are identically immediate with no status animation. The receipt owns
+the eight Staging theme mappings and releases Task 147 only after this Task's
+user checkpoint; Tasks 145–146 remain headless owners and Pool/Explorer
+authority, Task 113, `DP-VQ02`, and `D-CARD` remain unchanged.
 
 **Observable acceptance:** Staging statuses have direct section-local authority, including alert lifetime and non-focus-stealing remote arrival.
 

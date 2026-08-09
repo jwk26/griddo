@@ -1,0 +1,213 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq06-staging",
+  "decision_receipt_id": "DP-VQ06-STAGING",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 112,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "continuation_entrypoint": "d5770d6987c8b556630e9a0b818872fa7bb2d186",
+  "continuation_kickoff_commit": "15be56007b0290622bd907cbb3a02d78684a15f6",
+  "predecessor_acceptance_commit": "36a034ce42cced070a0bb27b6a4945a315210b83",
+  "durable_start_commit": "1b48c6b0bf0cb61100f44f76744fca71a330116d",
+  "user_decision": {
+    "date": "2026-08-10",
+    "statement": "DP-VQ06-STAGING=A",
+    "recorded_scope": "DP-VQ06-STAGING=A only",
+    "choice": "A",
+    "label": "Candidate-attached status, subsection arrivals, and Staging-local alert"
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-staging-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "surface": {
+      "operation": "one fixed status line inside the affected final-type Node card or Bit row",
+      "remote_arrival": "separate actionable indicator beside only the affected Nodes or Bits heading",
+      "terminal_alert": "one static band directly below the Staging title and above both subsection wells",
+      "target_reason": "attached only to the currently active neutral or invalid Staging well or target",
+      "prohibited": [
+        "global or unified status rail",
+        "toast or dialog",
+        "alert stack, queue, history, or carousel",
+        "permanent Unstage or Retry control",
+        "Pool or Explorer presentation"
+      ]
+    },
+    "count_and_remote_arrival": {
+      "base_count": "Nodes and Bits remain bare at zero or one and use the durable total prefix only at two or more",
+      "copy": "1 new or {count} new",
+      "accessible_action": "Show new {Nodes|Bits}",
+      "arrival_effect": "preserve scroll and focus without mutation",
+      "activation": "revalidate, scroll the affected subsection to top, clear its count, and focus the first surviving new candidate without starting a drag or mutation",
+      "empty_revalidation": "focus the affected subsection heading when no new candidate survives",
+      "observed_top": "clear the count without moving focus",
+      "excluded_sources": [
+        "initial hydration",
+        "Scratch-switch load",
+        "local Stage"
+      ],
+      "clear": "activation, authoritative top observation, Scratch change, or Inbox route exit/reload"
+    },
+    "operation_state_matrix": {
+      "stage_pending": {
+        "copy": "Staging “{title}”…",
+        "shape": "final semantic Node card or Bit row projection",
+        "action": "none"
+      },
+      "unstage_pending": {
+        "copy": "Returning “{title}” to Breakdown…",
+        "shape": "retain exact durable candidate and position",
+        "action": "none"
+      },
+      "stage_unknown": {
+        "copy": "We couldn’t confirm whether “{title}” was staged.",
+        "action": "none; reconcile before another drag"
+      },
+      "stage_reconciling": {
+        "copy": "Checking whether “{title}” was staged…",
+        "action": "none"
+      },
+      "unstage_unknown": {
+        "copy": "We couldn’t confirm whether “{title}” was returned.",
+        "action": "none; reconcile before another drag"
+      },
+      "unstage_reconciling": {
+        "copy": "Checking whether “{title}” was returned…",
+        "action": "none"
+      },
+      "stage_not_applied": {
+        "copy": "“{title}” was not staged. Drag it again to retry.",
+        "action": "Dismiss Staging alert only; retry is a new drag"
+      },
+      "stage_rejected": {
+        "copy": "“{title}” can’t be staged from its current source.",
+        "action": "Dismiss Staging alert"
+      },
+      "stage_conflict": {
+        "copy": "“{title}” changed elsewhere and was not staged.",
+        "action": "Dismiss Staging alert"
+      },
+      "unstage_not_applied": {
+        "copy": "“{title}” is still staged. Drag it back to Breakdown to retry.",
+        "action": "Dismiss Staging alert only; retry is a new drag"
+      },
+      "unstage_rejected": {
+        "copy": "“{title}” can’t be returned from its current state.",
+        "action": "Dismiss Staging alert"
+      },
+      "unstage_conflict": {
+        "copy": "“{title}” changed elsewhere and remains staged.",
+        "action": "Dismiss Staging alert"
+      }
+    },
+    "integrity_and_stale": {
+      "source_unresolved": {
+        "copy": "Checking a staged {Node|Bit} source…",
+        "presentation": "type-shaped integrity status, never a normal draggable candidate",
+        "boundary": "cache miss, offline, and delayed subscription never use orphan wording"
+      },
+      "confirmed_orphan": {
+        "copy": "A staged {Node|Bit} was removed because its source no longer exists.",
+        "presentation": "terminal alert after authoritative proof and atomic cleanup",
+        "title_boundary": "never reconstruct an unavailable source title or candidate label snapshot"
+      },
+      "invalidated_drag": {
+        "copy": "“{title}” changed elsewhere. Drop canceled.",
+        "effect": "retain visual snapshot only through release, suppress mutation, then apply authority"
+      },
+      "invalidated_placement": {
+        "copy": "Placement closed because “{title}” changed elsewhere.",
+        "effect": "close stale placement under the existing headless contract"
+      }
+    },
+    "target_reason_matrix": {
+      "same_type_node": "Already in Nodes.",
+      "same_type_bit": "Already in Bits.",
+      "opposite_type": "Return to Breakdown before changing type.",
+      "invalid_source_or_target": "This item is no longer available.",
+      "lifetime": "active target only; clear on target exit or drag end",
+      "mutation": "same-type release is mutation-free cancel; invalid release writes nothing"
+    },
+    "alert": {
+      "visible_action": "X",
+      "accessible_action": "Dismiss Staging alert",
+      "action_effect": "close only current alert and perform no mutation",
+      "replacement": "a later failure replaces the prior alert",
+      "auto_dismiss": "none",
+      "clear": "X, a new operation for that candidate, authoritative candidate disappearance, or Scratch switch",
+      "focus_on_arrival": "preserve current focus",
+      "focus_after_dismiss": "surviving candidate root, otherwise related Breakdown source, otherwise Staging heading",
+      "success": "ordinary Stage uses staged state; authoritative Unstage success delegates to DP-VQ02 and creates no alert or toast",
+      "prohibited_actions": [
+        "Retry",
+        "Retry Stage",
+        "Retry Unstage",
+        "permanent Unstage",
+        "details",
+        "undo"
+      ]
+    },
+    "focus_and_accessibility": {
+      "automatic_updates": "status, remote arrival/removal, source resolution, and alert replacement never steal focus",
+      "announcement": "announce each newly entered operation or alert sentence once through one polite atomic status; never announce rerender or elapsed time",
+      "pending_focus": "retain the logical operation source or candidate focus",
+      "orphan_announcement": "announce once only after authoritative proof and cleanup"
+    },
+    "motion": {
+      "ordinary": "all candidate-line, indicator, alert, target-reason, scroll, and focus changes are immediate",
+      "prohibited": "fade, slide, scale, spinner, pulse, ping, bounce, blink, flicker, and layout-transition animation",
+      "reduced_motion": "identical geometry, copy, controls, timing, focus, and lifetime"
+    },
+    "theme_mapping": {
+      "griddo": "candidate technical rule, compact subsection count chip, restrained semantic alert band, and canonical action/focus roles",
+      "tiny-desk": "paper-object annotation, stationery count tab, and ruled-paper notice below the wood/cork title",
+      "neumorphism": "shallow inset candidate line, named raised count action, and wide inset alert well within the existing shadow family",
+      "claymorphism": "shape-preserving candidate seam, puffy non-color count, and soft sculpted alert ribbon",
+      "origami": "candidate fold-edge status, folded count tab, and attached alert strip with seam-separated action",
+      "terminal": "variable-driven inline record status, text count command, and static framed alert with no fixed JSX color or blink",
+      "retro-mac": "in-place 1-bit candidate footer, hard counter control, and full-width alert pane below the title with no new window",
+      "graphite": "candidate editorial caption, compact index count, and strengthened-rule alert band with restrained monochrome action"
+    },
+    "implementation_boundary": {
+      "task": 147,
+      "files": [
+        "src/components/triage/staging-zone.tsx",
+        "src/components/triage/staging-zone.test.tsx",
+        "src/components/triage/breakdown-panel.tsx",
+        "src/components/triage/breakdown-panel.test.tsx",
+        "src/app/globals.css",
+        "src/lib/copy/inbox-triage.ts",
+        "src/lib/copy/inbox-triage.test.ts",
+        "docs/verification/inbox-triage/task-147.md"
+      ],
+      "prerequisites": [
+        128,
+        145,
+        146
+      ],
+      "excludes": "Tasks 145-146 headless behavior, repository commands, operation locks, reconciliation, candidate truth, DP-VQ02, D-CARD, product implementation in Task 112, and every Pool/Explorer state or realization"
+    }
+  },
+  "exact_release": {
+    "tasks": [
+      147
+    ],
+    "consumption_condition": "Task 112 user checkpoint accepted; its plan marker remains open until then",
+    "all_other_tasks": "unreleased, including Tasks 113 and 150"
+  },
+  "task_state": "implemented-awaiting-user-checkpoint",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "task-112-user-checkpoint"
+}

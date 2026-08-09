@@ -383,7 +383,7 @@ or to promotion-map §11.4's shared implication.
 | External Scratch removal | `external-removal-scrim`, `external-removal-panel`, `external-removal-title`, `external-removal-destination`, `external-removal-countdown-track`, `external-removal-countdown-fill`, `external-removal-draft-card`, `external-removal-copy-status`, `external-removal-primary-action`, `external-removal-secondary-action` | `DP-VQ01`; Task 141 only |
 | Selected Context | `context-signature-plate`, `context-eyebrow-meta`, `context-title`, `context-action-cluster`, `context-complete-marker` | `R-CONTEXT` |
 | Breakdown | `breakdown-active-row`, `breakdown-staged-row`, `breakdown-row-action`, `breakdown-add-field`, `breakdown-add-control`, `breakdown-ordinary-empty`, `breakdown-consumed-completion`, `breakdown-success-wash`, `breakdown-success-status`, `breakdown-success-check` | `R-BREAKDOWN`; success roles from `DP-VQ02` / Task 148 only |
-| Staging | `staging-panel`, `staging-node-well`, `staging-node-card`, `staging-bit-well`, `staging-bit-row`, `staging-neutral`, `staging-unavailable`, `staging-invalid`, `staging-pending`, `staging-unstage-target` | `R-STAGING` |
+| Staging | `staging-panel`, `staging-node-well`, `staging-node-card`, `staging-bit-well`, `staging-bit-row`, `staging-neutral`, `staging-unavailable`, `staging-invalid`, `staging-pending`, `staging-unstage-target`, `staging-operation-status`, `staging-arrival-count`, `staging-local-alert`, `staging-alert-action`, `staging-target-reason`, `staging-integrity-status` | `R-STAGING`; status roles from `DP-VQ06-STAGING` / Task 147 only |
 | Grid Explorer base | `explorer-header`, `explorer-column`, `explorer-full-level-label`, `explorer-node-row`, `explorer-bit-row`, `explorer-eligible-target`, `explorer-hovered-target`, `explorer-invalid-target`, `explorer-unavailable-target` | `R-EXPLORER`; excludes the `VQ-07` body |
 | Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled` | `R-PLACEMENT`; excludes `VQ-08` reliability realization and all `VQ-09` surfaces |
 | Newly Placed / Undo | `newly-marker`, `newly-dot`, `newly-new-badge`, `newly-undo-action` | `R-NEWLY`; composes over the actual Node/Bit card and never replaces it |
@@ -413,6 +413,9 @@ appropriate; the data attribute never replaces them.
 | `hidden-selection` | The selected Scratch remains active but its row does not match the current Pool query; retain selection/Context and expose the `DP-VQ06-POOL` search-context line without a proxy row |
 | `remote-arrival` | One or more active Scratches arrived remotely during the mounted Inbox page; expose the exact aggregate count without auto-selection or focus theft |
 | `lifecycle-update` | One or more non-selected Scratches were externally archived, deleted, or restored; keep lifecycle categories distinct in the exact Pool-local aggregate copy |
+| `source-unresolved` | A durable staged candidate's source join is temporarily unavailable without authoritative orphan proof; render only the type-shaped integrity status and never a normal draggable candidate |
+| `orphan-cleanup` | Authoritative source deletion/tombstone proof completed the atomic candidate cleanup; announce the exact Staging-local result without inventing a missing title snapshot |
+| `stale` | Current authority invalidated a drag, placement, candidate, or source snapshot; suppress stale mutation and expose the exact section-local reason after the applicable visual snapshot release |
 | `newly-placed` | Page-session provenance layered on the actual card; use `newly-*` roles and keep Undo separate |
 | `completed` | Complete Context or completion presentation; do not treat it as Archive mutation success |
 | `local-alert` | A section-local status with visible text/icon semantics and the SPEC-selected live/status behavior; it does not become a global toast by default |
@@ -751,6 +754,41 @@ JSX theme branch or copied adjacent-surface literal:
 | Retro Mac | In-place 1-bit pane below FIND/tools, hard text control, and hard-outline marker with no new window |
 | Graphite | Editorial caption band, strengthened rules, restrained monochrome text action, and index-like compact marker |
 
+### Approved Staging attached-status realization — `DP-VQ06-STAGING`
+
+**User-approved 2026-08-10:** Choice A establishes candidate-attached
+pending/unknown/reconciling status, subsection-local remote-arrival indicators,
+and one Staging-title-attached terminal/integrity alert. It resolves only the
+Staging slice of `VQ-06`; Task 147 alone consumes it. Pool remains owned by
+`DP-VQ06-POOL`, and Explorer remains unresolved.
+
+| Contract | Exact token requirement |
+|---|---|
+| Operation placement | `staging-operation-status` is one fixed line inside the affected final-type Node card or Bit row; Stage pending uses a non-draggable projection, Unstage retains the durable candidate, and pending/unknown/reconciling never replace or resize the Staging panel |
+| Base and remote count | `Nodes` / `Bits` remain bare at zero or one and receive the durable total prefix only at two or more; `staging-arrival-count` separately renders exact `1 new` / `{count} new` beside only the affected heading with accessible action name `Show new {Nodes|Bits}` |
+| Terminal alert | `staging-local-alert` is one static band directly below `Staging` and above both wells; `staging-alert-action` is visible `X` named `Dismiss Staging alert`; later failure replaces earlier and no stack/history/rail/toast/dialog exists |
+| Pending/reconcile copy | Use the Staging recipe's exact `Staging “{title}”…`, `Returning “{title}” to Breakdown…`, unknown, and checking sentences; no action or Retry exists before authority |
+| Failure copy | Use the recipe's exact Stage/Unstage `not_applied`, rejected, and conflict sentences; alert `X` dismisses presentation only and a permitted retry is a new drag, never a status action |
+| Integrity/stale copy | Bind `source-unresolved`, `orphan-cleanup`, or `stale` and use the exact type-only unresolved/orphan, changed-elsewhere drop cancellation, and placement-closed copy; cache/offline/delay never uses orphan copy and no missing candidate title is reconstructed |
+| Neutral/invalid | `staging-target-reason` attaches exact `Already in Nodes.`, `Already in Bits.`, `Return to Breakdown before changing type.`, or `This item is no longer available.` only to the active well/target and clears on exit/end |
+| Remote focus | Arrival preserves focus/scroll; activating the count revalidates, scrolls its subsection to top, clears its count, and focuses the first surviving new candidate without mutation, or the subsection heading when none survives; observing top clears without focus movement |
+| Alert lifetime/focus | No timer; clear on `X`, new operation for that candidate, authoritative candidate disappearance, or Scratch switch; `X` returns focus to surviving candidate, related Breakdown source, then Staging heading |
+| Motion | Every status/count/alert/reason/scroll/focus transition is immediate; no fade, slide, scale, spinner, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No repository/lock/reconciliation change, candidate label snapshot, permanent Unstage/Retry, `DP-VQ02` change, `D-CARD`, Pool role, Explorer role, or theme-ID behavior/copy branch |
+
+The attached family maps through Staging-native theme roles:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Candidate technical rule, compact subsection count chip, restrained semantic alert band, and canonical action/focus roles |
+| Tiny Desk | Paper-object annotation, stationery count tab, and ruled-paper notice below the wood/cork title |
+| Neumorphism | Shallow inset candidate line, named raised count action, and wide inset alert well within the existing shadow family |
+| Claymorphism | Shape-preserving candidate seam, puffy non-color count, and soft sculpted alert ribbon |
+| Origami | Candidate fold-edge status, folded count tab, and attached alert strip with seam-separated action |
+| Terminal | Variable-driven inline record status, text count command, and static framed alert with no fixed JSX color or blink |
+| Retro Mac | In-place 1-bit candidate footer, hard counter control, and full-width alert pane below the title with no new window |
+| Graphite | Candidate editorial caption, compact index count, and strengthened-rule alert band with restrained monochrome action |
+
 ### Existing-surface state gaps — 5 open Decision prerequisites
 
 The shared role/state envelope above is the maximum current authority for
@@ -761,7 +799,7 @@ dependent exact realization.
 
 | ID | Unresolved boundary; no implied realization | Future owner | Resume condition |
 |---|---|---|---|
-| `VQ-06` | `DP-VQ06-POOL` resolves only Pool hidden-selection/count/remote/lifecycle realization. No Staging pending/invalid/remote-arrival/orphan/stale/failure or Explorer remote/path alert, count, placement, layout, duration, dismissal, copy, effect, or per-theme realization is chosen. | User Decision → owning Staging or Explorer recipe/token owner and realtime phase | `DP-VQ06-STAGING` before Task 147; `DP-VQ06-EXPLORER` before Task 150 |
+| `VQ-06` | `DP-VQ06-POOL` and `DP-VQ06-STAGING` resolve their own Pool and Staging families. No Explorer remote/path alert, count, placement, layout, duration, dismissal, copy, effect, or per-theme realization is chosen. | User Decision → Explorer recipe/token owner and realtime phase | `DP-VQ06-EXPLORER` before Task 150 |
 | `VQ-08` | No placement pending, failure, reconcile, Retry, stale, success, control placement, layout, timing, copy, or per-theme realization is chosen. | User Decision → Placement recipe/token owner and reliability phase | Receipt resolves the dependent placement-state UI |
 | `VQ-10` | No selected+new overlap, unavailable reason, dependency-reenabled, undoing, failure, Undo/retry/conflict treatment, copy, placement, timing, or per-theme realization is chosen; repeated motion is forbidden. | User Decision → Newly Placed/Undo recipe/token owner and rollback phase | Receipt resolves the dependent marker/reliability UI |
 | `VQ-11` | No completion blocker or eligibility-withdrawal copy, effect, placement, layout, timing, or per-theme realization is chosen. | User Decision → Context/Breakdown/Archive recipe/token owner and completion phase | Receipt resolves the dependent blocker UI |
