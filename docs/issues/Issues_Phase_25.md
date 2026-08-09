@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Task 120 accepted by the user; Task 121 is the next approved sequential task
+> State: Task 120 accepted; Task 121 In Progress; Task 122 not started
 
 ## Status Legend
 
@@ -113,7 +113,7 @@ None at kickoff.
 | User acceptance | Task 120 targeted repair checkpoint explicitly accepted on 2026-08-09; Task 120 may receive `[x]` and the Gate C sequential batch may advance to Task 121 |
 | Canonical impact | None — this repairs implementation conformance to the existing SCHEMA reconciliation contract |
 
-## Active Task
+## Accepted Task 120
 
 | Field | Durable value |
 | --- | --- |
@@ -133,3 +133,25 @@ None at kickoff.
 | Task markers | Task 120 is `[x]`; Tasks 121–126 remain `[ ]` |
 | Next legal action | Create a separate durable Task 121 start commit before any Task 121 production write, then implement only Stage/Unstage and ABA-2 no-resurrection |
 | Forbidden here | Do not start Task 122, write Task 121 `[x]` without later explicit acceptance, push, create a PR, merge, rebase, cherry-pick, clean up, or modify Phase 24 scope |
+
+## Active Task
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 121 — Implement Stage and Unstage commands |
+| Approved scope | Typed Stage/Unstage command and reconcile inputs/results in `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/staged-candidates.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; implement ABA-2 Stage→Unstage no-resurrection only; no UI and no Task 122 work |
+| State | In Progress — implementation state remains distinct from user acceptance and Task 121 stays `[ ]` |
+| Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, sequential batch Task 120 → Task 121), plus explicit user authorization after Task 120 acceptance |
+| Start base / entrypoint | Approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; Task 121 entrypoint and Task 120 acceptance commit `9d7a6361fb0bdb52891f8253757d8088abbd3aac` |
+| Recovery anchor | Resume from this committed Task 121 durable start signal; its parent must remain the Task 120 acceptance commit |
+| Dependencies | Tasks 103 and 104 accepted at `169ffa525a4fc50ecf2b73af21c4976d8d45387c` and `bc9d2d7e037cda7f4a3901185b0e805cf308b01b`; both are ancestors of the approved base |
+| Issues / deviations | None |
+| Canonical impact | None — implementation-local conformance to the approved SCHEMA Stage/Unstage matrix and SPEC durable-staging contract |
+| Production changes | Pending; no Task 121 production file has been written before this durable start signal |
+| TDD evidence | Pending direct selected-target RED then GREEN evidence |
+| Focused verification | Planned direct selected-target execution of `src/lib/db/staged-candidates.test.ts` and `src/lib/db/inbox-operations.test.ts`, followed by `pnpm typecheck` and `git diff --check` |
+| Full gate | Pending one serial `pnpm test`, `pnpm lint`, `pnpm typecheck`, and `pnpm build` after focused green |
+| Review | Pending diff, invariant, ownership, and Task 122 exclusion review |
+| Task markers | Task 120 is `[x]`; Tasks 121–126 remain `[ ]` |
+| Next legal action | Add failing real-Dexie Stage/Unstage and ABA-2 tests, then implement only Task 121 scope |
+| Forbidden here | Do not start Task 122, write Task 121 `[x]`, push, create a PR, merge, rebase, cherry-pick, clean up, or modify Phase 24 scope |
