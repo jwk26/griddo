@@ -244,7 +244,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ01` | `VQ-01` | 106 | 141 only | Choice A central blocking panel accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_106.dp-vq01.json`; Task 141 only is released. |
 | `DP-VQ02` | `VQ-02` | 107 | 148 only | Choice A row-attached wash/check/text signal accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_107.dp-vq02.json`; Task 148 only is released. |
 | `DP-VQ03` | `VQ-03` | 108 | 140 only | Choice A Add-adjacent inline decision sheet, including the checkpoint-approved position/copy supersession, accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_108.dp-vq03.json`; Task 140 only is released. |
-| `DP-VQ04` | `VQ-04` | 109 | 138 only | Choice A dual direct in-place editor system recorded at `docs/issues/Issues_Phase_24.Task_109.dp-vq04.json`; Task 109 remains `[ ]` pending its user checkpoint. |
+| `DP-VQ04` | `VQ-04` | 109 | 138 only | Choice A dual direct in-place editor system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_109.dp-vq04.json`; Task 138 only is released. |
 | `DP-VQ05` | `VQ-05` | 110 | 143 only | Accepted receipt defines Add/Delete reliability states. |
 | `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Accepted Pool-specific status receipt. |
 | `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Accepted Staging-specific status receipt. |
@@ -568,7 +568,7 @@ destination exactly once.
 
 **Commit contract:** the three named documents and `DP-VQ03` receipt only; `docs(triage): record DP-VQ03`.
 
-### Task 109: [ ] Record `DP-VQ04` inline-editor decision
+### Task 109: [x] Record `DP-VQ04` inline-editor decision
 
 **Files and actions:** modify `docs/recipes/inbox-triage-selected-scratch-context-visual-recipe.md`, `docs/recipes/inbox-triage-breakdown-row-empty-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to specify Scratch-title and row-content editor realization across pristine, dirty, validation, saving, offline/not-applied, reconcile, conflict/use-mine/use-latest, lifecycle invalidation, draft review/copy, focus, and themes; change no code or Task 137 headless state.
 
@@ -600,8 +600,18 @@ receipt. No generic Dialog/AlertDialog, popover, detached conflict card, toast,
 prototype, adjacent UI, repeated motion, or theme-ID behavior branch is
 allowed. The durable receipt is
 `docs/issues/Issues_Phase_24.Task_109.dp-vq04.json`; it releases Task 138 only,
-leaves Task 137 headless state unchanged, and does not accept Task 109's `[ ]`
-marker.
+leaves Task 137 headless state unchanged, and its canonical decision commit did
+not itself accept Task 109's then-open `[ ]` marker.
+
+**Checkpoint acceptance and copy supersession (2026-08-09):** the user
+accepted the recorded Choice A structure/state model and replaced the initial
+review packet's abbreviated shared wording with these exact final strings:
+`Offline. Your draft is still here.`, `Not saved. Your draft is still here.`,
+`Retry save`, `This changed elsewhere.`, `Latest version`, `Your draft`,
+`Draft not saved`, `This Scratch is no longer editable.`,
+`This breakdown is no longer editable.`, `Saving before continuing…`, and
+`Stay here`. This acceptance releases Task 138 only and leaves Task 137's
+headless ownership unchanged.
 
 **Observable acceptance:** Task 138 can implement both complete editors without generic dialogs or invented conflict/offline/copy presentation; Task 137 remains independently runnable.
 

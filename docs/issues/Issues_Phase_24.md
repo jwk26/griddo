@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–108 accepted; Task 109 implemented with `DP-VQ04` choice A awaiting user checkpoint acceptance
+> State: Tasks 106–109 accepted; Task 110 is the next authorized Task in the approved first decision batch
 
 ## Status Legend
 
@@ -123,23 +123,26 @@ canonical document update, and commit remain Task-local and sequential.
 | Acceptance boundary | Accepts only Task 108 and its explicit position/copy supersession; releases Task 140 only; does not accept Task 109, another DP receipt, product code, push, PR, merge, or phase close |
 | Next legal action | Commit this acceptance state. Task 109 may then start from the accepted sequential batch; Task 110 remains unavailable |
 
-## Active Task
+## Task 109 Acceptance Receipt
 
 | Field | Durable value |
 | --- | --- |
 | Task | 109 — record `DP-VQ04` Scratch-title and Breakdown-content inline-editor decision |
-| State | Implemented / awaiting user review; user acceptance remains pending and the Task 109 plan marker stays `[ ]` |
+| State | Accepted by the user on 2026-08-09; the Task 109 plan marker is `[x]` |
 | Approved scope | Choice A direct in-place editors across pristine, dirty, validation, saving, offline/not-applied, reconciling, conflict/use-mine/use-latest, lifecycle invalidation, draft review/copy, focus, and eight themes; update only the Selected Scratch Context recipe, Breakdown rows recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ04` receipt; no product code or Task 137 headless behavior |
 | User decision | On 2026-08-09 the user selected `DP-VQ04=A` |
+| User acceptance | `Task 109 / DP‑VQ04=A checkpoint를 수락합니다.` |
+| Accepted copy supersession | Replaces the initial review packet's abbreviated shared wording with the final exact set `Offline. Your draft is still here.`, `Not saved. Your draft is still here.`, `Retry save`, `This changed elsewhere.`, `Latest version` / `Your draft`, `Draft not saved`, `This Scratch is no longer editable.`, `This breakdown is no longer editable.`, and `Saving before continuing…` / `Stay here` |
 | Predecessor | Task 108 accepted at `e3a834ce1f3e11997689b6e2f6e40e94757fa789`; its exact release remains Task 140 only |
 | Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
 | Entrypoint / recovery anchor | Task 108 acceptance `e3a834ce1f3e11997689b6e2f6e40e94757fa789`; Task 109 durable start `f5f4605ab1d10b31d35194926b6061258ad09bb2`; Task 109 decision commit `e8ebc834be603d443a502970ef4a45d66a6dcae6` |
-| Durable receipt | `docs/issues/Issues_Phase_24.Task_109.dp-vq04.json`; candidate resolver returned `ready` for gate `dp-vq04` and next action `task-109-user-checkpoint` |
+| Durable receipt | `docs/issues/Issues_Phase_24.Task_109.dp-vq04.json`; its accepted next action is `task-110` |
 | Issue / deviation | None |
 | Canonical impact | Reflected — Choice A is recorded in both inline-editor recipes, `docs/DESIGN_TOKENS.md`, and Task 109 execution authority |
-| Verification | `git diff --check` exit 0; `pnpm typecheck` exit 0; exact five-path Task decision commit; Tasks 106–108 remain `[x]`, Tasks 109–110 remain `[ ]`; no product code or Task 110 decision was recorded |
+| Verification | `git diff --check` exit 0; `pnpm typecheck` exit 0; exact five-path Task decision commit; Tasks 106–108 were `[x]` and Tasks 109–110 were `[ ]` at the implementation checkpoint; no product code or Task 110 decision was recorded |
 | Review | No concrete blocking finding; both source-surface placements, nine-state copy/action matrices, acknowledged-latest CAS conflict resolution, offline/manual Retry, invalidated full-draft review/copy, save-before-action intent, deterministic focus, mounted-page lifetime, static reduced-motion parity, eight-theme mappings, and Task 138-only edge are present with no generic dialog, prototype, or adjacent-surface fallback |
-| Next legal action | Stop at the Task 109 user checkpoint. Do not write Task 109 `[x]` or start Task 110 without new explicit user acceptance |
+| Acceptance boundary | Accepts only Task 109 and its explicit exact-copy supersession; releases Task 138 only; does not accept Task 110, another DP receipt, product code, push, PR, merge, or phase close |
+| Next legal action | Commit this acceptance state. Task 110 may then start from the accepted sequential batch; Task 111 remains unavailable |
 
 ## Readiness Evidence
 

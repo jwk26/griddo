@@ -23,6 +23,28 @@
     "choice": "A",
     "label": "direct in-place Scratch-title and Breakdown-content editors"
   },
+  "checkpoint_acceptance": {
+    "date": "2026-08-09",
+    "statement": "Task 109 / DP‑VQ04=A checkpoint를 수락합니다.",
+    "accepted_task": 109,
+    "accepted_decision": "DP-VQ04=A",
+    "supersedes_initial_review_packet": {
+      "scope": "replace the initial review packet's abbreviated shared wording with the checkpoint-recorded exact copy",
+      "final_copy": [
+        "Offline. Your draft is still here.",
+        "Not saved. Your draft is still here.",
+        "Retry save",
+        "This changed elsewhere.",
+        "Latest version",
+        "Your draft",
+        "Draft not saved",
+        "This Scratch is no longer editable.",
+        "This breakdown is no longer editable.",
+        "Saving before continuing…",
+        "Stay here"
+      ]
+    }
+  },
   "canonical_record_paths": [
     "docs/recipes/inbox-triage-selected-scratch-context-visual-recipe.md",
     "docs/recipes/inbox-triage-breakdown-row-empty-visual-recipe.md",
@@ -176,11 +198,11 @@
     "tasks": [
       138
     ],
-    "consumption_condition": "Task 109 user checkpoint accepted; its plan marker remains open until then",
+    "consumption_condition": "satisfied by Task 109 checkpoint acceptance, including the explicit exact-copy supersession, on 2026-08-09",
     "all_other_tasks": "unreleased"
   },
-  "task_state": "implemented-awaiting-user-checkpoint",
+  "task_state": "accepted",
   "canonical_impact": "Reflected",
   "issue_or_deviation": "None",
-  "next_legal_action": "task-109-user-checkpoint"
+  "next_legal_action": "task-110"
 }
