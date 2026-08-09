@@ -11,21 +11,30 @@
     "phase": 24,
     "worktree_role": "feature",
     "active_decision_batch": [
-      111,
-      112,
-      113
+      114,
+      115,
+      116,
+      117,
+      118,
+      119
     ],
     "active_decision_receipts": [
-      "DP-VQ06-POOL",
-      "DP-VQ06-STAGING",
-      "DP-VQ06-EXPLORER"
+      "DP-VQ07",
+      "DP-VQ08",
+      "DP-VQ09",
+      "DP-VQ10",
+      "DP-VQ11",
+      "DP-VQ12"
     ],
     "serial_order": [
-      111,
-      112,
-      113
+      114,
+      115,
+      116,
+      117,
+      118,
+      119
     ],
-    "next_task": 111,
+    "next_task": 114,
     "decision_receipts": [
       "DP-VQ01",
       "DP-VQ02",
@@ -44,7 +53,7 @@
     ]
   },
   "continuation": {
-    "entrypoint": "d5770d6987c8b556630e9a0b818872fa7bb2d186",
+    "entrypoint": "9c0bae2d8b928564ef03637e899e3bf9d62637c7",
     "reuse_existing_branch": true,
     "approved_branch": "phase-24/user-owned-decision-prerequisites",
     "reuse_existing_worktree": true,
@@ -136,6 +145,6 @@
     "date": "2026-08-10",
     "approval_kind": "continuation",
     "exact_scope_confirmed": true,
-    "user_statement": "위 revised Phase 24 continuation Gate C packet 전체를 정확히 승인합니다."
+    "user_statement": "위 Phase 24 Tasks 114–119 serial continuation Gate C packet 전체를 정확히 승인합니다."
   }
 }

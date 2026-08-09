@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–113 accepted; the approved `111 → 112 → 113` serial batch is complete and no later batch is authorized
+> State: Tasks 106–113 accepted; Tasks 114–119 are approved as one serial Gate C batch, with Task 114 as the only next legal task
 
 ## Status Legend
 
@@ -247,6 +247,25 @@ canonical document update, and commit remain Task-local and sequential.
 | Acceptance boundary | Accepts only Task 113 and `DP-VQ06-EXPLORER=A`; releases Task 150 only; does not start Task 114, prepare another Gate C packet, change product code, publish, or close the phase |
 | Batch boundary | The approved `111 → 112 → 113` VQ-06 decision batch is complete; Task 114 and every later batch remain unauthorized |
 | Next legal action | Commit this acceptance state, verify a clean worktree, and stop awaiting separate future authority |
+
+## Remaining Decision Batch Gate C Continuation Receipt
+
+| Field | Durable value |
+| --- | --- |
+| Gate | `gate-c`; the user approved the complete exact remaining-decision continuation packet on 2026-08-10 with `위 Phase 24 Tasks 114–119 serial continuation Gate C packet 전체를 정확히 승인합니다.` |
+| Lifecycle | `run-phase` continuation for Phase 24 only |
+| Active decision batch | Tasks 114–119 / `DP-VQ07`, `DP-VQ08`, `DP-VQ09`, `DP-VQ10`, `DP-VQ11`, and `DP-VQ12` |
+| Serial order | `114 → 115 → 116 → 117 → 118 → 119`; every decision, receipt, canonical update, commit, checkpoint, and acceptance remains Task-local |
+| Exact release edges | Task 114 releases Task 151 and search-only Task 158; Task 115 releases Task 153 only; Task 116 releases Task 154 only; Task 117 releases Task 157 only; Task 118 releases Task 160 only; Task 119 releases Task 162 only, each only after its own user decision and checkpoint acceptance |
+| Continuation base | `9c0bae2d8b928564ef03637e899e3bf9d62637c7`, the Task 113 acceptance commit |
+| Branch/worktree reuse | Reuse branch `phase-24/user-owned-decision-prerequisites` and its existing feature worktree `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`; create or switch no branch/worktree |
+| Source mode | Approved canonical authority plus the approved source-only recipe package and fresh user decisions; no prototype, adjacent-surface, existing-token, or inferred fallback |
+| Whole-file receipt | `docs/issues/Issues_Phase_24.gate-c.json`, updated to make `[114, 115, 116, 117, 118, 119]` the active batch and serial order, with Task 114 next |
+| Baseline reuse | Reuse the recorded full base gate because every non-`docs/` path, including the production source tree and manifests, is unchanged between approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` and continuation base `9c0bae2d8b928564ef03637e899e3bf9d62637c7`; this kickoff runs only resolver validation, exact two-path commit-scope inspection, `git diff --check`, and clean-status verification |
+| Task state | Tasks 106–113 are accepted; Tasks 114–119 remain `[ ]`; no `DP-VQ07`–`DP-VQ12` choice, decision receipt, canonical decision, or product change exists |
+| Next receipt | Task 114 may later create `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json` only after its real user decision; this continuation kickoff does not create it |
+| Durable kickoff boundary | The commit containing this section and the updated whole-file Gate C receipt has parent `9c0bae2d8b928564ef03637e899e3bf9d62637c7` and no other changed path |
+| Next legal action | After that kickoff commit is resolver-valid and the worktree is clean, end this `run-phase` session. A fresh session may load only candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` `skills/run-task/SKILL.md` and start Task 114 only; the live `/Users/jwk/Documents/codex-workflow/skills/run-task` is prohibited |
 
 ## Readiness Evidence
 
