@@ -21,8 +21,59 @@
 
 ## Decision-Prerequisite Boundary
 
-- `VQ-11` — Add/title completion blockers and completion-withdrawal status may use only the shared semantic-state envelope: state attributes, existing semantic/theme tokens, visible text/icon/non-color cues, and selected focus/accessibility behavior. Exact copy, placement, layout, effect, duration, and per-theme values remain a **user-owned non-code Decision prerequisite**. Future owner: Breakdown/archive recipe owner and completion phase; resume exact blocker realization only after user receipt.
+- `VQ-11` — **resolved by `DP-VQ11` on 2026-08-11.** The user selected Choice A: Add/title blockers stay attached to their source status regions, while actual eligibility loss removes completion presentation and places an exact persistent status in its vacated Breakdown completion slot. Task 160 is the only realization edge after Task 118 checkpoint acceptance.
 - `VQ-12` — archive pending, reconciling, failure, and reload-recovery variants use the same limited envelope. Exact overlay variants, current-action target, Retry/Cancel arrangement, copy, effects, and theme values remain a **user-owned non-code Decision prerequisite**. Future owner: archive reliability phase; resume exact variants only after user receipt.
+
+## `DP-VQ11` Approved Completion Composition
+
+`DP-VQ11` does not alter the completion predicate, Task 159 transition model,
+Archive transaction, or `VQ-12` operation/recovery states. It supplies only the
+missing presentation contract around those owners:
+
+| Condition | Exact surface ownership |
+|---|---|
+| Otherwise-eligible Scratch with non-empty Add draft | The Breakdown Add recipe owns exact `Add this idea or clear the draft to complete this Scratch.` directly below the Add row |
+| Otherwise-eligible Scratch with Task 137 title snapshot `open|dirty|saving|conflicted|reconciling` | The Context recipe owns the matching exact completion sentence inside the existing editor status region |
+| Previously presented completion becomes persistently ineligible from active Breakdown rows and/or staged candidates | Remove scrim/card, complete Context, and Reopen; the Breakdown recipe owns the narrow exact reason in the vacated completion slot |
+| Selected Scratch becomes archived/deleted/inactive | Show no blocker or withdrawal card; the canonical active-Scratch/workspace owner exits the stale surface |
+| Blocker resolves or persisted eligibility returns | Remove only the `DP-VQ11` status and let Task 159 recompute from current truth; never auto-save, auto-submit, auto-cancel, or auto-Archive |
+
+The Add and title blockers suppress the automatic completion presentation but
+do not withdraw stored eligibility. The withdrawal status is reserved for a
+real persisted eligibility loss after completion presentation and never appears
+for a never-used, all-deleted-without-consumption, all-staged, or initially
+ineligible Scratch.
+
+### Completion-Slot Structure And Focus
+
+- `archive-withdrawal-status` occupies the same Breakdown completion slot as
+  the removed overlay card/complete prompt/Reopen family, but it is a compact
+  non-blocking status rather than a disabled Archive card or empty state.
+- The status contains one static non-color `archive-withdrawal-mark` and one
+  exact sentence. It has no Close, Dismiss, Retry, Reopen, Archive, or hidden
+  action and persists only while the current mounted-page cause remains true.
+- Local source actions retain their canonical focus and remote status never
+  steals it. Only a focused control removed with completion hands focus to the
+  surviving Breakdown heading.
+- One polite atomic announcement occurs when the withdrawal cause first
+  appears or changes. Recovery is announced by Task 159's resulting current-
+  truth completion presentation, not a second transient message.
+- Geometry and state changes are immediate/static in ordinary and reduced-
+  motion modes. No overlay fade, card exit, blur transition, pulse, bounce,
+  spinner, timer, auto-dismissal, or repeated motion is authorized.
+
+### Eight-Theme Completion-Slot Binding
+
+| Theme | Exact withdrawal-slot binding |
+|---|---|
+| GridDO | Compact ruled technical status replacing the archive card, with canonical static warning mark |
+| Tiny Desk | Pinned filing-status note in the same paper completion area |
+| Neumorphism | Inset status trough at the former raised-card locus, without a second raised panel |
+| Claymorphism | Stable sculpted status ribbon replacing the completion object without bounce |
+| Origami | Seam-bound folded notice in the completion area with no animated fold |
+| Terminal | Variable-driven `[completion withdrawn]` record and exact sentence with no blink/glow loop |
+| Retro Mac | Hard 1-bit in-section system status replacing the completion alert/reopen family |
+| Graphite | Restrained editorial status and strengthened rule in the completion locus |
 
 ## Theme Realizations
 
@@ -76,5 +127,5 @@
 
 ## Exclusions And Verification
 
-- Excluded: exact `VQ-11/12` details beyond the shared envelope, source eligibility latch, mock list removal, global AlertDialog fallback, timers, automatic archive, repeated pulse/bounce, route copy as canonical copy, and any claim that blur/layering/contrast was rendered.
+- Excluded: `VQ-12` details beyond the shared envelope, detached/global `VQ-11` fallback, source eligibility latch, mock list removal, global AlertDialog fallback, timers, automatic archive, repeated pulse/bounce, route copy as canonical copy, and any claim that blur/layering/contrast was rendered.
 - No section-only clipping, scrim opacity, backdrop blur, complete/working distinction, focus behavior, reopen flow, pending/recovery variant, contrast, light/dark parity, motion, or reduced-motion equivalence was rendered or verified.

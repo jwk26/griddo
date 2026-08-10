@@ -381,14 +381,14 @@ or to promotion-map §11.4's shared implication.
 | Shell / chrome | `shell-background`, `section-surface`, `section-header`, `section-divider`, `internal-scroll-viewport`, `section-state-overlay` | `R-SHELL` |
 | Scratch Pool | `pool-tools`, `pool-search-field`, `pool-total-count`, `pool-filtered-count`, `pool-selected-row`, `pool-compact-switcher`, `pool-compact-marker`, `pool-scroll-viewport`, `pool-status-band`, `pool-status-line`, `pool-status-action`, `pool-activity-marker` | `R-POOL`; status roles from `DP-VQ06-POOL` / Task 144 only |
 | External Scratch removal | `external-removal-scrim`, `external-removal-panel`, `external-removal-title`, `external-removal-destination`, `external-removal-countdown-track`, `external-removal-countdown-fill`, `external-removal-draft-card`, `external-removal-copy-status`, `external-removal-primary-action`, `external-removal-secondary-action` | `DP-VQ01`; Task 141 only |
-| Selected Context | `context-signature-plate`, `context-eyebrow-meta`, `context-title`, `context-action-cluster`, `context-complete-marker` | `R-CONTEXT` |
-| Breakdown | `breakdown-active-row`, `breakdown-staged-row`, `breakdown-row-action`, `breakdown-add-field`, `breakdown-add-control`, `breakdown-ordinary-empty`, `breakdown-consumed-completion`, `breakdown-success-wash`, `breakdown-success-status`, `breakdown-success-check` | `R-BREAKDOWN`; success roles from `DP-VQ02` / Task 148 only |
+| Selected Context | `context-signature-plate`, `context-eyebrow-meta`, `context-title`, `context-action-cluster`, `context-complete-marker`, `context-completion-blocker`, `context-completion-blocker-mark` | `R-CONTEXT`; blocker roles from approved `DP-VQ11`, Task 160 only |
+| Breakdown | `breakdown-active-row`, `breakdown-staged-row`, `breakdown-row-action`, `breakdown-add-field`, `breakdown-add-control`, `breakdown-ordinary-empty`, `breakdown-consumed-completion`, `breakdown-success-wash`, `breakdown-success-status`, `breakdown-success-check`, `breakdown-add-completion-blocker` | `R-BREAKDOWN`; success roles from `DP-VQ02` / Task 148 only; blocker role from approved `DP-VQ11`, Task 160 only |
 | Staging | `staging-panel`, `staging-node-well`, `staging-node-card`, `staging-bit-well`, `staging-bit-row`, `staging-neutral`, `staging-unavailable`, `staging-invalid`, `staging-pending`, `staging-unstage-target`, `staging-operation-status`, `staging-arrival-count`, `staging-local-alert`, `staging-alert-action`, `staging-target-reason`, `staging-integrity-status` | `R-STAGING`; status roles from `DP-VQ06-STAGING` / Task 147 only |
 | Grid Explorer base | `explorer-header`, `explorer-column`, `explorer-full-level-label`, `explorer-node-row`, `explorer-bit-row`, `explorer-eligible-target`, `explorer-hovered-target`, `explorer-invalid-target`, `explorer-unavailable-target`, `explorer-remote-count`, `explorer-path-status`, `explorer-status-action` | `R-EXPLORER`; status roles from `DP-VQ06-EXPLORER` / Task 150 only |
 | Grid Explorer search | `explorer-search-entry`, `explorer-search-body`, `explorer-search-field`, `explorer-search-close`, `explorer-search-status`, `explorer-search-results`, `explorer-search-result`, `explorer-search-type`, `explorer-search-breadcrumb`, `explorer-search-duplicate`, `explorer-search-retry`, `explorer-search-undo`, `explorer-reveal-status`, `explorer-revealed-row` | `DP-VQ07`; complete body Task 151 and search-result Undo composition Task 158 only |
 | Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled`, `placement-result-title-shell`, `placement-result-title-source`, `placement-result-title-input`, `placement-result-title-count`, `placement-result-title-error`, `placement-result-title-continue`, `placement-direct-type-option`, `placement-direct-type-reason`, `placement-direct-limit-summary` | `R-PLACEMENT`; reliability extends through approved `DP-VQ08`, and title/limit replacement surfaces extend through approved `DP-VQ09`; Task 153 and Task 154 remain separate edges |
 | Newly Placed / Undo | `newly-marker`, `newly-dot`, `newly-new-badge`, `newly-undo-action`, `newly-status-rail`, `newly-status-mark`, `newly-status-action`, `newly-status-reason` | `R-NEWLY`; exact overlap/reason/reliability roles from approved `DP-VQ10`, Task 157 only; composes around the actual Node/Bit card and never replaces or redesigns it |
-| Archive / completion base | `archive-section-scrim`, `archive-card`, `archive-complete-context`, `archive-reopen`, `archive-action`, `archive-cancel` | `R-ARCHIVE`; excludes `VQ-11/12` gap realization |
+| Archive / completion | `archive-section-scrim`, `archive-card`, `archive-complete-context`, `archive-reopen`, `archive-action`, `archive-cancel`, `archive-withdrawal-status`, `archive-withdrawal-mark` | `R-ARCHIVE`; exact blocker/withdrawal roles from approved `DP-VQ11`, Task 160 only; excludes `VQ-12` gap realization |
 
 The shared state binding is a whitespace-delimited
 `data-triage-state="<state> …"` token list so independent states can coexist.
@@ -429,6 +429,8 @@ appropriate; the data attribute never replaces them.
 | `undo-reconciling` | The same operation is being checked without resend; retain the action position and all result/source truth |
 | `undo-not-applied` | Authority proves no write occurred; retain all truth and expose exact manual `Retry` only here |
 | `undo-conflict` | Returned authority proves mutation/dependency/partial mismatch; show the narrow current reason or canonical conflict reason, never Retry/cascade/overwrite |
+| `completion-blocked` | Persisted Archive eligibility is true but a non-empty Add draft or Task 137 title snapshot suppresses completion presentation; retain source draft/editor, existing actions, logical focus, and the exact source-attached `DP-VQ11` sentence |
+| `completion-withdrawn` | A previously presented completion state lost persisted eligibility through active Breakdown rows and/or staged candidates; remove overlay/complete/reopen and expose the exact cause in `archive-withdrawal-status` without a stale Archive action |
 | `completed` | Complete Context or completion presentation; do not treat it as Archive mutation success |
 | `local-alert` | A section-local status with visible text/icon semantics and the SPEC-selected live/status behavior; it does not become a global toast by default |
 
@@ -977,7 +979,42 @@ theme branching or unsupported literal values:
 | Retro Mac | Static 1-bit `[NEW]`; hard Undo and in-item system line preserving selected inversion |
 | Graphite | Restrained black `NEW`; strengthened-rule caption and labeled Undo with precise focus |
 
-### Existing-surface state gaps — 2 open Decision prerequisites
+### Approved Completion Blocker / Withdrawal realization — `DP-VQ11`
+
+**User-selected 2026-08-11:** Choice A keeps page-local blockers attached to
+their Add or Scratch-title source status regions and reserves the vacated
+Breakdown completion slot for real persisted eligibility withdrawal. Task 160
+alone consumes this contract after Task 118 checkpoint acceptance.
+
+| Contract | Exact token requirement |
+|---|---|
+| Independent binding | `completion-blocked` never changes persisted eligibility; `completion-withdrawn` requires a real transition from presented completion to persisted ineligibility. Neither state implies Archive success, mutation, persistence, or a disabled stale completion control |
+| Add placement / copy | Bind `breakdown-add-completion-blocker` immediately below the stable Add field/control row with exact `Add this idea or clear the draft to complete this Scratch.`; keep `DP-VQ05` reliability copy first when both occupy the source status area |
+| Title placement / copy | Bind `context-completion-blocker` inside the existing `DP-VQ04` Scratch-title status region after its editor-state copy. `open|dirty`: `Save or cancel the Scratch title edit to complete this Scratch.`; `saving`: `Saving the Scratch title before completion…`; `conflicted`: `Resolve the Scratch title conflict to complete this Scratch.`; `reconciling`: `Checking the Scratch title before completion…` |
+| Existing actions only | Add creates no completion action; its existing Add/text-editing paths resolve the draft. Title uses only the current `DP-VQ04` actions. No blocker auto-adds, clears, saves, cancels, persists, archives, or moves focus |
+| Withdrawal placement | Remove `archive-section-scrim`, `archive-card`, `archive-complete-context`, and `archive-reopen`, then use `archive-withdrawal-status` plus static `archive-withdrawal-mark` in the vacated Breakdown completion slot; never substitute an ordinary empty state, toast, dialog, global banner, or detached panel |
+| Withdrawal copy | Active row only: `Completion is no longer available because a Breakdown item is active.`; staged candidate only: `Completion is no longer available because an item is in Staging.`; both: `Completion is no longer available because Breakdown and Staging have active items.` |
+| Inactive Scratch | Archived/deleted/inactive selected Scratch exits through the canonical workspace owner and renders no blocker/withdrawal status or stale Archive control |
+| Focus / accessibility | Blockers preserve source logical focus and associate exact copy to the source control. Local withdrawal retains the action's canonical focus; remote arrival never steals focus; removal of the focused Archive/Cancel/Reopen target hands focus to the surviving Breakdown heading. Announce a new/changed sentence once through a visible polite atomic status |
+| Lifetime / recovery | Blockers persist while their otherwise-eligible source cause exists. Withdrawal persists only for the same selected active Scratch while its current aggregate cause exists. Scratch switch/route exit/reload/unmount clears page-memory status; current-truth recovery removes it and returns ownership to Task 159 without a timer, dismissal, Retry, or separate restoration rail |
+| Motion | All blocker, withdrawal, removal, and focus changes are immediate/static; reduced motion is identical. No fade, slide, scale, blur transition, skeleton, shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, or layout-transition animation |
+| Scope | No completion predicate, headless Task 137/159 behavior, Archive transaction, `VQ-12` state, product implementation in Task 118, Task 119 start, Task 160 start, theme-ID behavior/copy branch, or adjacent fallback |
+
+The roles map through existing theme families while retaining identical copy,
+source/completion-slot placement, actions, focus, lifetime, and static motion:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Technical ruled source status and compact ruled completion-slot notice with static warning mark |
+| Tiny Desk | Same-paper source annotation and pinned filing-status note |
+| Neumorphism | Inset source/completion troughs using existing depth variables, never a second raised card |
+| Claymorphism | Shape-preserving source ribbon and stable completion ribbon without bounce |
+| Origami | Seam-bound source note and folded completion notice without animated fold |
+| Terminal | Variable-driven `[completion blocked]` / `[completion withdrawn]` records with exact copy and no blink/glow loop |
+| Retro Mac | Hard 1-bit in-window source line and in-section completion system status |
+| Graphite | Restrained editorial source caption and strengthened-rule completion notice |
+
+### Existing-surface state gaps — 1 open Decision prerequisite
 
 The shared role/state envelope above is the maximum current authority for
 these gaps. It authorizes semantic state binding, existing supported tokens,
@@ -987,7 +1024,6 @@ dependent exact realization.
 
 | ID | Unresolved boundary; no implied realization | Future owner | Resume condition |
 |---|---|---|---|
-| `VQ-11` | No completion blocker or eligibility-withdrawal copy, effect, placement, layout, timing, or per-theme realization is chosen. | User Decision → Context/Breakdown/Archive recipe/token owner and completion phase | Receipt resolves the dependent blocker UI |
 | `VQ-12` | No Archive pending, reconcile, failure, recovery, check-again, Retry/Cancel visual, copy, control/status placement, layout, timing, or per-theme realization is chosen. | User Decision → Archive recipe/token owner and reliability phase | Receipt resolves the dependent Archive variants |
 
 Existing global color and motion values do not automatically realize any row

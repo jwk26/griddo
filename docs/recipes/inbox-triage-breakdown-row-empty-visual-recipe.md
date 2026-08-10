@@ -24,8 +24,96 @@
 - `VQ-02` — **resolved by `DP-VQ02` on 2026-08-09.** The user selected Choice A, the row-attached confirmation wash/check/text signal specified below. Task 148 is its only realization edge; successful Unstage still has no toast.
 - `VQ-03` — **resolved by `DP-VQ03` on 2026-08-09.** The user selected Choice A, the Add-adjacent inline decision sheet specified below. Task 140 is its only realization edge; Task 139 remains headless and native unload remains browser-owned.
 - `VQ-05` — **resolved by `DP-VQ05` on 2026-08-09.** The user selected Choice A, the Add-region and source-row-attached reliability system specified below. Task 143 is its only realization edge; Task 136 remains the headless owner.
-- `VQ-11` — completion-blocker status uses the same limited envelope. Exact why/where/how remains a **user-owned non-code Decision prerequisite** owned by the Breakdown/archive phase.
+- `VQ-11` — **resolved by `DP-VQ11` on 2026-08-11.** The user selected Choice A: attach the Add-draft blocker to the Add region and place actual eligibility-withdrawal status in the vacated Breakdown completion slot. Task 160 is the only realization edge after Task 118 checkpoint acceptance.
 - `VQ-04` — **resolved by `DP-VQ04` on 2026-08-09.** The user selected Choice A, the direct in-place Scratch-title and Breakdown-content editor system. This recipe owns the Breakdown-row half specified below; Task 138 is the only realization edge and Task 137 remains headless.
+
+## `DP-VQ11` Approved Add Blocker And Withdrawal Slot
+
+Choice A keeps each reason beside the surface that can resolve it. A page-local
+Add draft uses the Add region; a persisted eligibility loss after completion
+was presented uses the same Breakdown completion slot from which the overlay,
+complete prompt, or Reopen control was withdrawn. Neither state replaces an
+ordinary empty state or creates a toast, dialog, page-global banner, detached
+status panel, or automatic action.
+
+### Non-Empty Add Draft Blocker
+
+- Render one static status line immediately below the stable Add field/control
+  row and inside the same Add region. Use exact copy:
+  `Add this idea or clear the draft to complete this Scratch.`
+- Show it only when the selected active Scratch satisfies persisted Archive
+  eligibility and the page-local Add draft is non-empty. Keep the draft, input,
+  Add control, and any `DP-VQ05` reliability state unchanged. When both status
+  families are present, the operation/reliability sentence stays first and the
+  completion-blocker sentence follows in the same source-attached status area.
+- Add no new completion button. The existing Add path and ordinary text-editing
+  path are the only resolution controls; clearing text is not a synthetic
+  `Clear` command. Never submit, clear, blur-submit, discard, persist, or move
+  focus on behalf of completion.
+- Associate the blocker with the Add input and announce it politely/atomically
+  only when the blocker first becomes current. Do not announce each keystroke.
+  Focus remains in the Add input or at the current user-owned destination.
+- Keep the blocker without a timer until the draft becomes empty, the Scratch
+  changes, persisted eligibility changes, or the Inbox page exits/reloads/
+  unmounts. If the draft becomes empty and eligibility is still true, remove
+  the line and let Task 159 perform its current-truth completion transition.
+
+### Actual Eligibility Withdrawal
+
+This status is not an Add/title blocker. It appears only after the mounted page
+had displayed the completion overlay, complete Context, or Reopen control and
+current persisted truth then becomes ineligible because an active Breakdown
+row or staged candidate exists. Remove the overlay/scrim, complete Context, and
+Reopen control first, reveal current work, and place one persistent status at
+the vacated Breakdown completion slot using the narrow matching copy:
+
+| Current persisted cause | Exact visible copy |
+|---|---|
+| One or more active Breakdown rows, no staged candidate | `Completion is no longer available because a Breakdown item is active.` |
+| No active Breakdown row, one or more staged candidates | `Completion is no longer available because an item is in Staging.` |
+| Both causes | `Completion is no longer available because Breakdown and Staging have active items.` |
+
+Use the actual aggregate cause, never a stale operation guess. If the selected
+Scratch becomes archived/deleted/inactive, do not show this status: the
+canonical workspace-exit owner removes the stale Scratch surface. Never keep a
+disabled stale Archive control, wait for eligibility to return, or archive from
+the old completion snapshot.
+
+### Withdrawal Focus, Recovery, Accessibility, And Motion
+
+- A local Add/restore/Stage action keeps its canonical focus. A remote cause
+  never steals focus. If eligibility loss removes the currently focused
+  Archive, Cancel, or Reopen control, move focus to the surviving Breakdown
+  heading; otherwise preserve current focus.
+- Use a visible static non-color status mark plus the exact sentence in one
+  polite atomic status. Announce only a new cause or changed cause, not every
+  subscription update or rerender.
+- Persist the status while that same selected active Scratch remains
+  ineligible in the mounted page. Scratch switch, route exit, reload, or
+  unmount clears it; return/re-entry does not reconstruct an old withdrawal.
+- When persisted truth becomes eligible again, remove the withdrawal status
+  immediately and let Task 159's current mounted-page transition own overlay/
+  complete/reopen and its readiness announcement. Add no separate timer,
+  dismissal, Retry, or `Completion restored` state.
+- All blocker, withdrawal, removal, and focus changes are immediate/static.
+  Reduced motion is identical; no fade, slide, scale, blur transition,
+  skeleton, shimmer, spinner, pulse, blink, bounce, or layout animation.
+
+### Eight-Theme Mapping
+
+The Add blocker stays in the Add region and withdrawal stays in the completion
+slot in every theme. Product logic and copy never branch on theme ID:
+
+| Theme | Add blocker / withdrawal realization |
+|---|---|
+| GridDO | Ruled technical Add status / compact ruled completion-slot status with a static warning mark |
+| Tiny Desk | Same-paper Add annotation / pinned filing-status note in the completion slot |
+| Neumorphism | Inset Add reason trough / inset completion-status trough without a new floating card |
+| Claymorphism | Sculpted Add ribbon / stable completion-status ribbon with tactile non-color mark |
+| Origami | Seam-bound Add note / folded completion-slot notice with no animated fold |
+| Terminal | `[completion blocked]` Add record / `[completion withdrawn]` status plus exact copy, no blink |
+| Retro Mac | 1-bit Add system line / hard in-section completion status preserving current focus inversion |
+| Graphite | Editorial Add caption / strengthened-rule completion notice with precise focus outline |
 
 ## `DP-VQ02` Approved Add/Unstage Success Signal
 
@@ -410,5 +498,5 @@ not prototype or adjacent-surface literals:
 
 ## Exclusions And Verification
 
-- Excluded: unsupported exact `VQ-11` details, source mutation behavior, Add-on-blur, mock delete/placement, row dates/numbers, consumed strike-through, repeated pulse/bounce, and route copy as authority.
+- Excluded: detached or non-source-attached `VQ-11` blockers, source mutation behavior, Add-on-blur, mock delete/placement, row dates/numbers, consumed strike-through, repeated pulse/bounce, and route copy as authority.
 - No row height, list density, staged distinction, empty/completion distinction, focus-visible action, overflow, scroll, contrast, success effect, deletion state, or reduced-motion equivalence was rendered or verified.

@@ -23,8 +23,66 @@
 ## Decision-Prerequisite Boundary
 
 - `VQ-04` — **resolved by `DP-VQ04` on 2026-08-09.** The user selected Choice A, the direct in-place Scratch-title and Breakdown-content editor system. This recipe owns the Context half specified below; Task 138 is the only realization edge and Task 137 remains headless.
-- Context subset of `VQ-11` — title-editor completion blocker may use only the approved shared semantic-state envelope. Exact blocker copy, position, layout, effect, and per-theme values remain a **user-owned non-code Decision prerequisite**. Future owner: Context recipe/token owner and archive phase; exact UI resumes only after receipt.
+- Context subset of `VQ-11` — **resolved by `DP-VQ11` on 2026-08-11.** The user selected Choice A: keep every title-editor completion blocker inside the existing Context editor status region, preserve the editor and logical focus, and add no detached completion surface. Task 160 is the only realization edge after Task 118 checkpoint acceptance.
 - `D-LENS` — Neumorphism water-lens sort treatment is deferred and excluded.
+
+## `DP-VQ11` Approved Scratch-Title Completion Blocker
+
+The completion blocker is an additional sentence in the existing persistent
+Scratch-title editor status region. It never replaces the `DP-VQ04` editor
+state, field, comparison/recovery content, or actions and never creates a
+Context-wide completion summary, toast, dialog, banner, or second panel.
+
+### Snapshot, Copy, And Actions
+
+Render the matching exact completion sentence only while persisted Archive
+eligibility is otherwise true and Task 137 reports the named synchronous
+Scratch-title blocker snapshot:
+
+| Task 137 blocker snapshot | Exact completion sentence | Existing action contract |
+|---|---|---|
+| `open` or `dirty` | `Save or cancel the Scratch title edit to complete this Scratch.` | Keep the current `Save` / `Cancel`, validation, offline, or not-applied actions from `DP-VQ04`; add no completion action |
+| `saving` | `Saving the Scratch title before completion…` | Keep the draft visible/read-only and the existing save/pending-intent contract |
+| `conflicted` | `Resolve the Scratch title conflict to complete this Scratch.` | Keep `Use mine`, `Use latest`, and `Copy draft` in their approved hierarchy |
+| `reconciling` | `Checking the Scratch title before completion…` | Keep the focused read-only field mounted and all approved mutation/dismiss locks |
+
+The editor's own exact status remains first and the completion sentence follows
+inside the same associated status region. The completion sentence never turns
+`Save`, `Cancel`, `Use mine`, or `Use latest` into an Archive action and never
+auto-saves, auto-cancels, discards, or persists the draft. Closing the editor
+through its ordinary authoritative terminal path removes this blocker and lets
+Task 159 recompute and present completion from current truth.
+
+### Focus, Accessibility, Lifetime, And Motion
+
+- Keep logical focus exactly where `DP-VQ04` owns it. Appearance, copy changes,
+  remote latest-version changes, and blocker removal never move focus.
+- Associate the combined status region with the Scratch title field. Announce
+  the completion sentence politely and atomically only when its blocker
+  snapshot first appears or changes, never on keystrokes or rerenders.
+- Persist the sentence without a timer while the matching snapshot and
+  otherwise-eligible Scratch remain current. Scratch switch, Inbox route exit,
+  reload, unmount, lifecycle invalidation, or loss of persisted eligibility
+  removes this blocker presentation; none of those events reconstructs it.
+- Every change is immediate and static. Reduced motion uses identical geometry,
+  copy, actions, focus, and lifetime with no fade, slide, scale, spinner,
+  shimmer, pulse, blink, bounce, or layout-transition animation.
+
+### Eight-Theme Mapping
+
+All themes keep the existing editor geometry and action hierarchy and add only
+a source-attached static completion sentence:
+
+| Theme | Exact realization mapping |
+|---|---|
+| GridDO | Compact technical rule and status mark inside the existing Context editor status region |
+| Tiny Desk | Same-sheet margin annotation below the title field, using the existing paper/ink family |
+| Neumorphism | Inset status trough within the current Context depth; no new raised card |
+| Claymorphism | Shape-preserving inset ribbon inside the existing clay Context |
+| Origami | Seam-bound note inside the same folded title region; no animated fold |
+| Terminal | Variable-driven `[completion blocked]` status record followed by the exact sentence; no blink or glow loop |
+| Retro Mac | Hard 1-bit in-window system line below the title field, preserving field focus/inversion |
+| Graphite | Restrained editorial caption and strengthened rule inside the Context plate |
 
 ## `DP-VQ04` Approved Scratch-Title Inline Editor
 
@@ -157,5 +215,5 @@ order, and state machine using canonical family roles only:
 
 ## Exclusions And Verification
 
-- Excluded: unsupported `VQ-11` blocker details, `D-LENS`, no-op prototype handlers, review variants, route-local complete latch, repeated pulse/bounce, and source copy as canonical copy.
+- Excluded: detached or Context-wide `VQ-11` summaries, `D-LENS`, no-op prototype handlers, review variants, route-local complete latch, repeated pulse/bounce, and source copy as canonical copy.
 - No Context height relative to actual rows, text fit, visual depth, complete/working distinction, focus behavior, light/dark parity, or motion was rendered or verified. Exact declarations remain source-only until this package is approved and later rendered checks occur.
