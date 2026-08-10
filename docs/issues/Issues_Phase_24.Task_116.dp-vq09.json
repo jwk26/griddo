@@ -1,0 +1,127 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq09",
+  "decision_receipt_id": "DP-VQ09",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 116,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "continuation_entrypoint": "9c0bae2d8b928564ef03637e899e3bf9d62637c7",
+  "continuation_kickoff_commit": "0861b071d58cba03d1e698fae12155a589709736",
+  "predecessor_acceptance_commit": "da08c428e6ee94598254256987cbceabf50d2d83",
+  "durable_start_commit": "95e818eb555522e0f62a6f1be88479c2bfc0172a",
+  "user_decision": {
+    "date": "2026-08-11",
+    "statement": "DP-VQ09=A",
+    "recorded_scope": "DP-VQ09=A only",
+    "choice": "A",
+    "label": "Compact Result Title and direct-limit steps inside the captured Placement Affordance"
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-placement-affordances-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "surface": {
+      "placement": "one compact staged Result Title step and one compact direct Node/Bit eligibility step inside the captured target-column Placement Affordance",
+      "scroll_owner": "existing target-column scroll content only",
+      "prohibited": [
+        "source edit, truncation, or normalized source copy used as an over-limit draft",
+        "direct Result Title editor, hidden editor, create dialog, or generic placement UI",
+        "automatic type or target fallback",
+        "prototype replacement surface as authority",
+        "theme-ID product behavior or copy branch"
+      ]
+    },
+    "staged_result_title": {
+      "trigger": "source title exceeds the chosen result type limit; Node 100 or Bit 200",
+      "within_limit": "skip this step and retain the exact source title",
+      "initial_draft": "empty; never a clipped, truncated, or normalized source copy",
+      "copy": {
+        "eyebrow": "RESULT TITLE",
+        "heading": "Name this {Node|Bit}",
+        "explanation": "The source is {count} characters. A {Node|Bit} title can be up to {limit}. The source won’t change.",
+        "label": "Result title",
+        "counter": "{count} / {limit}",
+        "empty_error": "Enter a result title.",
+        "over_limit_error": "Use {limit} characters or fewer.",
+        "actions": [
+          "Continue",
+          "Cancel"
+        ]
+      },
+      "validation": "accept draft input without silent clipping or source mutation; Continue remains unavailable until canonical non-empty and selected-type length validation passes",
+      "focus": "entry focuses Result title; valid Continue focuses the next placement-step heading",
+      "source_truth": "the source remains unchanged and remains the Undo/restoration truth"
+    },
+    "direct_type_limit": {
+      "copy": {
+        "eyebrow": "DIRECT PLACEMENT",
+        "heading": "Choose a result type",
+        "actions": [
+          "Node",
+          "Bit",
+          "Cancel"
+        ],
+        "node_reason": "Node titles can be up to 100 characters. This source has {count}.",
+        "bit_reason": "Bit titles can be up to 200 characters. This source has {count}.",
+        "neither_available": "This source is too long for direct placement. Cancel and stage it first."
+      },
+      "length_matrix": {
+        "1-100": "Node and Bit available",
+        "101-200": "Node unavailable with its reason; Bit available",
+        "201-1000": "Node and Bit unavailable with per-type reasons and the neither-available instruction"
+      },
+      "accessibility": "entry focuses the heading; unavailable rows remain visible with native unavailable semantics and associated non-hover reasons; tab order reaches only available types and Cancel",
+      "editor_boundary": "no direct Result Title input, truncation, or alternate type selection"
+    },
+    "cancel_and_invalidation": {
+      "cancel_or_escape": "write nothing, discard only the uncommitted draft, and return to the surviving staged candidate or Breakdown grip, otherwise the owning section heading",
+      "source_candidate_target_or_path_change": "close the flow, discard the draft, write nothing, announce the named authoritative change once, and use the same safe focus fallback",
+      "navigation": "no internal intent is queued or replayed; only a dirty staged Result Title draft may use the native browser-unload guard"
+    },
+    "motion": {
+      "ordinary": "step swap, validation-state change, close, and focus handoff are immediate and static",
+      "prohibited": "fade, slide, scale, spinner, shimmer, pulse, ping, bounce, blink, flicker, and layout-transition animation",
+      "reduced_motion": "identical geometry, copy, controls, focus, and lifetime"
+    },
+    "theme_mapping": {
+      "griddo": "compact technical form card and ruled eligibility rows with canonical error, action, and focus roles",
+      "tiny-desk": "pinned paper form slip and library-index type rows inside the target column",
+      "neumorphism": "raised compact step with inset field, counter, reason trough, and existing shadow variables",
+      "claymorphism": "sculpted compact form plate and tactile type rows with static availability shape",
+      "origami": "folded label sheet, seam-bound field/error, and cut-paper rows with no animated fold",
+      "terminal": "variable-driven prompt, static count/error record, and [N]/[B] rows with textual unavailable reasons",
+      "retro-mac": "in-pane compact system form with hard field/buttons and disabled rows; no new window or dialog",
+      "graphite": "restrained registry form and strengthened-rule rows with monochrome reason and precise focus outline"
+    },
+    "implementation_boundary": {
+      "realization_task": 154,
+      "additional_prerequisites": [
+        128,
+        152
+      ],
+      "excludes": "product implementation in Task 116, DP-VQ08 reliability changes, DP-VQ10 Newly/Undo appearance, command/repository changes, prototype fallback, and theme-ID logic"
+    }
+  },
+  "exact_release": {
+    "tasks": [
+      154
+    ],
+    "consumption_condition": "Task 116 user checkpoint accepted; its plan marker remains open until then",
+    "all_other_tasks": "unreleased; Task 117 and every later decision remain unstarted"
+  },
+  "task_state": "implemented-awaiting-user-checkpoint",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "task-116-user-checkpoint"
+}

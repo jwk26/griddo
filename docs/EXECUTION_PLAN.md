@@ -251,7 +251,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Choice A affected-column remote/path status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`; Task 150 only is released. |
 | `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Choice A dedicated fixed-input/state-line/flat-result replacement body accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json`; Task 151 and search-only Task 158 are released subject to their own prerequisites. |
 | `DP-VQ08` | `VQ-08` | 115 | 153 only | Choice A fixed reliability rail accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`; Task 153 only is released. |
-| `DP-VQ09` | `VQ-09` | 116 | 154 only | Accepted receipt supplies both title/limit surfaces. |
+| `DP-VQ09` | `VQ-09` | 116 | 154 only | Choice A compact Result Title/direct-limit steps selected on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`; Task 154 remains unreleased until Task 116 checkpoint acceptance. |
 | `DP-VQ10` | `VQ-10` | 117 | 157 only | Accepted receipt defines Newly/Undo overlap, reasons, and reliability. |
 | `DP-VQ11` | `VQ-11` | 118 | 160 only | Accepted receipt defines blocker/withdrawal realization. |
 | `DP-VQ12` | `VQ-12` | 119 | 162 only | Accepted receipt defines Archive reliability/recovery realization. |
@@ -879,15 +879,30 @@ product code, publish, or close the phase.
 
 ### Task 116: [ ] Record `DP-VQ09` Result Title/direct-limit decision
 
-**Files and actions:** modify `docs/recipes/inbox-triage-placement-affordances-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to specify or scope out staged Result Title and direct Node/Bit unavailable-limit bodies, exact reasons, validation, Cancel, focus, and eight-theme treatment; change no code.
+**Files and actions:** modify `docs/recipes/inbox-triage-placement-affordances-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to record Choice A: one compact staged over-limit Result Title step and one compact direct Node/Bit availability step inside the captured target-column Placement Affordance; specify exact copy/reasons, non-truncating validation, Continue/Cancel, source preservation, focus/invalidation, static reduced-motion parity, and eight-theme treatment; change no code.
 
 **Dependencies:** user decision only; no code prerequisite and no other DP task.
 
-**Decision owner:** User. **Receipt:** `DP-VQ09`. **Exact edge:** Task 154 only. **Resume:** one accepted receipt resolves both staged and direct surfaces.
+**Decision owner:** User. **Receipt:** `DP-VQ09`. **Selected decision:** `DP-VQ09=A` on 2026-08-11. **Exact edge:** Task 154 only after Task 116 checkpoint acceptance. **Resume:** explicit Task 116 user acceptance of the recorded complete compact-step realization.
 
 **Authority / flows:** `VQ-09`, `UF-23`, `NEG-21`.
 
 **Recipe:** [`Placement affordances`](recipes/inbox-triage-placement-affordances-visual-recipe.md).
+
+**Selected realization:** staged placement opens a compact `RESULT TITLE` /
+`Name this {Node|Bit}` step only when the source exceeds the chosen type limit.
+It starts with an empty `Result title` draft, shows source count/type limit,
+validates without clipping or truncation, keeps the source unchanged, and uses
+exact `Continue` / `Cancel` with input-first focus. Direct placement keeps its
+compact `DIRECT PLACEMENT` / `Choose a result type` step and never exposes an
+editor: `1–100` enables Node/Bit, `101–200` disables Node with its exact
+accessible reason, and `201–1000` disables both with exact per-type reasons and
+the instruction to Cancel and stage first. Cancel/Escape or authoritative
+source/target/path invalidation writes nothing, discards only the draft, and
+returns to the surviving source or owning heading. All eight themes share one
+semantic order with static reduced-motion-identical transitions; no create or
+generic dialog, hidden editor, automatic fallback, or theme-ID branch is
+permitted.
 
 **Observable acceptance:** Task 154 can handle over-limit staged/direct text without source edits, truncation, create dialogs, or a hidden editor.
 

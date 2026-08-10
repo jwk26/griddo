@@ -386,7 +386,7 @@ or to promotion-map §11.4's shared implication.
 | Staging | `staging-panel`, `staging-node-well`, `staging-node-card`, `staging-bit-well`, `staging-bit-row`, `staging-neutral`, `staging-unavailable`, `staging-invalid`, `staging-pending`, `staging-unstage-target`, `staging-operation-status`, `staging-arrival-count`, `staging-local-alert`, `staging-alert-action`, `staging-target-reason`, `staging-integrity-status` | `R-STAGING`; status roles from `DP-VQ06-STAGING` / Task 147 only |
 | Grid Explorer base | `explorer-header`, `explorer-column`, `explorer-full-level-label`, `explorer-node-row`, `explorer-bit-row`, `explorer-eligible-target`, `explorer-hovered-target`, `explorer-invalid-target`, `explorer-unavailable-target`, `explorer-remote-count`, `explorer-path-status`, `explorer-status-action` | `R-EXPLORER`; status roles from `DP-VQ06-EXPLORER` / Task 150 only |
 | Grid Explorer search | `explorer-search-entry`, `explorer-search-body`, `explorer-search-field`, `explorer-search-close`, `explorer-search-status`, `explorer-search-results`, `explorer-search-result`, `explorer-search-type`, `explorer-search-breadcrumb`, `explorer-search-duplicate`, `explorer-search-retry`, `explorer-search-undo`, `explorer-reveal-status`, `explorer-revealed-row` | `DP-VQ07`; complete body Task 151 and search-result Undo composition Task 158 only |
-| Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled` | `R-PLACEMENT`; reliability extends only through approved `DP-VQ08` roles below, while all `VQ-09` surfaces remain excluded |
+| Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled`, `placement-result-title-shell`, `placement-result-title-source`, `placement-result-title-input`, `placement-result-title-count`, `placement-result-title-error`, `placement-result-title-continue`, `placement-direct-type-option`, `placement-direct-type-reason`, `placement-direct-limit-summary` | `R-PLACEMENT`; reliability extends through approved `DP-VQ08`, and title/limit replacement surfaces extend through approved `DP-VQ09`; Task 153 and Task 154 remain separate edges |
 | Newly Placed / Undo | `newly-marker`, `newly-dot`, `newly-new-badge`, `newly-undo-action` | `R-NEWLY`; composes over the actual Node/Bit card and never replaces it |
 | Archive / completion base | `archive-section-scrim`, `archive-card`, `archive-complete-context`, `archive-reopen`, `archive-action`, `archive-cancel` | `R-ARCHIVE`; excludes `VQ-11/12` gap realization |
 
@@ -897,6 +897,41 @@ theme branching or unsupported literal values:
 | Retro Mac | In-pane 1-bit system line with hard action controls and no new window or dialog |
 | Graphite | Strengthened-rule status caption with restrained monochrome action and precise focus outline |
 
+### Approved Placement compact title/limit realization — `DP-VQ09`
+
+**User-selected 2026-08-11:** Choice A retains the captured target-column
+Placement Affordance and adds one compact staged Result Title step plus one
+compact direct Node/Bit eligibility step. Task 154 alone consumes this contract
+after Task 116 checkpoint acceptance.
+
+| Contract | Exact token requirement |
+|---|---|
+| Surface binding | `data-placement-title-step="staged-result-title|direct-type-limit"` binds one compact step inside the existing target-column scroll content; neither step expands/clips the column or opens a dialog |
+| Staged trigger | `placement-result-title-shell` appears only when staged source length exceeds the chosen type limit (`Node=100`, `Bit=200`); within-limit staged placement keeps the exact source title and skips the step |
+| Staged copy | Use exact `RESULT TITLE`, `Name this {Node|Bit}`, `The source is {count} characters. A {Node|Bit} title can be up to {limit}. The source won’t change.`, label `Result title`, counter `{count} / {limit}`, errors `Enter a result title.` and `Use {limit} characters or fewer.`, and actions `Continue`, `Cancel` |
+| Staged validation | Start with an empty draft; accept input without silent clipping, truncation, source-prefill normalization, or source mutation; `placement-result-title-continue` is unavailable until canonical non-empty/length validation passes |
+| Direct structure | Use exact `DIRECT PLACEMENT`, `Choose a result type`, retained source/destination, `Node`, `Bit`, and `Cancel`; direct placement exposes no Result Title input |
+| Direct limits | `1–100` enables Node/Bit; `101–200` disables Node with exact `Node titles can be up to 100 characters. This source has {count}.`; `201–1000` disables both, adds exact Bit reason `Bit titles can be up to 200 characters. This source has {count}.`, and shows `This source is too long for direct placement. Cancel and stage it first.` |
+| Accessibility | Staged entry focuses `Result title`; direct entry focuses its heading; unavailable type rows remain visible with native unavailable semantics and associated non-hover reasons; errors/counters do not move focus or announce every keystroke |
+| Advance / Cancel | Valid Continue or an available direct type focuses the next placement-step heading; Cancel/Escape writes nothing, discards only the draft, and returns to the surviving candidate/grip or its owning section heading |
+| Invalidation | Source/candidate/target/path invalidation closes the step, discards the draft, writes nothing, announces the named authoritative change once, and uses the same safe focus fallback; only a dirty staged draft may use native unload guard |
+| Motion | Step, validation, close, and focus changes are immediate/static; no fade, slide, scale, spinner, shimmer, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No source edit/truncation, direct hidden editor, create/generic dialog, automatic type/target fallback, prototype authority, product implementation in Task 116, `DP-VQ10` invention, or theme-ID behavior/copy branch |
+
+The compact steps map through Placement-native roles without product JSX theme
+branching or unsupported literal values:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Compact technical form card and ruled eligibility rows with canonical error/action/focus roles |
+| Tiny Desk | Pinned paper form slip and library-index type rows inside the target column |
+| Neumorphism | Raised compact step with inset field, counter, reason trough, and existing shadow variables |
+| Claymorphism | Sculpted compact form plate and tactile type rows with static availability shape |
+| Origami | Folded label sheet, seam-bound field/error, and cut-paper rows with no animated fold |
+| Terminal | Variable-driven prompt, static count/error record, and `[N]`/`[B]` rows with textual unavailable reasons |
+| Retro Mac | In-pane compact system form with hard field/buttons and disabled rows; no new window/dialog |
+| Graphite | Restrained registry form and strengthened-rule rows with monochrome reason and precise focus outline |
+
 ### Existing-surface state gaps — 3 open Decision prerequisites
 
 The shared role/state envelope above is the maximum current authority for
@@ -914,15 +949,10 @@ dependent exact realization.
 Existing global color and motion values do not automatically realize any row
 in this table.
 
-### Absent replacement surfaces — 1 open Decision prerequisite
+### Absent replacement surfaces — None
 
-These surfaces remain completely outside token realization. Assign no role,
-value, layout, theme mapping, copy, icon, control arrangement, or adjacent
-fallback until a matching user receipt approves the missing surface.
-
-| ID | Missing surface and prohibited fallback | Future owner | Resume condition |
-|---|---|---|---|
-| `VQ-09` | Staged Result Title and direct-limit/reason surfaces; create dialogs and generic placement UI are prohibited substitutes | User Decision → Placement recipe and title/limit phase | Receipt supplies both replacement surfaces |
+The former `VQ-09` replacement-surface gap is resolved by `DP-VQ09` Choice A.
+No other absent replacement surface remains in this promotion package.
 
 ### Selected deferrals
 

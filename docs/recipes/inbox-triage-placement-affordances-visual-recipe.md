@@ -22,7 +22,7 @@
 ## Decision-Prerequisite Boundary
 
 - `VQ-08` — **resolved by `DP-VQ08` Choice A on 2026-08-10.** The fixed reliability rail specified below stays inside the captured target-column Placement Affordance, retains its source/type/destination identity, and owns exact pending, unknown/reconciling, not-applied, stale-source/target, Retry/Cancel, success-announcement, focus, lifetime, motion, and eight-theme treatment. Task 153 is its only realization edge after Task 115 checkpoint acceptance.
-- `VQ-09` — staged over-limit Result Title and direct unavailable-limit content states are an absent replacement surface. They are wholly excluded; create dialogs, generic placement dialogs, and prototype type chooser are not fallbacks. **User-owned Decision prerequisite:** approve the direct Result Title/limit realization. Future owner: placement-title phase; no dependent UI task starts until matching receipt.
+- `VQ-09` — **resolved by `DP-VQ09` Choice A on 2026-08-11.** The compact step card specified below owns the staged over-limit Result Title step and direct Node/Bit availability rows inside the captured Placement Affordance. It preserves the source, exposes exact non-truncating validation and unavailable reasons, and supplies the only Task 154 realization after Task 116 checkpoint acceptance.
 
 ## `DP-VQ08` Approved Fixed Reliability Rail
 
@@ -118,6 +118,88 @@ theme ID and no literal observed source value becomes reliability authority.
 | Retro Mac | In-pane 1-bit system line with hard action controls and no new window or dialog |
 | Graphite | Strengthened-rule status caption with restrained monochrome action and precise focus outline |
 
+## `DP-VQ09` Approved Compact Result-Title And Direct-Limit Steps
+
+Choice A keeps both replacement surfaces inside the captured target-column
+Placement Affordance as compact, visually distinct steps. The existing target
+column scroll content remains the only scroll owner; neither step expands the
+column, opens a dialog, edits the source, truncates text, or supplies an
+automatic type fallback.
+
+### Staged Over-Limit Result Title
+
+This step appears only when a staged candidate's source title exceeds the
+chosen result type's SCHEMA limit: 100 characters for Node or 200 for Bit. A
+within-limit staged title proceeds without this step and keeps the exact source
+title. An over-limit step starts with an empty draft rather than a truncated or
+normalized source copy.
+
+| Element | Exact contract |
+|---|---|
+| Eyebrow / heading | `RESULT TITLE` / `Name this {Node|Bit}` |
+| Explanation | `The source is {count} characters. A {Node|Bit} title can be up to {limit}. The source won’t change.` |
+| Field / counter | Label `Result title`; visible counter `{count} / {limit}` |
+| Empty error | `Enter a result title.` |
+| Over-limit error | `Use {limit} characters or fewer.` |
+| Actions | `Continue`, then `Cancel`; Continue is unavailable while the canonical non-empty/length validation fails |
+
+The input accepts the draft without silently clipping, truncating, or
+substituting the source. Its associated error and counter update without
+moving focus or announcing each keystroke. `Continue` advances only with the
+exact valid draft and focuses the next placement-step heading. It changes no
+source content; that source remains the Undo/restoration truth.
+
+Entry focuses `Result title`. Cancel or Escape discards only this uncommitted
+draft and returns focus to the surviving staged candidate, otherwise the
+Staging heading. A source, candidate, target, or reachable-path invalidation
+closes the flow, discards the draft, performs no write, announces the named
+authoritative change once, and uses the same safe focus fallback. Only a dirty
+Result Title draft may use the native browser-unload guard; no internal intent
+is queued or replayed.
+
+### Direct Type Availability
+
+Direct placement never shows a Result Title input. Its compact step uses exact
+eyebrow `DIRECT PLACEMENT`, heading `Choose a result type`, the retained source
+and destination path, one `Node` row, one `Bit` row, and `Cancel`.
+
+| Direct source length | Node row | Bit row | Additional exact copy |
+|---|---|---|---|
+| `1–100` | Available | Available | None |
+| `101–200` | Unavailable: `Node titles can be up to 100 characters. This source has {count}.` | Available | None |
+| `201–1000` | Unavailable: `Node titles can be up to 100 characters. This source has {count}.` | Unavailable: `Bit titles can be up to 200 characters. This source has {count}.` | `This source is too long for direct placement. Cancel and stage it first.` |
+
+Each unavailable row remains visible, uses native unavailable semantics, and
+references its reason through an accessible description; color or hover never
+carries the reason alone. Entry focuses the step heading, then the normal tab
+order reaches only available type actions and Cancel. Activating an available
+type preserves the source/target snapshot, advances to the distinct placement
+step, and focuses its heading. Cancel/Escape writes nothing and returns to the
+surviving Breakdown grip, otherwise the Breakdown heading. Source/target/path
+invalidation closes the step with the same no-write and focus rules.
+
+### Lifetime, Motion, And Eight Themes
+
+Both steps last until valid advance, Cancel/Escape, invalidation, or route
+exit. Every step swap, validation-state change, close, and focus handoff is
+immediate and static. There is no fade, slide, scale, spinner, shimmer, pulse,
+ping, bounce, blink, flicker, or layout-transition animation; reduced motion
+keeps identical geometry, copy, controls, focus, and lifetime.
+
+All themes bind one semantic DOM order and contract through Placement-native
+roles; product components never branch on theme ID:
+
+| Theme | Compact-step realization |
+|---|---|
+| GridDO | Compact technical form card and ruled Node/Bit eligibility rows with canonical error/action/focus roles |
+| Tiny Desk | Pinned paper form slip and two-line library-index type rows inside the target column |
+| Neumorphism | Raised compact step with inset title field, counter, reason trough, and existing shadow variables |
+| Claymorphism | Sculpted compact form plate and tactile type rows whose static shape carries availability |
+| Origami | Folded label sheet, seam-bound field/error, and cut-paper type rows with no animated fold |
+| Terminal | Variable-driven prompt field, static count/error record, and `[N]`/`[B]` rows with textual unavailable reasons |
+| Retro Mac | In-pane compact system form with hard field/buttons and disabled type rows; no new window or dialog |
+| Graphite | Restrained registry form and strengthened-rule eligibility rows with monochrome reason and precise focus outline |
+
 ## Theme Realizations
 
 ### GridDO
@@ -170,5 +252,5 @@ theme ID and no literal observed source value becomes reliability authority.
 
 ## Exclusions And Verification
 
-- Excluded: all `VQ-09`, every placement-reliability realization outside the approved `DP-VQ08` fixed rail, generic/global Dialog fallback, source mutation/timers, keyboard handlers, automatic target fallback, partial writes, repeated pulse/ping/spin/bounce, and source copy as product copy.
+- Excluded: every placement-reliability realization outside the approved `DP-VQ08` fixed rail; every Result Title/direct-limit realization outside the approved `DP-VQ09` compact steps; generic/global Dialog fallback, source mutation/truncation/timers, direct hidden editor, keyboard handlers, automatic type/target fallback, partial writes, repeated pulse/ping/spin/bounce, and source copy as product copy.
 - No target-column containment, clipping, full-target state, disabled action, step distinction, focus containment, scrolling, pointer hit testing, pending/retry state, contrast, or light/dark outcome was rendered or verified.
