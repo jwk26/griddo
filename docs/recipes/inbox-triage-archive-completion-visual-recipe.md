@@ -22,7 +22,7 @@
 ## Decision-Prerequisite Boundary
 
 - `VQ-11` — **resolved by `DP-VQ11` on 2026-08-11.** The user selected Choice A: Add/title blockers stay attached to their source status regions, while actual eligibility loss removes completion presentation and places an exact persistent status in its vacated Breakdown completion slot. Task 160 is the only realization edge after Task 118 checkpoint acceptance.
-- `VQ-12` — archive pending, reconciling, failure, and reload-recovery variants use the same limited envelope. Exact overlay variants, current-action target, Retry/Cancel arrangement, copy, effects, and theme values remain a **user-owned non-code Decision prerequisite**. Future owner: archive reliability phase; resume exact variants only after user receipt.
+- `VQ-12` — **resolved by `DP-VQ12` on 2026-08-11.** The user selected Choice A: retain one stable Breakdown-scoped Archive card and change its content plus one current-action slot in place through pending, unknown, reconciliation, terminal failure, forced-reload recovery, and authoritative success. Task 162 is the only realization edge after Task 119 checkpoint acceptance.
 
 ## `DP-VQ11` Approved Completion Composition
 
@@ -74,6 +74,85 @@ ineligible Scratch.
 | Terminal | Variable-driven `[completion withdrawn]` record and exact sentence with no blink/glow loop |
 | Retro Mac | Hard 1-bit in-section system status replacing the completion alert/reopen family |
 | Graphite | Restrained editorial status and strengthened rule in the completion locus |
+
+## `DP-VQ12` Approved Archive Reliability And Recovery Composition
+
+`DP-VQ12` does not change the SCHEMA Archive transaction, operation-result
+family, current-tab recovery descriptor, Task 161 coordinator, terminal Pool
+handoff, or Task 126 reconciliation classification. It supplies the missing
+single-card presentation contract consumed only by Task 162.
+
+### One Stable Card And Action Slot
+
+- Keep `archive-card` in the same centered Breakdown completion locus and keep
+  its outer geometry stable from Archive activation until a terminal result.
+  Change only the card's static mark, heading/status copy, and one
+  `archive-current-action` slot. Do not add a second status rail or replace the
+  card with a separate recovery panel.
+- `archive-status` is visible text with one static non-color
+  `archive-status-mark`. The current-action slot occupies the original Archive
+  action position. Pending/reconciling variants keep it keyboard-focusable and
+  `aria-disabled` so logical focus does not disappear; activation performs no
+  mutation.
+- The ordinary pre-dispatch Cancel remains the existing secondary action.
+  After dispatch, pending, unknown, and reconciling expose no Cancel/Escape
+  escape hatch. Terminal `not_applied` exposes Retry and Cancel; terminal
+  rejected/conflict or recovery-storage failure exposes Cancel only. Terminal
+  Cancel dismisses only the operation result and returns to current completion/
+  reopen or working truth; it never aborts, rolls back, compensates, or hides an
+  unresolved operation.
+
+### Exact State, Copy, And Action Matrix
+
+| State | Exact visible copy | Current action and result |
+|---|---|---|
+| Pending after Archive dispatch | `Archiving this Scratch…` | Keep the originating Archive position as a focusable inactive current-action target. No Check again, Retry, Cancel, resend, optimistic Pool removal, or success copy |
+| Unknown outcome | `We couldn’t confirm whether this Scratch was archived.` | Expose primary `Check again`; it performs read-only reconciliation with the same descriptor/operation ID and never resends Archive |
+| Reconciling after Check again | `Checking whether this Scratch was archived…` | Retain the same current-action position as focusable inactive `Checking…`; no Retry or Cancel |
+| Forced-reload initial recovery | `Checking the Archive request from before this reload…` | Before initial Inbox projection, validate the current-tab descriptor and run one reconciliation. Use no normal-completion flash, new operation ID, resend, or restored page-session state |
+| Authoritative `not_applied` | `This Scratch was not archived.` | Primary `Retry`, secondary `Cancel`; focus Retry. Retry alone reuses the same logical operation identity and returns the same card to pending |
+| Recovery descriptor unavailable before dispatch | `Archive couldn’t start because this tab couldn’t keep its recovery details.` | No command ran and no Retry is exposed in this operation variant; focus `Cancel`, then return to current completion/reopen truth where a later explicit Archive is a new attempt |
+| Authoritative rejected result | `Archive stopped because this Scratch is no longer ready.` | Show returned current truth where available, expose Cancel only, and never Retry until a later newly confirmed Archive attempt revalidates eligibility |
+| Authoritative conflict | `Archive couldn’t finish because this Scratch changed while the result was being checked.` | Expose Cancel only; never Retry, overwrite, compensate, infer success, or preserve stale completion controls |
+| `applied` or `already_applied` | `Scratch archived.` | Announce once, remove the Archive card with the selected Scratch, and perform the canonical next-visible → previous-visible → filtered-null → true-empty handoff; render no lingering success card |
+
+On reload, `applied|already_applied` uses the same terminal handoff;
+`not_applied` opens the exact not-applied card over current complete/reopen
+truth; `unknown` opens the exact unknown card with `Check again`; and conflict
+opens the exact non-retriable conflict card. Invalid/foreign/stale descriptors
+are discarded by Task 161/126 and never produce a `DP-VQ12` card or mutation.
+
+### Focus, Accessibility, Lifetime, And Motion
+
+- Archive activation retains focus in the stable current-action slot. Unknown
+  focuses `Check again`; reconciling retains that position; `not_applied`
+  focuses Retry; storage failure/rejected/conflict focuses Cancel. A forced
+  reload focuses the recovery heading before any ordinary Inbox control.
+- One polite atomic announcement occurs for each new exact state sentence,
+  never per rerender. The static mark plus full text carries meaning without
+  color, motion, ellipsis animation, or spinner.
+- Pending/unknown/reconciling and valid forced-reload recovery last until the
+  same descriptor reaches authoritative terminal classification. They do not
+  end on a timer, Scratch switch, route intent, theme/mode change, or attempted
+  conflicting action. Terminal Cancel ends only its displayed terminal result.
+- Geometry, copy, actions, focus, announcement, and lifetime are identical in
+  ordinary and reduced-motion modes. Card content and terminal removal change
+  immediately/staticly; no fade, slide, scale, blur transition, skeleton,
+  shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, or
+  layout-transition animation is authorized.
+
+### Eight-Theme Single-Card Binding
+
+| Theme | Exact reliability/recovery binding |
+|---|---|
+| GridDO | One ruled technical Archive operation card with a static state glyph and canonical current-action slot |
+| Tiny Desk | One pinned filing note whose stamp line and single action row change in place |
+| Neumorphism | One raised Archive card with an inset static status line and stable action capsule position |
+| Claymorphism | One shape-preserving clay Archive object with a static status inset and no bounce |
+| Origami | One seam-bound Archive sheet whose printed status/action change without a new fold or panel |
+| Terminal | One variable-driven `[archive:*]` system frame and current command line with no blink, spinner, or glow loop |
+| Retro Mac | One hard 1-bit in-section Archive alert whose message and default action change in the same window |
+| Graphite | One restrained editorial Archive card with a fixed rule, static mark, and stable action row |
 
 ## Theme Realizations
 
@@ -127,5 +206,5 @@ ineligible Scratch.
 
 ## Exclusions And Verification
 
-- Excluded: `VQ-12` details beyond the shared envelope, detached/global `VQ-11` fallback, source eligibility latch, mock list removal, global AlertDialog fallback, timers, automatic archive, repeated pulse/bounce, route copy as canonical copy, and any claim that blur/layering/contrast was rendered.
+- Excluded: detached/global `VQ-11` fallback, a second `VQ-12` status rail or replacement recovery panel, source eligibility latch, mock list removal, global AlertDialog fallback, timers, automatic Archive/Retry, blind resend, repeated pulse/bounce, route copy as canonical copy, and any claim that blur/layering/contrast was rendered.
 - No section-only clipping, scrim opacity, backdrop blur, complete/working distinction, focus behavior, reopen flow, pending/recovery variant, contrast, light/dark parity, motion, or reduced-motion equivalence was rendered or verified.

@@ -254,7 +254,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ09` | `VQ-09` | 116 | 154 only | Choice A compact Result Title/direct-limit steps accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`; Task 154 only is released. |
 | `DP-VQ10` | `VQ-10` | 117 | 157 only | Choice A card-attached always-visible Newly/Undo status rail accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_117.dp-vq10.json`; Task 157 only is released. |
 | `DP-VQ11` | `VQ-11` | 118 | 160 only | Choice A source-attached blocker guidance and completion-slot withdrawal status accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_118.dp-vq11.json`; Task 160 only is released. |
-| `DP-VQ12` | `VQ-12` | 119 | 162 only | Accepted receipt defines Archive reliability/recovery realization. |
+| `DP-VQ12` | `VQ-12` | 119 | 162 only | Choice A stable single-card Archive reliability/recovery composition selected on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_119.dp-vq12.json`; Task 162 remains unreleased until Task 119 checkpoint acceptance. |
 
 ## Cross-Cutting Exclusions And Negative Coverage
 
@@ -990,7 +990,7 @@ behavior, or Archive transaction behavior, publish, or close the phase.
 
 ### Task 119: [ ] Record `DP-VQ12` Archive-recovery decision
 
-**Files and actions:** modify `docs/recipes/inbox-triage-archive-completion-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to specify pending, reconciling, explicit failure, forced-reload recovery, check-again, Retry/Cancel, terminal handoff, current-action focus, copy, timing, and eight-theme variants; change no code.
+**Files and actions:** modify `docs/recipes/inbox-triage-archive-completion-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to record Choice A: keep one stable Breakdown-scoped Archive card and original-position current-action slot while its static mark, exact sentence, and allowed action change in place through pending, unknown, reconciling, explicit failure, forced-reload recovery, and authoritative success. Specify check-again, authoritative `not_applied`-only Retry, terminal Cancel, terminal handoff, focus, timing, reduced-motion parity, and eight-theme variants; change no code.
 
 **Dependencies:** user decision only; no code prerequisite and no other DP task.
 
@@ -999,6 +999,22 @@ behavior, or Archive transaction behavior, publish, or close the phase.
 **Authority / flows:** `VQ-12`, `UF-28`, `NEG-17`, `NEG-20`, `NEG-21`.
 
 **Recipe:** [`Archive completion`](recipes/inbox-triage-archive-completion-visual-recipe.md).
+
+**Selected decision (2026-08-11):** `DP-VQ12=A` preserves one card/one current-
+action locus. Pending retains inactive current-action focus; unknown exposes
+read-only `Check again`; reconciliation retains the same descriptor and never
+resends; only authoritative `not_applied` exposes Retry plus Cancel; storage
+failure/rejected/conflict expose Cancel only; forced reload reconciles before
+initial Inbox projection; and authoritative success performs the canonical
+visible-order/null/empty handoff without a lingering success card. Every state
+uses exact static copy/non-color marking, polite atomic announcement, identical
+reduced-motion behavior, and the approved eight-theme single-card mapping.
+
+**Implementation boundary:** Task 162 only may realize this receipt after Task
+119 checkpoint acceptance and its other prerequisites. Task 119 changes no
+product source, SCHEMA Archive transaction/result/reconciliation rule, Task
+126/161 behavior, persistence, Release edge other than Task 162, or Phase 24
+close state.
 
 **Observable acceptance:** known failure, unknown outcome, recovery, Retry, Cancel, and success are fully specified inside the Breakdown-scoped flow.
 

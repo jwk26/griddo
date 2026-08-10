@@ -388,7 +388,7 @@ or to promotion-map §11.4's shared implication.
 | Grid Explorer search | `explorer-search-entry`, `explorer-search-body`, `explorer-search-field`, `explorer-search-close`, `explorer-search-status`, `explorer-search-results`, `explorer-search-result`, `explorer-search-type`, `explorer-search-breadcrumb`, `explorer-search-duplicate`, `explorer-search-retry`, `explorer-search-undo`, `explorer-reveal-status`, `explorer-revealed-row` | `DP-VQ07`; complete body Task 151 and search-result Undo composition Task 158 only |
 | Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled`, `placement-result-title-shell`, `placement-result-title-source`, `placement-result-title-input`, `placement-result-title-count`, `placement-result-title-error`, `placement-result-title-continue`, `placement-direct-type-option`, `placement-direct-type-reason`, `placement-direct-limit-summary` | `R-PLACEMENT`; reliability extends through approved `DP-VQ08`, and title/limit replacement surfaces extend through approved `DP-VQ09`; Task 153 and Task 154 remain separate edges |
 | Newly Placed / Undo | `newly-marker`, `newly-dot`, `newly-new-badge`, `newly-undo-action`, `newly-status-rail`, `newly-status-mark`, `newly-status-action`, `newly-status-reason` | `R-NEWLY`; exact overlap/reason/reliability roles from approved `DP-VQ10`, Task 157 only; composes around the actual Node/Bit card and never replaces or redesigns it |
-| Archive / completion | `archive-section-scrim`, `archive-card`, `archive-complete-context`, `archive-reopen`, `archive-action`, `archive-cancel`, `archive-withdrawal-status`, `archive-withdrawal-mark` | `R-ARCHIVE`; exact blocker/withdrawal roles from approved `DP-VQ11`, Task 160 only; excludes `VQ-12` gap realization |
+| Archive / completion | `archive-section-scrim`, `archive-card`, `archive-complete-context`, `archive-reopen`, `archive-action`, `archive-cancel`, `archive-withdrawal-status`, `archive-withdrawal-mark`, `archive-status`, `archive-status-mark`, `archive-current-action` | `R-ARCHIVE`; blocker/withdrawal roles from approved `DP-VQ11`, Task 160 only; reliability/recovery roles from approved `DP-VQ12`, Task 162 only |
 
 The shared state binding is a whitespace-delimited
 `data-triage-state="<state> …"` token list so independent states can coexist.
@@ -432,6 +432,12 @@ appropriate; the data attribute never replaces them.
 | `completion-blocked` | Persisted Archive eligibility is true but a non-empty Add draft or Task 137 title snapshot suppresses completion presentation; retain source draft/editor, existing actions, logical focus, and the exact source-attached `DP-VQ11` sentence |
 | `completion-withdrawn` | A previously presented completion state lost persisted eligibility through active Breakdown rows and/or staged candidates; remove overlay/complete/reopen and expose the exact cause in `archive-withdrawal-status` without a stale Archive action |
 | `completed` | Complete Context or completion presentation; do not treat it as Archive mutation success |
+| `archive-pending` | The guarded Archive command is in flight; retain the selected Scratch/card and stable current-action focus without optimistic removal or Cancel |
+| `archive-unknown` | Outcome is not authoritative; retain the same descriptor/operation/card and expose only read-only `Check again` |
+| `archive-reconciling` | The same Archive operation is being classified without resend; retain the card geometry and current-action position |
+| `archive-recovery` | A validated current-tab descriptor is reconciled before initial Inbox projection; never flash ordinary completion or reconstruct unrelated page-session state |
+| `archive-not-applied` | Authority proves no Archive write occurred; expose exact Retry/Cancel, with Retry available only here and reusing the logical operation identity |
+| `archive-conflict` | Returned authority proves changed lifecycle/version/eligibility or partial mismatch; expose current truth and Cancel only, never Retry/overwrite/compensation |
 | `local-alert` | A section-local status with visible text/icon semantics and the SPEC-selected live/status behavior; it does not become a global toast by default |
 
 Focus-visible treatment continues to use the canonical focus ring and the
@@ -1014,20 +1020,47 @@ source/completion-slot placement, actions, focus, lifetime, and static motion:
 | Retro Mac | Hard 1-bit in-window source line and in-section completion system status |
 | Graphite | Restrained editorial source caption and strengthened-rule completion notice |
 
-### Existing-surface state gaps — 1 open Decision prerequisite
+### Approved Archive Reliability / Recovery realization — `DP-VQ12`
 
-The shared role/state envelope above is the maximum current authority for
-these gaps. It authorizes semantic state binding, existing supported tokens,
-visible text/icon/non-color cues, and approved accessibility/focus semantics
-only. A matching user-owned non-code Decision receipt is required before any
-dependent exact realization.
+**User-selected 2026-08-11:** Choice A keeps one stable Breakdown-scoped
+`archive-card` and changes only its static mark, exact sentence, and one
+current-action slot in place. Task 162 alone consumes this contract after Task
+119 checkpoint acceptance.
 
-| ID | Unresolved boundary; no implied realization | Future owner | Resume condition |
-|---|---|---|---|
-| `VQ-12` | No Archive pending, reconcile, failure, recovery, check-again, Retry/Cancel visual, copy, control/status placement, layout, timing, or per-theme realization is chosen. | User Decision → Archive recipe/token owner and reliability phase | Receipt resolves the dependent Archive variants |
+| Contract | Exact token requirement |
+|---|---|
+| Stable composition | Keep `archive-card` in the existing completion locus and preserve its outer geometry through `archive-pending`, `archive-unknown`, `archive-reconciling`, `archive-recovery`, `archive-not-applied`, and `archive-conflict`. Use one `archive-status`, static `archive-status-mark`, and original-position `archive-current-action`; no second rail or replacement panel |
+| Pending | Exact `Archiving this Scratch…`; retain a keyboard-focusable `aria-disabled` current-action target at the originating Archive position; no Check again, Retry, Cancel, resend, optimistic removal, or success treatment |
+| Unknown / reconcile | Unknown exact `We couldn’t confirm whether this Scratch was archived.` with primary `Check again`; reconciliation exact `Checking whether this Scratch was archived…` with the same focusable inactive action position. Both retain the same descriptor/operation ID and never resend Archive |
+| Forced reload | Exact `Checking the Archive request from before this reload…`; focus the recovery heading and reconcile the validated current-tab descriptor before initial Inbox projection. Never flash normal completion, restore unrelated page state, allocate a new identity, or mutate from an invalid descriptor |
+| Not applied | Exact `This Scratch was not archived.` with primary `Retry` and secondary `Cancel`; focus Retry. Retry exists only for authoritative `not_applied`, reuses the logical operation identity, and returns the same card to pending |
+| Pre-dispatch storage failure | Exact `Archive couldn’t start because this tab couldn’t keep its recovery details.`; no command ran, expose Cancel only, focus it, and return to current completion/reopen truth. A later Archive activation is a newly confirmed attempt, not this variant's Retry |
+| Rejected / conflict | Rejected exact `Archive stopped because this Scratch is no longer ready.` plus returned current truth where available; conflict exact `Archive couldn’t finish because this Scratch changed while the result was being checked.`. Focus Cancel and expose no Retry, overwrite, compensation, inferred success, or stale completion action |
+| Success / handoff | `applied|already_applied` announces exact `Scratch archived.` once, then removes the card with the selected Scratch and uses canonical next-visible → previous-visible → filtered-null → true-empty focus. No persistent success card, Archive View navigation, or hidden-Scratch selection |
+| Cancel | Pre-dispatch base Cancel retains Task 159 meaning. No Cancel/Escape exists while pending/unknown/reconciling. Terminal Cancel dismisses only the terminal result and returns to current completion/reopen or working truth; it never aborts, rolls back, compensates, or conceals uncertainty |
+| Accessibility / lifetime | One visible polite atomic status announces each changed exact sentence once. Static text/mark carries meaning without color or motion. Nonterminal state lasts until the same descriptor is authoritatively classified; theme/mode change and conflicting intents do not end or restart it |
+| Motion | Card content, action, terminal removal, and focus changes are immediate/static; reduced motion is identical. No fade, slide, scale, blur transition, skeleton, shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, ellipsis animation, or layout-transition animation |
+| Scope | No SCHEMA command/result/reconciliation change, Task 126/161 behavior change, new persistence, product implementation in Task 119, Task 162 start, Phase 24 close, theme-ID behavior/copy branch, adjacent-surface fallback, or Release edge other than Task 162 |
 
-Existing global color and motion values do not automatically realize any row
-in this table.
+The same card/action/status roles map through existing theme families without
+product JSX theme branching or unsupported literal values:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | One ruled technical Archive operation card with static state glyph and canonical current-action slot |
+| Tiny Desk | One pinned filing note whose stamp line and single action row change in place |
+| Neumorphism | One raised Archive card with inset static status line and stable action capsule position |
+| Claymorphism | One shape-preserving clay Archive object with static status inset and no bounce |
+| Origami | One seam-bound Archive sheet whose printed status/action changes without a new fold/panel |
+| Terminal | One variable-driven `[archive:*]` system frame/current command line with no blink, spinner, or glow loop |
+| Retro Mac | One hard 1-bit in-section Archive alert whose message/default action changes in the same window |
+| Graphite | One restrained editorial Archive card with fixed rule, static mark, and stable action row |
+
+### Existing-surface state gaps — None
+
+`DP-VQ12` Choice A resolves the final existing-surface Decision prerequisite.
+No global color, motion, or component value outside its exact receipt becomes
+fallback authority.
 
 ### Absent replacement surfaces — None
 
