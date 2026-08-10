@@ -1,0 +1,67 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "final-close",
+  "approved_repository": "jwk26/griddo",
+  "approved_base": "a7bb848e30be579c9ae49ef06cb27bb9d4061e3d",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_scope": {
+    "lifecycle": "end-phase",
+    "phase": 24,
+    "worktree_role": "feature"
+  },
+  "user_disposition": "approved",
+  "next_legal_action": "execute-final-close",
+  "transaction": {
+    "workflow_candidate": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
+    "pre_close_head": "a7bb848e30be579c9ae49ef06cb27bb9d4061e3d",
+    "candidate_a": {
+      "commit": "f688322cb8094fc8108ab01d19f38d6b8f86c7c7",
+      "parent": "a7bb848e30be579c9ae49ef06cb27bb9d4061e3d",
+      "tree": "1cb6f9d970caeeafdc727e874880b3d5837dad85",
+      "diff_hash_domain": "git-diff-binary-parent-to-candidate",
+      "diff_sha256": "42bb168a747dcc857d8e30c99c2d3b46ac5eb426d905467e7ce711a9900805c0"
+    },
+    "receipt_path": "docs/issues/Final_Close_Phase_24.json",
+    "receipt_commit_message": "docs: record Phase 24 final close receipt",
+    "publication_head_construction": "fast-forward the clean feature branch from pre_close_head to candidate_a.commit, add only this exact receipt file, and create receipt commit B with B^ equal to candidate_a.commit",
+    "publication": {
+      "provider": "github",
+      "command": "scripts/codex-gh",
+      "remote": "origin",
+      "remote_url": "https://github.com/jwk26/griddo.git",
+      "integration_base_oid": "f76c68b79846ed1c1f19cc9972d488b60add3d19",
+      "base_branch": "main",
+      "head_branch": "phase-24/user-owned-decision-prerequisites",
+      "pr_action": "create",
+      "pr_number": null,
+      "pr_url": null,
+      "title": "docs(triage): close Phase 24 decision prerequisites",
+      "body": "## Summary\n\n- archive all fourteen accepted Phase 24 Decision-prerequisite receipts\n- preserve each exact realization release edge without starting implementation\n- record the combined completed/archive state for Phases 23–25\n\n## Validation\n\n- candidate changes only the Phase 24 archive, execution plan, and phase ledger\n- candidate and integration main share the verified src tree 483c7756667335b502105dfa4a712b128a7a117b\n- reused the Phase 25 full gate: 87 files / 679 tests, lint, typecheck, and seven-route build\n- git diff --check and the detached candidate audit passed",
+      "draft": false,
+      "merge_method": "merge",
+      "expected_head": "receipt commit B",
+      "expected_head_mechanism": "scripts/codex-gh pr merge --merge --match-head-commit B",
+      "status_source": "GitHub PR headRefOid, mergeStateStatus, statusCheckRollup, branch protection, and repository rulesets",
+      "required_checks": "all reported required checks reach terminal success",
+      "queue": "forbidden",
+      "auto_merge": "forbidden",
+      "admin_bypass": "forbidden",
+      "implicit_branch_deletion": "forbidden",
+      "bounded_wait_retry": "at most 20 status reads at 15-second intervals"
+    },
+    "integration_sync": {
+      "primary_worktree": "/Users/jwk/Documents/griddo2-codex-integration",
+      "branch": "main",
+      "method": "fetch then fast-forward-only sync followed by method-neutral candidate inclusion proof"
+    },
+    "cleanup": {
+      "preview_worktree": "/Users/jwk/Documents/griddo2-codex-phase-24-final-close-preview",
+      "preview_cleanup_timing": "after candidate_a is moved to the feature branch and receipt commit B is verified, remove clean preview non-force",
+      "remote_ref": "refs/heads/phase-24/user-owned-decision-prerequisites",
+      "feature_worktree": "/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites",
+      "local_branch": "phase-24/user-owned-decision-prerequisites",
+      "policy": "guarded non-force only after exact merge proof and primary integration sync"
+    }
+  }
+}
