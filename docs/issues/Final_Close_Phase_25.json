@@ -1,0 +1,67 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "final-close",
+  "approved_repository": "jwk26/griddo",
+  "approved_base": "adb9cc35ba611521915373fa5876665dedb2fc98",
+  "approved_branch": "phase-25/authoritative-command-dag",
+  "approved_scope": {
+    "lifecycle": "end-phase",
+    "phase": 25,
+    "worktree_role": "feature"
+  },
+  "user_disposition": "approved",
+  "next_legal_action": "execute-final-close",
+  "transaction": {
+    "workflow_candidate": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
+    "pre_close_head": "adb9cc35ba611521915373fa5876665dedb2fc98",
+    "candidate_a": {
+      "commit": "d5480918e2272bfea45a389c4c5e6130712c1187",
+      "parent": "adb9cc35ba611521915373fa5876665dedb2fc98",
+      "tree": "aaf1e1bd2c7dbcc02b7c365605ed8091d4039408",
+      "diff_hash_domain": "git-diff-binary-parent-to-candidate",
+      "diff_sha256": "d68cf208f20e7b9c22888fb70ed4872407b1f33c30f5c2b736bfedea4392b716"
+    },
+    "receipt_path": "docs/issues/Final_Close_Phase_25.json",
+    "receipt_commit_message": "docs: record Phase 25 final close receipt",
+    "publication_head_construction": "fast-forward the clean feature branch from pre_close_head to candidate_a.commit, add only this exact receipt file, and create receipt commit B with B^ equal to candidate_a.commit",
+    "publication": {
+      "provider": "github",
+      "command": "scripts/codex-gh",
+      "remote": "origin",
+      "remote_url": "https://github.com/jwk26/griddo.git",
+      "integration_base_oid": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+      "base_branch": "main",
+      "head_branch": "phase-25/authoritative-command-dag",
+      "pr_action": "create",
+      "pr_number": null,
+      "pr_url": null,
+      "title": "feat(triage): land Phase 25 command DAG",
+      "body": "## Summary\n\n- land eleven authoritative Inbox/Triage repository commands\n- enforce atomic reconciliation, monotonic CAS, and ABA no-resurrection\n- add guarded Scratch Archive and read-only Archive recovery classification\n- archive accepted Phase 25 work and its conformance audit\n\n## Validation\n\n- pnpm test - 87 files / 679 tests\n- pnpm lint - 0 errors / 11 pre-existing warnings\n- pnpm typecheck\n- pnpm build - seven routes\n- Task 126 acceptance changed docs only; the final full gate was reused without rerun",
+      "draft": false,
+      "merge_method": "merge",
+      "expected_head": "receipt commit B",
+      "expected_head_mechanism": "scripts/codex-gh pr merge --merge --match-head-commit B",
+      "status_source": "GitHub PR headRefOid, mergeStateStatus, statusCheckRollup, branch protection, and repository rulesets",
+      "required_checks": "all reported required checks reach terminal success",
+      "queue": "forbidden",
+      "auto_merge": "forbidden",
+      "admin_bypass": "forbidden",
+      "implicit_branch_deletion": "forbidden",
+      "bounded_wait_retry": "at most 20 status reads at 15-second intervals"
+    },
+    "integration_sync": {
+      "primary_worktree": "/Users/jwk/Documents/griddo2-codex-integration",
+      "branch": "main",
+      "method": "fetch then fast-forward-only sync followed by method-neutral candidate inclusion proof"
+    },
+    "cleanup": {
+      "preview_worktree": "/Users/jwk/Documents/griddo2-codex-phase-25-final-close-preview",
+      "preview_cleanup_timing": "after candidate_a is moved to the feature branch and receipt commit B is verified, remove clean preview non-force",
+      "remote_ref": "refs/heads/phase-25/authoritative-command-dag",
+      "feature_worktree": "/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag",
+      "local_branch": "phase-25/authoritative-command-dag",
+      "policy": "guarded non-force only after exact merge proof and primary integration sync"
+    }
+  }
+}

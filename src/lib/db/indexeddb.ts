@@ -1,18 +1,49 @@
 import Dexie, { type DexieOptions, type Table } from "dexie";
+import { z } from "zod";
 import { GRID_COLS, GRID_ROWS, TRASH_RETENTION_DAYS } from "@/lib/constants";
 import type {
+  AddBreakdownCommand,
+  AddBreakdownResult,
   AggregateHardDeleteResult,
+  ArchiveScratchCommand,
+  ArchiveScratchRecoveryResult,
+  ArchiveScratchResult,
+  ConfirmedCandidateOrphanCleanupCommand,
+  ConfirmedCandidateOrphanCleanupResult,
   DataStore,
+  DeleteBreakdownCommand,
+  DeleteBreakdownResult,
+  DirectPlacementCommand,
+  DirectPlacementUndoCommand,
+  PlacementCommandBase,
+  PlacementResult,
+  PlacementUndoResult,
+  SaveBreakdownCommand,
+  SaveBreakdownResult,
+  SaveScratchTitleCommand,
+  SaveScratchTitleResult,
+  ScratchArchiveEligibility,
+  StageCandidateCommand,
+  StageCandidateResult,
+  StagedPlacementCommand,
+  StagedPlacementUndoCommand,
+  UnstageCandidateCommand,
+  UnstageCandidateResult,
 } from "@/lib/db/datastore";
 import {
   bitSchema,
+  candidateOrphanAuditEventSchema,
   chunkSchema,
   createBitSchema,
   createChunkSchema,
   createScratchBreakdownSchema,
   createNodeSchema,
   nodeSchema,
+  pendingOperationRecoverySchema,
+  repositoryOperationIdSchema,
+  repositoryOperationStatusSchema,
   scratchBreakdownSchema,
+  stagedCandidateSchema,
   updateBitSchema,
   updateNodeSchema,
   updateScratchBreakdownSchema,
@@ -24,6 +55,7 @@ import {
   type CreateNode,
   type CreateScratchBreakdown,
   type Node,
+  type PendingOperationRecovery,
   type ScratchBreakdown,
   type StagedCandidate,
   type UpdateBit,
@@ -68,6 +100,41 @@ type DatabaseLike = {
   settings?: SettingsTableLike;
   scratchBreakdowns?: TableLike<ScratchBreakdown>;
   stagedCandidates?: TableLike<StagedCandidate>;
+  candidateOrphanAuditEvents?: TableLike<CandidateOrphanAuditEvent>;
+};
+
+type ConfirmedCandidateOrphanState = {
+  candidate: StagedCandidate | undefined;
+  source: ScratchBreakdown | undefined;
+  auditById: CandidateOrphanAuditEvent | undefined;
+  auditByCandidate: CandidateOrphanAuditEvent | undefined;
+  authoritativeAudit: CandidateOrphanAuditEvent | undefined;
+};
+
+type PlacementState = {
+  resultNode: Node | undefined;
+  resultBit: Bit | undefined;
+  source: ScratchBreakdown | undefined;
+  candidate: StagedCandidate | undefined;
+  sourceCandidate: StagedCandidate | undefined;
+  scratch: Bit | undefined;
+  nodes: Node[];
+  bits: Bit[];
+};
+
+type PlacementUndoState = {
+  resultNode: Node | undefined;
+  resultBit: Bit | undefined;
+  source: ScratchBreakdown | undefined;
+  candidate: StagedCandidate | undefined;
+  sourceCandidate: StagedCandidate | undefined;
+  nodes: Node[];
+  bits: Bit[];
+};
+
+type ScratchArchiveState = {
+  eligibility: ScratchArchiveEligibility;
+  activeInboxOwner: boolean;
 };
 
 type IndexedDBTransactionCheckpointHook = (name: string) => undefined;
@@ -126,6 +193,218 @@ const BIT_PERSISTED_FIELDS = bitSchema.keyof().options;
 const BREAKDOWN_PERSISTED_FIELDS = scratchBreakdownSchema.keyof().options;
 
 const chunkUpdateSchema = chunkSchema.omit({ id: true, parentId: true }).partial();
+const commandVersionSchema = z.number().int().min(1);
+
+const addBreakdownCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  breakdownId: z.string().uuid(),
+  scratchBitId: z.string().uuid(),
+  scratchExpectedVersion: commandVersionSchema,
+  content: z.string().min(1).max(1000),
+}).strict();
+
+const saveScratchTitleCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  scratchBitId: z.string().uuid(),
+  expectedVersion: commandVersionSchema,
+  baseTitle: z.string().min(1).max(200),
+  title: z.string().min(1).max(200),
+}).strict();
+
+const saveBreakdownCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  breakdownId: z.string().uuid(),
+  expectedVersion: commandVersionSchema,
+  baseContent: z.string().min(1).max(1000),
+  baseOrder: z.number().int().min(0),
+  content: z.string().min(1).max(1000),
+  order: z.number().int().min(0),
+}).strict();
+
+const deleteBreakdownCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  breakdownId: z.string().uuid(),
+  expectedVersion: commandVersionSchema,
+  scratchBitId: z.string().uuid(),
+  scratchExpectedVersion: commandVersionSchema,
+}).strict();
+
+const stageCandidateCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  candidateId: z.string().uuid(),
+  scratchBitId: z.string().uuid(),
+  sourceBreakdownId: z.string().uuid(),
+  sourceExpectedVersion: commandVersionSchema,
+  resultType: z.enum(["node", "bit"]),
+}).strict();
+
+const unstageCandidateCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  candidateId: z.string().uuid(),
+  candidateExpectedVersion: commandVersionSchema,
+  sourceBreakdownId: z.string().uuid(),
+  sourceExpectedVersion: commandVersionSchema,
+}).strict();
+
+const confirmedCandidateOrphanProofSchema = z.discriminatedUnion("status", [
+  z.object({
+    status: z.literal("confirmed"),
+    cause: z.enum(["source_deleted", "source_tombstoned"]),
+    sourceBreakdownId: z.string().uuid(),
+  }).strict(),
+  z.object({
+    status: z.literal("unresolved"),
+    reason: z.enum(["cache_miss", "offline", "delayed_subscription"]),
+  }).strict(),
+  z.object({
+    status: z.literal("planned_aggregate"),
+    sourceBreakdownId: z.string().uuid(),
+  }).strict(),
+]);
+
+const confirmedCandidateOrphanCleanupCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  auditEventId: z.string().uuid(),
+  candidateId: z.string().uuid(),
+  candidateExpectedVersion: commandVersionSchema,
+  sourceBreakdownId: z.string().uuid(),
+  scratchBitId: z.string().uuid(),
+  resultType: z.enum(["node", "bit"]),
+  proof: confirmedCandidateOrphanProofSchema,
+}).strict();
+
+const placementCommandShape = {
+  operationId: repositoryOperationIdSchema,
+  resultId: z.string().uuid(),
+  scratchBitId: z.string().uuid(),
+  sourceBreakdownId: z.string().uuid(),
+  sourceExpectedVersion: commandVersionSchema,
+  resultType: z.enum(["node", "bit"]),
+  title: z.string().min(1).max(1000),
+  targetParentId: z.string().uuid().nullable(),
+  expectedAncestorIds: z.array(z.string().uuid()),
+  x: z.number().int(),
+  y: z.number().int(),
+};
+
+const stagedPlacementCommandSchema = z.object({
+  ...placementCommandShape,
+  candidateId: z.string().uuid(),
+  candidateExpectedVersion: commandVersionSchema,
+}).strict();
+
+const directPlacementCommandSchema = z.object(placementCommandShape).strict();
+
+const placementUndoCommandShape = {
+  operationId: repositoryOperationIdSchema,
+  resultSnapshot: z.union([nodeSchema, bitSchema]),
+  sourceSnapshot: scratchBreakdownSchema,
+};
+
+const stagedPlacementUndoCommandSchema = z.object({
+  ...placementUndoCommandShape,
+  candidateSnapshot: stagedCandidateSchema,
+}).strict();
+
+const directPlacementUndoCommandSchema = z.object(placementUndoCommandShape).strict();
+
+const archiveScratchCommandSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  scratchBitId: z.string().uuid(),
+  expectedVersion: commandVersionSchema,
+  callerAssertion: z.object({
+    addDraftClear: z.literal(true),
+    titleBlockerClear: z.literal(true),
+  }).strict(),
+}).strict();
+
+const addBreakdownResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  breakdown: scratchBreakdownSchema.nullable(),
+  scratch: bitSchema.nullable(),
+}).strict();
+
+const saveScratchTitleResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  scratch: bitSchema.nullable(),
+}).strict();
+
+const saveBreakdownResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  breakdown: scratchBreakdownSchema.nullable(),
+  candidate: stagedCandidateSchema.nullable(),
+  scratch: bitSchema.nullable(),
+}).strict();
+
+const deleteBreakdownResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  breakdown: scratchBreakdownSchema.nullable(),
+  candidate: stagedCandidateSchema.nullable(),
+  scratch: bitSchema.nullable(),
+}).strict();
+
+const stageCandidateResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  candidate: stagedCandidateSchema.nullable(),
+  source: scratchBreakdownSchema.nullable(),
+  scratch: bitSchema.nullable(),
+}).strict();
+
+const unstageCandidateResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  candidate: stagedCandidateSchema.nullable(),
+  source: scratchBreakdownSchema.nullable(),
+}).strict();
+
+const confirmedCandidateOrphanCleanupResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  candidate: stagedCandidateSchema.nullable(),
+  source: scratchBreakdownSchema.nullable(),
+  auditEvent: candidateOrphanAuditEventSchema.nullable(),
+}).strict();
+
+const placementResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  result: z.union([nodeSchema, bitSchema]).nullable(),
+  source: scratchBreakdownSchema.nullable(),
+  candidate: stagedCandidateSchema.nullable(),
+}).strict();
+
+const placementUndoResultSchema = placementResultSchema;
+
+const scratchArchiveEligibilitySchema = z.object({
+  eligible: z.boolean(),
+  scratch: bitSchema.nullable(),
+  consumedCount: z.number().int().min(0),
+  unconsumedCount: z.number().int().min(0),
+  stagedCandidateCount: z.number().int().min(0),
+}).strict();
+
+const archiveScratchResultSchema = z.object({
+  operationId: repositoryOperationIdSchema,
+  status: repositoryOperationStatusSchema,
+  scratch: bitSchema.nullable(),
+}).strict();
+
+const archiveScratchRecoveryResultSchema = z.union([
+  z.object({
+    operationId: repositoryOperationIdSchema,
+    status: z.enum(["applied", "not_applied", "conflict"]),
+    scratch: bitSchema.nullable(),
+  }).strict(),
+  z.object({
+    operationId: repositoryOperationIdSchema,
+    outcome: z.literal("unknown"),
+  }).strict(),
+]);
 
 export class GridDODatabase extends Dexie {
   nodes!: Table<Node, string>;
@@ -761,6 +1040,11 @@ export class IndexedDBDataStore implements DataStore {
 
     const bit = await this.getRequiredBit(id);
 
+    const parent = await this.database.nodes.get(bit.parentId);
+    if (parent?.systemRole === "inbox") {
+      throw new Error("Use archiveScratch for Inbox-owned Scratch Bits");
+    }
+
     if (bit.archivedAt !== null) {
       return;
     }
@@ -771,6 +1055,147 @@ export class IndexedDBDataStore implements DataStore {
       await this.database.bits.put(bitSchema.parse(incrementVersion({ ...bit, archivedAt })));
       await this.touchNodeIds([bit.parentId], archivedAt);
     });
+  }
+
+  async getScratchArchiveEligibility(
+    scratchBitId: string,
+  ): Promise<ScratchArchiveEligibility> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.getScratchArchiveEligibility(scratchBitId),
+      );
+    }
+
+    const state = await this.readScratchArchiveState(scratchBitId);
+    return scratchArchiveEligibilitySchema.parse(state.eligibility);
+  }
+
+  async archiveScratch(
+    command: ArchiveScratchCommand,
+  ): Promise<ArchiveScratchResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.archiveScratch(command));
+    }
+
+    const parsed = archiveScratchCommandSchema.parse(command);
+    const state = await this.readScratchArchiveState(parsed.scratchBitId);
+    const eligibility = state.eligibility;
+    const currentScratch = eligibility.scratch;
+
+    if (
+      currentScratch &&
+      state.activeInboxOwner &&
+      currentScratch.archivedAt !== null &&
+      currentScratch.version === parsed.expectedVersion + 1
+    ) {
+      return archiveScratchResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        scratch: currentScratch,
+      });
+    }
+
+    if (
+      !currentScratch ||
+      currentScratch.deletedAt !== null ||
+      currentScratch.archivedAt !== null
+    ) {
+      return archiveScratchResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        scratch: currentScratch,
+      });
+    }
+
+    if (currentScratch.version !== parsed.expectedVersion) {
+      return archiveScratchResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        scratch: currentScratch,
+      });
+    }
+
+    if (!eligibility.eligible) {
+      return archiveScratchResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        scratch: currentScratch,
+      });
+    }
+
+    const timestamp = Date.now();
+    const scratch = bitSchema.parse({
+      ...currentScratch,
+      archivedAt: timestamp,
+      mtime: timestamp,
+      version: currentScratch.version + 1,
+    });
+    await this.database.bits.put(scratch);
+    this.emitTransactionCheckpoint("inbox.archive-scratch.after.scratch");
+
+    return archiveScratchResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      scratch,
+    });
+  }
+
+  async classifyArchiveScratchRecovery(
+    recovery: PendingOperationRecovery,
+  ): Promise<ArchiveScratchRecoveryResult> {
+    const parsed = pendingOperationRecoverySchema.parse(recovery);
+
+    try {
+      if (
+        this.database instanceof GridDODatabase &&
+        !this.hasAmbientDatabaseTransaction()
+      ) {
+        return await this.readInboxBreakdownSnapshot(() =>
+          this.classifyArchiveScratchRecovery(parsed),
+        );
+      }
+
+      const state = await this.readScratchArchiveState(parsed.scratchBitId);
+      const scratch = state.eligibility.scratch;
+      const aggregateIsComplete =
+        state.eligibility.consumedCount >= 1 &&
+        state.eligibility.unconsumedCount === 0 &&
+        state.eligibility.stagedCandidateCount === 0;
+      const completePostcondition =
+        scratch !== null &&
+        state.activeInboxOwner &&
+        scratch.deletedAt === null &&
+        scratch.archivedAt !== null &&
+        scratch.archivedAt >= parsed.startedAt &&
+        scratch.mtime === scratch.archivedAt &&
+        scratch.version === parsed.expectedVersion + 1 &&
+        aggregateIsComplete;
+      const completePrecondition =
+        scratch !== null &&
+        state.activeInboxOwner &&
+        scratch.deletedAt === null &&
+        scratch.archivedAt === null &&
+        scratch.version === parsed.expectedVersion &&
+        aggregateIsComplete;
+
+      return archiveScratchRecoveryResultSchema.parse({
+        operationId: parsed.operationId,
+        status: completePostcondition
+          ? "applied"
+          : completePrecondition
+            ? "not_applied"
+            : "conflict",
+        scratch,
+      });
+    } catch {
+      return archiveScratchRecoveryResultSchema.parse({
+        operationId: parsed.operationId,
+        outcome: "unknown",
+      });
+    }
   }
 
   async unarchiveNode(id: string): Promise<void> {
@@ -1011,6 +1436,1185 @@ export class IndexedDBDataStore implements DataStore {
       if (seedNodes.length > 0) {
         await this.database.nodes.bulkPut(seedNodes);
       }
+    });
+  }
+
+  async addBreakdown(command: AddBreakdownCommand): Promise<AddBreakdownResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.addBreakdown(command));
+    }
+
+    const parsed = addBreakdownCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const [currentBreakdown, currentScratch] = await Promise.all([
+      breakdowns.get(parsed.breakdownId),
+      this.database.bits.get(parsed.scratchBitId),
+    ]);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+
+    if (
+      matchesAddBreakdownPostcondition(
+        parsed,
+        currentBreakdown,
+        currentScratch,
+        scratchIsActive,
+      )
+    ) {
+      return addBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        breakdown: currentBreakdown ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (!scratchIsActive || !currentScratch) {
+      return addBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        breakdown: currentBreakdown ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      currentBreakdown !== undefined ||
+      currentScratch.version !== parsed.scratchExpectedVersion
+    ) {
+      return addBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        breakdown: currentBreakdown ?? null,
+        scratch: currentScratch,
+      });
+    }
+
+    const authoritativeRows = await breakdowns.toArray();
+    const nextOrder = authoritativeRows.reduce(
+      (maximum, row) =>
+        row.scratchBitId === parsed.scratchBitId
+          ? Math.max(maximum, row.order + 1)
+          : maximum,
+      0,
+    );
+    const breakdown = scratchBreakdownSchema.parse({
+      id: parsed.breakdownId,
+      scratchBitId: parsed.scratchBitId,
+      content: parsed.content,
+      order: nextOrder,
+      createdAt: Date.now(),
+      consumedAt: null,
+      version: 1,
+    });
+    const scratch = bitSchema.parse(incrementVersion(currentScratch));
+
+    await breakdowns.put(breakdown);
+    this.emitTransactionCheckpoint("inbox.add.after.breakdown");
+    await this.database.bits.put(scratch);
+    this.emitTransactionCheckpoint("inbox.add.after.scratch");
+
+    return addBreakdownResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      breakdown,
+      scratch,
+    });
+  }
+
+  async reconcileAddBreakdown(
+    command: AddBreakdownCommand,
+  ): Promise<AddBreakdownResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileAddBreakdown(command),
+      );
+    }
+
+    const parsed = addBreakdownCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const [currentBreakdown, currentScratch] = await Promise.all([
+      breakdowns.get(parsed.breakdownId),
+      this.database.bits.get(parsed.scratchBitId),
+    ]);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+    const status = matchesAddBreakdownPostcondition(
+      parsed,
+      currentBreakdown,
+      currentScratch,
+      scratchIsActive,
+    )
+      ? "already_applied"
+      : currentBreakdown === undefined &&
+          scratchIsActive &&
+          currentScratch?.version === parsed.scratchExpectedVersion
+        ? "not_applied"
+        : "conflict";
+
+    return addBreakdownResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      breakdown: currentBreakdown ?? null,
+      scratch: currentScratch ?? null,
+    });
+  }
+
+  async saveScratchTitle(
+    command: SaveScratchTitleCommand,
+  ): Promise<SaveScratchTitleResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.saveScratchTitle(command));
+    }
+
+    const parsed = saveScratchTitleCommandSchema.parse(command);
+    const currentScratch = await this.database.bits.get(parsed.scratchBitId);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+
+    if (
+      matchesSaveScratchTitlePostcondition(
+        parsed,
+        currentScratch,
+        scratchIsActive,
+      )
+    ) {
+      return saveScratchTitleResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (!scratchIsActive || !currentScratch || parsed.baseTitle === parsed.title) {
+      return saveScratchTitleResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      currentScratch.version !== parsed.expectedVersion ||
+      currentScratch.title !== parsed.baseTitle
+    ) {
+      return saveScratchTitleResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        scratch: currentScratch,
+      });
+    }
+
+    const scratch = bitSchema.parse({
+      ...currentScratch,
+      title: parsed.title,
+      mtime: Date.now(),
+      version: currentScratch.version + 1,
+    });
+    await this.database.bits.put(scratch);
+    this.emitTransactionCheckpoint("inbox.save-scratch.after.scratch");
+
+    return saveScratchTitleResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      scratch,
+    });
+  }
+
+  async reconcileSaveScratchTitle(
+    command: SaveScratchTitleCommand,
+  ): Promise<SaveScratchTitleResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileSaveScratchTitle(command),
+      );
+    }
+
+    const parsed = saveScratchTitleCommandSchema.parse(command);
+    const currentScratch = await this.database.bits.get(parsed.scratchBitId);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+    const status = matchesSaveScratchTitlePostcondition(
+      parsed,
+      currentScratch,
+      scratchIsActive,
+    )
+      ? "already_applied"
+      : scratchIsActive &&
+          currentScratch?.version === parsed.expectedVersion &&
+          currentScratch.title === parsed.baseTitle
+        ? "not_applied"
+        : "conflict";
+
+    return saveScratchTitleResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      scratch: currentScratch ?? null,
+    });
+  }
+
+  async saveBreakdown(
+    command: SaveBreakdownCommand,
+  ): Promise<SaveBreakdownResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.saveBreakdown(command));
+    }
+
+    const parsed = saveBreakdownCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const [currentBreakdown, currentCandidate] = await Promise.all([
+      breakdowns.get(parsed.breakdownId),
+      this.findCandidateBySource(parsed.breakdownId),
+    ]);
+    const currentScratch = currentBreakdown
+      ? await this.database.bits.get(currentBreakdown.scratchBitId)
+      : undefined;
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+
+    if (
+      matchesSaveBreakdownPostcondition(
+        parsed,
+        currentBreakdown,
+        currentCandidate,
+        scratchIsActive,
+      )
+    ) {
+      return saveBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        breakdown: currentBreakdown ?? null,
+        candidate: currentCandidate ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      !currentBreakdown ||
+      !scratchIsActive ||
+      currentCandidate !== undefined ||
+      currentBreakdown.consumedAt !== null ||
+      (parsed.baseContent === parsed.content && parsed.baseOrder === parsed.order)
+    ) {
+      return saveBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        breakdown: currentBreakdown ?? null,
+        candidate: currentCandidate ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      currentBreakdown.version !== parsed.expectedVersion ||
+      currentBreakdown.content !== parsed.baseContent ||
+      currentBreakdown.order !== parsed.baseOrder
+    ) {
+      return saveBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        breakdown: currentBreakdown,
+        candidate: null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    const breakdown = scratchBreakdownSchema.parse({
+      ...currentBreakdown,
+      content: parsed.content,
+      order: parsed.order,
+      version: currentBreakdown.version + 1,
+    });
+    await breakdowns.put(breakdown);
+    this.emitTransactionCheckpoint("inbox.save-breakdown.after.breakdown");
+
+    return saveBreakdownResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      breakdown,
+      candidate: null,
+      scratch: currentScratch ?? null,
+    });
+  }
+
+  async reconcileSaveBreakdown(
+    command: SaveBreakdownCommand,
+  ): Promise<SaveBreakdownResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileSaveBreakdown(command),
+      );
+    }
+
+    const parsed = saveBreakdownCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const [currentBreakdown, currentCandidate] = await Promise.all([
+      breakdowns.get(parsed.breakdownId),
+      this.findCandidateBySource(parsed.breakdownId),
+    ]);
+    const currentScratch = currentBreakdown
+      ? await this.database.bits.get(currentBreakdown.scratchBitId)
+      : undefined;
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+    const status = matchesSaveBreakdownPostcondition(
+      parsed,
+      currentBreakdown,
+      currentCandidate,
+      scratchIsActive,
+    )
+      ? "already_applied"
+      : matchesSaveBreakdownPrecondition(
+            parsed,
+            currentBreakdown,
+            currentCandidate,
+            scratchIsActive,
+          )
+        ? "not_applied"
+        : "conflict";
+
+    return saveBreakdownResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      breakdown: currentBreakdown ?? null,
+      candidate: currentCandidate ?? null,
+      scratch: currentScratch ?? null,
+    });
+  }
+
+  async deleteBreakdown(
+    command: DeleteBreakdownCommand,
+  ): Promise<DeleteBreakdownResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.deleteBreakdown(command));
+    }
+
+    const parsed = deleteBreakdownCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const [currentBreakdown, currentCandidate, currentScratch] = await Promise.all([
+      breakdowns.get(parsed.breakdownId),
+      this.findCandidateBySource(parsed.breakdownId),
+      this.database.bits.get(parsed.scratchBitId),
+    ]);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+
+    if (
+      matchesDeleteBreakdownPostcondition(
+        parsed,
+        currentBreakdown,
+        currentCandidate,
+        currentScratch,
+        scratchIsActive,
+      )
+    ) {
+      return deleteBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        breakdown: null,
+        candidate: null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      !currentBreakdown ||
+      !currentScratch ||
+      !scratchIsActive ||
+      currentCandidate !== undefined ||
+      currentBreakdown.scratchBitId !== parsed.scratchBitId ||
+      currentBreakdown.consumedAt !== null
+    ) {
+      return deleteBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        breakdown: currentBreakdown ?? null,
+        candidate: currentCandidate ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      currentBreakdown.version !== parsed.expectedVersion ||
+      currentScratch.version !== parsed.scratchExpectedVersion
+    ) {
+      return deleteBreakdownResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        breakdown: currentBreakdown,
+        candidate: null,
+        scratch: currentScratch,
+      });
+    }
+
+    const scratch = bitSchema.parse(incrementVersion(currentScratch));
+    await breakdowns.delete(parsed.breakdownId);
+    this.emitTransactionCheckpoint("inbox.delete.after.breakdown");
+    await this.database.bits.put(scratch);
+    this.emitTransactionCheckpoint("inbox.delete.after.scratch");
+
+    return deleteBreakdownResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      breakdown: null,
+      candidate: null,
+      scratch,
+    });
+  }
+
+  async reconcileDeleteBreakdown(
+    command: DeleteBreakdownCommand,
+  ): Promise<DeleteBreakdownResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileDeleteBreakdown(command),
+      );
+    }
+
+    const parsed = deleteBreakdownCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const [currentBreakdown, currentCandidate, currentScratch] = await Promise.all([
+      breakdowns.get(parsed.breakdownId),
+      this.findCandidateBySource(parsed.breakdownId),
+      this.database.bits.get(parsed.scratchBitId),
+    ]);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+    const status = matchesDeleteBreakdownPostcondition(
+      parsed,
+      currentBreakdown,
+      currentCandidate,
+      currentScratch,
+      scratchIsActive,
+    )
+      ? "already_applied"
+      : matchesDeleteBreakdownPrecondition(
+            parsed,
+            currentBreakdown,
+            currentCandidate,
+            currentScratch,
+            scratchIsActive,
+          )
+        ? "not_applied"
+        : "conflict";
+
+    return deleteBreakdownResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      breakdown: currentBreakdown ?? null,
+      candidate: currentCandidate ?? null,
+      scratch: currentScratch ?? null,
+    });
+  }
+
+  async stageCandidate(
+    command: StageCandidateCommand,
+  ): Promise<StageCandidateResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.stageCandidate(command));
+    }
+
+    const parsed = stageCandidateCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const [currentCandidate, sourceCandidate, currentSource, currentScratch] =
+      await Promise.all([
+        candidates.get(parsed.candidateId),
+        this.findCandidateBySource(parsed.sourceBreakdownId),
+        breakdowns.get(parsed.sourceBreakdownId),
+        this.database.bits.get(parsed.scratchBitId),
+      ]);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+    const authoritativeCandidate = currentCandidate ?? sourceCandidate;
+
+    if (
+      matchesStageCandidatePostcondition(
+        parsed,
+        currentCandidate,
+        sourceCandidate,
+        currentSource,
+        currentScratch,
+        scratchIsActive,
+      )
+    ) {
+      return stageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        candidate: currentCandidate ?? null,
+        source: currentSource ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (
+      !scratchIsActive ||
+      !currentScratch ||
+      !currentSource ||
+      currentSource.scratchBitId !== parsed.scratchBitId ||
+      currentSource.consumedAt !== null
+    ) {
+      return stageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        candidate: authoritativeCandidate ?? null,
+        source: currentSource ?? null,
+        scratch: currentScratch ?? null,
+      });
+    }
+
+    if (currentCandidate !== undefined) {
+      return stageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        candidate: currentCandidate,
+        source: currentSource,
+        scratch: currentScratch,
+      });
+    }
+
+    if (sourceCandidate !== undefined) {
+      return stageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        candidate: sourceCandidate,
+        source: currentSource,
+        scratch: currentScratch,
+      });
+    }
+
+    if (currentSource.version !== parsed.sourceExpectedVersion) {
+      return stageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        candidate: null,
+        source: currentSource,
+        scratch: currentScratch,
+      });
+    }
+
+    const timestamp = Date.now();
+    const candidate = stagedCandidateSchema.parse({
+      id: parsed.candidateId,
+      scratchBitId: parsed.scratchBitId,
+      sourceBreakdownId: parsed.sourceBreakdownId,
+      resultType: parsed.resultType,
+      lifecycle: "staged",
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      version: 1,
+    });
+    const source = scratchBreakdownSchema.parse(incrementVersion(currentSource));
+
+    await candidates.put(candidate);
+    this.emitTransactionCheckpoint("inbox.stage.after.candidate");
+    await breakdowns.put(source);
+    this.emitTransactionCheckpoint("inbox.stage.after.source");
+
+    return stageCandidateResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      candidate,
+      source,
+      scratch: currentScratch,
+    });
+  }
+
+  async reconcileStageCandidate(
+    command: StageCandidateCommand,
+  ): Promise<StageCandidateResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileStageCandidate(command),
+      );
+    }
+
+    const parsed = stageCandidateCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const [currentCandidate, sourceCandidate, currentSource, currentScratch] =
+      await Promise.all([
+        candidates.get(parsed.candidateId),
+        this.findCandidateBySource(parsed.sourceBreakdownId),
+        breakdowns.get(parsed.sourceBreakdownId),
+        this.database.bits.get(parsed.scratchBitId),
+      ]);
+    const scratchIsActive = await this.isActiveInboxScratch(currentScratch);
+    const status = matchesStageCandidatePostcondition(
+      parsed,
+      currentCandidate,
+      sourceCandidate,
+      currentSource,
+      currentScratch,
+      scratchIsActive,
+    )
+      ? "already_applied"
+      : matchesStageCandidatePrecondition(
+            parsed,
+            currentCandidate,
+            sourceCandidate,
+            currentSource,
+            currentScratch,
+            scratchIsActive,
+          )
+        ? "not_applied"
+        : "conflict";
+
+    return stageCandidateResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      candidate: currentCandidate ?? sourceCandidate ?? null,
+      source: currentSource ?? null,
+      scratch: currentScratch ?? null,
+    });
+  }
+
+  async unstageCandidate(
+    command: UnstageCandidateCommand,
+  ): Promise<UnstageCandidateResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.unstageCandidate(command));
+    }
+
+    const parsed = unstageCandidateCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const [currentCandidate, sourceCandidate, currentSource] = await Promise.all([
+      candidates.get(parsed.candidateId),
+      this.findCandidateBySource(parsed.sourceBreakdownId),
+      breakdowns.get(parsed.sourceBreakdownId),
+    ]);
+    const authoritativeCandidate = currentCandidate ?? sourceCandidate;
+
+    if (
+      matchesUnstageCandidatePostcondition(
+        parsed,
+        currentCandidate,
+        sourceCandidate,
+        currentSource,
+      )
+    ) {
+      return unstageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        candidate: null,
+        source: currentSource ?? null,
+      });
+    }
+
+    if (
+      currentCandidate !== undefined &&
+      (currentCandidate.sourceBreakdownId !== parsed.sourceBreakdownId ||
+        (currentSource !== undefined &&
+          currentCandidate.scratchBitId !== currentSource.scratchBitId))
+    ) {
+      return unstageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        candidate: authoritativeCandidate ?? null,
+        source: currentSource ?? null,
+      });
+    }
+
+    if (
+      currentSource === undefined ||
+      !matchesUnstageCandidatePrecondition(
+        parsed,
+        currentCandidate,
+        sourceCandidate,
+        currentSource,
+      )
+    ) {
+      return unstageCandidateResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        candidate: authoritativeCandidate ?? null,
+        source: currentSource,
+      });
+    }
+
+    const source = scratchBreakdownSchema.parse(incrementVersion(currentSource));
+    await candidates.delete(parsed.candidateId);
+    this.emitTransactionCheckpoint("inbox.unstage.after.candidate");
+    await breakdowns.put(source);
+    this.emitTransactionCheckpoint("inbox.unstage.after.source");
+
+    return unstageCandidateResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      candidate: null,
+      source,
+    });
+  }
+
+  async reconcileUnstageCandidate(
+    command: UnstageCandidateCommand,
+  ): Promise<UnstageCandidateResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileUnstageCandidate(command),
+      );
+    }
+
+    const parsed = unstageCandidateCommandSchema.parse(command);
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const [currentCandidate, sourceCandidate, currentSource] = await Promise.all([
+      candidates.get(parsed.candidateId),
+      this.findCandidateBySource(parsed.sourceBreakdownId),
+      breakdowns.get(parsed.sourceBreakdownId),
+    ]);
+    const status = matchesUnstageCandidatePostcondition(
+      parsed,
+      currentCandidate,
+      sourceCandidate,
+      currentSource,
+    )
+      ? "already_applied"
+      : matchesUnstageCandidatePrecondition(
+            parsed,
+            currentCandidate,
+            sourceCandidate,
+            currentSource,
+          )
+        ? "not_applied"
+        : "conflict";
+
+    return unstageCandidateResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      candidate: currentCandidate ?? sourceCandidate ?? null,
+      source: currentSource ?? null,
+    });
+  }
+
+  async cleanupConfirmedCandidateOrphan(
+    command: ConfirmedCandidateOrphanCleanupCommand,
+  ): Promise<ConfirmedCandidateOrphanCleanupResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.cleanupConfirmedCandidateOrphan(command));
+    }
+
+    const parsed = confirmedCandidateOrphanCleanupCommandSchema.parse(command);
+    const state = await this.readConfirmedCandidateOrphanState(parsed);
+
+    if (matchesConfirmedCandidateOrphanPostcondition(parsed, state)) {
+      return confirmedCandidateOrphanCleanupResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        candidate: null,
+        source: state.source ?? null,
+        auditEvent: state.authoritativeAudit ?? null,
+      });
+    }
+
+    if (parsed.proof.status !== "confirmed") {
+      return confirmedCandidateOrphanCleanupResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "rejected",
+        candidate: state.candidate ?? null,
+        source: state.source ?? null,
+        auditEvent: state.authoritativeAudit ?? null,
+      });
+    }
+
+    if (!matchesConfirmedCandidateOrphanPrecondition(parsed, state)) {
+      return confirmedCandidateOrphanCleanupResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "conflict",
+        candidate: state.candidate ?? null,
+        source: state.source ?? null,
+        auditEvent: state.authoritativeAudit ?? null,
+      });
+    }
+
+    const candidates = this.requireStagedCandidates();
+    const audits = this.requireCandidateOrphanAuditEvents();
+    const auditEvent = candidateOrphanAuditEventSchema.parse({
+      id: parsed.auditEventId,
+      cause: parsed.proof.cause,
+      candidateId: parsed.candidateId,
+      sourceBreakdownId: parsed.sourceBreakdownId,
+      scratchBitId: parsed.scratchBitId,
+      occurredAt: Date.now(),
+    });
+
+    await candidates.delete(parsed.candidateId);
+    this.emitTransactionCheckpoint("inbox.orphan-cleanup.after.candidate");
+    await audits.put(auditEvent);
+    this.emitTransactionCheckpoint("inbox.orphan-cleanup.after.audit");
+
+    return confirmedCandidateOrphanCleanupResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      candidate: null,
+      source: null,
+      auditEvent,
+    });
+  }
+
+  async reconcileConfirmedCandidateOrphanCleanup(
+    command: ConfirmedCandidateOrphanCleanupCommand,
+  ): Promise<ConfirmedCandidateOrphanCleanupResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readConfirmedCandidateOrphanSnapshot(() =>
+        this.reconcileConfirmedCandidateOrphanCleanup(command),
+      );
+    }
+
+    const parsed = confirmedCandidateOrphanCleanupCommandSchema.parse(command);
+    const state = await this.readConfirmedCandidateOrphanState(parsed);
+    const status = matchesConfirmedCandidateOrphanPostcondition(parsed, state)
+      ? "already_applied"
+      : parsed.proof.status !== "confirmed"
+        ? "rejected"
+        : matchesConfirmedCandidateOrphanPrecondition(parsed, state)
+          ? "not_applied"
+          : "conflict";
+
+    return confirmedCandidateOrphanCleanupResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      candidate: state.candidate ?? null,
+      source: state.source ?? null,
+      auditEvent: state.authoritativeAudit ?? null,
+    });
+  }
+
+  async placeStagedCandidate(
+    command: StagedPlacementCommand,
+  ): Promise<PlacementResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.placeStagedCandidate(command));
+    }
+
+    const parsed = stagedPlacementCommandSchema.parse(command);
+    const state = await this.readPlacementState(parsed);
+    const result = placementStateResult(state);
+    const authoritativeCandidate = state.candidate ?? state.sourceCandidate;
+
+    if (matchesStagedPlacementPostcondition(parsed, state)) {
+      return placementResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        result,
+        source: state.source ?? null,
+        candidate: null,
+      });
+    }
+
+    const validation = this.validatePlacementPrecondition(parsed, state, true);
+    if (validation !== "valid") {
+      return placementResultSchema.parse({
+        operationId: parsed.operationId,
+        status: validation,
+        result,
+        source: state.source ?? null,
+        candidate: authoritativeCandidate ?? null,
+      });
+    }
+
+    const timestamp = Date.now();
+    const placed = createPlacementResult(parsed, state, timestamp);
+    const source = scratchBreakdownSchema.parse({
+      ...state.source!,
+      consumedAt: timestamp,
+      version: parsed.sourceExpectedVersion + 1,
+    });
+
+    await this.putPlacementResult(placed);
+    if (parsed.targetParentId !== null) {
+      const targetParent = state.nodes.find(({ id }) => id === parsed.targetParentId)!;
+      await this.database.nodes.put({ ...targetParent, mtime: timestamp });
+    }
+    this.emitTransactionCheckpoint("inbox.place-staged.after.result");
+    await this.requireScratchBreakdowns().put(source);
+    this.emitTransactionCheckpoint("inbox.place-staged.after.source");
+    await this.requireStagedCandidates().delete(parsed.candidateId);
+    this.emitTransactionCheckpoint("inbox.place-staged.after.candidate");
+
+    return placementResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      result: placed,
+      source,
+      candidate: null,
+    });
+  }
+
+  async reconcileStagedPlacement(
+    command: StagedPlacementCommand,
+  ): Promise<PlacementResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileStagedPlacement(command),
+      );
+    }
+
+    const parsed = stagedPlacementCommandSchema.parse(command);
+    const state = await this.readPlacementState(parsed);
+    const status = matchesStagedPlacementPostcondition(parsed, state)
+      ? "already_applied"
+      : this.validatePlacementPrecondition(parsed, state, true) === "valid"
+        ? "not_applied"
+        : "conflict";
+
+    return placementResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      result: placementStateResult(state),
+      source: state.source ?? null,
+      candidate: state.candidate ?? state.sourceCandidate ?? null,
+    });
+  }
+
+  async placeDirectBreakdown(
+    command: DirectPlacementCommand,
+  ): Promise<PlacementResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.placeDirectBreakdown(command));
+    }
+
+    const parsed = directPlacementCommandSchema.parse(command);
+    const state = await this.readPlacementState(parsed);
+    const result = placementStateResult(state);
+
+    if (matchesDirectPlacementPostcondition(parsed, state)) {
+      return placementResultSchema.parse({
+        operationId: parsed.operationId,
+        status: "already_applied",
+        result,
+        source: state.source ?? null,
+        candidate: null,
+      });
+    }
+
+    const validation = this.validatePlacementPrecondition(parsed, state, false);
+    if (validation !== "valid") {
+      return placementResultSchema.parse({
+        operationId: parsed.operationId,
+        status: validation,
+        result,
+        source: state.source ?? null,
+        candidate: state.sourceCandidate ?? null,
+      });
+    }
+
+    const timestamp = Date.now();
+    const placed = createPlacementResult(parsed, state, timestamp);
+    const source = scratchBreakdownSchema.parse({
+      ...state.source!,
+      consumedAt: timestamp,
+      version: parsed.sourceExpectedVersion + 1,
+    });
+
+    await this.putPlacementResult(placed);
+    if (parsed.targetParentId !== null) {
+      const targetParent = state.nodes.find(({ id }) => id === parsed.targetParentId)!;
+      await this.database.nodes.put({ ...targetParent, mtime: timestamp });
+    }
+    this.emitTransactionCheckpoint("inbox.place-direct.after.result");
+    await this.requireScratchBreakdowns().put(source);
+    this.emitTransactionCheckpoint("inbox.place-direct.after.source");
+
+    return placementResultSchema.parse({
+      operationId: parsed.operationId,
+      status: "applied",
+      result: placed,
+      source,
+      candidate: null,
+    });
+  }
+
+  async reconcileDirectPlacement(
+    command: DirectPlacementCommand,
+  ): Promise<PlacementResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileDirectPlacement(command),
+      );
+    }
+
+    const parsed = directPlacementCommandSchema.parse(command);
+    const state = await this.readPlacementState(parsed);
+    const status = matchesDirectPlacementPostcondition(parsed, state)
+      ? "already_applied"
+      : this.validatePlacementPrecondition(parsed, state, false) === "valid"
+        ? "not_applied"
+        : "conflict";
+
+    return placementResultSchema.parse({
+      operationId: parsed.operationId,
+      status,
+      result: placementStateResult(state),
+      source: state.source ?? null,
+      candidate: state.sourceCandidate ?? null,
+    });
+  }
+
+  async undoStagedPlacement(
+    command: StagedPlacementUndoCommand,
+  ): Promise<PlacementUndoResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.undoStagedPlacement(command));
+    }
+
+    const parsed = stagedPlacementUndoCommandSchema.parse(command);
+    return this.applyPlacementUndo(parsed, true);
+  }
+
+  async reconcileStagedPlacementUndo(
+    command: StagedPlacementUndoCommand,
+  ): Promise<PlacementUndoResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileStagedPlacementUndo(command),
+      );
+    }
+
+    const parsed = stagedPlacementUndoCommandSchema.parse(command);
+    const state = await this.readPlacementUndoState(parsed);
+    return placementUndoResultSchema.parse({
+      operationId: parsed.operationId,
+      status: matchesPlacementUndoPostcondition(parsed, state, true)
+        ? "already_applied"
+        : matchesPlacementUndoPrecondition(parsed, state, true)
+          ? "not_applied"
+          : "conflict",
+      result: placementUndoStateResult(state),
+      source: state.source ?? null,
+      candidate: state.candidate ?? state.sourceCandidate ?? null,
+    });
+  }
+
+  async undoDirectPlacement(
+    command: DirectPlacementUndoCommand,
+  ): Promise<PlacementUndoResult> {
+    if (this.database instanceof GridDODatabase && !this.hasAmbientWriteTransaction()) {
+      return this.write(() => this.undoDirectPlacement(command));
+    }
+
+    const parsed = directPlacementUndoCommandSchema.parse(command);
+    return this.applyPlacementUndo(parsed, false);
+  }
+
+  async reconcileDirectPlacementUndo(
+    command: DirectPlacementUndoCommand,
+  ): Promise<PlacementUndoResult> {
+    if (
+      this.database instanceof GridDODatabase &&
+      !this.hasAmbientDatabaseTransaction()
+    ) {
+      return this.readInboxBreakdownSnapshot(() =>
+        this.reconcileDirectPlacementUndo(command),
+      );
+    }
+
+    const parsed = directPlacementUndoCommandSchema.parse(command);
+    const state = await this.readPlacementUndoState(parsed);
+    return placementUndoResultSchema.parse({
+      operationId: parsed.operationId,
+      status: matchesPlacementUndoPostcondition(parsed, state, false)
+        ? "already_applied"
+        : matchesPlacementUndoPrecondition(parsed, state, false)
+          ? "not_applied"
+          : "conflict",
+      result: placementUndoStateResult(state),
+      source: state.source ?? null,
+      candidate: state.sourceCandidate ?? null,
+    });
+  }
+
+  private async applyPlacementUndo(
+    command: DirectPlacementUndoCommand | StagedPlacementUndoCommand,
+    staged: boolean,
+  ): Promise<PlacementUndoResult> {
+    const state = await this.readPlacementUndoState(command);
+    const authoritativeCandidate = state.candidate ?? state.sourceCandidate;
+
+    if (matchesPlacementUndoPostcondition(command, state, staged)) {
+      return placementUndoResultSchema.parse({
+        operationId: command.operationId,
+        status: "already_applied",
+        result: null,
+        source: state.source ?? null,
+        candidate: staged ? authoritativeCandidate ?? null : null,
+      });
+    }
+
+    if (!matchesPlacementUndoPrecondition(command, state, staged)) {
+      return placementUndoResultSchema.parse({
+        operationId: command.operationId,
+        status: "conflict",
+        result: placementUndoStateResult(state),
+        source: state.source ?? null,
+        candidate: authoritativeCandidate ?? null,
+      });
+    }
+
+    const timestamp = Date.now();
+    const result = command.resultSnapshot;
+    if ("level" in result) {
+      await this.database.nodes.delete(result.id);
+    } else {
+      await this.database.bits.delete(result.id);
+    }
+    if (result.parentId !== null) {
+      const parent = state.nodes.find(({ id }) => id === result.parentId)!;
+      await this.database.nodes.put({ ...parent, mtime: timestamp });
+    }
+    this.emitTransactionCheckpoint(
+      staged ? "inbox.undo-staged.after.result" : "inbox.undo-direct.after.result",
+    );
+
+    const source = scratchBreakdownSchema.parse({
+      ...command.sourceSnapshot,
+      consumedAt: null,
+      version: command.sourceSnapshot.version + 1,
+    });
+    await this.requireScratchBreakdowns().put(source);
+    this.emitTransactionCheckpoint(
+      staged ? "inbox.undo-staged.after.source" : "inbox.undo-direct.after.source",
+    );
+
+    let candidate: StagedCandidate | null = null;
+    if (staged && "candidateSnapshot" in command) {
+      candidate = stagedCandidateSchema.parse({
+        ...command.candidateSnapshot,
+        updatedAt: timestamp,
+        version: command.candidateSnapshot.version + 1,
+      });
+      await this.requireStagedCandidates().put(candidate);
+      this.emitTransactionCheckpoint("inbox.undo-staged.after.candidate");
+    }
+
+    return placementUndoResultSchema.parse({
+      operationId: command.operationId,
+      status: "applied",
+      result: null,
+      source,
+      candidate,
     });
   }
 
@@ -1710,6 +3314,49 @@ export class IndexedDBDataStore implements DataStore {
     return scope();
   }
 
+  private async readInboxBreakdownSnapshot<T>(
+    scope: () => Promise<T>,
+  ): Promise<T> {
+    if (!(this.database instanceof GridDODatabase)) {
+      return scope();
+    }
+    if (this.hasAmbientDatabaseTransaction()) {
+      return scope();
+    }
+
+    return this.database.transaction(
+      "r",
+      [
+        this.database.nodes,
+        this.database.bits,
+        this.database.scratchBreakdowns,
+        this.database.stagedCandidates,
+      ],
+      scope,
+    );
+  }
+
+  private async readConfirmedCandidateOrphanSnapshot<T>(
+    scope: () => Promise<T>,
+  ): Promise<T> {
+    if (!(this.database instanceof GridDODatabase)) {
+      return scope();
+    }
+    if (this.hasAmbientDatabaseTransaction()) {
+      return scope();
+    }
+
+    return this.database.transaction(
+      "r",
+      [
+        this.database.scratchBreakdowns,
+        this.database.stagedCandidates,
+        this.database.candidateOrphanAuditEvents,
+      ],
+      scope,
+    );
+  }
+
   /** @internal Narrow test seam for proving named rollback checkpoints. */
   protected async runTransactionCheckpointProbe<T>(
     scope: (checkpoint: IndexedDBTransactionCheckpointHook) => Promise<T>,
@@ -1740,6 +3387,13 @@ export class IndexedDBDataStore implements DataStore {
       this.database instanceof GridDODatabase &&
       Dexie.currentTransaction?.db === this.database &&
       Dexie.currentTransaction.mode === "readwrite"
+    );
+  }
+
+  private hasAmbientDatabaseTransaction(): boolean {
+    return (
+      this.database instanceof GridDODatabase &&
+      Dexie.currentTransaction?.db === this.database
     );
   }
 
@@ -1779,6 +3433,271 @@ export class IndexedDBDataStore implements DataStore {
     }
 
     return this.database.scratchBreakdowns;
+  }
+
+  private requireStagedCandidates(): TableLike<StagedCandidate> {
+    if (!this.database.stagedCandidates) {
+      throw new Error("stagedCandidates store not available");
+    }
+
+    return this.database.stagedCandidates;
+  }
+
+  private requireCandidateOrphanAuditEvents(): TableLike<CandidateOrphanAuditEvent> {
+    if (!this.database.candidateOrphanAuditEvents) {
+      throw new Error("candidateOrphanAuditEvents store not available");
+    }
+
+    return this.database.candidateOrphanAuditEvents;
+  }
+
+  private async readConfirmedCandidateOrphanState(
+    command: ConfirmedCandidateOrphanCleanupCommand,
+  ): Promise<ConfirmedCandidateOrphanState> {
+    const candidates = this.requireStagedCandidates();
+    const breakdowns = this.requireScratchBreakdowns();
+    const audits = this.requireCandidateOrphanAuditEvents();
+    const [candidate, source, auditById, auditByCandidate] = await Promise.all([
+      candidates.get(command.candidateId),
+      breakdowns.get(command.sourceBreakdownId),
+      audits.get(command.auditEventId),
+      this.findCandidateOrphanAuditByCandidate(
+        audits,
+        command.candidateId,
+      ),
+    ]);
+
+    return {
+      candidate,
+      source,
+      auditById,
+      auditByCandidate,
+      authoritativeAudit: auditByCandidate ?? auditById,
+    };
+  }
+
+  private async findCandidateOrphanAuditByCandidate(
+    audits: TableLike<CandidateOrphanAuditEvent>,
+    candidateId: string,
+  ): Promise<CandidateOrphanAuditEvent | undefined> {
+    if (this.database instanceof GridDODatabase) {
+      return this.database.candidateOrphanAuditEvents
+        .where("candidateId")
+        .equals(candidateId)
+        .first();
+    }
+
+    const auditRows = await audits.toArray();
+    return auditRows.find((event) => event.candidateId === candidateId);
+  }
+
+  private async findCandidateBySource(
+    sourceBreakdownId: string,
+  ): Promise<StagedCandidate | undefined> {
+    const candidates = await this.requireStagedCandidates().toArray();
+    return candidates.find(
+      (candidate) => candidate.sourceBreakdownId === sourceBreakdownId,
+    );
+  }
+
+  private async isActiveInboxScratch(
+    scratch: Bit | undefined,
+  ): Promise<boolean> {
+    if (
+      !scratch ||
+      scratch.deletedAt !== null ||
+      scratch.archivedAt !== null
+    ) {
+      return false;
+    }
+
+    const parent = await this.database.nodes.get(scratch.parentId);
+    return (
+      parent?.systemRole === "inbox" &&
+      parent.deletedAt === null &&
+      parent.archivedAt === null
+    );
+  }
+
+  private async readScratchArchiveState(
+    scratchBitId: string,
+  ): Promise<ScratchArchiveState> {
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const [scratch, nodes, allBreakdowns, allCandidates] = await Promise.all([
+      this.database.bits.get(scratchBitId),
+      this.database.nodes.toArray(),
+      breakdowns.toArray(),
+      candidates.toArray(),
+    ]);
+    const scratchBreakdowns = allBreakdowns.filter(
+      (breakdown) => breakdown.scratchBitId === scratchBitId,
+    );
+    const consumedCount = scratchBreakdowns.filter(
+      (breakdown) => breakdown.consumedAt !== null,
+    ).length;
+    const unconsumedCount = scratchBreakdowns.length - consumedCount;
+    const stagedCandidateCount = allCandidates.filter(
+      (candidate) =>
+        candidate.scratchBitId === scratchBitId && candidate.lifecycle === "staged",
+    ).length;
+    const parent = scratch
+      ? nodes.find((node) => node.id === scratch.parentId)
+      : undefined;
+    const activeInboxOwner =
+      parent?.systemRole === "inbox" &&
+      parent.deletedAt === null &&
+      parent.archivedAt === null;
+    const activeInboxScratch =
+      scratch !== undefined &&
+      scratch.deletedAt === null &&
+      scratch.archivedAt === null &&
+      activeInboxOwner;
+
+    return {
+      eligibility: {
+        eligible:
+          activeInboxScratch &&
+          consumedCount >= 1 &&
+          unconsumedCount === 0 &&
+          stagedCandidateCount === 0,
+        scratch: scratch ?? null,
+        consumedCount,
+        unconsumedCount,
+        stagedCandidateCount,
+      },
+      activeInboxOwner,
+    };
+  }
+
+  private async readPlacementState(
+    command: PlacementCommandBase & Partial<Pick<StagedPlacementCommand, "candidateId">>,
+  ): Promise<PlacementState> {
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const [resultNode, resultBit, source, candidate, scratch, nodes, bits, allCandidates] =
+      await Promise.all([
+        this.database.nodes.get(command.resultId),
+        this.database.bits.get(command.resultId),
+        breakdowns.get(command.sourceBreakdownId),
+        command.candidateId ? candidates.get(command.candidateId) : Promise.resolve(undefined),
+        this.database.bits.get(command.scratchBitId),
+        this.database.nodes.toArray(),
+        this.database.bits.toArray(),
+        candidates.toArray(),
+      ]);
+
+    return {
+      resultNode,
+      resultBit,
+      source,
+      candidate,
+      sourceCandidate: allCandidates.find(
+        (item) => item.sourceBreakdownId === command.sourceBreakdownId,
+      ),
+      scratch,
+      nodes,
+      bits,
+    };
+  }
+
+  private async readPlacementUndoState(
+    command: DirectPlacementUndoCommand | StagedPlacementUndoCommand,
+  ): Promise<PlacementUndoState> {
+    const breakdowns = this.requireScratchBreakdowns();
+    const candidates = this.requireStagedCandidates();
+    const candidateId = "candidateSnapshot" in command
+      ? command.candidateSnapshot.id
+      : undefined;
+    const [resultNode, resultBit, source, candidate, nodes, bits, allCandidates] =
+      await Promise.all([
+        this.database.nodes.get(command.resultSnapshot.id),
+        this.database.bits.get(command.resultSnapshot.id),
+        breakdowns.get(command.sourceSnapshot.id),
+        candidateId ? candidates.get(candidateId) : Promise.resolve(undefined),
+        this.database.nodes.toArray(),
+        this.database.bits.toArray(),
+        candidates.toArray(),
+      ]);
+
+    return {
+      resultNode,
+      resultBit,
+      source,
+      candidate,
+      sourceCandidate: allCandidates.find(
+        (item) => item.sourceBreakdownId === command.sourceSnapshot.id,
+      ),
+      nodes,
+      bits,
+    };
+  }
+
+  private validatePlacementPrecondition(
+    command: PlacementCommandBase & Partial<Pick<StagedPlacementCommand, "candidateId" | "candidateExpectedVersion">>,
+    state: PlacementState,
+    staged: boolean,
+  ): "valid" | "rejected" | "conflict" {
+    if (state.resultNode || state.resultBit) return "conflict";
+
+    const scratchParent = state.scratch
+      ? state.nodes.find(({ id }) => id === state.scratch!.parentId)
+      : undefined;
+    const scratchIsActive =
+      state.scratch !== undefined &&
+      state.scratch.deletedAt === null &&
+      state.scratch.archivedAt === null &&
+      scratchParent?.systemRole === "inbox" &&
+      scratchParent.deletedAt === null &&
+      scratchParent.archivedAt === null;
+    if (
+      !scratchIsActive ||
+      !state.source ||
+      state.source.scratchBitId !== command.scratchBitId ||
+      state.source.consumedAt !== null
+    ) {
+      return "rejected";
+    }
+    if (state.source.version !== command.sourceExpectedVersion) return "conflict";
+
+    if (staged) {
+      if (
+        !command.candidateId ||
+        !state.candidate ||
+        state.sourceCandidate?.id !== command.candidateId ||
+        state.candidate.sourceBreakdownId !== command.sourceBreakdownId ||
+        state.candidate.scratchBitId !== command.scratchBitId ||
+        state.candidate.lifecycle !== "staged" ||
+        state.candidate.resultType !== command.resultType
+      ) {
+        return "conflict";
+      }
+      if (state.candidate.version !== command.candidateExpectedVersion) return "conflict";
+    } else {
+      if (state.sourceCandidate) return "rejected";
+      if (command.title !== state.source.content) return "rejected";
+    }
+
+    if (!placementTitleIsValid(command.resultType, command.title)) return "rejected";
+    if (!targetIsValid(command, state.nodes)) return "rejected";
+    if (
+      command.x < 0 ||
+      command.x >= GRID_COLS ||
+      command.y < 0 ||
+      command.y >= GRID_ROWS ||
+      placementCellIsOccupied(command, state)
+    ) {
+      return "rejected";
+    }
+
+    return "valid";
+  }
+
+  private putPlacementResult(result: Node | Bit): Promise<unknown> {
+    if ("level" in result) {
+      return this.database.nodes.put(nodeSchema.parse(result));
+    }
+    return this.database.bits.put(bitSchema.parse(result));
   }
 
   private async saveNodes(nodes: Node[]): Promise<void> {
@@ -1960,6 +3879,568 @@ export class IndexedDBDataStore implements DataStore {
     );
     await this.touchNodeIds([bit.parentId], timestamp);
   }
+}
+
+function matchesAddBreakdownPostcondition(
+  command: AddBreakdownCommand,
+  breakdown: ScratchBreakdown | undefined,
+  scratch: Bit | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    breakdown?.id === command.breakdownId &&
+    breakdown.scratchBitId === command.scratchBitId &&
+    breakdown.content === command.content &&
+    breakdown.consumedAt === null &&
+    breakdown.version === 1 &&
+    scratch?.version === command.scratchExpectedVersion + 1
+  );
+}
+
+function matchesSaveScratchTitlePostcondition(
+  command: SaveScratchTitleCommand,
+  scratch: Bit | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    scratch?.title === command.title &&
+    scratch.version === command.expectedVersion + 1
+  );
+}
+
+function matchesSaveBreakdownPrecondition(
+  command: SaveBreakdownCommand,
+  breakdown: ScratchBreakdown | undefined,
+  candidate: StagedCandidate | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    candidate === undefined &&
+    breakdown?.consumedAt === null &&
+    breakdown.version === command.expectedVersion &&
+    breakdown.content === command.baseContent &&
+    breakdown.order === command.baseOrder
+  );
+}
+
+function matchesSaveBreakdownPostcondition(
+  command: SaveBreakdownCommand,
+  breakdown: ScratchBreakdown | undefined,
+  candidate: StagedCandidate | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    candidate === undefined &&
+    breakdown?.consumedAt === null &&
+    breakdown.version === command.expectedVersion + 1 &&
+    breakdown.content === command.content &&
+    breakdown.order === command.order
+  );
+}
+
+function matchesDeleteBreakdownPrecondition(
+  command: DeleteBreakdownCommand,
+  breakdown: ScratchBreakdown | undefined,
+  candidate: StagedCandidate | undefined,
+  scratch: Bit | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    candidate === undefined &&
+    breakdown?.scratchBitId === command.scratchBitId &&
+    breakdown.consumedAt === null &&
+    breakdown.version === command.expectedVersion &&
+    scratch?.version === command.scratchExpectedVersion
+  );
+}
+
+function matchesDeleteBreakdownPostcondition(
+  command: DeleteBreakdownCommand,
+  breakdown: ScratchBreakdown | undefined,
+  candidate: StagedCandidate | undefined,
+  scratch: Bit | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    breakdown === undefined &&
+    candidate === undefined &&
+    scratch?.version === command.scratchExpectedVersion + 1
+  );
+}
+
+function matchesStageCandidatePrecondition(
+  command: StageCandidateCommand,
+  candidate: StagedCandidate | undefined,
+  sourceCandidate: StagedCandidate | undefined,
+  source: ScratchBreakdown | undefined,
+  scratch: Bit | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    candidate === undefined &&
+    sourceCandidate === undefined &&
+    source?.id === command.sourceBreakdownId &&
+    source.scratchBitId === command.scratchBitId &&
+    source.consumedAt === null &&
+    source.version === command.sourceExpectedVersion &&
+    scratch?.id === command.scratchBitId
+  );
+}
+
+function matchesStageCandidatePostcondition(
+  command: StageCandidateCommand,
+  candidate: StagedCandidate | undefined,
+  sourceCandidate: StagedCandidate | undefined,
+  source: ScratchBreakdown | undefined,
+  scratch: Bit | undefined,
+  scratchIsActive: boolean,
+): boolean {
+  return (
+    scratchIsActive &&
+    candidate?.id === command.candidateId &&
+    sourceCandidate?.id === command.candidateId &&
+    candidate.scratchBitId === command.scratchBitId &&
+    candidate.sourceBreakdownId === command.sourceBreakdownId &&
+    candidate.resultType === command.resultType &&
+    candidate.lifecycle === "staged" &&
+    candidate.version === 1 &&
+    candidate.createdAt === candidate.updatedAt &&
+    source?.id === command.sourceBreakdownId &&
+    source.scratchBitId === command.scratchBitId &&
+    source.consumedAt === null &&
+    source.version === command.sourceExpectedVersion + 1 &&
+    scratch?.id === command.scratchBitId
+  );
+}
+
+function matchesUnstageCandidatePrecondition(
+  command: UnstageCandidateCommand,
+  candidate: StagedCandidate | undefined,
+  sourceCandidate: StagedCandidate | undefined,
+  source: ScratchBreakdown | undefined,
+): boolean {
+  return (
+    candidate?.id === command.candidateId &&
+    sourceCandidate?.id === command.candidateId &&
+    candidate.sourceBreakdownId === command.sourceBreakdownId &&
+    candidate.lifecycle === "staged" &&
+    candidate.version === command.candidateExpectedVersion &&
+    source?.id === command.sourceBreakdownId &&
+    source.scratchBitId === candidate.scratchBitId &&
+    source.consumedAt === null &&
+    source.version === command.sourceExpectedVersion
+  );
+}
+
+function matchesUnstageCandidatePostcondition(
+  command: UnstageCandidateCommand,
+  candidate: StagedCandidate | undefined,
+  sourceCandidate: StagedCandidate | undefined,
+  source: ScratchBreakdown | undefined,
+): boolean {
+  return (
+    candidate === undefined &&
+    sourceCandidate === undefined &&
+    source?.id === command.sourceBreakdownId &&
+    source.consumedAt === null &&
+    source.version === command.sourceExpectedVersion + 1
+  );
+}
+
+function matchesConfirmedCandidateOrphanPrecondition(
+  command: ConfirmedCandidateOrphanCleanupCommand,
+  state: ConfirmedCandidateOrphanState,
+): boolean {
+  return (
+    command.proof.status === "confirmed" &&
+    command.proof.sourceBreakdownId === command.sourceBreakdownId &&
+    state.source === undefined &&
+    state.auditById === undefined &&
+    state.auditByCandidate === undefined &&
+    state.candidate?.id === command.candidateId &&
+    state.candidate.version === command.candidateExpectedVersion &&
+    state.candidate.sourceBreakdownId === command.sourceBreakdownId &&
+    state.candidate.scratchBitId === command.scratchBitId &&
+    state.candidate.resultType === command.resultType &&
+    state.candidate.lifecycle === "staged"
+  );
+}
+
+function matchesConfirmedCandidateOrphanPostcondition(
+  command: ConfirmedCandidateOrphanCleanupCommand,
+  state: ConfirmedCandidateOrphanState,
+): boolean {
+  return (
+    command.proof.status === "confirmed" &&
+    command.proof.sourceBreakdownId === command.sourceBreakdownId &&
+    state.candidate === undefined &&
+    matchesCandidateOrphanAuditEvent(command, state.auditById) &&
+    state.auditByCandidate?.id === state.auditById?.id
+  );
+}
+
+function matchesCandidateOrphanAuditEvent(
+  command: ConfirmedCandidateOrphanCleanupCommand,
+  event: CandidateOrphanAuditEvent | undefined,
+): boolean {
+  return (
+    command.proof.status === "confirmed" &&
+    event?.id === command.auditEventId &&
+    event.cause === command.proof.cause &&
+    event.candidateId === command.candidateId &&
+    event.sourceBreakdownId === command.sourceBreakdownId &&
+    event.scratchBitId === command.scratchBitId
+  );
+}
+
+function placementUndoStateResult(state: PlacementUndoState): Node | Bit | null {
+  return state.resultNode ?? state.resultBit ?? null;
+}
+
+function matchesPlacementUndoPrecondition(
+  command: DirectPlacementUndoCommand | StagedPlacementUndoCommand,
+  state: PlacementUndoState,
+  staged: boolean,
+): boolean {
+  const result = placementUndoStateResult(state);
+  if (
+    !result ||
+    ("level" in command.resultSnapshot ? state.resultBit !== undefined : state.resultNode !== undefined) ||
+    !sameFlatRecord(result, command.resultSnapshot) ||
+    !validPlacementUndoSnapshots(command, staged) ||
+    !state.source ||
+    !sameFlatRecord(state.source, command.sourceSnapshot) ||
+    placementUndoHasDependencies(command.resultSnapshot.id, state)
+  ) {
+    return false;
+  }
+
+  if (
+    command.resultSnapshot.parentId !== null &&
+    !state.nodes.some(({ id }) => id === command.resultSnapshot.parentId)
+  ) {
+    return false;
+  }
+
+  if (staged) {
+    return (
+      "candidateSnapshot" in command &&
+      state.candidate === undefined &&
+      state.sourceCandidate === undefined
+    );
+  }
+  return state.sourceCandidate === undefined;
+}
+
+function matchesPlacementUndoPostcondition(
+  command: DirectPlacementUndoCommand | StagedPlacementUndoCommand,
+  state: PlacementUndoState,
+  staged: boolean,
+): boolean {
+  if (
+    state.resultNode !== undefined ||
+    state.resultBit !== undefined ||
+    placementUndoHasDependencies(command.resultSnapshot.id, state) ||
+    !state.source ||
+    !sameFlatRecord(state.source, {
+      ...command.sourceSnapshot,
+      consumedAt: null,
+      version: command.sourceSnapshot.version + 1,
+    })
+  ) {
+    return false;
+  }
+
+  if (!staged) return state.sourceCandidate === undefined;
+  if (!("candidateSnapshot" in command)) return false;
+
+  const candidate = state.candidate ?? state.sourceCandidate;
+  return (
+    candidate !== undefined &&
+    state.candidate?.id === state.sourceCandidate?.id &&
+    candidate.updatedAt >= candidate.createdAt &&
+    sameFlatRecord(candidate, {
+      ...command.candidateSnapshot,
+      updatedAt: candidate.updatedAt,
+      version: command.candidateSnapshot.version + 1,
+    })
+  );
+}
+
+function validPlacementUndoSnapshots(
+  command: DirectPlacementUndoCommand | StagedPlacementUndoCommand,
+  staged: boolean,
+): boolean {
+  const result = command.resultSnapshot;
+  const source = command.sourceSnapshot;
+  const isNode = "level" in result;
+  if (
+    result.version !== 1 ||
+    result.createdAt !== result.mtime ||
+    result.deletedAt !== null ||
+    result.archivedAt !== null ||
+    source.consumedAt !== result.createdAt
+  ) {
+    return false;
+  }
+  if (isNode && (result.systemRole !== null || result.hiddenFromGrid)) return false;
+
+  if (!staged) return !("candidateSnapshot" in command);
+  if (!("candidateSnapshot" in command)) return false;
+  const candidate = command.candidateSnapshot;
+  return (
+    candidate.scratchBitId === source.scratchBitId &&
+    candidate.sourceBreakdownId === source.id &&
+    candidate.resultType === (isNode ? "node" : "bit") &&
+    candidate.lifecycle === "staged"
+  );
+}
+
+function placementUndoHasDependencies(
+  resultId: string,
+  state: PlacementUndoState,
+): boolean {
+  return (
+    state.nodes.some(({ parentId }) => parentId === resultId) ||
+    state.bits.some(({ parentId }) => parentId === resultId)
+  );
+}
+
+function sameFlatRecord<T extends object>(actual: T, expected: T): boolean {
+  const actualRecord = actual as Record<string, unknown>;
+  const expectedRecord = expected as Record<string, unknown>;
+  const actualKeys = Object.keys(actualRecord);
+  const expectedKeys = Object.keys(expectedRecord);
+  return (
+    actualKeys.length === expectedKeys.length &&
+    expectedKeys.every((key) => actualRecord[key] === expectedRecord[key])
+  );
+}
+
+function placementStateResult(state: PlacementState): Node | Bit | null {
+  return state.resultNode ?? state.resultBit ?? null;
+}
+
+function matchesStagedPlacementPostcondition(
+  command: StagedPlacementCommand,
+  state: PlacementState,
+): boolean {
+  const result = matchingPlacementResult(command, state);
+  return (
+    result !== undefined &&
+    state.source?.id === command.sourceBreakdownId &&
+    state.source.scratchBitId === command.scratchBitId &&
+    state.source.version === command.sourceExpectedVersion + 1 &&
+    state.source.consumedAt === result.createdAt &&
+    state.candidate === undefined &&
+    state.sourceCandidate === undefined
+  );
+}
+
+function matchesDirectPlacementPostcondition(
+  command: DirectPlacementCommand,
+  state: PlacementState,
+): boolean {
+  const result = matchingPlacementResult(command, state);
+  return (
+    result !== undefined &&
+    state.source?.id === command.sourceBreakdownId &&
+    state.source.scratchBitId === command.scratchBitId &&
+    state.source.version === command.sourceExpectedVersion + 1 &&
+    state.source.consumedAt === result.createdAt &&
+    state.sourceCandidate === undefined
+  );
+}
+
+function matchingPlacementResult(
+  command: PlacementCommandBase,
+  state: PlacementState,
+): Node | Bit | undefined {
+  if (command.resultType === "node") {
+    const result = state.resultNode;
+    if (
+      !result ||
+      state.resultBit ||
+      result.id !== command.resultId ||
+      result.title !== command.title ||
+      result.parentId !== command.targetParentId ||
+      result.x !== command.x ||
+      result.y !== command.y ||
+      result.version !== 1 ||
+      result.pastDeadlineDismissed !== false ||
+      result.deletedAt !== null ||
+      result.archivedAt !== null ||
+      result.systemRole !== null ||
+      result.hiddenFromGrid !== false ||
+      result.deadline !== null ||
+      result.deadlineAllDay !== false ||
+      result.color !== "hsl(210, 80%, 55%)" ||
+      result.icon !== "Folder" ||
+      result.createdAt !== result.mtime
+    ) {
+      return undefined;
+    }
+    const expectedLevel = command.expectedAncestorIds.length;
+    return result.level === expectedLevel ? result : undefined;
+  }
+
+  const result = state.resultBit;
+  if (
+    !result ||
+    state.resultNode ||
+    command.targetParentId === null ||
+    result.id !== command.resultId ||
+    result.title !== command.title ||
+    result.parentId !== command.targetParentId ||
+    result.x !== command.x ||
+    result.y !== command.y ||
+    result.version !== 1 ||
+    result.pastDeadlineDismissed !== false ||
+    result.deletedAt !== null ||
+    result.archivedAt !== null ||
+    result.description !== "" ||
+    result.icon !== "ListTodo" ||
+    result.deadline !== null ||
+    result.deadlineAllDay !== false ||
+    result.priority !== null ||
+    result.status !== "active" ||
+    result.createdAt !== result.mtime
+  ) {
+    return undefined;
+  }
+  return result;
+}
+
+function createPlacementResult(
+  command: PlacementCommandBase,
+  state: PlacementState,
+  timestamp: number,
+): Node | Bit {
+  if (command.resultType === "node") {
+    const parentLevel = command.targetParentId === null
+      ? -1
+      : state.nodes.find(({ id }) => id === command.targetParentId)!.level;
+    return nodeSchema.parse({
+      id: command.resultId,
+      title: command.title,
+      color: "hsl(210, 80%, 55%)",
+      icon: "Folder",
+      deadline: null,
+      deadlineAllDay: false,
+      mtime: timestamp,
+      createdAt: timestamp,
+      version: 1,
+      parentId: command.targetParentId,
+      level: parentLevel + 1,
+      x: command.x,
+      y: command.y,
+      deletedAt: null,
+      archivedAt: null,
+      systemRole: null,
+      hiddenFromGrid: false,
+      pastDeadlineDismissed: false,
+    });
+  }
+
+  return bitSchema.parse({
+    id: command.resultId,
+    title: command.title,
+    description: "",
+    icon: "ListTodo",
+    deadline: null,
+    deadlineAllDay: false,
+    priority: null,
+    status: "active",
+    mtime: timestamp,
+    createdAt: timestamp,
+    version: 1,
+    parentId: command.targetParentId,
+    x: command.x,
+    y: command.y,
+    deletedAt: null,
+    archivedAt: null,
+    pastDeadlineDismissed: false,
+  });
+}
+
+function placementTitleIsValid(type: "node" | "bit", title: string): boolean {
+  return title.length >= 1 && title.length <= (type === "node" ? 100 : 200);
+}
+
+function targetIsValid(command: PlacementCommandBase, nodes: Node[]): boolean {
+  if (command.targetParentId === null) {
+    return command.resultType === "node" && command.expectedAncestorIds.length === 0;
+  }
+
+  const nodesById = new Map(nodes.map((node) => [node.id, node]));
+  const target = nodesById.get(command.targetParentId);
+  if (!target || target.systemRole !== null) return false;
+
+  const ancestorIds: string[] = [];
+  const visited = new Set<string>();
+  let current: Node | undefined = target;
+  while (current) {
+    if (
+      visited.has(current.id) ||
+      current.deletedAt !== null ||
+      current.archivedAt !== null ||
+      current.systemRole !== null ||
+      current.hiddenFromGrid
+    ) {
+      return false;
+    }
+    visited.add(current.id);
+    ancestorIds.unshift(current.id);
+    if (current.parentId === null) break;
+    const parent = nodesById.get(current.parentId);
+    if (!parent) return false;
+    current = parent;
+  }
+
+  if (
+    ancestorIds.length !== command.expectedAncestorIds.length ||
+    ancestorIds.some((id, index) => id !== command.expectedAncestorIds[index])
+  ) {
+    return false;
+  }
+  const chainIsConsistent = ancestorIds.every(
+    (id, index) => nodesById.get(id)?.level === index,
+  );
+  if (!chainIsConsistent) return false;
+
+  return command.resultType === "bit" || target.level < 2;
+}
+
+function placementCellIsOccupied(
+  command: PlacementCommandBase,
+  state: PlacementState,
+): boolean {
+  return (
+    state.nodes.some(
+      (node) =>
+        node.parentId === command.targetParentId &&
+        node.deletedAt === null &&
+        node.archivedAt === null &&
+        !(command.targetParentId === null && node.hiddenFromGrid) &&
+        node.x === command.x &&
+        node.y === command.y,
+    ) ||
+    state.bits.some(
+      (bit) =>
+        bit.parentId === command.targetParentId &&
+        bit.deletedAt === null &&
+        bit.archivedAt === null &&
+        bit.x === command.x &&
+        bit.y === command.y,
+    )
+  );
 }
 
 function sortGridItems<T extends { x: number; y: number }>(items: T[]): T[] {

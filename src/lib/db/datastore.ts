@@ -11,7 +11,202 @@ import type {
   CreateScratchBreakdown,
   UpdateScratchBreakdown,
   StagedCandidate,
+  CandidateOrphanAuditEvent,
+  RepositoryOperationCommand,
+  RepositoryOperationResult,
+  RepositoryOperationStatus,
+  PendingOperationRecovery,
+  UnknownRepositoryOperationOutcome,
 } from "@/lib/db/schema";
+
+export type AddBreakdownCommand = RepositoryOperationCommand<{
+  breakdownId: string;
+  scratchBitId: string;
+  scratchExpectedVersion: number;
+  content: string;
+}>;
+
+export type AddBreakdownResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  breakdown: ScratchBreakdown | null;
+  scratch: Bit | null;
+}>;
+
+export type SaveScratchTitleCommand = RepositoryOperationCommand<{
+  scratchBitId: string;
+  expectedVersion: number;
+  baseTitle: string;
+  title: string;
+}>;
+
+export type SaveScratchTitleResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  scratch: Bit | null;
+}>;
+
+export type SaveBreakdownCommand = RepositoryOperationCommand<{
+  breakdownId: string;
+  expectedVersion: number;
+  baseContent: string;
+  baseOrder: number;
+  content: string;
+  order: number;
+}>;
+
+export type SaveBreakdownResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  breakdown: ScratchBreakdown | null;
+  candidate: StagedCandidate | null;
+  scratch: Bit | null;
+}>;
+
+export type DeleteBreakdownCommand = RepositoryOperationCommand<{
+  breakdownId: string;
+  expectedVersion: number;
+  scratchBitId: string;
+  scratchExpectedVersion: number;
+}>;
+
+export type DeleteBreakdownResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  breakdown: ScratchBreakdown | null;
+  candidate: StagedCandidate | null;
+  scratch: Bit | null;
+}>;
+
+export type StageCandidateCommand = RepositoryOperationCommand<{
+  candidateId: string;
+  scratchBitId: string;
+  sourceBreakdownId: string;
+  sourceExpectedVersion: number;
+  resultType: StagedCandidate["resultType"];
+}>;
+
+export type StageCandidateResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  candidate: StagedCandidate | null;
+  source: ScratchBreakdown | null;
+  scratch: Bit | null;
+}>;
+
+export type UnstageCandidateCommand = RepositoryOperationCommand<{
+  candidateId: string;
+  candidateExpectedVersion: number;
+  sourceBreakdownId: string;
+  sourceExpectedVersion: number;
+}>;
+
+export type UnstageCandidateResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  candidate: StagedCandidate | null;
+  source: ScratchBreakdown | null;
+}>;
+
+export type ConfirmedCandidateOrphanProof =
+  | Readonly<{
+      status: "confirmed";
+      cause: CandidateOrphanAuditEvent["cause"];
+      sourceBreakdownId: string;
+    }>
+  | Readonly<{
+      status: "unresolved";
+      reason: "cache_miss" | "offline" | "delayed_subscription";
+    }>
+  | Readonly<{
+      status: "planned_aggregate";
+      sourceBreakdownId: string;
+    }>;
+
+export type ConfirmedCandidateOrphanCleanupCommand = RepositoryOperationCommand<{
+  auditEventId: string;
+  candidateId: string;
+  candidateExpectedVersion: number;
+  sourceBreakdownId: string;
+  scratchBitId: string;
+  resultType: StagedCandidate["resultType"];
+  proof: ConfirmedCandidateOrphanProof;
+}>;
+
+export type ConfirmedCandidateOrphanCleanupResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  candidate: StagedCandidate | null;
+  source: ScratchBreakdown | null;
+  auditEvent: CandidateOrphanAuditEvent | null;
+}>;
+
+export type PlacementCommandBase = RepositoryOperationCommand<{
+  resultId: string;
+  scratchBitId: string;
+  sourceBreakdownId: string;
+  sourceExpectedVersion: number;
+  resultType: "node" | "bit";
+  title: string;
+  targetParentId: string | null;
+  expectedAncestorIds: readonly string[];
+  x: number;
+  y: number;
+}>;
+
+export type StagedPlacementCommand = PlacementCommandBase & Readonly<{
+  candidateId: string;
+  candidateExpectedVersion: number;
+}>;
+
+export type DirectPlacementCommand = PlacementCommandBase;
+
+export type PlacementResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  result: Node | Bit | null;
+  source: ScratchBreakdown | null;
+  candidate: StagedCandidate | null;
+}>;
+
+export type PlacementUndoCommandBase = RepositoryOperationCommand<{
+  resultSnapshot: Node | Bit;
+  sourceSnapshot: ScratchBreakdown;
+}>;
+
+export type StagedPlacementUndoCommand = PlacementUndoCommandBase & Readonly<{
+  candidateSnapshot: StagedCandidate;
+}>;
+
+export type DirectPlacementUndoCommand = PlacementUndoCommandBase;
+
+export type PlacementUndoResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  result: Node | Bit | null;
+  source: ScratchBreakdown | null;
+  candidate: StagedCandidate | null;
+}>;
+
+export type ScratchArchiveEligibility = Readonly<{
+  eligible: boolean;
+  scratch: Bit | null;
+  consumedCount: number;
+  unconsumedCount: number;
+  stagedCandidateCount: number;
+}>;
+
+export type ArchiveScratchCommand = RepositoryOperationCommand<{
+  scratchBitId: string;
+  expectedVersion: number;
+  callerAssertion: Readonly<{
+    addDraftClear: true;
+    titleBlockerClear: true;
+  }>;
+}>;
+
+export type ArchiveScratchResult = RepositoryOperationResult<{
+  status: RepositoryOperationStatus;
+  scratch: Bit | null;
+}>;
+
+export type ArchiveScratchRecoveryResult =
+  | RepositoryOperationResult<{
+      status: "applied" | "not_applied" | "conflict";
+      scratch: Bit | null;
+    }>
+  | UnknownRepositoryOperationOutcome;
 
 export type AggregateHardDeleteResult =
   | { status: "deleted" }
@@ -50,6 +245,13 @@ export interface DataStore {
   unarchiveNode(id: string): Promise<void>;
   unarchiveBit(id: string): Promise<void>;
 
+  // --- Authoritative Inbox Scratch Archive ---
+  getScratchArchiveEligibility(scratchBitId: string): Promise<ScratchArchiveEligibility>;
+  archiveScratch(command: ArchiveScratchCommand): Promise<ArchiveScratchResult>;
+  classifyArchiveScratchRecovery(
+    recovery: PendingOperationRecovery,
+  ): Promise<ArchiveScratchRecoveryResult>;
+
   // --- System Node Seeding ---
   /**
    * Idempotently ensures the Inbox and Archive View system nodes exist.
@@ -66,6 +268,60 @@ export interface DataStore {
   markScratchBreakdownConsumed(id: string): Promise<void>;
   unconsumeScratchBreakdown(id: string): Promise<void>;
   deleteScratchBreakdown(id: string): Promise<void>;
+
+  // --- Authoritative Inbox Breakdown Commands ---
+  addBreakdown(command: AddBreakdownCommand): Promise<AddBreakdownResult>;
+  reconcileAddBreakdown(command: AddBreakdownCommand): Promise<AddBreakdownResult>;
+  saveScratchTitle(
+    command: SaveScratchTitleCommand,
+  ): Promise<SaveScratchTitleResult>;
+  reconcileSaveScratchTitle(
+    command: SaveScratchTitleCommand,
+  ): Promise<SaveScratchTitleResult>;
+  saveBreakdown(command: SaveBreakdownCommand): Promise<SaveBreakdownResult>;
+  reconcileSaveBreakdown(
+    command: SaveBreakdownCommand,
+  ): Promise<SaveBreakdownResult>;
+  deleteBreakdown(command: DeleteBreakdownCommand): Promise<DeleteBreakdownResult>;
+  reconcileDeleteBreakdown(
+    command: DeleteBreakdownCommand,
+  ): Promise<DeleteBreakdownResult>;
+
+  // --- Authoritative Inbox Staging Commands ---
+  stageCandidate(command: StageCandidateCommand): Promise<StageCandidateResult>;
+  reconcileStageCandidate(
+    command: StageCandidateCommand,
+  ): Promise<StageCandidateResult>;
+  unstageCandidate(
+    command: UnstageCandidateCommand,
+  ): Promise<UnstageCandidateResult>;
+  reconcileUnstageCandidate(
+    command: UnstageCandidateCommand,
+  ): Promise<UnstageCandidateResult>;
+
+  // --- Authoritative Candidate Integrity Commands ---
+  cleanupConfirmedCandidateOrphan(
+    command: ConfirmedCandidateOrphanCleanupCommand,
+  ): Promise<ConfirmedCandidateOrphanCleanupResult>;
+  reconcileConfirmedCandidateOrphanCleanup(
+    command: ConfirmedCandidateOrphanCleanupCommand,
+  ): Promise<ConfirmedCandidateOrphanCleanupResult>;
+
+  // --- Authoritative Inbox Placement Commands ---
+  placeStagedCandidate(command: StagedPlacementCommand): Promise<PlacementResult>;
+  reconcileStagedPlacement(command: StagedPlacementCommand): Promise<PlacementResult>;
+  placeDirectBreakdown(command: DirectPlacementCommand): Promise<PlacementResult>;
+  reconcileDirectPlacement(command: DirectPlacementCommand): Promise<PlacementResult>;
+
+  // --- Authoritative Inbox Placement Undo Commands ---
+  undoStagedPlacement(command: StagedPlacementUndoCommand): Promise<PlacementUndoResult>;
+  reconcileStagedPlacementUndo(
+    command: StagedPlacementUndoCommand,
+  ): Promise<PlacementUndoResult>;
+  undoDirectPlacement(command: DirectPlacementUndoCommand): Promise<PlacementUndoResult>;
+  reconcileDirectPlacementUndo(
+    command: DirectPlacementUndoCommand,
+  ): Promise<PlacementUndoResult>;
 
   // --- Chunks ---
   getChunks(bitId: string): Promise<Chunk[]>;
