@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–114 accepted; Task 115 remains unstarted as the next serial Task
+> State: Tasks 106–114 accepted; Task 115 is In Progress for user-selected `DP-VQ08=A`
 
 ## Status Legend
 
@@ -286,6 +286,22 @@ canonical document update, and commit remain Task-local and sequential.
 | Review | No concrete blocking finding; fixed-input/state-line/flat-result placement, exact pre-search/loading/stale/no-results/error/stale-selection/reveal/source-restoration copy, duplicate text, Arrow/Enter/Escape and close focus, DnD-only interruption preservation, event-owned reveal/status lifetime, static reduced-motion parity, all eight themes, and the Task 151/search-only Task 158 edge are present without overlay/dialog/fifth-column/prototype/adjacent-surface/ordinary-column/theme-ID fallback or `DP-VQ10` invention |
 | Acceptance boundary | Accepts only Task 114 and `DP-VQ07=A`; releases Task 151 and only the search-result integration slice of Task 158 subject to their existing prerequisites; Task 158 still requires `DP-VQ10` and Tasks 156–157, and ordinary-card Undo Task 156 remains independent |
 | Next legal action | Commit this acceptance-only state and stop. Task 115 remains `[ ]` and unstarted; a later session may begin only its separate `DP-VQ08` decision gate |
+
+## Task 115 Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Task | 115 — record `DP-VQ08` placement-reliability decision |
+| State | In Progress; the Task 115 plan marker remains `[ ]` and no Task 116 work is authorized |
+| User decision | On 2026-08-10 the user selected `DP-VQ08=A`, the fixed reliability rail inside the captured Placement Affordance |
+| Approved scope | Specify pending, unknown/reconciling, explicit not-applied failure, stale source/target, `Check again`, Retry/Cancel, authoritative success, exact current-action focus, copy, timing/lifetime, static reduced-motion parity, and eight-theme treatment; every nonterminal result stays inside the captured Placement Affordance; update only the Placement recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, the `DP-VQ08` receipt, and this ledger; change no product code and no Task 116-or-later decision |
+| Prohibited fallback | No toast/dialog or adjacent-surface fallback, optimistic result/source transition, automatic or implied alternate target, prototype-derived reliability state, existing-product realization, or theme-ID product-logic branch |
+| Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `0861b071d58cba03d1e698fae12155a589709736`; accepted predecessor receipt `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json` |
+| Start base / recovery anchor | `be2a842fa87395031e8f15b81751b3ac67e3869b`, the clean Task 114 acceptance commit |
+| Exact release edge | Task 153 only, and only after a later explicit Task 115 checkpoint acceptance |
+| Issue / deviation | None |
+| Canonical impact | Tagged — reflect `DP-VQ08=A` in the Placement recipe, `docs/DESIGN_TOKENS.md`, and Task 115 execution authority before checkpoint |
+| Next legal action | Commit this ledger-only durable start, then write the selected receipt and exact canonical realization without changing the Task 115 marker or starting Task 116 |
 
 ## Readiness Evidence
 
