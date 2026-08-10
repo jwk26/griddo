@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–118 accepted; Task 119 remains unstarted as the next serial Task
+> State: Tasks 106–118 accepted; Task 119 is In Progress for user-selected `DP-VQ12=A`
 
 ## Status Legend
 
@@ -378,6 +378,22 @@ canonical document update, and commit remain Task-local and sequential.
 | Review | No concrete blocking finding. Add and title blockers remain source-attached, preserve current draft/editor/actions/focus, and do not change persisted eligibility. Actual active-row/Staging loss removes all stale completion controls before showing one narrow persistent completion-slot reason; remote causes do not steal focus, recovery returns to Task 159 current truth, and no toast/dialog/global panel/automatic action/timer/repeated motion/theme-ID branch is introduced. Only Task 160 can be released after user acceptance |
 | Acceptance boundary | Accepts only Task 118 and `DP-VQ11=A`; releases Task 160 only but does not start Task 119 or Task 160, change product code/completion predicate/headless or Archive behavior, publish, or close the phase |
 | Next legal action | Commit this acceptance-only state and stop. Task 119 remains `[ ]` and unstarted; a later fresh session may begin only its `DP-VQ12` decision gate |
+
+## Task 119 Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Task | 119 — record `DP-VQ12` Archive-recovery decision |
+| State | In Progress; the Task 119 plan marker remains `[ ]` and no Task 162 or Phase 24 close work is authorized |
+| User decision | On 2026-08-11 the user selected `DP-VQ12=A`, one stable Breakdown-scoped Archive card whose content and current action change in place through pending, unknown, reconciliation, terminal failure, forced-reload recovery, and success handoff |
+| Approved scope | Specify the single-card pending/recovery composition, exact state copy, static non-color marks, `Check again`, authoritative `not_applied`-only Retry, terminal Cancel, forced-reload recovery, focus, announcement, lifetime, static reduced-motion parity, and eight-theme treatment; update only the Archive completion recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, the `DP-VQ12` receipt, and this ledger; change no product code or Archive transaction behavior |
+| Prohibited fallback | No second status rail, replacement recovery panel, toast, dialog, page-global banner/spinner, blind resend, automatic Retry, in-flight Cancel, timer, auto-dismissal, repeated motion, persistence beyond the approved current-tab descriptor, or theme-ID product-logic branch |
+| Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `0861b071d58cba03d1e698fae12155a589709736`; accepted predecessor receipt `docs/issues/Issues_Phase_24.Task_118.dp-vq11.json` |
+| Start base / recovery anchor | `54328f4a477e60d07e2b8e29cfbab4b7ad45f634`, the clean Task 118 acceptance commit |
+| Exact release edge | Task 162 only, and only after a later explicit Task 119 checkpoint acceptance; Task 162 is not started here |
+| Issue / deviation | None |
+| Canonical impact | Tagged — reflect `DP-VQ12=A` in the Archive completion recipe, `docs/DESIGN_TOKENS.md`, and Task 119 execution authority before checkpoint |
+| Next legal action | Commit this ledger-only durable start, then write the selected receipt and exact canonical realization without changing the Task 119 marker, starting Task 162, or closing Phase 24 |
 
 ## Readiness Evidence
 
