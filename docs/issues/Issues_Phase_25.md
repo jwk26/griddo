@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–125 accepted; Task 126 held for a separate fresh run-task session
+> State: Tasks 120–126 accepted; end-phase audit complete and Final Close pending
 
 ## Status Legend
 
@@ -441,3 +441,81 @@ None at kickoff.
 | Canonical impact | None — no canonical amendment required |
 | Recovery anchor | This separate acceptance commit, whose parent is `4eb8df3c50455588e4ebd880d72d5e366f50d0cd` |
 | Phase 25 next legal action | Stop this run-task session. Any Phase 25 close preparation/final close requires its separately authorized lifecycle and user-owned gate; do not start Task 127 or another phase from this acceptance commit. |
+
+## Phase 25 Close Audit
+
+### Identity, ownership, and acceptance
+
+- **Pinned pre-close SHA:**
+  `adb9cc35ba611521915373fa5876665dedb2fc98` on
+  `phase-25/authoritative-command-dag`, based on
+  `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` from `main`.
+- Tasks 120–126 each have a user-owned `[x]`, a durable implementation/evidence
+  boundary, and a separate acceptance commit. Task 127 and later markers remain
+  open, and Phase 24 work is absent from this branch.
+- The base-to-head diff is exhaustively owned by the approved Phase 25
+  DataStore/IndexedDB commands, real-Dexie transaction tests, the approved
+  Task 125 stale-regression repair, and committed plan/ledger/receipt evidence.
+  No unrelated, future, UI, hook, store, or reference-prototype work is mixed.
+- User-visible rendered evidence is not applicable: every Phase 25 task is
+  declared data/nonvisual. The accepted checkpoint evidence proves the
+  observable repository outcomes, while Tasks 136–162 own later interaction
+  and presentation realization.
+
+### Terminal evidence and gate reuse
+
+Task 126 implementation commit
+`4eb8df3c50455588e4ebd880d72d5e366f50d0cd` ran the final fresh serial full
+gate. The later acceptance commit changed only `docs/EXECUTION_PLAN.md` and
+this ledger; both commits have the identical `src` tree
+`483c7756667335b502105dfa4a712b128a7a117b`. Per the end-phase instruction,
+the valid full gate was reused and test/lint/typecheck/build were not rerun.
+
+| Command | Exit | Result |
+| --- | ---: | --- |
+| `pnpm test` | 0 | 87 test files / 679 tests passed |
+| `pnpm lint` | 0 | 0 errors; the same 11 pre-existing warnings |
+| `pnpm typecheck` | 0 | TypeScript check passed |
+| `pnpm build` | 0 | Next.js 16.2.1 production build passed; seven routes generated |
+| `git diff --check` | 0 | Rechecked at pre-close and detached close preview; no whitespace errors |
+
+### Architecture conformance
+
+| Governing rule | Affected evidence | Tier | Disposition |
+| --- | --- | --- | --- |
+| DataStore facade and hook boundary | Phase 25 production changes are confined to `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; no component or hook imports or data boundary changed. | Blocking | Pass |
+| Zod write boundary | Typed command/result schemas validate repository inputs and complete records at the existing write boundary; Task 126 validates its recovery descriptor before authority reads. | Blocking | Pass |
+| Monotonic CAS / ABA protection | Tasks 120, 121, 123, and 124 prove exact source/candidate/result revisions and ABA-1/2/3 no-resurrection behavior. | Blocking | Pass |
+| Atomic complete postconditions | Real-Dexie tests cover all eleven commands, named rollback checkpoints, exact pre/post/conflict classification, and one-snapshot reconciliation reads. | Blocking | Pass |
+| No general operation-log shortcut | No general log, journal, outbox, offline queue, operation-ID index, or persisted recovery owner was introduced. The existing narrow orphan audit remains integrity-only. | Blocking | Pass |
+| Durable Staging authority | Staged candidates remain repository-owned durable truth joined to source rows; Stage/Unstage/Placement/Undo preserve exact identity and uniqueness. | Blocking | Pass |
+| Archive evidence guard | Guarded Archive independently revalidates active Inbox ownership, consumed ≥1, unconsumed 0, staged 0, exact version, and explicit clear caller blockers in one transaction. | Blocking | Pass |
+| Read-only Archive recovery | Task 126 classifies only complete precondition, complete postcondition, conflict, or unavailable authority from one read snapshot and performs zero writes. | Blocking | Pass |
+| Future UI/search/session/theme owners | Phase 25 changes no component, hook, store, route, theme, copy, search, mounted-session, or visual-decision owner; their exact later tasks remain open. | Blocking | Pass for Phase 25 scope |
+| File organization | New command tests stay beside their declared database owner and match the committed task file contracts. | Advisory | Pass |
+| Local-first presentation | No presentation surface changed; authoritative source remains visible for later adapters to project. | Advisory | Not applicable |
+
+Blocking violations: **0**. Advisory violations: **0**.
+
+### Issue, canonical-impact, and handoff reconciliation
+
+- `P25-120-R1`, `P25-122-R1`, and `P25-125-R1` are Closed under their exact
+  user-accepted repair boundaries. No `Open`, `In Progress`, or `Awaiting User
+  Decision` issue remains active; historical task-state sections are retained
+  as execution chronology rather than current status.
+- Every phase canonical-impact record is `None`: the work implements the
+  already-approved SCHEMA/SPEC/execution contracts. There is no unresolved
+  `Tagged` item, canonical amendment, deferred Phase 25 issue, or central
+  deferred-index update.
+- `docs/execution-plan/archive/phase-25.md` records completion-time truth, the
+  Phase Index marks Phase 25 Completed and links the archive, and Phase Notes
+  are not used by adapter policy.
+- Two cross-phase repository learnings were added to
+  `docs/execution-plan/LEARNINGS.md`: snapshot-consistent reconciliation and
+  indexed lookup for indefinitely retained evidence.
+
+**Next legal action:** present one exact Final Close packet pinning detached
+candidate A, its diff hash, the future whole-file JSON receipt payload,
+publication metadata, merge method, checks policy, integration sync, and
+guarded cleanup. This audit is not the receipt and grants no push, PR, merge,
+sync, or cleanup authority.

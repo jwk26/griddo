@@ -7,13 +7,14 @@
 > This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
 > its supersession rules. It accepts no phase, task, implementation, branch,
 > publication, or completion state.
-> **Task markers:** Tasks 101–105A were explicitly accepted and are archived as
-> Phase 23. Tasks 106–165 remain open (`[ ]`) and may be checked only after
-> their own observable acceptance and verification evidence is explicitly
+> **Task markers:** Tasks 101–105A and 120–126 were explicitly accepted and are
+> archived as Phases 23 and 25. Every remaining task may be checked only after
+> its own observable acceptance and verification evidence is explicitly
 > accepted by the user.
-> **Execution lifecycle:** Phase 23 execution is complete. Phase 24 still
-> requires its own approved kickoff; this planning receipt alone does not
-> authorize later implementation, Git lifecycle work, or publication.
+> **Execution lifecycle:** Phase 25 execution is complete. Phase 24 remains a
+> separately scheduled branch, and Phase 26 requires its own approved kickoff;
+> this planning receipt alone does not authorize later implementation, Git
+> lifecycle work, or publication.
 
 ## Goal
 
@@ -90,12 +91,12 @@ The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were exclu
 | Area | Current status | Smallest blocker / next condition |
 |---|---|---|
 | Document approval | `APPROVED` | The approval receipt above remains the planning authority. |
-| Execution lifecycle | Phase 23 complete; Phase 24 not started | Phase 24 requires a separate `run-phase` kickoff after the post-Phase-23 workflow rollout. |
-| Data foundations | `COMPLETED` | Tasks 101–105A are accepted and recorded in the Phase 23 archive. |
+| Execution lifecycle | Phases 23 and 25 complete; Phase 24 separately scheduled | Every later phase still requires its own approved lifecycle gate and exact branch/worktree authority. |
+| Data foundations | `COMPLETED` | Tasks 101–105A and authoritative command Tasks 120–126 are accepted and recorded in their phase archives. |
 | Decision prerequisites | Runnable non-code lane after plan approval | Tasks 106–119 collect 14 independently executable DP receipts for 12 VQs. |
 | Headless/base UI | Dependency-ready after document and lifecycle gates | Tasks 127–137, 139, 142, 145–146, 149, 152, 155–156, 159, and 161 follow only their named data/headless prerequisites. |
 | VQ realization | `BLOCKED_PENDING_USER_DECISIONS` | Each realization task resumes only from its exact DP receipt. |
-| Full close | Not ready | Tasks 106–164 complete, all required DP receipts accepted, then Task 165 passes on top of the archived Phase 23 foundation. |
+| Full close | Not ready | Tasks 106–164 complete, all required DP receipts accepted, then Task 165 passes on top of the archived Phase 23 and Phase 25 foundations. |
 
 ## Dependency Graph
 
@@ -131,7 +132,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 |---|---|---|---|---|
 | Phase 23 | Completed | [Model, v4 migration, revisions, real transaction harness, aggregate deletion, and Scratch-promotion guard](execution-plan/archive/phase-23.md) | 101–105 + 105A | Accepted and archived; downstream tasks consume this completed foundation. |
 | Phase 24 | Proposed | Fourteen user-owned DP receipts covering twelve VQs | 106–119 | Logical parallelism; shared document writes use one mutex and create no cross-VQ dependency. |
-| Phase 25 | Proposed | Eleven authoritative commands plus Archive recovery | 120–126 | Follows the exact independent data DAG, not Phase 24 completion. |
+| Phase 25 | Completed | [Eleven authoritative commands plus Archive recovery](execution-plan/archive/phase-25.md) | 120–126 | Accepted and archived; downstream tasks consume the completed command foundation by their exact dependencies. |
 | Phase 26 | Proposed | Lifetime/copy/theme foundations and source-backed base surfaces | 127–135 | Individual data dependencies only. |
 | Phase 27 | Proposed | Breakdown, Pool, and Staging headless adapters and exact realizations | 136–148 | Headless tasks remain independent from their VQ presentation slices. |
 | Phase 28 | Proposed | Explorer status/search and pointer placement | 149–154 | Search, status, reliability, and title slices have distinct receipt edges. |
@@ -697,7 +698,7 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 ---
 
-## Phase 25 — Authoritative Command DAG
+## Phase 25 — Authoritative Command DAG (Completed)
 
 ### Task 120: [x] Implement Add, Scratch Save, row Save, and row Delete commands
 
@@ -810,6 +811,39 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 **Verification:** `pnpm test -- src/lib/db/archive-scratch-recovery.test.ts`; cover applied/not-applied/conflict/unknown/invalid/foreign/stale descriptors and zero writes; then `pnpm typecheck`.
 
 **Commit contract:** recovery read contract/classifier and its dedicated tests only; `feat(triage): classify archive recovery`.
+
+#### Phase 25 Close Notes
+
+- Tasks 120–126 were explicitly accepted and completed on the isolated Phase
+  25 branch. They land eleven typed authoritative repository commands plus the
+  read-only Archive recovery classifier without UI, hook, store, session
+  storage, operation-log, queue, outbox, or Task 127+ scope.
+- The phase establishes atomic complete-postcondition transactions for
+  Breakdown Add/Save/Delete, Stage/Unstage, confirmed-orphan cleanup,
+  staged/direct Placement, source-aware Undo, and guarded Scratch Archive.
+  Reconciliation uses exact identities and versions, including ABA-1/2/3
+  no-resurrection coverage and one-snapshot authoritative reads.
+- Task 126's fresh serial full gate at implementation commit `4eb8df3` passed
+  87 test files / 679 tests, lint with 0 errors and the same 11 pre-existing
+  warnings, typecheck, and production build with seven routes. The acceptance
+  commit changed only this plan and the phase ledger, leaving the `src` tree
+  unchanged, so Phase 25 close reused that gate without rerunning it.
+- No rendered surface changed. The task checkpoints' real-Dexie and focused
+  acceptance evidence is the applicable verification for this data/nonvisual
+  phase; later UI realization remains with Tasks 136–162.
+
+| Task | Implementation / repair commit | Acceptance commit |
+| --- | --- | --- |
+| 120 | `785b9d0` → `6a4523e` | `9d7a636` |
+| 121 | `d37d5cf` | `a01c854` |
+| 122 | `6c49204` → `5d3fb54` | `dea3d09` |
+| 123 | `c1b62ef` | `54405de` |
+| 124 | `19dc391` | `06344a7` |
+| 125 | `a28ea53` | `4a02fc0` |
+| 126 | `4eb8df3` | `adb9cc3` |
+
+**Full issue log:**
+[`docs/issues/Issues_Phase_25.md`](issues/Issues_Phase_25.md)
 
 ---
 
@@ -1526,9 +1560,10 @@ This register is complete for every exact path declared by two or more tasks. Ev
 
 - **Next planned phase:** Phase 34. Phases 32 and 33 are reserved and receive no tasks.
 - **Next planned task:** Task 166.
-- Active graph count: 8 open implementation phases (24–31), 60 open tasks
-  (106–165), 1 completed archive (Phase 23 with Tasks 101–105A), and 2
+- Active graph count: 7 open implementation phases (Phase 24 and Phases
+  26–31), 53 open tasks (Tasks 106–119 and 127–165), 2 completed archives
+  (Phase 23 with Tasks 101–105A and Phase 25 with Tasks 120–126), and 2
   reserved phase numbers (32–33).
 - The document is **user-approved for planning authority** under the receipt at
-  the top of this file; Tasks 101–105A are accepted and archived, while Tasks
-  106–165 remain open.
+  the top of this file; Tasks 101–105A and 120–126 are accepted and archived,
+  while Tasks 106–119 and 127–165 remain open.

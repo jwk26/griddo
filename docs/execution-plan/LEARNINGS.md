@@ -45,6 +45,10 @@
 
 **`liveQuery` not `useLiveQuery`.** Dexie v4 removes `useLiveQuery`. Use `liveQuery` from `dexie` with `useState` + `useEffect` subscribe/unsubscribe. `dexie-react-hooks` is not needed. *(Phase 2)*
 
+**Authoritative reconciliation reads need one transaction snapshot.** When a result depends on several related stores, independently opened reads can combine states from different commits and misclassify a complete precondition or postcondition. Read the whole authority set in one Dexie read-only transaction. *(Phase 25)*
+
+**Indefinitely retained evidence needs indexed lookup.** Append-only audit or integrity evidence must use its declared identity index on production paths; a full-table materialization quietly turns permanent retention into growing latency and memory cost. Keep any compatibility scan isolated from the real database path. *(Phase 25)*
+
 ---
 
 ## CSS / Tailwind
