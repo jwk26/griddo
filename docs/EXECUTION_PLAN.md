@@ -252,7 +252,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Choice A dedicated fixed-input/state-line/flat-result replacement body accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json`; Task 151 and search-only Task 158 are released subject to their own prerequisites. |
 | `DP-VQ08` | `VQ-08` | 115 | 153 only | Choice A fixed reliability rail accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`; Task 153 only is released. |
 | `DP-VQ09` | `VQ-09` | 116 | 154 only | Choice A compact Result Title/direct-limit steps accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`; Task 154 only is released. |
-| `DP-VQ10` | `VQ-10` | 117 | 157 only | Choice A card-attached always-visible Newly/Undo status rail selected on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_117.dp-vq10.json`; Task 157 remains unreleased until Task 117 checkpoint acceptance. |
+| `DP-VQ10` | `VQ-10` | 117 | 157 only | Choice A card-attached always-visible Newly/Undo status rail accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_117.dp-vq10.json`; Task 157 only is released. |
 | `DP-VQ11` | `VQ-11` | 118 | 160 only | Accepted receipt defines blocker/withdrawal realization. |
 | `DP-VQ12` | `VQ-12` | 119 | 162 only | Accepted receipt defines Archive reliability/recovery realization. |
 
@@ -917,7 +917,7 @@ It does not start Task 117, change product code, publish, or close the phase.
 
 **Commit contract:** the three named documents and `DP-VQ09` receipt only; `docs(triage): record DP-VQ09`.
 
-### Task 117: [ ] Record `DP-VQ10` Newly/Undo decision
+### Task 117: [x] Record `DP-VQ10` Newly/Undo decision
 
 **Files and actions:** modify `docs/recipes/inbox-triage-newly-placed-undo-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to record Choice A: retain the actual common Node/Bit card and add a static Newly marker, separate stable Undo action, and card-attached always-visible status rail; specify selected+newly overlap, available/ineligible/re-enabled Undo, accessible exact reasons, undoing/failure/reconcile/retry/conflict, placement, copy, timing, focus, static reduced-motion parity, and eight-theme mappings; change no common-card design or code.
 
@@ -941,6 +941,14 @@ removes the result only after commit. Focus remains in the card context, marker
 provenance survives ineligibility, and every theme uses static source-backed
 marker/control grammar with no pulse, common-card redesign, adjacent fallback,
 or theme-ID branch.
+
+**Checkpoint acceptance (2026-08-11):** the user explicitly accepted the
+complete Choice A card-attached always-visible status rail, independent
+selection/Newly/eligibility semantics, exact unavailable/re-enabled and
+operation/recovery copy, focus/lifetime behavior, static reduced-motion parity,
+eight-theme mapping, and Task 157-only boundary. This acceptance releases Task
+157 only. It does not start Task 118, Task 157, Tasks 155–156, or Task 158,
+change product code/common-card design, publish, or close the phase.
 
 **Observable acceptance:** marker, selection, and eligibility remain distinct; reasons are non-hover-only; no repeated motion or card redesign is required.
 
