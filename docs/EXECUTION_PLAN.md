@@ -250,7 +250,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Choice A candidate-attached/subsection-indicator/Staging-alert status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_112.dp-vq06-staging.json`; Task 147 only is released. |
 | `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Choice A affected-column remote/path status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`; Task 150 only is released. |
 | `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Choice A dedicated fixed-input/state-line/flat-result replacement body accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json`; Task 151 and search-only Task 158 are released subject to their own prerequisites. |
-| `DP-VQ08` | `VQ-08` | 115 | 153 only | Choice A fixed reliability rail selected on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`; Task 153 remains unreleased until Task 115 checkpoint acceptance. |
+| `DP-VQ08` | `VQ-08` | 115 | 153 only | Choice A fixed reliability rail accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`; Task 153 only is released. |
 | `DP-VQ09` | `VQ-09` | 116 | 154 only | Accepted receipt supplies both title/limit surfaces. |
 | `DP-VQ10` | `VQ-10` | 117 | 157 only | Accepted receipt defines Newly/Undo overlap, reasons, and reliability. |
 | `DP-VQ11` | `VQ-11` | 118 | 160 only | Accepted receipt defines blocker/withdrawal realization. |
@@ -838,7 +838,7 @@ and ordinary-card Undo Task 156 remains independent. It does not start Task
 
 **Commit contract:** the three named documents and `DP-VQ07` receipt only; `docs(triage): record DP-VQ07`.
 
-### Task 115: [ ] Record `DP-VQ08` placement-reliability decision
+### Task 115: [x] Record `DP-VQ08` placement-reliability decision
 
 **Files and actions:** modify `docs/recipes/inbox-triage-placement-affordances-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to record Choice A: one fixed two-line reliability rail inside the captured target-column Placement Affordance, below its retained source/type/destination summary and above one fixed action row; specify exact pending, unknown/reconciling, authoritative not-applied, stale source/target, `Check again`, Retry/Cancel, success announcement/handoff, current-action focus, lifetime, static reduced-motion parity, and eight-theme treatments; change no code.
 
@@ -863,6 +863,13 @@ lifetime, static motion/reduced-motion parity, and all eight theme-role
 bindings are owned by the accepted receipt. No toast/dialog/adjacent fallback,
 optimistic source/result change, automatic target correction, or theme-ID
 product branch is permitted.
+
+**Checkpoint acceptance (2026-08-10):** the user explicitly accepted the
+complete Choice A fixed reliability rail, seven exact state families/copy,
+authoritative-result mapping, current-action focus, operation-owned lifetime,
+static reduced-motion parity, eight-theme mapping, and Task 153-only boundary.
+This acceptance releases Task 153 only. It does not start Task 116, change
+product code, publish, or close the phase.
 
 **Observable acceptance:** every nonterminal outcome stays in the captured placement affordance with an exact focus target and no toast/dialog fallback.
 

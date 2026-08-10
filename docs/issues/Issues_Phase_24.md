@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–114 accepted; Task 115 is Implemented awaiting user checkpoint for `DP-VQ08=A`
+> State: Tasks 106–115 accepted; Task 116 remains unstarted as the next serial Task
 
 ## Status Legend
 
@@ -287,26 +287,28 @@ canonical document update, and commit remain Task-local and sequential.
 | Acceptance boundary | Accepts only Task 114 and `DP-VQ07=A`; releases Task 151 and only the search-result integration slice of Task 158 subject to their existing prerequisites; Task 158 still requires `DP-VQ10` and Tasks 156–157, and ordinary-card Undo Task 156 remains independent |
 | Next legal action | Commit this acceptance-only state and stop. Task 115 remains `[ ]` and unstarted; a later session may begin only its separate `DP-VQ08` decision gate |
 
-## Task 115 Durable Start
+## Task 115 Acceptance Receipt
 
 | Field | Durable value |
 | --- | --- |
 | Task | 115 — record `DP-VQ08` placement-reliability decision |
-| State | Implemented awaiting user checkpoint; the Task 115 plan marker remains `[ ]` and no Task 116 work is authorized |
+| State | Accepted by the user on 2026-08-10; the Task 115 plan marker is `[x]` and Task 116 remains `[ ]` |
 | User decision | On 2026-08-10 the user selected `DP-VQ08=A`, the fixed reliability rail inside the captured Placement Affordance |
+| User acceptance | `Task 115 / DP-VQ08=A checkpoint를 수락합니다.` against evidence commit `630a43e94ccafa485c0f4388274a45aeb98891ae` |
 | Approved scope | Specify pending, unknown/reconciling, explicit not-applied failure, stale source/target, `Check again`, Retry/Cancel, authoritative success, exact current-action focus, copy, timing/lifetime, static reduced-motion parity, and eight-theme treatment; every nonterminal result stays inside the captured Placement Affordance; update only the Placement recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, the `DP-VQ08` receipt, and this ledger; change no product code and no Task 116-or-later decision |
 | Prohibited fallback | No toast/dialog or adjacent-surface fallback, optimistic result/source transition, automatic or implied alternate target, prototype-derived reliability state, existing-product realization, or theme-ID product-logic branch |
 | Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `0861b071d58cba03d1e698fae12155a589709736`; accepted predecessor receipt `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json` |
 | Start base / recovery anchor | `be2a842fa87395031e8f15b81751b3ac67e3869b`, the clean Task 114 acceptance commit |
 | Durable start commit | `f985ed98b994ed8de922fbfd67b7fc192644f925`; ledger-only and parented directly by the recovery anchor |
 | Decision / implementation commit | `dd26f6e2013bf76000ac61c53557923b0dab8d45`; exact paths are the Placement recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, and `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json` |
-| Durable receipt | `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`; state `implemented-awaiting-user-checkpoint`, next action `task-115-user-checkpoint` |
-| Exact release edge | Task 153 only, and only after a later explicit Task 115 checkpoint acceptance |
+| Durable receipt | `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`; state `accepted`, next action `task-116` |
+| Exact release edge | Task 153 only; released by this explicit checkpoint acceptance |
 | Issue / deviation | None |
 | Canonical impact | Reflected — Choice A is recorded in the Placement recipe, `docs/DESIGN_TOKENS.md`, and Task 115 execution authority |
 | Verification | Candidate resolver `ready` at `dd26f6e`; `git diff --check` exit 0; receipt JSON valid with seven exact state families and eight theme mappings; all seven exact copy strings match recipe/tokens; exact four-path decision commit; Tasks 115–116 remain `[ ]`; no product source, manifest, Phase 25, Shelf, Task 116 decision, toast/dialog fallback, optimistic result, or alternate-target implication changed; install/test/lint/typecheck/build omitted under the Task 115 minimal-correctness instruction and recorded successful baseline reuse |
 | Review | Initial semantic review found that SCHEMA `rejected/conflict` needed an explicit no-fallback projection. The repaired decision maps returned authoritative facts only to stale-source or stale-target, never a generic state or guessed side. Post-repair review found no concrete blocking issue: every nonterminal result remains in the captured affordance with exact focus, Retry is not-applied-only, unknown uses read-only `Check again`, success focuses the actual card without inventing `DP-VQ10`, reduced motion is static-identical, and Task 153 is the only edge |
-| Next legal action | Commit this ledger-only implementation evidence and stop at the Task 115 user checkpoint. Do not mark Task 115 `[x]`, release Task 153, or start Task 116 without explicit user acceptance |
+| Acceptance boundary | Accepts only Task 115 and `DP-VQ08=A`; releases Task 153 only; does not start Task 116, change product code, publish, or close the phase |
+| Next legal action | Commit this acceptance-only state and stop. Task 116 remains `[ ]` and unstarted; a later separate session may begin only its `DP-VQ09` decision gate |
 
 ## Readiness Evidence
 
