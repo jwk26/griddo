@@ -1,4 +1,10 @@
 import { describe, expect, it } from "vitest";
+import type {
+  AddBreakdownCommand,
+  DeleteBreakdownCommand,
+  SaveBreakdownCommand,
+  SaveScratchTitleCommand,
+} from "@/lib/db/datastore";
 import type { Bit, Chunk, CreateScratchBreakdown, Node, ScratchBreakdown } from "@/lib/db/schema";
 import { IndexedDBDataStore } from "@/lib/db/indexeddb";
 import {
@@ -166,6 +172,40 @@ function expectRecord<T>(record: T | undefined): T {
 function testUuid(index: number): string {
   return `00000000-0000-4000-8000-${index.toString().padStart(12, "0")}`;
 }
+
+const commandTypeContract = {
+  add: {
+    operationId: testUuid(401),
+    breakdownId: testUuid(402),
+    scratchBitId: testUuid(403),
+    scratchExpectedVersion: 1,
+    content: "new row",
+  } satisfies AddBreakdownCommand,
+  saveScratch: {
+    operationId: testUuid(404),
+    scratchBitId: testUuid(403),
+    expectedVersion: 1,
+    baseTitle: "Scratch",
+    title: "Renamed Scratch",
+  } satisfies SaveScratchTitleCommand,
+  saveBreakdown: {
+    operationId: testUuid(405),
+    breakdownId: testUuid(402),
+    expectedVersion: 1,
+    baseContent: "old row",
+    baseOrder: 0,
+    content: "new row",
+    order: 1,
+  } satisfies SaveBreakdownCommand,
+  delete: {
+    operationId: testUuid(406),
+    breakdownId: testUuid(402),
+    expectedVersion: 1,
+    scratchBitId: testUuid(403),
+    scratchExpectedVersion: 1,
+  } satisfies DeleteBreakdownCommand,
+};
+void commandTypeContract;
 
 describe("IndexedDBDataStore scratchBreakdowns CRUD", () => {
   it("creates and lists scratch breakdowns ordered by order", async () => {
@@ -439,7 +479,7 @@ describe("IndexedDBDataStore scratchBreakdowns lifecycle integration", () => {
     expect(await store.getScratchBreakdowns(scratchBit.id)).toHaveLength(2);
   });
 
-  it("keeps source rows, staged candidates, and audit history when archiving Scratch", async () => {
+  it("rejects guarded Scratch Archive with active work and leaves all seven stores unchanged", async () => {
     const database = await openTransactionTestDatabase();
 
     try {
@@ -447,18 +487,23 @@ describe("IndexedDBDataStore scratchBreakdowns lifecycle integration", () => {
       const before = await snapshotSevenStores(database);
       const store = new IndexedDBDataStore(database);
 
-      await store.archiveBit(TRANSACTION_TEST_IDS.scratchBit);
-      const after = await snapshotSevenStores(database);
-
-      expect(after.scratchBreakdowns).toEqual(before.scratchBreakdowns);
-      expect(after.stagedCandidates).toEqual(before.stagedCandidates);
-      expect(after.candidateOrphanAuditEvents).toEqual(
-        before.candidateOrphanAuditEvents,
-      );
-      expect(after.bits[0]).toMatchObject({
-        id: TRANSACTION_TEST_IDS.scratchBit,
-        archivedAt: expect.any(Number),
+      await expect(store.archiveScratch({
+        operationId: testUuid(12500),
+        scratchBitId: TRANSACTION_TEST_IDS.scratchBit,
+        expectedVersion: before.bits[0]!.version,
+        callerAssertion: {
+          addDraftClear: true,
+          titleBlockerClear: true,
+        },
+      })).resolves.toMatchObject({
+        status: "rejected",
+        scratch: {
+          id: TRANSACTION_TEST_IDS.scratchBit,
+          archivedAt: null,
+          version: before.bits[0]!.version,
+        },
       });
+      expect(await snapshotSevenStores(database)).toEqual(before);
     } finally {
       database.close();
     }

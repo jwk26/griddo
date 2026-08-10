@@ -1,0 +1,521 @@
+# Issues — Phase 25: Authoritative Command DAG
+
+> Branch: `phase-25/authoritative-command-dag`
+> Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
+> Kickoff date: 2026-08-09
+> State: Tasks 120–126 accepted; end-phase audit complete and Final Close pending
+
+## Status Legend
+
+| Status | Meaning |
+| --- | --- |
+| Open | Identified and unresolved |
+| In Progress | Actively owned by the current task |
+| Awaiting User Decision | Blocked on an explicit user-owned choice |
+| Closed | Resolved with durable user-confirmed evidence |
+| Deferred | Moved to declared future ownership with rationale |
+| Dropped | Explicitly rejected or no longer applicable |
+| Promoted to Execution Plan | Reflected in canonical task ownership |
+
+## Gate C Kickoff Receipt
+
+| Field | Durable value |
+| --- | --- |
+| Gate | `gate-c`, explicitly approved by the user on 2026-08-09 |
+| Source mode | `approved canonical plan + archived/merged Phase 23 foundation on fetched origin/main` |
+| Phase scope | Phase 25, Tasks 120–126 |
+| First sequential batch | Task 120 → Task 121; never concurrent |
+| First next task | Task 120 only, in a fresh `$run-task` session |
+| Issue ledger | `docs/issues/Issues_Phase_25.md` |
+| Whole-file receipt | `docs/issues/Issues_Phase_25.gate-c.json` |
+| Integration branch | `main` |
+| Post-fetch remote | `origin/main` at `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
+| Approved base | `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
+| Feature branch | `phase-25/authoritative-command-dag` |
+| Worktree | `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag` |
+| Worktree choice | New linked feature worktree; no reuse and no base exception |
+| Next legal action | Fresh candidate-pinned `$run-task` session for Task 120 |
+
+## Readiness Evidence
+
+- Task 120 and Task 121 each depend directly on accepted Tasks 103 and 104.
+  Their acceptance commits are respectively
+  `169ffa525a4fc50ecf2b73af21c4976d8d45387c` and
+  `bc9d2d7e037cda7f4a3901185b0e805cf308b01b`; both are ancestors of the
+  approved base.
+- The Phase 23 feature tip
+  `e5da17d4f988908611d0c63ddb39589fb252aaf3` and merge commit
+  `8977ffc741abab2707a1c6632cca50324d3101ae` are contained in the approved
+  base. The Phase 23 archive records Tasks 101–105A as accepted.
+- Phase 25 has no dependency on Phase 24 completion. Tasks 120 and 121 have no
+  open `VQ-*` or Decision-prerequisite receipt edge.
+- Tasks 120 and 121 share `db-implementation`, `db-interface`, and
+  `db-command-harness` writer mutexes. Task 121 starts only after Task 120's
+  narrow commit/checkpoint is available; the mutex order creates no semantic
+  dependency and grants no concurrent write authority.
+- Tasks 122–126 remain held until each task's declared Phase 25 dependencies
+  are satisfied.
+- Fresh source inspection found the Task 103 revision boundary, v4 candidate
+  stores and operation types, Task 104 real seven-store transaction/checkpoint
+  harness, and current legacy Breakdown CRUD at their declared paths. The two
+  Task-owned new tests are absent as expected. No plan/code drift was found.
+- The historical flow review's lifecycle-unavailable result is superseded only
+  at runtime by merged Adapter v2 PR #38 and the fresh candidate resolver
+  result below; it grants no product write authority by itself.
+
+## Full Base Gate
+
+Environment setup was `pnpm install --frozen-lockfile` (exit 0, lockfile
+unchanged, 537 packages linked). The Adapter v2 full gate then ran serially:
+
+| Command | Exit | Relevant result |
+| --- | ---: | --- |
+| `pnpm test` | 0 | 80 test files passed; 554 tests passed |
+| `pnpm lint` | 0 | 0 errors; 11 pre-existing warnings |
+| `pnpm typecheck` | 0 | `tsc --noEmit` passed |
+| `pnpm build` | 0 | Next.js 16.2.1 production build passed; seven routes generated |
+
+Before the gate, `HEAD` equaled the approved base, the tree was clean, and
+`approved-base..HEAD` contained zero commits. After the gate, the tree remained
+clean and the production `src` tree remained
+`ecad26328bf8a8b798193e61fe54c4afee4478b0` with no staged or unstaged diff.
+
+## Adapter v2 Fresh-Session Evidence
+
+- Workflow candidate worktree:
+  `/Users/jwk/Documents/codex-workflow-clean-design-mode-implementation`
+- Candidate identity: branch `post-v1/workflow-candidate-low-cost`, commit
+  `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`, clean.
+- Run Phase used the candidate's exact `skills/run-phase/SKILL.md`, references,
+  and `skills/run-phase/scripts/resolve-project-adapter-v2.py`; no global live
+  skill link was changed or substituted.
+- Pre-Gate resolver result was `status=approval_required`,
+  `contract_ready=true`, `writes_allowed=false`, with runtime identity
+  `main` at `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` in the single integration-role
+  worktree.
+- The follow-up session must explicitly use candidate
+  `skills/run-task/SKILL.md` at the same candidate commit. It must not use
+  `/Users/jwk/Documents/codex-workflow/skills/run-task`.
+
+## Active Issues
+
+None at kickoff.
+
+### P25-120-R1 — Authoritative reconcile reads lack one snapshot
+
+| Field | Durable value |
+| --- | --- |
+| Status | Closed — targeted repair accepted by the user on 2026-08-09 |
+| Source | User targeted rejection of Task 120 checkpoint after implementation commit `785b9d09b45f25ad50089c00c1f5539a7c4e44de` |
+| Affected paths | `reconcileAddBreakdown`, `reconcileSaveScratchTitle`, `reconcileSaveBreakdown`, and `reconcileDeleteBreakdown` in `src/lib/db/indexeddb.ts`; focused invariant coverage in `src/lib/db/inbox-operations.test.ts` |
+| Trigger / consequence | A concurrent Stage/Unstage/archive/delete transaction may commit between independently opened table reads, mixing Breakdown/Candidate/Scratch/Inbox-parent states and allowing an incorrect authoritative `not_applied` or `already_applied` presentation |
+| Approved repair | Run every reconcile method's authoritative reads inside one Dexie read-only transaction snapshot; add a real-Dexie invariant test and rerun invalidated gates |
+| User acceptance | Task 120 targeted repair checkpoint explicitly accepted on 2026-08-09; Task 120 may receive `[x]` and the Gate C sequential batch may advance to Task 121 |
+| Canonical impact | None — this repairs implementation conformance to the existing SCHEMA reconciliation contract |
+
+### P25-122-R1 — Candidate audit lookup scans indefinite history
+
+| Field | Durable value |
+| --- | --- |
+| Status | Closed — targeted repair accepted by the user on 2026-08-10 |
+| Source | User targeted rejection of the Task 122 checkpoint after implementation commit `6c4920414e7aceeb50a5df0eec6fb2c656845f7e` |
+| Affected paths | `readConfirmedCandidateOrphanState` in `src/lib/db/indexeddb.ts`; production-index invariant coverage in `src/lib/db/candidate-orphan-cleanup.test.ts` |
+| Trigger / consequence | Every cleanup and reconciliation calls `candidateOrphanAuditEvents.toArray().find(...)`; because SCHEMA retains the append-only audit indefinitely, lookup cost and memory grow with the complete audit history despite the existing unique `candidateId` index |
+| Approved repair | On the production `GridDODatabase` path, query the existing `&candidateId` index with `where("candidateId").equals(candidateId).first()` inside the same read-only/write transaction; retain a separately bounded compatibility fallback only for non-production `DatabaseLike` implementations; prove production never invokes the audit table's full `toArray()` scan |
+| Repair evidence | Production `GridDODatabase` now uses the unique `candidateId` index inside the existing transaction; the real-Dexie invariant fails immediately on any audit `toArray()` call and asserts `where("candidateId")`; the non-production `DatabaseLike` fallback remains isolated behind the `GridDODatabase` branch |
+| User acceptance | Task 122 repaired checkpoint explicitly accepted on 2026-08-10; repair commit `5d3fb54b2bc5452e6bc2cb3b7932c92119712248` and its focused/full verification evidence are the durable closure basis |
+| Canonical impact | None — this is an implementation-local performance/scalability correction using the already-approved unique index and retention contract |
+
+## Accepted Task 120
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 120 — Implement Add, Scratch Save, row Save, and row Delete commands |
+| Approved scope | Typed command/reconcile inputs and results in `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; Task-owned real-transaction evidence in `src/lib/db/scratch-breakdowns.test.ts` and new `src/lib/db/inbox-operations.test.ts`; no UI and no Task 121 work |
+| State | Accepted by the user on 2026-08-09; Task 120 marker is `[x]` |
+| Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`) |
+| Start base | Approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; run-task entrypoint `93d5d9dbcf71d4b8a7268683f9b892902bfcb037` |
+| Recovery anchor | Original implementation commit `785b9d09b45f25ad50089c00c1f5539a7c4e44de`; targeted-repair start commit `7077cd19910f5dedc307eca52f3e82e5cf067490` |
+| Issues / deviations | `P25-120-R1` Closed by explicit user acceptance; no scope deviation |
+| Canonical impact | None — Task 120 is implementation-local to the already-approved SCHEMA/SPEC/execution contract |
+| Production changes | Typed Add, Scratch Save, row Save, row Delete command/reconcile APIs in `src/lib/db/datastore.ts`; atomic Dexie implementation in `src/lib/db/indexeddb.ts`, including one read-only four-store snapshot for every authoritative reconcile; compile-time command fixtures in `src/lib/db/scratch-breakdowns.test.ts`; real-transaction, rollback, CAS, candidate-guard, ABA-1, and reconcile-snapshot coverage in `src/lib/db/inbox-operations.test.ts` |
+| TDD / repair evidence | Initial RED: focused command exit 1 with 13 expected missing-method failures while 554 existing tests passed. First implementation reduced the set to two identical ABA fixture conflicts; correcting the fixture's row precondition from legacy v2 to Add v1 reduced the set to zero. Targeted-repair RED: direct selected command exited 1 with four new snapshot-invariant failures and 26 existing selected tests passing; every observed authoritative read had a null transaction. Targeted-repair GREEN: the same command exited 0 with 2 files and 30 tests passing. No production repair cycle repeated the same unchanged failure set. |
+| Focused verification | Direct selected-target `pnpm exec vitest run src/lib/db/scratch-breakdowns.test.ts src/lib/db/inbox-operations.test.ts` exit 0 (2 files, 30 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0. The previous `pnpm test -- ...` result (81 files, 567 tests) remains classified as full-suite rather than focused evidence. |
+| Full gate | Fresh serial rerun after the repair: `pnpm test` exit 0 (81 files, 571 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js production build and seven routes). |
+| Review | User accepted the targeted repair checkpoint after all four reconcile methods were verified to enter one read-only Dexie transaction over `nodes`, `bits`, `scratchBreakdowns`, and `stagedCandidates`. |
+| Task markers | Task 120 is `[x]`; Tasks 121–126 remain `[ ]` |
+| Next legal action | Create a separate durable Task 121 start commit before any Task 121 production write, then implement only Stage/Unstage and ABA-2 no-resurrection |
+| Forbidden here | Do not start Task 122, write Task 121 `[x]` without later explicit acceptance, push, create a PR, merge, rebase, cherry-pick, clean up, or modify Phase 24 scope |
+
+## Accepted Task 121
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 121 — Implement Stage and Unstage commands |
+| Approved scope | Typed Stage/Unstage command and reconcile inputs/results in `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/staged-candidates.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; implement ABA-2 Stage→Unstage no-resurrection only; no UI and no Task 122 work |
+| State | Accepted by the user on 2026-08-09; Task 121 marker is `[x]` |
+| Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, sequential batch Task 120 → Task 121), plus explicit user authorization after Task 120 acceptance |
+| Start base / entrypoint | Approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; Task 121 entrypoint and Task 120 acceptance commit `9d7a6361fb0bdb52891f8253757d8088abbd3aac` |
+| Recovery anchor | Task 121 durable start commit `28fe8dbef84794596f02da21bf8f32677173e339`; its parent is the Task 120 acceptance commit `9d7a6361fb0bdb52891f8253757d8088abbd3aac` |
+| Dependencies | Tasks 103 and 104 accepted at `169ffa525a4fc50ecf2b73af21c4976d8d45387c` and `bc9d2d7e037cda7f4a3901185b0e805cf308b01b`; both are ancestors of the approved base |
+| Issues / deviations | None |
+| Canonical impact | None — implementation-local conformance to the approved SCHEMA Stage/Unstage matrix and SPEC durable-staging contract |
+| Production changes | Added typed `StageCandidate`/`UnstageCandidate` command, result, execute, and reconcile APIs; Stage validates active Inbox Scratch, source lifecycle/version, stable candidate ID, and unique source before atomically creating candidate v1 and advancing the source once; Unstage atomically deletes only the exact candidate and advances only the unconsumed source once; both reconcile from one authoritative four-store read snapshot and never write an operation log or orphan audit |
+| TDD evidence | Initial RED direct selected command exited 1: 2 files, 30 tests, 13 missing-API failures and 17 existing passes. Initial GREEN was 2 files / 30 tests. Repair 1 fixed only two test-fixture `TS7024` inference errors. Review then found later placement/consume was classified `rejected` instead of SCHEMA-required `conflict`; its focused RED exited 1 with 1 failure / 30 passes, then GREEN reached 2 files / 31 tests. The resulting `TS2345` source-narrowing error was fixed with an explicit no-source conflict guard. Repair 3 removed one new lint-only unused-parameter warning. No error signature persisted twice and every failure set shrank to zero. |
+| Focused verification | Final direct selected-target `pnpm exec vitest run src/lib/db/staged-candidates.test.ts src/lib/db/inbox-operations.test.ts` exit 0 (2 files, 31 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0 |
+| Full gate | Final serial rerun after the last test-only repair: `pnpm test` exit 0 (82 files, 585 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js production build and seven routes) |
+| Review | No remaining blocking finding. Real-Dexie evidence covers commit/reconcile preconditions and postconditions, unique-source/type-change rejection, durable reopen without copied label, Stage and Unstage rollback, one-snapshot reconciliation, no orphan-audit write, later-placement conflict, and ABA-2 delayed/duplicate orders with exact candidate absence, final source version, and no extra write. Diff ownership is exactly `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, `src/lib/db/staged-candidates.test.ts`, and `src/lib/db/inbox-operations.test.ts`; no Task 122 or UI path is owned. |
+| User acceptance | Task 121 checkpoint explicitly accepted on 2026-08-09 after direct confirmation of atomic Stage/Unstage, durable candidate truth, one-snapshot reconciliation, and ABA-2 no-resurrection evidence |
+| Task markers | Tasks 120–121 are `[x]`; Tasks 122–126 remain `[ ]` |
+| Batch status | Approved Gate C first batch Task 120 → Task 121 is complete; this acceptance grants no Task 122 write authority |
+| Next legal action | Read-only verification of Task 122 dependencies, exact scope, files, verification, and existing branch/worktree reuse conditions; present a next-batch approval packet and stop |
+| Forbidden here | Do not start Task 122, write Task 122 `[x]`, push, create a PR, merge, rebase, switch or clean up a branch/worktree, or modify Phase 24 scope |
+
+## Accepted Task 122
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 122 — Implement confirmed-orphan cleanup with exact reconciliation |
+| Approved scope | Add typed confirmed-orphan cleanup command/reconcile inputs and results in `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/candidate-orphan-cleanup.test.ts` on Task 104's real seven-store database; implement only authoritative `source_deleted`/`source_tombstoned` proof, exact candidate/audit reconciliation, unique audit append, and rollback between candidate deletion and audit append; no UI and no Task 123 work |
+| State | Accepted by the user on 2026-08-10; Task 122 marker is `[x]` |
+| Approval | Explicit user approval of the Task 122 next-batch packet on 2026-08-09; approved task is Task 122 only and the existing Phase 25 branch/worktree is explicitly reused |
+| Lifecycle evidence | Candidate-pinned `run-task` resolver at workflow candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned the expected receipt-less compatibility result `approval_required`, `contract_ready=true`; write authority comes from the explicit user-approved bounded work order |
+| Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag` |
+| Start base / entrypoint | Phase approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; Task 122 continuation entrypoint and Task 121 acceptance commit `a01c854aa82e1303550e19b915dd09af1acd9d81` |
+| Remote freshness | User-authorized `git fetch origin` on 2026-08-09 left `origin/main` at `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; no rebase, merge, cherry-pick, or reset was performed |
+| Recovery anchor | Task 122 durable start commit `f6d118f1e1d1f481a75ff9ffe2c0c964c29fc589`; targeted audit-index repair start commit `ef4b219b1f4f2a72f16732125cd105b098d2b4d8`, whose parent is the original implementation commit `6c4920414e7aceeb50a5df0eec6fb2c656845f7e` |
+| Dependencies | Tasks 104, 105, and 121 are accepted at `bc9d2d7e037cda7f4a3901185b0e805cf308b01b`, `0faaa70302928a28521e49b7e9c3747033d58cdd`, and `a01c854aa82e1303550e19b915dd09af1acd9d81`; all are ancestors of this start point |
+| Authority | `docs/SCHEMA.md` Confirmed candidate orphan cleanup matrix and Staged Candidate Integrity; `docs/SPEC.md` `UF-16`, `AF-04`, `AF-07`, and `AF-08`; `docs/EXECUTION_PLAN.md` Task 122 |
+| Issues / deviations | `P25-122-R1` Closed by explicit user acceptance; no scope deviation or new product decision |
+| Canonical impact | None — implementation-local conformance to the already-approved SCHEMA/SPEC/execution contract |
+| Production changes | Added typed confirmed/unresolved/planned-aggregate proof, cleanup command/result, execute, and reconcile APIs; confirmed cleanup revalidates exact candidate/version/source/Scratch/type and authoritative source absence before atomically deleting the candidate and appending one schema-parsed unique audit event; unresolved/local-miss and planned-aggregate evidence reject without writes; execute uses the existing real seven-store write transaction and reconcile reads candidate/source/audit from one three-store read-only snapshot. Targeted repair replaces the production audit-history scan with `where("candidateId").equals(candidateId).first()` while preserving the isolated non-production `DatabaseLike` fallback. |
+| TDD evidence | Initial RED exited 1 with 17 expected missing-method failures and the existing planned-aggregate invariant passing; the first minimal implementation reduced that set to zero. Targeted-repair RED exited 1 with exactly one production-scan invariant failure and 17 passes; the error was `production candidate audit full scan` at the former `audits.toArray()` call. The minimal indexed lookup reduced the failure set to zero with no repeated error signature or repair cycle. |
+| Focused verification | Final direct selected-target `pnpm exec vitest run src/lib/db/candidate-orphan-cleanup.test.ts` exit 0 (1 file, 18 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0 |
+| Full gate | Fresh serial run after the production indexed-lookup repair: `pnpm test` exit 0 (83 files, 603 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js production build and seven routes) |
+| Review | Accepted after the targeted repair. Functional contracts remain unchanged; production execute/reconcile use the existing transaction and unique `candidateId` index without materializing audit history, while the full-scan compatibility fallback is reachable only for a non-`GridDODatabase` implementation. Diff ownership is limited to `src/lib/db/indexeddb.ts`, `src/lib/db/candidate-orphan-cleanup.test.ts`, and this ledger; no Task 123 or UI path is owned. |
+| Targeted rejection | Resolved and accepted: the production `auditByCandidate` lookup no longer calls `toArray().find`; repair commit `5d3fb54b2bc5452e6bc2cb3b7932c92119712248` passed the recorded focused and fresh full gates |
+| User acceptance | Task 122 repaired checkpoint explicitly accepted on 2026-08-10, including confirmed-orphan correctness, exact reconciliation/rollback, retained audit history, and the indexed production audit lookup |
+| Task markers | Tasks 120–122 are `[x]`; Tasks 123–126 remain `[ ]` |
+| Next legal action | End the current Task 122 session; Task 123 remains not started and this acceptance creates no Task 123 write authority |
+| Forbidden here | Do not start Task 123, write Task 123 `[x]`, push, create a PR, merge, rebase, cherry-pick, reset, switch or clean up a branch/worktree, or modify Phase 24 scope |
+
+## Task 123 Gate C Handoff
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 123 only — Implement staged and direct Placement commands |
+| State | Gate C approved by the user on 2026-08-10; Task 123 is not started and its marker remains `[ ]` |
+| Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-placement.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; implement only the staged/direct typed Placement command, transaction, schema-default, rollback, and exact reconciliation contract; no UI and no Task 124 work |
+| Whole-file receipt | `docs/issues/Issues_Phase_25.gate-c.json`, updated to `task_batch` / `task_order` `[123]` |
+| Branch / worktree | Reuse explicitly approved for `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag` |
+| Integration / remote | `main`; post-fetch `origin/main` `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; local `main` matched at Gate C |
+| Continuation approved base | `dea3d094ae060db17bc1a5870d68267c27f2a3c7` (`docs: accept Task 122`) |
+| Base exception | User explicitly approved preserving the existing 14-commit same-phase continuation above `origin/main`; no reset, rebase, merge, or cherry-pick |
+| Dependencies | Tasks 120 and 121 are accepted at `9d7a6361fb0bdb52891f8253757d8088abbd3aac` and `a01c854aa82e1303550e19b915dd09af1acd9d81`; both are ancestors of the continuation base |
+| Authority / readiness | SCHEMA staged/direct placement matrix; SPEC pointer-placement and commit-reliability contract; `docs/EXECUTION_PLAN.md` Task 123; no recipe, open Decision prerequisite, active issue, or plan/code drift |
+| Writer mutex | Acquire `db-implementation`, `db-interface`, and `db-command-harness`; Task 123 is the only approved writer and Tasks 124–126 remain held |
+| Baseline gate reuse | User approved reuse of the fresh serial full gate recorded after Task 122 repair commit `5d3fb54b2bc5452e6bc2cb3b7932c92119712248`; its `src` tree and the continuation base `src` tree are both `7a4b365b5bbd2fc595edb7ce318cd4ef7f896a65`; the later changes are only the Task 122 plan marker and ledger acceptance evidence |
+| Task 123 verification | Start from direct selected-target RED; focused `pnpm exec vitest run src/lib/db/triage-placement.test.ts src/lib/db/inbox-operations.test.ts`; mutex regression `pnpm exec vitest run src/lib/db/candidate-orphan-cleanup.test.ts src/lib/db/staged-candidates.test.ts src/lib/db/triage-placement.test.ts src/lib/db/inbox-operations.test.ts`; then `pnpm typecheck` and `git diff --check`; after implementation run exactly one fresh serial full gate: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` |
+| Workflow candidate | Use candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`; next lifecycle skill is `skills/run-task/SKILL.md`; the global live `$run-task` is forbidden |
+| Canonical impact | None at kickoff; Task 123 remains implementation-local to the approved SCHEMA/SPEC/execution contract unless run-task discovers and records otherwise |
+| Next legal action | In a fresh session, invoke only the pinned candidate `$run-task`; it must first validate this committed Gate C receipt and create a separate durable Task 123 start commit before any test or production-code write |
+| Forbidden here | Do not start Task 123 or Task 124, modify product/test files, write any task marker, run downstream lifecycle work, push, create a PR, merge, rebase, or modify Phase 24 or Shelf |
+
+## Accepted Task 123
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 123 only — Implement staged and direct Placement commands |
+| State | Accepted by the user on 2026-08-10; Task 123 marker is `[x]` |
+| Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-placement.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; no other product/test file, UI, hook, Task 124, Phase 24, or Shelf work |
+| Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, Task 123 only), explicitly approved by the user |
+| Start base / entrypoint | Continuation approved base `dea3d094ae060db17bc1a5870d68267c27f2a3c7`; run-task entrypoint and Gate C kickoff commit `aa28e01dc46280fee58117044fefb292482e409b` |
+| Recovery anchor | Durable-start commit `1188e3959206182b8b2ca37e96f52eedcc4ef513`; its parent is `aa28e01dc46280fee58117044fefb292482e409b` and it precedes every Task 123 product/test write |
+| Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`; existing same-phase reuse approved; clean at start |
+| Dependencies / mutex | Tasks 120 and 121 accepted; `P25-122-R1` Closed; Task 123 exclusively owns `db-implementation`, `db-interface`, and `db-command-harness`; Tasks 124–126 remain held |
+| Lifecycle evidence | Candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` run-phase resolver validated the committed Gate C receipt as `ready`; receipt-less run-task resolver returned the expected compatibility state `approval_required`, `contract_ready=true`, `writes_allowed=false`; write authority remains the user-approved Gate C receipt |
+| Issues / deviations | None |
+| Canonical impact | None — implementation-local conformance to the approved SCHEMA/SPEC/Task 123 contract |
+| Verification contract | Selected-target RED; focused placement/inbox tests; four-file mutex regression; `pnpm typecheck`; `git diff --check`; then exactly one fresh serial full gate after focused green and final repair |
+| Production changes | Added separate typed staged/direct Placement execute and reconcile APIs. Both carry stable operation/result identity, exact source/candidate revisions, intended type/title, target parent/path, and exact cell; revalidate Scratch/source/candidate lifecycle, hierarchy/reachability/type, title limits, capacity/cell, and versions inside one transaction; construct all four Node/Bit variants with explicit `version: 1` and `pastDeadlineDismissed: false` before full schema parsing; atomically create/touch parent/consume source and, for staged placement, delete the candidate. Reconcile accepts only complete postcondition, exact untouched precondition, or conflict. |
+| TDD evidence | Initial selected-target RED exited 1 with 24 expected missing-method failures and 27 existing passes. The first implementation reduced the failure set to 10 transaction-lifetime failures, the synchronous snapshot validation repair reduced it to one mislabeled test fixture, and the corrected fixture reached 2 files / 51 tests. Review RED then reproduced missing parent `mtime` cascade and committed-Node reconcile drift with three exact failures / 50 passes; the targeted repair reached 2 files / 53 tests. No identical unchanged failure set persisted twice. |
+| Focused verification | Final direct selected-target `pnpm exec vitest run src/lib/db/triage-placement.test.ts src/lib/db/inbox-operations.test.ts` exit 0 (2 files, 53 tests); mutex regression exit 0 (4 files, 75 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0 |
+| Full gate | Exactly one fresh serial post-implementation run: `pnpm test` exit 0 (84 files, 629 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js 16.2.1 production build, successful TypeScript/static generation, seven routes) |
+| Review | No remaining blocking finding. Real-Dexie evidence covers four schema-parsed constructors, complete/untouched/conflict reconciliation, one-snapshot reconcile reads, stale lifecycle/version/path/cell/title rejection, source-candidate exclusion, every staged/direct checkpoint rollback, stable-ID replay, no compensation/alternate target/truncation/heuristic/silent resend, parent `mtime` cascade, and post-commit reconcile independence from later target movement. Diff ownership is exactly the four approved product/test paths plus this ledger. |
+| User acceptance | Task 123 checkpoint explicitly accepted on 2026-08-10; implementation commit `c1b62eff6e35b740bc693b48ad080380cdd0241f` and its recorded focused/mutex/full verification evidence are the durable acceptance basis |
+| Acceptance verification | Reused the recorded Task 123 full gate exactly as instructed; acceptance-only verification is exact two-file write-set inspection plus `git diff --check` |
+| Task markers | Tasks 120–123 are `[x]`; Tasks 124–126 remain `[ ]` |
+| Next legal action | Stop after the Task 123 acceptance commit; Task 124 and any next Gate C packet remain unapproved |
+| Forbidden here | Do not start Task 124, prepare a next Gate C packet, modify product/test code, push, create a PR, merge, rebase, or perform branch/worktree cleanup |
+
+## Task 124 Gate C Handoff
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 124 only — Implement source-aware Undo with candidate-version ABA protection |
+| State | Gate C approved by the user on 2026-08-10; Task 124 is not started and its marker remains `[ ]` |
+| Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-undo.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; implement only typed staged/direct source-aware Undo execute/reconcile, exact atomic inverse, dependency rejection, candidate v+1 restoration, ABA-3 conflict/no-resurrection, and ambiguous-Undo/new-placement protection; no UI and no Task 125/126, Phase 24, or Shelf work |
+| Whole-file receipt | `docs/issues/Issues_Phase_25.gate-c.json`, updated to `task_batch` / `task_order` `[124]` |
+| Branch / worktree | Reuse explicitly approved for `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag` |
+| Integration / remote | `main`; post-fetch `origin/main` `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; local `main` matches |
+| Continuation approved base | `54405de6aa9d1b42d1b58b19cbb68ee45a6a900e` (`docs: accept Task 123`) |
+| Base exception | User explicitly approved preserving the existing 18-commit same-phase continuation above `origin/main`; no reset, rebase, merge, or cherry-pick |
+| Dependency | Task 123 accepted at `54405de6aa9d1b42d1b58b19cbb68ee45a6a900e`; implementation commit `c1b62eff6e35b740bc693b48ad080380cdd0241f` and acceptance commit are ancestors of the continuation base |
+| Authority / readiness | SCHEMA Undo matrix, staged-candidate v+1 restoration, and atomic reconciliation; `docs/EXECUTION_PLAN.md` Task 124, `UF-25`, `AF-06`, `AF-07`, `NEG-18`, and `NEG-20`; no recipe, open Decision prerequisite, active issue, or plan/code drift |
+| Writer mutex | Acquire `db-implementation`, `db-interface`, and `db-command-harness`; Task 124 is the only approved writer and Tasks 125–126 remain held |
+| Baseline gate reuse | User approved reuse of Task 123's fresh serial full gate at implementation commit `c1b62eff6e35b740bc693b48ad080380cdd0241f`; its `src` tree and the continuation base `src` tree are both `5feb3fae627d0a7e6c0adf2b770f289c6a6978c1`; the later changes are only Task 123 plan-marker and ledger acceptance evidence |
+| Task 124 verification | Start from direct selected-target RED; focused `pnpm exec vitest run src/lib/db/triage-undo.test.ts src/lib/db/inbox-operations.test.ts`; mutex regression `pnpm exec vitest run src/lib/db/triage-placement.test.ts src/lib/db/triage-undo.test.ts src/lib/db/inbox-operations.test.ts`; then `pnpm typecheck` and `git diff --check`; after implementation run exactly one fresh serial full gate: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` |
+| Workflow candidate | Use candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`; next lifecycle skill is `/Users/jwk/Documents/codex-workflow-clean-design-mode-implementation/skills/run-task/SKILL.md` with SHA-256 `614631c56866549feb298d995ea0cf1311caa1cacaaefc2ba2ca753e43910531`; the global live `$run-task` is forbidden |
+| Canonical impact | None at kickoff; Task 124 remains implementation-local to the approved SCHEMA/execution contract unless run-task discovers and records otherwise |
+| Next legal action | Close this run-phase session after its receipt-only kickoff commit; in a fresh session invoke only the pinned candidate `$run-task`, using that kickoff commit as the recovery anchor; run-task must create a separate durable Task 124 start commit before any test or production-code write |
+| Forbidden here | Do not start Task 124 or Task 125/126, modify product/test files, write any task marker, run test/lint/typecheck/build, invoke downstream lifecycle work, push, create a PR, merge, rebase, or modify Phase 24 or Shelf |
+
+## Accepted Task 124
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 124 only — Implement source-aware Undo with candidate-version ABA protection |
+| State | Accepted by the user on 2026-08-10; Task 124 marker is `[x]` |
+| Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/triage-undo.test.ts`; extend `src/lib/db/inbox-operations.test.ts`; no other product/test file, UI, hook, Task 125/126, Phase 24, or Shelf work |
+| Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, Task 124 only), explicitly approved by the user |
+| Start base / entrypoint | Continuation approved base `54405de6aa9d1b42d1b58b19cbb68ee45a6a900e`; run-task entrypoint and Gate C kickoff commit `2128558387a94daf1ec2ee3ed1e612e83d1f75a2` |
+| Recovery anchor | This durable-start commit; its parent must be `2128558387a94daf1ec2ee3ed1e612e83d1f75a2` and it precedes every Task 124 product/test write |
+| Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`; existing same-phase reuse approved; clean at start |
+| Dependencies / mutex | Task 123 accepted; Task 124 exclusively owns `db-implementation`, `db-interface`, and `db-command-harness`; Tasks 125–126 remain held |
+| Lifecycle evidence | Candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` run-phase resolver validated the committed Gate C receipt as `ready`, `contract_ready=true`; receipt-less run-task resolver returned the expected compatibility state `approval_required`, `contract_ready=true`; both returned `writes_allowed=false`, while write authority remains the user-approved Gate C receipt |
+| Issues / deviations | None — no scope deviation or new product/design/policy decision |
+| Canonical impact | None — implementation-local conformance to the approved SCHEMA/SPEC/Task 124 contract |
+| Verification contract | Selected-target RED; focused Undo/inbox tests; three-file placement/Undo/inbox mutex regression; `pnpm typecheck`; `git diff --check`; scope diff review; then exactly one fresh serial full gate after focused green and final repair |
+| Production changes | Added typed staged/direct Placement Undo command, result, execute, and reconcile APIs carrying exact result/source snapshots and staged candidate provenance. Undo validates the unchanged full result record, exact consumed source revision/timestamp, candidate ID/source uniqueness, result lifecycle/defaults, parent existence, and zero surviving descendants inside one transaction; it hard-deletes only the exact result, refreshes the surviving parent `mtime` without a version increment, restores/advances the source once, and for staged provenance recreates the same candidate ID/Scratch/source/type/`createdAt` at prior version + 1 with transaction `updatedAt`. Direct Undo creates no candidate. Complete precondition/postcondition/conflict reconciliation uses one authoritative four-store snapshot and performs no compensation or resurrection. |
+| TDD evidence | Initial direct selected-target RED exited 1 with 2 files, 19 expected missing-method failures, and 29 existing passes. The minimum implementation reached 2 files / 48 tests and the first mutex run reached 3 files / 72 tests. Review found two unused test imports and added exact parent-`mtime` evidence; the first test-only repair run exposed three clock-fixture failures because Dexie consumed one-shot `Date.now()` mocks. Replacing call-count mocks with explicit Placement/Undo clock phases reached the final 2 files / 48 tests, with targeted ESLint at 0 errors/0 warnings. No production failure signature repeated and no repair changed the approved behavior or scope. |
+| Focused verification | Final direct selected-target `pnpm exec vitest run src/lib/db/triage-undo.test.ts src/lib/db/inbox-operations.test.ts` exit 0 (2 files, 48 tests); final mutex regression `pnpm exec vitest run src/lib/db/triage-placement.test.ts src/lib/db/triage-undo.test.ts src/lib/db/inbox-operations.test.ts` exit 0 (3 files, 72 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0 |
+| Full gate | Exactly one fresh serial post-implementation run: `pnpm test` exit 0 (85 files, 648 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js 16.2.1 production build, successful TypeScript/static generation, seven routes) |
+| Review | No remaining blocking finding. Real-Dexie evidence covers staged/direct Node/Bit exact inverse and schema identity, source/candidate revisions, parent `mtime`, result mutation/lifecycle/source-consumption/candidate-ID collision rejection, descendant blocking and child-first re-enable, every staged/direct checkpoint rollback, one-snapshot reconciliation, ABA-3 late Placement/Stage conflict with candidate v+1 preservation, and ambiguous Undo followed by a new confirmed Placement with no deletion/restoration/resurrection. Diff ownership is exactly `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, `src/lib/db/triage-undo.test.ts`, `src/lib/db/inbox-operations.test.ts`, and this ledger; no UI/hook, Task 125/126, Phase 24, or Shelf path is owned. |
+| User acceptance | Task 124 checkpoint explicitly accepted on 2026-08-10; implementation commit `19dc391b4f08f02249abc817c74e3dc1019a40f4` and its recorded focused/mutex/full verification evidence are the durable acceptance basis |
+| Acceptance verification | Reused the recorded Task 124 full gate exactly as instructed; acceptance-only verification is exact two-file write-set inspection plus `git diff --check` |
+| Task markers | Tasks 120–124 are `[x]`; Tasks 125–126 remain `[ ]` |
+| Next legal action | Stop after the Task 124 acceptance commit; Task 125/126 and any next Gate C packet remain unapproved |
+| Forbidden here | Do not start Task 125/126, prepare a next Gate C packet, modify product/test code, push, create a PR, merge, rebase, or perform branch/worktree cleanup |
+
+## Tasks 125 → 126 Gate C Handoff
+
+| Field | Durable value |
+| --- | --- |
+| Batch | Exact batch `[125,126]`; serial order `[125,126]`; next task Task 125 |
+| State | Gate C approved by the user on 2026-08-10; Tasks 125 and 126 are not started and both markers remain `[ ]` |
+| Whole-file receipt | `docs/issues/Issues_Phase_25.gate-c.json`, updated to `task_batch` / `task_order` `[125,126]`, `execution_mode` `sequential`, and `next_task` `125` |
+| Branch / worktree | Existing same-phase reuse explicitly approved for `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag` |
+| Integration / remote | `main`; post-fetch `origin/main` `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`; local `main` matches |
+| Continuation approved base | `06344a75ef1efd9335e4e771a893d269feae3d61` (`docs: accept Task 124`) |
+| Base exception | User explicitly approved preserving the existing 22-commit same-phase continuation above `origin/main`; no reset, rebase, merge, or cherry-pick |
+| Task 125 scope | Modify `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, and `src/lib/db/archive.test.ts`; create `src/lib/db/archive-scratch-command.test.ts`; implement only authoritative eligibility, typed guarded Archive, active Inbox Scratch + consumed≥1 + unconsumed=0 + candidate=0 + exact-version checks, mandatory clear Add-draft/title-blocker assertion, generic `archiveBit` bypass rejection, and ordinary Bit Archive/Archive View restore preservation |
+| Task 125 exclusions | No UI/hook/store, sessionStorage, Task 126 recovery classifier, Task 161 recovery coordinator, Phase 24, or Shelf work |
+| Task 126 scope | After Task 125 acceptance only, modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/archive-scratch-recovery.test.ts`; implement only schema-validated `PendingOperationRecovery` read-only `applied`/`not_applied`/`conflict`/`unknown` classification with invalid/foreign/stale fail-closed and zero writes |
+| Task 126 exclusions | No Archive mutation, operation journal/log/index, queue/outbox, sessionStorage implementation, recovery-descriptor creation/ownership, Task 161 scope, Phase 24, or Shelf work |
+| Dependencies | Task 125 dependencies Tasks 120 and 121 are accepted at `9d7a6361fb0bdb52891f8253757d8088abbd3aac` and `a01c854aa82e1303550e19b915dd09af1acd9d81`; Task 126 depends on Task 125 and remains held until explicit user acceptance plus a separate Task 125 acceptance commit |
+| Acceptance boundary | Inclusion in this receipt does not pre-accept Task 125 or pre-satisfy Task 126. Each task has a separate durable start, implementation checkpoint, explicit user acceptance, and acceptance commit; Task 126 cannot start from Task 125 implementation/checkpoint evidence alone |
+| Writer mutex | Strict serial single writer. Both tasks acquire `db-implementation` and `db-interface`; Task 125 additionally acquires `db-archive-regression`; no concurrent implementation or commit |
+| Authority / readiness | SCHEMA Archive Scratch matrix/eligibility and forced-Archive recovery; SPEC coordinator/Archive View boundary; EXECUTION_PLAN Tasks 125/126, `UF-26`, `UF-28`, `AF-04`–`AF-08`, `NEG-17`, and `NEG-20`; no recipe, open Decision prerequisite, active blocking issue, or path/API drift |
+| Baseline gate reuse | User approved reuse of Task 124's fresh serial full gate at implementation commit `19dc391b4f08f02249abc817c74e3dc1019a40f4`; its `src` tree and this continuation base `src` tree are both `49f6971d6ad1971773bbe23addb56b97d4aa342d`; later changes are only Task 124 plan-marker and ledger acceptance evidence |
+| Baseline full gate | `pnpm test` exit 0 (85 files, 648 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js 16.2.1 production build, seven routes) |
+| Gate C verification | Candidate resolver contract-ready; Git identity/ancestry/source-tree equality/path/API inspection and `git diff --check` passed; no install/test/lint/typecheck/build rerun at Gate C |
+| Workflow candidate | Candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`; candidate `run-phase` SHA-256 `6b45762f2d291c006deb50b4caba9aa518e558af1c5a80db3c040073c6822e46`; next lifecycle uses candidate `/Users/jwk/Documents/codex-workflow-clean-design-mode-implementation/skills/run-task/SKILL.md` SHA-256 `614631c56866549feb298d995ea0cf1311caa1cacaaefc2ba2ca753e43910531`; global live run-phase/run-task forbidden |
+| Canonical impact | None at kickoff; both tasks remain implementation-local to approved SCHEMA/SPEC/execution authority unless run-task discovers and records otherwise |
+| Next legal action | Close this run-phase session after its receipt/ledger-only kickoff commit; in a fresh session invoke only the candidate-pinned `$run-task` for Task 125, using that kickoff commit as the recovery anchor |
+| Forbidden here | Do not record Task 125/126 durable start, modify product/test files or task markers, run install/test/lint/typecheck/build, invoke run-task, push, create a PR, merge, rebase, clean branch/worktree, or modify Phase 24/Shelf |
+
+## Task 125 In Progress
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 125 only — Implement exact Archive eligibility and guarded Archive command |
+| State | In Progress; implementation is not user acceptance and the Task 125 marker remains `[ ]` |
+| Approved scope | Modify `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, and `src/lib/db/archive.test.ts`; create `src/lib/db/archive-scratch-command.test.ts`; by approved `P25-125-R1`, modify only the one stale regression in `src/lib/db/scratch-breakdowns.test.ts`; implement only authoritative eligibility, typed guarded Archive, active Inbox-owned Scratch + consumed≥1 + unconsumed=0 + candidate=0 + exact-version checks, mandatory clear Add-draft/title-blocker caller assertion, generic `archiveBit` bypass rejection, and ordinary Bit Archive/Archive View restore preservation; no UI/hook/store, sessionStorage, Task 126, Phase 24, or Shelf work |
+| Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, serial batch `[125,126]`, next Task 125), explicitly approved by the user |
+| Start base / entrypoint | Continuation approved base `06344a75ef1efd9335e4e771a893d269feae3d61`; exact run-task entrypoint and Gate C kickoff commit `77206d8fb00cb7d6a9d62ae9995dd6834618bb70` |
+| Recovery anchor | This durable-start commit; its parent must be `77206d8fb00cb7d6a9d62ae9995dd6834618bb70` and it precedes every Task 125 product/test write |
+| Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`; existing same-phase reuse approved; clean at start |
+| Dependencies / mutex | Tasks 120 and 121 accepted; Task 125 exclusively owns `db-implementation`, `db-interface`, and `db-archive-regression`, plus temporary `db-breakdown-regression` ownership only for the approved stale test; Task 126 remains held until explicit Task 125 user acceptance plus its separate acceptance commit |
+| Lifecycle evidence | Candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` run-phase resolver validated the committed Gate C receipt as `ready`, `contract_ready=true`; receipt-less run-task resolver returned the expected compatibility state `approval_required`, `contract_ready=true`; both returned `writes_allowed=false`, while write authority remains the user-approved Gate C receipt |
+| Issues / deviations | `P25-125-R1` approved by the user: test-only write-set expansion adds `src/lib/db/scratch-breakdowns.test.ts` and temporary `db-breakdown-regression` ownership, limited to replacing the one stale generic Inbox Scratch assertion with guarded rejection plus whole-snapshot immutability evidence |
+| Canonical impact | None — implementation-local conformance to the approved SCHEMA/SPEC/Task 125 contract |
+| Verification contract | Selected-target RED; focused Archive Scratch/archive tests; triage/inbox/archive mutex regression; `pnpm typecheck`; `git diff --check`; scope and concrete-risk review with focused repair; then exactly one fresh serial full gate after final code stability |
+| Next legal action | Update only the approved stale regression, rerun invalidated focused/mutex checks, review, run the fresh serial full gate exactly once, commit implementation/evidence, and stop at the Task 125 checkpoint |
+
+## P25-125-R1 — Stale generic Scratch Archive regression consumer
+
+| Field | Durable value |
+| --- | --- |
+| Status | Closed — approved test-only repair implemented, verified, and accepted with Task 125 |
+| Discovered | Task 125 consumer/diff review after focused and mutex green, before the serial full gate |
+| Code path | `src/lib/db/scratch-breakdowns.test.ts` real-Dexie retention case calls `archiveBit(TRANSACTION_TEST_IDS.scratchBit)` for an Inbox-owned Scratch |
+| Trigger | Task 125 correctly makes generic `archiveBit` reject every Inbox-owned Scratch so callers cannot bypass guarded `archiveScratch` eligibility/version/blocker validation |
+| Concrete consequence | Selected-target `pnpm exec vitest run src/lib/db/scratch-breakdowns.test.ts` exits 1 with 1 failure / 12 passes at the required guard; the unrun full gate would therefore fail unless the stale test is updated or the required product guard is weakened |
+| Current evidence | Task 125 focused command passes 2 files / 23 tests; mutex regression passes 4 files / 71 tests; `pnpm typecheck` and `git diff --check` pass. A review RED for foreign ordinary-Bit replay failed as expected and its repair is green. Full gate has not run. |
+| Requested disposition | Expand Task 125's test-only write set to also modify `src/lib/db/scratch-breakdowns.test.ts`, replacing only the stale generic Inbox Scratch call/fixture with Task 125 guarded-command retention evidence. No product/UI/hook/store/sessionStorage/Task 126/Phase 24/Shelf expansion. |
+| User disposition | Approved; add only `src/lib/db/scratch-breakdowns.test.ts`, acquire temporary `db-breakdown-regression` mutex ownership, and change only the failing stale regression to expect guarded `archiveScratch` rejection with the complete seven-store snapshot unchanged |
+| Canonical impact | None — canonical SCHEMA/SPEC already require the guard; this is stale test conformance only |
+
+## Task 125 Implementation Checkpoint
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 125 only — Implement exact Archive eligibility and guarded Archive command |
+| State | Implemented awaiting user review; implementation is not user acceptance and the Task 125 marker remains `[ ]`; Task 126 remains held |
+| Durable start | `78fcf634f3addc533c76c81adab6c2ab6e957d41`; parent `77206d8fb00cb7d6a9d62ae9995dd6834618bb70`, before every Task 125 product/test write |
+| Approved deviation | `P25-125-R1` ledger record `7ec42863181c1959334d07ae6fbc08217fbcbeb7`; user-approved durable scope/mutex update `030d8b193cb41be83dc89b43eab84c5ad302f2b1` |
+| Implemented behavior | Added a typed authoritative eligibility query and guarded `archiveScratch` command with exact Scratch version and literal clear Add-draft/title-blocker assertion. One read-write transaction independently verifies active Inbox ownership, consumed≥1, unconsumed=0, staged=0, exact version, and replay postcondition; success changes only Scratch `archivedAt`/`mtime`/version. Generic `archiveBit` rejects Inbox-owned Scratch while ordinary Bit Archive and Archive View restore remain intact. |
+| Retention / atomicity | Real-Dexie evidence proves rows and unrelated stores remain byte-for-byte unchanged on success/rejection, durable eligibility/version/candidate races write nothing, same-command replay is `already_applied`, and the named post-write checkpoint rolls the transaction back. The approved stale integration regression now proves its unconsumed row plus active candidate returns `rejected` and preserves the complete seven-store snapshot. |
+| TDD / review evidence | Initial selected-target RED exited 1 with 15 expected failures / 7 existing passes. Minimal implementation reduced the set to six then three transaction-lifetime failures before focused green. Review found foreign ordinary-Bit replay could be misclassified; its focused RED exited 1 with 1 failure / 14 passes, and Inbox-owner postcondition repair reached green. Consumer review found `P25-125-R1`; its standalone RED exited 1 with 1 failure / 12 passes before the approved test-only repair. No unchanged failure set persisted twice. |
+| Focused verification | Final `pnpm exec vitest run src/lib/db/scratch-breakdowns.test.ts` exit 0 (1 file, 13 tests); final `pnpm exec vitest run src/lib/db/archive-scratch-command.test.ts src/lib/db/archive.test.ts` exit 0 (2 files, 23 tests); final mutex regression exit 0 (4 files, 71 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0 |
+| Full gate | Exactly one fresh serial post-implementation run: `pnpm test` exit 0 (86 files, 664 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js 16.2.1 production build, successful TypeScript/static generation, seven routes) |
+| Review | No remaining blocking finding. Reviewed code paths cover malformed caller assertion, active Inbox ownership, empty/unconsumed/staged/consumed counts, exact version, durable races, foreign replay, same-command replay, rollback, generic bypass, ordinary Direct Archive, Archive View restore, and full-store immutability. |
+| Diff ownership | Exactly `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, `src/lib/db/archive.test.ts`, new `src/lib/db/archive-scratch-command.test.ts`, approved deviation `src/lib/db/scratch-breakdowns.test.ts`, and this ledger; no UI/hook/store/sessionStorage/Task 126/Phase 24/Shelf path |
+| Issues / deviations | `P25-125-R1` implemented and verified under explicit user-approved test-only scope; terminal closure remains user-owned. No other issue or deviation. |
+| Canonical impact | None — implementation-local conformance to already-approved SCHEMA/SPEC/Task 125 authority; no canonical amendment required |
+| Next legal action | Present the Task 125 user checkpoint and stop. Only explicit acceptance may later write Task 125 `[x]` in a separate acceptance commit; Task 126 cannot start before that commit. |
+
+## Accepted Task 125
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 125 only — Implement exact Archive eligibility and guarded Archive command |
+| State | Accepted by the user on 2026-08-10; Task 125 marker is `[x]`; Task 126 marker remains `[ ]` and is not started |
+| Acceptance basis | Implementation/evidence commit `a28ea533d8d1c6cc0b09e1b652cddd2fa4aad94a`; durable start `78fcf634f3addc533c76c81adab6c2ab6e957d41`; approved deviation `030d8b193cb41be83dc89b43eab84c5ad302f2b1`; focused 23/23; mutex 71/71; Breakdown standalone 13/13; serial full gate 86 files / 664 tests, lint 0 errors, typecheck/build passed; no remaining blocking finding; canonical impact None; clean checkpoint worktree |
+| User acceptance | The user explicitly accepted the recorded Task 125 implementation checkpoint and its exact evidence on 2026-08-10 |
+| P25-125-R1 | Closed by the user-owned Task 125 acceptance boundary: the approved test-only stale regression repair is implemented and verified; no product scope expansion occurred |
+| Acceptance write set | Only `docs/EXECUTION_PLAN.md` and `docs/issues/Issues_Phase_25.md`; no Gate C receipt, product/test code, Task 126, Phase 24, or Shelf change |
+| Acceptance verification | Reused the accepted implementation verification without rerunning test/lint/typecheck/build; acceptance-only checks are exact two-file write-set inspection and `git diff --check` |
+| Canonical impact | None — no canonical amendment required |
+| Recovery anchor | This separate acceptance commit, whose parent is `a28ea533d8d1c6cc0b09e1b652cddd2fa4aad94a` |
+| Next legal action | Stop after this acceptance commit. Task 126 may begin only in a separate fresh candidate-pinned run-task session using this acceptance commit as its recovery anchor. |
+
+## Task 126 In Progress
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 126 only — Implement Archive recovery classification |
+| State | In Progress; implementation is not user acceptance and the Task 126 marker remains `[ ]` |
+| Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/archive-scratch-recovery.test.ts`; implement only schema-validated `PendingOperationRecovery` read-only `applied`/`not_applied`/`conflict`/`unknown` classification using exact Scratch ID/version/`archivedAt` and complete Breakdown/candidate pre/postconditions; invalid/foreign/stale descriptors fail closed; every classification path performs zero mutation |
+| Excluded | Archive mutation; operation journal/log/index; queue/outbox; `sessionStorage`; recovery descriptor creation/ownership; Task 161 coordinator; UI/hook/store; Phase 24; Shelf; workflow rollout; Task 127 or later scope |
+| Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, serial batch `[125,126]`), explicitly approved by the user; Task 125 acceptance commit releases Task 126 without converting the run-phase receipt into a run-task receipt |
+| Start base / entrypoint | Task 125 implementation/evidence parent `a28ea533d8d1c6cc0b09e1b652cddd2fa4aad94a`; exact Task 125 acceptance and Task 126 recovery anchor `4a02fc0de4f0b4489dfe3eb693554306233344aa` |
+| Recovery anchor | `4a02fc0de4f0b4489dfe3eb693554306233344aa`; this durable-start commit must precede every Task 126 product/test write |
+| Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`; existing same-phase reuse approved; clean at start |
+| Dependencies / mutex | Task 125 accepted at `4a02fc0de4f0b4489dfe3eb693554306233344aa`; Task 126 exclusively owns `db-implementation` and `db-interface`; no concurrent implementation or commit |
+| Lifecycle evidence | Candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` and run-task SHA-256 `614631c56866549feb298d995ea0cf1311caa1cacaaefc2ba2ca753e43910531` verified; receipt-less run-task resolver returned expected `approval_required`, `contract_ready=true`, `writes_allowed=false`; write authority remains the user-approved Gate C plus Task 125 acceptance commit |
+| Issues / deviations | None |
+| Canonical impact | None — implementation-local conformance to the approved SCHEMA forced-Archive recovery/no-journal contract, SPEC authority, and Task 126 execution contract |
+| Verification contract | TDD selected-target RED; focused recovery test; Archive command/recovery/archive mutex regression; `pnpm typecheck`; `git diff --check`; concrete-risk/diff review and bounded repair; then exactly one fresh serial full gate: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` |
+| Next legal action | Create the Task 126 dedicated failing test, implement only the approved read-only classifier, complete bounded verification/review, commit implementation/evidence, and stop at the Task 126 user checkpoint without writing `[x]` |
+
+## Task 126 Implementation Checkpoint
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 126 only — Implement Archive recovery classification |
+| State | Implemented awaiting user review; implementation is not user acceptance and the Task 126 marker remains `[ ]` |
+| Durable start | `aa2ea32487e9f7619061ea5a4ece864d2f75090b`; parent and recovery anchor `4a02fc0de4f0b4489dfe3eb693554306233344aa`, before every Task 126 product/test write |
+| Implemented behavior | Added typed `classifyArchiveScratchRecovery` to the DataStore and IndexedDB implementation. It schema-validates `PendingOperationRecovery`, reads Scratch/Inbox owner/Breakdowns/candidates from one existing four-store read-only snapshot, and returns `applied` only for the complete retained Archive postcondition, `not_applied` only for the complete active eligible precondition, `conflict` for changed/foreign/stale/partial authority, and `unknown` only when repository authority cannot be read. It invokes no Archive mutation and creates no journal/log/index/queue/outbox/session owner. |
+| Exact classification | Complete postcondition requires the exact Scratch ID, active Inbox owner, `deletedAt: null`, next version, non-null `archivedAt >= startedAt`, exact Archive `mtime === archivedAt`, consumed≥1, unconsumed=0, and staged candidates=0. Complete precondition requires the same exact owner/lifecycle and aggregate at the descriptor's expected version with `archivedAt: null`. Every other readable state is `conflict`. |
+| TDD evidence | Initial direct selected-target RED exited 1 with 15 expected missing-method failures, all with `store.classifyArchiveScratchRecovery is not a function`. Minimal implementation reached 1 file / 15 tests green. One test datum was corrected before production behavior was extended: canonical Zod strips unknown keys, so the invalid-descriptor case uses invalid `startedAt: 0` rather than contradicting the existing schema contract. No failure signature repeated and no repair cycle was required. |
+| Focused verification | `pnpm exec vitest run src/lib/db/archive-scratch-recovery.test.ts` exit 0 (1 file, 15 tests); `pnpm exec vitest run src/lib/db/archive-scratch-command.test.ts src/lib/db/archive-scratch-recovery.test.ts src/lib/db/archive.test.ts` exit 0 (3 files, 38 tests); `pnpm typecheck` exit 0; `git diff --check` exit 0; targeted ESLint over the three Task 126 paths exit 0 with no warning |
+| Full gate | Exactly one fresh serial post-implementation run: `pnpm test` exit 0 (87 files, 679 tests); `pnpm lint` exit 0 (0 errors, 11 pre-existing warnings); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next.js 16.2.1 production build, TypeScript/static generation, seven routes) |
+| Review | No blocking or remaining concrete finding. Reviewed paths prove schema-invalid input fails before authority use, foreign ordinary Bit/missing Scratch/stale timestamp/changed version/lifecycle/eligibility/partial aggregate all conflict, read failure alone is unknown, and every real/fake classification path performs zero writes. The classifier contains no write transaction or mutation call and reuses the existing real-Dexie read-only snapshot boundary. |
+| Diff ownership | Exactly `src/lib/db/datastore.ts`, `src/lib/db/indexeddb.ts`, new `src/lib/db/archive-scratch-recovery.test.ts`, and this ledger; no Archive mutation test change, UI/hook/store, sessionStorage, Task 161, Phase 24, Shelf, workflow rollout, or Task 127+ path |
+| Issues / deviations | None |
+| Canonical impact | None — implementation-local conformance to already-approved SCHEMA forced-Archive recovery/no-journal authority, SPEC, and Task 126; no canonical amendment required |
+| Next legal action | Present the Task 126 user checkpoint and stop. Only explicit user acceptance may later write Task 126 `[x]` in a separate acceptance commit; do not start Task 127, push, PR, merge, rebase, or clean up. |
+
+## Accepted Task 126
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 126 only — Implement Archive recovery classification |
+| State | Accepted by the user on 2026-08-10; Task 126 marker is `[x]`; Tasks 120–126 are accepted |
+| Acceptance basis | Implementation/evidence commit `4eb8df3c50455588e4ebd880d72d5e366f50d0cd`; durable start `aa2ea32487e9f7619061ea5a4ece864d2f75090b`; focused recovery 15/15; Archive mutex regression 38/38; serial full gate 87 files / 679 tests; lint 0 errors and 11 pre-existing warnings; typecheck/build passed; no blocking or remaining concrete finding; canonical impact None; clean checkpoint worktree |
+| User acceptance | The user explicitly accepted the recorded Task 126 implementation checkpoint and its exact evidence on 2026-08-10 |
+| Acceptance write set | Only `docs/EXECUTION_PLAN.md` and `docs/issues/Issues_Phase_25.md`; no product/test code, Gate C receipt, Task 127, Phase 24, Shelf, or workflow rollout change |
+| Acceptance verification | Reused the recorded focused, mutex, targeted lint, full test, full lint, typecheck, and build results without rerunning test/lint/typecheck/build; acceptance-only checks are exact two-file write-set inspection, `git diff --check`, Task 125/126 marker inspection, and post-commit clean status |
+| Issues / deviations | None |
+| Canonical impact | None — no canonical amendment required |
+| Recovery anchor | This separate acceptance commit, whose parent is `4eb8df3c50455588e4ebd880d72d5e366f50d0cd` |
+| Phase 25 next legal action | Stop this run-task session. Any Phase 25 close preparation/final close requires its separately authorized lifecycle and user-owned gate; do not start Task 127 or another phase from this acceptance commit. |
+
+## Phase 25 Close Audit
+
+### Identity, ownership, and acceptance
+
+- **Pinned pre-close SHA:**
+  `adb9cc35ba611521915373fa5876665dedb2fc98` on
+  `phase-25/authoritative-command-dag`, based on
+  `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` from `main`.
+- Tasks 120–126 each have a user-owned `[x]`, a durable implementation/evidence
+  boundary, and a separate acceptance commit. Task 127 and later markers remain
+  open, and Phase 24 work is absent from this branch.
+- The base-to-head diff is exhaustively owned by the approved Phase 25
+  DataStore/IndexedDB commands, real-Dexie transaction tests, the approved
+  Task 125 stale-regression repair, and committed plan/ledger/receipt evidence.
+  No unrelated, future, UI, hook, store, or reference-prototype work is mixed.
+- User-visible rendered evidence is not applicable: every Phase 25 task is
+  declared data/nonvisual. The accepted checkpoint evidence proves the
+  observable repository outcomes, while Tasks 136–162 own later interaction
+  and presentation realization.
+
+### Terminal evidence and gate reuse
+
+Task 126 implementation commit
+`4eb8df3c50455588e4ebd880d72d5e366f50d0cd` ran the final fresh serial full
+gate. The later acceptance commit changed only `docs/EXECUTION_PLAN.md` and
+this ledger; both commits have the identical `src` tree
+`483c7756667335b502105dfa4a712b128a7a117b`. Per the end-phase instruction,
+the valid full gate was reused and test/lint/typecheck/build were not rerun.
+
+| Command | Exit | Result |
+| --- | ---: | --- |
+| `pnpm test` | 0 | 87 test files / 679 tests passed |
+| `pnpm lint` | 0 | 0 errors; the same 11 pre-existing warnings |
+| `pnpm typecheck` | 0 | TypeScript check passed |
+| `pnpm build` | 0 | Next.js 16.2.1 production build passed; seven routes generated |
+| `git diff --check` | 0 | Rechecked at pre-close and detached close preview; no whitespace errors |
+
+### Architecture conformance
+
+| Governing rule | Affected evidence | Tier | Disposition |
+| --- | --- | --- | --- |
+| DataStore facade and hook boundary | Phase 25 production changes are confined to `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; no component or hook imports or data boundary changed. | Blocking | Pass |
+| Zod write boundary | Typed command/result schemas validate repository inputs and complete records at the existing write boundary; Task 126 validates its recovery descriptor before authority reads. | Blocking | Pass |
+| Monotonic CAS / ABA protection | Tasks 120, 121, 123, and 124 prove exact source/candidate/result revisions and ABA-1/2/3 no-resurrection behavior. | Blocking | Pass |
+| Atomic complete postconditions | Real-Dexie tests cover all eleven commands, named rollback checkpoints, exact pre/post/conflict classification, and one-snapshot reconciliation reads. | Blocking | Pass |
+| No general operation-log shortcut | No general log, journal, outbox, offline queue, operation-ID index, or persisted recovery owner was introduced. The existing narrow orphan audit remains integrity-only. | Blocking | Pass |
+| Durable Staging authority | Staged candidates remain repository-owned durable truth joined to source rows; Stage/Unstage/Placement/Undo preserve exact identity and uniqueness. | Blocking | Pass |
+| Archive evidence guard | Guarded Archive independently revalidates active Inbox ownership, consumed ≥1, unconsumed 0, staged 0, exact version, and explicit clear caller blockers in one transaction. | Blocking | Pass |
+| Read-only Archive recovery | Task 126 classifies only complete precondition, complete postcondition, conflict, or unavailable authority from one read snapshot and performs zero writes. | Blocking | Pass |
+| Future UI/search/session/theme owners | Phase 25 changes no component, hook, store, route, theme, copy, search, mounted-session, or visual-decision owner; their exact later tasks remain open. | Blocking | Pass for Phase 25 scope |
+| File organization | New command tests stay beside their declared database owner and match the committed task file contracts. | Advisory | Pass |
+| Local-first presentation | No presentation surface changed; authoritative source remains visible for later adapters to project. | Advisory | Not applicable |
+
+Blocking violations: **0**. Advisory violations: **0**.
+
+### Issue, canonical-impact, and handoff reconciliation
+
+- `P25-120-R1`, `P25-122-R1`, and `P25-125-R1` are Closed under their exact
+  user-accepted repair boundaries. No `Open`, `In Progress`, or `Awaiting User
+  Decision` issue remains active; historical task-state sections are retained
+  as execution chronology rather than current status.
+- Every phase canonical-impact record is `None`: the work implements the
+  already-approved SCHEMA/SPEC/execution contracts. There is no unresolved
+  `Tagged` item, canonical amendment, deferred Phase 25 issue, or central
+  deferred-index update.
+- `docs/execution-plan/archive/phase-25.md` records completion-time truth, the
+  Phase Index marks Phase 25 Completed and links the archive, and Phase Notes
+  are not used by adapter policy.
+- Two cross-phase repository learnings were added to
+  `docs/execution-plan/LEARNINGS.md`: snapshot-consistent reconciliation and
+  indexed lookup for indefinitely retained evidence.
+
+**Next legal action:** present one exact Final Close packet pinning detached
+candidate A, its diff hash, the future whole-file JSON receipt payload,
+publication metadata, merge method, checks policy, integration sync, and
+guarded cleanup. This audit is not the receipt and grants no push, PR, merge,
+sync, or cleanup authority.
