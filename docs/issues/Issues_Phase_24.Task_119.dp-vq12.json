@@ -25,6 +25,21 @@
     "choice": "A",
     "label": "Stable single-card Archive reliability and recovery composition"
   },
+  "checkpoint_acceptance": {
+    "date": "2026-08-11",
+    "statement": "Task 119 / DP‑VQ12=A checkpoint를 수락합니다.",
+    "acceptance_basis": "b2d4fc06343770d40218d3cb8c78d089d8223c73",
+    "accepted_task": 119,
+    "accepted_decision": "DP-VQ12=A",
+    "accepted_contract": [
+      "one stable Breakdown-scoped Archive card and original-position current-action locus through pending, unknown, reconciliation, terminal failure, forced-reload recovery, and authoritative success",
+      "exact state copy, read-only Check again without resend, authoritative not_applied-only Retry, terminal-only Cancel, and canonical visible-order/null/empty success handoff",
+      "stable focus, polite atomic accessibility, descriptor-bound lifetime, immediate static state changes, and identical reduced-motion behavior",
+      "eight-theme role mapping without a second rail/panel, toast/dialog/global spinner, blind resend, automatic Retry, in-flight Cancel, timer, repeated motion, extra persistence, or theme-ID product logic",
+      "Task 162-only release with Task 162 and Phase 24 close preserved as unstarted"
+    ],
+    "lifecycle_boundary": "Task 119 is accepted; Task 162 is released but not started, Phase 24 close is not started, and the user will choose the next Phase 24 lifecycle action separately"
+  },
   "canonical_record_paths": [
     "docs/recipes/inbox-triage-archive-completion-visual-recipe.md",
     "docs/DESIGN_TOKENS.md",
@@ -116,11 +131,11 @@
     "tasks": [
       162
     ],
-    "consumption_condition": "Task 119 user checkpoint accepted; its plan marker remains open until then",
-    "all_other_tasks": "unreleased; Task 162 is not started by this receipt and Phase 24 close remains unavailable"
+    "consumption_condition": "satisfied by explicit Task 119 checkpoint acceptance on 2026-08-11",
+    "all_other_tasks": "Task 162 is released but not started by this receipt; Phase 24 close remains unstarted and every other lifecycle edge retains its prior state"
   },
-  "task_state": "implemented-awaiting-user-checkpoint",
+  "task_state": "accepted",
   "canonical_impact": "Reflected",
   "issue_or_deviation": "None",
-  "next_legal_action": "task-119-user-checkpoint"
+  "next_legal_action": "phase-24-next-lifecycle-decision"
 }

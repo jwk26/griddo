@@ -254,7 +254,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ09` | `VQ-09` | 116 | 154 only | Choice A compact Result Title/direct-limit steps accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`; Task 154 only is released. |
 | `DP-VQ10` | `VQ-10` | 117 | 157 only | Choice A card-attached always-visible Newly/Undo status rail accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_117.dp-vq10.json`; Task 157 only is released. |
 | `DP-VQ11` | `VQ-11` | 118 | 160 only | Choice A source-attached blocker guidance and completion-slot withdrawal status accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_118.dp-vq11.json`; Task 160 only is released. |
-| `DP-VQ12` | `VQ-12` | 119 | 162 only | Choice A stable single-card Archive reliability/recovery composition selected on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_119.dp-vq12.json`; Task 162 remains unreleased until Task 119 checkpoint acceptance. |
+| `DP-VQ12` | `VQ-12` | 119 | 162 only | Choice A stable single-card Archive reliability/recovery composition accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_119.dp-vq12.json`; Task 162 only is released. |
 
 ## Cross-Cutting Exclusions And Negative Coverage
 
@@ -988,7 +988,7 @@ behavior, or Archive transaction behavior, publish, or close the phase.
 
 **Commit contract:** the five named documents and `DP-VQ11` receipt only; `docs(triage): record DP-VQ11`.
 
-### Task 119: [ ] Record `DP-VQ12` Archive-recovery decision
+### Task 119: [x] Record `DP-VQ12` Archive-recovery decision
 
 **Files and actions:** modify `docs/recipes/inbox-triage-archive-completion-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to record Choice A: keep one stable Breakdown-scoped Archive card and original-position current-action slot while its static mark, exact sentence, and allowed action change in place through pending, unknown, reconciling, explicit failure, forced-reload recovery, and authoritative success. Specify check-again, authoritative `not_applied`-only Retry, terminal Cancel, terminal handoff, focus, timing, reduced-motion parity, and eight-theme variants; change no code.
 
@@ -1015,6 +1015,14 @@ reduced-motion behavior, and the approved eight-theme single-card mapping.
 product source, SCHEMA Archive transaction/result/reconciliation rule, Task
 126/161 behavior, persistence, Release edge other than Task 162, or Phase 24
 close state.
+
+**Checkpoint acceptance (2026-08-11):** the user explicitly accepted the
+complete Choice A stable single-card Archive pending/unknown/reconciliation/
+failure/reload-recovery contract, exact copy/actions/focus/lifetime/static-
+motion behavior, eight-theme mapping, and Task 162-only boundary. This
+acceptance releases Task 162 only. It does not start Task 162, choose the next
+Phase 24 lifecycle action, change product or Archive transaction behavior,
+publish, or close the phase.
 
 **Observable acceptance:** known failure, unknown outcome, recovery, Retry, Cancel, and success are fully specified inside the Breakdown-scoped flow.
 
