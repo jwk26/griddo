@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–117 accepted; Task 118 remains unstarted as the next serial Task
+> State: Tasks 106–117 accepted; Task 118 is In Progress for user-selected `DP-VQ11=A`
 
 ## Status Legend
 
@@ -355,6 +355,22 @@ canonical document update, and commit remain Task-local and sequential.
 | Review | No concrete blocking finding. The existing card and selected treatment remain authoritative; the marker, stable Undo slot, and always-visible rail are separate accessories; unavailable reasons remain focusable and non-hover-only; non-optimistic pending/reconciliation keeps result/source truth; Retry exists only for authoritative `not_applied`; re-enabled state is event-owned without a timer; all theme treatments are static and role-driven; `D-CARD` remains excluded; only Task 157 can be released after user acceptance |
 | Acceptance boundary | Accepts only Task 117 and `DP-VQ10=A`; releases Task 157 only; does not start Task 118, Task 157, Tasks 155–156, or Task 158, change product code/common-card design, publish, or close the phase |
 | Next legal action | Commit this acceptance-only state and stop. Task 118 remains `[ ]` and unstarted; a later separate session may begin only its `DP-VQ11` decision gate |
+
+## Task 118 Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Task | 118 — record `DP-VQ11` completion-blocker decision |
+| State | In Progress; the Task 118 plan marker remains `[ ]` and no Task 119 or Task 160 work is authorized |
+| User decision | On 2026-08-11 the user selected `DP-VQ11=A`, source-attached blocker guidance plus a completion-slot eligibility-withdrawal status |
+| Approved scope | Specify non-empty Add-draft and every Scratch-title-editor blocker, actual eligibility withdrawal/recovery, exact source-attached and completion-slot placement, copy, existing actions, effect, focus, lifetime, static reduced-motion parity, and eight-theme treatment; update only the three named completion recipes, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, the `DP-VQ11` receipt, and this ledger; change no product code, completion predicate/headless behavior, Task 119 decision, or Task 160 implementation |
+| Prohibited fallback | No toast, dialog, empty-state replacement, page-global banner, unified detached status panel, Context-only summary, automatic Add/Save/Cancel/Archive, timer, repeated motion, persistence, or theme-ID product-logic branch |
+| Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `0861b071d58cba03d1e698fae12155a589709736`; accepted predecessor receipt `docs/issues/Issues_Phase_24.Task_117.dp-vq10.json` |
+| Start base / recovery anchor | `d4bd591aa3e0cdd540156c95f306c274c215ca26`, the clean Task 117 acceptance commit |
+| Exact release edge | Task 160 only, and only after a later explicit Task 118 checkpoint acceptance; Task 160 is not started here |
+| Issue / deviation | None |
+| Canonical impact | Tagged — reflect `DP-VQ11=A` in the three completion recipes, `docs/DESIGN_TOKENS.md`, and Task 118 execution authority before checkpoint |
+| Next legal action | Commit this ledger-only durable start, then write the selected receipt and exact canonical realization without changing the Task 118 marker or starting Task 119 or Task 160 |
 
 ## Readiness Evidence
 
