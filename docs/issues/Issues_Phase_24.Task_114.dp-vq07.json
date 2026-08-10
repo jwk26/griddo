@@ -25,6 +25,21 @@
     "choice": "A",
     "label": "Dedicated fixed-input Explorer replacement search body"
   },
+  "checkpoint_acceptance": {
+    "date": "2026-08-10",
+    "statement": "Task 114 / DP-VQ07=A checkpoint를 명시적으로 수락합니다.",
+    "acceptance_basis": "5d6b229f5cc6e323113975c54cb1babc4bad5003",
+    "accepted_task": 114,
+    "accepted_decision": "DP-VQ07=A",
+    "accepted_contract": [
+      "fixed full-width input, fixed state line, and internally scrolling flat typed results replacing only the Explorer body",
+      "exact pre-search, loading, stale, no-results, error, duplicate, stale-selection, reveal, and source-restoration copy",
+      "deterministic focus, close, DnD interruption and explicit-reopen matrix",
+      "event-owned lifetime, static reduced-motion parity, and eight-theme mapping",
+      "Task 151 complete-body and search-only Task 158 release with DP-VQ10 and Tasks 156–157 preserved as Task 158 prerequisites"
+    ],
+    "serial_boundary": "Task 114 is accepted; Task 115 remains unstarted and may begin only after this acceptance commit"
+  },
   "canonical_record_paths": [
     "docs/recipes/inbox-triage-grid-explorer-visual-recipe.md",
     "docs/DESIGN_TOKENS.md",
@@ -178,11 +193,11 @@
     "partial_tasks": {
       "158": "search-result Undo integration only; still requires DP-VQ10 and Tasks 156–157"
     },
-    "consumption_condition": "Task 114 user checkpoint accepted; its plan marker remains open until then",
+    "consumption_condition": "satisfied by explicit Task 114 checkpoint acceptance on 2026-08-10",
     "all_other_tasks": "unreleased; Task 156 ordinary-card Undo remains independently planned rather than released by DP-VQ07"
   },
-  "task_state": "implemented-awaiting-user-checkpoint",
+  "task_state": "accepted",
   "canonical_impact": "Reflected",
   "issue_or_deviation": "None",
-  "next_legal_action": "task-114-user-checkpoint"
+  "next_legal_action": "task-115"
 }

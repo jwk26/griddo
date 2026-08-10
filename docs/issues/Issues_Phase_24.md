@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–113 accepted; Task 114 choice A is implemented and awaiting its user checkpoint
+> State: Tasks 106–114 accepted; Task 115 remains unstarted as the next serial Task
 
 ## Status Legend
 
@@ -267,23 +267,25 @@ canonical document update, and commit remain Task-local and sequential.
 | Durable kickoff boundary | The commit containing this section and the updated whole-file Gate C receipt has parent `9c0bae2d8b928564ef03637e899e3bf9d62637c7` and no other changed path |
 | Next legal action | After that kickoff commit is resolver-valid and the worktree is clean, end this `run-phase` session. A fresh session may load only candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` `skills/run-task/SKILL.md` and start Task 114 only; the live `/Users/jwk/Documents/codex-workflow/skills/run-task` is prohibited |
 
-## Active Task
+## Task 114 Acceptance Receipt
 
 | Field | Durable value |
 | --- | --- |
 | Task | 114 — record `DP-VQ07` Explorer replacement-search decision |
-| State | Implemented and awaiting user review; user acceptance remains pending and the Task 114 plan marker stays `[ ]` |
+| State | Accepted by the user on 2026-08-10; the Task 114 plan marker is `[x]` |
 | Approved scope | Choice A retains Explorer chrome and replaces only the four-column body with a dedicated whole-hierarchy search body: fixed input, state line, flat typed results, exact pre-search/loading/stale/no-results/error/duplicate/reveal copy, deterministic focus and close/interruption behavior, event-owned lifetime, static reduced-motion parity, eight-theme mapping, and a bounded search-result Undo slot; update only the Grid Explorer recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ07` receipt; no product code, global/active-column Search fallback, ordinary-column substitution, or Task 115 authority |
 | User decision | On 2026-08-10 the user selected `DP-VQ07=A` |
+| User acceptance | `Task 114 / DP-VQ07=A checkpoint를 명시적으로 수락합니다.` against evidence commit `5d6b229f5cc6e323113975c54cb1babc4bad5003` |
 | Predecessor | Task 113 accepted at `9c0bae2d8b928564ef03637e899e3bf9d62637c7`; its exact release remains Task 150 only |
 | Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `0861b071d58cba03d1e698fae12155a589709736`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
 | Entrypoint / recovery anchor | Task 113 acceptance `9c0bae2d8b928564ef03637e899e3bf9d62637c7`; continuation kickoff `0861b071d58cba03d1e698fae12155a589709736`; Task 114 durable start `689d602d55a405c868a0e7622b41f772a340b415`; Task 114 decision commit `d90a1d67d5c0cf51506fc32e6bfbdd745f690b23` |
-| Durable receipt | `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json`; candidate resolver status is `ready`, with `contract_ready=true`, `writes_allowed=false`, and next action `task-114-user-checkpoint` |
+| Durable receipt | `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json`; its accepted next action is `task-115` |
 | Issue / deviation | None |
 | Canonical impact | Reflected — Choice A is recorded in the Grid Explorer recipe, `docs/DESIGN_TOKENS.md`, and Task 114 execution authority |
-| Verification | Candidate resolver `ready`; `git diff --check` exit 0; `pnpm typecheck` exit 0; exact four-path Task decision commit; Tasks 106–113 remain `[x]`, Tasks 114–115 remain `[ ]`, and no product source, manifest, Phase 25, Shelf, Task 115 decision, global Search, or active-column Search path changed; install/test/lint/build omitted under the continuation baseline instruction |
+| Verification | At the implementation checkpoint, candidate resolver `ready`; `git diff --check` exit 0; `pnpm typecheck` exit 0; exact four-path Task decision commit; Tasks 106–113 were `[x]`, Tasks 114–115 were `[ ]`, and no product source, manifest, Phase 25, Shelf, Task 115 decision, global Search, or active-column Search path changed; install/test/lint/build omitted under the continuation baseline instruction |
 | Review | No concrete blocking finding; fixed-input/state-line/flat-result placement, exact pre-search/loading/stale/no-results/error/stale-selection/reveal/source-restoration copy, duplicate text, Arrow/Enter/Escape and close focus, DnD-only interruption preservation, event-owned reveal/status lifetime, static reduced-motion parity, all eight themes, and the Task 151/search-only Task 158 edge are present without overlay/dialog/fifth-column/prototype/adjacent-surface/ordinary-column/theme-ID fallback or `DP-VQ10` invention |
-| Next legal action | Stop at the Task 114 user checkpoint. Do not mark Task 114 `[x]`, release Task 151/search-only Task 158 for consumption, start Task 115, write product code, publish, or close the phase before explicit acceptance |
+| Acceptance boundary | Accepts only Task 114 and `DP-VQ07=A`; releases Task 151 and only the search-result integration slice of Task 158 subject to their existing prerequisites; Task 158 still requires `DP-VQ10` and Tasks 156–157, and ordinary-card Undo Task 156 remains independent |
+| Next legal action | Commit this acceptance-only state and stop. Task 115 remains `[ ]` and unstarted; a later session may begin only its separate `DP-VQ08` decision gate |
 
 ## Readiness Evidence
 
