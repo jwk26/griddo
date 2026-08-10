@@ -795,7 +795,7 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 **Commit contract:** eligibility/guarded Archive command, generic-bypass guard, and exact repository tests only; `feat(triage): guard scratch archive command`.
 
-### Task 126: [ ] Implement Archive recovery classification
+### Task 126: [x] Implement Archive recovery classification
 
 **Files and actions:** modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/archive-scratch-recovery.test.ts`. Add read-only classification for a schema-validated `PendingOperationRecovery` using exact current Scratch ID/version/archivedAt plus Breakdown/candidate pre/postconditions: complete Archive postcondition = applied; complete eligible active precondition = not-applied; changed lifecycle/version/eligibility or partial state = conflict; authority unavailable = unknown. Invalid/foreign/stale descriptors fail closed and never invoke mutation. No operation-ID index/log is added; current-tab sessionStorage ownership remains Task 161.
 

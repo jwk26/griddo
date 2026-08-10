@@ -426,3 +426,18 @@ None at kickoff.
 | Issues / deviations | None |
 | Canonical impact | None — implementation-local conformance to already-approved SCHEMA forced-Archive recovery/no-journal authority, SPEC, and Task 126; no canonical amendment required |
 | Next legal action | Present the Task 126 user checkpoint and stop. Only explicit user acceptance may later write Task 126 `[x]` in a separate acceptance commit; do not start Task 127, push, PR, merge, rebase, or clean up. |
+
+## Accepted Task 126
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 126 only — Implement Archive recovery classification |
+| State | Accepted by the user on 2026-08-10; Task 126 marker is `[x]`; Tasks 120–126 are accepted |
+| Acceptance basis | Implementation/evidence commit `4eb8df3c50455588e4ebd880d72d5e366f50d0cd`; durable start `aa2ea32487e9f7619061ea5a4ece864d2f75090b`; focused recovery 15/15; Archive mutex regression 38/38; serial full gate 87 files / 679 tests; lint 0 errors and 11 pre-existing warnings; typecheck/build passed; no blocking or remaining concrete finding; canonical impact None; clean checkpoint worktree |
+| User acceptance | The user explicitly accepted the recorded Task 126 implementation checkpoint and its exact evidence on 2026-08-10 |
+| Acceptance write set | Only `docs/EXECUTION_PLAN.md` and `docs/issues/Issues_Phase_25.md`; no product/test code, Gate C receipt, Task 127, Phase 24, Shelf, or workflow rollout change |
+| Acceptance verification | Reused the recorded focused, mutex, targeted lint, full test, full lint, typecheck, and build results without rerunning test/lint/typecheck/build; acceptance-only checks are exact two-file write-set inspection, `git diff --check`, Task 125/126 marker inspection, and post-commit clean status |
+| Issues / deviations | None |
+| Canonical impact | None — no canonical amendment required |
+| Recovery anchor | This separate acceptance commit, whose parent is `4eb8df3c50455588e4ebd880d72d5e366f50d0cd` |
+| Phase 25 next legal action | Stop this run-task session. Any Phase 25 close preparation/final close requires its separately authorized lifecycle and user-owned gate; do not start Task 127 or another phase from this acceptance commit. |
