@@ -61,7 +61,7 @@ Values that differ from `docs/design-system-preview.html` **on purpose**:
 |---|-------------------|---------------|-----------|--------|
 | 1 | Base font family | Inter (Google Fonts) | Geist Sans by default; Batch 2 color themes may override via `--theme-font` | Geist remains the default app/system font; color themes may opt into their own display fonts |
 | 2 | Sidebar model | `52px` icon strip | `3rem` (48px) fixed icon rail, always visible | Phase 9: sidebar is now a permanent icon rail — no fold/unfold. Closest to the reference's icon strip model |
-| 3 | Inbox/Triage Batch 2 labels, Context, and search | Removed visible section labels; compact Context strip; active-column search | Visible theme chrome; standalone signature Context; dedicated full-hierarchy replacement body remains absent behind `VQ-07` | The approved mature-topic decision supersedes the old Batch 2 direction; adjacent search and chrome are prohibited substitutes |
+| 3 | Inbox/Triage Batch 2 labels, Context, and search | Removed visible section labels; compact Context strip; active-column search | Visible theme chrome; standalone signature Context; `DP-VQ07` Choice A dedicated full-hierarchy replacement body | The approved mature-topic decision and Task 114 choice supersede the old Batch 2 direction; active-column/global search and ordinary columns remain prohibited substitutes |
 
 ---
 
@@ -384,7 +384,8 @@ or to promotion-map §11.4's shared implication.
 | Selected Context | `context-signature-plate`, `context-eyebrow-meta`, `context-title`, `context-action-cluster`, `context-complete-marker` | `R-CONTEXT` |
 | Breakdown | `breakdown-active-row`, `breakdown-staged-row`, `breakdown-row-action`, `breakdown-add-field`, `breakdown-add-control`, `breakdown-ordinary-empty`, `breakdown-consumed-completion`, `breakdown-success-wash`, `breakdown-success-status`, `breakdown-success-check` | `R-BREAKDOWN`; success roles from `DP-VQ02` / Task 148 only |
 | Staging | `staging-panel`, `staging-node-well`, `staging-node-card`, `staging-bit-well`, `staging-bit-row`, `staging-neutral`, `staging-unavailable`, `staging-invalid`, `staging-pending`, `staging-unstage-target`, `staging-operation-status`, `staging-arrival-count`, `staging-local-alert`, `staging-alert-action`, `staging-target-reason`, `staging-integrity-status` | `R-STAGING`; status roles from `DP-VQ06-STAGING` / Task 147 only |
-| Grid Explorer base | `explorer-header`, `explorer-column`, `explorer-full-level-label`, `explorer-node-row`, `explorer-bit-row`, `explorer-eligible-target`, `explorer-hovered-target`, `explorer-invalid-target`, `explorer-unavailable-target`, `explorer-remote-count`, `explorer-path-status`, `explorer-status-action` | `R-EXPLORER`; status roles from `DP-VQ06-EXPLORER` / Task 150 only; excludes the `VQ-07` body |
+| Grid Explorer base | `explorer-header`, `explorer-column`, `explorer-full-level-label`, `explorer-node-row`, `explorer-bit-row`, `explorer-eligible-target`, `explorer-hovered-target`, `explorer-invalid-target`, `explorer-unavailable-target`, `explorer-remote-count`, `explorer-path-status`, `explorer-status-action` | `R-EXPLORER`; status roles from `DP-VQ06-EXPLORER` / Task 150 only |
+| Grid Explorer search | `explorer-search-entry`, `explorer-search-body`, `explorer-search-field`, `explorer-search-close`, `explorer-search-status`, `explorer-search-results`, `explorer-search-result`, `explorer-search-type`, `explorer-search-breadcrumb`, `explorer-search-duplicate`, `explorer-search-retry`, `explorer-search-undo`, `explorer-reveal-status`, `explorer-revealed-row` | `DP-VQ07`; complete body Task 151 and search-result Undo composition Task 158 only |
 | Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled` | `R-PLACEMENT`; excludes `VQ-08` reliability realization and all `VQ-09` surfaces |
 | Newly Placed / Undo | `newly-marker`, `newly-dot`, `newly-new-badge`, `newly-undo-action` | `R-NEWLY`; composes over the actual Node/Bit card and never replaces it |
 | Archive / completion base | `archive-section-scrim`, `archive-card`, `archive-complete-context`, `archive-reopen`, `archive-action`, `archive-cancel` | `R-ARCHIVE`; excludes `VQ-11/12` gap realization |
@@ -551,9 +552,9 @@ non-destructive operation cannot proceed; they must not inherit destructive
 delete styling merely because the current drop is rejected.
 
 The old active-section/active-column search is superseded and is not fallback
-authority. Under `VQ-07`, the selected full-hierarchy replacement body remains
-absent. Global Search, the old active-column search, ordinary Explorer columns,
-and Explorer chrome are prohibited substitutes for that body.
+authority. `DP-VQ07` Choice A supplies the full-hierarchy replacement body;
+global Search, the old active-column search, ordinary Explorer columns, and
+Explorer chrome alone remain prohibited substitutes for that body.
 
 ### Approved external-removal realization — `DP-VQ01`
 
@@ -797,8 +798,8 @@ The attached family maps through Staging-native theme roles:
 **User-approved 2026-08-10:** Choice A establishes per-column remote-insertion
 counts and one affected surviving-column path/fallback strip. It resolves the
 final Explorer slice of `VQ-06`; Task 150 alone consumes it. Pool and Staging
-remain owned by their receipts, and the separate `VQ-07` search body remains
-unresolved and excluded.
+remain owned by their receipts, and the separately approved `DP-VQ07` search
+body does not alter this status family.
 
 | Contract | Exact token requirement |
 |---|---|
@@ -827,6 +828,41 @@ The affected-column family maps through Explorer-native theme roles:
 | Retro Mac | Hard counter control and in-pane 1-bit system message below the full label with no new window or ghost pane |
 | Graphite | Compact editorial index and strengthened-rule column note with restrained monochrome action |
 
+### Approved Explorer replacement-search realization — `DP-VQ07`
+
+**User-selected 2026-08-10:** Choice A retains theme-native Explorer chrome
+and replaces only its four-column body with one dedicated whole-hierarchy
+search body. Task 151 consumes the complete body after checkpoint acceptance;
+Task 158 consumes only its result-Undo composition after `DP-VQ10` and Tasks
+156–157. Ordinary-card Undo Task 156 remains independent.
+
+| Contract | Exact token requirement |
+|---|---|
+| Entry and body | `explorer-search-entry` is exact `Search Explorer`; activation swaps only the body. `explorer-search-body` contains one fixed top `explorer-search-field`, its in-input `explorer-search-close`, one fixed `explorer-search-status`, and one internally scrolling `explorer-search-results` viewport; no overlay, dialog, fifth column, detached panel, or page scroll response |
+| Input and close copy | Placeholder is exact `Search all Nodes and Bits`; `X` accessible name is exact `Clear and close Explorer search`; X and Escape clear active/interrupted query, results, scroll, and reveal, restore columns, and focus the entry action |
+| Result grammar | Each `explorer-search-result` preserves Node/Bit icon/color identity and adds visible `explorer-search-type`, title, full `explorer-search-breadcrumb`, and when required exact `explorer-search-duplicate` text `Duplicate {index} of {count}` in stable hierarchy order; no result is a drag source and no ID/coordinate/hidden root is exposed |
+| State copy | Use exact `Search the entire Grid Explorer.`, `Searching Grid Explorer…`, `Updating results…`, `No results for “{query}”.`, `Search couldn’t be updated.`, `That item is no longer available. Results were updated.`, `Revealed “{title}” in {breadcrumb}.`, and `Restored “{title}” to {source}.`; request failure alone exposes exact `Try again` |
+| Loading/stale/error | Initial loading has an empty result viewport; stale refresh retains prior rows, scroll, and focus; error retains prior successful rows when available; `aria-busy` and one-time state announcements replace spinner/shimmer or row-by-row announcements |
+| Navigation/focus | Open focuses input; Arrow Down/Up moves result focus; Enter/pointer revalidates before selection; valid selection restores columns and focuses the actual revealed row; stale selection changes no path/selection/route and returns to input when the focused result disappears; Scratch switch preserves state without forcing focus |
+| Reveal | `explorer-revealed-row` is a static non-color marker on the actual row and `explorer-reveal-status` sits directly below the Explorer header; it ends only on another item selection, path change, DnD start, search restart, route exit, or reload, never a timer |
+| DnD interruption | DnD start alone closes the body and preserves query/results/scroll as mounted-page interrupted state; Drop/Cancel never auto-reopens; explicit entry activation restores it and focuses input; result selection, X, Escape, route exit, or reload clears it |
+| Result Undo boundary | `explorer-search-undo` is a trailing exact `Undo` action only when later `DP-VQ10` allows it; operation-specific reason/pending/failure/conflict treatment is imported from Tasks 156–157. Terminal success keeps query/scroll, removes only that result, reports source restoration, and focuses the next result at the removed position or otherwise the input, never the previous result |
+| Lifetime and motion | Request/status lines are request/event-owned and end on their specified next request, status, selection, clear/close, route exit, or reload; none auto-dismisses. Every swap, status, result removal, reveal, scroll, and focus handoff is immediate; no fade, slide, scale, skeleton shimmer, spinner, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No query traversal/rank/exclusion change, global Search import, active-column search, ordinary-column fallback, placement mutation, `DP-VQ06-EXPLORER` change, `DP-VQ10` state invention, product implementation in Task 114, or theme-ID behavior/copy branch |
+
+The replacement body maps through Explorer-search-native theme roles:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Full-width technical search field, restrained state rule, compact typed result rows, and canonical primary/action/focus roles |
+| Tiny Desk | Library-index search tab, catalog-paper status slip, and stacked catalog result cards inside the Explorer body |
+| Neumorphism | Inset search field and state trough with shallow raised result rows inside the existing shadow family |
+| Claymorphism | Soft sculpted search field, shape-preserving status ribbon, and tactile typed result tiles without motion-led state |
+| Origami | Folded search sheet, seam-attached state strip, and cut-paper result rows with no animated fold or ghost column |
+| Terminal | Variable-driven command-line search, static status record, and text-led result records with no fixed JSX color, spinner, or blink |
+| Retro Mac | In-pane Finder `Find` strip, 1-bit system status line, and hard bordered result list with no new window/dialog/ghost pane |
+| Graphite | Editorial index field, strengthened-rule status caption, and restrained monochrome result rows with precise focus outline |
+
 ### Existing-surface state gaps — 4 open Decision prerequisites
 
 The shared role/state envelope above is the maximum current authority for
@@ -845,7 +881,7 @@ dependent exact realization.
 Existing global color and motion values do not automatically realize any row
 in this table.
 
-### Absent replacement surfaces — 2 open Decision prerequisites
+### Absent replacement surfaces — 1 open Decision prerequisite
 
 These surfaces remain completely outside token realization. Assign no role,
 value, layout, theme mapping, copy, icon, control arrangement, or adjacent
@@ -853,7 +889,6 @@ fallback until a matching user receipt approves the missing surface.
 
 | ID | Missing surface and prohibited fallback | Future owner | Resume condition |
 |---|---|---|---|
-| `VQ-07` | Dedicated full-hierarchy Explorer search body; global Search, old active-column search, ordinary columns, and Explorer chrome are prohibited substitutes | User Decision → Explorer recipe and search phase | Receipt supplies the complete replacement body |
 | `VQ-09` | Staged Result Title and direct-limit/reason surfaces; create dialogs and generic placement UI are prohibited substitutes | User Decision → Placement recipe and title/limit phase | Receipt supplies both replacement surfaces |
 
 ### Selected deferrals
@@ -1483,7 +1518,7 @@ role tables above.
 | `R-CONTEXT` | [Selected Scratch Context](recipes/inbox-triage-selected-scratch-context-visual-recipe.md) | Standalone signature Context and working/complete base roles |
 | `R-BREAKDOWN` | [Breakdown rows and empty states](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md) | Base row, action, Add, ordinary-empty, and completion-prompt roles |
 | `R-STAGING` | [Staging](recipes/inbox-triage-staging-visual-recipe.md) | Node/Bit wells and shapes, base state grammar, transient unstage target |
-| `R-EXPLORER` | [Grid Explorer](recipes/inbox-triage-grid-explorer-visual-recipe.md) | Base chrome/columns/full labels/rows/target grammar; excludes `VQ-07` |
+| `R-EXPLORER` | [Grid Explorer](recipes/inbox-triage-grid-explorer-visual-recipe.md) | Base chrome/columns/full labels/rows/target grammar plus separately receipt-owned `DP-VQ07` search roles |
 | `R-PLACEMENT` | [Placement affordances](recipes/inbox-triage-placement-affordances-visual-recipe.md) | Direct/staged base shells, target-column affordance, and full-target warning |
 | `R-NEWLY` | [Newly Placed and Undo](recipes/inbox-triage-newly-placed-undo-visual-recipe.md) | Actual-card marker and separate Undo base; static/one-shot candidates only |
 | `R-ARCHIVE` | [Archive and completion](recipes/inbox-triage-archive-completion-visual-recipe.md) | Breakdown-scoped base scrim/card, complete Context, reopen, Archive/Cancel |

@@ -21,8 +21,137 @@
 
 ## Decision-Prerequisite Boundary
 
-- `VQ-07` — the full-hierarchy Explorer replacement search body (pre-search, results, loading/error, duplicates, reveal, and Undo feedback) is an absent replacement surface and is wholly excluded. The source/current active-column search, global Search overlay, and four-column chrome are prohibited fallbacks. **User-owned Decision prerequisite:** approve direct replacement-mode visual/content authority. Future owner: Explorer search phase; no dependent search UI task starts until a matching receipt.
-- Explorer subset of `VQ-06` — **resolved by `DP-VQ06-EXPLORER` on 2026-08-10.** The user selected Choice A, the affected-column-attached remote/path status family specified below. Task 150 is its only realization edge. Pool and Staging remain governed by their own receipts; the separate `VQ-07` search body remains unresolved and supplies no fallback authority here.
+- `VQ-07` — **resolved by `DP-VQ07` Choice A on 2026-08-10.** The dedicated full-hierarchy search keeps Explorer chrome and replaces only the four-column body with the approved fixed-input, state-line, flat-result realization below. After Task 114 checkpoint acceptance, Task 151 consumes the complete search body and Task 158 consumes only its search-result Undo integration after that task's other prerequisites. The source/current active-column search, global Search overlay, and ordinary columns remain prohibited fallbacks.
+- Explorer subset of `VQ-06` — **resolved by `DP-VQ06-EXPLORER` on 2026-08-10.** The user selected Choice A, the affected-column-attached remote/path status family specified below. Task 150 is its only realization edge. Pool and Staging remain governed by their own receipts; `DP-VQ07` is now separately owned by the approved search contract above and supplies no fallback authority for this status family.
+
+## `DP-VQ07` Approved Dedicated Replacement Search Body
+
+`DP-VQ07` Choice A keeps the theme-native Explorer section header and identity
+but replaces the complete four-column body while search is open. It introduces
+no page overlay, dialog, detached panel, fifth column, active-column filter, or
+global Search dependency. Search behavior and hierarchy truth remain owned by
+SPEC and the Task 135 query lifecycle; this section owns only the direct
+replacement body's content, placement, focus, lifetime, motion, and themes.
+
+### Placement And Result Grammar
+
+- `Search Explorer` is the Explorer-header entry action. Opening it replaces
+  only the body and moves focus to one full-width input fixed at the top of the
+  replacement body. Its placeholder is `Search all Nodes and Bits`; its
+  in-input `X` is named `Clear and close Explorer search`.
+- One non-scrolling state line sits directly below the input. The remaining
+  body is one internally scrolling flat result list; the page, Explorer shell,
+  and hidden ordinary columns do not scroll in response to result focus.
+- Each result uses its existing Node or Bit icon/color identity, a visible
+  `Node` or `Bit` type label, title, and full breadcrumb. It is not a drag
+  source. Same-type results with the same title and breadcrumb add exact
+  `Duplicate {index} of {count}` text in stable hierarchy order; no ID,
+  coordinate, hidden root, or synthetic path is exposed.
+- Initial loading uses the state line and an empty result viewport. Stale
+  refresh retains the last successful rows, result scroll, and focus beneath
+  the updating line. Error retains those rows when available; `Try again`
+  starts a new read without changing the query or hierarchy path.
+
+### Exact Search Copy And Actions
+
+| State | Exact visible copy | Action |
+|---|---|---|
+| Empty query / pre-search | `Search the entire Grid Explorer.` | None |
+| Initial loading | `Searching Grid Explorer…` | None |
+| Stale refresh | `Updating results…` | None |
+| No results | `No results for “{query}”.` | None |
+| Request failure | `Search couldn’t be updated.` | `Try again` |
+| Selection-time stale/removed/hidden/unreachable | `That item is no longer available. Results were updated.` | None |
+| Valid result reveal after columns return | `Revealed “{title}” in {breadcrumb}.` | None |
+| Search-result Undo success | `Restored “{title}” to {source}.` | None |
+
+The input `X` and Escape are clear-and-close actions, not query retries. Query
+editing clears an obsolete no-results, failure, stale-selection, reveal, or
+Undo-success sentence when the next request begins. The Undo control itself is
+exact `Undo`; its eligibility, unavailable reason, pending/failure/conflict
+copy, and semantic treatment come only from later `DP-VQ10` and Tasks 156–157,
+not from this receipt.
+
+### Focus, Selection, Reveal, And Close
+
+- Arrow Down/Up moves one result at a time without selecting it; Enter or a
+  pointer activation first revalidates that exact item and ancestor chain.
+  Scrolling follows only the active result. Ordinary Tab order reaches the
+  input, `Try again` when present, and eligible result `Undo` controls without
+  turning result rows into drag sources.
+- A current reachable result clears active and interrupted search state,
+  restores the four columns, reconstructs the real ancestor chain inside
+  Inbox, and focuses the revealed Node or Bit row. The actual row receives a
+  static non-color reveal marker, and the reveal sentence is a polite atomic
+  status directly below the Explorer header.
+- A stale, removed, hidden, or unreachable result performs no path, selection,
+  reveal, route, or focus jump. Search remains open, refreshes in place, shows
+  the stale-selection sentence, and returns focus to the input when the
+  previously focused row no longer exists.
+- Input `X` or Escape clears active/interrupted query, results, result scroll,
+  and reveal, restores ordinary columns, and focuses `Search Explorer`. Inbox
+  route exit clears the same state under route focus ownership. Scratch switch
+  preserves current search/results/scroll/path/reveal and never forces focus.
+- DnD start is the only interruption close: restore ordinary columns and drop
+  affordances immediately while preserving query/results/scroll as mounted-
+  page interrupted state. Drop and Cancel never reopen it. The next explicit
+  `Search Explorer` activation restores that state and focuses the input;
+  result selection, input `X`, Escape, route exit, or reload clears it.
+
+### Undo Placement And Deterministic Focus
+
+- When later `DP-VQ10` makes a matching result eligible, its trailing `Undo`
+  action composes inside the result row without replacing the title,
+  breadcrumb, duplicate text, or row activation target. Activating it never
+  bubbles into reveal and never makes the result draggable.
+- Pending, unknown, and failure retain the result and query. Terminal success
+  retains query and scroll, removes only the undone result, shows the exact
+  restoration sentence in the fixed state line, and focuses the next
+  surviving result at the removed row's position; if none exists, focus the
+  input. There is no previous-result fallback.
+
+### Lifetime, Accessibility, And Motion
+
+- Pre-search lasts while the query is empty. Initial loading, stale refresh,
+  and error last only for their owning request state; error also ends on query
+  edit, `Try again`, clear/close, route exit, or reload. Stale-selection and
+  Undo-success lines last until query edit/new request, another status, result
+  selection, clear/close, route exit, or reload. No state uses a timer.
+- Reveal lasts until another item selection, path change, DnD start, search
+  restart, route exit, or reload. It is event-ended and never auto-dismissed.
+- The input exposes its search name; the result set exposes result count and
+  Node/Bit type text; loading/stale use `aria-busy`; each changed state sentence
+  is announced once without announcing every row, rerender, theme change, or
+  scroll movement.
+- Body replacement, status changes, result removal, column restoration,
+  reveal, scrolling, and focus handoff are immediate and static. No fade,
+  slide, scale, skeleton shimmer, spinner, pulse, ping, bounce, blink, flicker,
+  or layout-transition animation is allowed. Reduced motion uses identical
+  geometry, copy, controls, focus, timing, and lifetime.
+
+### Eight-Theme Mapping
+
+Every theme preserves the same semantic tree, copy, result order, duplicate
+text, actions, focus, lifetime, close/interruption behavior, and static motion.
+Only Explorer-owned role realization changes:
+
+| Theme | Exact realization mapping |
+|---|---|
+| GridDO | Full-width technical search field, restrained state rule, compact typed result rows, and canonical primary/action/focus roles. |
+| Tiny Desk | Library-index search tab, catalog-paper status slip, and stacked catalog result cards inside the existing Explorer body. |
+| Neumorphism | Inset search field and state trough with shallow raised result rows inside the existing column-shadow family. |
+| Claymorphism | Soft sculpted search field, shape-preserving status ribbon, and tactile typed result tiles without motion-led state. |
+| Origami | Folded search sheet, seam-attached state strip, and cut-paper result rows with no animated fold or ghost column. |
+| Terminal | Variable-driven command-line search, static status record, and text-led result records with no fixed JSX color, spinner, or blink. |
+| Retro Mac | In-pane Finder `Find` strip, 1-bit system status line, and hard bordered result list; no new window, dialog, or ghost pane. |
+| Graphite | Editorial index field, strengthened-rule status caption, and restrained monochrome result rows with precise focus outline. |
+
+Task 151 alone realizes the complete search body, copy, reveal, close matrix,
+tests, styles, and verification over Task 135. Task 158 may later compose only
+the search-result Undo slice after Tasks 156–157 and `DP-VQ10`; ordinary-card
+Undo Task 156 remains independent. Neither edge changes query/ranking behavior,
+global Search, ordinary Explorer base/status semantics, placement commands,
+Pool/Staging surfaces, or product code in Task 114.
 
 ## `DP-VQ06-EXPLORER` Approved Affected-Column Status Family
 
@@ -133,7 +262,7 @@ Task 150 alone consumes this realization in `HierarchyExplorer`, app-session
 Explorer state, centralized copy, tests, theme CSS, and its verification
 artifact over Tasks 128 and 134. It changes no path/fallback semantics,
 stable-ID/offset algorithm, product mutation, Pool/Staging family, placement
-implementation, or `VQ-07` search body.
+implementation, or `DP-VQ07` search body.
 
 ## Theme Realizations
 
@@ -187,5 +316,5 @@ implementation, or `VQ-07` search body.
 
 ## Exclusions And Verification
 
-- Excluded: the entire `VQ-07` replacement body, any Explorer status outside `DP-VQ06-EXPLORER`, active-column search behavior/visual body, global Search fallback, route-local filtering, mock placement, keyboard-grab UI, repeated pulse/blink, abbreviated labels, and Pool/Staging realization.
-- No four-column composition, column clipping, scroll behavior, invalid distinction, card density, focus-visible state, search mode, reveal, contrast, or responsive behavior was rendered or verified.
+- Excluded from the base/status source observations: active-column search behavior/visual body, global Search fallback, route-local filtering, mock placement, keyboard-grab UI, repeated pulse/blink, abbreviated labels, and Pool/Staging realization. `DP-VQ07` supplies only the separately specified replacement search body; it does not promote any excluded source behavior.
+- No four-column composition, column clipping, scroll behavior, invalid distinction, card density, focus-visible state, search/reveal realization, contrast, or responsive behavior was rendered or verified; the Task 114 decision is canonical specification, not rendered evidence.

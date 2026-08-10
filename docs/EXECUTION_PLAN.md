@@ -249,7 +249,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Choice A fixed Pool-local status band accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json`; Task 144 only is released. |
 | `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Choice A candidate-attached/subsection-indicator/Staging-alert status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_112.dp-vq06-staging.json`; Task 147 only is released. |
 | `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Choice A affected-column remote/path status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`; Task 150 only is released. |
-| `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Accepted receipt supplies or scopes out the complete replacement search body. |
+| `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Choice A dedicated fixed-input/state-line/flat-result replacement body selected on 2026-08-10; release waits on the Task 114 user checkpoint. |
 | `DP-VQ08` | `VQ-08` | 115 | 153 only | Accepted receipt defines placement reliability states. |
 | `DP-VQ09` | `VQ-09` | 116 | 154 only | Accepted receipt supplies both title/limit surfaces. |
 | `DP-VQ10` | `VQ-10` | 117 | 157 only | Accepted receipt defines Newly/Undo overlap, reasons, and reliability. |
@@ -812,17 +812,17 @@ code, publish, or close the phase.
 
 ### Task 114: [ ] Record `DP-VQ07` Explorer replacement-search decision
 
-**Files and actions:** modify `docs/recipes/inbox-triage-grid-explorer-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to specify or scope out the complete replacement body for pre-search, results, loading, stale refresh, error, duplicates, reveal, result focus, DnD interruption/reopen, close semantics, and result Undo; change no query behavior/code.
+**Files and actions:** modify `docs/recipes/inbox-triage-grid-explorer-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to record Choice A: retain Explorer chrome, replace only the four-column body with a fixed full-width search input, fixed state line, and internally scrolling flat typed results; specify exact pre-search/loading/stale/no-results/error/duplicate/reveal/source-restoration copy, focus, DnD interruption/reopen, close semantics, event-owned lifetime, static reduced-motion parity, eight-theme mapping, and a search-result Undo slot bounded by later `DP-VQ10`; change no query behavior/code.
 
 **Dependencies:** user decision only; no code prerequisite and no other DP task.
 
-**Decision owner:** User. **Receipt:** `DP-VQ07`. **Exact edge:** Task 151 and search-only integration Task 158; ordinary-card Undo Task 156 is not blocked. **Resume:** accepted complete search body or explicit scope-out.
+**Decision owner:** User. **Receipt:** `DP-VQ07`. **Selected decision:** `DP-VQ07=A` on 2026-08-10. **Exact edge:** Task 151 and search-only integration Task 158 after Task 114 checkpoint acceptance; Task 158 still requires `DP-VQ10` and Tasks 156–157, while ordinary-card Undo Task 156 is not blocked. **Resume:** explicit Task 114 user acceptance of the recorded complete search body.
 
 **Authority / flows:** `VQ-07`, `UF-18`, `UF-19`, `NEG-10`, `NEG-21`.
 
 **Recipe:** [`Grid Explorer`](recipes/inbox-triage-grid-explorer-visual-recipe.md).
 
-**Observable acceptance:** no active-column/global Search or ordinary columns are needed as body fallback; unrelated ordinary Undo remains runnable.
+**Observable acceptance:** the approved direct body covers its fixed placement, complete state copy, duplicate text, result/retry/close actions, Arrow/Enter/Escape and deterministic focus, valid/stale reveal split, DnD-only interruption preservation, result Undo placement/focus, event-owned lifetime, static reduced-motion parity, and all eight themes without active-column/global Search, ordinary-column, prototype, adjacent-surface, or theme-ID fallback; unrelated ordinary Undo remains runnable.
 
 **Verification:** `git diff --check`; verify complete close/interruption matrix and only search tasks release.
 

@@ -1,0 +1,188 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq07",
+  "decision_receipt_id": "DP-VQ07",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 114,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "continuation_entrypoint": "9c0bae2d8b928564ef03637e899e3bf9d62637c7",
+  "continuation_kickoff_commit": "0861b071d58cba03d1e698fae12155a589709736",
+  "predecessor_acceptance_commit": "9c0bae2d8b928564ef03637e899e3bf9d62637c7",
+  "durable_start_commit": "689d602d55a405c868a0e7622b41f772a340b415",
+  "user_decision": {
+    "date": "2026-08-10",
+    "statement": "DP-VQ07=A",
+    "recorded_scope": "DP-VQ07=A only",
+    "choice": "A",
+    "label": "Dedicated fixed-input Explorer replacement search body"
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-grid-explorer-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "surface": {
+      "entry": "Explorer-header action Search Explorer",
+      "replacement": "retain theme-native Explorer chrome and replace only the complete four-column body",
+      "body_order": [
+        "one fixed full-width search input",
+        "one fixed state line",
+        "one internally scrolling flat result list"
+      ],
+      "prohibited": [
+        "page or global overlay",
+        "dialog or detached panel",
+        "fifth or ghost column",
+        "active-column filtering",
+        "global Search dependency",
+        "ordinary-column or Explorer-chrome fallback"
+      ]
+    },
+    "input_and_results": {
+      "entry_copy": "Search Explorer",
+      "placeholder": "Search all Nodes and Bits",
+      "close_accessible_name": "Clear and close Explorer search",
+      "result_identity": "existing Node or Bit icon/color identity plus visible type, title, and full breadcrumb",
+      "duplicate_copy": "Duplicate {index} of {count}",
+      "duplicate_order": "stable hierarchy order",
+      "result_drag_source": false,
+      "prohibited_exposure": "record ID, coordinate, hidden root, or synthetic path"
+    },
+    "state_matrix": {
+      "pre_search": {
+        "copy": "Search the entire Grid Explorer.",
+        "action": "None"
+      },
+      "initial_loading": {
+        "copy": "Searching Grid Explorer…",
+        "action": "None",
+        "results": "empty viewport"
+      },
+      "stale_refresh": {
+        "copy": "Updating results…",
+        "action": "None",
+        "results": "retain last successful rows, result scroll, and focus"
+      },
+      "no_results": {
+        "copy": "No results for “{query}”.",
+        "action": "None"
+      },
+      "request_failure": {
+        "copy": "Search couldn’t be updated.",
+        "action": "Try again",
+        "results": "retain last successful rows when available"
+      },
+      "stale_selection": {
+        "copy": "That item is no longer available. Results were updated.",
+        "action": "None",
+        "effect": "keep search open and perform no path, selection, reveal, route, or focus jump"
+      },
+      "valid_reveal": {
+        "copy": "Revealed “{title}” in {breadcrumb}.",
+        "action": "None"
+      },
+      "result_undo_success": {
+        "copy": "Restored “{title}” to {source}.",
+        "action": "None"
+      }
+    },
+    "focus_and_close": {
+      "open": "focus the search input",
+      "result_navigation": "Arrow Down and Arrow Up move one result; Enter or pointer activation revalidates before selection",
+      "valid_selection": "clear active/interrupted search, restore columns, reconstruct the real ancestor chain inside Inbox, and focus the actual revealed Node or Bit row",
+      "stale_selection": "retain query/results/scroll and return to input when the focused result disappears",
+      "x_or_escape": "clear active/interrupted query, results, scroll, and reveal; restore columns and focus Search Explorer",
+      "scratch_switch": "preserve search/results/scroll/path/reveal without forcing focus",
+      "route_exit": "clear search and reveal under route focus ownership"
+    },
+    "dnd_interruption": {
+      "only_preserving_close": "DnD start",
+      "effect": "immediately restore ordinary columns/drop affordances and retain query/results/scroll as mounted-page interrupted state",
+      "drop_or_cancel": "never auto-reopen",
+      "explicit_reopen": "restore interrupted state and focus the input",
+      "clear_events": [
+        "result selection",
+        "input X",
+        "Escape",
+        "Inbox route exit",
+        "reload"
+      ]
+    },
+    "reveal": {
+      "presentation": "static non-color marker on the actual row plus a polite atomic status directly below the Explorer header",
+      "end_events": [
+        "another item selection",
+        "path change",
+        "DnD start",
+        "search restart",
+        "route exit",
+        "reload"
+      ],
+      "timer": "none"
+    },
+    "search_result_undo": {
+      "placement": "trailing exact Undo action inside an eligible result without replacing title, breadcrumb, duplicate text, or row activation",
+      "authority_boundary": "eligibility, unavailable reason, pending, failure, conflict, and semantic treatment come only from DP-VQ10 and Tasks 156–157",
+      "pending_unknown_failure": "retain result and query",
+      "terminal_success": "retain query and scroll, remove only the undone result, and announce source restoration",
+      "focus_after_success": "next surviving result at the removed position, otherwise search input; never previous result",
+      "event_isolation": "Undo never activates reveal and never creates a drag source"
+    },
+    "lifetime_and_accessibility": {
+      "request_states": "pre-search follows empty query; loading/stale/error follow their owning request; error also ends on query edit, retry, clear/close, route exit, or reload",
+      "feedback_states": "stale-selection and Undo-success end on query edit/new request, another status, selection, clear/close, route exit, or reload",
+      "auto_dismiss": "none",
+      "accessibility": "named search input and close action, visible Node/Bit type and result count semantics, aria-busy for loading/stale, and one announcement per changed state sentence"
+    },
+    "motion": {
+      "ordinary": "body swap, state change, result removal, column restoration, reveal, scroll, and focus handoff are immediate and static",
+      "prohibited": "fade, slide, scale, skeleton shimmer, spinner, pulse, ping, bounce, blink, flicker, and layout-transition animation",
+      "reduced_motion": "identical geometry, copy, controls, focus, timing, and lifetime"
+    },
+    "theme_mapping": {
+      "griddo": "full-width technical search field, restrained state rule, compact typed result rows, and canonical primary/action/focus roles",
+      "tiny-desk": "Library Index search tab, catalog-paper status slip, and stacked catalog result cards inside the Explorer body",
+      "neumorphism": "inset search field and state trough with shallow raised result rows inside the existing shadow family",
+      "claymorphism": "soft sculpted search field, shape-preserving status ribbon, and tactile typed result tiles without motion-led state",
+      "origami": "folded search sheet, seam-attached state strip, and cut-paper result rows with no animated fold or ghost column",
+      "terminal": "variable-driven command-line search, static status record, and text-led result records with no fixed JSX color, spinner, or blink",
+      "retro-mac": "in-pane Finder Find strip, 1-bit system status line, and hard bordered result list with no new window, dialog, or ghost pane",
+      "graphite": "editorial index field, strengthened-rule status caption, and restrained monochrome result rows with precise focus outline"
+    },
+    "implementation_boundary": {
+      "complete_body_task": 151,
+      "search_result_undo_task": 158,
+      "task_158_additional_prerequisites": [
+        117,
+        156,
+        157
+      ],
+      "ordinary_undo_independent_task": 156,
+      "excludes": "query traversal/rank/exclusion changes, global or active-column Search, ordinary-column fallback, DP-VQ06-EXPLORER changes, DP-VQ10 state invention, product implementation in Task 114, and every Task 115 or later decision"
+    }
+  },
+  "exact_release": {
+    "tasks": [
+      151
+    ],
+    "partial_tasks": {
+      "158": "search-result Undo integration only; still requires DP-VQ10 and Tasks 156–157"
+    },
+    "consumption_condition": "Task 114 user checkpoint accepted; its plan marker remains open until then",
+    "all_other_tasks": "unreleased; Task 156 ordinary-card Undo remains independently planned rather than released by DP-VQ07"
+  },
+  "task_state": "implemented-awaiting-user-checkpoint",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "task-114-user-checkpoint"
+}
