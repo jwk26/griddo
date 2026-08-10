@@ -6,6 +6,7 @@ import type {
   AddBreakdownResult,
   AggregateHardDeleteResult,
   ArchiveScratchCommand,
+  ArchiveScratchRecoveryResult,
   ArchiveScratchResult,
   ConfirmedCandidateOrphanCleanupCommand,
   ConfirmedCandidateOrphanCleanupResult,
@@ -38,6 +39,7 @@ import {
   createScratchBreakdownSchema,
   createNodeSchema,
   nodeSchema,
+  pendingOperationRecoverySchema,
   repositoryOperationIdSchema,
   repositoryOperationStatusSchema,
   scratchBreakdownSchema,
@@ -53,6 +55,7 @@ import {
   type CreateNode,
   type CreateScratchBreakdown,
   type Node,
+  type PendingOperationRecovery,
   type ScratchBreakdown,
   type StagedCandidate,
   type UpdateBit,
@@ -390,6 +393,18 @@ const archiveScratchResultSchema = z.object({
   status: repositoryOperationStatusSchema,
   scratch: bitSchema.nullable(),
 }).strict();
+
+const archiveScratchRecoveryResultSchema = z.union([
+  z.object({
+    operationId: repositoryOperationIdSchema,
+    status: z.enum(["applied", "not_applied", "conflict"]),
+    scratch: bitSchema.nullable(),
+  }).strict(),
+  z.object({
+    operationId: repositoryOperationIdSchema,
+    outcome: z.literal("unknown"),
+  }).strict(),
+]);
 
 export class GridDODatabase extends Dexie {
   nodes!: Table<Node, string>;
@@ -1126,6 +1141,61 @@ export class IndexedDBDataStore implements DataStore {
       status: "applied",
       scratch,
     });
+  }
+
+  async classifyArchiveScratchRecovery(
+    recovery: PendingOperationRecovery,
+  ): Promise<ArchiveScratchRecoveryResult> {
+    const parsed = pendingOperationRecoverySchema.parse(recovery);
+
+    try {
+      if (
+        this.database instanceof GridDODatabase &&
+        !this.hasAmbientDatabaseTransaction()
+      ) {
+        return await this.readInboxBreakdownSnapshot(() =>
+          this.classifyArchiveScratchRecovery(parsed),
+        );
+      }
+
+      const state = await this.readScratchArchiveState(parsed.scratchBitId);
+      const scratch = state.eligibility.scratch;
+      const aggregateIsComplete =
+        state.eligibility.consumedCount >= 1 &&
+        state.eligibility.unconsumedCount === 0 &&
+        state.eligibility.stagedCandidateCount === 0;
+      const completePostcondition =
+        scratch !== null &&
+        state.activeInboxOwner &&
+        scratch.deletedAt === null &&
+        scratch.archivedAt !== null &&
+        scratch.archivedAt >= parsed.startedAt &&
+        scratch.mtime === scratch.archivedAt &&
+        scratch.version === parsed.expectedVersion + 1 &&
+        aggregateIsComplete;
+      const completePrecondition =
+        scratch !== null &&
+        state.activeInboxOwner &&
+        scratch.deletedAt === null &&
+        scratch.archivedAt === null &&
+        scratch.version === parsed.expectedVersion &&
+        aggregateIsComplete;
+
+      return archiveScratchRecoveryResultSchema.parse({
+        operationId: parsed.operationId,
+        status: completePostcondition
+          ? "applied"
+          : completePrecondition
+            ? "not_applied"
+            : "conflict",
+        scratch,
+      });
+    } catch {
+      return archiveScratchRecoveryResultSchema.parse({
+        operationId: parsed.operationId,
+        outcome: "unknown",
+      });
+    }
   }
 
   async unarchiveNode(id: string): Promise<void> {

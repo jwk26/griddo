@@ -15,6 +15,8 @@ import type {
   RepositoryOperationCommand,
   RepositoryOperationResult,
   RepositoryOperationStatus,
+  PendingOperationRecovery,
+  UnknownRepositoryOperationOutcome,
 } from "@/lib/db/schema";
 
 export type AddBreakdownCommand = RepositoryOperationCommand<{
@@ -199,6 +201,13 @@ export type ArchiveScratchResult = RepositoryOperationResult<{
   scratch: Bit | null;
 }>;
 
+export type ArchiveScratchRecoveryResult =
+  | RepositoryOperationResult<{
+      status: "applied" | "not_applied" | "conflict";
+      scratch: Bit | null;
+    }>
+  | UnknownRepositoryOperationOutcome;
+
 export type AggregateHardDeleteResult =
   | { status: "deleted" }
   | {
@@ -239,6 +248,9 @@ export interface DataStore {
   // --- Authoritative Inbox Scratch Archive ---
   getScratchArchiveEligibility(scratchBitId: string): Promise<ScratchArchiveEligibility>;
   archiveScratch(command: ArchiveScratchCommand): Promise<ArchiveScratchResult>;
+  classifyArchiveScratchRecovery(
+    recovery: PendingOperationRecovery,
+  ): Promise<ArchiveScratchRecoveryResult>;
 
   // --- System Node Seeding ---
   /**
