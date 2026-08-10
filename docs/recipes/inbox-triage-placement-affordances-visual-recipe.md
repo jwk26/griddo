@@ -21,8 +21,102 @@
 
 ## Decision-Prerequisite Boundary
 
-- `VQ-08` — pending, reconciling, failure, Retry, and stale-source/target appearance beyond the sourced base affordance may use only the shared semantic-state envelope: state attributes, existing semantic/theme tokens, visible text/icon/non-color cues, and selected focus/accessibility behavior. Exact copy, location, layout, effect, duration, and per-theme values remain a **user-owned non-code Decision prerequisite**. Future owner: placement recipe/token owner and reliability phase; resume exact styling only after user receipt.
+- `VQ-08` — **resolved by `DP-VQ08` Choice A on 2026-08-10.** The fixed reliability rail specified below stays inside the captured target-column Placement Affordance, retains its source/type/destination identity, and owns exact pending, unknown/reconciling, not-applied, stale-source/target, Retry/Cancel, success-announcement, focus, lifetime, motion, and eight-theme treatment. Task 153 is its only realization edge after Task 115 checkpoint acceptance.
 - `VQ-09` — staged over-limit Result Title and direct unavailable-limit content states are an absent replacement surface. They are wholly excluded; create dialogs, generic placement dialogs, and prototype type chooser are not fallbacks. **User-owned Decision prerequisite:** approve the direct Result Title/limit realization. Future owner: placement-title phase; no dependent UI task starts until matching receipt.
+
+## `DP-VQ08` Approved Fixed Reliability Rail
+
+Choice A adds one fixed two-line reliability rail directly below the retained
+source, result type, and destination summary and directly above one fixed
+action row. The rail and action row reserve their final geometry before
+Confirm, so state/copy changes neither expand the target column nor clip its
+controls. The target column's existing scroll content remains the only scroll
+owner. No state leaves this captured affordance for a toast, dialog, global
+alert, detached panel, or adjacent surface.
+
+### Exact State Copy And Actions
+
+| State | Exact rail copy / announcement | Available action |
+|---|---|---|
+| Confirmed request pending | `Placing “{title}” in {destination}…` | None |
+| Outcome unknown | `We couldn’t confirm whether “{title}” was placed.` | `Check again` |
+| Read-only reconciliation | `Checking whether “{title}” was placed…` | None |
+| Authoritative `not_applied` | `“{title}” wasn’t placed. Your source is unchanged.` | `Retry`, `Cancel` |
+| Stale source | `The source changed. Nothing was placed. Cancel and drag it again.` | `Cancel` |
+| Stale target | `The destination changed. Nothing was placed. Cancel and drag to the current destination.` | `Cancel` |
+| Authoritative `applied` / `already_applied` | `Placed “{title}” in {destination}.` | None; transition to the actual card |
+
+`applied` and `already_applied` map only to success; `not_applied` maps only to
+the retryable not-applied row. `rejected` or `conflict` maps to stale source or
+stale target from the returned authoritative source/target facts; it never
+creates a generic fallback state or guesses which side changed.
+
+`Check again` performs read-only reconciliation with the same operation ID; it
+never resends the placement. `Retry` appears only after authoritative
+`not_applied`, reuses that logical operation and its preallocated result ID,
+and returns the rail to pending. Rejected/conflict or stale source/target never
+offers Retry. Cancel closes the flow without a write and never queues or
+automatically replays a blocked navigation request.
+
+### Focus, Locking, And Result Handoff
+
+- Confirm activation retains focus on the still-rendered Confirm control while
+  pending. The control and visible Cancel remain in their fixed locations but
+  are unavailable with programmatic activation suppressed; all conflicting
+  DnD, Scratch, Grid path/search, route, Archive, and Undo actions remain
+  locked. Pending never removes the source/candidate or creates a projected
+  result.
+- An unknown outcome replaces the fixed action row with `Check again` and
+  focuses it. Activating it retains focus at that same position while the
+  unavailable action reconciles. Repeated activation cannot start another
+  read or mutation.
+- Authoritative `not_applied` exposes `Retry` followed by `Cancel` and focuses
+  `Retry`. Returned authority classifies rejected/conflict as stale source or
+  stale target; that rail exposes only `Cancel` and focuses it. The
+  source still exists only when authoritative state says it does; no stale
+  snapshot is restored or used to infer a result.
+- Cancel/Escape after a terminal non-success returns focus to the surviving
+  Breakdown grip or staged candidate surface; if that source no longer exists,
+  it focuses the owning Breakdown or Staging section heading. Escape is locked
+  during pending/reconciliation just like visible Cancel.
+- Authoritative success announces the exact success sentence once, removes the
+  affordance without an intermediate success timer or decorative success
+  card, renders the actual repository Node/Bit, and focuses that card. The
+  actual card is the sole visible result; Newly Placed/Undo appearance remains
+  owned by `DP-VQ10` and is not invented here.
+
+### Lifetime, Accessibility, And Motion
+
+- Pending lasts from Confirm until an authoritative result or unknown outcome.
+  Unknown lasts until `Check again`; reconciliation lasts until its
+  authoritative result or another unknown outcome. Not-applied and stale
+  states persist until their named action. None auto-dismisses.
+- The rail is one visible, polite, atomic status. Announce each changed
+  sentence once, never on a rerender, and never move focus merely because copy
+  changed. Text plus the rail's static non-color state mark carries meaning;
+  color alone never does.
+- Every rail/action replacement, affordance removal, actual-card insertion,
+  and focus handoff is immediate and static. No fade, slide, scale, skeleton,
+  shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, or
+  layout-transition animation is allowed. Reduced motion keeps identical
+  geometry, copy, controls, focus, timing, and lifetime.
+
+### Eight-Theme Reliability-Rail Mapping
+
+All themes bind the same semantic state, copy, DOM order, actions, and focus
+contract through existing theme roles. Product components never branch on
+theme ID and no literal observed source value becomes reliability authority.
+
+| Theme | Fixed-rail realization |
+|---|---|
+| GridDO | Restrained technical status rail with canonical semantic border, text, action, and focus roles |
+| Tiny Desk | Narrow pinned status slip beneath the retained placement summary |
+| Neumorphism | Shallow inset status trough inside the existing shadow family |
+| Claymorphism | Compact sculpted status ribbon whose static shape carries state without motion |
+| Origami | Seam-attached status strip with a fixed paper edge and no animated fold |
+| Terminal | Variable-driven one-line `[SYS]` status record with text/non-color state cue and no blink |
+| Retro Mac | In-pane 1-bit system line with hard action controls and no new window or dialog |
+| Graphite | Strengthened-rule status caption with restrained monochrome action and precise focus outline |
 
 ## Theme Realizations
 
@@ -48,7 +142,7 @@
 
 - Observed source-only: direct choice is a blue-tinted `20px` clay plate with bold source/path and rounded actions. Confirmation is an amber `24px` capsule with explicit pending-type label and Confirm/Cancel; invalid state is a rounded clay alert.
 - Adopted fact: distinct cool direct-choice and warm confirmation objects are supported as base step differentiation.
-- Token implication: direct, confirmation, warning, Confirm, and Cancel roles should alias clay variables; reliability variants remain `VQ-08`.
+- Token implication: direct, confirmation, warning, Confirm, and Cancel roles should alias clay variables; reliability variants use the approved `DP-VQ08` fixed rail without changing the base clay object.
 
 ### Origami
 
@@ -76,5 +170,5 @@
 
 ## Exclusions And Verification
 
-- Excluded: all `VQ-09`, exact `VQ-08` reliability details beyond the shared envelope, generic/global Dialog fallback, source mutation/timers, keyboard handlers, automatic target fallback, partial writes, repeated pulse/ping/spin/bounce, and source copy as product copy.
+- Excluded: all `VQ-09`, every placement-reliability realization outside the approved `DP-VQ08` fixed rail, generic/global Dialog fallback, source mutation/timers, keyboard handlers, automatic target fallback, partial writes, repeated pulse/ping/spin/bounce, and source copy as product copy.
 - No target-column containment, clipping, full-target state, disabled action, step distinction, focus containment, scrolling, pointer hit testing, pending/retry state, contrast, or light/dark outcome was rendered or verified.

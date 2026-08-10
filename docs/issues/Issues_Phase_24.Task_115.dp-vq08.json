@@ -1,0 +1,147 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq08",
+  "decision_receipt_id": "DP-VQ08",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 115,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "continuation_entrypoint": "9c0bae2d8b928564ef03637e899e3bf9d62637c7",
+  "continuation_kickoff_commit": "0861b071d58cba03d1e698fae12155a589709736",
+  "predecessor_acceptance_commit": "be2a842fa87395031e8f15b81751b3ac67e3869b",
+  "durable_start_commit": "f985ed98b994ed8de922fbfd67b7fc192644f925",
+  "user_decision": {
+    "date": "2026-08-10",
+    "statement": "DP-VQ08=A",
+    "recorded_scope": "DP-VQ08=A only",
+    "choice": "A",
+    "label": "Fixed reliability rail inside the captured Placement Affordance"
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-placement-affordances-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "surface": {
+      "placement": "one fixed two-line reliability rail below the retained source/type/destination summary and above one fixed action row inside the captured target-column Placement Affordance",
+      "geometry": "reserve rail and action-row geometry before Confirm; never expand the target column or clip controls",
+      "scroll_owner": "existing target-column scroll content only",
+      "prohibited": [
+        "toast, dialog, global alert, detached panel, or adjacent-surface fallback",
+        "optimistic source removal or result insertion",
+        "automatic or implied alternate target",
+        "prototype or existing-product reliability realization as authority",
+        "theme-ID product behavior or copy branch"
+      ]
+    },
+    "state_matrix": {
+      "pending": {
+        "copy": "Placing “{title}” in {destination}…",
+        "action": "None",
+        "focus": "retain the rendered unavailable Confirm control",
+        "effect": "retain and lock source, candidate, summary, affordance, and conflicting interactions; show no optimistic result"
+      },
+      "unknown": {
+        "copy": "We couldn’t confirm whether “{title}” was placed.",
+        "action": "Check again",
+        "focus": "Check again",
+        "effect": "retain the same operation ID and start no mutation"
+      },
+      "reconciling": {
+        "copy": "Checking whether “{title}” was placed…",
+        "action": "None",
+        "focus": "retain the unavailable Check again action position",
+        "effect": "read complete authoritative pre/postconditions with the same operation ID; repeated activation is suppressed"
+      },
+      "not_applied": {
+        "copy": "“{title}” wasn’t placed. Your source is unchanged.",
+        "actions": [
+          "Retry",
+          "Cancel"
+        ],
+        "focus": "Retry",
+        "effect": "Retry alone reuses the logical operation and preallocated result ID; Cancel closes without a write"
+      },
+      "stale_source": {
+        "copy": "The source changed. Nothing was placed. Cancel and drag it again.",
+        "action": "Cancel",
+        "focus": "Cancel",
+        "effect": "apply latest source authority; never restore or place from the stale snapshot"
+      },
+      "stale_target": {
+        "copy": "The destination changed. Nothing was placed. Cancel and drag to the current destination.",
+        "action": "Cancel",
+        "focus": "Cancel",
+        "effect": "apply latest Grid authority; never correct, substitute, or reuse the stale target"
+      },
+      "success": {
+        "copy": "Placed “{title}” in {destination}.",
+        "action": "None",
+        "focus": "actual authoritative Node or Bit card",
+        "effect": "announce once, remove the affordance without a timer or decorative result, render the actual card, and leave Newly Placed/Undo appearance to DP-VQ10"
+      }
+    },
+    "focus_and_cancel": {
+      "pending_and_reconciling": "contain focus in the active affordance; visible Confirm/Cancel or Check again remains at its fixed position but unavailable; Escape is locked",
+      "terminal_non_success": "Cancel or Escape returns to the surviving Breakdown grip or staged candidate surface, otherwise the owning Breakdown or Staging heading",
+      "copy_change": "status changes never steal focus by themselves"
+    },
+    "authoritative_result_mapping": {
+      "applied_or_already_applied": "success only",
+      "not_applied": "retryable not-applied only",
+      "rejected_or_conflict": "classify as stale source or stale target from returned authoritative facts; never create a generic fallback state or guess which side changed",
+      "unknown": "not authoritative; retain operation identity and offer read-only Check again"
+    },
+    "lifetime_and_accessibility": {
+      "pending": "Confirm until authoritative result or unknown outcome",
+      "unknown": "until Check again",
+      "reconciling": "until authoritative result or another unknown outcome",
+      "not_applied_and_stale": "until the named action",
+      "auto_dismiss": "none",
+      "accessibility": "one visible polite atomic rail, one announcement per changed sentence, and text plus a static non-color state mark"
+    },
+    "motion": {
+      "ordinary": "rail/action replacement, affordance removal, actual-card insertion, and focus handoff are immediate and static",
+      "prohibited": "fade, slide, scale, skeleton, shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, and layout-transition animation",
+      "reduced_motion": "identical geometry, copy, controls, focus, timing, and lifetime"
+    },
+    "theme_mapping": {
+      "griddo": "restrained technical status rail with canonical semantic border, text, action, and focus roles",
+      "tiny-desk": "narrow pinned status slip beneath the retained placement summary",
+      "neumorphism": "shallow inset status trough inside the existing shadow family",
+      "claymorphism": "compact sculpted status ribbon whose static shape carries state without motion",
+      "origami": "seam-attached status strip with a fixed paper edge and no animated fold",
+      "terminal": "variable-driven one-line [SYS] status record with text/non-color cue and no blink",
+      "retro-mac": "in-pane 1-bit system line with hard action controls and no new window or dialog",
+      "graphite": "strengthened-rule status caption with restrained monochrome action and precise focus outline"
+    },
+    "implementation_boundary": {
+      "realization_task": 153,
+      "additional_prerequisites": [
+        128,
+        152
+      ],
+      "excludes": "product implementation in Task 115, VQ-09 and Task 116, DP-VQ10 Newly/Undo appearance, command/repository changes, prototype or existing-product reliability authority, adjacent fallback, and theme-ID logic"
+    }
+  },
+  "exact_release": {
+    "tasks": [
+      153
+    ],
+    "consumption_condition": "Task 115 user checkpoint accepted; its plan marker remains open until then",
+    "all_other_tasks": "unreleased; Task 116 and every later decision remain unstarted"
+  },
+  "task_state": "implemented-awaiting-user-checkpoint",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "task-115-user-checkpoint"
+}

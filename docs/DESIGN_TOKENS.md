@@ -386,7 +386,7 @@ or to promotion-map §11.4's shared implication.
 | Staging | `staging-panel`, `staging-node-well`, `staging-node-card`, `staging-bit-well`, `staging-bit-row`, `staging-neutral`, `staging-unavailable`, `staging-invalid`, `staging-pending`, `staging-unstage-target`, `staging-operation-status`, `staging-arrival-count`, `staging-local-alert`, `staging-alert-action`, `staging-target-reason`, `staging-integrity-status` | `R-STAGING`; status roles from `DP-VQ06-STAGING` / Task 147 only |
 | Grid Explorer base | `explorer-header`, `explorer-column`, `explorer-full-level-label`, `explorer-node-row`, `explorer-bit-row`, `explorer-eligible-target`, `explorer-hovered-target`, `explorer-invalid-target`, `explorer-unavailable-target`, `explorer-remote-count`, `explorer-path-status`, `explorer-status-action` | `R-EXPLORER`; status roles from `DP-VQ06-EXPLORER` / Task 150 only |
 | Grid Explorer search | `explorer-search-entry`, `explorer-search-body`, `explorer-search-field`, `explorer-search-close`, `explorer-search-status`, `explorer-search-results`, `explorer-search-result`, `explorer-search-type`, `explorer-search-breadcrumb`, `explorer-search-duplicate`, `explorer-search-retry`, `explorer-search-undo`, `explorer-reveal-status`, `explorer-revealed-row` | `DP-VQ07`; complete body Task 151 and search-result Undo composition Task 158 only |
-| Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled` | `R-PLACEMENT`; excludes `VQ-08` reliability realization and all `VQ-09` surfaces |
+| Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled` | `R-PLACEMENT`; reliability extends only through approved `DP-VQ08` roles below, while all `VQ-09` surfaces remain excluded |
 | Newly Placed / Undo | `newly-marker`, `newly-dot`, `newly-new-badge`, `newly-undo-action` | `R-NEWLY`; composes over the actual Node/Bit card and never replaces it |
 | Archive / completion base | `archive-section-scrim`, `archive-card`, `archive-complete-context`, `archive-reopen`, `archive-action`, `archive-cancel` | `R-ARCHIVE`; excludes `VQ-11/12` gap realization |
 
@@ -863,7 +863,41 @@ The replacement body maps through Explorer-search-native theme roles:
 | Retro Mac | In-pane Finder `Find` strip, 1-bit system status line, and hard bordered result list with no new window/dialog/ghost pane |
 | Graphite | Editorial index field, strengthened-rule status caption, and restrained monochrome result rows with precise focus outline |
 
-### Existing-surface state gaps — 4 open Decision prerequisites
+### Approved Placement fixed-reliability-rail realization — `DP-VQ08`
+
+**User-selected 2026-08-10:** Choice A retains the captured target-column
+Placement Affordance and inserts one fixed two-line reliability rail below its
+source/type/destination summary and above one fixed action row. Task 153 alone
+consumes this contract after Task 115 checkpoint acceptance.
+
+| Contract | Exact token requirement |
+|---|---|
+| Surface binding | `data-placement-reliability="pending|unknown|reconciling|not-applied|stale-source|stale-target"` binds one `placement-reliability-rail` inside the captured affordance; the source/type/destination summary stays visible, geometry is reserved before Confirm, and the target column does not expand or clip controls |
+| Pending / unknown / reconcile copy | Use exact `Placing “{title}” in {destination}…`, `We couldn’t confirm whether “{title}” was placed.`, and `Checking whether “{title}” was placed…`; unknown alone exposes exact `Check again`, which performs read-only reconciliation with the same operation ID and never resends placement |
+| Failure / stale copy | Authoritative `not_applied` uses exact `“{title}” wasn’t placed. Your source is unchanged.` with `Retry` then `Cancel`; stale source uses exact `The source changed. Nothing was placed. Cancel and drag it again.`; stale target uses exact `The destination changed. Nothing was placed. Cancel and drag to the current destination.`; stale states expose only `Cancel` |
+| Result mapping | `applied|already_applied` maps only to success; `not_applied` maps only to the retryable row; returned authoritative facts classify `rejected|conflict` as `stale-source` or `stale-target`; no generic failure fallback or guessed side is allowed |
+| Retry boundary | `placement-reliability-retry` exists only for authoritative `not_applied`, reuses the logical operation and preallocated result ID, and returns to pending; rejected/conflict, unknown/reconciling, and stale states never Retry, auto-retry, compensate, or infer success |
+| Focus and locking | Pending retains focus on rendered unavailable Confirm; unknown focuses `Check again`, reconciliation retains that action position, not-applied focuses `Retry`, stale focuses `Cancel`, and Cancel/Escape returns to surviving source grip/candidate or the owning section heading; pending/reconciling lock Escape, Cancel, and all conflicting interactions |
+| Success | Announce exact `Placed “{title}” in {destination}.` once at authoritative `applied`/`already_applied`, remove the affordance without an intermediate timer/card, render and focus the actual Node/Bit card, and leave all Newly Placed/Undo appearance to `DP-VQ10` |
+| Lifetime / accessibility | Pending, unknown, and reconcile are operation/result-owned; not-applied and stale persist until their named action; none auto-dismisses. The visible rail is one polite atomic status with text plus a static non-color state mark and one announcement per changed sentence, never per rerender |
+| Motion | Rail/action replacement, affordance removal, actual-card insertion, and focus handoff are immediate and static; no fade, slide, scale, skeleton, shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No toast/dialog/global alert/detached or adjacent surface, optimistic result/source change, alternate-target implication, prototype or existing-product reliability authority, `VQ-09`/`DP-VQ10` invention, product implementation in Task 115, or theme-ID behavior/copy branch |
+
+The fixed rail maps through Placement-native theme roles without product JSX
+theme branching or unsupported literal values:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Restrained technical status rail with canonical semantic border, text, action, and focus roles |
+| Tiny Desk | Narrow pinned status slip beneath the retained placement summary |
+| Neumorphism | Shallow inset status trough inside the existing shadow family |
+| Claymorphism | Compact sculpted status ribbon whose static shape carries state without motion |
+| Origami | Seam-attached status strip with a fixed paper edge and no animated fold |
+| Terminal | Variable-driven one-line `[SYS]` status record with text/non-color cue and no blink |
+| Retro Mac | In-pane 1-bit system line with hard action controls and no new window or dialog |
+| Graphite | Strengthened-rule status caption with restrained monochrome action and precise focus outline |
+
+### Existing-surface state gaps — 3 open Decision prerequisites
 
 The shared role/state envelope above is the maximum current authority for
 these gaps. It authorizes semantic state binding, existing supported tokens,
@@ -873,7 +907,6 @@ dependent exact realization.
 
 | ID | Unresolved boundary; no implied realization | Future owner | Resume condition |
 |---|---|---|---|
-| `VQ-08` | No placement pending, failure, reconcile, Retry, stale, success, control placement, layout, timing, copy, or per-theme realization is chosen. | User Decision → Placement recipe/token owner and reliability phase | Receipt resolves the dependent placement-state UI |
 | `VQ-10` | No selected+new overlap, unavailable reason, dependency-reenabled, undoing, failure, Undo/retry/conflict treatment, copy, placement, timing, or per-theme realization is chosen; repeated motion is forbidden. | User Decision → Newly Placed/Undo recipe/token owner and rollback phase | Receipt resolves the dependent marker/reliability UI |
 | `VQ-11` | No completion blocker or eligibility-withdrawal copy, effect, placement, layout, timing, or per-theme realization is chosen. | User Decision → Context/Breakdown/Archive recipe/token owner and completion phase | Receipt resolves the dependent blocker UI |
 | `VQ-12` | No Archive pending, reconcile, failure, recovery, check-again, Retry/Cancel visual, copy, control/status placement, layout, timing, or per-theme realization is chosen. | User Decision → Archive recipe/token owner and reliability phase | Receipt resolves the dependent Archive variants |

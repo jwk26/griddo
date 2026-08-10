@@ -250,7 +250,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Choice A candidate-attached/subsection-indicator/Staging-alert status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_112.dp-vq06-staging.json`; Task 147 only is released. |
 | `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Choice A affected-column remote/path status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`; Task 150 only is released. |
 | `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Choice A dedicated fixed-input/state-line/flat-result replacement body accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json`; Task 151 and search-only Task 158 are released subject to their own prerequisites. |
-| `DP-VQ08` | `VQ-08` | 115 | 153 only | Accepted receipt defines placement reliability states. |
+| `DP-VQ08` | `VQ-08` | 115 | 153 only | Choice A fixed reliability rail selected on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`; Task 153 remains unreleased until Task 115 checkpoint acceptance. |
 | `DP-VQ09` | `VQ-09` | 116 | 154 only | Accepted receipt supplies both title/limit surfaces. |
 | `DP-VQ10` | `VQ-10` | 117 | 157 only | Accepted receipt defines Newly/Undo overlap, reasons, and reliability. |
 | `DP-VQ11` | `VQ-11` | 118 | 160 only | Accepted receipt defines blocker/withdrawal realization. |
@@ -840,15 +840,29 @@ and ordinary-card Undo Task 156 remains independent. It does not start Task
 
 ### Task 115: [ ] Record `DP-VQ08` placement-reliability decision
 
-**Files and actions:** modify `docs/recipes/inbox-triage-placement-affordances-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to specify pending, reconciling, explicit failure, stale source/target, Retry/Cancel, success, current-action focus, copy, timing, and eight-theme treatments; change no code.
+**Files and actions:** modify `docs/recipes/inbox-triage-placement-affordances-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to record Choice A: one fixed two-line reliability rail inside the captured target-column Placement Affordance, below its retained source/type/destination summary and above one fixed action row; specify exact pending, unknown/reconciling, authoritative not-applied, stale source/target, `Check again`, Retry/Cancel, success announcement/handoff, current-action focus, lifetime, static reduced-motion parity, and eight-theme treatments; change no code.
 
 **Dependencies:** user decision only; no code prerequisite and no other DP task.
 
-**Decision owner:** User. **Receipt:** `DP-VQ08`. **Exact edge:** Task 153 only. **Resume:** accepted complete placement reliability realization.
+**Decision owner:** User. **Receipt:** `DP-VQ08`. **Selected decision:** `DP-VQ08=A` on 2026-08-10. **Exact edge:** Task 153 only after Task 115 checkpoint acceptance. **Resume:** explicit Task 115 user acceptance of the recorded complete fixed-rail realization.
 
 **Authority / flows:** `VQ-08`, `UF-20`, `UF-21`, `NEG-18`, `NEG-21`.
 
 **Recipe:** [`Placement affordances`](recipes/inbox-triage-placement-affordances-visual-recipe.md).
+
+**Selected realization:** retain the captured affordance and its source/type/
+destination summary for every nonterminal outcome. Pending retains focus on
+rendered unavailable Confirm; unknown exposes and focuses read-only `Check
+again`; reconcile retains that action position; authoritative `not_applied`
+focuses `Retry` before `Cancel`; stale source/target focuses sole `Cancel`;
+returned authoritative facts classify rejected/conflict into that exact stale
+source/target split without a generic fallback or guessed side;
+authoritative success announces once, removes the affordance without a timer or
+decorative result, and focuses the actual card. Exact copy, event-owned
+lifetime, static motion/reduced-motion parity, and all eight theme-role
+bindings are owned by the accepted receipt. No toast/dialog/adjacent fallback,
+optimistic source/result change, automatic target correction, or theme-ID
+product branch is permitted.
 
 **Observable acceptance:** every nonterminal outcome stays in the captured placement affordance with an exact focus target and no toast/dialog fallback.
 
