@@ -389,3 +389,22 @@ None at kickoff.
 | Canonical impact | None — no canonical amendment required |
 | Recovery anchor | This separate acceptance commit, whose parent is `a28ea533d8d1c6cc0b09e1b652cddd2fa4aad94a` |
 | Next legal action | Stop after this acceptance commit. Task 126 may begin only in a separate fresh candidate-pinned run-task session using this acceptance commit as its recovery anchor. |
+
+## Task 126 In Progress
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 126 only — Implement Archive recovery classification |
+| State | In Progress; implementation is not user acceptance and the Task 126 marker remains `[ ]` |
+| Approved scope | Modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/archive-scratch-recovery.test.ts`; implement only schema-validated `PendingOperationRecovery` read-only `applied`/`not_applied`/`conflict`/`unknown` classification using exact Scratch ID/version/`archivedAt` and complete Breakdown/candidate pre/postconditions; invalid/foreign/stale descriptors fail closed; every classification path performs zero mutation |
+| Excluded | Archive mutation; operation journal/log/index; queue/outbox; `sessionStorage`; recovery descriptor creation/ownership; Task 161 coordinator; UI/hook/store; Phase 24; Shelf; workflow rollout; Task 127 or later scope |
+| Kickoff receipt | `docs/issues/Issues_Phase_25.gate-c.json` (`run-phase`, `gate-c`, serial batch `[125,126]`), explicitly approved by the user; Task 125 acceptance commit releases Task 126 without converting the run-phase receipt into a run-task receipt |
+| Start base / entrypoint | Task 125 implementation/evidence parent `a28ea533d8d1c6cc0b09e1b652cddd2fa4aad94a`; exact Task 125 acceptance and Task 126 recovery anchor `4a02fc0de4f0b4489dfe3eb693554306233344aa` |
+| Recovery anchor | `4a02fc0de4f0b4489dfe3eb693554306233344aa`; this durable-start commit must precede every Task 126 product/test write |
+| Branch / worktree | `phase-25/authoritative-command-dag` / `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`; existing same-phase reuse approved; clean at start |
+| Dependencies / mutex | Task 125 accepted at `4a02fc0de4f0b4489dfe3eb693554306233344aa`; Task 126 exclusively owns `db-implementation` and `db-interface`; no concurrent implementation or commit |
+| Lifecycle evidence | Candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` and run-task SHA-256 `614631c56866549feb298d995ea0cf1311caa1cacaaefc2ba2ca753e43910531` verified; receipt-less run-task resolver returned expected `approval_required`, `contract_ready=true`, `writes_allowed=false`; write authority remains the user-approved Gate C plus Task 125 acceptance commit |
+| Issues / deviations | None |
+| Canonical impact | None — implementation-local conformance to the approved SCHEMA forced-Archive recovery/no-journal contract, SPEC authority, and Task 126 execution contract |
+| Verification contract | TDD selected-target RED; focused recovery test; Archive command/recovery/archive mutex regression; `pnpm typecheck`; `git diff --check`; concrete-risk/diff review and bounded repair; then exactly one fresh serial full gate: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` |
+| Next legal action | Create the Task 126 dedicated failing test, implement only the approved read-only classifier, complete bounded verification/review, commit implementation/evidence, and stop at the Task 126 user checkpoint without writing `[x]` |
