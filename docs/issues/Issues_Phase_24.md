@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–116 accepted; Task 117 remains unstarted as the next serial Task
+> State: Tasks 106–116 accepted; Task 117 is In Progress for user-selected `DP-VQ10=A`
 
 ## Status Legend
 
@@ -332,6 +332,22 @@ canonical document update, and commit remain Task-local and sequential.
 | Review | No concrete blocking finding. The staged step appears only above the selected Node/Bit limit, starts empty, validates without truncation or source mutation, and owns exact input-first focus/Cancel/invalidation behavior. The direct step has no editor, keeps unavailable rows/reasons accessible without hover, preserves the exact three length bands, and advances only through available types. Both surfaces remain column-scoped, static/reduced-motion-identical, theme-role-driven, and release only Task 154 after user acceptance |
 | Acceptance boundary | Accepts only Task 116 and `DP-VQ09=A`; releases Task 154 only; does not start Task 117, change product code, publish, or close the phase |
 | Next legal action | Commit this acceptance-only state and stop. Task 117 remains `[ ]` and unstarted; a later separate session may begin only its `DP-VQ10` decision gate |
+
+## Task 117 Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Task | 117 — record `DP-VQ10` Newly/Undo decision |
+| State | In Progress; the Task 117 plan marker remains `[ ]` and no Task 118 work is authorized |
+| User decision | On 2026-08-11 the user selected `DP-VQ10=A`, the card-attached always-visible Newly/Undo status rail, by replying `gogogo` directly to the explicit A-selection prompt |
+| Approved scope | Specify selected+newly overlap, available/ineligible/re-enabled Undo, accessible always-visible reasons, undoing/failure/reconcile/retry/conflict, marker/control placement, exact copy, timing, focus, static reduced-motion parity, and eight-theme treatment; update only the Newly/Undo recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, the `DP-VQ10` receipt, and this ledger; change no product code, common-card design, or Task 118-or-later decision |
+| Prohibited fallback | No current main-card menu, prototype pulse marker, generic disabled-button treatment, hover-only reason, detached toast/dialog, repeated motion, common-card redesign, theme-ID product-logic branch, or adjacent visual invention |
+| Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `0861b071d58cba03d1e698fae12155a589709736`; accepted predecessor receipt `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json` |
+| Start base / recovery anchor | `8e61b9412589bf7c709c1838b8b6dbc35d2a1c57`, the clean Task 116 acceptance commit |
+| Exact release edge | Task 157 only, and only after a later explicit Task 117 checkpoint acceptance; Tasks 155–156 and 158 are not started or released here |
+| Issue / deviation | None |
+| Canonical impact | Tagged — reflect `DP-VQ10=A` in the Newly/Undo recipe, `docs/DESIGN_TOKENS.md`, and Task 117 execution authority before checkpoint |
+| Next legal action | Commit this ledger-only durable start, then write the selected receipt and exact canonical realization without changing the Task 117 marker or starting Task 118 |
 
 ## Readiness Evidence
 
