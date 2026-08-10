@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–113 accepted; Tasks 114–119 are approved as one serial Gate C batch, with Task 114 as the only next legal task
+> State: Tasks 106–113 accepted; Task 114 is In Progress for `DP-VQ07` choice A
 
 ## Status Legend
 
@@ -266,6 +266,22 @@ canonical document update, and commit remain Task-local and sequential.
 | Next receipt | Task 114 may later create `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json` only after its real user decision; this continuation kickoff does not create it |
 | Durable kickoff boundary | The commit containing this section and the updated whole-file Gate C receipt has parent `9c0bae2d8b928564ef03637e899e3bf9d62637c7` and no other changed path |
 | Next legal action | After that kickoff commit is resolver-valid and the worktree is clean, end this `run-phase` session. A fresh session may load only candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` `skills/run-task/SKILL.md` and start Task 114 only; the live `/Users/jwk/Documents/codex-workflow/skills/run-task` is prohibited |
+
+## Active Task
+
+| Field | Durable value |
+| --- | --- |
+| Task | 114 — record `DP-VQ07` Explorer replacement-search decision |
+| State | In Progress; user acceptance remains pending and the Task 114 plan marker stays `[ ]` |
+| Approved scope | Choice A retains Explorer chrome and replaces only the four-column body with a dedicated whole-hierarchy search body: fixed input, state line, flat typed results, exact pre-search/loading/stale/no-results/error/duplicate/reveal copy, deterministic focus and close/interruption behavior, event-owned lifetime, static reduced-motion parity, eight-theme mapping, and a bounded search-result Undo slot; update only the Grid Explorer recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, this ledger, and the `DP-VQ07` receipt; no product code, global/active-column Search fallback, ordinary-column substitution, or Task 115 authority |
+| User decision | On 2026-08-10 the user selected `DP-VQ07=A` |
+| Predecessor | Task 113 accepted at `9c0bae2d8b928564ef03637e899e3bf9d62637c7`; its exact release remains Task 150 only |
+| Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `0861b071d58cba03d1e698fae12155a589709736`; approved base `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28` |
+| Entrypoint / recovery anchor | Task 113 acceptance `9c0bae2d8b928564ef03637e899e3bf9d62637c7`; continuation kickoff `0861b071d58cba03d1e698fae12155a589709736`; this ledger commit is the Task 114 durable start anchor |
+| Decision receipt target | `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json` |
+| Issue / deviation | None |
+| Canonical impact | None — Choice A is selected but has not yet been reflected in Task 114's three canonical documents |
+| Next legal action | Commit this ledger-only durable start, then record only `DP-VQ07=A`; do not start Task 115 or write product code |
 
 ## Readiness Evidence
 
