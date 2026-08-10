@@ -779,7 +779,7 @@ Tasks 106–119 are non-code Decision tasks. They have no dependencies on one an
 
 **Commit contract:** Undo command and exact staged/direct/dependency/ABA tests only; `feat(triage): add source aware undo command`.
 
-### Task 125: [ ] Implement exact Archive eligibility and guarded Archive command
+### Task 125: [x] Implement exact Archive eligibility and guarded Archive command
 
 **Files and actions:** modify `src/lib/db/datastore.ts` and `src/lib/db/indexeddb.ts`; create `src/lib/db/archive-scratch-command.test.ts`; update `src/lib/db/archive.test.ts`. Add authoritative eligibility query and typed Archive request containing Scratch ID/expectedVersion plus an explicit caller assertion that Add-draft and Scratch-title blockers are clear. Repository transaction independently requires active Inbox-owned Scratch, consumed count ≥1, unconsumed count 0, candidate count 0, and exact version, then changes only Scratch `archivedAt`/`mtime`/version. Make generic `archiveBit` reject an Inbox-parented Scratch so no caller can bypass the guarded command; retain generic Direct Archive for ordinary Bits and existing Archive View restore. Test missing/false blocker assertion, durable races, same-ID replay, and rollback.
 

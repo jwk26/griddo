@@ -3,7 +3,7 @@
 > Branch: `phase-25/authoritative-command-dag`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-25-authoritative-command-dag`
 > Kickoff date: 2026-08-09
-> State: Tasks 120–124 accepted; Task 125 Implemented awaiting user review; Task 126 held pending explicit Task 125 user acceptance
+> State: Tasks 120–125 accepted; Task 126 held for a separate fresh run-task session
 
 ## Status Legend
 
@@ -346,7 +346,7 @@ None at kickoff.
 
 | Field | Durable value |
 | --- | --- |
-| Status | In Progress — user-approved test-only deviation |
+| Status | Closed — approved test-only repair implemented, verified, and accepted with Task 125 |
 | Discovered | Task 125 consumer/diff review after focused and mutex green, before the serial full gate |
 | Code path | `src/lib/db/scratch-breakdowns.test.ts` real-Dexie retention case calls `archiveBit(TRANSACTION_TEST_IDS.scratchBit)` for an Inbox-owned Scratch |
 | Trigger | Task 125 correctly makes generic `archiveBit` reject every Inbox-owned Scratch so callers cannot bypass guarded `archiveScratch` eligibility/version/blocker validation |
@@ -374,3 +374,18 @@ None at kickoff.
 | Issues / deviations | `P25-125-R1` implemented and verified under explicit user-approved test-only scope; terminal closure remains user-owned. No other issue or deviation. |
 | Canonical impact | None — implementation-local conformance to already-approved SCHEMA/SPEC/Task 125 authority; no canonical amendment required |
 | Next legal action | Present the Task 125 user checkpoint and stop. Only explicit acceptance may later write Task 125 `[x]` in a separate acceptance commit; Task 126 cannot start before that commit. |
+
+## Accepted Task 125
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 125 only — Implement exact Archive eligibility and guarded Archive command |
+| State | Accepted by the user on 2026-08-10; Task 125 marker is `[x]`; Task 126 marker remains `[ ]` and is not started |
+| Acceptance basis | Implementation/evidence commit `a28ea533d8d1c6cc0b09e1b652cddd2fa4aad94a`; durable start `78fcf634f3addc533c76c81adab6c2ab6e957d41`; approved deviation `030d8b193cb41be83dc89b43eab84c5ad302f2b1`; focused 23/23; mutex 71/71; Breakdown standalone 13/13; serial full gate 86 files / 664 tests, lint 0 errors, typecheck/build passed; no remaining blocking finding; canonical impact None; clean checkpoint worktree |
+| User acceptance | The user explicitly accepted the recorded Task 125 implementation checkpoint and its exact evidence on 2026-08-10 |
+| P25-125-R1 | Closed by the user-owned Task 125 acceptance boundary: the approved test-only stale regression repair is implemented and verified; no product scope expansion occurred |
+| Acceptance write set | Only `docs/EXECUTION_PLAN.md` and `docs/issues/Issues_Phase_25.md`; no Gate C receipt, product/test code, Task 126, Phase 24, or Shelf change |
+| Acceptance verification | Reused the accepted implementation verification without rerunning test/lint/typecheck/build; acceptance-only checks are exact two-file write-set inspection and `git diff --check` |
+| Canonical impact | None — no canonical amendment required |
+| Recovery anchor | This separate acceptance commit, whose parent is `a28ea533d8d1c6cc0b09e1b652cddd2fa4aad94a` |
+| Next legal action | Stop after this acceptance commit. Task 126 may begin only in a separate fresh candidate-pinned run-task session using this acceptance commit as its recovery anchor. |
