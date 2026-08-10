@@ -25,6 +25,21 @@
     "choice": "A",
     "label": "Source-attached completion blockers and completion-slot eligibility-withdrawal status"
   },
+  "checkpoint_acceptance": {
+    "date": "2026-08-11",
+    "statement": "Task 118 / DP‑VQ11=A checkpoint를 수락합니다.",
+    "acceptance_basis": "1c8465089106bb1a2023408570b0e112eee2b8d6",
+    "accepted_task": 118,
+    "accepted_decision": "DP-VQ11=A",
+    "accepted_contract": [
+      "source-attached non-empty Add-draft blocker and all five Task 137 Scratch-title blocker snapshots with exact copy and existing actions only",
+      "exact active-Breakdown, Staging, and combined eligibility-withdrawal causes in the vacated completion slot after all stale completion controls are removed",
+      "draft/editor preservation, logical focus, polite atomic accessibility, mounted-page lifetime, current-truth recovery, and no automatic Add, Save, Cancel, or Archive",
+      "static reduced-motion parity and eight-theme role mapping without toast, dialog, detached/global fallback, timer, repeated motion, persistence, or theme-ID product logic",
+      "Task 160-only release with Task 119 and Task 160 preserved as unstarted"
+    ],
+    "serial_boundary": "Task 118 is accepted; Task 119 remains unstarted and may begin only in a later separate session, while Task 160 is released but not started"
+  },
   "canonical_record_paths": [
     "docs/recipes/inbox-triage-selected-scratch-context-visual-recipe.md",
     "docs/recipes/inbox-triage-breakdown-row-empty-visual-recipe.md",
@@ -122,11 +137,11 @@
     "tasks": [
       160
     ],
-    "consumption_condition": "Task 118 user checkpoint accepted; its plan marker remains open until then",
-    "all_other_tasks": "unreleased; Task 119 remains unstarted and Task 160 is not started by this receipt"
+    "consumption_condition": "satisfied by explicit Task 118 checkpoint acceptance on 2026-08-11",
+    "all_other_tasks": "Task 119 remains unstarted; Task 160 is released but not started by this receipt; every unrelated task edge retains its prior state"
   },
-  "task_state": "implemented-awaiting-user-checkpoint",
+  "task_state": "accepted",
   "canonical_impact": "Reflected",
   "issue_or_deviation": "None",
-  "next_legal_action": "task-118-user-checkpoint"
+  "next_legal_action": "task-119"
 }

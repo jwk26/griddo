@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–117 accepted; Task 118 is Implemented awaiting user checkpoint for `DP-VQ11=A`
+> State: Tasks 106–118 accepted; Task 119 remains unstarted as the next serial Task
 
 ## Status Legend
 
@@ -356,26 +356,28 @@ canonical document update, and commit remain Task-local and sequential.
 | Acceptance boundary | Accepts only Task 117 and `DP-VQ10=A`; releases Task 157 only; does not start Task 118, Task 157, Tasks 155–156, or Task 158, change product code/common-card design, publish, or close the phase |
 | Next legal action | Commit this acceptance-only state and stop. Task 118 remains `[ ]` and unstarted; a later separate session may begin only its `DP-VQ11` decision gate |
 
-## Task 118 Durable Start
+## Task 118 Acceptance Receipt
 
 | Field | Durable value |
 | --- | --- |
 | Task | 118 — record `DP-VQ11` completion-blocker decision |
-| State | Implemented awaiting user checkpoint; the Task 118 plan marker remains `[ ]` and no Task 119 or Task 160 work is authorized |
+| State | Accepted by the user on 2026-08-11; the Task 118 plan marker is `[x]` and Task 119 remains `[ ]` |
 | User decision | On 2026-08-11 the user selected `DP-VQ11=A`, source-attached blocker guidance plus a completion-slot eligibility-withdrawal status |
+| User acceptance | `Task 118 / DP‑VQ11=A checkpoint를 수락합니다.` against evidence commit `1c8465089106bb1a2023408570b0e112eee2b8d6` |
 | Approved scope | Specify non-empty Add-draft and every Scratch-title-editor blocker, actual eligibility withdrawal/recovery, exact source-attached and completion-slot placement, copy, existing actions, effect, focus, lifetime, static reduced-motion parity, and eight-theme treatment; update only the three named completion recipes, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, the `DP-VQ11` receipt, and this ledger; change no product code, completion predicate/headless behavior, Task 119 decision, or Task 160 implementation |
 | Prohibited fallback | No toast, dialog, empty-state replacement, page-global banner, unified detached status panel, Context-only summary, automatic Add/Save/Cancel/Archive, timer, repeated motion, persistence, or theme-ID product-logic branch |
 | Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `0861b071d58cba03d1e698fae12155a589709736`; accepted predecessor receipt `docs/issues/Issues_Phase_24.Task_117.dp-vq10.json` |
 | Start base / recovery anchor | `d4bd591aa3e0cdd540156c95f306c274c215ca26`, the clean Task 117 acceptance commit |
 | Durable start commit | `077499e519eccbb41845447f1af7e45a44288631`; ledger-only and parented directly by the recovery anchor |
 | Decision / implementation commit | `341da1226ad0138103239969b0b962c105c129d0`; exact paths are the three completion recipes, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, and `docs/issues/Issues_Phase_24.Task_118.dp-vq11.json` |
-| Durable receipt | `docs/issues/Issues_Phase_24.Task_118.dp-vq11.json`; state `implemented-awaiting-user-checkpoint`, next action `task-118-user-checkpoint` |
-| Exact release edge | Task 160 only, and only after a later explicit Task 118 checkpoint acceptance; Task 160 is not started here |
+| Durable receipt | `docs/issues/Issues_Phase_24.Task_118.dp-vq11.json`; state `accepted`, next action `task-119` |
+| Exact release edge | Task 160 only; released by this explicit checkpoint acceptance but not started here |
 | Issue / deviation | None |
 | Canonical impact | Reflected — Choice A is recorded in the three completion recipes, `docs/DESIGN_TOKENS.md`, and Task 118 execution authority |
-| Verification | Candidate resolver `ready` at `341da12`; `git diff --check` exit 0; receipt JSON valid; exact Add and all five Task 137 blocker snapshots, three persisted-withdrawal causes, existing-action-only behavior, focus/lifetime/recovery, static reduced-motion parity, and eight-theme mappings are present; `pnpm typecheck` exit 0; exact six-path decision commit; Tasks 118, 119, and 160 remain `[ ]`; no non-`docs/` path, completion predicate/headless behavior, Archive transaction, `VQ-12`, Task 119 decision, or Task 160 implementation changed; test/lint/build omitted under the recorded successful baseline/full-gate reuse instruction |
+| Verification | At the implementation checkpoint, candidate resolver `ready` at `341da12`; `git diff --check` exit 0; receipt JSON valid; exact Add and all five Task 137 blocker snapshots, three persisted-withdrawal causes, existing-action-only behavior, focus/lifetime/recovery, static reduced-motion parity, and eight-theme mappings are present; `pnpm typecheck` exit 0; exact six-path decision commit; Tasks 118, 119, and 160 remained `[ ]`; no non-`docs/` path, completion predicate/headless behavior, Archive transaction, `VQ-12`, Task 119 decision, or Task 160 implementation changed; test/lint/build omitted under the recorded successful baseline/full-gate reuse instruction |
 | Review | No concrete blocking finding. Add and title blockers remain source-attached, preserve current draft/editor/actions/focus, and do not change persisted eligibility. Actual active-row/Staging loss removes all stale completion controls before showing one narrow persistent completion-slot reason; remote causes do not steal focus, recovery returns to Task 159 current truth, and no toast/dialog/global panel/automatic action/timer/repeated motion/theme-ID branch is introduced. Only Task 160 can be released after user acceptance |
-| Next legal action | Commit this ledger-only implementation evidence and stop at the Task 118 user checkpoint. Do not mark Task 118 `[x]`, release or start Task 160, or start Task 119 without explicit user acceptance |
+| Acceptance boundary | Accepts only Task 118 and `DP-VQ11=A`; releases Task 160 only but does not start Task 119 or Task 160, change product code/completion predicate/headless or Archive behavior, publish, or close the phase |
+| Next legal action | Commit this acceptance-only state and stop. Task 119 remains `[ ]` and unstarted; a later fresh session may begin only its `DP-VQ12` decision gate |
 
 ## Readiness Evidence
 

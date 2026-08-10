@@ -253,7 +253,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ08` | `VQ-08` | 115 | 153 only | Choice A fixed reliability rail accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`; Task 153 only is released. |
 | `DP-VQ09` | `VQ-09` | 116 | 154 only | Choice A compact Result Title/direct-limit steps accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`; Task 154 only is released. |
 | `DP-VQ10` | `VQ-10` | 117 | 157 only | Choice A card-attached always-visible Newly/Undo status rail accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_117.dp-vq10.json`; Task 157 only is released. |
-| `DP-VQ11` | `VQ-11` | 118 | 160 only | Choice A source-attached blocker guidance and completion-slot withdrawal status selected on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_118.dp-vq11.json`; Task 160 remains unreleased until Task 118 checkpoint acceptance. |
+| `DP-VQ11` | `VQ-11` | 118 | 160 only | Choice A source-attached blocker guidance and completion-slot withdrawal status accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_118.dp-vq11.json`; Task 160 only is released. |
 | `DP-VQ12` | `VQ-12` | 119 | 162 only | Accepted receipt defines Archive reliability/recovery realization. |
 
 ## Cross-Cutting Exclusions And Negative Coverage
@@ -956,7 +956,7 @@ change product code/common-card design, publish, or close the phase.
 
 **Commit contract:** the three named documents and `DP-VQ10` receipt only; `docs(triage): record DP-VQ10`.
 
-### Task 118: [ ] Record `DP-VQ11` completion-blocker decision
+### Task 118: [x] Record `DP-VQ11` completion-blocker decision
 
 **Files and actions:** modify `docs/recipes/inbox-triage-selected-scratch-context-visual-recipe.md`, `docs/recipes/inbox-triage-breakdown-row-empty-visual-recipe.md`, `docs/recipes/inbox-triage-archive-completion-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to record Choice A: keep the Add-draft blocker immediately below the Add row, keep every Task 137 Scratch-title blocker in the existing Context editor status region, and replace withdrawn overlay/complete/reopen with one exact persistent status in the vacated Breakdown completion slot. Specify exact state copy, existing-action-only behavior, aggregate active-row/Staging causes, effect, focus, lifetime, static reduced-motion parity, and eight-theme mappings; change no completion predicate/headless behavior.
 
@@ -973,6 +973,14 @@ change product code/common-card design, publish, or close the phase.
 The approved presentation adds no completion action. Existing Add/text editing and `DP-VQ04` editor actions remain the only resolution paths. Blockers retain source focus; local eligibility-changing actions retain canonical focus; remote changes do not steal it; removal of a focused Archive/Cancel/Reopen target falls back to the Breakdown heading. Status persists only with the mounted-page cause, recovery returns presentation ownership to Task 159, and every theme uses source/completion-slot roles with immediate static reduced-motion-identical changes. No toast, dialog, ordinary-empty replacement, global/detached panel, auto-Add/Save/Cancel/Archive, timer, repeated motion, persistence, or theme-ID product branch is allowed.
 
 **Implementation boundary:** Task 160 only may realize this receipt after Task 118 checkpoint acceptance and its other prerequisites. Task 118 changes no product source, completion predicate, Task 137/159 headless behavior, Archive transaction, `VQ-12`, Task 119, or Task 160 implementation.
+
+**Checkpoint acceptance (2026-08-11):** the user explicitly accepted the
+complete Choice A source-attached Add/title blockers, exact completion-slot
+eligibility-withdrawal causes, existing-action-only behavior, focus/lifetime/
+recovery contract, static reduced-motion parity, eight-theme mapping, and Task
+160-only boundary. This acceptance releases Task 160 only. It does not start
+Task 119 or Task 160, change product code, completion predicates/headless
+behavior, or Archive transaction behavior, publish, or close the phase.
 
 **Observable acceptance:** blockers preserve drafts/editors and logical focus with exact source-attached copy; actual eligibility loss removes all stale completion controls and has exact persistent section-local reporting; recovery follows current truth without auto-save/submit/archive or a transient timer.
 
