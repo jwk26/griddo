@@ -387,7 +387,7 @@ or to promotion-map §11.4's shared implication.
 | Grid Explorer base | `explorer-header`, `explorer-column`, `explorer-full-level-label`, `explorer-node-row`, `explorer-bit-row`, `explorer-eligible-target`, `explorer-hovered-target`, `explorer-invalid-target`, `explorer-unavailable-target`, `explorer-remote-count`, `explorer-path-status`, `explorer-status-action` | `R-EXPLORER`; status roles from `DP-VQ06-EXPLORER` / Task 150 only |
 | Grid Explorer search | `explorer-search-entry`, `explorer-search-body`, `explorer-search-field`, `explorer-search-close`, `explorer-search-status`, `explorer-search-results`, `explorer-search-result`, `explorer-search-type`, `explorer-search-breadcrumb`, `explorer-search-duplicate`, `explorer-search-retry`, `explorer-search-undo`, `explorer-reveal-status`, `explorer-revealed-row` | `DP-VQ07`; complete body Task 151 and search-result Undo composition Task 158 only |
 | Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled`, `placement-result-title-shell`, `placement-result-title-source`, `placement-result-title-input`, `placement-result-title-count`, `placement-result-title-error`, `placement-result-title-continue`, `placement-direct-type-option`, `placement-direct-type-reason`, `placement-direct-limit-summary` | `R-PLACEMENT`; reliability extends through approved `DP-VQ08`, and title/limit replacement surfaces extend through approved `DP-VQ09`; Task 153 and Task 154 remain separate edges |
-| Newly Placed / Undo | `newly-marker`, `newly-dot`, `newly-new-badge`, `newly-undo-action` | `R-NEWLY`; composes over the actual Node/Bit card and never replaces it |
+| Newly Placed / Undo | `newly-marker`, `newly-dot`, `newly-new-badge`, `newly-undo-action`, `newly-status-rail`, `newly-status-mark`, `newly-status-action`, `newly-status-reason` | `R-NEWLY`; exact overlap/reason/reliability roles from approved `DP-VQ10`, Task 157 only; composes around the actual Node/Bit card and never replaces or redesigns it |
 | Archive / completion base | `archive-section-scrim`, `archive-card`, `archive-complete-context`, `archive-reopen`, `archive-action`, `archive-cancel` | `R-ARCHIVE`; excludes `VQ-11/12` gap realization |
 
 The shared state binding is a whitespace-delimited
@@ -421,6 +421,14 @@ appropriate; the data attribute never replaces them.
 | `path-fallback` | Authority invalidated an Explorer suffix; remove only that suffix, use the nearest valid ancestor/Home without sibling or ghost substitution, and expose the exact affected-column status/focus contract |
 | `selection-cleared` | A selected/revealed Bit disappeared while its parent path remained valid; clear only that selection/reveal and retain the parent path with the exact column-local status |
 | `newly-placed` | Page-session provenance layered on the actual card; use `newly-*` roles and keep Undo separate |
+| `undo-available` | The exact placement remains reversible; expose the stable `Undo` action and visible `Undo this placement.` rail copy independently from selection/Newly provenance |
+| `undo-ineligible` | Keep the focusable `aria-disabled` Undo slot and exact always-visible authoritative reason; no late-error, hover-only, menu, or generic-disabled fallback |
+| `undo-reenabled` | Dependencies cleared and eligibility recovered; expose `Undo is available again.` without focus movement or a timer |
+| `undo-pending` | Atomic Undo is in flight; retain actual result/source/marker, lock the stable action slot, and show exact pending copy without optimistic removal |
+| `undo-unknown` | Outcome is not authoritative; retain identity/state and expose only read-only `Check again` |
+| `undo-reconciling` | The same operation is being checked without resend; retain the action position and all result/source truth |
+| `undo-not-applied` | Authority proves no write occurred; retain all truth and expose exact manual `Retry` only here |
+| `undo-conflict` | Returned authority proves mutation/dependency/partial mismatch; show the narrow current reason or canonical conflict reason, never Retry/cascade/overwrite |
 | `completed` | Complete Context or completion presentation; do not treat it as Archive mutation success |
 | `local-alert` | A section-local status with visible text/icon semantics and the SPEC-selected live/status behavior; it does not become a global toast by default |
 
@@ -543,7 +551,7 @@ surface target below.
 | Staging | Keep visible `Staging`, `Nodes`, and `Bits`; Node cards and Bit rows use distinct shapes and independent wells. Neutral, unavailable, invalid, pending, and transient unstage-target meanings stay separate and non-destructive. | `R-STAGING` |
 | Explorer base | Use four ordinary progressive columns, full level labels, native Node/Bit row shapes, and eligible/hovered/invalid/unavailable target roles. This base excludes the absent replacement search body. | `R-EXPLORER` |
 | Placement base | Direct and staged shells, target path, Confirm/Cancel, full-target warning, and disabled Confirm use the Placement base roles. The affordance stays inside the target column; unsupported reliability and Result Title/direct-limit bodies remain excluded. | `R-PLACEMENT` |
-| Newly Placed / Undo | Compose a marker/dot or visible `NEW` badge over the actual Node/Bit card and expose Undo as a separate action. Never introduce a replacement indicator card. | `R-NEWLY` |
+| Newly Placed / Undo | Compose the source-backed marker/dot or visible `NEW` badge over the unchanged actual Node/Bit card; keep selection authoritative; expose Undo in a separate stable trailing slot and the approved always-visible status rail immediately below the card inside the same Explorer item wrapper. Never introduce a replacement indicator card, internal card footer/menu, or common-card redesign. | `R-NEWLY`, `DP-VQ10` |
 | Archive / completion base | Use a Breakdown-scoped scrim/card, complete Context, reopen, Archive, and Cancel base roles. Do not promote the surface into a page-wide overlay or infer its unresolved blocker/reliability variants. | `R-ARCHIVE` |
 
 The shared compact drag preview remains pointer-centered and type-aware rather
@@ -932,7 +940,44 @@ branching or unsupported literal values:
 | Retro Mac | In-pane compact system form with hard field/buttons and disabled rows; no new window/dialog |
 | Graphite | Restrained registry form and strengthened-rule rows with monochrome reason and precise focus outline |
 
-### Existing-surface state gaps — 3 open Decision prerequisites
+### Approved Newly Placed / Undo realization — `DP-VQ10`
+
+**User-selected 2026-08-11:** Choice A keeps the actual common Node/Bit card
+unchanged and composes a static Newly marker, separate trailing Undo action,
+and one card-attached always-visible status rail in the same Explorer item
+wrapper. Task 157 alone consumes this contract after Task 117 checkpoint
+acceptance.
+
+| Contract | Exact token requirement |
+|---|---|
+| Independent binding | Independent `selected`, `newly-placed`, and `data-undo-state="available|reenabled|result-mutated|descendants|placement-open|operation-locked|edit-blocked|pending|unknown|reconciling|not-applied|conflict"`; selected treatment/focus remains authoritative and Newly/eligibility never clears or replaces it |
+| Placement | `newly-marker` stays at the actual card's leading corner; `newly-undo-action` occupies one stable trailing slot; `newly-status-rail` follows the unchanged actual card inside the same Explorer item wrapper. The rail is not a card footer, menu, toast, dialog, disclosure-only surface, or second card |
+| Available / re-enabled copy | Use exact `Undo this placement.` and `Undo is available again.` with `Undo`; re-enabled announces once without focus movement and persists until Undo, another eligibility change, next activation of that card, or route exit/reload, never a timer |
+| Ineligible copy | Result mutation: `This item changed after placement. Undo is unavailable.`; descendants: `Undo newly placed items below this one first.`; open placement: `Finish or cancel the placement in progress first.`; shared lock: `Wait for the current action to finish.`; Edit: `Save or cancel the current edit before undoing.`; unknown mutation/conflict fallback: `This item or its source changed. Undo is unavailable.` |
+| Unavailable action | Keep `Undo` in the stable slot, keyboard-focusable with `aria-disabled="true"`, programmatic activation suppressed, and associated to the visible current reason; never require hover or invoke a late-error mutation |
+| Pending / unknown / reconcile copy | Use exact `Undoing “{title}”…`, `We couldn’t confirm whether “{title}” was undone.`, and `Checking whether “{title}” was undone…`; unknown exposes `Check again`, which performs read-only reconciliation with the same operation ID and never resends Undo |
+| Not-applied / conflict | Authoritative `not_applied` uses exact `“{title}” wasn’t undone. Nothing changed.` and exposes `Retry`; rejected/conflict uses the narrow authoritative ineligible reason, otherwise exact `This item or its source changed. Undo is unavailable.`, and never exposes Retry |
+| Retry / success | `Retry` exists only for authoritative `not_applied`, reuses the logical operation ID, and returns to pending. `applied|already_applied` announces exact `Restored “{source}”.` once, removes only the committed result, and never focuses/scrolls the restored source |
+| Focus | Pending retains the stable Undo slot; unknown focuses `Check again`; reconcile retains it; not-applied focuses `Retry`; conflict focuses the unavailable Undo slot. Ordinary success focuses next card, then previous card, then column heading; Task 158 alone owns search-result focus composition |
+| Lifetime / accessibility | Marker/ordinary rail follow mounted-page provenance through Scratch/path/theme/light-dark changes and end on Inbox route exit/reload; operation states persist to their authoritative result/action. One visible polite atomic rail announces each changed sentence once, never per rerender; text plus static non-color mark carries meaning |
+| Motion | Marker, rail/action/state changes, result removal, and focus handoff are immediate/static; no fade, slide, scale, skeleton, shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No selection/navigation/search eligibility change, optimistic removal, cascade/best-effort restoration, current main-card menu, generic disabled control, common-card redesign, product implementation in Task 117, Task 118 start, or theme-ID behavior/copy branch |
+
+The marker/action/rail map through existing theme families without product JSX
+theme branching or unsupported literal values:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Static sky dot and technical `NEW`; ruled rail and canonical separate Undo |
+| Tiny Desk | Static yellow paper edge/amber pin; stationery note rail and brown Undo |
+| Neumorphism | Static violet-blue dot/`NEW`; inset reason trough and raised Undo without pulse |
+| Claymorphism | Static sky badge; sculpted reason ribbon and tactile rose Undo |
+| Origami | Static folded-corner marker; seam-attached rail and rose Undo with no animated fold |
+| Terminal | Textual `[new]`; variable-driven `[UNDO]` and one-line status record with no blink/glow loop |
+| Retro Mac | Static 1-bit `[NEW]`; hard Undo and in-item system line preserving selected inversion |
+| Graphite | Restrained black `NEW`; strengthened-rule caption and labeled Undo with precise focus |
+
+### Existing-surface state gaps — 2 open Decision prerequisites
 
 The shared role/state envelope above is the maximum current authority for
 these gaps. It authorizes semantic state binding, existing supported tokens,
@@ -942,7 +987,6 @@ dependent exact realization.
 
 | ID | Unresolved boundary; no implied realization | Future owner | Resume condition |
 |---|---|---|---|
-| `VQ-10` | No selected+new overlap, unavailable reason, dependency-reenabled, undoing, failure, Undo/retry/conflict treatment, copy, placement, timing, or per-theme realization is chosen; repeated motion is forbidden. | User Decision → Newly Placed/Undo recipe/token owner and rollback phase | Receipt resolves the dependent marker/reliability UI |
 | `VQ-11` | No completion blocker or eligibility-withdrawal copy, effect, placement, layout, timing, or per-theme realization is chosen. | User Decision → Context/Breakdown/Archive recipe/token owner and completion phase | Receipt resolves the dependent blocker UI |
 | `VQ-12` | No Archive pending, reconcile, failure, recovery, check-again, Retry/Cancel visual, copy, control/status placement, layout, timing, or per-theme realization is chosen. | User Decision → Archive recipe/token owner and reliability phase | Receipt resolves the dependent Archive variants |
 
@@ -1221,9 +1265,9 @@ not automatic fallbacks for another `VQ-*` state or missing replacement
 surface.
 
 Repeated pulse, blink, ping, bounce, spin, and flicker are excluded from the
-Inbox/Triage target. Newly Placed may use only recipe-supported static or
-one-shot candidates after its remaining `VQ-10` decisions are approved; no
-repeating motion token is adopted. `DP-VQ02` owns the exact Add/Unstage
+Inbox/Triage target. Approved `DP-VQ10` Newly Placed and Undo uses immediate
+static marker/rail/action changes with reduced-motion-identical geometry and
+lifetime; no repeating or one-shot animation token is adopted. `DP-VQ02` owns the exact Add/Unstage
 `success` appearance, trigger, timing, placement, interruption, and theme
 mapping above; no other success or reliability surface inherits it.
 
@@ -1583,7 +1627,7 @@ role tables above.
 | `R-STAGING` | [Staging](recipes/inbox-triage-staging-visual-recipe.md) | Node/Bit wells and shapes, base state grammar, transient unstage target |
 | `R-EXPLORER` | [Grid Explorer](recipes/inbox-triage-grid-explorer-visual-recipe.md) | Base chrome/columns/full labels/rows/target grammar plus separately receipt-owned `DP-VQ07` search roles |
 | `R-PLACEMENT` | [Placement affordances](recipes/inbox-triage-placement-affordances-visual-recipe.md) | Direct/staged base shells, target-column affordance, and full-target warning |
-| `R-NEWLY` | [Newly Placed and Undo](recipes/inbox-triage-newly-placed-undo-visual-recipe.md) | Actual-card marker and separate Undo base; static/one-shot candidates only |
+| `R-NEWLY` | [Newly Placed and Undo](recipes/inbox-triage-newly-placed-undo-visual-recipe.md) | Actual-card marker, separate Undo, and receipt-owned `DP-VQ10` always-visible reason/reliability rail; static treatment only |
 | `R-ARCHIVE` | [Archive and completion](recipes/inbox-triage-archive-completion-visual-recipe.md) | Breakdown-scoped base scrim/card, complete Context, reopen, Archive/Cancel |
 
 The old [Batch 2 Inbox/Triage recipe](recipes/inbox-triage-batch2-visual-recipe.md)

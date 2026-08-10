@@ -252,7 +252,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Choice A dedicated fixed-input/state-line/flat-result replacement body accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json`; Task 151 and search-only Task 158 are released subject to their own prerequisites. |
 | `DP-VQ08` | `VQ-08` | 115 | 153 only | Choice A fixed reliability rail accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`; Task 153 only is released. |
 | `DP-VQ09` | `VQ-09` | 116 | 154 only | Choice A compact Result Title/direct-limit steps accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`; Task 154 only is released. |
-| `DP-VQ10` | `VQ-10` | 117 | 157 only | Accepted receipt defines Newly/Undo overlap, reasons, and reliability. |
+| `DP-VQ10` | `VQ-10` | 117 | 157 only | Choice A card-attached always-visible Newly/Undo status rail selected on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_117.dp-vq10.json`; Task 157 remains unreleased until Task 117 checkpoint acceptance. |
 | `DP-VQ11` | `VQ-11` | 118 | 160 only | Accepted receipt defines blocker/withdrawal realization. |
 | `DP-VQ12` | `VQ-12` | 119 | 162 only | Accepted receipt defines Archive reliability/recovery realization. |
 
@@ -919,15 +919,28 @@ It does not start Task 117, change product code, publish, or close the phase.
 
 ### Task 117: [ ] Record `DP-VQ10` Newly/Undo decision
 
-**Files and actions:** modify `docs/recipes/inbox-triage-newly-placed-undo-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to specify selected+newly overlap, available/ineligible/re-enabled Undo, accessible reasons, undoing/failure/reconcile/retry/conflict, placement, copy, timing, reduced motion, and eight-theme mappings; change no common-card design or code.
+**Files and actions:** modify `docs/recipes/inbox-triage-newly-placed-undo-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to record Choice A: retain the actual common Node/Bit card and add a static Newly marker, separate stable Undo action, and card-attached always-visible status rail; specify selected+newly overlap, available/ineligible/re-enabled Undo, accessible exact reasons, undoing/failure/reconcile/retry/conflict, placement, copy, timing, focus, static reduced-motion parity, and eight-theme mappings; change no common-card design or code.
 
 **Dependencies:** user decision only; no code prerequisite and no other DP task.
 
-**Decision owner:** User. **Receipt:** `DP-VQ10`. **Exact edge:** Task 157 only. **Resume:** accepted complete Newly/Undo realization.
+**Decision owner:** User. **Receipt:** `DP-VQ10`. **Selected decision:** `DP-VQ10=A` on 2026-08-11. **Exact edge:** Task 157 only after Task 117 checkpoint acceptance. **Resume:** explicit Task 117 user acceptance of the recorded complete card-attached rail realization.
 
 **Authority / flows:** `VQ-10`, `UF-24`, `UF-25`, `NEG-11`, `NEG-21`, `D-CARD`.
 
 **Recipe:** [`Newly placed and Undo`](recipes/inbox-triage-newly-placed-undo-visual-recipe.md).
+
+**Selected realization:** keep existing selection and common-card internals
+unchanged; add a static theme-native Newly marker at the actual card, one
+separate trailing Undo slot, and one compact always-visible status rail directly
+below that card in the same Explorer item wrapper. The rail shows exact
+available, dependency/result/placement/operation/Edit-blocked, re-enabled,
+pending, unknown/reconciling, not-applied, and conflict copy without hover or a
+late-error action. `Check again` reconciles without resend; `Retry` exists only
+after authoritative `not_applied`; success announces source restoration and
+removes the result only after commit. Focus remains in the card context, marker
+provenance survives ineligibility, and every theme uses static source-backed
+marker/control grammar with no pulse, common-card redesign, adjacent fallback,
+or theme-ID branch.
 
 **Observable acceptance:** marker, selection, and eligibility remain distinct; reasons are non-hover-only; no repeated motion or card redesign is required.
 
