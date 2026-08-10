@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–119 accepted; the next Phase 24 lifecycle action awaits a separate user decision
+> State: Tasks 106–119 accepted; end-phase audit complete and Final Close pending
 
 ## Status Legend
 
@@ -467,3 +467,77 @@ is `d5770d6987c8b556630e9a0b818872fa7bb2d186`. It must not use the live
 `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json`, choose a
 `DP-VQ06-POOL` decision, write canonical decision authority, or begin Task 112
 before Task 111's separate user-owned gates permit those actions.
+
+## Phase 24 Close Audit
+
+### Identity, ownership, and acceptance
+
+- **Pinned pre-close SHA:**
+  `a7bb848e30be579c9ae49ef06cb27bb9d4061e3d` on
+  `phase-24/user-owned-decision-prerequisites`. This merge commit incorporates
+  the authoritative integration `main` at
+  `f76c68b79846ed1c1f19cc9972d488b60add3d19` while preserving the accepted
+  Phase 24 history rooted at approved base
+  `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`.
+- Tasks 106–119 each have a user-owned `[x]`, a durable Decision receipt, an
+  implementation/evidence boundary, and explicit checkpoint acceptance.
+  Tasks 127–165 remain open; Task 162 is released by `DP-VQ12` but is not
+  started.
+- Relative to merged integration `main`, the pre-close diff contains only the
+  approved Phase 24 decision recipes, `docs/DESIGN_TOKENS.md`, execution-plan
+  authority, Gate C/Task receipts, and this ledger. The integration-side Phase
+  25 work is already merged authority and remains disjoint. No product source,
+  future implementation, prototype, or unrelated user work is mixed.
+- Rendered evidence is not applicable to this decision-only phase. The accepted
+  checkpoints approve source declarations, exact copy/state/focus/motion/theme
+  contracts, and release edges; later realization tasks own production and
+  running-app evidence.
+
+### Terminal evidence and gate reuse
+
+The pre-close `src` tree, integration `main` `src` tree, and Phase 25 Task 126
+full-gate `src` tree are identical at
+`483c7756667335b502105dfa4a712b128a7a117b`. The latest relevant Phase 25 full
+gate is therefore reusable, and test/lint/typecheck/build were not rerun.
+
+| Command | Exit | Result |
+| --- | ---: | --- |
+| `pnpm test` | 0 | Reused Phase 25 gate: 87 test files / 679 tests passed |
+| `pnpm lint` | 0 | Reused Phase 25 gate: 0 errors; 11 pre-existing warnings |
+| `pnpm typecheck` | 0 | Reused Phase 25 gate: TypeScript check passed |
+| `pnpm build` | 0 | Reused Phase 25 gate: Next.js 16.2.1 production build passed; seven routes generated |
+| `git diff --check` | 0 | Rechecked at pre-close and detached close preview; no whitespace errors |
+
+### Architecture conformance
+
+| Governing rule | Affected evidence | Tier | Disposition |
+| --- | --- | --- | --- |
+| Decision-prerequisite no-fallback | All fourteen exact DP receipts are accepted and release only their declared realization edges; no prototype, adjacent surface, or generic fallback was adopted. | Blocking | Pass |
+| Source-only versus rendered evidence | Recipes and token records are explicitly source authority; no rendered-fidelity claim or production-completion claim is made by Phase 24. | Blocking | Pass |
+| Semantic role/state and theme mapping | Every accepted decision records one shared semantic surface/state contract and exact eight-theme role-family mapping without theme-ID product branching. | Blocking | Pass |
+| Centralized copy and deferral boundary | Exact English copy is recorded in the declared recipe/token authority; `D-CARD`, `D-LOCALE`, `D-LENS`, `D-KEYBOARD`, and `D-TEXT` remain outside this phase. | Blocking | Pass |
+| Future implementation ownership | Phase 24 changes no `src` path and starts no realization task; the plan preserves all headless, UI, search, session, Archive, and conformance owners in Tasks 127–165. | Blocking | Pass |
+| File organization | Decision receipts, recipes, plan authority, and the phase ledger remain in their adapter- and plan-declared locations. | Advisory | Pass |
+| Local-first presentation | No production presentation or runtime behavior changed in this decision-only phase. | Advisory | Not applicable |
+
+Blocking violations: **0**. Advisory violations: **0**.
+
+### Issue, canonical-impact, and handoff reconciliation
+
+- No `Open`, `In Progress`, or `Awaiting User Decision` issue remains. Every
+  task records `issue_or_deviation: None` in its durable receipt.
+- All fourteen canonical-impact records are `Reflected` in their declared
+  recipe/token/execution paths. There is no unresolved `Tagged` item,
+  canonical amendment, Phase 24 deferral, or central deferred-index update.
+- `docs/execution-plan/archive/phase-24.md` records completion-time truth, the
+  Phase Index marks Phase 24 Completed and links the archive, and Phase Notes
+  are not used by adapter policy.
+- No new cross-phase reusable learning was added: the accepted decision
+  outcomes already live in their canonical owners and duplicating them in the
+  learnings file would create a second source of truth.
+
+**Next legal action:** present one exact Final Close packet pinning the new
+detached candidate A, its diff hash, a new whole-file JSON receipt payload and
+payload hash, publication metadata, merge method, checks policy, integration
+sync, and guarded cleanup. This audit is not the receipt and grants no push,
+PR, merge, integration sync, cleanup, or Task 162 authority.

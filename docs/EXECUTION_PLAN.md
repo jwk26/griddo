@@ -7,15 +7,14 @@
 > This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
 > its supersession rules. It accepts no phase, task, implementation, branch,
 > publication, or completion state.
-> **Task markers:** Tasks 101–126 were explicitly accepted. Phases 23 and 25
-> are archived; Phase 24 Tasks 106–119 await Final Close without a Phase 24
-> completion/archive state. Tasks 127–165 remain open (`[ ]`) and may be
+> **Task markers:** Tasks 101–126 were explicitly accepted. Phases 23–25 are
+> completed and archived. Tasks 127–165 remain open (`[ ]`) and may be
 > checked only after their own observable acceptance and verification evidence
 > is explicitly accepted by the user.
-> **Execution lifecycle:** Phases 23 and 25 are complete. Phase 24 Tasks
-> 106–119 are accepted and Phase 24 Final Close is pending; Phase 26 requires
-> its own approved kickoff. This planning receipt alone does not authorize
-> later implementation, Git lifecycle work, or publication.
+> **Execution lifecycle:** Phases 23–25 are complete. The six open phases are
+> Phases 26–31 with 39 open Tasks 127–165; Phase 26 requires its own approved
+> kickoff. This planning receipt alone does not authorize later implementation,
+> Git lifecycle work, or publication.
 
 ## Goal
 
@@ -92,12 +91,12 @@ The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were exclu
 | Area | Current status | Smallest blocker / next condition |
 |---|---|---|
 | Document approval | `APPROVED` | The approval receipt above remains the planning authority. |
-| Execution lifecycle | Phases 23 and 25 complete; Phase 24 Final Close pending | Phase 24 requires a fresh exact Final Close packet; every later phase still requires its own approved lifecycle gate and exact branch/worktree authority. |
+| Execution lifecycle | Phases 23–25 complete and archived | Six open phases (26–31) remain; each requires its own approved lifecycle gate and exact branch/worktree authority. |
 | Data foundations | `COMPLETED` | Tasks 101–105A and authoritative command Tasks 120–126 are accepted and recorded in their phase archives. |
-| Decision prerequisites | `ACCEPTED_FINAL_CLOSE_PENDING` | Tasks 106–119 and all fourteen DP receipts are accepted and reflected; Phase 24 is not completed or archived before Final Close. |
+| Decision prerequisites | `COMPLETED` | Tasks 106–119 and all fourteen DP receipts are accepted, reflected, and recorded in the Phase 24 archive. |
 | Headless/base UI | Dependency-ready after document and lifecycle gates | Tasks 127–137, 139, 142, 145–146, 149, 152, 155–156, 159, and 161 follow only their named data/headless prerequisites. |
 | VQ realization | `BLOCKED_PENDING_USER_DECISIONS` | Each realization task resumes only from its exact DP receipt. |
-| Full close | Not ready | Tasks 127–164 complete, then Task 165 passes on top of the archived Phase 23/25 foundations and accepted Phase 24 DP receipts. |
+| Full close | Not ready | Tasks 127–164 complete, then Task 165 passes on top of the archived Phase 23–25 foundations. |
 
 ## Dependency Graph
 
@@ -132,7 +131,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | Phase | Status | Scope | Tasks | Dependency-aware readiness |
 |---|---|---|---|---|
 | Phase 23 | Completed | [Model, v4 migration, revisions, real transaction harness, aggregate deletion, and Scratch-promotion guard](execution-plan/archive/phase-23.md) | 101–105 + 105A | Accepted and archived; downstream tasks consume this completed foundation. |
-| Phase 24 | Final Close pending | Fourteen user-owned DP receipts covering twelve VQs | 106–119 | All Tasks and receipts are accepted; no Phase 24 completion/archive state exists before a fresh exact Final Close approval. |
+| Phase 24 | Completed | [Fourteen user-owned DP receipts covering twelve VQs](execution-plan/archive/phase-24.md) | 106–119 | Accepted and archived; each later realization consumes only its exact released DP edge. |
 | Phase 25 | Completed | [Eleven authoritative commands plus Archive recovery](execution-plan/archive/phase-25.md) | 120–126 | Accepted and archived; downstream tasks consume the completed command foundation by their exact dependencies. |
 | Phase 26 | Proposed | Lifetime/copy/theme foundations and source-backed base surfaces | 127–135 | Individual data dependencies only. |
 | Phase 27 | Proposed | Breakdown, Pool, and Staging headless adapters and exact realizations | 136–148 | Headless tasks remain independent from their VQ presentation slices. |
@@ -441,7 +440,12 @@ code commit; `fix(db): reject Scratch bit promotion`.
 
 ---
 
-## Phase 24 — User-Owned Decision Prerequisites
+## Phase 24 — User-Owned Decision Prerequisites (Completed)
+
+> **Archived:** completion-time truth is recorded in
+> [`docs/execution-plan/archive/phase-24.md`](execution-plan/archive/phase-24.md).
+> The accepted task detail remains inline for receipt continuity and is
+> historical, not an active task surface.
 
 Tasks 106–119 are non-code Decision tasks. They have no dependencies on one another; their shared document edits are serialized by the `decision-docs` mutex without creating a semantic VQ dependency.
 
@@ -1031,6 +1035,29 @@ publish, or close the phase.
 **Verification:** `git diff --check`; verify reload/unknown/terminal distinctions and only Task 162 release.
 
 **Commit contract:** the three named documents and `DP-VQ12` receipt only; `docs(triage): record DP-VQ12`.
+
+#### Phase 24 Close Notes
+
+- Tasks 106–119 and all fourteen Decision-prerequisite receipts were explicitly
+  accepted. Each Choice A contract is reflected in its declared recipe,
+  `docs/DESIGN_TOKENS.md`, and this execution authority; no unresolved
+  `Tagged` canonical impact remains.
+- Phase 24 changed decision authority and durable receipts only. It changed no
+  product `src` path, test, dependency, route, component, hook, store, or
+  repository command, and it does not start any released realization task.
+- The merged pre-close `src` tree equals both integration `main` and the latest
+  Phase 25 full-gate tree at
+  `483c7756667335b502105dfa4a712b128a7a117b`. The valid Phase 25 gate (87 test
+  files / 679 tests, lint with 0 errors and 11 pre-existing warnings,
+  typecheck, and seven-route build) was therefore reused without rerunning
+  test/lint/typecheck/build.
+- Source declarations are not rendered evidence. The accepted Task 106–119
+  checkpoints approve the exact source-only decisions; Tasks 138, 140–141,
+  143–144, 147–148, 150–151, 153–154, 157, 160, and 162 retain implementation
+  and running-app verification ownership.
+
+**Full issue log:**
+[`docs/issues/Issues_Phase_24.md`](issues/Issues_Phase_24.md)
 
 ---
 
@@ -1897,10 +1924,8 @@ This register is complete for every exact path declared by two or more tasks. Ev
 - **Next planned phase:** Phase 34. Phases 32 and 33 are reserved and receive no tasks.
 - **Next planned task:** Task 166.
 - Active graph count: 6 open implementation phases (26–31), 39 open tasks
-  (127–165), 1 Final-Close-pending phase (Phase 24 with accepted Tasks
-  106–119), 2 completed archives (Phase 23 with Tasks 101–105A and Phase 25
-  with Tasks 120–126), and 2 reserved phase numbers (32–33).
+  (127–165), 3 completed archives (Phases 23–25 with accepted Tasks 101–126),
+  and 2 reserved phase numbers (32–33).
 - The document is **user-approved for planning authority** under the receipt at
-  the top of this file; Tasks 101–126 are accepted, Phases 23 and 25 are
-  archived, Phase 24 Final Close is pending without completion/archive state,
+  the top of this file; Tasks 101–126 are accepted, Phases 23–25 are archived,
   and Tasks 127–165 remain open.
