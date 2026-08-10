@@ -1,0 +1,141 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq01",
+  "decision_receipt_id": "DP-VQ01",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 106,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "durable_start_commit": "ade7c4f76a32c424fac0e599f376d94bc12b8159",
+  "user_decision": {
+    "date": "2026-08-09",
+    "statement": "DP-VQ01=A",
+    "recorded_scope": "DP-VQ01=A only",
+    "choice": "A",
+    "label": "central blocking external-removal transition panel"
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-scratch-pool-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "surface": {
+      "kind": "dedicated-central-blocking-alertdialog",
+      "workspace": "Inbox workspace is inert behind a scrim; stale Scratch remains non-interactive context",
+      "width": "min(35rem, calc(100% - 2rem))",
+      "max_height": "calc(100% - 2rem)",
+      "scroll_owner": "draft list only",
+      "content_order": [
+        "lifecycle title",
+        "destination and countdown message",
+        "4px linear countdown track",
+        "draft-copy region when present",
+        "action row"
+      ],
+      "icons": "none; exact text, progress geometry, and focus treatment are the non-color cues"
+    },
+    "copy": {
+      "archive_title": "This Scratch was archived elsewhere",
+      "delete_title": "This Scratch was deleted elsewhere",
+      "running_destination": "Moving to “{Scratch title}” in {seconds} seconds.",
+      "running_search_empty": "No matching Scratch is visible. Clearing the selection in {seconds} seconds.",
+      "running_inbox_empty": "No active Scratches remain. Opening the empty Inbox in {seconds} seconds.",
+      "paused_destination": "Movement paused. Destination: “{Scratch title}”.",
+      "paused_search_empty": "Movement paused. No matching Scratch is visible; the selection will clear.",
+      "paused_inbox_empty": "Movement paused. No active Scratches remain; the empty Inbox will open.",
+      "draft_heading": "Copy drafts before moving",
+      "draft_explanation": "These drafts exist only on this page and will not move with the Scratch.",
+      "add_draft_label": "New Breakdown draft",
+      "scratch_title_draft_label": "Scratch title draft",
+      "row_draft_label": "Breakdown draft",
+      "copy_action": "Copy full draft",
+      "copy_success": "Copied",
+      "move_now": "Move now",
+      "pause": "Pause",
+      "resume": "Resume"
+    },
+    "timing_and_state": {
+      "duration_ms": 5000,
+      "easing": "linear",
+      "visible_seconds": "5 through 1",
+      "announcement": "announce lifecycle, timing, and destination once on entry and a changed destination once; never announce each tick",
+      "pause": "freeze exact remaining time and progress width",
+      "resume": "continue from the frozen remainder",
+      "running_destination_change": "revalidate and restart at 5000ms",
+      "paused_destination_change": "update message and remain paused",
+      "dirty_draft_entry": "open paused",
+      "terminal_validation": "revalidate lifecycle and destination immediately before automatic or explicit movement"
+    },
+    "draft_copy": {
+      "sources": [
+        "non-empty Add draft",
+        "dirty Scratch title draft",
+        "each dirty Breakdown row draft"
+      ],
+      "presentation": "one source-labeled card per untruncated selectable full draft",
+      "success_effect": "replace only the triggering card action with Copied",
+      "copy_rejected": "keep Copy full draft, preserve focus, emit no false success, and leave the full selectable text available",
+      "forbidden_effects": [
+        "move focus",
+        "resume countdown",
+        "persist draft",
+        "move draft",
+        "clear draft"
+      ]
+    },
+    "focus": {
+      "running_initial": "Pause",
+      "dirty_initial": "first Copy full draft",
+      "containment": "focus remains within the alertdialog; Escape does not dismiss",
+      "copy_success": "preserve triggering Copy full draft button focus",
+      "archive_restore": "restore the pre-transition target when it survives, otherwise Scratch title Edit",
+      "destination": "destination Scratch Context heading",
+      "search_empty": "Pool results status",
+      "inbox_empty": "Inbox empty-state heading"
+    },
+    "theme_mapping": {
+      "griddo": "semantic card/border/primary/muted/text/focus roles",
+      "tiny-desk": "wood frame, paper notice, ruled drafts, ruled-line countdown, stationery actions",
+      "neumorphism": "named inset panel/track and raised draft/action shadow roles",
+      "claymorphism": "sculpted panel, inset progress groove, raised actions, shape-led draft separation",
+      "origami": "folded paper panel, seam track, faceted draft sheets, asymmetric controls",
+      "terminal": "variable-driven editor frame, block progress, framed records, text command controls",
+      "retro-mac": "striped title bar, 1-bit double frame, hard segmented progress, pane drafts, square controls",
+      "graphite": "editorial notice, fine-rule track, ruled draft blocks, restrained monochrome actions"
+    },
+    "restore": "authoritative archive restore alone cancels the transition and retains selection plus page-memory drafts; hard delete has no restore path",
+    "prohibited_fallbacks": [
+      "generic Dialog or AlertDialog",
+      "Archive UI",
+      "Scratch Pool chrome",
+      "adjacent cards or status surfaces",
+      "prototype realization"
+    ]
+  },
+  "exact_release": {
+    "tasks": [
+      141
+    ],
+    "consumption_condition": "satisfied by Task 106 checkpoint acceptance on 2026-08-09",
+    "all_other_tasks": "unreleased"
+  },
+  "checkpoint_acceptance": {
+    "date": "2026-08-09",
+    "statement": "Task 106 / DP-VQ01=A checkpoint를 수락합니다.",
+    "accepted_implementation_commit": "bf749bee95bf03153c098188a23e031e2c21088b",
+    "accepted_evidence_commit": "7c982eca27a20ddee05db1ce85633f80232e4aa3"
+  },
+  "task_state": "accepted",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "task-107"
+}

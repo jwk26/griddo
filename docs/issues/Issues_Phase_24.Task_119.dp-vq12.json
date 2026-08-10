@@ -1,0 +1,141 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq12",
+  "decision_receipt_id": "DP-VQ12",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 119,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "continuation_entrypoint": "9c0bae2d8b928564ef03637e899e3bf9d62637c7",
+  "continuation_kickoff_commit": "0861b071d58cba03d1e698fae12155a589709736",
+  "predecessor_acceptance_commit": "54328f4a477e60d07e2b8e29cfbab4b7ad45f634",
+  "durable_start_commit": "c56773472ceaf3830e393b8d34988820ea2fca5d",
+  "user_decision": {
+    "date": "2026-08-11",
+    "statement": "DP‑VQ12=A",
+    "recorded_scope": "DP-VQ12=A only",
+    "choice": "A",
+    "label": "Stable single-card Archive reliability and recovery composition"
+  },
+  "checkpoint_acceptance": {
+    "date": "2026-08-11",
+    "statement": "Task 119 / DP‑VQ12=A checkpoint를 수락합니다.",
+    "acceptance_basis": "b2d4fc06343770d40218d3cb8c78d089d8223c73",
+    "accepted_task": 119,
+    "accepted_decision": "DP-VQ12=A",
+    "accepted_contract": [
+      "one stable Breakdown-scoped Archive card and original-position current-action locus through pending, unknown, reconciliation, terminal failure, forced-reload recovery, and authoritative success",
+      "exact state copy, read-only Check again without resend, authoritative not_applied-only Retry, terminal-only Cancel, and canonical visible-order/null/empty success handoff",
+      "stable focus, polite atomic accessibility, descriptor-bound lifetime, immediate static state changes, and identical reduced-motion behavior",
+      "eight-theme role mapping without a second rail/panel, toast/dialog/global spinner, blind resend, automatic Retry, in-flight Cancel, timer, repeated motion, extra persistence, or theme-ID product logic",
+      "Task 162-only release with Task 162 and Phase 24 close preserved as unstarted"
+    ],
+    "lifecycle_boundary": "Task 119 is accepted; Task 162 is released but not started, Phase 24 close is not started, and the user will choose the next Phase 24 lifecycle action separately"
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-archive-completion-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "composition": {
+      "surface": "retain one Breakdown-scoped archive-card in the existing completion locus from activation through terminal classification",
+      "state_change": "change only the static non-color mark, exact status sentence, and one current-action slot in the original Archive action position",
+      "prohibited": [
+        "second status rail",
+        "replacement recovery panel",
+        "toast, dialog, page-global banner, or page-global spinner",
+        "blind resend, automatic Retry, or in-flight Cancel",
+        "optimistic Pool removal or inferred success",
+        "timer, auto-dismissal, ellipsis animation, or repeated motion",
+        "persistence beyond the approved current-tab descriptor",
+        "theme-ID product behavior or copy branch"
+      ]
+    },
+    "copy": {
+      "pending": "Archiving this Scratch…",
+      "unknown": "We couldn’t confirm whether this Scratch was archived.",
+      "reconciling": "Checking whether this Scratch was archived…",
+      "forced_reload": "Checking the Archive request from before this reload…",
+      "not_applied": "This Scratch was not archived.",
+      "storage_failure": "Archive couldn’t start because this tab couldn’t keep its recovery details.",
+      "rejected": "Archive stopped because this Scratch is no longer ready.",
+      "conflict": "Archive couldn’t finish because this Scratch changed while the result was being checked.",
+      "success": "Scratch archived.",
+      "check_action": "Check again",
+      "retry_action": "Retry",
+      "cancel_action": "Cancel"
+    },
+    "state_mapping": {
+      "pending": "retain selected Scratch/card and focusable aria-disabled current-action position; no Check again, Retry, Cancel, resend, or optimistic change",
+      "unknown": "retain the same descriptor/operation and expose read-only Check again without resend",
+      "reconciling": "retain the Check again position as a focusable inactive current-action target while classifying the same operation",
+      "not_applied": "focus Retry, expose Retry plus Cancel, and let Retry alone reuse the logical operation identity and return to pending",
+      "storage_failure": "no command ran; focus Cancel and return to current completion/reopen truth, where a later explicit Archive is a new attempt",
+      "rejected_or_conflict": "show current authority where available, focus Cancel, and expose no Retry, overwrite, compensation, inferred success, or stale completion action",
+      "applied_or_already_applied": "announce success once, remove the card with the selected Scratch, and perform the canonical visible-order/null/empty handoff without a lingering success card"
+    },
+    "reload_recovery": {
+      "entry": "validate the current-tab descriptor and reconcile before initial Inbox projection, focusing the recovery heading and never flashing ordinary completion",
+      "applied": "use the same terminal success handoff",
+      "not_applied": "show the exact not-applied card over current complete/reopen truth with Retry and Cancel",
+      "unknown": "show the exact unknown card with Check again",
+      "conflict": "show the exact non-retriable conflict card with Cancel",
+      "invalid_descriptor": "Task 161/126 discards invalid, foreign, or stale descriptors without a DP-VQ12 surface or mutation"
+    },
+    "cancel": {
+      "pre_dispatch": "retain Task 159 ordinary Cancel semantics before mutation",
+      "in_flight": "pending, unknown, and reconciling expose no Cancel or Escape dismissal",
+      "terminal": "dismiss only the terminal result and return to current completion/reopen or working truth; never abort, roll back, compensate, or hide uncertainty"
+    },
+    "focus_accessibility_lifetime": {
+      "focus": "activation retains the stable current-action slot; unknown focuses Check again; reconciling retains it; not-applied focuses Retry; storage failure/rejected/conflict focuses Cancel; reload focuses the recovery heading",
+      "status": "one visible polite atomic status announces each changed exact sentence once, never per rerender; static text and mark carry meaning without color or motion",
+      "lifetime": "nonterminal state persists until the same descriptor is authoritatively classified; no timer, theme/mode reset, Scratch-switch escape, route-intent escape, or conflicting-action replay"
+    },
+    "motion": {
+      "ordinary": "card content, action, terminal removal, and focus changes are immediate and static",
+      "prohibited": "fade, slide, scale, blur transition, skeleton, shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, ellipsis animation, and layout-transition animation",
+      "reduced_motion": "identical geometry, copy, controls, focus, announcement, timing, and lifetime"
+    },
+    "theme_mapping": {
+      "griddo": "one ruled technical Archive operation card with static state glyph and canonical current-action slot",
+      "tiny-desk": "one pinned filing note whose stamp line and single action row change in place",
+      "neumorphism": "one raised Archive card with inset static status line and stable action capsule position",
+      "claymorphism": "one shape-preserving clay Archive object with static status inset and no bounce",
+      "origami": "one seam-bound Archive sheet whose printed status and action change without a new fold or panel",
+      "terminal": "one variable-driven [archive:*] system frame and current command line with no blink, spinner, or glow loop",
+      "retro-mac": "one hard 1-bit in-section Archive alert whose message and default action change in the same window",
+      "graphite": "one restrained editorial Archive card with fixed rule, static mark, and stable action row"
+    },
+    "implementation_boundary": {
+      "realization_task": 162,
+      "additional_prerequisites": [
+        125,
+        126,
+        159,
+        161
+      ],
+      "excludes": "product implementation in Task 119, SCHEMA Archive transaction/result/reconciliation changes, Task 126 or Task 161 behavior changes, new persistence, starting Task 162, Phase 24 close, adjacent fallback, and theme-ID logic"
+    }
+  },
+  "exact_release": {
+    "tasks": [
+      162
+    ],
+    "consumption_condition": "satisfied by explicit Task 119 checkpoint acceptance on 2026-08-11",
+    "all_other_tasks": "Task 162 is released but not started by this receipt; Phase 24 close remains unstarted and every other lifecycle edge retains its prior state"
+  },
+  "task_state": "accepted",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "phase-24-next-lifecycle-decision"
+}

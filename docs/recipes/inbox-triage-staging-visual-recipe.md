@@ -21,8 +21,117 @@
 
 ## Decision-Prerequisite Boundary
 
-- `VQ-06` — remote-arrival indicator, orphan/stale alerts, pending/failure details, navigation status, and related section-local statuses may use only the shared semantic-state envelope: state attributes, existing semantic/theme tokens, visible text/icon/non-color cues, and the selected focus/accessibility contract. Exact copy, count placement, alert placement/layout, effect, duration, and per-theme values are a **user-owned non-code Decision prerequisite**. Future owner: Staging recipe/token owner and durable-candidate/reliability phase; resume exact realization only after user receipt.
+- Staging subset of `VQ-06` — **resolved by `DP-VQ06-STAGING` on 2026-08-10.** The user selected Choice A, the candidate-attached operation status, subsection-local arrival indicator, and single Staging-local alert specified below. Task 147 is its only realization edge. Pool remains governed by `DP-VQ06-POOL`; Explorer retains its separate unresolved decision and supplies no fallback authority here.
 - `D-CARD` — common Node/Bit eight-theme card redesign and later Staging reuse are deferred. Current recipe covers Staging shapes without preselecting that future redesign.
+
+## `DP-VQ06-STAGING` Approved Attached Status Family
+
+`DP-VQ06-STAGING` chooses three direct Staging-local anchors: operation status
+inside the affected candidate shape, remote-arrival count/action beside the
+owning subsection heading, and one terminal/integrity alert directly below the
+visible `Staging` title. It introduces no global rail, toast, dialog, event
+history, permanent Unstage/Retry button, or Pool/Explorer presentation.
+
+### Placement And State Ownership
+
+- A Stage pending projection uses the candidate's final Node-card or Bit-row
+  shape in the destination subsection and reserves one fixed status line inside
+  that candidate. Unstage keeps the durable candidate in its current position
+  and uses the same attached line. Pending, unknown, and reconciling never
+  replace the subsection, resize the Staging panel, or become draggable,
+  unstageable, or placeable.
+- `Nodes` and `Bits` keep their canonical base counts: zero or one renders the
+  bare label and two or more renders the total prefix (`2 Nodes`, `3 Bits`). A
+  separate actionable `1 new` / `{count} new` indicator sits beside only the
+  affected subsection heading and never changes the durable total.
+- The terminal/integrity alert is one static band immediately below the
+  `Staging` title and above both subsection wells. A later failure replaces the
+  earlier alert; no stack, queue, history, or rotating carousel is created.
+- Neutral/invalid drag reasons attach to the currently affected Staging well or
+  target only while that target is active. They never replace `Nodes`, `Bits`,
+  Breakdown, or Explorer labels and clear on target exit or drag end.
+
+### Exact Copy And Actions
+
+| State | Exact visible copy | Action |
+|---|---|---|
+| Stage pending | `Staging “{title}”…` | None |
+| Unstage pending | `Returning “{title}” to Breakdown…` | None |
+| Stage unknown | `We couldn’t confirm whether “{title}” was staged.` | None; reconciliation begins before another drag |
+| Stage reconciling | `Checking whether “{title}” was staged…` | None |
+| Unstage unknown | `We couldn’t confirm whether “{title}” was returned.` | None; reconciliation begins before another drag |
+| Unstage reconciling | `Checking whether “{title}” was returned…` | None |
+| Stage `not_applied` | `“{title}” was not staged. Drag it again to retry.` | Alert `X`; retry is a new drag |
+| Stage rejected | `“{title}” can’t be staged from its current source.` | Alert `X` |
+| Stage conflict | `“{title}” changed elsewhere and was not staged.` | Alert `X` |
+| Unstage `not_applied` | `“{title}” is still staged. Drag it back to Breakdown to retry.` | Alert `X`; retry is a new drag |
+| Unstage rejected | `“{title}” can’t be returned from its current state.` | Alert `X` |
+| Unstage conflict | `“{title}” changed elsewhere and remains staged.` | Alert `X` |
+| Unresolved source | `Checking a staged {Node|Bit} source…` | None; this type-shaped integrity status is not a normal draggable candidate |
+| Confirmed orphan cleanup | `A staged {Node|Bit} was removed because its source no longer exists.` | Alert `X`; no unavailable title snapshot is invented |
+| Invalidated active drag | `“{title}” changed elsewhere. Drop canceled.` | Alert `X` after snapshot release and suppressed mutation |
+| Invalidated open placement | `Placement closed because “{title}” changed elsewhere.` | Alert `X` |
+| Same-type neutral target | `Already in Nodes.` or `Already in Bits.` | None; release is mutation-free cancel |
+| Opposite-type target | `Return to Breakdown before changing type.` | None |
+| Invalid source/target | `This item is no longer available.` | None |
+| Remote arrival | `1 new` or `{count} new` | Activate the indicator; accessible action name is `Show new {Nodes|Bits}` |
+
+The alert `X` has accessible name `Dismiss Staging alert` and closes only the
+current alert. There is no visible or accessible `Retry`, `Retry Stage`,
+`Retry Unstage`, permanent `Unstage`, details, undo, or mutation action in this
+status family. Authoritative success uses the existing staged state or the
+separately approved `DP-VQ02` Unstage success signal and creates no alert/toast.
+
+### Focus, Dismissal, Lifetime, And Accessibility
+
+- Status arrival, remote arrival/removal, source resolution, and alert
+  replacement never steal focus. Pending/unknown/reconciling retain the
+  operation's logical source/candidate focus and announce each newly entered
+  sentence once through one polite atomic status.
+- Activating `Show new {Nodes|Bits}` revalidates the subsection's remote
+  arrivals, scrolls that subsection to top, clears its new count, and focuses
+  the first surviving new candidate without starting a drag or mutation. If no
+  new candidate survives, focus the affected subsection heading. Merely
+  observing the authoritative top clears the count without moving focus.
+- Remote counts exclude initial hydration, Scratch-switch loads, and local
+  Stage. They preserve current scroll and focus on arrival and last until the
+  indicator is activated, the authoritative top is observed, the Scratch
+  changes, or the Inbox route exits/reloads.
+- A terminal alert never auto-dismisses. It clears on its `X`, a new operation
+  for that candidate, authoritative candidate disappearance, or Scratch
+  switch; a later failure replaces it. When the user activates `X`, focus
+  returns to the surviving candidate root, otherwise its related Breakdown
+  source, otherwise the Staging heading.
+- Unknown/reconciling attached status lasts until authoritative resolution.
+  Terminal authority removes the line and projects the exact latest
+  candidate/source state; it never uses the drag snapshot as authority.
+- Confirmed orphan cleanup is announced once only after authoritative proof
+  and atomic cleanup. Cache miss, offline, or delayed subscription remains the
+  unresolved-source status and never uses orphan wording.
+
+### Motion And Eight-Theme Mapping
+
+Candidate-line entry/removal, indicator updates, alert entry/replacement/
+dismissal, target reasons, scroll, and focus handoff are immediate. There is no
+fade, slide, scale, spinner, pulse, ping, bounce, blink, flicker, or
+layout-transition animation. Reduced motion uses identical geometry, copy,
+controls, timing, focus, and lifetime.
+
+| Theme | Exact realization mapping |
+|---|---|
+| GridDO | Candidate-attached technical rule, compact subsection count chip, restrained semantic alert band, and canonical action/focus roles. |
+| Tiny Desk | Paper-object status annotation, stationery count tab, and ruled-paper notice below the Staging wood/cork title. |
+| Neumorphism | Shallow inset candidate line, named raised count action, and wide inset alert well within the existing shadow family. |
+| Claymorphism | Shape-preserving candidate seam, puffy non-color count, and soft sculpted alert ribbon. |
+| Origami | Candidate fold-edge status, folded count tab, and attached alert strip with seam-separated action. |
+| Terminal | Variable-driven inline record status, text count command, and static framed alert; no fixed JSX color or blink. |
+| Retro Mac | In-place 1-bit candidate footer, hard counter control, and full-width alert pane below the title; no new window. |
+| Graphite | Candidate editorial caption, compact index count, and strengthened-rule alert band with restrained monochrome action. |
+
+Task 147 alone consumes this exact realization in Staging/Breakdown rendering,
+centralized copy, tests, theme CSS, and its verification artifact over Tasks
+145–146. It changes no repository command, operation lock, reconciliation,
+candidate truth, Pool behavior, Explorer behavior, `DP-VQ02`, or `D-CARD`.
 
 ## Theme Realizations
 
@@ -76,5 +185,5 @@
 
 ## Exclusions And Verification
 
-- Excluded: exact `VQ-06` realization beyond the shared envelope, `D-CARD`, internal handles, keyboard-grab/drop mechanics, candidate label snapshots, local mock persistence, large empty placeholders, permanent unstage buttons, repeated pulse/blink/bounce/spin, and route-specific mutations.
+- Excluded: any Staging status outside `DP-VQ06-STAGING`, `D-CARD`, internal handles, keyboard-grab/drop mechanics, candidate label snapshots, local mock persistence, large empty placeholders, permanent unstage/Retry buttons, repeated pulse/blink/bounce/spin, and route-specific mutations.
 - No drag target, pending candidate, scroll padding, last-item reachability, type distinction, remote arrival, alert, focus, contrast, or light/dark state was rendered or verified.

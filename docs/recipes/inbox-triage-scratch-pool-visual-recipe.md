@@ -23,8 +23,212 @@
 
 ## Decision-Prerequisite Boundary
 
-- `VQ-01` — external Scratch removal modal is an absent replacement surface. It is wholly excluded: generic dialogs, archive UI, and Pool chrome are not fallbacks. **User-owned Decision prerequisite:** supply or approve that realization, or explicitly scope it out. Future owner: the Pool execution phase; resume its dependent UI task only after a matching user receipt.
-- Pool subset of `VQ-06` — hidden-selection and remote/path status appearance may use only the shared semantic-state envelope: state attributes, existing semantic/theme tokens, visible text/icon/non-color cues, and selected focus/accessibility behavior. Exact copy, placement, layout, effect, duration, and per-theme values remain a **user-owned non-code Decision prerequisite**. Future owner: Pool recipe/canonical token owner and Pool execution phase; resume exact styling only after a matching receipt.
+- `VQ-01` — **resolved by `DP-VQ01` on 2026-08-09.** The user selected Choice A, the dedicated central blocking transition panel specified below. Task 141 is its only realization edge. Generic dialogs, Archive UI, Pool chrome, and any adjacent surface remain prohibited fallbacks.
+- Pool subset of `VQ-06` — **resolved by `DP-VQ06-POOL` on 2026-08-10.** The user selected Choice A, the fixed Pool-local status band specified below. Task 144 is its only realization edge. Staging and Explorer retain their separate unresolved `VQ-06` decisions, and neither supplies fallback authority here.
+
+## `DP-VQ06-POOL` Approved Fixed Status Band
+
+`DP-VQ06-POOL` chooses one fixed, section-local status band directly below the
+expanded Pool search/sort row and outside the internally scrolling Scratch
+list. It keeps state immediately visible without a disclosure panel, event
+list, Escape-close path, toast, or Mark-reviewed state. The band never changes
+Scratch selection and never borrows Staging or Explorer presentation.
+
+### Placement, Count, And Compact Form
+
+- Expanded order is identity/all-active count/collapse → search/sort row →
+  fixed status band when applicable → internally scrolling Scratch list.
+  Status appearance may grow only this tools region; it never inserts a fake,
+  proxy, placeholder, or pinned status row into the Scratch list.
+- The identity/header count and collapsed count always equal all currently
+  active Scratches. During a non-empty search, the band separately renders
+  exact `{visible} of {total} Scratches`; neither number changes selection.
+- The band has at most two simultaneous static lines: one search-context line
+  and one Pool-activity line. It is not an event history. Remote/lifecycle
+  events aggregate into the one current activity line by category.
+- Collapsed mode continues to ignore the preserved search for switchers and
+  total count, so it renders no hidden-selection line or filtered count. Beside
+  the total it may render a literal `+{count}` unseen-arrival marker and a
+  separate non-color lifecycle marker with accessible name `Pool updated
+  elsewhere.` Activating the existing expand control reveals the full band;
+  neither compact marker is a new control.
+
+### Exact Copy And State Matrix
+
+| State | Exact visible copy | Allowed action |
+|---|---|---|
+| Search count, selection visible | `{visible} of {total} Scratches` | None |
+| Search count, selection hidden | `{visible} of {total} Scratches` and `Selected Scratch is hidden by this search.` | `Clear search` |
+| One remote arrival | `1 new Scratch arrived.` | `Review new` |
+| Multiple remote arrivals | `{count} new Scratches arrived.` | `Review new` |
+| One non-selected external archive | `A Scratch was archived elsewhere.` | `Dismiss` |
+| One non-selected external delete | `A Scratch was deleted elsewhere.` | `Dismiss` |
+| One external restore | `A Scratch was restored.` | `Dismiss` |
+| Multiple changes in one lifecycle category | `{count} Scratches were archived elsewhere.`, `{count} Scratches were deleted elsewhere.`, or `{count} Scratches were restored.` | `Dismiss` |
+| Mixed unseen activity | `Pool updated elsewhere: {nonzero clauses}.` Clauses appear only when nonzero and in fixed `new`, `archived`, `deleted`, `restored` order, using `1 new`, `{count} new`, `1 archived`, `{count} archived`, `1 deleted`, `{count} deleted`, `1 restored`, or `{count} restored`. | `Review new` when a new-arrival clause exists; `Dismiss` when a lifecycle clause exists |
+
+`Clear search`, `Review new`, and `Dismiss` are the only new actions. There is
+no panel toggle, details/history action, Escape behavior, retry, undo,
+Mark-reviewed action, automatic selection, or lifecycle mutation. Locally
+created Scratches and the initial query snapshot do not increment remote
+arrival counts.
+
+### Selection, Lifecycle, Focus, And Accessibility
+
+- A search-hidden selected Scratch remains selected and its Context remains
+  active. `Clear search` clears only the Pool query, leaves focus in the search
+  field, and makes the selected row ordinarily visible again. If a title/data
+  change makes the selected row match without user action, the line clears
+  without moving focus.
+- `Review new` first revalidates unseen active arrivals under the current sort,
+  clears the reviewed arrival count, scrolls the first surviving unseen row
+  into view, and focuses that row without selecting it. If none survives,
+  clear the count and move focus to the expanded Pool search field.
+- `Dismiss` clears only accumulated non-selected lifecycle messages and moves
+  focus to the expanded Pool search field. It never dismisses or alters an
+  arrival count.
+- An externally archived or deleted selected Scratch is not rendered as this
+  ordinary activity line. Its row/all-active count update from authority and
+  the already-approved `DP-VQ01` blocking transition immediately owns copy,
+  actions, dismissal, and focus. Authoritative restore while that transition
+  waits retains the `DP-VQ01` cancellation contract. This decision adds no
+  duplicate Pool action or competing announcement.
+- Remote arrival or a non-selected lifecycle update never moves focus or
+  selection. Each newly changed visible activity sentence is announced once
+  through one polite atomic status; rerender, sorting, collapsing/expanding,
+  theme change, and elapsed time do not repeat it. The compact markers have
+  accessible names and remain distinguishable without color.
+
+### Dismissal, Lifetime, And Motion
+
+- Hidden-selection and filtered-count presentation lasts exactly while the
+  non-empty query and current data require it. It clears on query resolution,
+  selection/lifecycle resolution, route exit, or reload; it never auto-dismisses.
+- Remote-arrival counts and non-selected lifecycle aggregates are mounted
+  Inbox-page state. Scratch selection, sort, collapse/expand, theme, and
+  light/dark changes preserve them. `Review new` clears only arrivals;
+  `Dismiss` clears only lifecycle aggregates; Inbox route exit or reload clears
+  both. No timer or automatic dismissal exists.
+- Every entry, replacement, clear, band-size change, marker change, scroll
+  request, and focus handoff is immediate. There is no fade, slide, scale,
+  spinner, pulse, ping, bounce, blink, flicker, or layout-transition animation.
+  Reduced motion therefore uses identical geometry, copy, controls, timing,
+  focus, and lifetime.
+
+### Eight-Theme Mapping
+
+All themes share one semantic tree, exact copy, line/action order, counts,
+focus, lifetime, and static motion contract. Only Pool-owned role realization
+changes:
+
+| Theme | Exact realization mapping |
+|---|---|
+| GridDO | A restrained semantic band and compact marker using the canonical border, muted, primary, text, action, and focus roles. |
+| Tiny Desk | A ruled-paper status strip directly below the wood tools, with stationery text/actions and a pin/bar-like compact marker. |
+| Neumorphism | A shallow inset status well below the tools, named raised action treatment, and a raised compact marker within the existing shadow family. |
+| Claymorphism | A shape-preserving soft inset ribbon, restrained raised text action, and puffy but non-color-only compact marker. |
+| Origami | An attached folded-paper strip with seam-separated lines/actions and a small folded-tab compact marker. |
+| Terminal | A variable-driven static bordered status line with bracketed text actions and a text/shape compact marker; no fixed JSX color or blink. |
+| Retro Mac | An in-place 1-bit status pane below the FIND/tools row, hard text controls, and a hard-outline compact marker; no new window. |
+| Graphite | An editorial caption band with strengthened rules, restrained monochrome text actions, and a concise index-like compact marker. |
+
+Task 144 alone consumes this realization in `ScratchPool`, centralized core
+English copy, Pool/copy tests, theme CSS, and its verification artifact. Tasks
+128 and 130 remain the prerequisite lifetime/base owners. Task 144 does not
+change selection, query/count meaning, persistence, repository truth,
+`DP-VQ01`, or any Staging/Explorer behavior or presentation.
+
+## `DP-VQ01` Approved External-Removal Transition
+
+`DP-VQ01` chooses a dedicated central blocking panel for external archive or
+delete of the selected Scratch. The panel is a new lifecycle surface, not a
+restyled generic Dialog/AlertDialog and not an extension of Pool or Archive
+chrome.
+
+### Surface And Geometry
+
+- Cover the Inbox workspace with an inert scrim and center one
+  `role="alertdialog"`, `aria-modal="true"` panel. The stale Scratch remains
+  visible only as non-interactive context behind the scrim.
+- The panel width is `min(35rem, calc(100% - 2rem))`; its maximum height is
+  `calc(100% - 2rem)`. Keep the title, destination, countdown, and actions
+  fixed in the panel while only the draft list scrolls when necessary.
+- Order content as lifecycle title → destination/countdown message → one
+  4px linear countdown track → draft-copy region when present → action row.
+  Use no lifecycle, pause/resume, or copy icon: exact text, progress geometry,
+  and native focus treatment provide the non-color cues.
+- The action row keeps `Move now` primary and `Pause` or `Resume` secondary.
+  There is no Cancel action and Escape does not dismiss the transition.
+
+### Exact Copy And State Matrix
+
+| State | Exact visible copy |
+|---|---|
+| External archive title | `This Scratch was archived elsewhere` |
+| External delete title | `This Scratch was deleted elsewhere` |
+| Running with destination | `Moving to “{Scratch title}” in {seconds} seconds.` |
+| Running with search-empty destination | `No matching Scratch is visible. Clearing the selection in {seconds} seconds.` |
+| Running with Inbox empty | `No active Scratches remain. Opening the empty Inbox in {seconds} seconds.` |
+| Paused with destination | `Movement paused. Destination: “{Scratch title}”.` |
+| Paused with search-empty destination | `Movement paused. No matching Scratch is visible; the selection will clear.` |
+| Paused with Inbox empty | `Movement paused. No active Scratches remain; the empty Inbox will open.` |
+| Draft heading | `Copy drafts before moving` |
+| Draft explanation | `These drafts exist only on this page and will not move with the Scratch.` |
+| Add draft source label | `New Breakdown draft` |
+| Scratch title draft source label | `Scratch title draft` |
+| Row draft source label | `Breakdown draft` |
+| Draft action / success status | `Copy full draft` / `Copied` |
+| Controls | `Move now`, `Pause`, `Resume` |
+
+Each draft card exposes its complete selectable text without truncation.
+`Copied` replaces only that card's action label; it does not announce movement,
+resume the countdown, clear the draft, or move focus. If clipboard copy is
+rejected, keep `Copy full draft`, preserve focus, emit no false success, and
+leave the complete selectable text available for manual copy.
+
+### Timing, Destination, Restore, And Focus
+
+- Run one `5000ms` linear countdown. Visible whole seconds update from 5 to 1,
+  but the polite live region announces lifecycle, timing, and destination once
+  on entry and announces a changed destination once, never once per tick.
+- `Pause` freezes the exact remaining time and progress width. `Resume`
+  continues from that remainder. `Move now` performs the current revalidated
+  handoff immediately.
+- When the displayed destination changes, a running countdown restarts at
+  `5000ms`; a user-paused countdown remains paused and only its destination
+  message updates. Revalidate lifecycle and destination immediately before
+  every automatic or explicit move.
+- A non-empty Add draft or dirty Scratch/row draft opens the panel paused.
+  With no draft, initial focus is `Pause`; with drafts, initial focus is the
+  first `Copy full draft`. Focus remains contained in the panel. Copy success
+  preserves the triggering button's focus.
+- Authoritative archive restore is the only transition cancellation. It closes
+  the panel, retains the Scratch selection and page-memory drafts, and restores
+  the pre-transition focus target when it still exists, otherwise the Scratch
+  title Edit entry. Hard delete has no restore path.
+- After a terminal move, focus the destination Scratch Context heading. For
+  search-empty/no-selection focus the Pool results status; for Inbox empty
+  focus the Inbox empty-state heading.
+
+### Eight-Theme Mapping
+
+All themes use the same semantic tree, exact copy, geometry, controls, timing,
+and focus order. Only the recipe-owned role realization changes:
+
+| Theme | Exact realization mapping |
+|---|---|
+| GridDO | Restrained semantic card and border, primary linear fill, muted draft cards, and the canonical focus ring. |
+| Tiny Desk | Paper notice inside a wood frame; ruled draft slips, a ruled-line countdown track, and stationery buttons. |
+| Neumorphism | Inset panel and countdown track with raised draft cards/actions; use the named inset/card shadow family. |
+| Claymorphism | Sculpted panel, inset progress groove, raised clay actions, and shape-led draft separation. |
+| Origami | Folded paper panel, seam-like countdown track, faceted draft sheets, and asymmetric folded controls. |
+| Terminal | Variable-driven editor frame, block-style progress fill, framed draft records, and text command controls; no fixed terminal color in JSX. |
+| Retro Mac | Striped title bar, 1-bit double frame, hard segmented progress, pane-separated drafts, and square controls. |
+| Graphite | Editorial notice plate, fine-rule progress track, ruled draft blocks, and restrained monochrome actions. |
+
+The role aliases and state tokens live in `docs/DESIGN_TOKENS.md`. Theme IDs
+never branch product behavior, and light/dark changes never restart, pause,
+resume, dismiss, or otherwise mutate the transition.
 
 ## Theme Realizations
 
@@ -78,5 +282,5 @@
 
 ## Exclusions And Verification
 
-- Excluded: `VQ-01`, unsupported Pool statuses beyond the shared `VQ-06` envelope, fold-lock review control, source selection persistence, route-local search/sort behavior, copied strings, and any source behavior conflicting with the selected session lifecycle.
+- Excluded: any Pool status outside `DP-VQ06-POOL`, fold-lock review control, source selection persistence, copied source strings outside the exact approved decision copy above, and any source behavior conflicting with the selected session lifecycle.
 - No rendered selected/hidden/empty/collapsed state, count meaning, focus path, text fit, contrast, scrolling, or transition was verified. All exact class/color/size statements above are source declarations only.

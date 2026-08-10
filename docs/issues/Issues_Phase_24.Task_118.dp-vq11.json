@@ -1,0 +1,147 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq11",
+  "decision_receipt_id": "DP-VQ11",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 118,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "continuation_entrypoint": "9c0bae2d8b928564ef03637e899e3bf9d62637c7",
+  "continuation_kickoff_commit": "0861b071d58cba03d1e698fae12155a589709736",
+  "predecessor_acceptance_commit": "d4bd591aa3e0cdd540156c95f306c274c215ca26",
+  "durable_start_commit": "077499e519eccbb41845447f1af7e45a44288631",
+  "user_decision": {
+    "date": "2026-08-11",
+    "statement": "DP‑VQ11=A",
+    "recorded_scope": "DP-VQ11=A only",
+    "choice": "A",
+    "label": "Source-attached completion blockers and completion-slot eligibility-withdrawal status"
+  },
+  "checkpoint_acceptance": {
+    "date": "2026-08-11",
+    "statement": "Task 118 / DP‑VQ11=A checkpoint를 수락합니다.",
+    "acceptance_basis": "1c8465089106bb1a2023408570b0e112eee2b8d6",
+    "accepted_task": 118,
+    "accepted_decision": "DP-VQ11=A",
+    "accepted_contract": [
+      "source-attached non-empty Add-draft blocker and all five Task 137 Scratch-title blocker snapshots with exact copy and existing actions only",
+      "exact active-Breakdown, Staging, and combined eligibility-withdrawal causes in the vacated completion slot after all stale completion controls are removed",
+      "draft/editor preservation, logical focus, polite atomic accessibility, mounted-page lifetime, current-truth recovery, and no automatic Add, Save, Cancel, or Archive",
+      "static reduced-motion parity and eight-theme role mapping without toast, dialog, detached/global fallback, timer, repeated motion, persistence, or theme-ID product logic",
+      "Task 160-only release with Task 119 and Task 160 preserved as unstarted"
+    ],
+    "serial_boundary": "Task 118 is accepted; Task 119 remains unstarted and may begin only in a later separate session, while Task 160 is released but not started"
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-selected-scratch-context-visual-recipe.md",
+    "docs/recipes/inbox-triage-breakdown-row-empty-visual-recipe.md",
+    "docs/recipes/inbox-triage-archive-completion-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "binding": {
+      "add_blocker": "source-attached immediately below the stable Breakdown Add field/control row",
+      "title_blocker": "source-attached inside the existing DP-VQ04 Scratch-title editor status region after editor-state copy",
+      "withdrawal": "one persistent non-blocking status in the vacated Breakdown completion slot after overlay, complete Context, and Reopen are removed",
+      "prohibited": [
+        "toast",
+        "dialog or AlertDialog",
+        "ordinary-empty replacement",
+        "page-global banner",
+        "unified detached status panel",
+        "Context-only summary",
+        "disabled stale Archive control",
+        "automatic Add, Save, Cancel, or Archive",
+        "timer or auto-dismissal",
+        "repeated motion",
+        "theme-ID product behavior or copy branch"
+      ]
+    },
+    "add_blocker": {
+      "trigger": "persisted Archive eligibility is otherwise true and the mounted-page Add draft is non-empty",
+      "copy": "Add this idea or clear the draft to complete this Scratch.",
+      "placement": "inside the Add region immediately below the stable field/control row; DP-VQ05 operation copy stays first when both status families exist",
+      "actions": "no new completion action; retain existing Add and ordinary text-editing paths",
+      "effect": "suppress completion presentation without changing persisted eligibility, draft, Add control, or reliability state",
+      "focus": "retain Add-input or current user-owned focus and associate the status to the Add input",
+      "lifetime": "persist without a timer while the otherwise-eligible non-empty draft remains current; never announce each keystroke"
+    },
+    "title_blocker": {
+      "trigger": "persisted Archive eligibility is otherwise true and Task 137 reports open, dirty, saving, conflicted, or reconciling",
+      "copy": {
+        "open_or_dirty": "Save or cancel the Scratch title edit to complete this Scratch.",
+        "saving": "Saving the Scratch title before completion…",
+        "conflicted": "Resolve the Scratch title conflict to complete this Scratch.",
+        "reconciling": "Checking the Scratch title before completion…"
+      },
+      "placement": "after the current editor-state sentence inside the same persistent associated status region",
+      "actions": "retain the complete DP-VQ04 action hierarchy for the current editor state; add no completion action",
+      "effect": "preserve editor, draft, comparison or recovery content, locks, and persisted eligibility",
+      "focus": "retain DP-VQ04 logical field/action focus through appearance, state changes, remote updates, and removal",
+      "lifetime": "persist only while the matching synchronous snapshot and otherwise-eligible Scratch remain current"
+    },
+    "eligibility_withdrawal": {
+      "trigger": "the mounted page previously presented overlay, complete Context, or Reopen and persisted eligibility becomes false because active Breakdown rows and/or staged candidates exist",
+      "copy": {
+        "active_breakdown_only": "Completion is no longer available because a Breakdown item is active.",
+        "staging_only": "Completion is no longer available because an item is in Staging.",
+        "both": "Completion is no longer available because Breakdown and Staging have active items."
+      },
+      "ordering": "remove scrim/card, complete Context, and Reopen first; reveal current work; then render the actual aggregate cause in the vacated completion slot",
+      "inactive_scratch": "archived, deleted, or inactive selected Scratch exits through the canonical workspace owner and renders no withdrawal status",
+      "actions": "no Close, Dismiss, Retry, Reopen, Archive, or hidden action",
+      "focus": "local source action retains canonical focus; remote cause never steals focus; if a removed Archive, Cancel, or Reopen control owned focus, move it to the surviving Breakdown heading",
+      "lifetime": "persist for the same selected active Scratch while its current aggregate cause remains; do not reconstruct across Scratch switch, route exit, reload, or unmount"
+    },
+    "recovery": {
+      "blocker_resolution": "remove only the source blocker and let Task 159 recompute from current truth",
+      "eligibility_restoration": "remove withdrawal immediately and let Task 159 own overlay, complete, Reopen, and readiness announcement",
+      "forbidden": "no separate restoration rail, timer, dismissal, Retry, persistence, waiting stale control, or archive from a previous completion snapshot"
+    },
+    "accessibility_and_motion": {
+      "status": "visible static non-color mark plus exact sentence; polite atomic announcement once per new or changed cause, never per rerender",
+      "ordinary_motion": "immediate and static blocker, withdrawal, removal, and focus changes",
+      "reduced_motion": "identical geometry, copy, actions, focus, and lifetime",
+      "prohibited_motion": "fade, slide, scale, blur transition, skeleton, shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, and layout-transition animation"
+    },
+    "theme_mapping": {
+      "griddo": "technical ruled source status and compact ruled completion-slot notice with static warning mark",
+      "tiny-desk": "same-paper source annotation and pinned filing-status note",
+      "neumorphism": "inset source/completion troughs using existing depth variables without a second raised card",
+      "claymorphism": "shape-preserving source ribbon and stable completion ribbon without bounce",
+      "origami": "seam-bound source note and folded completion notice without animated fold",
+      "terminal": "variable-driven [completion blocked] and [completion withdrawn] records with exact copy and no blink or glow loop",
+      "retro-mac": "hard 1-bit in-window source line and in-section completion system status",
+      "graphite": "restrained editorial source caption and strengthened-rule completion notice"
+    },
+    "implementation_boundary": {
+      "realization_task": 160,
+      "additional_prerequisites": [
+        128,
+        137,
+        159
+      ],
+      "excludes": "product implementation in Task 118, completion predicate changes, Task 137 or Task 159 headless changes, Archive transaction changes, VQ-12, Task 119 start, Task 160 start, adjacent fallback, and theme-ID logic"
+    }
+  },
+  "exact_release": {
+    "tasks": [
+      160
+    ],
+    "consumption_condition": "satisfied by explicit Task 118 checkpoint acceptance on 2026-08-11",
+    "all_other_tasks": "Task 119 remains unstarted; Task 160 is released but not started by this receipt; every unrelated task edge retains its prior state"
+  },
+  "task_state": "accepted",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "task-119"
+}

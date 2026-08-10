@@ -61,7 +61,7 @@ Values that differ from `docs/design-system-preview.html` **on purpose**:
 |---|-------------------|---------------|-----------|--------|
 | 1 | Base font family | Inter (Google Fonts) | Geist Sans by default; Batch 2 color themes may override via `--theme-font` | Geist remains the default app/system font; color themes may opt into their own display fonts |
 | 2 | Sidebar model | `52px` icon strip | `3rem` (48px) fixed icon rail, always visible | Phase 9: sidebar is now a permanent icon rail — no fold/unfold. Closest to the reference's icon strip model |
-| 3 | Inbox/Triage Batch 2 labels, Context, and search | Removed visible section labels; compact Context strip; active-column search | Visible theme chrome; standalone signature Context; dedicated full-hierarchy replacement body remains absent behind `VQ-07` | The approved mature-topic decision supersedes the old Batch 2 direction; adjacent search and chrome are prohibited substitutes |
+| 3 | Inbox/Triage Batch 2 labels, Context, and search | Removed visible section labels; compact Context strip; active-column search | Visible theme chrome; standalone signature Context; `DP-VQ07` Choice A dedicated full-hierarchy replacement body | The approved mature-topic decision and Task 114 choice supersede the old Batch 2 direction; active-column/global search and ordinary columns remain prohibited substitutes |
 
 ---
 
@@ -379,14 +379,16 @@ or to promotion-map §11.4's shared implication.
 | Family | Canonical `<role>` values | Approved trace |
 |---|---|---|
 | Shell / chrome | `shell-background`, `section-surface`, `section-header`, `section-divider`, `internal-scroll-viewport`, `section-state-overlay` | `R-SHELL` |
-| Scratch Pool | `pool-tools`, `pool-search-field`, `pool-total-count`, `pool-selected-row`, `pool-compact-switcher`, `pool-compact-marker`, `pool-scroll-viewport` | `R-POOL` |
-| Selected Context | `context-signature-plate`, `context-eyebrow-meta`, `context-title`, `context-action-cluster`, `context-complete-marker` | `R-CONTEXT` |
-| Breakdown | `breakdown-active-row`, `breakdown-staged-row`, `breakdown-row-action`, `breakdown-add-field`, `breakdown-add-control`, `breakdown-ordinary-empty`, `breakdown-consumed-completion` | `R-BREAKDOWN` |
-| Staging | `staging-panel`, `staging-node-well`, `staging-node-card`, `staging-bit-well`, `staging-bit-row`, `staging-neutral`, `staging-unavailable`, `staging-invalid`, `staging-pending`, `staging-unstage-target` | `R-STAGING` |
-| Grid Explorer base | `explorer-header`, `explorer-column`, `explorer-full-level-label`, `explorer-node-row`, `explorer-bit-row`, `explorer-eligible-target`, `explorer-hovered-target`, `explorer-invalid-target`, `explorer-unavailable-target` | `R-EXPLORER`; excludes the `VQ-07` body |
-| Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled` | `R-PLACEMENT`; excludes `VQ-08` reliability realization and all `VQ-09` surfaces |
-| Newly Placed / Undo | `newly-marker`, `newly-dot`, `newly-new-badge`, `newly-undo-action` | `R-NEWLY`; composes over the actual Node/Bit card and never replaces it |
-| Archive / completion base | `archive-section-scrim`, `archive-card`, `archive-complete-context`, `archive-reopen`, `archive-action`, `archive-cancel` | `R-ARCHIVE`; excludes `VQ-11/12` gap realization |
+| Scratch Pool | `pool-tools`, `pool-search-field`, `pool-total-count`, `pool-filtered-count`, `pool-selected-row`, `pool-compact-switcher`, `pool-compact-marker`, `pool-scroll-viewport`, `pool-status-band`, `pool-status-line`, `pool-status-action`, `pool-activity-marker` | `R-POOL`; status roles from `DP-VQ06-POOL` / Task 144 only |
+| External Scratch removal | `external-removal-scrim`, `external-removal-panel`, `external-removal-title`, `external-removal-destination`, `external-removal-countdown-track`, `external-removal-countdown-fill`, `external-removal-draft-card`, `external-removal-copy-status`, `external-removal-primary-action`, `external-removal-secondary-action` | `DP-VQ01`; Task 141 only |
+| Selected Context | `context-signature-plate`, `context-eyebrow-meta`, `context-title`, `context-action-cluster`, `context-complete-marker`, `context-completion-blocker`, `context-completion-blocker-mark` | `R-CONTEXT`; blocker roles from approved `DP-VQ11`, Task 160 only |
+| Breakdown | `breakdown-active-row`, `breakdown-staged-row`, `breakdown-row-action`, `breakdown-add-field`, `breakdown-add-control`, `breakdown-ordinary-empty`, `breakdown-consumed-completion`, `breakdown-success-wash`, `breakdown-success-status`, `breakdown-success-check`, `breakdown-add-completion-blocker` | `R-BREAKDOWN`; success roles from `DP-VQ02` / Task 148 only; blocker role from approved `DP-VQ11`, Task 160 only |
+| Staging | `staging-panel`, `staging-node-well`, `staging-node-card`, `staging-bit-well`, `staging-bit-row`, `staging-neutral`, `staging-unavailable`, `staging-invalid`, `staging-pending`, `staging-unstage-target`, `staging-operation-status`, `staging-arrival-count`, `staging-local-alert`, `staging-alert-action`, `staging-target-reason`, `staging-integrity-status` | `R-STAGING`; status roles from `DP-VQ06-STAGING` / Task 147 only |
+| Grid Explorer base | `explorer-header`, `explorer-column`, `explorer-full-level-label`, `explorer-node-row`, `explorer-bit-row`, `explorer-eligible-target`, `explorer-hovered-target`, `explorer-invalid-target`, `explorer-unavailable-target`, `explorer-remote-count`, `explorer-path-status`, `explorer-status-action` | `R-EXPLORER`; status roles from `DP-VQ06-EXPLORER` / Task 150 only |
+| Grid Explorer search | `explorer-search-entry`, `explorer-search-body`, `explorer-search-field`, `explorer-search-close`, `explorer-search-status`, `explorer-search-results`, `explorer-search-result`, `explorer-search-type`, `explorer-search-breadcrumb`, `explorer-search-duplicate`, `explorer-search-retry`, `explorer-search-undo`, `explorer-reveal-status`, `explorer-revealed-row` | `DP-VQ07`; complete body Task 151 and search-result Undo composition Task 158 only |
+| Placement base | `placement-direct-shell`, `placement-staged-shell`, `placement-target-path`, `placement-confirm`, `placement-cancel`, `placement-full-target-warning`, `placement-confirm-disabled`, `placement-result-title-shell`, `placement-result-title-source`, `placement-result-title-input`, `placement-result-title-count`, `placement-result-title-error`, `placement-result-title-continue`, `placement-direct-type-option`, `placement-direct-type-reason`, `placement-direct-limit-summary` | `R-PLACEMENT`; reliability extends through approved `DP-VQ08`, and title/limit replacement surfaces extend through approved `DP-VQ09`; Task 153 and Task 154 remain separate edges |
+| Newly Placed / Undo | `newly-marker`, `newly-dot`, `newly-new-badge`, `newly-undo-action`, `newly-status-rail`, `newly-status-mark`, `newly-status-action`, `newly-status-reason` | `R-NEWLY`; exact overlap/reason/reliability roles from approved `DP-VQ10`, Task 157 only; composes around the actual Node/Bit card and never replaces or redesigns it |
+| Archive / completion | `archive-section-scrim`, `archive-card`, `archive-complete-context`, `archive-reopen`, `archive-action`, `archive-cancel`, `archive-withdrawal-status`, `archive-withdrawal-mark`, `archive-status`, `archive-status-mark`, `archive-current-action` | `R-ARCHIVE`; blocker/withdrawal roles from approved `DP-VQ11`, Task 160 only; reliability/recovery roles from approved `DP-VQ12`, Task 162 only |
 
 The shared state binding is a whitespace-delimited
 `data-triage-state="<state> …"` token list so independent states can coexist.
@@ -404,9 +406,38 @@ appropriate; the data attribute never replaces them.
 | `pending-confirmation` | A valid intent awaits user confirmation before mutation; distinguish it from `pending` |
 | `pending` | An authoritative result is outstanding; preserve the SPEC-owned stable focus target and lock only the conflicting actions named there |
 | `reconciling` | An uncertain outcome is being checked; visible text/icon semantics distinguish it from both `pending` and success |
-| `success` | Authoritative, non-repeating success; use polite status semantics without focus theft and a static distinction under reduced motion; exact `VQ-02` realization remains unresolved |
+| `external-removal` | The selected Scratch is authoritatively archived or deleted elsewhere; stale work is inert and the dedicated `DP-VQ01` transition owns the workspace until restore or terminal handoff |
+| `paused` | The `DP-VQ01` countdown is frozen at its exact remainder; destination changes update content without resuming it |
+| `draft-copy-ready` | One full source-labeled page-memory draft remains available for copying before the external-removal handoff |
+| `copied` | The matching full draft was copied once; preserve button focus and never infer persistence, countdown resume, or movement |
+| `success` | Authoritative, non-repeating Add/Unstage success; `DP-VQ02` binds the exact row wash/check/text, polite status, focus preservation, and static reduced-motion equivalent consumed only by Task 148 |
+| `hidden-selection` | The selected Scratch remains active but its row does not match the current Pool query; retain selection/Context and expose the `DP-VQ06-POOL` search-context line without a proxy row |
+| `remote-arrival` | One or more active Scratches arrived remotely during the mounted Inbox page; expose the exact aggregate count without auto-selection or focus theft |
+| `lifecycle-update` | One or more non-selected Scratches were externally archived, deleted, or restored; keep lifecycle categories distinct in the exact Pool-local aggregate copy |
+| `source-unresolved` | A durable staged candidate's source join is temporarily unavailable without authoritative orphan proof; render only the type-shaped integrity status and never a normal draggable candidate |
+| `orphan-cleanup` | Authoritative source deletion/tombstone proof completed the atomic candidate cleanup; announce the exact Staging-local result without inventing a missing title snapshot |
+| `stale` | Current authority invalidated a drag, placement, candidate, or source snapshot; suppress stale mutation and expose the exact section-local reason after the applicable visual snapshot release |
+| `explorer-remote-arrival` | One or more ordinary remote insertions first appeared in a currently open Explorer column; preserve path/selection/focus and stable-ID/offset anchoring while exposing only that column's exact count |
+| `path-fallback` | Authority invalidated an Explorer suffix; remove only that suffix, use the nearest valid ancestor/Home without sibling or ghost substitution, and expose the exact affected-column status/focus contract |
+| `selection-cleared` | A selected/revealed Bit disappeared while its parent path remained valid; clear only that selection/reveal and retain the parent path with the exact column-local status |
 | `newly-placed` | Page-session provenance layered on the actual card; use `newly-*` roles and keep Undo separate |
+| `undo-available` | The exact placement remains reversible; expose the stable `Undo` action and visible `Undo this placement.` rail copy independently from selection/Newly provenance |
+| `undo-ineligible` | Keep the focusable `aria-disabled` Undo slot and exact always-visible authoritative reason; no late-error, hover-only, menu, or generic-disabled fallback |
+| `undo-reenabled` | Dependencies cleared and eligibility recovered; expose `Undo is available again.` without focus movement or a timer |
+| `undo-pending` | Atomic Undo is in flight; retain actual result/source/marker, lock the stable action slot, and show exact pending copy without optimistic removal |
+| `undo-unknown` | Outcome is not authoritative; retain identity/state and expose only read-only `Check again` |
+| `undo-reconciling` | The same operation is being checked without resend; retain the action position and all result/source truth |
+| `undo-not-applied` | Authority proves no write occurred; retain all truth and expose exact manual `Retry` only here |
+| `undo-conflict` | Returned authority proves mutation/dependency/partial mismatch; show the narrow current reason or canonical conflict reason, never Retry/cascade/overwrite |
+| `completion-blocked` | Persisted Archive eligibility is true but a non-empty Add draft or Task 137 title snapshot suppresses completion presentation; retain source draft/editor, existing actions, logical focus, and the exact source-attached `DP-VQ11` sentence |
+| `completion-withdrawn` | A previously presented completion state lost persisted eligibility through active Breakdown rows and/or staged candidates; remove overlay/complete/reopen and expose the exact cause in `archive-withdrawal-status` without a stale Archive action |
 | `completed` | Complete Context or completion presentation; do not treat it as Archive mutation success |
+| `archive-pending` | The guarded Archive command is in flight; retain the selected Scratch/card and stable current-action focus without optimistic removal or Cancel |
+| `archive-unknown` | Outcome is not authoritative; retain the same descriptor/operation/card and expose only read-only `Check again` |
+| `archive-reconciling` | The same Archive operation is being classified without resend; retain the card geometry and current-action position |
+| `archive-recovery` | A validated current-tab descriptor is reconciled before initial Inbox projection; never flash ordinary completion or reconstruct unrelated page-session state |
+| `archive-not-applied` | Authority proves no Archive write occurred; expose exact Retry/Cancel, with Retry available only here and reusing the logical operation identity |
+| `archive-conflict` | Returned authority proves changed lifecycle/version/eligibility or partial mismatch; expose current truth and Cancel only, never Retry/overwrite/compensation |
 | `local-alert` | A section-local status with visible text/icon semantics and the SPEC-selected live/status behavior; it does not become a global toast by default |
 
 Focus-visible treatment continues to use the canonical focus ring and the
@@ -528,7 +559,7 @@ surface target below.
 | Staging | Keep visible `Staging`, `Nodes`, and `Bits`; Node cards and Bit rows use distinct shapes and independent wells. Neutral, unavailable, invalid, pending, and transient unstage-target meanings stay separate and non-destructive. | `R-STAGING` |
 | Explorer base | Use four ordinary progressive columns, full level labels, native Node/Bit row shapes, and eligible/hovered/invalid/unavailable target roles. This base excludes the absent replacement search body. | `R-EXPLORER` |
 | Placement base | Direct and staged shells, target path, Confirm/Cancel, full-target warning, and disabled Confirm use the Placement base roles. The affordance stays inside the target column; unsupported reliability and Result Title/direct-limit bodies remain excluded. | `R-PLACEMENT` |
-| Newly Placed / Undo | Compose a marker/dot or visible `NEW` badge over the actual Node/Bit card and expose Undo as a separate action. Never introduce a replacement indicator card. | `R-NEWLY` |
+| Newly Placed / Undo | Compose the source-backed marker/dot or visible `NEW` badge over the unchanged actual Node/Bit card; keep selection authoritative; expose Undo in a separate stable trailing slot and the approved always-visible status rail immediately below the card inside the same Explorer item wrapper. Never introduce a replacement indicator card, internal card footer/menu, or common-card redesign. | `R-NEWLY`, `DP-VQ10` |
 | Archive / completion base | Use a Breakdown-scoped scrim/card, complete Context, reopen, Archive, and Cancel base roles. Do not promote the surface into a page-wide overlay or infer its unresolved blocker/reliability variants. | `R-ARCHIVE` |
 
 The shared compact drag preview remains pointer-centered and type-aware rather
@@ -537,44 +568,504 @@ non-destructive operation cannot proceed; they must not inherit destructive
 delete styling merely because the current drop is rejected.
 
 The old active-section/active-column search is superseded and is not fallback
-authority. Under `VQ-07`, the selected full-hierarchy replacement body remains
-absent. Global Search, the old active-column search, ordinary Explorer columns,
-and Explorer chrome are prohibited substitutes for that body.
+authority. `DP-VQ07` Choice A supplies the full-hierarchy replacement body;
+global Search, the old active-column search, ordinary Explorer columns, and
+Explorer chrome alone remain prohibited substitutes for that body.
 
-### Existing-surface state gaps — 7 Decision prerequisites
+### Approved external-removal realization — `DP-VQ01`
 
-The shared role/state envelope above is the maximum current authority for
-these gaps. It authorizes semantic state binding, existing supported tokens,
-visible text/icon/non-color cues, and approved accessibility/focus semantics
-only. A matching user-owned non-code Decision receipt is required before any
-dependent exact realization.
+**User-approved 2026-08-09:** Choice A establishes one dedicated central
+blocking transition panel for externally archived/deleted selected Scratches.
+This removes `VQ-01` from the open absent-surface list without authorizing any
+other VQ. The exact copy, geometry, state matrix, timing, controls, focus, and
+theme mapping are owned by the Scratch Pool recipe and consumed only by Task
+141.
 
-| ID | Unresolved boundary; no implied realization | Future owner | Resume condition |
-|---|---|---|---|
-| `VQ-02` | The semantic non-repeating success role may exist and reduced motion requires a static distinction. No success effect, timing, placement, wording, or per-theme value is chosen. | User Decision → Breakdown recipe/token owner and Add/Unstage phase | Receipt defines the exact dependent realization |
-| `VQ-05` | No Add/Delete pending, failure, reconcile, check-again, or in-place deleting visual, copy, action placement, timing, or per-theme realization is chosen. | User Decision → Breakdown recipe/token owner and reliability phase | Receipt resolves each dependent state treatment |
-| `VQ-06` | No Pool/Staging/Explorer pending, invalid, remote, arrival, orphan, stale, alert, count placement, layout, duration, dismissal, copy, effect, or per-theme realization is chosen. | User Decision → owning Pool, Staging, or Explorer recipe/token owner and realtime phase | Receipt resolves the affected surface family before its UI task |
-| `VQ-08` | No placement pending, failure, reconcile, Retry, stale, success, control placement, layout, timing, copy, or per-theme realization is chosen. | User Decision → Placement recipe/token owner and reliability phase | Receipt resolves the dependent placement-state UI |
-| `VQ-10` | No selected+new overlap, unavailable reason, dependency-reenabled, undoing, failure, Undo/retry/conflict treatment, copy, placement, timing, or per-theme realization is chosen; repeated motion is forbidden. | User Decision → Newly Placed/Undo recipe/token owner and rollback phase | Receipt resolves the dependent marker/reliability UI |
-| `VQ-11` | No completion blocker or eligibility-withdrawal copy, effect, placement, layout, timing, or per-theme realization is chosen. | User Decision → Context/Breakdown/Archive recipe/token owner and completion phase | Receipt resolves the dependent blocker UI |
-| `VQ-12` | No Archive pending, reconcile, failure, recovery, check-again, Retry/Cancel visual, copy, control/status placement, layout, timing, or per-theme realization is chosen. | User Decision → Archive recipe/token owner and reliability phase | Receipt resolves the dependent Archive variants |
+| Contract | Exact token requirement |
+|---|---|
+| Geometry | `external-removal-scrim` covers and inerts the Inbox workspace; `external-removal-panel` is centered at `min(35rem, calc(100% - 2rem))` width and `calc(100% - 2rem)` maximum height; only the draft list scrolls |
+| Countdown | `external-removal-countdown-track` is 4px high; `external-removal-countdown-fill` runs once, linearly, from full to empty over `5000ms`, freezes on `paused`, and restarts only when a running destination changes |
+| Actions | Primary `Move now`; secondary `Pause`/`Resume`; text-only controls with the canonical focus ring; no Cancel and no Escape dismissal |
+| Draft state | Source-labeled, selectable, untruncated `external-removal-draft-card`; `Copy full draft` becomes `Copied` in `external-removal-copy-status` without focus movement or countdown change |
+| Accessibility | Dedicated `alertdialog`/modal semantics, inert stale workspace, one polite lifecycle/timing/destination announcement on entry plus one for a changed destination, no tick announcements, and the recipe-owned initial/terminal focus destinations |
+| Theme invariance | Color theme or light/dark changes swap aliases only and never restart, pause, resume, dismiss, or mutate the transition |
 
-Existing global color and motion values do not automatically realize any row
-in this table.
+The external-removal roles map through existing families without product JSX
+theme branches or copied source literals:
 
-### Absent replacement surfaces — 5 Decision prerequisites
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Semantic card/border/primary/muted/text/focus roles |
+| Tiny Desk | Wood frame, paper notice, ruled draft, and stationery action roles |
+| Neumorphism | Named inset track/panel and raised card/control shadow roles |
+| Claymorphism | Panel, inset groove, raised action, and shape-led draft roles |
+| Origami | Paper, fold, seam, facet, and asymmetric control roles |
+| Terminal | Variable-driven editor/frame/block-progress/record/command roles |
+| Retro Mac | Stripe/title-bar, 1-bit double-frame, segmented-progress, pane, and hard-control roles |
+| Graphite | Dark/subtle editorial surface, fine rule, ruled block, and monochrome action roles |
 
-These surfaces remain completely outside token realization. Assign no role,
-value, layout, theme mapping, copy, icon, control arrangement, or adjacent
-fallback until a matching user receipt approves the missing surface.
+### Approved Add/Unstage success realization — `DP-VQ02`
 
-| ID | Missing surface and prohibited fallback | Future owner | Resume condition |
-|---|---|---|---|
-| `VQ-01` | External selected-Scratch archive/delete transition; Pool chrome, generic dialogs, and Archive UI are not substitutes | User Decision → Pool recipe and owning phase | Receipt supplies or explicitly scopes out the replacement surface |
-| `VQ-03` | Add-draft continue-writing/discard-and-move confirmation; generic confirmation and native unload are not the app-internal replacement | User Decision → Breakdown recipe and Add-draft phase | Receipt supplies the replacement surface |
-| `VQ-04` | Scratch/row inline editing across validation, saving, conflict, and invalid lifecycle; existing Edit controls and generic conflict UI are not substitutes | User Decision → Context/Breakdown recipes and editing phase | Receipt supplies the complete inline surfaces |
-| `VQ-07` | Dedicated full-hierarchy Explorer search body; global Search, old active-column search, ordinary columns, and Explorer chrome are prohibited substitutes | User Decision → Explorer recipe and search phase | Receipt supplies the complete replacement body |
-| `VQ-09` | Staged Result Title and direct-limit/reason surfaces; create dialogs and generic placement UI are prohibited substitutes | User Decision → Placement recipe and title/limit phase | Receipt supplies both replacement surfaces |
+**User-approved 2026-08-09:** Choice A establishes one shared row-attached
+success signal for Add and Unstage. This removes `VQ-02` from the open
+existing-surface state gaps without authorizing another reliability state or
+task. Task 148 consumes the exact recipe realization.
+
+| Contract | Exact token requirement |
+|---|---|
+| Trigger identity | One newly observed local `{operation kind, operationId, target Breakdown row ID}`; direct `applied` or the current operation's first authoritative `already_applied` may trigger once |
+| State binding | `data-triage-state="success"` on the exact target row and `data-triage-success-kind="add"` or `"unstage"`; no theme-ID or copy branch |
+| Placement | `breakdown-success-wash` covers the unchanged row surface; the reserved non-interactive `breakdown-success-status` slot sits immediately before the stable action cluster; `breakdown-success-check` is literal `✓` and `aria-hidden` |
+| Copy / announcement | `Added.` or `Returned to Breakdown.` is visible and announced once through a polite atomic status without focus theft |
+| Motion | `--triage-success-wash-duration: 600ms`; `--triage-success-wash-easing: ease-out`; background and border return from success emphasis to active-row values with no transform or layout motion |
+| Visibility | `--triage-success-status-duration: 1600ms`; check/copy remain static for the full interval and disappear without exit animation |
+| Reduced motion | Skip the transition; retain an immediate static success border/surface plus the same check/copy for `1600ms`, then clear in one step |
+| Retrigger / interruption | A different new success replaces the prior target and restarts once; same identity, rerender, hydration, reload, remote arrival, and replay do not trigger; Scratch/route exit clears it |
+| Focus | Add remains in the Add input; Unstage remains on the restored source row; the signal has no focusable control |
+
+The success roles map through the existing theme families while keeping one
+semantic tree and exact copy:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Primary-tinted semantic row surface/border/text roles |
+| Tiny Desk | Paper-row highlight and stationery check-stamp roles |
+| Neumorphism | Named raised success surface/shadow returning to ordinary row depth |
+| Claymorphism | Shape-preserving glossy success surface and raised check roles |
+| Origami | Paper highlight and emphasized seam/fold-edge roles |
+| Terminal | Variable-driven record/background/border/check roles with no fixed JSX color |
+| Retro Mac | 1-bit surface/border and hard-check roles without cycling inversion |
+| Graphite | Restrained grayscale surface and strengthened editorial-rule roles |
+
+### Approved Add-draft departure realization — `DP-VQ03`
+
+**User-approved 2026-08-09:** Choice A establishes one Add-adjacent inline
+decision sheet for app-internal departure with a non-empty Add draft. This
+removes `VQ-03` from the open absent-surface list without changing Task 139,
+native unload, or any other confirmation. Task 140 alone consumes the exact
+recipe realization.
+
+| Contract | Exact token requirement |
+|---|---|
+| Trigger / order | `data-triage-state="departure-decision"` exists only after an internal Scratch/path/route intent meets a non-empty Add draft and any required inline Save has resolved; native unload never binds it |
+| Placement | `breakdown-departure-sheet` is an in-flow surface immediately below and edge-aligned with the complete Add input/control row; no portal, scrim, centered modal, toast lane, or row-action placement |
+| Content roles | `breakdown-departure-eyebrow`, `breakdown-departure-heading`, and `breakdown-departure-description` render exact `Unsaved Add draft`, `Keep writing?`, and `Continue writing here, or discard this draft and move.` copy without dynamic destination text |
+| Actions | `breakdown-departure-actions` orders primary/default `breakdown-departure-continue` (`Continue writing`) before destructive secondary `breakdown-departure-discard` (`Discard and move`); no close, backdrop, or third action |
+| Focus / semantics | Labelled and described alert-dialog semantics; initial focus on Continue, sequential focus contained to two actions; Continue/Escape restore the Add caret while Discard hands focus to the performed destination |
+| State continuity | A replacement headless destination preserves one sheet and static copy; theme/light-dark changes swap aliases only; no queued destination, stale destination copy, retrigger, or focus movement |
+| Motion | Appearance and removal are immediate with no animation; reduced motion keeps the identical static surface, copy, hierarchy, focus, and lifecycle |
+| Scope boundary | Generic Dialog/AlertDialog chrome, delete/archive confirmation, native unload UI, prototype literals, adjacent cards, and theme-ID behavior/copy branches are prohibited |
+
+The departure roles map through the existing theme families while preserving
+one semantic tree and exact copy:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Restrained semantic panel/border/technical-label/primary/destructive-secondary roles |
+| Tiny Desk | Attached paper-slip, ruled-divider, and stationery-action roles |
+| Neumorphism | Inset decision-well and raised-primary roles with separate destructive secondary treatment |
+| Claymorphism | Shape-preserving inset-sheet, raised-primary, and restrained destructive-secondary roles |
+| Origami | In-flow paper-strip, seam, and asymmetric action-fold roles |
+| Terminal | Variable-driven command-block and bracketed-action roles with no blink |
+| Retro Mac | In-flow 1-bit pane, hard-border, and default-button roles without window chrome |
+| Graphite | Editorial-note, strengthened-rule, solid-primary, and text-destructive roles |
+
+### Approved dual inline-editor realization — `DP-VQ04`
+
+**User-approved 2026-08-09:** Choice A replaces the Scratch title and active
+Breakdown content directly inside their source Context/title and row/content
+regions. One common state vocabulary drives both surfaces; Task 137 remains the
+headless owner and Task 138 alone consumes this visual/copy contract.
+
+| Contract | Exact token requirement |
+|---|---|
+| Surface binding | `data-triage-editor-surface="scratch-title"` or `"breakdown-content"`; `context-inline-editor` stays inside Context and `breakdown-inline-editor` inside the exact source/former row position |
+| State binding | `data-triage-editor-state="pristine|dirty|validation|saving|offline|not-applied|reconciling|conflict|invalidated"`; no theme-ID or copy branch |
+| Common roles | `inline-editor-field`, `inline-editor-status`, `inline-editor-actions`, `inline-editor-compare`, `inline-editor-latest`, `inline-editor-draft`, `inline-editor-recovery`, and `inline-editor-copy-status` |
+| Base actions | Primary `Save`, secondary `Cancel`; pristine/validation Save disabled; unchanged Save/valid blur exits without a write; theme/locale activation and IME composition do not blur-save |
+| State copy | `No changes.`, `Unsaved changes.`, surface-specific empty validation, `Saving…`, `Offline. Your draft is still here.`, `Not saved. Your draft is still here.`, and `Checking whether your changes were saved…` |
+| Conflict | `This changed elsewhere.`, full labelled `Latest version` / `Your draft`, primary `Use mine`, secondary `Use latest`, tertiary `Copy draft`; latest refresh copy `Latest version updated.` |
+| Recovery | `Draft not saved`, surface-specific no-longer-editable reason, `Review or copy your draft before closing.`, full `Your draft`, primary `Copy draft`, secondary `Close`; copy status `Copied.` |
+| Pending intent | `Saving before continuing…` replaces ordinary saving copy; `Stay here` cancels only the pending intent, never the in-flight Save or draft |
+| Completion / focus | Applied copy `Saved.` once; surviving Save/Cancel/Use latest returns to Edit; validation/conflict/offline/not-applied retain field focus; invalid row uses next-visible then Add fallback; invalid Scratch uses canonical Pool/selection fallback |
+| Motion / lifetime | Static transitions only; no spinner rotation, pulse, bounce, blink, scale, or layout-transition animation; reduced motion is identical; all drafts/resolvers/recovery are mounted-page memory only |
+| Scope boundary | No generic Dialog/AlertDialog, popover, detached conflict card, toast, prototype literal, adjacent editor, or theme-specific behavior/copy branch |
+
+The two surfaces share one semantic state tree while consuming their existing
+theme families:
+
+| Theme | Shared editor-family binding |
+|---|---|
+| GridDO | In-place semantic fields, technical status rules, labelled comparison blocks, and canonical primary/secondary roles |
+| Tiny Desk | Same-sheet ruled fields, paper status annotations, and labelled paper comparison/recovery sections |
+| Neumorphism | Inset fields/comparison wells inside existing Context/row depth with raised actions |
+| Claymorphism | Shape-preserving inset text channels, restrained seams, and raised actions within source silhouettes |
+| Origami | Inline field, comparison, and recovery folds inside the same source paper geometry |
+| Terminal | Variable-driven editable record lines and static status/diff blocks with no blink |
+| Retro Mac | In-place 1-bit fields, hard status/comparison panes, and default-button hierarchy without new windows |
+| Graphite | Editorial fields, strengthened status rules, and labelled manuscript comparison/recovery blocks |
+
+### Approved Add/Delete attached reliability realization — `DP-VQ05`
+
+**User-approved 2026-08-09:** Choice A binds Add reliability to the Add region
+and Delete reliability to the exact source row. Task 136 remains headless;
+Task 143 alone consumes this copy/visual contract.
+
+| Contract | Exact token requirement |
+|---|---|
+| Surface binding | `data-triage-reliability-surface="add|delete"` with headless-authoritative `pending|unknown|reconciling|not-applied|rejected|conflict`; no theme-ID or copy branch |
+| Add placement | `breakdown-add-reliability` is a reserved full-width second line inside the Add input/control grid; `breakdown-reliability-status` precedes one trailing `breakdown-reliability-action`; `DP-VQ03` stays below the complete Add region |
+| Delete placement | `breakdown-delete-reliability` is a full-width second line inside the exact source row below its ordinary content/action line; width, identity, order, content, grip, Edit, and Trash positions stay stable |
+| Add copy | `Adding…`; `We couldn’t confirm whether it was added.`; `Checking whether it was added…`; `Not added. Your draft is still here.`; `Add unavailable. Your draft is still here.`; `This Scratch changed. Your draft is still here.` |
+| Add recovery | `Check again` only for unknown/reconciling; primary `Retry Add` only for authoritative `not_applied` with the same operation/row identity and snapshotted content; editing withdraws Retry; rejected/conflict return to a new ordinary Add path |
+| Delete copy | `Deleting…`; `We couldn’t confirm whether it was deleted.`; `Checking whether it was deleted…`; `Not deleted. This breakdown is still here.`; `Delete unavailable. This breakdown is still here.`; `This breakdown changed. Delete was not completed.` |
+| Delete recovery | `Check again` is the sole reliability action and performs read-only reconciliation; no `Retry`, `Retry Delete`, or `Delete again`; a later ordinary Trash activation is a new attempt |
+| Confirmed result | Add clears once and delegates visible success to `DP-VQ02`'s row `Added.` signal; Delete removes once with SPEC focus/empty/completion handoff and no placeholder or toast |
+| Timing / lifetime | Pending appears synchronously before the first async gap; all changes are immediate; unknown/failure persist without auto-dismiss until new source interaction, exit, or terminal authority replaces them |
+| Focus / accessibility | One polite atomic announcement per new state; Add input stays logically focused, `Check again` stays mounted/focused through reconcile, `not_applied` may replace it with focused `Retry Add`; Delete retains Trash then uses focused Check again and returns terminal failure to Trash |
+| Motion | Static only; no spinner rotation, pulse, ping, bounce, blink, flicker, scale, transform, or layout-transition animation; reduced motion is identical |
+| Scope boundary | No toast, placeholder row, generic card/dialog, global status rail, prototype literal, adjacent-surface fallback, blind Retry, or theme-specific behavior/copy |
+
+The same semantic tree consumes existing theme families:
+
+| Theme | Reliability-family binding |
+|---|---|
+| GridDO | Compact technical rule, semantic status text, canonical action/focus roles |
+| Tiny Desk | Attached ruled-paper annotation and stationery recovery controls |
+| Neumorphism | Shallow inset status channel and named raised recovery control inside existing depth |
+| Claymorphism | Shape-preserving inset status seam and restrained raised recovery control |
+| Origami | Attached status seam/fold and fixed recovery fold inside source paper |
+| Terminal | Variable-driven static status line and bracketed recovery action with no blink |
+| Retro Mac | In-place 1-bit status pane and hard recovery control with no new window |
+| Graphite | Editorial status caption, strengthened rule, monochrome action, and persistent focus cue |
+
+### Approved Pool fixed-status realization — `DP-VQ06-POOL`
+
+**User-approved 2026-08-10:** Choice A establishes one fixed Pool-local status
+band directly below the expanded search/sort row and outside the scrolling
+Scratch list. It resolves only the Pool slice of `VQ-06`; Task 144 alone
+consumes it, while the Staging and Explorer slices remain unresolved.
+
+| Contract | Exact token requirement |
+|---|---|
+| Placement | `pool-status-band` follows the complete search/sort row and precedes `pool-scroll-viewport`; it has at most one search-context `pool-status-line` and one aggregate activity line and never becomes a list row, toast, panel, event history, or adjacent-surface status |
+| Count meaning | `pool-total-count` always means all active Scratches; non-empty search alone renders exact `{visible} of {total} Scratches` in `pool-filtered-count`; `pool-activity-marker` means mounted-page unseen remote arrivals or non-selected lifecycle activity and never replaces either count |
+| Hidden selection | Bind `hidden-selection`; render exact `Selected Scratch is hidden by this search.` plus `Clear search`; retain selection/Context, clear only the query, and keep focus in the search field |
+| Remote arrival | Bind `remote-arrival`; render `1 new Scratch arrived.` or `{count} new Scratches arrived.` plus `Review new`; revalidate, scroll/focus the first surviving unseen row without selecting it, and otherwise return focus to the search field |
+| Lifecycle | Bind `lifecycle-update`; render exact archive/delete/restore singular or plural copy from the Pool recipe plus `Dismiss`; selected external archive/delete bypasses this ordinary line and remains owned by `DP-VQ01` |
+| Mixed activity | Use the recipe's one `Pool updated elsewhere: {nonzero clauses}.` sentence in fixed new/archive/delete/restore order; expose `Review new` only for arrivals and `Dismiss` only for lifecycle aggregates; no disclosure or Mark-reviewed state |
+| Compact mode | Search is not applied, so show no hidden/filtered line; keep the all-active count and use literal `+{count}` plus a separate non-color lifecycle marker named `Pool updated elsewhere.`; markers are not controls and the existing expand control reveals the band |
+| Lifetime | Hidden/filter status is condition-bound; arrival/lifecycle aggregates are mounted Inbox-page state, preserved by selection/sort/collapse/theme/light-dark changes, independently cleared by `Review new` / `Dismiss`, and cleared together only by route exit or reload; no timer or auto-dismiss |
+| Accessibility / focus | One polite atomic announcement per newly changed activity sentence, never per rerender; arrival/lifecycle never steals focus or selection; user actions use the exact recipe focus destinations; `DP-VQ01` alone owns blocking selected-disappearance focus |
+| Motion | Every entry, replacement, clear, marker, band-size, scroll, and focus change is immediate; no fade, slide, scale, spinner, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No selection/query meaning/persistence mutation, no repository or lifecycle command, no `DP-VQ01` duplication, and no Staging/Explorer role, copy, action, state, or theme authority |
+
+The fixed status band maps through Pool-native theme families with no product
+JSX theme branch or copied adjacent-surface literal:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Restrained semantic band/marker using canonical border, muted, primary, text, action, and focus roles |
+| Tiny Desk | Ruled-paper strip below wood tools, stationery text/actions, and pin/bar-like compact marker |
+| Neumorphism | Shallow inset status well, named raised action, and raised compact marker within the existing shadow family |
+| Claymorphism | Shape-preserving soft inset ribbon, restrained raised text action, and puffy non-color compact marker |
+| Origami | Attached folded-paper strip, seam-separated lines/actions, and folded-tab compact marker |
+| Terminal | Variable-driven static bordered line, bracketed text action, and text/shape marker with no fixed JSX color or blink |
+| Retro Mac | In-place 1-bit pane below FIND/tools, hard text control, and hard-outline marker with no new window |
+| Graphite | Editorial caption band, strengthened rules, restrained monochrome text action, and index-like compact marker |
+
+### Approved Staging attached-status realization — `DP-VQ06-STAGING`
+
+**User-approved 2026-08-10:** Choice A establishes candidate-attached
+pending/unknown/reconciling status, subsection-local remote-arrival indicators,
+and one Staging-title-attached terminal/integrity alert. It resolves only the
+Staging slice of `VQ-06`; Task 147 alone consumes it. Pool remains owned by
+`DP-VQ06-POOL`, and Explorer remains unresolved.
+
+| Contract | Exact token requirement |
+|---|---|
+| Operation placement | `staging-operation-status` is one fixed line inside the affected final-type Node card or Bit row; Stage pending uses a non-draggable projection, Unstage retains the durable candidate, and pending/unknown/reconciling never replace or resize the Staging panel |
+| Base and remote count | `Nodes` / `Bits` remain bare at zero or one and receive the durable total prefix only at two or more; `staging-arrival-count` separately renders exact `1 new` / `{count} new` beside only the affected heading with accessible action name `Show new {Nodes|Bits}` |
+| Terminal alert | `staging-local-alert` is one static band directly below `Staging` and above both wells; `staging-alert-action` is visible `X` named `Dismiss Staging alert`; later failure replaces earlier and no stack/history/rail/toast/dialog exists |
+| Pending/reconcile copy | Use the Staging recipe's exact `Staging “{title}”…`, `Returning “{title}” to Breakdown…`, unknown, and checking sentences; no action or Retry exists before authority |
+| Failure copy | Use the recipe's exact Stage/Unstage `not_applied`, rejected, and conflict sentences; alert `X` dismisses presentation only and a permitted retry is a new drag, never a status action |
+| Integrity/stale copy | Bind `source-unresolved`, `orphan-cleanup`, or `stale` and use the exact type-only unresolved/orphan, changed-elsewhere drop cancellation, and placement-closed copy; cache/offline/delay never uses orphan copy and no missing candidate title is reconstructed |
+| Neutral/invalid | `staging-target-reason` attaches exact `Already in Nodes.`, `Already in Bits.`, `Return to Breakdown before changing type.`, or `This item is no longer available.` only to the active well/target and clears on exit/end |
+| Remote focus | Arrival preserves focus/scroll; activating the count revalidates, scrolls its subsection to top, clears its count, and focuses the first surviving new candidate without mutation, or the subsection heading when none survives; observing top clears without focus movement |
+| Alert lifetime/focus | No timer; clear on `X`, new operation for that candidate, authoritative candidate disappearance, or Scratch switch; `X` returns focus to surviving candidate, related Breakdown source, then Staging heading |
+| Motion | Every status/count/alert/reason/scroll/focus transition is immediate; no fade, slide, scale, spinner, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No repository/lock/reconciliation change, candidate label snapshot, permanent Unstage/Retry, `DP-VQ02` change, `D-CARD`, Pool role, Explorer role, or theme-ID behavior/copy branch |
+
+The attached family maps through Staging-native theme roles:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Candidate technical rule, compact subsection count chip, restrained semantic alert band, and canonical action/focus roles |
+| Tiny Desk | Paper-object annotation, stationery count tab, and ruled-paper notice below the wood/cork title |
+| Neumorphism | Shallow inset candidate line, named raised count action, and wide inset alert well within the existing shadow family |
+| Claymorphism | Shape-preserving candidate seam, puffy non-color count, and soft sculpted alert ribbon |
+| Origami | Candidate fold-edge status, folded count tab, and attached alert strip with seam-separated action |
+| Terminal | Variable-driven inline record status, text count command, and static framed alert with no fixed JSX color or blink |
+| Retro Mac | In-place 1-bit candidate footer, hard counter control, and full-width alert pane below the title with no new window |
+| Graphite | Candidate editorial caption, compact index count, and strengthened-rule alert band with restrained monochrome action |
+
+### Approved Explorer affected-column status realization — `DP-VQ06-EXPLORER`
+
+**User-approved 2026-08-10:** Choice A establishes per-column remote-insertion
+counts and one affected surviving-column path/fallback strip. It resolves the
+final Explorer slice of `VQ-06`; Task 150 alone consumes it. Pool and Staging
+remain owned by their receipts, and the separately approved `DP-VQ07` search
+body does not alter this status family.
+
+| Contract | Exact token requirement |
+|---|---|
+| Remote count | `explorer-remote-count` sits beside only the affected full `Home` / `Level 1` / `Level 2` / `Level 3` label and renders exact `1 new` / `{count} new` with accessible action `Show new in {full level label}`; initial hydration, local placement, and move-between-column do not count |
+| Stable anchoring | Ordinary insertion binds `explorer-remote-arrival` and preserves path, selection, focus, first-visible stable ID, and viewport offset; never restore raw `scrollTop`, jump, select, or change path automatically |
+| Path placement | `explorer-path-status` follows the surviving destination column's full label and precedes only that column's scrolling rows; removed suffix columns leave no ghost status/row/column/label; one later fallback replaces the prior strip |
+| Path copy | Bind `path-fallback` and use the recipe's exact deleted/unavailable, archived, moved, generic invalid-path, and stale-placement sentences with `{destination}` equal to the nearest valid ancestor's visible title/full label or `Home` |
+| Bit disappearance | Bind `selection-cleared`; render exact `“{title}” is no longer available. Selection cleared.` in the valid parent column and clear only Bit selection/reveal |
+| Actions | `explorer-status-action` is only `Dismiss`; remote count is only `Show new in {level}`; no Retry, restore, reveal, Search, sibling choice, undo, navigation, or mutation action |
+| Fallback/focus | Remove only invalid suffix, close stale placement without write, never choose sibling/ghost, then focus surviving nearest-valid ancestor row or destination full-label heading; ordinary arrival/status appearance never steals focus |
+| Show new | Revalidate, scroll only that column to top, clear only its count, and focus the first surviving new row without selection/path change, otherwise its full-label heading; observing top clears without focus movement |
+| Lifetime | Per-column count clears on its action/top observation/column close or path change/route exit or reload; path strip clears on Dismiss/next fallback/explicit user path change/route exit or reload; Scratch/theme/light-dark changes preserve open-column state; no timer or auto-dismiss |
+| Motion | Indicator, strip, suffix removal, fallback, anchoring, scroll, and focus changes are immediate; no fade, slide, scale, spinner, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No path semantics or anchoring algorithm change, product mutation, placement implementation, `VQ-07` search body, Pool/Staging role, abbreviated label, or theme-ID behavior/copy branch |
+
+The affected-column family maps through Explorer-native theme roles:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Compact column-label count chip and restrained technical strip using canonical border, muted, primary, text, action, and focus roles |
+| Tiny Desk | Library-index count tab and catalog-paper status slip below the destination column label |
+| Neumorphism | Named raised count control and shallow inset column notice within the existing shadow family |
+| Claymorphism | Puffy non-color marker and shape-preserving soft ribbon attached to the destination clay column |
+| Origami | Folded count tab and seam-attached paper strip with no ghost fold or repeated motion |
+| Terminal | Variable-driven text count command and static destination-column status record with no fixed JSX color or blink |
+| Retro Mac | Hard counter control and in-pane 1-bit system message below the full label with no new window or ghost pane |
+| Graphite | Compact editorial index and strengthened-rule column note with restrained monochrome action |
+
+### Approved Explorer replacement-search realization — `DP-VQ07`
+
+**User-selected 2026-08-10:** Choice A retains theme-native Explorer chrome
+and replaces only its four-column body with one dedicated whole-hierarchy
+search body. Task 151 consumes the complete body after checkpoint acceptance;
+Task 158 consumes only its result-Undo composition after `DP-VQ10` and Tasks
+156–157. Ordinary-card Undo Task 156 remains independent.
+
+| Contract | Exact token requirement |
+|---|---|
+| Entry and body | `explorer-search-entry` is exact `Search Explorer`; activation swaps only the body. `explorer-search-body` contains one fixed top `explorer-search-field`, its in-input `explorer-search-close`, one fixed `explorer-search-status`, and one internally scrolling `explorer-search-results` viewport; no overlay, dialog, fifth column, detached panel, or page scroll response |
+| Input and close copy | Placeholder is exact `Search all Nodes and Bits`; `X` accessible name is exact `Clear and close Explorer search`; X and Escape clear active/interrupted query, results, scroll, and reveal, restore columns, and focus the entry action |
+| Result grammar | Each `explorer-search-result` preserves Node/Bit icon/color identity and adds visible `explorer-search-type`, title, full `explorer-search-breadcrumb`, and when required exact `explorer-search-duplicate` text `Duplicate {index} of {count}` in stable hierarchy order; no result is a drag source and no ID/coordinate/hidden root is exposed |
+| State copy | Use exact `Search the entire Grid Explorer.`, `Searching Grid Explorer…`, `Updating results…`, `No results for “{query}”.`, `Search couldn’t be updated.`, `That item is no longer available. Results were updated.`, `Revealed “{title}” in {breadcrumb}.`, and `Restored “{title}” to {source}.`; request failure alone exposes exact `Try again` |
+| Loading/stale/error | Initial loading has an empty result viewport; stale refresh retains prior rows, scroll, and focus; error retains prior successful rows when available; `aria-busy` and one-time state announcements replace spinner/shimmer or row-by-row announcements |
+| Navigation/focus | Open focuses input; Arrow Down/Up moves result focus; Enter/pointer revalidates before selection; valid selection restores columns and focuses the actual revealed row; stale selection changes no path/selection/route and returns to input when the focused result disappears; Scratch switch preserves state without forcing focus |
+| Reveal | `explorer-revealed-row` is a static non-color marker on the actual row and `explorer-reveal-status` sits directly below the Explorer header; it ends only on another item selection, path change, DnD start, search restart, route exit, or reload, never a timer |
+| DnD interruption | DnD start alone closes the body and preserves query/results/scroll as mounted-page interrupted state; Drop/Cancel never auto-reopens; explicit entry activation restores it and focuses input; result selection, X, Escape, route exit, or reload clears it |
+| Result Undo boundary | `explorer-search-undo` is a trailing exact `Undo` action only when later `DP-VQ10` allows it; operation-specific reason/pending/failure/conflict treatment is imported from Tasks 156–157. Terminal success keeps query/scroll, removes only that result, reports source restoration, and focuses the next result at the removed position or otherwise the input, never the previous result |
+| Lifetime and motion | Request/status lines are request/event-owned and end on their specified next request, status, selection, clear/close, route exit, or reload; none auto-dismisses. Every swap, status, result removal, reveal, scroll, and focus handoff is immediate; no fade, slide, scale, skeleton shimmer, spinner, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No query traversal/rank/exclusion change, global Search import, active-column search, ordinary-column fallback, placement mutation, `DP-VQ06-EXPLORER` change, `DP-VQ10` state invention, product implementation in Task 114, or theme-ID behavior/copy branch |
+
+The replacement body maps through Explorer-search-native theme roles:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Full-width technical search field, restrained state rule, compact typed result rows, and canonical primary/action/focus roles |
+| Tiny Desk | Library-index search tab, catalog-paper status slip, and stacked catalog result cards inside the Explorer body |
+| Neumorphism | Inset search field and state trough with shallow raised result rows inside the existing shadow family |
+| Claymorphism | Soft sculpted search field, shape-preserving status ribbon, and tactile typed result tiles without motion-led state |
+| Origami | Folded search sheet, seam-attached state strip, and cut-paper result rows with no animated fold or ghost column |
+| Terminal | Variable-driven command-line search, static status record, and text-led result records with no fixed JSX color, spinner, or blink |
+| Retro Mac | In-pane Finder `Find` strip, 1-bit system status line, and hard bordered result list with no new window/dialog/ghost pane |
+| Graphite | Editorial index field, strengthened-rule status caption, and restrained monochrome result rows with precise focus outline |
+
+### Approved Placement fixed-reliability-rail realization — `DP-VQ08`
+
+**User-selected 2026-08-10:** Choice A retains the captured target-column
+Placement Affordance and inserts one fixed two-line reliability rail below its
+source/type/destination summary and above one fixed action row. Task 153 alone
+consumes this contract after Task 115 checkpoint acceptance.
+
+| Contract | Exact token requirement |
+|---|---|
+| Surface binding | `data-placement-reliability="pending|unknown|reconciling|not-applied|stale-source|stale-target"` binds one `placement-reliability-rail` inside the captured affordance; the source/type/destination summary stays visible, geometry is reserved before Confirm, and the target column does not expand or clip controls |
+| Pending / unknown / reconcile copy | Use exact `Placing “{title}” in {destination}…`, `We couldn’t confirm whether “{title}” was placed.`, and `Checking whether “{title}” was placed…`; unknown alone exposes exact `Check again`, which performs read-only reconciliation with the same operation ID and never resends placement |
+| Failure / stale copy | Authoritative `not_applied` uses exact `“{title}” wasn’t placed. Your source is unchanged.` with `Retry` then `Cancel`; stale source uses exact `The source changed. Nothing was placed. Cancel and drag it again.`; stale target uses exact `The destination changed. Nothing was placed. Cancel and drag to the current destination.`; stale states expose only `Cancel` |
+| Result mapping | `applied|already_applied` maps only to success; `not_applied` maps only to the retryable row; returned authoritative facts classify `rejected|conflict` as `stale-source` or `stale-target`; no generic failure fallback or guessed side is allowed |
+| Retry boundary | `placement-reliability-retry` exists only for authoritative `not_applied`, reuses the logical operation and preallocated result ID, and returns to pending; rejected/conflict, unknown/reconciling, and stale states never Retry, auto-retry, compensate, or infer success |
+| Focus and locking | Pending retains focus on rendered unavailable Confirm; unknown focuses `Check again`, reconciliation retains that action position, not-applied focuses `Retry`, stale focuses `Cancel`, and Cancel/Escape returns to surviving source grip/candidate or the owning section heading; pending/reconciling lock Escape, Cancel, and all conflicting interactions |
+| Success | Announce exact `Placed “{title}” in {destination}.` once at authoritative `applied`/`already_applied`, remove the affordance without an intermediate timer/card, render and focus the actual Node/Bit card, and leave all Newly Placed/Undo appearance to `DP-VQ10` |
+| Lifetime / accessibility | Pending, unknown, and reconcile are operation/result-owned; not-applied and stale persist until their named action; none auto-dismisses. The visible rail is one polite atomic status with text plus a static non-color state mark and one announcement per changed sentence, never per rerender |
+| Motion | Rail/action replacement, affordance removal, actual-card insertion, and focus handoff are immediate and static; no fade, slide, scale, skeleton, shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No toast/dialog/global alert/detached or adjacent surface, optimistic result/source change, alternate-target implication, prototype or existing-product reliability authority, `VQ-09`/`DP-VQ10` invention, product implementation in Task 115, or theme-ID behavior/copy branch |
+
+The fixed rail maps through Placement-native theme roles without product JSX
+theme branching or unsupported literal values:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Restrained technical status rail with canonical semantic border, text, action, and focus roles |
+| Tiny Desk | Narrow pinned status slip beneath the retained placement summary |
+| Neumorphism | Shallow inset status trough inside the existing shadow family |
+| Claymorphism | Compact sculpted status ribbon whose static shape carries state without motion |
+| Origami | Seam-attached status strip with a fixed paper edge and no animated fold |
+| Terminal | Variable-driven one-line `[SYS]` status record with text/non-color cue and no blink |
+| Retro Mac | In-pane 1-bit system line with hard action controls and no new window or dialog |
+| Graphite | Strengthened-rule status caption with restrained monochrome action and precise focus outline |
+
+### Approved Placement compact title/limit realization — `DP-VQ09`
+
+**User-selected 2026-08-11:** Choice A retains the captured target-column
+Placement Affordance and adds one compact staged Result Title step plus one
+compact direct Node/Bit eligibility step. Task 154 alone consumes this contract
+after Task 116 checkpoint acceptance.
+
+| Contract | Exact token requirement |
+|---|---|
+| Surface binding | `data-placement-title-step="staged-result-title|direct-type-limit"` binds one compact step inside the existing target-column scroll content; neither step expands/clips the column or opens a dialog |
+| Staged trigger | `placement-result-title-shell` appears only when staged source length exceeds the chosen type limit (`Node=100`, `Bit=200`); within-limit staged placement keeps the exact source title and skips the step |
+| Staged copy | Use exact `RESULT TITLE`, `Name this {Node|Bit}`, `The source is {count} characters. A {Node|Bit} title can be up to {limit}. The source won’t change.`, label `Result title`, counter `{count} / {limit}`, errors `Enter a result title.` and `Use {limit} characters or fewer.`, and actions `Continue`, `Cancel` |
+| Staged validation | Start with an empty draft; accept input without silent clipping, truncation, source-prefill normalization, or source mutation; `placement-result-title-continue` is unavailable until canonical non-empty/length validation passes |
+| Direct structure | Use exact `DIRECT PLACEMENT`, `Choose a result type`, retained source/destination, `Node`, `Bit`, and `Cancel`; direct placement exposes no Result Title input |
+| Direct limits | `1–100` enables Node/Bit; `101–200` disables Node with exact `Node titles can be up to 100 characters. This source has {count}.`; `201–1000` disables both, adds exact Bit reason `Bit titles can be up to 200 characters. This source has {count}.`, and shows `This source is too long for direct placement. Cancel and stage it first.` |
+| Accessibility | Staged entry focuses `Result title`; direct entry focuses its heading; unavailable type rows remain visible with native unavailable semantics and associated non-hover reasons; errors/counters do not move focus or announce every keystroke |
+| Advance / Cancel | Valid Continue or an available direct type focuses the next placement-step heading; Cancel/Escape writes nothing, discards only the draft, and returns to the surviving candidate/grip or its owning section heading |
+| Invalidation | Source/candidate/target/path invalidation closes the step, discards the draft, writes nothing, announces the named authoritative change once, and uses the same safe focus fallback; only a dirty staged draft may use native unload guard |
+| Motion | Step, validation, close, and focus changes are immediate/static; no fade, slide, scale, spinner, shimmer, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No source edit/truncation, direct hidden editor, create/generic dialog, automatic type/target fallback, prototype authority, product implementation in Task 116, `DP-VQ10` invention, or theme-ID behavior/copy branch |
+
+The compact steps map through Placement-native roles without product JSX theme
+branching or unsupported literal values:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Compact technical form card and ruled eligibility rows with canonical error/action/focus roles |
+| Tiny Desk | Pinned paper form slip and library-index type rows inside the target column |
+| Neumorphism | Raised compact step with inset field, counter, reason trough, and existing shadow variables |
+| Claymorphism | Sculpted compact form plate and tactile type rows with static availability shape |
+| Origami | Folded label sheet, seam-bound field/error, and cut-paper rows with no animated fold |
+| Terminal | Variable-driven prompt, static count/error record, and `[N]`/`[B]` rows with textual unavailable reasons |
+| Retro Mac | In-pane compact system form with hard field/buttons and disabled rows; no new window/dialog |
+| Graphite | Restrained registry form and strengthened-rule rows with monochrome reason and precise focus outline |
+
+### Approved Newly Placed / Undo realization — `DP-VQ10`
+
+**User-selected 2026-08-11:** Choice A keeps the actual common Node/Bit card
+unchanged and composes a static Newly marker, separate trailing Undo action,
+and one card-attached always-visible status rail in the same Explorer item
+wrapper. Task 157 alone consumes this contract after Task 117 checkpoint
+acceptance.
+
+| Contract | Exact token requirement |
+|---|---|
+| Independent binding | Independent `selected`, `newly-placed`, and `data-undo-state="available|reenabled|result-mutated|descendants|placement-open|operation-locked|edit-blocked|pending|unknown|reconciling|not-applied|conflict"`; selected treatment/focus remains authoritative and Newly/eligibility never clears or replaces it |
+| Placement | `newly-marker` stays at the actual card's leading corner; `newly-undo-action` occupies one stable trailing slot; `newly-status-rail` follows the unchanged actual card inside the same Explorer item wrapper. The rail is not a card footer, menu, toast, dialog, disclosure-only surface, or second card |
+| Available / re-enabled copy | Use exact `Undo this placement.` and `Undo is available again.` with `Undo`; re-enabled announces once without focus movement and persists until Undo, another eligibility change, next activation of that card, or route exit/reload, never a timer |
+| Ineligible copy | Result mutation: `This item changed after placement. Undo is unavailable.`; descendants: `Undo newly placed items below this one first.`; open placement: `Finish or cancel the placement in progress first.`; shared lock: `Wait for the current action to finish.`; Edit: `Save or cancel the current edit before undoing.`; unknown mutation/conflict fallback: `This item or its source changed. Undo is unavailable.` |
+| Unavailable action | Keep `Undo` in the stable slot, keyboard-focusable with `aria-disabled="true"`, programmatic activation suppressed, and associated to the visible current reason; never require hover or invoke a late-error mutation |
+| Pending / unknown / reconcile copy | Use exact `Undoing “{title}”…`, `We couldn’t confirm whether “{title}” was undone.`, and `Checking whether “{title}” was undone…`; unknown exposes `Check again`, which performs read-only reconciliation with the same operation ID and never resends Undo |
+| Not-applied / conflict | Authoritative `not_applied` uses exact `“{title}” wasn’t undone. Nothing changed.` and exposes `Retry`; rejected/conflict uses the narrow authoritative ineligible reason, otherwise exact `This item or its source changed. Undo is unavailable.`, and never exposes Retry |
+| Retry / success | `Retry` exists only for authoritative `not_applied`, reuses the logical operation ID, and returns to pending. `applied|already_applied` announces exact `Restored “{source}”.` once, removes only the committed result, and never focuses/scrolls the restored source |
+| Focus | Pending retains the stable Undo slot; unknown focuses `Check again`; reconcile retains it; not-applied focuses `Retry`; conflict focuses the unavailable Undo slot. Ordinary success focuses next card, then previous card, then column heading; Task 158 alone owns search-result focus composition |
+| Lifetime / accessibility | Marker/ordinary rail follow mounted-page provenance through Scratch/path/theme/light-dark changes and end on Inbox route exit/reload; operation states persist to their authoritative result/action. One visible polite atomic rail announces each changed sentence once, never per rerender; text plus static non-color mark carries meaning |
+| Motion | Marker, rail/action/state changes, result removal, and focus handoff are immediate/static; no fade, slide, scale, skeleton, shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, or layout-transition animation; reduced motion is identical |
+| Scope | No selection/navigation/search eligibility change, optimistic removal, cascade/best-effort restoration, current main-card menu, generic disabled control, common-card redesign, product implementation in Task 117, Task 118 start, or theme-ID behavior/copy branch |
+
+The marker/action/rail map through existing theme families without product JSX
+theme branching or unsupported literal values:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Static sky dot and technical `NEW`; ruled rail and canonical separate Undo |
+| Tiny Desk | Static yellow paper edge/amber pin; stationery note rail and brown Undo |
+| Neumorphism | Static violet-blue dot/`NEW`; inset reason trough and raised Undo without pulse |
+| Claymorphism | Static sky badge; sculpted reason ribbon and tactile rose Undo |
+| Origami | Static folded-corner marker; seam-attached rail and rose Undo with no animated fold |
+| Terminal | Textual `[new]`; variable-driven `[UNDO]` and one-line status record with no blink/glow loop |
+| Retro Mac | Static 1-bit `[NEW]`; hard Undo and in-item system line preserving selected inversion |
+| Graphite | Restrained black `NEW`; strengthened-rule caption and labeled Undo with precise focus |
+
+### Approved Completion Blocker / Withdrawal realization — `DP-VQ11`
+
+**User-selected 2026-08-11:** Choice A keeps page-local blockers attached to
+their Add or Scratch-title source status regions and reserves the vacated
+Breakdown completion slot for real persisted eligibility withdrawal. Task 160
+alone consumes this contract after Task 118 checkpoint acceptance.
+
+| Contract | Exact token requirement |
+|---|---|
+| Independent binding | `completion-blocked` never changes persisted eligibility; `completion-withdrawn` requires a real transition from presented completion to persisted ineligibility. Neither state implies Archive success, mutation, persistence, or a disabled stale completion control |
+| Add placement / copy | Bind `breakdown-add-completion-blocker` immediately below the stable Add field/control row with exact `Add this idea or clear the draft to complete this Scratch.`; keep `DP-VQ05` reliability copy first when both occupy the source status area |
+| Title placement / copy | Bind `context-completion-blocker` inside the existing `DP-VQ04` Scratch-title status region after its editor-state copy. `open|dirty`: `Save or cancel the Scratch title edit to complete this Scratch.`; `saving`: `Saving the Scratch title before completion…`; `conflicted`: `Resolve the Scratch title conflict to complete this Scratch.`; `reconciling`: `Checking the Scratch title before completion…` |
+| Existing actions only | Add creates no completion action; its existing Add/text-editing paths resolve the draft. Title uses only the current `DP-VQ04` actions. No blocker auto-adds, clears, saves, cancels, persists, archives, or moves focus |
+| Withdrawal placement | Remove `archive-section-scrim`, `archive-card`, `archive-complete-context`, and `archive-reopen`, then use `archive-withdrawal-status` plus static `archive-withdrawal-mark` in the vacated Breakdown completion slot; never substitute an ordinary empty state, toast, dialog, global banner, or detached panel |
+| Withdrawal copy | Active row only: `Completion is no longer available because a Breakdown item is active.`; staged candidate only: `Completion is no longer available because an item is in Staging.`; both: `Completion is no longer available because Breakdown and Staging have active items.` |
+| Inactive Scratch | Archived/deleted/inactive selected Scratch exits through the canonical workspace owner and renders no blocker/withdrawal status or stale Archive control |
+| Focus / accessibility | Blockers preserve source logical focus and associate exact copy to the source control. Local withdrawal retains the action's canonical focus; remote arrival never steals focus; removal of the focused Archive/Cancel/Reopen target hands focus to the surviving Breakdown heading. Announce a new/changed sentence once through a visible polite atomic status |
+| Lifetime / recovery | Blockers persist while their otherwise-eligible source cause exists. Withdrawal persists only for the same selected active Scratch while its current aggregate cause exists. Scratch switch/route exit/reload/unmount clears page-memory status; current-truth recovery removes it and returns ownership to Task 159 without a timer, dismissal, Retry, or separate restoration rail |
+| Motion | All blocker, withdrawal, removal, and focus changes are immediate/static; reduced motion is identical. No fade, slide, scale, blur transition, skeleton, shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, or layout-transition animation |
+| Scope | No completion predicate, headless Task 137/159 behavior, Archive transaction, `VQ-12` state, product implementation in Task 118, Task 119 start, Task 160 start, theme-ID behavior/copy branch, or adjacent fallback |
+
+The roles map through existing theme families while retaining identical copy,
+source/completion-slot placement, actions, focus, lifetime, and static motion:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | Technical ruled source status and compact ruled completion-slot notice with static warning mark |
+| Tiny Desk | Same-paper source annotation and pinned filing-status note |
+| Neumorphism | Inset source/completion troughs using existing depth variables, never a second raised card |
+| Claymorphism | Shape-preserving source ribbon and stable completion ribbon without bounce |
+| Origami | Seam-bound source note and folded completion notice without animated fold |
+| Terminal | Variable-driven `[completion blocked]` / `[completion withdrawn]` records with exact copy and no blink/glow loop |
+| Retro Mac | Hard 1-bit in-window source line and in-section completion system status |
+| Graphite | Restrained editorial source caption and strengthened-rule completion notice |
+
+### Approved Archive Reliability / Recovery realization — `DP-VQ12`
+
+**User-selected 2026-08-11:** Choice A keeps one stable Breakdown-scoped
+`archive-card` and changes only its static mark, exact sentence, and one
+current-action slot in place. Task 162 alone consumes this contract after Task
+119 checkpoint acceptance.
+
+| Contract | Exact token requirement |
+|---|---|
+| Stable composition | Keep `archive-card` in the existing completion locus and preserve its outer geometry through `archive-pending`, `archive-unknown`, `archive-reconciling`, `archive-recovery`, `archive-not-applied`, and `archive-conflict`. Use one `archive-status`, static `archive-status-mark`, and original-position `archive-current-action`; no second rail or replacement panel |
+| Pending | Exact `Archiving this Scratch…`; retain a keyboard-focusable `aria-disabled` current-action target at the originating Archive position; no Check again, Retry, Cancel, resend, optimistic removal, or success treatment |
+| Unknown / reconcile | Unknown exact `We couldn’t confirm whether this Scratch was archived.` with primary `Check again`; reconciliation exact `Checking whether this Scratch was archived…` with the same focusable inactive action position. Both retain the same descriptor/operation ID and never resend Archive |
+| Forced reload | Exact `Checking the Archive request from before this reload…`; focus the recovery heading and reconcile the validated current-tab descriptor before initial Inbox projection. Never flash normal completion, restore unrelated page state, allocate a new identity, or mutate from an invalid descriptor |
+| Not applied | Exact `This Scratch was not archived.` with primary `Retry` and secondary `Cancel`; focus Retry. Retry exists only for authoritative `not_applied`, reuses the logical operation identity, and returns the same card to pending |
+| Pre-dispatch storage failure | Exact `Archive couldn’t start because this tab couldn’t keep its recovery details.`; no command ran, expose Cancel only, focus it, and return to current completion/reopen truth. A later Archive activation is a newly confirmed attempt, not this variant's Retry |
+| Rejected / conflict | Rejected exact `Archive stopped because this Scratch is no longer ready.` plus returned current truth where available; conflict exact `Archive couldn’t finish because this Scratch changed while the result was being checked.`. Focus Cancel and expose no Retry, overwrite, compensation, inferred success, or stale completion action |
+| Success / handoff | `applied|already_applied` announces exact `Scratch archived.` once, then removes the card with the selected Scratch and uses canonical next-visible → previous-visible → filtered-null → true-empty focus. No persistent success card, Archive View navigation, or hidden-Scratch selection |
+| Cancel | Pre-dispatch base Cancel retains Task 159 meaning. No Cancel/Escape exists while pending/unknown/reconciling. Terminal Cancel dismisses only the terminal result and returns to current completion/reopen or working truth; it never aborts, rolls back, compensates, or conceals uncertainty |
+| Accessibility / lifetime | One visible polite atomic status announces each changed exact sentence once. Static text/mark carries meaning without color or motion. Nonterminal state lasts until the same descriptor is authoritatively classified; theme/mode change and conflicting intents do not end or restart it |
+| Motion | Card content, action, terminal removal, and focus changes are immediate/static; reduced motion is identical. No fade, slide, scale, blur transition, skeleton, shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, ellipsis animation, or layout-transition animation |
+| Scope | No SCHEMA command/result/reconciliation change, Task 126/161 behavior change, new persistence, product implementation in Task 119, Task 162 start, Phase 24 close, theme-ID behavior/copy branch, adjacent-surface fallback, or Release edge other than Task 162 |
+
+The same card/action/status roles map through existing theme families without
+product JSX theme branching or unsupported literal values:
+
+| Theme | Role-family binding |
+|---|---|
+| GridDO | One ruled technical Archive operation card with static state glyph and canonical current-action slot |
+| Tiny Desk | One pinned filing note whose stamp line and single action row change in place |
+| Neumorphism | One raised Archive card with inset static status line and stable action capsule position |
+| Claymorphism | One shape-preserving clay Archive object with static status inset and no bounce |
+| Origami | One seam-bound Archive sheet whose printed status/action changes without a new fold/panel |
+| Terminal | One variable-driven `[archive:*]` system frame/current command line with no blink, spinner, or glow loop |
+| Retro Mac | One hard 1-bit in-section Archive alert whose message/default action changes in the same window |
+| Graphite | One restrained editorial Archive card with fixed rule, static mark, and stable action row |
+
+### Existing-surface state gaps — None
+
+`DP-VQ12` Choice A resolves the final existing-surface Decision prerequisite.
+No global color, motion, or component value outside its exact receipt becomes
+fallback authority.
+
+### Absent replacement surfaces — None
+
+The former `VQ-09` replacement-surface gap is resolved by `DP-VQ09` Choice A.
+No other absent replacement surface remains in this promotion package.
 
 ### Selected deferrals
 
@@ -834,18 +1325,20 @@ Runtime motion values live in `src/lib/animations/motion-language.ts`. Component
 
 ### Inbox/Triage Motion Boundary
 
-**Amendment status:** **User-approved 2026-07-28.** This amendment adopts no
-new Inbox/Triage duration, easing, delay, keyframe, interruption/retrigger, or
-reduced-motion-equivalence value. The unrelated global motion tokens above
-remain exact and unchanged, but they are not automatic fallbacks for any
-`VQ-*` state or missing replacement surface.
+**Amendment status:** **User-approved 2026-07-28; `DP-VQ02` supplement approved
+2026-08-09.** The original amendment adopted no new Inbox/Triage motion value.
+`DP-VQ02` now adds only the named `600ms` `ease-out` Add/Unstage row wash and
+`1600ms` status visibility with the exact static reduced-motion equivalent
+above. The unrelated global motion tokens remain exact and unchanged and are
+not automatic fallbacks for another `VQ-*` state or missing replacement
+surface.
 
 Repeated pulse, blink, ping, bounce, spin, and flicker are excluded from the
-Inbox/Triage target. Newly Placed may use only recipe-supported static or
-one-shot candidates after its remaining `VQ-10` decisions are approved; no
-repeating motion token is adopted. The `success` semantic state requires a
-static reduced-motion distinction, but `VQ-02` still owns its exact appearance,
-trigger realization, timing, placement, and theme mapping.
+Inbox/Triage target. Approved `DP-VQ10` Newly Placed and Undo uses immediate
+static marker/rail/action changes with reduced-motion-identical geometry and
+lifetime; no repeating or one-shot animation token is adopted. `DP-VQ02` owns the exact Add/Unstage
+`success` appearance, trigger, timing, placement, interruption, and theme
+mapping above; no other success or reliability surface inherits it.
 
 ---
 
@@ -1201,9 +1694,9 @@ role tables above.
 | `R-CONTEXT` | [Selected Scratch Context](recipes/inbox-triage-selected-scratch-context-visual-recipe.md) | Standalone signature Context and working/complete base roles |
 | `R-BREAKDOWN` | [Breakdown rows and empty states](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md) | Base row, action, Add, ordinary-empty, and completion-prompt roles |
 | `R-STAGING` | [Staging](recipes/inbox-triage-staging-visual-recipe.md) | Node/Bit wells and shapes, base state grammar, transient unstage target |
-| `R-EXPLORER` | [Grid Explorer](recipes/inbox-triage-grid-explorer-visual-recipe.md) | Base chrome/columns/full labels/rows/target grammar; excludes `VQ-07` |
+| `R-EXPLORER` | [Grid Explorer](recipes/inbox-triage-grid-explorer-visual-recipe.md) | Base chrome/columns/full labels/rows/target grammar plus separately receipt-owned `DP-VQ07` search roles |
 | `R-PLACEMENT` | [Placement affordances](recipes/inbox-triage-placement-affordances-visual-recipe.md) | Direct/staged base shells, target-column affordance, and full-target warning |
-| `R-NEWLY` | [Newly Placed and Undo](recipes/inbox-triage-newly-placed-undo-visual-recipe.md) | Actual-card marker and separate Undo base; static/one-shot candidates only |
+| `R-NEWLY` | [Newly Placed and Undo](recipes/inbox-triage-newly-placed-undo-visual-recipe.md) | Actual-card marker, separate Undo, and receipt-owned `DP-VQ10` always-visible reason/reliability rail; static treatment only |
 | `R-ARCHIVE` | [Archive and completion](recipes/inbox-triage-archive-completion-visual-recipe.md) | Breakdown-scoped base scrim/card, complete Context, reopen, Archive/Cancel |
 
 The old [Batch 2 Inbox/Triage recipe](recipes/inbox-triage-batch2-visual-recipe.md)

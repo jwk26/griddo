@@ -1,0 +1,142 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq03",
+  "decision_receipt_id": "DP-VQ03",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 108,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "predecessor_acceptance_commit": "9f866a3dafc376e2db37927b4e846664d19e2b5a",
+  "durable_start_commit": "442d20c180c1d71a4404f214bb65e0a6458f4b77",
+  "user_decision": {
+    "date": "2026-08-09",
+    "statement": "DP-VQ03=A",
+    "recorded_scope": "DP-VQ03=A only",
+    "choice": "A",
+    "label": "Add-adjacent inline Continue writing / Discard and move decision sheet"
+  },
+  "checkpoint_acceptance": {
+    "date": "2026-08-09",
+    "statement": "Task 108 / DP-VQ03=A checkpoint를 수락합니다.",
+    "accepted_task": 108,
+    "accepted_decision": "DP-VQ03=A",
+    "supersedes_initial_review_packet": {
+      "initial_position": "immediately above the Add input/control row",
+      "initial_copy": "Keep writing or discard this draft?",
+      "final_position": "immediately below the complete Add input/control row",
+      "final_copy": [
+        "Unsaved Add draft",
+        "Keep writing?",
+        "Continue writing here, or discard this draft and move."
+      ],
+      "final_actions": [
+        "Continue writing",
+        "Discard and move"
+      ],
+      "discard_destination": "Task 139's latest captured destination exactly once"
+    }
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-breakdown-row-empty-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "trigger_and_order": {
+      "qualifying_intents": [
+        "app-internal Scratch switch",
+        "app-internal Inbox path change",
+        "app-internal route departure"
+      ],
+      "draft_condition": "Add draft is non-empty at the synchronous departure check",
+      "ordering": "resolve any dirty inline Save before evaluating and opening the Add-draft decision",
+      "same_scratch": "does not trigger",
+      "save_not_resolved": "do not open or bypass the decision",
+      "native_unload": "browser reload, tab close, and native exit use only the browser-owned unload guard"
+    },
+    "placement": {
+      "surface": "inline decision sheet in normal document flow immediately below the complete Add input/control row",
+      "alignment": "left and right edges align with the complete Add row inside the Breakdown Add region",
+      "draft_visibility": "keep the non-empty Add draft visible in the input above the sheet",
+      "layout": "push following Breakdown content down",
+      "not_used": [
+        "portal",
+        "scrim",
+        "page center",
+        "toast lane",
+        "row action slot",
+        "borrowed dialog or card chrome"
+      ]
+    },
+    "copy": {
+      "eyebrow": "Unsaved Add draft",
+      "heading": "Keep writing?",
+      "description": "Continue writing here, or discard this draft and move.",
+      "continue_action": "Continue writing",
+      "discard_action": "Discard and move",
+      "dynamic_content": "no destination name, Scratch title, route, countdown, or draft excerpt"
+    },
+    "action_hierarchy": {
+      "continue": "primary and default; first in DOM and visual order",
+      "discard": "destructive secondary; second in DOM and visual order",
+      "other_actions": "none",
+      "outside_dismissal": "no backdrop, close icon, outside click, or automatic dismissal"
+    },
+    "focus_and_accessibility": {
+      "semantics": "dedicated labelled and described alert-dialog decision surface",
+      "initial_focus": "Continue writing",
+      "containment": "sequential focus remains within the two actions while the rest of the current workspace is inert",
+      "continue": "close without changing the draft and restore the Add input at its prior caret or selection",
+      "escape": "same outcome and focus restoration as Continue writing",
+      "enter": "activate only the focused action and never imply discard",
+      "discard": "clear only the Add draft, perform the latest captured internal destination once, and hand focus to that destination's canonical rule"
+    },
+    "continuity": {
+      "replacement_destination": "preserve one sheet, exact static copy, and focus; Discard consumes only the latest captured destination once",
+      "intent_queue": "none",
+      "theme_or_mode_change": "swap aliases only without closing, retriggering, or moving focus",
+      "motion": "appear and clear immediately with no animation",
+      "reduced_motion": "identical static surface, copy, hierarchy, focus, and lifecycle"
+    },
+    "theme_mapping": {
+      "griddo": "restrained semantic panel, border, technical-label, primary, and destructive-secondary roles",
+      "tiny-desk": "attached paper-slip, ruled-divider, and stationery-action roles",
+      "neumorphism": "inset decision-well and raised-primary roles with separate destructive secondary treatment",
+      "claymorphism": "shape-preserving inset-sheet, raised-primary, and restrained destructive-secondary roles",
+      "origami": "in-flow paper-strip, seam, and asymmetric action-fold roles",
+      "terminal": "variable-driven command-block and bracketed-action roles with no blink",
+      "retro-mac": "in-flow 1-bit pane, hard-border, and default-button roles without window chrome",
+      "graphite": "editorial-note, strengthened-rule, solid-primary, and text-destructive roles"
+    },
+    "prohibited_fallbacks": [
+      "generic Dialog or AlertDialog chrome",
+      "delete or archive confirmation",
+      "native unload UI",
+      "centered overlay",
+      "toast",
+      "adjacent card or search chrome",
+      "prototype literal or realization",
+      "theme-ID behavior or copy branch"
+    ],
+    "headless_boundary": "Task 139 behavior, destination capture/replacement, operation locks, and native unload ownership are unchanged"
+  },
+  "exact_release": {
+    "tasks": [
+      140
+    ],
+    "consumption_condition": "satisfied by Task 108 checkpoint acceptance, including the explicit position/copy supersession, on 2026-08-09",
+    "all_other_tasks": "unreleased"
+  },
+  "task_state": "accepted",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "task-109"
+}

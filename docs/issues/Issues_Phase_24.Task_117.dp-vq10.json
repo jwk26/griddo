@@ -1,0 +1,145 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq10",
+  "decision_receipt_id": "DP-VQ10",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 117,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "continuation_entrypoint": "9c0bae2d8b928564ef03637e899e3bf9d62637c7",
+  "continuation_kickoff_commit": "0861b071d58cba03d1e698fae12155a589709736",
+  "predecessor_acceptance_commit": "8e61b9412589bf7c709c1838b8b6dbc35d2a1c57",
+  "durable_start_commit": "b73ca5942c81bb75dddba8121ad1cf5b64a677ff",
+  "user_decision": {
+    "date": "2026-08-11",
+    "statement": "gogogo",
+    "prompt_context": "direct response to the explicit request to send DP-VQ10=A to proceed",
+    "recorded_scope": "DP-VQ10=A only",
+    "choice": "A",
+    "label": "Card-attached always-visible Newly/Undo status rail"
+  },
+  "checkpoint_acceptance": {
+    "date": "2026-08-11",
+    "statement": "Task 117 / DP-VQ10=A checkpoint를 수락합니다.",
+    "acceptance_basis": "d28680f133c2fa8553a7d9868a47fb166d275cff",
+    "accepted_task": 117,
+    "accepted_decision": "DP-VQ10=A",
+    "accepted_contract": [
+      "unchanged actual common Node/Bit card with independent selection, static Newly marker, stable trailing Undo action, and card-attached always-visible status rail",
+      "exact available, result-mutated, descendants, open-placement, shared-lock, Edit-blocked, conflict, and dependency-re-enabled copy with keyboard/touch non-hover reasons",
+      "exact non-optimistic pending, unknown, reconciliation, not-applied Retry, authoritative conflict, restoration announcement, and ordinary-card focus handoff",
+      "event-owned lifetime, static reduced-motion parity, and eight-theme mapping without repeated motion, adjacent fallback, common-card redesign, or theme-ID product logic",
+      "Task 157-only release with Task 118, Tasks 155–156, and Task 158 preserved as unstarted"
+    ],
+    "serial_boundary": "Task 117 is accepted; Task 118 remains unstarted and may begin only in a later separate session"
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-newly-placed-undo-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "surface": {
+      "actual_card": "retain the existing NodeCard/BitCard selection, navigation, padding, radius, base color, and internal content unchanged",
+      "newly_marker": "static source-backed marker at the actual card leading corner",
+      "undo_action": "separate stable trailing action slot that never bubbles into card navigation",
+      "status_rail": "one compact always-visible rail immediately below the actual card inside the same Explorer item wrapper",
+      "prohibited": [
+        "replacement or duplicate card",
+        "common-card internal, layout, or eight-theme redesign",
+        "current main-card menu or generic disabled-button fallback",
+        "toast, dialog, detached panel, disclosure-only, tooltip-only, or hover-only reason",
+        "prototype repeated pulse, blink, ping, flicker, or glow loop",
+        "theme-ID product behavior or copy branch"
+      ]
+    },
+    "independent_state": {
+      "selection": "existing selected treatment and focus ring remain authoritative",
+      "newly": "marker provenance remains present through selection and Undo ineligibility until mounted-page lifetime ends",
+      "eligibility": "changes only the stable action and rail state; never clears marker, selection, coordinates, order, or ordinary navigation",
+      "unavailable_action": "Undo remains keyboard-focusable with aria-disabled=true, suppresses mutation, and references the visible reason"
+    },
+    "eligibility_copy": {
+      "available": "Undo this placement.",
+      "reenabled": "Undo is available again.",
+      "result_mutated": "This item changed after placement. Undo is unavailable.",
+      "descendants": "Undo newly placed items below this one first.",
+      "placement_open": "Finish or cancel the placement in progress first.",
+      "operation_locked": "Wait for the current action to finish.",
+      "edit_blocked": "Save or cancel the current edit before undoing.",
+      "conflict": "This item or its source changed. Undo is unavailable.",
+      "action": "Undo"
+    },
+    "operation_copy": {
+      "pending": "Undoing “{title}”…",
+      "unknown": "We couldn’t confirm whether “{title}” was undone.",
+      "reconciling": "Checking whether “{title}” was undone…",
+      "not_applied": "“{title}” wasn’t undone. Nothing changed.",
+      "success": "Restored “{source}”.",
+      "check_action": "Check again",
+      "retry_action": "Retry"
+    },
+    "result_mapping": {
+      "applied_or_already_applied": "announce restoration once, then remove only the committed result card",
+      "not_applied": "retain result/source/marker, expose Retry, reuse the logical operation ID, and return to pending",
+      "unknown": "retain operation identity and expose read-only Check again without resend",
+      "rejected_or_conflict": "use the narrow returned eligibility reason or the canonical conflict copy; expose no Retry, cascade, overwrite, or compensation",
+      "optimistic_change": "forbidden; actual result, source truth, marker, and rail remain until authoritative success"
+    },
+    "focus_and_lifetime": {
+      "pending": "retain the stable Undo action position",
+      "unknown": "focus Check again",
+      "reconciling": "retain the Check again position",
+      "not_applied": "focus Retry",
+      "conflict": "focus the keyboard-focusable unavailable Undo slot with its visible reason",
+      "ordinary_success": "focus next card, then previous card, then column heading; announce restored source without cross-section focus or scroll",
+      "search_success": "Task 158 alone composes the approved next-result then search-input handoff",
+      "marker": "preserve across Scratch, path, theme, and light-dark changes; clear on Inbox route exit, reload, or unmount",
+      "reenabled": "announce once and persist until Undo, another eligibility change, next activation of that card, or route exit/reload; no timer",
+      "status": "announce each changed visible rail sentence once through a polite atomic status, never per rerender"
+    },
+    "motion": {
+      "ordinary": "marker, rail, action, state, result removal, and focus changes are immediate and static",
+      "prohibited": "fade, slide, scale, skeleton, shimmer, spinner, progress loop, pulse, ping, bounce, blink, flicker, and layout-transition animation",
+      "reduced_motion": "identical geometry, copy, controls, focus, timing, and lifetime"
+    },
+    "theme_mapping": {
+      "griddo": "static sky dot and technical NEW; ruled rail and separate canonical Undo",
+      "tiny-desk": "static yellow paper edge and amber pin; stationery note rail and brown Undo",
+      "neumorphism": "static violet-blue dot and NEW capsule; inset reason trough and raised Undo without pulse",
+      "claymorphism": "static sky badge; sculpted reason ribbon and tactile rose Undo",
+      "origami": "static folded-corner marker; seam-attached rail and rose Undo with no animated fold",
+      "terminal": "textual [new]; variable-driven [UNDO] and one-line status record with no blink or glow loop",
+      "retro-mac": "static 1-bit [NEW]; hard Undo and in-item system line preserving selected inversion",
+      "graphite": "restrained black NEW; strengthened-rule caption and labeled Undo with precise focus"
+    },
+    "implementation_boundary": {
+      "realization_task": 157,
+      "additional_prerequisites": [
+        128,
+        155,
+        156
+      ],
+      "excludes": "product implementation in Task 117, common-card redesign, starting Tasks 155–156 or 158, DP-VQ11 or Task 118 authority, command/repository changes, prototype fallback, and theme-ID logic"
+    }
+  },
+  "exact_release": {
+    "tasks": [
+      157
+    ],
+    "consumption_condition": "satisfied by explicit Task 117 checkpoint acceptance on 2026-08-11",
+    "all_other_tasks": "unreleased; Tasks 155–156 remain separately planned prerequisites, Task 158 remains unreleased by this receipt, and Task 118 remains unstarted"
+  },
+  "task_state": "accepted",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "task-118"
+}

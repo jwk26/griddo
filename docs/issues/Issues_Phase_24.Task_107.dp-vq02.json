@@ -1,0 +1,149 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "dp-vq02",
+  "decision_receipt_id": "DP-VQ02",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-24/user-owned-decision-prerequisites",
+  "approved_base": "7b79a97b56a7023c5f3e803ab646fc3bb7f6be28",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 24,
+    "task": 107,
+    "worktree_role": "feature"
+  },
+  "kickoff_receipt": "docs/issues/Issues_Phase_24.gate-c.json",
+  "predecessor_acceptance_commit": "5bcc507e88f28ce357cff35875b02a24b3856cbd",
+  "durable_start_commit": "88984304dbfbe80e6d3676217abc635b3056229d",
+  "user_decision": {
+    "date": "2026-08-09",
+    "statement": "DP-VQ02=A",
+    "recorded_scope": "DP-VQ02=A only",
+    "choice": "A",
+    "label": "row-attached Add/Unstage confirmation wash, check, and text"
+  },
+  "checkpoint_acceptance": {
+    "date": "2026-08-09",
+    "statement": "Task 107 / DP-VQ02=A checkpoint를 수락합니다.",
+    "accepted_task": 107,
+    "accepted_decision": "DP-VQ02=A"
+  },
+  "canonical_record_paths": [
+    "docs/recipes/inbox-triage-breakdown-row-empty-visual-recipe.md",
+    "docs/DESIGN_TOKENS.md",
+    "docs/EXECUTION_PLAN.md"
+  ],
+  "decision": {
+    "trigger": {
+      "qualifying_source": "first terminal authoritative success observed for a locally initiated Add or Unstage operation in the mounted Inbox page",
+      "qualifying_results": [
+        "applied",
+        "first already_applied confirmation of the still-current local operation"
+      ],
+      "identity": [
+        "operation kind",
+        "operationId",
+        "target Breakdown row ID"
+      ],
+      "add_target": "newly committed Breakdown row",
+      "unstage_target": "restored source Breakdown row",
+      "memory_lifetime": "current Inbox page mount only",
+      "non_triggers": [
+        "hydration",
+        "reload",
+        "remote or other-tab row",
+        "rerender",
+        "previously observed terminal result",
+        "already_applied without the current local operation identity",
+        "reconciliation replay after the first authoritative observation"
+      ]
+    },
+    "placement": {
+      "row_surface": "complete target row without height, content, grip, or action-position change",
+      "status_slot": "reserved non-interactive trailing row-grid slot immediately before the stable action cluster",
+      "check": "literal ✓ with aria-hidden=true",
+      "state_binding": "data-triage-state=success",
+      "kind_binding": "data-triage-success-kind=add or unstage"
+    },
+    "copy": {
+      "add": "Added.",
+      "unstage": "Returned to Breakdown.",
+      "visible": "✓ followed by the exact operation-specific copy",
+      "announcement": "same text once through role=status, aria-live=polite, aria-atomic=true"
+    },
+    "timeline": {
+      "wash_duration_ms": 600,
+      "wash_easing": "ease-out",
+      "wash_properties": [
+        "background-color",
+        "border-color"
+      ],
+      "wash_direction": "theme success emphasis back to ordinary active-row values",
+      "status_duration_ms": 1600,
+      "status_exit": "remove check, copy, and success state in one step with no exit animation",
+      "forbidden_motion": [
+        "transform",
+        "scale",
+        "sparkle",
+        "pulse",
+        "blink",
+        "bounce",
+        "spin",
+        "flicker",
+        "layout movement"
+      ]
+    },
+    "interruption_and_retrigger": {
+      "different_new_success": "clear the prior row immediately and start one fresh timeline on the new target",
+      "same_identity": "ignore",
+      "scratch_switch": "clear without replay",
+      "route_exit_or_unmount": "clear active signal and page-mount identity memory",
+      "reload": "do not reconstruct or replay",
+      "theme_or_mode_change": "preserve target and remaining time without retrigger"
+    },
+    "focus_and_accessibility": {
+      "add": "keep focus in the Add input",
+      "unstage": "keep canonical focus on the restored source row",
+      "status": "non-focusable and never steals focus",
+      "check": "aria-hidden; exact copy supplies the non-color cue",
+      "announcement_count": "once per new qualifying identity"
+    },
+    "reduced_motion": {
+      "wash": "skip the 600ms transition",
+      "static_treatment": "apply the theme success surface and border immediately with the same check and copy",
+      "duration_ms": 1600,
+      "exit": "clear all success treatment in one step",
+      "equivalence": "same copy, non-color check, target, focus, announcement, and duration as ordinary motion"
+    },
+    "theme_mapping": {
+      "griddo": "primary-tinted semantic row surface and border wash with canonical text and focus roles",
+      "tiny-desk": "paper-row highlight and stationery check-stamp treatment returning to ordinary paper",
+      "neumorphism": "named raised success surface and shadow emphasis returning to ordinary row depth",
+      "claymorphism": "shape-preserving glossy success wash and raised check treatment",
+      "origami": "paper highlight and emphasized seam or fold edge returning to ordinary row paper",
+      "terminal": "variable-driven record background and border emphasis with literal check and exact copy",
+      "retro-mac": "1-bit surface and border emphasis with hard check treatment and no inversion cycling",
+      "graphite": "restrained grayscale row wash and strengthened editorial rule returning to ordinary row"
+    },
+    "prohibited_fallbacks": [
+      "success toast",
+      "Newly Placed marker",
+      "global status",
+      "repeating motion",
+      "prototype realization",
+      "theme-ID behavior branch"
+    ]
+  },
+  "exact_release": {
+    "tasks": [
+      148
+    ],
+    "consumption_condition": "satisfied by Task 107 checkpoint acceptance on 2026-08-09",
+    "all_other_tasks": "unreleased"
+  },
+  "task_state": "accepted",
+  "canonical_impact": "Reflected",
+  "issue_or_deviation": "None",
+  "next_legal_action": "task-108"
+}

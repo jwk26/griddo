@@ -20,8 +20,121 @@
 
 ## Decision-Prerequisite Boundary
 
-- `VQ-10` — selected+newly overlap, unavailable Undo reasons, dependency recovery, undoing/retry/conflict, and other unsupported exact states may use only the shared semantic-state envelope: state attributes, existing semantic/theme tokens, visible text/icon/non-color cues, and selected focus/accessibility behavior. Exact marker overlap, reason placement/copy, effect, duration, and per-theme values remain a **user-owned non-code Decision prerequisite**. Future owner: card marker/Undo recipe owner and rollback phase; resume exact state realization only after user receipt.
+- `VQ-10` — **resolved by `DP-VQ10` Choice A on 2026-08-11.** The card-attached always-visible status rail specified below preserves the actual common card, keeps selection, Newly provenance, and Undo eligibility independent, and owns exact available/ineligible/re-enabled, pending, unknown/reconciling, not-applied, conflict, focus, lifetime, motion, and eight-theme treatment. Task 157 is its only realization edge after Task 117 checkpoint acceptance.
 - `D-CARD` — future common eight-theme Node/Bit card redesign remains deferred. This recipe layers only marker/control roles over the current common cards.
+
+## `DP-VQ10` Approved Card-Attached Always-Visible Status Rail
+
+Choice A keeps the existing actual `NodeCard` or `BitCard` as the sole card.
+The card's existing selection, navigation, padding, radius, base color, and
+internal content remain unchanged. One page-session Newly layer supplies a
+static marker at the card's leading corner, a separate trailing Undo action,
+and one compact status rail immediately below the card inside the same
+Explorer item wrapper. The rail is an accessory to the actual card, not a
+second card, card footer, menu, toast, dialog, or common-card redesign.
+
+### Independent State And Overlap
+
+- `selected`, `newly-placed`, and Undo eligibility are independent semantic
+  states. The existing selected treatment and focus ring remain authoritative;
+  Newly never replaces or recolors them. When both apply, the selected card
+  keeps that treatment while the static marker, visible `NEW`/theme-equivalent
+  non-color cue, Undo action, and status rail remain present.
+- Losing Undo eligibility changes only the action/rail state. It never clears
+  the marker, unselects the card, changes stored coordinates/order, blocks
+  ordinary navigation, or creates a replacement result card.
+- Undo handles its own pointer and keyboard activation without bubbling into
+  selection/navigation. An unavailable action stays in the same trailing slot,
+  remains keyboard-focusable with `aria-disabled="true"`, suppresses mutation,
+  and references the always-visible rail reason. Hover is never required.
+
+### Exact Eligibility Copy And Actions
+
+The rail always reserves one compact text line and the stable trailing action
+slot; long copy wraps inside the Explorer item's width without changing common
+card internals or overlapping another card. Only the current authoritative
+reason is shown.
+
+| Eligibility state | Exact visible rail copy | Trailing action |
+|---|---|---|
+| Available | `Undo this placement.` | `Undo` |
+| Re-enabled after dependencies clear | `Undo is available again.` | `Undo` |
+| Result mutated or lifecycle changed | `This item changed after placement. Undo is unavailable.` | Unavailable `Undo` |
+| Surviving descendants | `Undo newly placed items below this one first.` | Unavailable `Undo` |
+| Open placement flow | `Finish or cancel the placement in progress first.` | Unavailable `Undo` |
+| Archive or another operation owns the shared lock | `Wait for the current action to finish.` | Unavailable `Undo` |
+| Dirty/saving Edit owns save-before-action | `Save or cancel the current edit before undoing.` | Unavailable `Undo` |
+| Unknown mutation or authoritative conflict | `This item or its source changed. Undo is unavailable.` | Unavailable `Undo` |
+
+Selection, navigation, Search reveal, theme/light-dark change, and Scratch/path
+change do not produce an unavailable reason because they do not revoke
+eligibility. When same-session reversible descendants are undone child-first
+and no other blocker survives, the parent rail changes to the re-enabled row,
+announces it once, and exposes `Undo` without moving focus.
+
+### Exact Operation And Recovery Copy
+
+Undo is non-optimistic: the actual result card, marker, source truth, and rail
+remain rendered until authoritative success.
+
+| Operation state | Exact visible rail copy / announcement | Action |
+|---|---|---|
+| Request pending | `Undoing “{title}”…` | Unavailable `Undo` in its stable slot |
+| Outcome unknown | `We couldn’t confirm whether “{title}” was undone.` | `Check again` |
+| Read-only reconciliation | `Checking whether “{title}” was undone…` | Unavailable `Check again` |
+| Authoritative `not_applied` | `“{title}” wasn’t undone. Nothing changed.` | `Retry` |
+| Authoritative `rejected` / `conflict` | Use the exact current eligibility reason above; if returned authority proves no narrower reason, use `This item or its source changed. Undo is unavailable.` | Unavailable `Undo`; no Retry |
+| Authoritative `applied` / `already_applied` | `Restored “{source}”.` | None; remove only the result card after commit |
+
+`Check again` performs read-only reconciliation with the same operation ID and
+never resends Undo. `Retry` appears only for authoritative `not_applied`, reuses
+that logical operation ID, and returns to pending. Unknown, reconciling,
+rejected, conflict, mutation, and dependency states never Retry automatically,
+cascade, overwrite, compensate, or infer success.
+
+### Focus, Lifetime, Accessibility, And Motion
+
+- Undo activation retains focus at its still-rendered action slot while
+  pending. Unknown focuses `Check again`; reconciliation retains that position;
+  not-applied focuses `Retry`. A conflict returns the same slot to the
+  focusable unavailable `Undo` with its associated visible reason. Re-enabled
+  state never moves focus.
+- Terminal success removes the actual result only after the atomic repository
+  result, announces `Restored “{source}”.` once without moving to the restored
+  source, and focuses the next card, then previous card, then column heading.
+  Search-result composition remains Task 158-owned and uses its approved next
+  result, otherwise search-input handoff.
+- Marker and ordinary available/ineligible rail last until authority changes
+  or Inbox route exit/reload. Pending/unknown/reconciling/not-applied last until
+  their named result/action. The re-enabled sentence lasts until Undo is
+  activated, eligibility changes again, the user next activates that card, or
+  route exit/reload; it has no timer. Scratch/path/theme/light-dark changes do
+  not clear page-session provenance.
+- The rail is visible text with a static non-color state mark and an associated
+  polite atomic status. Announce each changed sentence once, never per rerender.
+  Color, tooltip, hover, pulse, or motion never carries the only meaning.
+- Every marker/rail/action/state change, card removal, and focus handoff is
+  immediate and static. No fade, slide, scale, skeleton, shimmer, spinner,
+  progress loop, pulse, ping, bounce, blink, flicker, or layout-transition
+  animation is allowed. Reduced motion keeps identical geometry, copy,
+  controls, focus, timing, and lifetime.
+
+### Eight-Theme Marker And Rail Mapping
+
+All themes use the same semantic state, copy, DOM order, action, and focus
+contract. They bind only source-supported marker/control families and existing
+semantic variables; product components never branch on theme ID.
+
+| Theme | Card-attached realization |
+|---|---|
+| GridDO | Static sky dot plus technical `NEW`; compact ruled status rail and separate canonical Undo action |
+| Tiny Desk | Static yellow paper edge and amber pin; narrow stationery note rail with brown Undo |
+| Neumorphism | Static violet-blue dot/`NEW` capsule; shallow inset reason trough and raised Undo without pulse |
+| Claymorphism | Static sky badge; compact sculpted reason ribbon and tactile rose Undo control |
+| Origami | Static amber folded-corner marker; seam-attached paper rail and separate rose Undo with no animated fold |
+| Terminal | Textual `[new]`; variable-driven `[UNDO]` action and one-line status record with no blink/glow loop |
+| Retro Mac | Static 1-bit `[NEW]`; hard Undo button and in-item system line, preserving the existing selected inversion |
+| Graphite | Restrained black `NEW` badge; strengthened-rule caption and labeled Undo with precise focus outline |
 
 ## Theme Realizations
 
@@ -75,5 +188,5 @@
 
 ## Exclusions And Verification
 
-- Excluded: exact `VQ-10` states beyond the shared envelope, `D-CARD`, all pulse/blink/flicker, mock `PlacedItem` data, source Undo mutation, Scratch-switch reset, permanent provenance, route-local ordering, and source accessibility behavior as evidence.
+- Excluded: every `VQ-10` realization outside the approved card-attached always-visible rail; `D-CARD`; common-card internal/layout redesign; current main-card menu, generic disabled-button, toast/dialog, disclosure-only or hover-only reason fallback; all pulse/blink/flicker; mock `PlacedItem` data; source Undo mutation; Scratch-switch reset; permanent provenance; route-local ordering; and source accessibility behavior as evidence.
 - No actual-card composition, selected+new overlap, pinned order, marker visibility, Undo hit target/reason, focus restoration, contrast, dependency recovery, retry, motion, or reduced-motion equivalence was rendered or verified.
