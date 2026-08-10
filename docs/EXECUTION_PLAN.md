@@ -251,7 +251,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Choice A affected-column remote/path status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`; Task 150 only is released. |
 | `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Choice A dedicated fixed-input/state-line/flat-result replacement body accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json`; Task 151 and search-only Task 158 are released subject to their own prerequisites. |
 | `DP-VQ08` | `VQ-08` | 115 | 153 only | Choice A fixed reliability rail accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`; Task 153 only is released. |
-| `DP-VQ09` | `VQ-09` | 116 | 154 only | Choice A compact Result Title/direct-limit steps selected on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`; Task 154 remains unreleased until Task 116 checkpoint acceptance. |
+| `DP-VQ09` | `VQ-09` | 116 | 154 only | Choice A compact Result Title/direct-limit steps accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`; Task 154 only is released. |
 | `DP-VQ10` | `VQ-10` | 117 | 157 only | Accepted receipt defines Newly/Undo overlap, reasons, and reliability. |
 | `DP-VQ11` | `VQ-11` | 118 | 160 only | Accepted receipt defines blocker/withdrawal realization. |
 | `DP-VQ12` | `VQ-12` | 119 | 162 only | Accepted receipt defines Archive reliability/recovery realization. |
@@ -877,7 +877,7 @@ product code, publish, or close the phase.
 
 **Commit contract:** the three named documents and `DP-VQ08` receipt only; `docs(triage): record DP-VQ08`.
 
-### Task 116: [ ] Record `DP-VQ09` Result Title/direct-limit decision
+### Task 116: [x] Record `DP-VQ09` Result Title/direct-limit decision
 
 **Files and actions:** modify `docs/recipes/inbox-triage-placement-affordances-visual-recipe.md`, `docs/DESIGN_TOKENS.md`, and `docs/EXECUTION_PLAN.md` to record Choice A: one compact staged over-limit Result Title step and one compact direct Node/Bit availability step inside the captured target-column Placement Affordance; specify exact copy/reasons, non-truncating validation, Continue/Cancel, source preservation, focus/invalidation, static reduced-motion parity, and eight-theme treatment; change no code.
 
@@ -903,6 +903,13 @@ returns to the surviving source or owning heading. All eight themes share one
 semantic order with static reduced-motion-identical transitions; no create or
 generic dialog, hidden editor, automatic fallback, or theme-ID branch is
 permitted.
+
+**Checkpoint acceptance (2026-08-11):** the user explicitly accepted the
+complete Choice A compact staged Result Title step, direct Node/Bit limit
+matrix and reasons, non-truncating validation/source preservation,
+focus/invalidation behavior, static reduced-motion parity, eight-theme
+mapping, and Task 154-only boundary. This acceptance releases Task 154 only.
+It does not start Task 117, change product code, publish, or close the phase.
 
 **Observable acceptance:** Task 154 can handle over-limit staged/direct text without source edits, truncation, create dialogs, or a hidden editor.
 

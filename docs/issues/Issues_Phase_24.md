@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–115 accepted; Task 116 is Implemented awaiting user checkpoint for `DP-VQ09=A`
+> State: Tasks 106–116 accepted; Task 117 remains unstarted as the next serial Task
 
 ## Status Legend
 
@@ -310,26 +310,28 @@ canonical document update, and commit remain Task-local and sequential.
 | Acceptance boundary | Accepts only Task 115 and `DP-VQ08=A`; releases Task 153 only; does not start Task 116, change product code, publish, or close the phase |
 | Next legal action | Commit this acceptance-only state and stop. Task 116 remains `[ ]` and unstarted; a later separate session may begin only its `DP-VQ09` decision gate |
 
-## Task 116 Durable Start
+## Task 116 Acceptance Receipt
 
 | Field | Durable value |
 | --- | --- |
 | Task | 116 — record `DP-VQ09` Result Title/direct-limit decision |
-| State | Implemented awaiting user checkpoint; the Task 116 plan marker remains `[ ]` and no Task 117 work is authorized |
+| State | Accepted by the user on 2026-08-11; the Task 116 plan marker is `[x]` and Task 117 remains `[ ]` |
 | User decision | On 2026-08-11 the user selected `DP-VQ09=A`, the compact step card inside the captured Placement Affordance |
+| User acceptance | `Task 116 / DP-VQ09=A checkpoint를 수락합니다.` against evidence commit `a05c8d46b20d677def10f00c44e41cf3f402996b` |
 | Approved scope | Specify the staged over-limit Result Title step and direct Node/Bit availability rows, exact copy/reasons, non-truncating validation, Continue/Cancel, source preservation, focus/invalidation, static reduced-motion parity, and eight-theme treatment; update only the Placement recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, the `DP-VQ09` receipt, and this ledger; change no product code and no Task 117-or-later decision |
 | Prohibited fallback | No source edit, truncation, direct Result Title editor, create dialog, generic placement UI, hidden editor, automatic type fallback, prototype-derived replacement surface, or theme-ID product-logic branch |
 | Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `0861b071d58cba03d1e698fae12155a589709736`; accepted predecessor receipt `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json` |
 | Start base / recovery anchor | `da08c428e6ee94598254256987cbceabf50d2d83`, the clean Task 115 acceptance commit |
 | Durable start commit | `95e818eb555522e0f62a6f1be88479c2bfc0172a`; ledger-only and parented directly by the recovery anchor |
 | Decision / implementation commit | `e9cad0d9af2d0aab5182f460049c2da7e40aabf7`; exact paths are the Placement recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, and `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json` |
-| Durable receipt | `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`; state `implemented-awaiting-user-checkpoint`, next action `task-116-user-checkpoint` |
-| Exact release edge | Task 154 only, and only after a later explicit Task 116 checkpoint acceptance |
+| Durable receipt | `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`; state `accepted`, next action `task-117` |
+| Exact release edge | Task 154 only; released by this explicit checkpoint acceptance |
 | Issue / deviation | None |
 | Canonical impact | Reflected — Choice A is recorded in the Placement recipe, `docs/DESIGN_TOKENS.md`, and Task 116 execution authority |
-| Verification | Candidate resolver `ready` at `e9cad0d`; `git diff --check` exit 0; receipt JSON valid; staged Node/Bit limits, direct `1–100` / `101–200` / `201–1000` matrix, exact copy/reasons, focus/invalidation, static reduced-motion parity, and eight theme mappings are present; `pnpm typecheck` exit 0; exact four-path decision commit; Tasks 116–117 remain `[ ]`; no product source, manifest, Phase 25, Shelf, Task 117 decision, create/generic dialog, source edit/truncation, direct hidden editor, or automatic fallback changed; install/test/lint/build omitted under the Task 116 minimal-verification instruction and recorded successful baseline reuse |
+| Verification | At the implementation checkpoint, candidate resolver `ready` at `e9cad0d`; `git diff --check` exit 0; receipt JSON valid; staged Node/Bit limits, direct `1–100` / `101–200` / `201–1000` matrix, exact copy/reasons, focus/invalidation, static reduced-motion parity, and eight theme mappings are present; `pnpm typecheck` exit 0; exact four-path decision commit; Tasks 116–117 remained `[ ]`; no product source, manifest, Phase 25, Shelf, Task 117 decision, create/generic dialog, source edit/truncation, direct hidden editor, or automatic fallback changed; install/test/lint/build omitted under the Task 116 minimal-verification instruction and recorded successful baseline reuse |
 | Review | No concrete blocking finding. The staged step appears only above the selected Node/Bit limit, starts empty, validates without truncation or source mutation, and owns exact input-first focus/Cancel/invalidation behavior. The direct step has no editor, keeps unavailable rows/reasons accessible without hover, preserves the exact three length bands, and advances only through available types. Both surfaces remain column-scoped, static/reduced-motion-identical, theme-role-driven, and release only Task 154 after user acceptance |
-| Next legal action | Commit this ledger-only implementation evidence and stop at the Task 116 user checkpoint. Do not mark Task 116 `[x]`, release Task 154, or start Task 117 without explicit user acceptance |
+| Acceptance boundary | Accepts only Task 116 and `DP-VQ09=A`; releases Task 154 only; does not start Task 117, change product code, publish, or close the phase |
+| Next legal action | Commit this acceptance-only state and stop. Task 117 remains `[ ]` and unstarted; a later separate session may begin only its `DP-VQ10` decision gate |
 
 ## Readiness Evidence
 
