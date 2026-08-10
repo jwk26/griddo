@@ -4,7 +4,7 @@
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-24-user-owned-decision-prerequisites`
 > Approved base: `7b79a97b56a7023c5f3e803ab646fc3bb7f6be28`
 > Kickoff date: 2026-08-09
-> State: Tasks 106–116 accepted; Task 117 is In Progress for user-selected `DP-VQ10=A`
+> State: Tasks 106–116 accepted; Task 117 is Implemented awaiting user checkpoint for `DP-VQ10=A`
 
 ## Status Legend
 
@@ -338,16 +338,21 @@ canonical document update, and commit remain Task-local and sequential.
 | Field | Durable value |
 | --- | --- |
 | Task | 117 — record `DP-VQ10` Newly/Undo decision |
-| State | In Progress; the Task 117 plan marker remains `[ ]` and no Task 118 work is authorized |
+| State | Implemented awaiting user checkpoint; the Task 117 plan marker remains `[ ]` and no Task 118 work is authorized |
 | User decision | On 2026-08-11 the user selected `DP-VQ10=A`, the card-attached always-visible Newly/Undo status rail, by replying `gogogo` directly to the explicit A-selection prompt |
 | Approved scope | Specify selected+newly overlap, available/ineligible/re-enabled Undo, accessible always-visible reasons, undoing/failure/reconcile/retry/conflict, marker/control placement, exact copy, timing, focus, static reduced-motion parity, and eight-theme treatment; update only the Newly/Undo recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, the `DP-VQ10` receipt, and this ledger; change no product code, common-card design, or Task 118-or-later decision |
 | Prohibited fallback | No current main-card menu, prototype pulse marker, generic disabled-button treatment, hover-only reason, detached toast/dialog, repeated motion, common-card redesign, theme-ID product-logic branch, or adjacent visual invention |
 | Kickoff authority | `docs/issues/Issues_Phase_24.gate-c.json`; continuation kickoff `0861b071d58cba03d1e698fae12155a589709736`; accepted predecessor receipt `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json` |
 | Start base / recovery anchor | `8e61b9412589bf7c709c1838b8b6dbc35d2a1c57`, the clean Task 116 acceptance commit |
+| Durable start commit | `b73ca5942c81bb75dddba8121ad1cf5b64a677ff`; ledger-only and parented directly by the recovery anchor |
+| Decision / implementation commit | `8975dbc670fdd4d416b53353af8edc55281fb0f4`; exact paths are the Newly/Undo recipe, `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, and `docs/issues/Issues_Phase_24.Task_117.dp-vq10.json` |
+| Durable receipt | `docs/issues/Issues_Phase_24.Task_117.dp-vq10.json`; state `implemented-awaiting-user-checkpoint`, next action `task-117-user-checkpoint` |
 | Exact release edge | Task 157 only, and only after a later explicit Task 117 checkpoint acceptance; Tasks 155–156 and 158 are not started or released here |
 | Issue / deviation | None |
-| Canonical impact | Tagged — reflect `DP-VQ10=A` in the Newly/Undo recipe, `docs/DESIGN_TOKENS.md`, and Task 117 execution authority before checkpoint |
-| Next legal action | Commit this ledger-only durable start, then write the selected receipt and exact canonical realization without changing the Task 117 marker or starting Task 118 |
+| Canonical impact | Reflected — Choice A is recorded in the Newly/Undo recipe, `docs/DESIGN_TOKENS.md`, and Task 117 execution authority |
+| Verification | Candidate resolver `ready` at `8975dbc`; `git diff --check` exit 0; receipt JSON valid; all exact eligibility/operation copy appears in the recipe and token contract; selected/Newly/eligibility independence, seven eligibility reasons, pending/unknown/reconciling/not-applied/conflict mapping, eight theme mappings, and Task 157-only edge are present; `pnpm typecheck` exit 0; exact four-path decision commit; Tasks 117–118 remain `[ ]`; no product source, manifest, common-card design, Task 118 decision, or Tasks 155–156/158 start changed; test/lint/build omitted under the recorded successful baseline/full-gate reuse instruction |
+| Review | No concrete blocking finding. The existing card and selected treatment remain authoritative; the marker, stable Undo slot, and always-visible rail are separate accessories; unavailable reasons remain focusable and non-hover-only; non-optimistic pending/reconciliation keeps result/source truth; Retry exists only for authoritative `not_applied`; re-enabled state is event-owned without a timer; all theme treatments are static and role-driven; `D-CARD` remains excluded; only Task 157 can be released after user acceptance |
+| Next legal action | Commit this ledger-only implementation evidence and stop at the Task 117 user checkpoint. Do not mark Task 117 `[x]`, release Task 157, or start Task 118 without explicit user acceptance |
 
 ## Readiness Evidence
 
