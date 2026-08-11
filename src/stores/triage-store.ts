@@ -33,6 +33,10 @@ interface TriageState {
   setScratchPoolQuery: (query: string) => void;
   setScratchPoolResultIds: (ids: string[]) => void;
   setScratchPoolScroll: (position: TriageSessionScrollPosition) => void;
+  reconcileScratchPoolContext: (context: {
+    activeIds: string[];
+    visibleIds: string[];
+  }) => void;
   setExplorerPathIds: (ids: string[]) => void;
   setExplorerOpenColumnIds: (ids: string[]) => void;
   setExplorerColumnScroll: (
@@ -61,7 +65,14 @@ export const useTriageStore = create<TriageState>((set) => ({
   explorerOpenColumnIds: [],
   explorerColumnScroll: {},
   stagedCandidates: {},
-  selectScratch: (id) => set({ selectedScratchId: id }),
+  selectScratch: (id) =>
+    set((state) => ({
+      selectedScratchId: id,
+      scratchPoolManualExpandedForId:
+        state.selectedScratchId === id
+          ? state.scratchPoolManualExpandedForId
+          : null,
+    })),
   clearSelection: () =>
     set({ selectedScratchId: null, scratchPoolManualExpandedForId: null }),
   setScratchPoolExpanded: (expanded) =>
@@ -78,6 +89,44 @@ export const useTriageStore = create<TriageState>((set) => ({
   setScratchPoolQuery: (query) => set({ scratchPoolQuery: query }),
   setScratchPoolResultIds: (ids) => set({ scratchPoolResultIds: ids }),
   setScratchPoolScroll: (position) => set({ scratchPoolScroll: position }),
+  reconcileScratchPoolContext: ({ activeIds, visibleIds }) =>
+    set((state) => {
+      const selectionIsActive =
+        state.selectedScratchId !== null &&
+        activeIds.includes(state.selectedScratchId);
+      const selectedScratchId = selectionIsActive
+        ? state.selectedScratchId
+        : (visibleIds[0] ?? null);
+      const selectionChanged = selectedScratchId !== state.selectedScratchId;
+      const scrollAnchorIsVisible =
+        state.scratchPoolScroll.anchorId !== null &&
+        visibleIds.includes(state.scratchPoolScroll.anchorId);
+      const scratchPoolScroll = scrollAnchorIsVisible
+        ? state.scratchPoolScroll
+        : { anchorId: visibleIds[0] ?? null, offset: 0 };
+      const resultsUnchanged =
+        state.scratchPoolResultIds.length === visibleIds.length &&
+        state.scratchPoolResultIds.every((id, index) => id === visibleIds[index]);
+
+      if (
+        !selectionChanged &&
+        resultsUnchanged &&
+        scratchPoolScroll === state.scratchPoolScroll
+      ) {
+        return state;
+      }
+
+      return {
+        selectedScratchId,
+        scratchPoolManualExpandedForId: selectionChanged
+          ? null
+          : state.scratchPoolManualExpandedForId,
+        scratchPoolResultIds: resultsUnchanged
+          ? state.scratchPoolResultIds
+          : visibleIds,
+        scratchPoolScroll,
+      };
+    }),
   setExplorerPathIds: (ids) => set({ explorerPathIds: ids }),
   setExplorerOpenColumnIds: (ids) => set({ explorerOpenColumnIds: ids }),
   setExplorerColumnScroll: (columnId, position) =>

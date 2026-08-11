@@ -86,6 +86,24 @@ describe("triage-preferences-store", () => {
     });
   });
 
+  it("changes Pool sort without changing the independent Breakdown sort", () => {
+    useTriagePreferencesStore.setState({ breakdownCreatedAtSort: "ASC" });
+
+    useTriagePreferencesStore.getState().setPoolCreatedAtSort("ASC");
+
+    expect(useTriagePreferencesStore.getState()).toMatchObject({
+      poolCreatedAtSort: "ASC",
+      breakdownCreatedAtSort: "ASC",
+    });
+
+    useTriagePreferencesStore.getState().setPoolCreatedAtSort("DESC");
+
+    expect(useTriagePreferencesStore.getState()).toMatchObject({
+      poolCreatedAtSort: "DESC",
+      breakdownCreatedAtSort: "ASC",
+    });
+  });
+
   it("hydrates valid values and defaults invalid values independently", async () => {
     localStorage.setItem(
       TRIAGE_PREFERENCES_PERSISTENCE_KEY,

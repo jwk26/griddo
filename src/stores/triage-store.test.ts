@@ -54,6 +54,7 @@ describe("useTriageStore app-session ownership", () => {
       "explorerColumnScroll",
       "explorerOpenColumnIds",
       "explorerPathIds",
+      "reconcileScratchPoolContext",
       "removeStagedCandidate",
       "scratchPoolExpanded",
       "scratchPoolManualExpandedForId",
@@ -101,6 +102,75 @@ describe("useTriageStore app-session ownership", () => {
         "node-1": { anchorId: "node-3", offset: 24 },
       },
     });
+  });
+
+  it("reconciles invalid selection, result context, and scroll against visible active Scratches", () => {
+    useTriageStore.setState({
+      selectedScratchId: "removed",
+      scratchPoolQuery: "project",
+      scratchPoolScroll: { anchorId: "removed", offset: 18 },
+      scratchPoolManualExpandedForId: "removed",
+    });
+
+    useTriageStore.getState().reconcileScratchPoolContext({
+      activeIds: ["scratch-new", "scratch-project"],
+      visibleIds: ["scratch-project"],
+    });
+
+    expect(useTriageStore.getState()).toMatchObject({
+      selectedScratchId: "scratch-project",
+      scratchPoolManualExpandedForId: null,
+      scratchPoolResultIds: ["scratch-project"],
+      scratchPoolScroll: { anchorId: "scratch-project", offset: 0 },
+    });
+  });
+
+  it("uses null instead of a hidden mismatch when a non-empty query has no result", () => {
+    useTriageStore.setState({
+      selectedScratchId: "removed",
+      scratchPoolQuery: "missing",
+    });
+
+    useTriageStore.getState().reconcileScratchPoolContext({
+      activeIds: ["scratch-new"],
+      visibleIds: [],
+    });
+
+    expect(useTriageStore.getState().selectedScratchId).toBeNull();
+  });
+
+  it("retains a valid search-hidden selection and its manual-reopen exception", () => {
+    useTriageStore.setState({
+      selectedScratchId: "scratch-hidden",
+      scratchPoolQuery: "visible",
+      scratchPoolManualExpandedForId: "scratch-hidden",
+    });
+
+    useTriageStore.getState().reconcileScratchPoolContext({
+      activeIds: ["scratch-hidden", "scratch-visible"],
+      visibleIds: ["scratch-visible"],
+    });
+
+    expect(useTriageStore.getState()).toMatchObject({
+      selectedScratchId: "scratch-hidden",
+      scratchPoolManualExpandedForId: "scratch-hidden",
+      scratchPoolResultIds: ["scratch-visible"],
+    });
+  });
+
+  it("clears the per-Scratch manual-reopen exception only when selection changes", () => {
+    useTriageStore.setState({
+      selectedScratchId: "scratch-1",
+      scratchPoolManualExpandedForId: "scratch-1",
+    });
+
+    useTriageStore.getState().selectScratch("scratch-1");
+    expect(useTriageStore.getState().scratchPoolManualExpandedForId).toBe(
+      "scratch-1",
+    );
+
+    useTriageStore.getState().selectScratch("scratch-2");
+    expect(useTriageStore.getState().scratchPoolManualExpandedForId).toBeNull();
   });
 
   it("starts a new app session with deterministic Pool and Explorer defaults", async () => {
