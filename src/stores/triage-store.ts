@@ -43,6 +43,10 @@ interface TriageState {
     columnId: string,
     position: TriageSessionScrollPosition,
   ) => void;
+  reconcileExplorerContext: (context: {
+    validPathIds: string[];
+    visibleItemIdsByColumn: Record<string, string[]>;
+  }) => void;
   /** @deprecated Non-authoritative compatibility action. Task 163 removes it. */
   addStagedCandidate: (
     scratchId: string,
@@ -136,6 +140,64 @@ export const useTriageStore = create<TriageState>((set) => ({
         [columnId]: position,
       },
     })),
+  reconcileExplorerContext: ({ validPathIds, visibleItemIdsByColumn }) =>
+    set((state) => {
+      let validPrefixLength = 0;
+      while (
+        validPrefixLength < state.explorerPathIds.length &&
+        validPrefixLength < validPathIds.length &&
+        state.explorerPathIds[validPrefixLength] ===
+          validPathIds[validPrefixLength]
+      ) {
+        validPrefixLength += 1;
+      }
+
+      const explorerPathIds = state.explorerPathIds.slice(0, validPrefixLength);
+      const explorerOpenColumnIds = ["home", ...explorerPathIds];
+      const explorerColumnScroll: Record<
+        string,
+        TriageSessionScrollPosition
+      > = {};
+
+      for (const columnId of explorerOpenColumnIds) {
+        const previous = state.explorerColumnScroll[columnId];
+        if (previous === undefined) continue;
+
+        const visibleIds = visibleItemIdsByColumn[columnId];
+        explorerColumnScroll[columnId] =
+          previous.anchorId === null && previous.offset === 0
+            ? previous
+            : previous.anchorId !== null &&
+                visibleIds?.includes(previous.anchorId)
+              ? previous
+              : { anchorId: null, offset: 0 };
+      }
+
+      const pathUnchanged =
+        explorerPathIds.length === state.explorerPathIds.length;
+      const columnsUnchanged =
+        explorerOpenColumnIds.length === state.explorerOpenColumnIds.length &&
+        explorerOpenColumnIds.every(
+          (columnId, index) => columnId === state.explorerOpenColumnIds[index],
+        );
+      const previousScrollKeys = Object.keys(state.explorerColumnScroll);
+      const nextScrollKeys = Object.keys(explorerColumnScroll);
+      const scrollUnchanged =
+        previousScrollKeys.length === nextScrollKeys.length &&
+        nextScrollKeys.every(
+          (columnId) =>
+            explorerColumnScroll[columnId] ===
+            state.explorerColumnScroll[columnId],
+        );
+
+      if (pathUnchanged && columnsUnchanged && scrollUnchanged) return state;
+
+      return {
+        explorerPathIds,
+        explorerOpenColumnIds,
+        explorerColumnScroll,
+      };
+    }),
   addStagedCandidate: (scratchId, candidate) =>
     set((state) => ({
       stagedCandidates: {

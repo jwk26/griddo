@@ -54,6 +54,7 @@ describe("useTriageStore app-session ownership", () => {
       "explorerColumnScroll",
       "explorerOpenColumnIds",
       "explorerPathIds",
+      "reconcileExplorerContext",
       "reconcileScratchPoolContext",
       "removeStagedCandidate",
       "scratchPoolExpanded",
@@ -200,6 +201,55 @@ describe("useTriageStore app-session ownership", () => {
       explorerPathIds: [],
       explorerOpenColumnIds: [],
       explorerColumnScroll: {},
+    });
+  });
+
+  it("reconciles Explorer state to the longest valid prefix without sibling substitution", () => {
+    useTriageStore.setState({
+      explorerPathIds: ["home-a", "removed", "stale-child"],
+      explorerOpenColumnIds: ["home", "home-a", "removed", "stale-child"],
+      explorerColumnScroll: {
+        home: { anchorId: "home-a", offset: -6 },
+        "home-a": { anchorId: "removed", offset: -12 },
+        removed: { anchorId: "stale-child", offset: -4 },
+      },
+    });
+
+    useTriageStore.getState().reconcileExplorerContext({
+      validPathIds: ["home-a"],
+      visibleItemIdsByColumn: {
+        home: ["home-a", "home-b"],
+        "home-a": ["sibling"],
+      },
+    });
+
+    expect(useTriageStore.getState()).toMatchObject({
+      explorerPathIds: ["home-a"],
+      explorerOpenColumnIds: ["home", "home-a"],
+      explorerColumnScroll: {
+        home: { anchorId: "home-a", offset: -6 },
+        "home-a": { anchorId: null, offset: 0 },
+      },
+    });
+  });
+
+  it("preserves a surviving stable scroll anchor and offset across remote insertion", () => {
+    useTriageStore.setState({
+      explorerColumnScroll: {
+        home: { anchorId: "home-b", offset: -9 },
+      },
+    });
+
+    useTriageStore.getState().reconcileExplorerContext({
+      validPathIds: [],
+      visibleItemIdsByColumn: {
+        home: ["remote-new", "home-a", "home-b"],
+      },
+    });
+
+    expect(useTriageStore.getState().explorerColumnScroll.home).toEqual({
+      anchorId: "home-b",
+      offset: -9,
     });
   });
 });

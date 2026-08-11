@@ -295,6 +295,7 @@ export function TriageWorkspace({ node }: { node: Node }) {
             >
               <HierarchyExplorer
                 activeDragItem={activeDragItem}
+                onPendingPlacementInvalidated={handlePlacementCancel}
                 overTargetId={overTargetId}
                 pendingPlacementDropId={pendingPlacement?.dropId ?? null}
               />

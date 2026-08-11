@@ -10,6 +10,7 @@ const useTriageDndMock = vi.hoisted(() => vi.fn());
 const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
 const handlePlacementConfirmMock = vi.hoisted(() => vi.fn());
 const handlePlacementCancelMock = vi.hoisted(() => vi.fn());
+const useGridDataMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/hooks/use-dnd", () => ({
   useTriageDnd: useTriageDndMock,
@@ -17,6 +18,10 @@ vi.mock("@/hooks/use-dnd", () => ({
 
 vi.mock("@/hooks/use-staged-candidates", () => ({
   useStagedCandidates: useStagedCandidatesMock,
+}));
+
+vi.mock("@/hooks/use-grid-data", () => ({
+  useGridData: useGridDataMock,
 }));
 
 vi.mock("@/components/triage/scratch-pool", () => ({
@@ -106,6 +111,8 @@ beforeEach(() => {
   handlePlacementConfirmMock.mockReset();
   handlePlacementConfirmMock.mockResolvedValue(undefined);
   handlePlacementCancelMock.mockReset();
+  useGridDataMock.mockReset();
+  useGridDataMock.mockReturnValue({ nodes: [], bits: [], isLoading: false });
   useTriageStore.setState({
     selectedScratchId: "scratch-1",
     stagedCandidates: {},
@@ -314,6 +321,34 @@ describe("TriageWorkspace", () => {
     expect(screen.getByTestId("hierarchy-section-body-l1")).toBeInTheDocument();
     expect(screen.getByTestId("hierarchy-section-body-l2")).toBeInTheDocument();
     expect(screen.getByTestId("hierarchy-section-body-l3")).toBeInTheDocument();
+  });
+
+  it("closes the actual placement owner when Explorer validation invalidates its target", async () => {
+    const target = {
+      ...createNode({ id: "parent-1", title: "Parent" }),
+      systemRole: null,
+    };
+    let rootNodes = [target];
+    useGridDataMock.mockImplementation((parentId) => ({
+      nodes: parentId === null ? rootNodes : [],
+      bits: [],
+      isLoading: false,
+    }));
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        pendingPlacement: createDirectPendingPlacement(),
+      }),
+    );
+
+    const view = render(<TriageWorkspace node={createNode()} />);
+    expect(handlePlacementCancelMock).not.toHaveBeenCalled();
+
+    rootNodes = [];
+    view.rerender(<TriageWorkspace node={createNode()} />);
+
+    await vi.waitFor(() => {
+      expect(handlePlacementCancelMock).toHaveBeenCalledOnce();
+    });
   });
 
   it("requires a type choice for direct breakdown placement and passes the selected type on confirm", () => {
