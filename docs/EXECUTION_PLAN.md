@@ -7,12 +7,12 @@
 > This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
 > its supersession rules. It accepts no phase, task, implementation, branch,
 > publication, or completion state.
-> **Task markers:** Tasks 101–126 were explicitly accepted. Phases 23–25 are
-> completed and archived. Tasks 127–165 remain open (`[ ]`) and may be
+> **Task markers:** Tasks 101–135 were explicitly accepted. Phases 23–26 are
+> completed and archived. Tasks 136–165 remain open (`[ ]`) and may be
 > checked only after their own observable acceptance and verification evidence
 > is explicitly accepted by the user.
-> **Execution lifecycle:** Phases 23–25 are complete. The six open phases are
-> Phases 26–31 with 39 open Tasks 127–165; Phase 26 requires its own approved
+> **Execution lifecycle:** Phases 23–26 are complete. The five open phases are
+> Phases 27–31 with 30 open Tasks 136–165; Phase 27 requires its own approved
 > kickoff. This planning receipt alone does not authorize later implementation,
 > Git lifecycle work, or publication.
 
@@ -91,12 +91,12 @@ The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were exclu
 | Area | Current status | Smallest blocker / next condition |
 |---|---|---|
 | Document approval | `APPROVED` | The approval receipt above remains the planning authority. |
-| Execution lifecycle | Phases 23–25 complete and archived | Six open phases (26–31) remain; each requires its own approved lifecycle gate and exact branch/worktree authority. |
+| Execution lifecycle | Phases 23–26 complete and archived | Five open phases (27–31) remain; each requires its own approved lifecycle gate and exact branch/worktree authority. |
 | Data foundations | `COMPLETED` | Tasks 101–105A and authoritative command Tasks 120–126 are accepted and recorded in their phase archives. |
 | Decision prerequisites | `COMPLETED` | Tasks 106–119 and all fourteen DP receipts are accepted, reflected, and recorded in the Phase 24 archive. |
-| Headless/base UI | Dependency-ready after document and lifecycle gates | Tasks 127–137, 139, 142, 145–146, 149, 152, 155–156, 159, and 161 follow only their named data/headless prerequisites. |
+| Headless/base UI | Phase 26 base owners completed | Tasks 127–135 are accepted and archived; Tasks 136–137, 139, 142, 145–146, 149, 152, 155–156, 159, and 161 follow only their named dependencies and lifecycle gates. |
 | VQ realization | `BLOCKED_PENDING_USER_DECISIONS` | Each realization task resumes only from its exact DP receipt. |
-| Full close | Not ready | Tasks 127–164 complete, then Task 165 passes on top of the archived Phase 23–25 foundations. |
+| Full close | Not ready | Tasks 136–164 complete, then Task 165 passes on top of the archived Phase 23–26 foundations. |
 
 ## Dependency Graph
 
@@ -133,7 +133,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | Phase 23 | Completed | [Model, v4 migration, revisions, real transaction harness, aggregate deletion, and Scratch-promotion guard](execution-plan/archive/phase-23.md) | 101–105 + 105A | Accepted and archived; downstream tasks consume this completed foundation. |
 | Phase 24 | Completed | [Fourteen user-owned DP receipts covering twelve VQs](execution-plan/archive/phase-24.md) | 106–119 | Accepted and archived; each later realization consumes only its exact released DP edge. |
 | Phase 25 | Completed | [Eleven authoritative commands plus Archive recovery](execution-plan/archive/phase-25.md) | 120–126 | Accepted and archived; downstream tasks consume the completed command foundation by their exact dependencies. |
-| Phase 26 | Proposed | Lifetime/copy/theme foundations and source-backed base surfaces | 127–135 | Individual data dependencies only. |
+| Phase 26 | Completed | [Lifetime, copy, and source-backed base-surface owners](execution-plan/archive/phase-26.md) | 127–135 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
 | Phase 27 | Proposed | Breakdown, Pool, and Staging headless adapters and exact realizations | 136–148 | Headless tasks remain independent from their VQ presentation slices. |
 | Phase 28 | Proposed | Explorer status/search and pointer placement | 149–154 | Search, status, reliability, and title slices have distinct receipt edges. |
 | Phase 29 | Proposed | Mounted-page Newly Placed, ordinary Undo, and search-result Undo integration | 155–158 | Ordinary-card Undo does not depend on `VQ-07`. |
@@ -432,8 +432,8 @@ code commit; `fix(db): reject Scratch bit promotion`.
 - Integrate Tasks 101–105A as one phase unit; Task 102 closes Task 101's
   temporary legacy-row migration risk, so intermediate cherry-picks are not a
   supported release state.
-- `P23-02` is deferred to exact Task 136 hook/test ownership; `P23-03` is
-  promoted to Task 130's defensive Bit-detail visibility guard.
+- `P23-02` is deferred to exact Task 136 hook/test ownership; `P23-03` was
+  resolved by accepted Task 130's defensive Bit-detail visibility guard.
 - The real-project lifecycle trace is retained for the post-merge workflow-v2
   pass. Phase 24 must not start until that rollout and GridDO adapter migration
   are verified.
@@ -1210,9 +1210,9 @@ publish, or close the phase.
 
 ---
 
-## Phase 26 — Lifetime, Copy, And Base-Surface Owners
+## Phase 26 — Lifetime, Copy, And Base-Surface Owners (Completed)
 
-### Task 127: [ ] Establish canonical session and two-preference ownership
+### Task 127: [x] Establish canonical session and two-preference ownership
 
 **Files and actions:** modify `src/stores/triage-store.ts` and `.test.ts`; create `src/stores/triage-preferences-store.ts` and `.test.ts`. Add app-session selected Scratch, Pool expanded/manual-reopen/query/result/scroll, and Explorer path/open-columns/column-scroll ownership without removing or renaming the candidate fields/actions that current consumers still call. Retain those candidate fields/actions unchanged as explicitly deprecated, non-authoritative compatibility state; no new consumer may adopt them, and they must not become persisted candidate truth. Task 163 alone removes the compatibility API after every consumer has migrated to the Task 131 durable candidate boundary. Prohibit adding Newly, drafts, active/interrupted Explorer search, placement, completion, or recovery state. Persist and validate exactly Pool created-at sort and Breakdown created-at sort in the preference store, default each independently to DESC, and expose no other persistence.
 
@@ -1228,7 +1228,7 @@ publish, or close the phase.
 
 **Commit contract:** the two state owners and tests only; `feat(triage): establish inbox state lifetimes`.
 
-### Task 128: [ ] Create the single core-English copy owner
+### Task 128: [x] Create the single core-English copy owner
 
 **Files and actions:** create `src/lib/copy/inbox-triage.ts` and `.test.ts` with typed keys for source-approved section names, base actions, validation, lifecycle reasons, live regions, and accessible names. Represent each unresolved receipt-dependent key as explicitly unavailable—never inferred text. Components may import only this owner for new Inbox/Triage system wording. Tasks 138, 140, 141, 143, 144, 147, 148, 150, 151, 153, 154, 157, 160, and 162 populate only their accepted receipt keys under the `copy` mutex.
 
@@ -1244,7 +1244,7 @@ publish, or close the phase.
 
 **Commit contract:** copy resource and its test only; `feat(triage): centralize inbox copy`.
 
-### Task 129: [ ] Build the semantic four-area Inbox shell
+### Task 129: [x] Build the semantic four-area Inbox shell
 
 **Files and actions:** modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` plus `src/app/globals.css` to implement one semantic tree with visible Scratch Pool, Breakdown, Staging, and Grid Explorer section identities; exact 60/40 main and 60/40 top ratios; theme envelope/data-state roles; desktop 1024px minimum; hidden-scrollbar treatment; and stable focus landmarks. Do not own Explorer item labels, which belong to Task 134, and do not copy prototype state/handlers.
 
@@ -1260,7 +1260,7 @@ publish, or close the phase.
 
 **Commit contract:** Workspace shell/test, semantic shell CSS, and Task 129 evidence only; `feat(triage): add semantic inbox shell`.
 
-### Task 130: [ ] Implement Pool selection, tools, collapse, and re-entry
+### Task 130: [x] Implement Pool selection, tools, collapse, and re-entry
 
 **Files and actions:** modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/hooks/use-inbox.ts` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, and `src/stores/triage-preferences-store.ts` and `.test.ts`. Implement active fallback/null, expanded tools/list, total versus filtered counts, base selected/empty states, persisted sort, session query/scroll, vertical collapsed switchers, hidden-query independence, first-printable Breakdown key collapse once, per-Scratch manual-reopen exception, same-session re-entry, and deterministic focus restoration using Task 128 copy. Also modify `src/components/bit-detail/bit-detail-popup.tsx` and `.test.tsx` so the globally mounted detail surface never offers Promote to Node for an Inbox-parented Scratch, even when defensive Chunk data exists; the Task 105A repository guard remains the safety backstop and ordinary Chunk-backed Bit promotion remains available. Do not implement `VQ-01` or Pool `VQ-06` states.
 
@@ -1276,7 +1276,7 @@ publish, or close the phase.
 
 **Commit contract:** Pool/Inbox/state-owner integration, the exact P23-03 popup visibility guard, tests, and Task 130 evidence only; `feat(triage): implement scratch pool base flow`.
 
-### Task 131: [ ] Add the durable candidate reactive boundary
+### Task 131: [x] Add the durable candidate reactive boundary
 
 **Files and actions:** create `src/hooks/use-staged-candidates.ts` and `.test.tsx` to subscribe to durable candidates, join authoritative Breakdown content, dispatch Task 121 Stage/Unstage and Task 122 confirmed-orphan commands, project pending/unknown separately from durable truth, and expose authoritative count/eligibility inputs. A cache/offline/delayed miss remains unresolved; it is neither a renderable candidate nor orphan proof. Import no candidate state from Zustand and sequence no component writes.
 
@@ -1292,7 +1292,7 @@ publish, or close the phase.
 
 **Commit contract:** candidate hook/test only; `feat(triage): add reactive staged candidates`.
 
-### Task 132: [ ] Implement Context and Breakdown base lifecycle
+### Task 132: [x] Implement Context and Breakdown base lifecycle
 
 **Files and actions:** modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx`, and `src/stores/triage-preferences-store.ts` and `.test.ts`. Render standalone signature Context, full title/time/sort, active/staged/consumed-removal rows, grip/actions, and distinct never-used/all-deleted/ordinary/completion states from repository data and Task 131 projections. Staged rows remain disabled/non-struck; consumed rows leave active Breakdown; preserve visible Edit/Trash slots without implementing VQ editors/statuses.
 
@@ -1308,9 +1308,9 @@ publish, or close the phase.
 
 **Commit contract:** Context/Breakdown base, tests, and Task 132 evidence only; `feat(triage): build breakdown base surfaces`.
 
-### Task 133: [ ] Implement source-backed Staging base
+### Task 133: [x] Implement source-backed Staging base
 
-**Files and actions:** modify `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/components/triage/triage-drag-token.tsx` and `.test.tsx`. Render Task 131 candidates with visible Staging/Nodes/Bits identity, exact 35/65 split, stable createdAt DESC then ID order, count prefixes at 2+, quiet empty wells, independent hidden-scroll lists, distinct Node-card/Bit-row shapes, whole-root activation semantics, and compact pointer-centered overlay. No large empty cards, internal handles, primary click, permanent Unstage, or `VQ-06` state appearance.
+**Files and actions:** modify `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/components/triage/triage-drag-token.tsx` and `.test.tsx`, and `src/components/triage/triage-workspace.tsx` and `.test.tsx`. Render Task 131 candidates with visible Staging/Nodes/Bits identity, exact 35/65 split, stable createdAt DESC then ID order, count prefixes at 2+, quiet empty wells, independent hidden-scroll lists, distinct Node-card/Bit-row shapes, whole-root activation semantics, and compact pointer-centered overlay. Project Task 131 authoritative counts into the existing Workspace Nodes/Bits headings without changing their IDs, semantics, focus structure, or layout. No large empty cards, internal handles, primary click, permanent Unstage, other shell behavior, or `VQ-06` state appearance.
 
 **Dependencies:** Tasks 129 and 131.
 
@@ -1324,9 +1324,9 @@ publish, or close the phase.
 
 **Commit contract:** Staging/token base, tests, and Task 133 evidence only; `feat(triage): render durable staging base`.
 
-### Task 134: [ ] Implement Explorer columns, full labels, session restoration, and remote anchoring
+### Task 134: [x] Implement Explorer columns, full labels, session restoration, and remote anchoring
 
-**Files and actions:** modify `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`. Move hierarchy path/open columns/column scroll to app-session ownership; render Home plus full ancestor/column labels; validate re-entry; anchor remote insertions by first visible stable ID plus offset; fall to nearest valid ancestor without sibling/ghost substitution; restore deterministic heading/ancestor focus; and close stale placement without write. Remove component-local abbreviated labels and active-column filtering, leaving the dedicated search body absent until Task 151.
+**Files and actions:** modify `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, and `src/components/triage/triage-workspace.tsx` and `.test.tsx`. Move hierarchy path/open columns/column scroll to app-session ownership; render Home plus full ancestor/column labels; validate re-entry; anchor remote insertions by first visible stable ID plus offset; fall to nearest valid ancestor without sibling/ghost substitution; restore deterministic heading/ancestor focus; and close stale placement without write by invoking the Workspace-owned existing `handlePlacementCancel` callback when Explorer validation invalidates the target. Remove component-local abbreviated labels and active-column filtering, leaving the dedicated search body absent until Task 151 and adding no other Workspace behavior.
 
 **Dependencies:** Tasks 127–129 and current reactive grid reads.
 
@@ -1340,7 +1340,7 @@ publish, or close the phase.
 
 **Commit contract:** Explorer base/state ownership, tests, and Task 134 evidence only; `feat(triage): build explorer session columns`.
 
-### Task 135: [ ] Build dedicated whole-hierarchy Explorer query lifecycle
+### Task 135: [x] Build dedicated whole-hierarchy Explorer query lifecycle
 
 **Files and actions:** create `src/lib/utils/grid-explorer-search.ts` and `.test.ts`; create `src/hooks/use-grid-explorer-search.ts` and `.test.tsx`. The pure utility traverses all active reachable Node/Bit descendants from every visible Home root; excludes Chunks, archived/trashed/system/hidden/unreachable items; uses whitespace AND matching and exact canonical rank/tie order; preserves type/path/ancestor identity for duplicates. The mounted-page hook owns request identity, cancellation, loading/error/stale response, reactive updates, active/interrupted query, result scroll/focus, and result disappearance. It never imports/extends `useSearch()` or `searchAll()` and renders no unsupported body.
 
@@ -1355,6 +1355,40 @@ publish, or close the phase.
 **Verification:** focused utility/hook tests for traversal, rank, duplicates, request races, reactive updates, disappearance, interruption, and reset; `pnpm typecheck`; `rg` proves no global Search dependency.
 
 **Commit contract:** dedicated search utility/hook and tests only; `feat(triage): add explorer search model`.
+
+#### Phase 26 Close Notes
+
+- Tasks 127–135 were explicitly accepted on the isolated Phase 26 branch. They
+  establish app-session and device-preference owners, centralized core-English
+  copy, the semantic Inbox shell, source-backed Pool/Breakdown/Staging/Explorer
+  base surfaces, durable-candidate projection, and the dedicated headless
+  whole-hierarchy Explorer query lifecycle.
+- Task 133's approved Workspace count-heading projection and Task 134's
+  approved Workspace stale-placement callback wiring are now part of their
+  canonical file/action boundaries. Both retained `Tagged` impacts are
+  `Reflected`; Task 135 remains `None`.
+- The fresh end-phase serial full gate at pre-close `cb09da0` passed 92 test
+  files / 743 tests, lint with 0 errors and the same 11 pre-existing warnings,
+  typecheck, and production build with seven static routes and one dynamic
+  route. Accepted Task 129/130/132/133/134 route and capture records remain the
+  applicable user-visible checkpoint evidence.
+- `P23-03` is resolved by accepted Task 130's popup visibility guard and is
+  synchronized to the deferred index. `P23-02` remains deferred to Task 136.
+
+| Task | Implementation / evidence | Acceptance |
+| --- | --- | --- |
+| 127 | `775045f` → `c5a1f65` | `8d2cde0` |
+| 128 | `f57d1d5` → `beb63a2` | `0079dc3` |
+| 129 | `78f6f97` → `2f2b8c5` | `dcced04` |
+| 130 | `3eed3a9` → `817432d` | `3ba4d72` |
+| 131 | `6ee8d4a` → `c927045` | `05d1e39` |
+| 132 | `e18a18b` → `5236400` | `7dd0b2e` |
+| 133 | `bf872fe` → `6e26326` | `5d8e2d3` |
+| 134 | `bc12c2d` → `29e0b61` | `2a4dabc` |
+| 135 | `d3f7726` → `5f731d6` | `cb09da0` |
+
+**Full issue log:**
+[`docs/issues/Issues_Phase_26.md`](issues/Issues_Phase_26.md)
 
 ---
 
@@ -1923,9 +1957,9 @@ This register is complete for every exact path declared by two or more tasks. Ev
 
 - **Next planned phase:** Phase 34. Phases 32 and 33 are reserved and receive no tasks.
 - **Next planned task:** Task 166.
-- Active graph count: 6 open implementation phases (26–31), 39 open tasks
-  (127–165), 3 completed archives (Phases 23–25 with accepted Tasks 101–126),
+- Active graph count: 5 open implementation phases (27–31), 30 open tasks
+  (136–165), 4 completed archives (Phases 23–26 with accepted Tasks 101–135),
   and 2 reserved phase numbers (32–33).
 - The document is **user-approved for planning authority** under the receipt at
-  the top of this file; Tasks 101–126 are accepted, Phases 23–25 are archived,
-  and Tasks 127–165 remain open.
+  the top of this file; Tasks 101–135 are accepted, Phases 23–26 are archived,
+  and Tasks 136–165 remain open.

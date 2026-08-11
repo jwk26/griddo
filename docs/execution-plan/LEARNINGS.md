@@ -102,3 +102,5 @@
 **Use runner-native focused commands.** With Vitest, `pnpm test -- <files>` may still run the whole suite depending on the package script. Use `pnpm exec vitest run <files>` when evidence must prove a genuinely focused run, and record the actual file/test counts. *(Phase 23 pilot)*
 
 **Serialize gates that share generated output.** Logically independent checks are not operationally independent when they read or write the same generated tree. In this project, `next build` and `tsc` can contend through `.next/types`; run them serially unless isolated outputs are configured. *(Phase 23 pilot)*
+
+**Canonical file boundaries must include the real composition owner.** When an accepted behavior requires a parent component to project child counts or close parent-owned transient state, include that parent and its focused test in the canonical task contract. A child-only file list cannot truthfully own cross-boundary callback or heading behavior. *(Phase 26, Tasks 133–134)*

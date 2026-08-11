@@ -186,6 +186,40 @@ beforeEach(() => {
 });
 
 describe("BitDetailPopup", () => {
+  it("does not offer Promote to Node for an Inbox-parented Scratch with defensive Chunks", () => {
+    mockBitDetail(
+      createBit({ parentId: "inbox-node" }),
+      [createChunk()],
+      createNode({ id: "inbox-node", systemRole: "inbox", level: 0 }),
+    );
+
+    render(<BitDetailPopup />);
+
+    expect(
+      screen.queryByRole("button", { name: "Promote to Node" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("continues to offer Promote to Node for an ordinary eligible Bit with Chunks", () => {
+    mockBitDetail(createBit(), [createChunk()], createNode({ level: 1 }));
+
+    render(<BitDetailPopup />);
+
+    expect(
+      screen.getByRole("button", { name: "Promote to Node" }),
+    ).toBeInTheDocument();
+  });
+
+  it("waits for a confirmed ordinary parent identity before offering Promote to Node", () => {
+    mockBitDetail(createBit({ parentId: "unresolved-parent" }), [createChunk()]);
+
+    render(<BitDetailPopup />);
+
+    expect(
+      screen.queryByRole("button", { name: "Promote to Node" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("keeps a stable description shell when entering edit mode", () => {
     mockBitDetail(createBit({ description: "" }));
 

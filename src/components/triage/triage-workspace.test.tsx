@@ -7,11 +7,21 @@ import type { Node } from "@/types";
 import { TriageWorkspace } from "./triage-workspace";
 
 const useTriageDndMock = vi.hoisted(() => vi.fn());
+const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
 const handlePlacementConfirmMock = vi.hoisted(() => vi.fn());
 const handlePlacementCancelMock = vi.hoisted(() => vi.fn());
+const useGridDataMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/hooks/use-dnd", () => ({
   useTriageDnd: useTriageDndMock,
+}));
+
+vi.mock("@/hooks/use-staged-candidates", () => ({
+  useStagedCandidates: useStagedCandidatesMock,
+}));
+
+vi.mock("@/hooks/use-grid-data", () => ({
+  useGridData: useGridDataMock,
 }));
 
 vi.mock("@/components/triage/scratch-pool", () => ({
@@ -101,12 +111,18 @@ beforeEach(() => {
   handlePlacementConfirmMock.mockReset();
   handlePlacementConfirmMock.mockResolvedValue(undefined);
   handlePlacementCancelMock.mockReset();
+  useGridDataMock.mockReset();
+  useGridDataMock.mockReturnValue({ nodes: [], bits: [], isLoading: false });
   useTriageStore.setState({
     selectedScratchId: "scratch-1",
     stagedCandidates: {},
   });
   useTriageDndMock.mockReset();
   useTriageDndMock.mockReturnValue(createDndState());
+  useStagedCandidatesMock.mockReset();
+  useStagedCandidatesMock.mockReturnValue({
+    counts: { nodes: 0, bits: 0 },
+  });
 });
 
 afterEach(() => {
@@ -123,17 +139,91 @@ describe("TriageWorkspace", () => {
     expect(within(workspace).getByTestId("breakdown-panel")).toBeInTheDocument();
   });
 
-  it("keeps staging zones and the hierarchy explorer visible without visible section headings", () => {
+  it("renders one semantic shell with visible identities for all four areas", () => {
     render(<TriageWorkspace node={createNode()} />);
 
-    // heading text must NOT be visible
-    expect(screen.queryByText("Hierarchy Explorer")).not.toBeInTheDocument();
-    expect(screen.queryByText("Breakdown / Scribble")).not.toBeInTheDocument();
+    const workspace = screen.getByRole("region", {
+      name: "Inbox triage workspace",
+    });
 
-    // structural elements must still render
+    expect(workspace).toHaveAttribute(
+      "data-triage-role",
+      "shell-background",
+    );
+    expect(workspace).toHaveAttribute("data-triage-state", "default");
+
+    for (const name of [
+      "Scratch Pool",
+      "Breakdown",
+      "Staging",
+      "Grid Explorer",
+    ]) {
+      const region = within(workspace).getByRole("region", { name });
+      const heading = within(region).getByRole("heading", { name });
+
+      expect(region).toHaveAttribute("data-triage-role", "section-surface");
+      expect(region).toHaveAttribute("data-triage-state", "default");
+      expect(heading).toHaveAttribute("tabindex", "-1");
+      expect(heading).toHaveAttribute("data-triage-role", "section-header");
+    }
+
     expect(screen.getByTestId("hierarchy-explorer")).toBeInTheDocument();
     expect(screen.getByTestId("node-staging-zone")).toBeInTheDocument();
     expect(screen.getByTestId("bit-staging-zone")).toBeInTheDocument();
+  });
+
+  it("declares the approved shell ratios, desktop minimum, and hidden-scroll viewports", () => {
+    render(<TriageWorkspace node={createNode()} />);
+
+    const workspace = screen.getByTestId("triage-workspace");
+
+    expect(workspace).toHaveClass("triage-shell");
+    expect(workspace).toHaveAttribute("data-min-viewport", "1024px");
+    expect(screen.getByTestId("triage-main-work-area")).toHaveAttribute(
+      "data-layout-ratio",
+      "60/40",
+    );
+    expect(screen.getByTestId("triage-top-work-area")).toHaveAttribute(
+      "data-layout-ratio",
+      "60/40",
+    );
+    expect(screen.getByTestId("triage-staging-columns")).toHaveAttribute(
+      "data-layout-ratio",
+      "35/65",
+    );
+
+    expect(
+      workspace.querySelectorAll(
+        '[data-triage-role="internal-scroll-viewport"]',
+      ),
+    ).toHaveLength(5);
+  });
+
+  it("prefixes subsection headings only when authoritative type counts reach two", () => {
+    useStagedCandidatesMock.mockReturnValue({
+      counts: { nodes: 2, bits: 3 },
+    });
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(useStagedCandidatesMock).toHaveBeenCalledWith("scratch-1");
+    expect(screen.getByRole("heading", { level: 3, name: "2 Nodes" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "3 Bits" })).toBeInTheDocument();
+    expect(screen.getByTestId("triage-staging-columns")).toHaveAttribute(
+      "data-layout-ratio",
+      "35/65",
+    );
+  });
+
+  it("keeps bare subsection headings at zero or one authoritative candidate", () => {
+    useStagedCandidatesMock.mockReturnValue({
+      counts: { nodes: 1, bits: 0 },
+    });
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.getByRole("heading", { level: 3, name: "Nodes" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "Bits" })).toBeInTheDocument();
   });
 
   it("shows the remove-from-staging strip only while dragging a staged candidate", () => {
@@ -231,6 +321,34 @@ describe("TriageWorkspace", () => {
     expect(screen.getByTestId("hierarchy-section-body-l1")).toBeInTheDocument();
     expect(screen.getByTestId("hierarchy-section-body-l2")).toBeInTheDocument();
     expect(screen.getByTestId("hierarchy-section-body-l3")).toBeInTheDocument();
+  });
+
+  it("closes the actual placement owner when Explorer validation invalidates its target", async () => {
+    const target = {
+      ...createNode({ id: "parent-1", title: "Parent" }),
+      systemRole: null,
+    };
+    let rootNodes = [target];
+    useGridDataMock.mockImplementation((parentId) => ({
+      nodes: parentId === null ? rootNodes : [],
+      bits: [],
+      isLoading: false,
+    }));
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        pendingPlacement: createDirectPendingPlacement(),
+      }),
+    );
+
+    const view = render(<TriageWorkspace node={createNode()} />);
+    expect(handlePlacementCancelMock).not.toHaveBeenCalled();
+
+    rootNodes = [];
+    view.rerender(<TriageWorkspace node={createNode()} />);
+
+    await vi.waitFor(() => {
+      expect(handlePlacementCancelMock).toHaveBeenCalledOnce();
+    });
   });
 
   it("requires a type choice for direct breakdown placement and passes the selected type on confirm", () => {

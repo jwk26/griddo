@@ -1,8 +1,10 @@
 "use client";
 
 import { liveQuery } from "dexie";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getDataStore } from "@/lib/db/datastore";
+import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
+import { useTriageStore } from "@/stores/triage-store";
 import type { Bit, Node } from "@/types";
 
 const INBOX_LOOKUP_RETRY_MS = 100;
@@ -21,7 +23,33 @@ export function useInbox(): {
   const [inboxNodeId, setInboxNodeId] = useState<string | undefined>();
   const [scratchCount, setScratchCount] = useState(0);
   const [activeScratchBits, setActiveScratchBits] = useState<Bit[]>([]);
+  const [activeScratchBitsReady, setActiveScratchBitsReady] = useState(false);
   const [systemNodes, setSystemNodes] = useState<Node[]>([]);
+  const scratchPoolQuery = useTriageStore((state) => state.scratchPoolQuery);
+  const reconcileScratchPoolContext = useTriageStore(
+    (state) => state.reconcileScratchPoolContext,
+  );
+  const poolCreatedAtSort = useTriagePreferencesStore(
+    (state) => state.poolCreatedAtSort,
+  );
+
+  const orderedActiveScratchBits = useMemo(
+    () =>
+      activeScratchBits.toSorted((left, right) =>
+        poolCreatedAtSort === "ASC"
+          ? left.createdAt - right.createdAt
+          : right.createdAt - left.createdAt,
+      ),
+    [activeScratchBits, poolCreatedAtSort],
+  );
+  const visibleScratchBits = useMemo(() => {
+    const normalizedQuery = scratchPoolQuery.toLocaleLowerCase();
+    return normalizedQuery.length === 0
+      ? orderedActiveScratchBits
+      : orderedActiveScratchBits.filter((bit) =>
+          bit.title.toLocaleLowerCase().includes(normalizedQuery),
+        );
+  }, [orderedActiveScratchBits, scratchPoolQuery]);
 
   useEffect(() => {
     let cancelled = false;
@@ -37,6 +65,7 @@ export function useInbox(): {
       }
 
       if (inboxNode) {
+        setActiveScratchBitsReady(false);
         setInboxNodeId(inboxNode.id);
         return;
       }
@@ -121,12 +150,29 @@ export function useInbox(): {
         )
         .toSorted((left, right) => right.createdAt - left.createdAt);
     }).subscribe({
-      next: (value) => setActiveScratchBits(value),
+      next: (value) => {
+        setActiveScratchBits(value);
+        setActiveScratchBitsReady(true);
+      },
       error: (err) => console.error("activeScratchBits liveQuery error:", err),
     });
 
     return () => subscription.unsubscribe();
   }, [inboxNodeId]);
+
+  useEffect(() => {
+    if (!activeScratchBitsReady) return;
+
+    reconcileScratchPoolContext({
+      activeIds: orderedActiveScratchBits.map((bit) => bit.id),
+      visibleIds: visibleScratchBits.map((bit) => bit.id),
+    });
+  }, [
+    activeScratchBitsReady,
+    orderedActiveScratchBits,
+    reconcileScratchPoolContext,
+    visibleScratchBits,
+  ]);
 
   const createScratchBit = useCallback(
     async (title: string) => {

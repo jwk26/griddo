@@ -41,6 +41,17 @@ describe("TriageDragToken", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it("keeps the overlay compact and pointer-transparent", () => {
+    render(
+      <TriageDragToken
+        item={makeItem({ kind: "triage-staged-bit", label: "Call Sam" })}
+      />,
+    );
+
+    const token = screen.getByText("Call Sam").parentElement;
+    expect(token).toHaveClass("pointer-events-none", "h-8", "max-w-40");
+  });
+
   describe("triage-breakdown kind", () => {
     it("renders the GripVertical icon", () => {
       render(<TriageDragToken item={makeItem({ kind: "triage-breakdown", label: "My note" })} />);

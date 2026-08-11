@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Bit } from "@/types";
+import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
 import { useTriageStore } from "@/stores/triage-store";
 import { ScratchPool } from "./scratch-pool";
 
@@ -51,7 +52,11 @@ beforeEach(() => {
     selectedScratchId: null,
     scratchPoolExpanded: true,
     scratchPoolManualExpandedForId: null,
+    scratchPoolQuery: "",
+    scratchPoolResultIds: [],
+    scratchPoolScroll: { anchorId: null, offset: 0 },
   });
+  useTriagePreferencesStore.setState({ poolCreatedAtSort: "DESC" });
   useInboxMock.mockReturnValue({ activeScratchBits: [] });
 });
 
@@ -63,7 +68,11 @@ afterEach(() => {
     selectedScratchId: null,
     scratchPoolExpanded: true,
     scratchPoolManualExpandedForId: null,
+    scratchPoolQuery: "",
+    scratchPoolResultIds: [],
+    scratchPoolScroll: { anchorId: null, offset: 0 },
   });
+  useTriagePreferencesStore.setState({ poolCreatedAtSort: "DESC" });
 });
 
 describe("ScratchPool", () => {
@@ -265,6 +274,77 @@ describe("ScratchPool", () => {
     fireEvent.click(screen.getByRole("button", { name: /Sort:/ }));
 
     expect(rowTitles()).toEqual(["Newer scratch45m ago", "Older scratch2h ago"]);
+    expect(useTriagePreferencesStore.getState().poolCreatedAtSort).toBe("DESC");
+  });
+
+  it("restores session query, exposes separate total and filtered counts, and records current results", () => {
+    useTriageStore.setState({ scratchPoolQuery: "project" });
+    useTriagePreferencesStore.setState({ poolCreatedAtSort: "ASC" });
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "new-hidden", title: "Inbox", createdAt: 300 }),
+        createBit({ id: "new-visible", title: "Project newer", createdAt: 200 }),
+        createBit({ id: "old-visible", title: "Project older", createdAt: 100 }),
+      ],
+    });
+
+    render(<ScratchPool />);
+
+    expect(screen.getByLabelText("Search scratches")).toHaveValue("project");
+    expect(screen.getByLabelText("3 scratches")).toBeInTheDocument();
+    expect(screen.getByTestId("pool-filtered-count")).toHaveTextContent("2 / 3");
+    expect(
+      screen
+        .getAllByRole("button", { name: /Project (older|newer)/ })
+        .map((row) => row.getAttribute("aria-label")),
+    ).toEqual(["Project older", "Project newer"]);
+  });
+
+  it("ignores a preserved hidden query for collapsed switchers and total count", () => {
+    useTriageStore.setState({
+      scratchPoolExpanded: false,
+      scratchPoolQuery: "alpha",
+    });
+    useTriagePreferencesStore.setState({ poolCreatedAtSort: "ASC" });
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "beta", title: "Beta", createdAt: 200 }),
+        createBit({ id: "alpha", title: "Alpha", createdAt: 100 }),
+      ],
+    });
+
+    render(<ScratchPool />);
+
+    const switcher = screen.getByRole("group", { name: "Switch scratch" });
+    expect(
+      within(switcher)
+        .getAllByRole("button")
+        .map((button) => button.getAttribute("aria-label")),
+    ).toEqual(["Alpha", "Beta"]);
+    expect(screen.getByLabelText("2 scratches")).toBeInTheDocument();
+    expect(screen.queryByTestId("pool-filtered-count")).not.toBeInTheDocument();
+  });
+
+  it("restores and updates session Pool scroll without persisting pixels elsewhere", () => {
+    useTriageStore.setState({
+      scratchPoolScroll: { anchorId: "scratch-1", offset: 36 },
+    });
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [createBit({ id: "scratch-1", title: "Scratch one" })],
+    });
+
+    render(<ScratchPool />);
+
+    const viewport = screen.getByTestId("pool-scroll-viewport");
+    expect(viewport.scrollTop).toBe(36);
+
+    Object.defineProperty(viewport, "scrollTop", { value: 72, writable: true });
+    fireEvent.scroll(viewport);
+
+    expect(useTriageStore.getState().scratchPoolScroll).toEqual({
+      anchorId: "scratch-1",
+      offset: 72,
+    });
   });
 
   it("collapsed mode has no search or sort controls", () => {
@@ -408,7 +488,7 @@ describe("ScratchPool", () => {
 
     render(<ScratchPool />);
 
-    useTriageStore.setState({ selectedScratchId: "scratch-2" });
+    useTriageStore.getState().selectScratch("scratch-2");
 
     expect(useTriageStore.getState().scratchPoolManualExpandedForId).toBeNull();
   });

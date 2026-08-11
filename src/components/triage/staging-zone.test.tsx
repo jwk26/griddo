@@ -2,11 +2,12 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { TriageDragItem } from "@/hooks/use-dnd";
-import type { StagedCandidate } from "@/stores/triage-store";
+import type { StagedCandidateProjection } from "@/hooks/use-staged-candidates";
 import { StagingZone } from "./staging-zone";
 
 const useDroppableMock = vi.hoisted(() => vi.fn());
 const useDraggableMock = vi.hoisted(() => vi.fn());
+const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@dnd-kit/core", () => ({
   useDraggable: useDraggableMock,
@@ -15,7 +16,7 @@ vi.mock("@dnd-kit/core", () => ({
 
 const triageStoreState = vi.hoisted(() => ({
   selectedScratchId: "scratch-1" as string | null,
-  stagedCandidates: {} as Record<string, StagedCandidate[]>,
+  stagedCandidates: {},
 }));
 const useTriageStoreMock = vi.hoisted(() => vi.fn());
 
@@ -23,14 +24,36 @@ vi.mock("@/stores/triage-store", () => ({
   useTriageStore: useTriageStoreMock,
 }));
 
+vi.mock("@/hooks/use-staged-candidates", () => ({
+  useStagedCandidates: useStagedCandidatesMock,
+}));
+
 function createCandidate(
-  overrides: Partial<StagedCandidate> = {},
-): StagedCandidate {
+  overrides: Partial<StagedCandidateProjection> = {},
+): StagedCandidateProjection {
+  const id = overrides.id ?? crypto.randomUUID();
+  const sourceBreakdownId =
+    overrides.sourceBreakdownId ?? `breakdown-${id}`;
+  const content = overrides.content ?? "Candidate";
   return {
-    id: overrides.id ?? crypto.randomUUID(),
-    type: overrides.type ?? "node",
-    sourceBreakdownId: overrides.sourceBreakdownId ?? "breakdown-1",
-    label: overrides.label ?? "Candidate",
+    id,
+    scratchBitId: overrides.scratchBitId ?? "scratch-1",
+    sourceBreakdownId,
+    resultType: overrides.resultType ?? "node",
+    lifecycle: "staged",
+    createdAt: overrides.createdAt ?? 1,
+    updatedAt: overrides.updatedAt ?? 1,
+    version: overrides.version ?? 1,
+    content,
+    source: overrides.source ?? {
+      id: sourceBreakdownId,
+      scratchBitId: overrides.scratchBitId ?? "scratch-1",
+      content,
+      order: 0,
+      createdAt: 1,
+      consumedAt: null,
+      version: 1,
+    },
   };
 }
 
@@ -41,10 +64,11 @@ beforeEach(() => {
     (
       selector: (state: {
         selectedScratchId: string | null;
-        stagedCandidates: Record<string, StagedCandidate[]>;
+        stagedCandidates: Record<string, unknown[]>;
       }) => unknown,
     ) => selector(triageStoreState),
   );
+  useStagedCandidatesMock.mockReturnValue({ candidates: [] });
   useDroppableMock.mockReturnValue({ setNodeRef: vi.fn() });
   useDraggableMock.mockReturnValue({
     setNodeRef: vi.fn(),
@@ -73,63 +97,56 @@ describe("StagingZone", () => {
     expect(screen.getByTestId("bit-staging-zone")).toBeInTheDocument();
   });
 
-  it("shows the node empty-state indicator when stagedCandidates is empty", () => {
+  it("renders a quiet Node well without a large empty placeholder", () => {
     render(<StagingZone type="node" />);
 
-    expect(screen.getByText("No node candidates")).toBeInTheDocument();
+    const zone = screen.getByTestId("node-staging-zone");
+    expect(zone).toHaveAttribute("data-empty", "true");
+    expect(within(zone).queryByText(/no node candidates/i)).not.toBeInTheDocument();
+    expect(within(zone).queryByTestId("node-empty-card")).not.toBeInTheDocument();
   });
 
-  it("shows the bit empty-state indicator when stagedCandidates is empty", () => {
+  it("renders a quiet Bit well without a large empty placeholder", () => {
     render(<StagingZone type="bit" />);
 
-    expect(screen.getByText("No bit candidates")).toBeInTheDocument();
+    const zone = screen.getByTestId("bit-staging-zone");
+    expect(zone).toHaveAttribute("data-empty", "true");
+    expect(within(zone).queryByText(/no bit candidates/i)).not.toBeInTheDocument();
+    expect(within(zone).queryByTestId("bit-empty-card")).not.toBeInTheDocument();
   });
 
-  it("renders a candidate card for each node candidate for the current scratch", () => {
-    triageStoreState.stagedCandidates = {
-      "scratch-1": [
-        createCandidate({ id: "node-1", label: "Project outline" }),
-        createCandidate({ id: "bit-1", type: "bit", label: "Call Sam" }),
-        createCandidate({ id: "node-2", label: "Research folder" }),
+  it("renders Task 131 Node projections in createdAt DESC then ID order", () => {
+    useStagedCandidatesMock.mockReturnValue({
+      candidates: [
+        createCandidate({ id: "node-b", content: "Newer B", createdAt: 3 }),
+        createCandidate({ id: "bit-a", content: "Bit", resultType: "bit", createdAt: 4 }),
+        createCandidate({ id: "node-old", content: "Older", createdAt: 2 }),
+        createCandidate({ id: "node-a", content: "Newer A", createdAt: 3 }),
       ],
-      "scratch-2": [
-        createCandidate({ id: "node-3", label: "Other scratch node" }),
-      ],
-    };
+    });
 
     render(<StagingZone type="node" />);
 
     const zone = screen.getByTestId("node-staging-zone");
     const cards = within(zone).getAllByTestId("node-candidate-card");
 
-    expect(cards).toHaveLength(2);
-    expect(within(zone).getByText("Project outline")).toBeInTheDocument();
-    expect(within(zone).getByText("Research folder")).toBeInTheDocument();
-    expect(within(zone).queryByText("Call Sam")).not.toBeInTheDocument();
-    expect(
-      within(zone).queryByText("Other scratch node"),
-    ).not.toBeInTheDocument();
+    expect(useStagedCandidatesMock).toHaveBeenCalledWith("scratch-1");
+    expect(cards.map((card) => card.textContent)).toEqual([
+      "Newer A",
+      "Newer B",
+      "Older",
+    ]);
+    expect(within(zone).queryByText("Bit")).not.toBeInTheDocument();
   });
 
-  it("renders a candidate row for each bit candidate for the current scratch", () => {
-    triageStoreState.stagedCandidates = {
-      "scratch-1": [
-        createCandidate({ id: "node-1", label: "Project outline" }),
-        createCandidate({ id: "bit-1", type: "bit", label: "Call Sam" }),
-        createCandidate({
-          id: "bit-2",
-          type: "bit",
-          label: "Draft the note",
-        }),
+  it("renders Task 131 Bit projections as text rows", () => {
+    useStagedCandidatesMock.mockReturnValue({
+      candidates: [
+        createCandidate({ id: "node-1", content: "Project outline" }),
+        createCandidate({ id: "bit-1", content: "Call Sam", resultType: "bit", createdAt: 3 }),
+        createCandidate({ id: "bit-2", content: "Draft the note", resultType: "bit", createdAt: 2 }),
       ],
-      "scratch-2": [
-        createCandidate({
-          id: "bit-3",
-          type: "bit",
-          label: "Other scratch bit",
-        }),
-      ],
-    };
+    });
 
     render(<StagingZone type="bit" />);
 
@@ -140,9 +157,60 @@ describe("StagingZone", () => {
     expect(within(zone).getByText("Call Sam")).toBeInTheDocument();
     expect(within(zone).getByText("Draft the note")).toBeInTheDocument();
     expect(within(zone).queryByText("Project outline")).not.toBeInTheDocument();
-    expect(
-      within(zone).queryByText("Other scratch bit"),
-    ).not.toBeInTheDocument();
+  });
+
+  it("uses the whole candidate root as the only pointer drag activator", () => {
+    const onPointerDown = vi.fn();
+    useStagedCandidatesMock.mockReturnValue({
+      candidates: [createCandidate({ content: "Whole root" })],
+    });
+    useDraggableMock.mockReturnValue({
+      setNodeRef: vi.fn(),
+      attributes: { role: "button", tabIndex: 0 },
+      listeners: { onPointerDown },
+      isDragging: false,
+    });
+
+    render(<StagingZone type="node" />);
+
+    const root = screen.getByTestId("node-candidate-card");
+    expect(root).toHaveAttribute("role", "button");
+    expect(root).toHaveAttribute("tabindex", "0");
+    expect(root).toHaveClass(
+      "touch-none",
+      "focus-visible:ring-2",
+      "motion-reduce:transition-none",
+    );
+    expect(root.querySelector("button, [data-dnd-handle]")).toBeNull();
+    expect(root).not.toHaveAttribute("onclick");
+    root.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    expect(onPointerDown).toHaveBeenCalledOnce();
+  });
+
+  it("keeps overflow candidates in an independently scrollable hidden-scroll well", () => {
+    useStagedCandidatesMock.mockReturnValue({
+      candidates: Array.from({ length: 8 }, (_, index) =>
+        createCandidate({
+          id: `bit-${index}`,
+          content: `Bit ${index}`,
+          resultType: "bit",
+          createdAt: index,
+        }),
+      ),
+    });
+
+    render(<StagingZone type="bit" />);
+
+    const zone = screen.getByTestId("bit-staging-zone");
+    expect(zone).toHaveClass(
+      "h-full",
+      "min-h-0",
+      "max-h-full",
+      "overflow-y-auto",
+      "[contain:size]",
+    );
+    expect(zone).toHaveClass("[scrollbar-width:none]");
+    expect(within(zone).getByText("Bit 0")).toBeInTheDocument();
   });
 });
 

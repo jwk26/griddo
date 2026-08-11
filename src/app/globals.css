@@ -696,3 +696,87 @@
   --calendar-border-color: hsl(0 0% 20%);
   --calendar-grid-line-color: hsl(0 0% 20%);
 }
+
+/* Inbox/Triage semantic shell */
+.triage-shell {
+  min-inline-size: 0;
+}
+
+.triage-shell__main {
+  display: grid;
+  grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
+}
+
+.triage-shell__top {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
+
+.triage-shell__staging {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 13fr);
+}
+
+.triage-shell__section-heading,
+.triage-shell__subsection-heading {
+  align-items: center;
+  background: hsl(var(--muted) / 0.3);
+  border-bottom: var(--theme-border-width) solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  display: flex;
+  flex-shrink: 0;
+  font-family: var(--theme-font);
+  font-size: 0.75rem;
+  font-weight: 600;
+  height: 2rem;
+  line-height: 1rem;
+  padding-inline: 0.75rem;
+}
+
+.triage-shell__subsection-heading {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.triage-shell__pool-heading {
+  color: hsl(var(--foreground));
+  font-family: var(--theme-font);
+  font-size: 0.75rem;
+  font-weight: 600;
+  left: 50%;
+  line-height: 2rem;
+  max-width: calc(100% - 5rem);
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.triage-shell [data-triage-role="section-surface"] {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+
+.triage-shell [data-triage-role="section-header"]:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: -2px;
+}
+
+.triage-shell [data-triage-role="internal-scroll-viewport"],
+.triage-shell [data-triage-role="internal-scroll-viewport"] .overflow-y-auto,
+.triage-shell [data-triage-role="internal-scroll-viewport"] .overflow-auto {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.triage-shell [data-triage-role="internal-scroll-viewport"]::-webkit-scrollbar,
+.triage-shell [data-triage-role="internal-scroll-viewport"] .overflow-y-auto::-webkit-scrollbar,
+.triage-shell [data-triage-role="internal-scroll-viewport"] .overflow-auto::-webkit-scrollbar {
+  display: none;
+}

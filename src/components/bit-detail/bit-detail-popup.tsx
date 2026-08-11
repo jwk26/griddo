@@ -232,7 +232,11 @@ export function BitDetailPopup() {
 
   const Icon = bit ? (NODE_ICON_MAP[bit.icon] ?? NODE_ICON_MAP.Box) : null;
   const hasChunks = chunks.length > 0;
-  const canPromote = hasChunks && (parentNode === null || parentNode.level < 2);
+  const canPromote =
+    hasChunks &&
+    parentNode !== null &&
+    parentNode.systemRole !== "inbox" &&
+    parentNode.level < 2;
   const completedCount = chunks.filter(
     (chunk) => chunk.status === "complete",
   ).length;

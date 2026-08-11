@@ -21,14 +21,20 @@ import {
   type PendingPlacement,
   type TriageDragItem,
 } from "@/hooks/use-dnd";
+import { useStagedCandidates } from "@/hooks/use-staged-candidates";
 import {
   getTriageRemoveDropId,
   triageCollisionDetection,
   type TriageDropData,
 } from "@/lib/grid-dnd";
+import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import { cn } from "@/lib/utils";
 import { useTriageStore } from "@/stores/triage-store";
 import type { Node } from "@/types";
+
+function formatStagingHeading(label: string, count: number) {
+  return count >= 2 ? `${count} ${label}` : label;
+}
 
 // Positions the compact drag token center at the cursor rather than the
 // original draggable element's top-left. Without this, grabbing a staged
@@ -107,6 +113,8 @@ function TriageRemoveDropTarget({
 
 export function TriageWorkspace({ node }: { node: Node }) {
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
+  const { counts: stagedCandidateCounts } =
+    useStagedCandidates(selectedScratchId);
   const addStagedCandidate = useTriageStore(
     (state) => state.addStagedCandidate,
   );
@@ -131,12 +139,39 @@ export function TriageWorkspace({ node }: { node: Node }) {
   return (
     <section
       aria-label={`${node.title} triage workspace`}
-      className="flex h-full min-h-0 w-full overflow-hidden bg-background"
+      className="triage-shell flex h-full min-h-0 w-full overflow-hidden bg-background"
+      data-min-viewport="1024px"
       data-testid="triage-workspace"
+      data-triage-role="shell-background"
+      data-triage-state="default"
     >
-      <ScratchPool />
+      <section
+        aria-labelledby="triage-scratch-pool-heading"
+        className="triage-shell__pool relative flex h-full min-h-0 shrink-0"
+        data-triage-role="section-surface"
+        data-triage-state="default"
+      >
+        <h2
+          className="triage-shell__pool-heading"
+          data-triage-role="section-header"
+          id="triage-scratch-pool-heading"
+          tabIndex={-1}
+        >
+          {INBOX_TRIAGE_COPY.sectionNames.scratchPool}
+        </h2>
+        <div
+          className="min-h-0"
+          data-triage-role="internal-scroll-viewport"
+        >
+          <ScratchPool />
+        </div>
+      </section>
 
-      <div className="flex h-full min-w-0 flex-1 flex-col bg-background">
+      <div
+        className="triage-shell__main h-full min-w-0 flex-1 bg-background"
+        data-layout-ratio="60/40"
+        data-testid="triage-main-work-area"
+      >
         <DndContext
           autoScroll={false}
           collisionDetection={triageCollisionDetection}
@@ -145,25 +180,63 @@ export function TriageWorkspace({ node }: { node: Node }) {
           onDragOver={handleDragOver}
           onDragStart={handleDragStart}
         >
-          <div className="flex min-h-0 basis-3/5 border-b border-border">
-            <div className="flex min-w-0 basis-3/5 flex-col border-r border-border bg-card">
+          <div
+            className="triage-shell__top min-h-0 border-b border-border"
+            data-layout-ratio="60/40"
+            data-testid="triage-top-work-area"
+          >
+            <section
+              aria-labelledby="triage-breakdown-heading"
+              className="flex min-h-0 min-w-0 flex-col border-r border-border bg-card"
+              data-triage-role="section-surface"
+              data-triage-state="default"
+            >
+              <h2
+                className="triage-shell__section-heading"
+                data-triage-role="section-header"
+                id="triage-breakdown-heading"
+                tabIndex={-1}
+              >
+                {INBOX_TRIAGE_COPY.sectionNames.breakdown}
+              </h2>
               <div
-                className="flex h-8 items-center border-b border-border bg-muted/30 px-3 py-1.5"
-                aria-hidden="true"
-              />
-              <div className="min-h-0 flex-1 overflow-hidden">
+                className="min-h-0 flex-1 overflow-hidden"
+                data-triage-role="internal-scroll-viewport"
+              >
                 <BreakdownPanel />
               </div>
-            </div>
+            </section>
 
-            <div className="flex min-w-0 basis-2/5 flex-col bg-card">
-              <div className="flex min-h-0 flex-1">
+            <section
+              aria-labelledby="triage-staging-heading"
+              className="flex min-h-0 min-w-0 flex-col bg-card"
+              data-triage-role="section-surface"
+              data-triage-state="default"
+            >
+              <h2
+                className="triage-shell__section-heading"
+                data-triage-role="section-header"
+                id="triage-staging-heading"
+                tabIndex={-1}
+              >
+                {INBOX_TRIAGE_COPY.sectionNames.staging}
+              </h2>
+              <div
+                className="triage-shell__staging min-h-0 flex-1"
+                data-layout-ratio="35/65"
+                data-testid="triage-staging-columns"
+              >
                 <div className="flex min-w-0 basis-[35%] flex-col">
+                  <h3 className="triage-shell__subsection-heading">
+                    {formatStagingHeading(
+                      INBOX_TRIAGE_COPY.sectionNames.stagingNodes,
+                      stagedCandidateCounts.nodes,
+                    )}
+                  </h3>
                   <div
-                    className="flex h-8 items-center border-b border-border bg-muted/30 px-3 py-1.5"
-                    aria-hidden="true"
-                  />
-                  <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
+                    className="flex min-h-0 flex-1 overflow-y-auto p-3"
+                    data-triage-role="internal-scroll-viewport"
+                  >
                     <StagingZone
                       activeDragItem={activeDragItem}
                       overTargetId={overTargetId}
@@ -173,11 +246,16 @@ export function TriageWorkspace({ node }: { node: Node }) {
                 </div>
 
                 <div className="flex min-w-0 basis-[65%] flex-col border-l border-dashed border-border/80">
+                  <h3 className="triage-shell__subsection-heading">
+                    {formatStagingHeading(
+                      INBOX_TRIAGE_COPY.sectionNames.stagingBits,
+                      stagedCandidateCounts.bits,
+                    )}
+                  </h3>
                   <div
-                    className="flex h-8 items-center border-b border-border bg-muted/30 px-3 py-1.5"
-                    aria-hidden="true"
-                  />
-                  <div className="flex min-h-0 flex-1 overflow-y-auto p-3">
+                    className="flex min-h-0 flex-1 overflow-y-auto p-3"
+                    data-triage-role="internal-scroll-viewport"
+                  >
                     <StagingZone
                       activeDragItem={activeDragItem}
                       overTargetId={overTargetId}
@@ -190,22 +268,39 @@ export function TriageWorkspace({ node }: { node: Node }) {
                 activeDragItem={activeDragItem}
                 overTargetId={overTargetId}
               />
-            </div>
+            </section>
           </div>
 
           <DragOverlay dropAnimation={null} modifiers={[snapDragTokenToCursor]}>
             {activeDragItem ? <TriageDragToken item={activeDragItem} /> : null}
           </DragOverlay>
 
-          <div className="flex min-h-0 basis-2/5 flex-col bg-background">
-            <div className="flex min-h-0 flex-1 overflow-hidden">
+          <section
+            aria-labelledby="triage-grid-explorer-heading"
+            className="flex min-h-0 flex-col bg-background"
+            data-triage-role="section-surface"
+            data-triage-state="default"
+          >
+            <h2
+              className="triage-shell__section-heading"
+              data-triage-role="section-header"
+              id="triage-grid-explorer-heading"
+              tabIndex={-1}
+            >
+              {INBOX_TRIAGE_COPY.sectionNames.gridExplorer}
+            </h2>
+            <div
+              className="flex min-h-0 flex-1 overflow-hidden"
+              data-triage-role="internal-scroll-viewport"
+            >
               <HierarchyExplorer
                 activeDragItem={activeDragItem}
+                onPendingPlacementInvalidated={handlePlacementCancel}
                 overTargetId={overTargetId}
                 pendingPlacementDropId={pendingPlacement?.dropId ?? null}
               />
             </div>
-          </div>
+          </section>
 
           <PlacementConfirmationDialog
             key={pendingPlacement?.dropId ?? "none"}

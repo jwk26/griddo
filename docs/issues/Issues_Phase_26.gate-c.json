@@ -1,0 +1,147 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "gate-c",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-26/lifetime-copy-base-surfaces",
+  "approved_base": "f91bf0529961541d9b7fa1645ee3aded081eaea3",
+  "approved_scope": {
+    "lifecycle": "run-phase",
+    "phase": 26,
+    "worktree_role": "feature",
+    "phase_tasks": [127, 128, 129, 130, 131, 132, 133, 134, 135],
+    "task_batch": [127],
+    "task_order": [127],
+    "execution_mode": "sequential",
+    "next_task": 127
+  },
+  "next_legal_action": "$run-task",
+  "source_mode": "approved canonical plan + archived/merged Phase 23–25 foundations on fetched origin/main",
+  "issue_ledger": "docs/issues/Issues_Phase_26.md",
+  "integration": {
+    "branch": "main",
+    "remote": "origin",
+    "post_fetch_sha": "f91bf0529961541d9b7fa1645ee3aded081eaea3",
+    "local_matches_remote": true
+  },
+  "worktree_preparation": {
+    "new_linked_worktree": true,
+    "reuse": false,
+    "base_exception": null,
+    "clean_start": true,
+    "approved_base_to_head_commits_before_receipt": 0
+  },
+  "dependency_evidence": {
+    "task_127": {
+      "dependencies": [101],
+      "accepted_commits": [
+        "4a7865ad9fdc88ee40d1cca5ff476a2b2dc9bbc0"
+      ],
+      "state_at_gate": "ready"
+    },
+    "later_phase_tasks": {
+      "tasks": [128, 129, 130, 131, 132, 133, 134, 135],
+      "state_at_gate": "held_for_separate_run-task_scope_and_dependency_revalidation"
+    }
+  },
+  "task_scope": {
+    "task_127": {
+      "modify": [
+        "src/stores/triage-store.ts",
+        "src/stores/triage-store.test.ts"
+      ],
+      "create": [
+        "src/stores/triage-preferences-store.ts",
+        "src/stores/triage-preferences-store.test.ts"
+      ],
+      "behavior": [
+        "app-session selected Scratch ownership",
+        "Pool expansion, manual reopen, query, result, and scroll ownership",
+        "Explorer path, open-column, and column-scroll ownership",
+        "validated device-local Pool and Breakdown created-at sort preferences defaulting independently to DESC",
+        "unchanged deprecated non-authoritative candidate compatibility API"
+      ],
+      "excluded": [
+        "candidate persistence or new candidate consumers",
+        "Newly Placed state",
+        "drafts",
+        "active or interrupted Explorer search",
+        "placement",
+        "completion",
+        "recovery",
+        "Task 128 or later implementation"
+      ]
+    }
+  },
+  "writer_mutex": {
+    "mode": "single-task",
+    "task_127": ["triage-state", "triage-preferences"],
+    "single_production_writer": "Codex"
+  },
+  "readiness": {
+    "plan_code_drift": "none",
+    "open_decision_receipts_for_batch": [],
+    "active_blocking_issues": [],
+    "flow_ownership": "PASS",
+    "task_127_started": false,
+    "production_implementation_started": false,
+    "baseline_src_tree": "483c7756667335b502105dfa4a712b128a7a117b"
+  },
+  "verification": {
+    "setup": {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "result": "lockfile unchanged; 537 packages linked"
+    },
+    "baseline_full_gate": [
+      {
+        "command": "pnpm test",
+        "exit": 0,
+        "result": "87 test files and 679 tests passed"
+      },
+      {
+        "command": "pnpm lint",
+        "exit": 0,
+        "result": "0 errors and 11 pre-existing warnings"
+      },
+      {
+        "command": "pnpm typecheck",
+        "exit": 0,
+        "result": "tsc --noEmit passed"
+      },
+      {
+        "command": "pnpm build",
+        "exit": 0,
+        "result": "Next.js 16.2.1 production build passed and seven routes generated"
+      }
+    ],
+    "task_127_focused": [
+      "focused triage-store and triage-preferences-store tests",
+      "pnpm typecheck",
+      "git diff --check"
+    ]
+  },
+  "workflow_candidate": {
+    "branch": "post-v1/workflow-candidate-low-cost",
+    "commit": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
+    "run_phase_skill": "skills/run-phase/SKILL.md",
+    "run_phase_skill_sha256": "6b45762f2d291c006deb50b4caba9aa518e558af1c5a80db3c040073c6822e46",
+    "run_task_skill": "skills/run-task/SKILL.md",
+    "run_task_skill_sha256": "614631c56866549feb298d995ea0cf1311caa1cacaaefc2ba2ca753e43910531",
+    "global_live_run_phase_allowed": false,
+    "global_live_run_task_allowed": false
+  },
+  "gate_c_approval": {
+    "date": "2026-08-11",
+    "approval_kind": "new-phase-kickoff",
+    "exact_scope_confirmed": true,
+    "user_statement": "Approve Gate C exactly as presented."
+  },
+  "kickoff_state": {
+    "clean_start": true,
+    "task_127_durable_start_recorded": false,
+    "production_implementation_started": false,
+    "run_task_invoked": false
+  }
+}

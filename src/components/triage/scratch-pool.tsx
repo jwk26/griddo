@@ -8,10 +8,19 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useInbox } from "@/hooks/use-inbox";
+import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils/relative-time";
+import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
 import { useTriageStore } from "@/stores/triage-store";
 import type { Bit } from "@/types";
 
@@ -43,6 +52,9 @@ function ScratchRow({
   return (
     <button
       aria-label={bit.title}
+      aria-pressed={isSelected}
+      data-triage-role={isSelected ? "pool-selected-row" : undefined}
+      data-triage-state={isSelected ? "selected" : "default"}
       className={cn(
         "group relative h-[52px] w-full border-b border-border/30 px-3 py-2 text-left last:border-b-0",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
@@ -97,25 +109,43 @@ export function ScratchPool() {
   const setScratchPoolManualExpandedForId = useTriageStore(
     (state) => state.setScratchPoolManualExpandedForId,
   );
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortAsc, setSortAsc] = useState(false);
+  const searchQuery = useTriageStore((state) => state.scratchPoolQuery);
+  const setSearchQuery = useTriageStore((state) => state.setScratchPoolQuery);
+  const scratchPoolScroll = useTriageStore((state) => state.scratchPoolScroll);
+  const setScratchPoolScroll = useTriageStore(
+    (state) => state.setScratchPoolScroll,
+  );
+  const poolCreatedAtSort = useTriagePreferencesStore(
+    (state) => state.poolCreatedAtSort,
+  );
+  const setPoolCreatedAtSort = useTriagePreferencesStore(
+    (state) => state.setPoolCreatedAtSort,
+  );
   const [reducedMotion, setReducedMotion] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement>(null);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreToggleFocusRef = useRef(false);
 
   const count = activeScratchBits.length;
 
-  const sortedFilteredBits = useMemo(() => {
-    const filtered = searchQuery
-      ? activeScratchBits.filter((bit) =>
-          bit.title.toLowerCase().includes(searchQuery.toLowerCase()),
-        )
-      : activeScratchBits;
-
-    return filtered.toSorted((left, right) =>
-      sortAsc
+  const orderedBits = useMemo(
+    () =>
+      activeScratchBits.toSorted((left, right) =>
+        poolCreatedAtSort === "ASC"
         ? left.createdAt - right.createdAt
         : right.createdAt - left.createdAt,
-    );
-  }, [activeScratchBits, searchQuery, sortAsc]);
+      ),
+    [activeScratchBits, poolCreatedAtSort],
+  );
+  const sortedFilteredBits = useMemo(() => {
+    const normalizedQuery = searchQuery.toLocaleLowerCase();
+    return normalizedQuery.length === 0
+      ? orderedBits
+      : orderedBits.filter((bit) =>
+          bit.title.toLocaleLowerCase().includes(normalizedQuery),
+        );
+  }, [orderedBits, searchQuery]);
 
   useEffect(() => {
     if (typeof window.matchMedia !== "function") {
@@ -134,10 +164,28 @@ export function ScratchPool() {
   }, []);
 
   useEffect(() => {
-    setScratchPoolManualExpandedForId(null);
-  }, [selectedScratchId, setScratchPoolManualExpandedForId]);
+    if (!restoreToggleFocusRef.current) return;
+    restoreToggleFocusRef.current = false;
+    toggleButtonRef.current?.focus();
+  }, [scratchPoolExpanded]);
+
+  useLayoutEffect(() => {
+    const viewport = scrollViewportRef.current;
+    if (
+      viewport === null ||
+      scratchPoolScroll.anchorId === null ||
+      !sortedFilteredBits.some(
+        (bit) => bit.id === scratchPoolScroll.anchorId,
+      )
+    ) {
+      return;
+    }
+
+    viewport.scrollTop = scratchPoolScroll.offset;
+  }, [scratchPoolScroll, sortedFilteredBits]);
 
   const handleToggle = useCallback(() => {
+    restoreToggleFocusRef.current = true;
     if (!scratchPoolExpanded) {
       setScratchPoolExpanded(true);
       setScratchPoolManualExpandedForId(selectedScratchId);
@@ -158,13 +206,28 @@ export function ScratchPool() {
     [selectScratch],
   );
 
-  const handleSortToggle = useCallback(() => setSortAsc((prev) => !prev), []);
-  const handleSearchClear = useCallback(() => setSearchQuery(""), []);
+  const handleSortToggle = useCallback(
+    () => setPoolCreatedAtSort(poolCreatedAtSort === "ASC" ? "DESC" : "ASC"),
+    [poolCreatedAtSort, setPoolCreatedAtSort],
+  );
+  const handleSearchClear = useCallback(() => {
+    setSearchQuery("");
+    searchInputRef.current?.focus();
+  }, [setSearchQuery]);
+  const handleScroll = useCallback(() => {
+    const viewport = scrollViewportRef.current;
+    if (viewport === null) return;
+    setScratchPoolScroll({
+      anchorId: sortedFilteredBits[0]?.id ?? null,
+      offset: viewport.scrollTop,
+    });
+  }, [setScratchPoolScroll, sortedFilteredBits]);
 
   if (scratchPoolExpanded) {
     return (
       <aside
         data-testid="scratch-pool"
+        data-triage-state="expanded"
         className={cn(
           "flex h-full min-w-0 flex-col border-r border-border bg-muted/10 w-72",
           reducedMotion
@@ -180,15 +243,17 @@ export function ScratchPool() {
             />
             <span
               aria-label={`${count} scratch${count === 1 ? "" : "es"}`}
+              data-triage-role="pool-total-count"
               className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/80 px-1 text-[9px] font-semibold text-primary-foreground"
             >
               {count}
             </span>
           </div>
           <button
+            ref={toggleButtonRef}
             type="button"
-            aria-label="Collapse Scratch Pool"
-            title="Collapse Scratch Pool"
+            aria-label={INBOX_TRIAGE_COPY.baseActions.collapseScratchPool}
+            title={INBOX_TRIAGE_COPY.baseActions.collapseScratchPool}
             onClick={handleToggle}
             className={cn(
               "rounded-md p-0.5 text-muted-foreground/80 hover:bg-muted hover:text-foreground",
@@ -202,24 +267,29 @@ export function ScratchPool() {
           </button>
         </div>
 
-        <div className="flex h-8 shrink-0 items-center gap-1 border-b border-border/50 px-2">
+        <div
+          className="flex h-8 shrink-0 items-center gap-1 border-b border-border/50 px-2"
+          data-triage-role="pool-tools"
+        >
           <div className="relative flex flex-1 items-center">
             <Search
               className="absolute left-1.5 h-3 w-3 text-muted-foreground/50"
               aria-hidden="true"
             />
             <input
+              ref={searchInputRef}
               type="text"
               placeholder="Search…"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              aria-label="Search scratches"
+              aria-label={INBOX_TRIAGE_COPY.accessibleNames.searchScratches}
+              data-triage-role="pool-search-field"
               className="h-6 w-full rounded-sm bg-muted/40 pl-5 pr-1 text-[10px] text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             {searchQuery && (
               <button
                 type="button"
-                aria-label="Clear search"
+                aria-label={INBOX_TRIAGE_COPY.accessibleNames.clearPoolSearch}
                 onClick={handleSearchClear}
                 className={cn(
                   "absolute right-1 text-muted-foreground/50 hover:text-foreground",
@@ -230,14 +300,28 @@ export function ScratchPool() {
               </button>
             )}
           </div>
+          {searchQuery.length > 0 ? (
+            <output
+              aria-label={`${sortedFilteredBits.length}/${count}`}
+              className="shrink-0 text-[10px] tabular-nums text-muted-foreground"
+              data-testid="pool-filtered-count"
+              data-triage-role="pool-filtered-count"
+            >
+              {sortedFilteredBits.length} / {count}
+            </output>
+          ) : null}
           <button
             type="button"
             aria-label={
-              sortAsc
-                ? "Sort: oldest first — click for newest first"
-                : "Sort: newest first — click for oldest first"
+              poolCreatedAtSort === "ASC"
+                ? INBOX_TRIAGE_COPY.baseActions.sortOldestFirst
+                : INBOX_TRIAGE_COPY.baseActions.sortNewestFirst
             }
-            title={sortAsc ? "Sort: oldest first" : "Sort: newest first"}
+            title={
+              poolCreatedAtSort === "ASC"
+                ? INBOX_TRIAGE_COPY.baseActions.sortOldestFirst
+                : INBOX_TRIAGE_COPY.baseActions.sortNewestFirst
+            }
             onClick={handleSortToggle}
             className={cn(
               "shrink-0 rounded-md p-1 text-muted-foreground/70 hover:bg-muted hover:text-foreground",
@@ -259,7 +343,14 @@ export function ScratchPool() {
               : "transition-opacity duration-150 ease-in-out",
           )}
         >
-          <div className="h-full overflow-y-auto">
+          <div
+            ref={scrollViewportRef}
+            className="h-full overflow-y-auto"
+            data-testid="pool-scroll-viewport"
+            data-triage-role="pool-scroll-viewport"
+            onScroll={handleScroll}
+            tabIndex={0}
+          >
             {activeScratchBits.length === 0 ? (
               <EmptyState />
             ) : sortedFilteredBits.length === 0 ? (
@@ -286,6 +377,7 @@ export function ScratchPool() {
   return (
     <aside
       data-testid="scratch-pool"
+      data-triage-state="collapsed"
       className={cn(
         "flex h-full min-w-0 flex-col border-r border-border bg-muted/10 w-12",
         reducedMotion
@@ -295,9 +387,10 @@ export function ScratchPool() {
     >
       <div className="flex h-8 shrink-0 items-center justify-center border-b border-border bg-muted/30">
         <button
+          ref={toggleButtonRef}
           type="button"
-          aria-label="Expand Scratch Pool"
-          title="Expand Scratch Pool"
+          aria-label={INBOX_TRIAGE_COPY.baseActions.expandScratchPool}
+          title={INBOX_TRIAGE_COPY.baseActions.expandScratchPool}
           onClick={handleToggle}
           className={cn(
             "rounded-md p-0.5 text-muted-foreground/80 hover:bg-muted hover:text-foreground",
@@ -323,6 +416,7 @@ export function ScratchPool() {
           {count > 0 && (
             <span
               aria-label={`${count} scratch${count === 1 ? "" : "es"}`}
+              data-triage-role="pool-total-count"
               className="absolute -right-1.5 -top-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-primary px-0.5 text-[8px] font-semibold text-primary-foreground"
             >
               {count}
@@ -336,8 +430,7 @@ export function ScratchPool() {
             role="group"
             aria-label="Switch scratch"
           >
-            {activeScratchBits
-              .toSorted((left, right) => right.createdAt - left.createdAt)
+            {orderedBits
               .map((bit) => {
                 const isSelected = bit.id === selectedScratchId;
                 return (
@@ -345,6 +438,9 @@ export function ScratchPool() {
                     key={bit.id}
                     type="button"
                     aria-label={bit.title}
+                    aria-pressed={isSelected}
+                    data-triage-role="pool-compact-switcher"
+                    data-triage-state={isSelected ? "selected" : "default"}
                     title={bit.title}
                     onClick={() => handleSelect(bit.id)}
                     className={cn(

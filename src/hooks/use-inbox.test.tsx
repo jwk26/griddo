@@ -1,7 +1,9 @@
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DataStore } from "@/lib/db/datastore";
 import type { Bit, Node } from "@/lib/db/schema";
+import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
+import { useTriageStore } from "@/stores/triage-store";
 import { useInbox } from "./use-inbox";
 
 const getDataStoreMock = vi.hoisted(() => vi.fn());
@@ -63,6 +65,15 @@ function createBit(overrides: Partial<Bit> = {}): Bit {
 describe("useInbox", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useTriageStore.setState({
+      selectedScratchId: null,
+      scratchPoolExpanded: true,
+      scratchPoolManualExpandedForId: null,
+      scratchPoolQuery: "",
+      scratchPoolResultIds: [],
+      scratchPoolScroll: { anchorId: null, offset: 0 },
+    });
+    useTriagePreferencesStore.setState({ poolCreatedAtSort: "DESC" });
     liveQueryMock.mockImplementation((query: () => Promise<unknown>) => ({
       subscribe: (observer: {
         next: (value: unknown) => void;
@@ -75,6 +86,7 @@ describe("useInbox", () => {
   });
 
   afterEach(() => {
+    cleanup();
     vi.useRealTimers();
   });
 
@@ -278,6 +290,96 @@ describe("useInbox", () => {
 
     await waitFor(() => {
       expect(result.current.activeScratchBits).toEqual([newest, oldest]);
+    });
+  });
+
+  it("selects the first visible active Scratch under persisted sort without moving focus", async () => {
+    const inbox = createNode({ id: "inbox", systemRole: "inbox" });
+    const hiddenNewer = createBit({
+      id: "hidden-newer",
+      title: "Hidden",
+      parentId: inbox.id,
+      createdAt: 300,
+    });
+    const visibleOlder = createBit({
+      id: "visible-older",
+      title: "Project alpha",
+      parentId: inbox.id,
+      createdAt: 100,
+    });
+    getDataStoreMock.mockResolvedValue({
+      getAllActiveNodes: vi.fn().mockResolvedValue([inbox]),
+      getAllActiveBits: vi.fn().mockResolvedValue([hiddenNewer, visibleOlder]),
+      createBit: vi.fn(),
+    } as unknown as DataStore);
+    useTriageStore.setState({
+      selectedScratchId: "removed",
+      scratchPoolQuery: "project",
+    });
+    useTriagePreferencesStore.setState({ poolCreatedAtSort: "ASC" });
+    const focusTarget = document.createElement("button");
+    document.body.append(focusTarget);
+    focusTarget.focus();
+
+    renderHook(() => useInbox());
+
+    await waitFor(() => {
+      expect(useTriageStore.getState()).toMatchObject({
+        selectedScratchId: "visible-older",
+        scratchPoolResultIds: ["visible-older"],
+      });
+    });
+    expect(document.activeElement).toBe(focusTarget);
+    focusTarget.remove();
+  });
+
+  it("keeps a valid selected Scratch when the restored query hides its row", async () => {
+    const inbox = createNode({ id: "inbox", systemRole: "inbox" });
+    const hidden = createBit({
+      id: "hidden",
+      title: "Hidden",
+      parentId: inbox.id,
+      createdAt: 300,
+    });
+    const visible = createBit({
+      id: "visible",
+      title: "Project alpha",
+      parentId: inbox.id,
+      createdAt: 100,
+    });
+    getDataStoreMock.mockResolvedValue({
+      getAllActiveNodes: vi.fn().mockResolvedValue([inbox]),
+      getAllActiveBits: vi.fn().mockResolvedValue([hidden, visible]),
+      createBit: vi.fn(),
+    } as unknown as DataStore);
+    useTriageStore.setState({
+      selectedScratchId: "hidden",
+      scratchPoolQuery: "project",
+    });
+
+    renderHook(() => useInbox());
+
+    await waitFor(() => {
+      expect(useTriageStore.getState()).toMatchObject({
+        selectedScratchId: "hidden",
+        scratchPoolResultIds: ["visible"],
+      });
+    });
+  });
+
+  it("clears selection for a true empty Inbox snapshot", async () => {
+    const inbox = createNode({ id: "inbox", systemRole: "inbox" });
+    getDataStoreMock.mockResolvedValue({
+      getAllActiveNodes: vi.fn().mockResolvedValue([inbox]),
+      getAllActiveBits: vi.fn().mockResolvedValue([]),
+      createBit: vi.fn(),
+    } as unknown as DataStore);
+    useTriageStore.setState({ selectedScratchId: "removed" });
+
+    renderHook(() => useInbox());
+
+    await waitFor(() => {
+      expect(useTriageStore.getState().selectedScratchId).toBeNull();
     });
   });
 
