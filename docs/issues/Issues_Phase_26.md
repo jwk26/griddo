@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–133 accepted; Task 134 not started
+> State: Tasks 127–135 accepted; end-phase audit complete and Final Close pending
 
 ## Status Legend
 
@@ -504,3 +504,76 @@ None at kickoff.
   selection/reveal/close realization; Task 152 consumes headless search for
   placement coordination; Task 158 owns search-result Undo integration.
 - **Unowned:** None.
+
+## Phase 26 Close Audit
+
+### Identity, ownership, and acceptance
+
+- **Pinned pre-close SHA:**
+  `cb09da04557bad3b253b87581a70d7ee24e630b6` on
+  `phase-26/lifetime-copy-base-surfaces`, based on fetched `origin/main`
+  `f91bf0529961541d9b7fa1645ee3aded081eaea3`.
+- Tasks 127–135 each have a user-owned `[x]`, durable implementation/evidence,
+  and a separate acceptance commit. Task 136 remains `[ ]` and unstarted.
+- The base-to-head diff is owned by the nine accepted tasks, their tests and
+  route/capture evidence, the Gate C receipt, the execution plan, and this
+  ledger. No Task 136+, unrelated, or reference-prototype work is mixed.
+- The exact accepted source tree is
+  `dba57c9e4da8639e98b4d966750835cb3895102c` at pre-close and is preserved by
+  candidate A, which changes close documents only.
+
+### Terminal evidence and topology
+
+The adapter-declared full gate ran freshly and serially at pre-close:
+
+| Command | Exit | Result |
+| --- | ---: | --- |
+| `pnpm test` | 0 | 92 test files / 743 tests passed |
+| `pnpm lint` | 0 | 0 errors; the same 11 pre-existing warnings |
+| `pnpm typecheck` | 0 | TypeScript check passed |
+| `pnpm build` | 0 | Next.js 16.2.1 production build passed; seven static and one dynamic route |
+| `git diff --check` | 0 | No whitespace errors |
+
+The latest fetch left `origin/main` unchanged at the approved base. It is an
+ancestor of pre-close, pre-close is 42 commits ahead, and the exact merge-tree
+against that `main` is conflict-free with tree
+`56ec9431e8d61ecbf547181ca8b9a289bb911c7c`. No other phase close or
+publication changed integration `main` after Phase 26 kickoff.
+
+### Architecture conformance
+
+| Governing rule | Affected evidence | Tier | Disposition |
+| --- | --- | --- | --- |
+| DataStore facade, reactive reads, and hook boundary | New reactive owners use `liveQuery` only in hooks and DataStore APIs; components do not import Dexie/DataStore or sequence repository writes. | Blocking | Pass |
+| State ownership by lifetime | `triage-store.ts` contains only the approved app-session owners plus the explicitly retained non-authoritative compatibility candidate API; device preferences and mounted query state remain separate. | Blocking | Pass |
+| Durable Staging authority | Task 131 joins durable candidates to authoritative source rows; Staging and Breakdown consume that projection rather than Zustand candidate truth. | Blocking | Pass |
+| Dedicated Explorer query boundary | Task 135 uses dedicated traversal/ranking/request owners and has no `useSearch()` / `searchAll()` dependency or UI body. | Blocking | Pass |
+| Shared production tree and semantic/theme mapping | Tasks 129–134 extend the single canonical Inbox tree and semantic tokens; no duplicate route or component theme-ID branch was added. | Blocking | Pass |
+| Decision-prerequisite and future-task boundary | Receipt-dependent presentation, mutation coordination, placement, Undo, completion, Archive, Task 136+, and Task 151 search UI remain absent. | Blocking | Pass |
+| Source/render evidence | Accepted task records and committed captures name route, state, viewport, mode, focus, and observed behavior; headless tasks are labeled nonvisual. | Blocking | Pass |
+| File organization | New utilities, hooks, stores, components, tests, and evidence remain beside their declared owners. | Advisory | Pass |
+| Local-first presentation | Source-backed content remains usable; no generic routine-loading chrome was introduced. | Advisory | Pass |
+
+Blocking violations: **0**. Advisory violations: **0**.
+
+### Issue, canonical-impact, archive, and handoff reconciliation
+
+- No `Open`, `In Progress`, or `Awaiting User Decision` Phase 26 issue remains;
+  historical run-state sections remain chronology rather than current state.
+- Task 133 `Tagged` is `Reflected` in canonical Task 133 by adding the approved
+  Workspace/test authoritative count-heading scope.
+- Task 134 `Tagged` is `Reflected` in canonical Task 134 by adding the approved
+  Workspace/test stale-placement callback scope. Task 135 remains `None`.
+- Deferred `P23-03` is resolved by accepted Task 130 and synchronized in its
+  source ledger and the central deferred index. `P23-02` remains deferred to
+  Task 136.
+- `docs/execution-plan/archive/phase-26.md` records completion-time truth; the
+  Phase Index and active counts agree. Phase Notes are not used by policy.
+- One cross-phase learning records that canonical task boundaries must name
+  the real owner component when an accepted behavior crosses composition.
+
+**Next legal action:** present one exact Final Close packet pinning detached
+candidate A, the exact future whole-file JSON receipt payload and hash,
+publication metadata, merge method, checks policy, integration sync, and
+guarded cleanup. This audit grants no Final Close, receipt write, push, PR,
+merge, sync, or cleanup authority.

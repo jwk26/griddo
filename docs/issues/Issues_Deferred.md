@@ -38,7 +38,6 @@ It is **not** the source of truth for issue details. The source remains each `do
 | `Issues_Phase_21.md` | ISSUE-21-01 | Process/Low | Sequential Codex A→B execution: B's scope verification relied on `git status` alone after A left uncommitted changes — cannot distinguish B's writes from A's. | Save `git diff --name-only` baseline before B launches, or commit A before B. |
 | `Issues_Phase_21.md` | ISSUE-21-03 | UX/Low | Weekly header now shows `"June 2026"` instead of date range; cross-month weeks lose date-range information. Recipe canonical, intentional tradeoff. | Post-Phase 21 UX review — assess whether date-range label is needed alongside month name. |
 | `Issues_Phase_23.md` | P23-02 | Test maintenance | `use-scratch-breakdowns.test.tsx` retains a mock/no-call assertion for the retired `deleteScratchBreakdownsByScratch` API. | Remove it in Task 136, the first task that owns the hook and test replacement. |
-| `Issues_Phase_23.md` | P23-03 | Inbox/Triage UX | A defensive Inbox-parented Scratch with Chunk data can expose Promote in the global Bit detail popup even though the repository safely rejects it. | Task 130 owns the exact popup visibility guard while preserving ordinary Bit promotion. |
 
 ## Resolved Historical Deferrals
 
@@ -49,3 +48,4 @@ These are listed so future sessions do not re-open already handled carryovers.
 | `Issues_Phase_5.md` | Issue 6 | Urgency hooks bypassing DataStore facade was deferred to Phase 5.5 and handled there. |
 | `Issues_Phase_15.md` | ISSUE-15-01 | Runtime Dexie v3 migration verification was carried to Phase 16 and resolved with `fake-indexeddb` real migration tests. |
 | `Issues_Phase_15.md` | Phase-local Q6 | Phase 19 kickoff: EXECUTION_PLAN T87 corrected to `unarchiveNode`/`unarchiveBit`; Issues_Phase_15.md Q6 marked Resolved. |
+| `Issues_Phase_23.md` | P23-03 | Phase 26 Task 130 added the accepted popup visibility guard for Inbox-parented Scratch while preserving ordinary eligible Bit promotion. |
