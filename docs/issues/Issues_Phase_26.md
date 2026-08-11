@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–131 accepted; Task 132 in progress
+> State: Tasks 127–131 accepted; Task 132 implemented and awaiting user acceptance
 
 ## Status Legend
 
