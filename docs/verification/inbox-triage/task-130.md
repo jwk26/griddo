@@ -16,11 +16,33 @@ sort preference with `useInbox` and `ScratchPool`, and adds only the exact
 | Review RED | `pnpm exec vitest run src/components/bit-detail/bit-detail-popup.test.tsx` | 1 | 1 expected failure proved unresolved parent identity still exposed Promote before the fail-closed repair; 10 tests passed |
 | Focused GREEN | `pnpm exec vitest run src/components/triage/breakdown-panel.test.tsx src/components/triage/scratch-pool.test.tsx src/hooks/use-inbox.test.tsx src/stores/triage-store.test.ts src/stores/triage-preferences-store.test.ts src/components/bit-detail/bit-detail-popup.test.tsx` | 0 | 6 files and 98 tests passed, including the existing first-printable Breakdown path |
 | Focused constraints | `pnpm exec eslint src/hooks/use-inbox.ts`; `pnpm typecheck`; `git diff --check` | 0 | Target lint, TypeScript, and whitespace checks passed after repair |
-| Full-gate attempt | `pnpm test`; `pnpm lint`; `pnpm typecheck`; `pnpm build` | 1 | Test passed (89 files, 707 tests); lint found one new `react-hooks/set-state-in-effect` error at `use-inbox.ts:118`; typecheck and build passed. Readiness reset moved into the async Inbox-identity callback before the post-repair gate |
-| Post-repair full gate | `pnpm test && pnpm lint && pnpm typecheck && pnpm build` | 0 | 89 files and 707 tests passed; lint had 0 errors and the unchanged 11 pre-existing warnings; `tsc --noEmit` passed; Next.js 16.2.1 build passed and generated seven routes |
+| Full-gate sequence 1 of 2 | `pnpm test`; `pnpm lint`; `pnpm typecheck`; `pnpm build` | mixed | Test exited 0 (89 files, 707 tests); lint exited 1 on one new `react-hooks/set-state-in-effect` error at `use-inbox.ts:118`; typecheck and build exited 0. This sequence ran before final repair and continued after lint failed |
+| Full-gate sequence 2 of 2 | `pnpm test && pnpm lint && pnpm typecheck && pnpm build` | 0 | After the final product repair, 89 files and 707 tests passed; lint had 0 errors and the unchanged 11 pre-existing warnings; `tsc --noEmit` passed; Next.js 16.2.1 build passed and generated seven routes |
 
-The successful full gate was not repeated after its relevant inputs became
-stable.
+## Process reconciliation
+
+- **Full-gate budget/sequence deviation:** the approved boundary required one
+  full gate only after final repair. Two full-gate sequences were actually
+  executed, comprising eight full-gate command invocations in total: test,
+  lint, typecheck, and build twice. Sequence 1 was premature and
+  non-conforming because it ran before the readiness-reset repair and
+  continued through typecheck/build after lint failed. Sequence 2 was the one
+  conforming post-repair run. This is a durable process deviation; it is not
+  represented as `None`.
+- **Final evidence validity:** sequence 2 remains valid successful evidence
+  because it ran after the final product repair, all four commands succeeded,
+  and no relevant product or test input changed afterward. It was not rerun
+  during this evidence-only reconciliation.
+- **Preference-source scope disposition:** canonical Task 130 named
+  `src/stores/triage-preferences-store.ts` for modification, but Task 127 had
+  already implemented the exact validated, device-local Pool created-at sort
+  API Task 130 needed. Task 130 consumed that API from `useInbox` and
+  `ScratchPool` and extended its test coverage without changing the source.
+  Behavioral scope is satisfied, while the prescribed source-file action is
+  durably reconciled as an intentional no-op rather than claimed as a diff.
+- **Canonical impact/tag:** `None`. The two reconciliations change neither
+  approved behavior nor ownership, and the canonical Task 130 contract remains
+  sufficient. No canonical amendment or separate end-phase tag is required.
 
 ## Visible route evidence
 
