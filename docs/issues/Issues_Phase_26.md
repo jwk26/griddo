@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–128 accepted; Task 129 in progress
+> State: Tasks 127–128 accepted; Task 129 implemented and awaiting user acceptance
 
 ## Status Legend
 
@@ -176,7 +176,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `129` — build the semantic four-area Inbox shell |
-| State | `In Progress` — implementation started; canonical Task 129 marker remains `[ ]` pending user acceptance |
+| State | `Implemented` — green checkpoint prepared; canonical Task 129 marker remains `[ ]` pending user acceptance |
 | Approved scope | Modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` plus `src/app/globals.css`; create `docs/verification/inbox-triage/task-129.md`; implement one semantic tree with visible Scratch Pool, Breakdown, Staging, and Grid Explorer identities, exact 60/40 main and top ratios, 35/65 Staging ratio, theme envelope/data-state roles, 1024px desktop minimum, hidden-scrollbar treatment, and stable focus landmarks; add no Explorer item labels, prototype state/handlers, Task 130 behavior, or later-task implementation |
 | Work order | User-approved Task 129-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -184,3 +184,33 @@ None at kickoff.
 | Dependency | Tasks 127–128 are accepted at the recovery anchor; existing canonical Inbox route dispatch is covered by focused runtime evidence and remains unchanged |
 | Issues / deviations | None |
 | Canonical impact | `None` — Task 129 implements the already-reflected SPEC/DESIGN_TOKENS/EXECUTION_PLAN shell boundary |
+
+## Task 129 Implementation Evidence
+
+| Field | Durable value |
+| --- | --- |
+| Durable start commit | `87fb6c374723279b4523cad2a8a32862751d4b2f` — ledger-only `In Progress` signal before production changes |
+| Implementation commit | `78f6f97bbe6a70fb359ada58b4dca26b1f9019fb` — Workspace shell/test, semantic shell CSS, and Task 129 route/capture evidence only |
+| RED evidence | `pnpm exec vitest run src/components/triage/triage-workspace.test.tsx` exited 1 with 2 expected failures for the absent semantic role and shell ratio contracts; all 10 pre-existing Workspace tests passed |
+| Focused GREEN | `pnpm exec vitest run src/components/triage/triage-workspace.test.tsx` exited 0: 1 file, 12 tests |
+| Focused constraints | `pnpm typecheck` exited 0; `git diff --check` exited 0 |
+| Full gate | Exactly one post-repair serial run: `pnpm test` exited 0 (89 files, 693 tests); `pnpm lint` exited 0 (0 errors, unchanged 11 warnings); `pnpm typecheck` exited 0; `pnpm build` exited 0 (Next.js 16.2.1, seven routes) |
+| Visible evidence | `docs/verification/inbox-triage/task-129.md` plus four committed GridDO light/dark captures at `1024×768` and `1920×1080`; canonical Inbox route showed four named regions, exact 60/40, 60/40, and 35/65 ratios, stable heading focus, hidden-scrollbar computation, and zero horizontal overflow |
+| Review | Direct scope/React/UI-guideline review found no concrete finding. Existing Explorer `L1`/`L2`/`L3` labels remain unchanged under explicit Task 134 ownership |
+| Diff ownership | `src/components/triage/triage-workspace.tsx`, `.test.tsx`, `src/app/globals.css`, and `docs/verification/inbox-triage/task-129.md` plus its four captures; no route dispatcher, Explorer item-label owner, Task 130+, or unrelated path |
+| Issues / deviations | None |
+| Canonical impact | `None` — no canonical amendment or end-phase tag is required |
+| Acceptance boundary | Task 129 remains `[ ]`; Task 130 was not started |
+| Next legal action | Stop at this green checkpoint and request Task 129 user acceptance; do not write `[x]` or start Task 130 |
+
+### Task 129 Checkpoint Buckets
+
+- **Visible now:** canonical Inbox route with a fresh empty system-node seed;
+  GridDO light/dark at `1024×768` and `1920×1080`; visible and accessible
+  Scratch Pool, Breakdown, Staging, and Grid Explorer; exact ratios; stable
+  heading focus; hidden-scrollbar treatment; no horizontal overflow.
+- **Review now:** section identity/chrome, ratio geometry, focus behavior,
+  captures, focused/full evidence, and user acceptance of Task 129.
+- **Planned later:** Task 130 owns Pool behavior; Task 134 owns full Explorer
+  item labels; later approved tasks own their exact state and receipt surfaces.
+- **Unowned:** None.
