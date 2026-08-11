@@ -127,3 +127,17 @@ None at kickoff.
   later approved Explorer work consume Explorer session state; Task 163 removes
   the deprecated candidate compatibility API after Task 131 migration.
 - **Unowned:** None.
+
+## Task 128 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `128` — create the single core-English copy owner |
+| State | `In Progress` — implementation started; canonical Task 128 marker remains `[ ]` pending user acceptance |
+| Approved scope | Create `src/lib/copy/inbox-triage.ts` and `.test.ts`; provide typed source-approved base copy and explicitly unavailable receipt-dependent keys; add no component consumer, locale provider/toggle, Task 129 shell, or later-task behavior |
+| Work order | User-approved Task 128-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
+| Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
+| Entrypoint / recovery anchor | `8d2cde00c4383baa0dcc446c0ae3186a096b6af8` |
+| Dependency | Plan approval/lifecycle only; Task 127 is accepted at the recovery anchor and Task 129 remains unstarted |
+| Issues / deviations | None |
+| Canonical impact | `None` — Task 128 implements the already-reflected SPEC/EXECUTION_PLAN copy boundary |
