@@ -1260,7 +1260,7 @@ publish, or close the phase.
 
 **Commit contract:** Workspace shell/test, semantic shell CSS, and Task 129 evidence only; `feat(triage): add semantic inbox shell`.
 
-### Task 130: [ ] Implement Pool selection, tools, collapse, and re-entry
+### Task 130: [x] Implement Pool selection, tools, collapse, and re-entry
 
 **Files and actions:** modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/hooks/use-inbox.ts` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, and `src/stores/triage-preferences-store.ts` and `.test.ts`. Implement active fallback/null, expanded tools/list, total versus filtered counts, base selected/empty states, persisted sort, session query/scroll, vertical collapsed switchers, hidden-query independence, first-printable Breakdown key collapse once, per-Scratch manual-reopen exception, same-session re-entry, and deterministic focus restoration using Task 128 copy. Also modify `src/components/bit-detail/bit-detail-popup.tsx` and `.test.tsx` so the globally mounted detail surface never offers Promote to Node for an Inbox-parented Scratch, even when defensive Chunk data exists; the Task 105A repository guard remains the safety backstop and ordinary Chunk-backed Bit promotion remains available. Do not implement `VQ-01` or Pool `VQ-06` states.
 

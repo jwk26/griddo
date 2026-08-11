@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–129 accepted; Task 130 implemented and awaiting user acceptance
+> State: Tasks 127–130 accepted; Task 131 not started
 
 ## Status Legend
 
@@ -221,7 +221,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `130` — implement Pool selection, tools, collapse, and re-entry |
-| State | `Implemented — awaiting user re-review` — the first checkpoint was rejected for missing durable process reconciliation; the evidence-only repair is recorded and the canonical Task 130 marker remains `[ ]` pending explicit user acceptance |
+| State | `Accepted` — explicitly accepted by the user after evidence-only process reconciliation; canonical Task 130 marker is `[x]` |
 | Approved scope | Modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/hooks/use-inbox.ts` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, `src/stores/triage-preferences-store.ts` and `.test.ts`, and `src/components/bit-detail/bit-detail-popup.tsx` and `.test.tsx`; create `docs/verification/inbox-triage/task-130.md` and its Task 130 captures; implement only the canonical Pool base flow and exact `P23-03` popup visibility guard; add no `VQ-01`, Pool `VQ-06`, Task 131+, or unowned behavior |
 | Work order | User-approved Task 130-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -229,7 +229,7 @@ None at kickoff.
 | Dependencies | Task 105A and Tasks 127–129 are accepted and ancestors of the recovery anchor |
 | Issues / deviations | Two process reconciliations: the full gate ran as two four-command sequences instead of exactly one post-final-repair sequence; canonical `triage-preferences-store.ts` was an intentional no-op because Task 127 already supplied the exact persisted Pool-sort API. No product defect or unresolved scope gap |
 | Canonical impact | `None` — the deviations change neither approved behavior nor ownership; no canonical amendment or separate end-phase tag is required |
-| Next legal action | Stop at the Task 130 green checkpoint and request explicit user acceptance; do not mark Task 130 `[x]` or start Task 131 |
+| Next legal action | Stop after this acceptance-only commit and await separate user direction; do not start Task 131 |
 
 ## Task 130 Implementation Evidence
 
@@ -237,6 +237,7 @@ None at kickoff.
 | --- | --- |
 | Durable start commit | `f5964294be915b6eea979da9f744cde935bc2bcc` — ledger-only `In Progress` signal before production and test writes |
 | Implementation commit | `3eed3a9a1b29d3ec23f09d87dff7119e33dd5367` — Task 130 Pool base-flow code/tests, exact popup guard, route evidence, and six captures only |
+| Process reconciliation commit | `817432d888ff60b80d5605426d8299d80b3ae270` — evidence-only record of the full-gate budget/sequence deviation and preference-source no-op disposition |
 | Checkpoint disposition | The first green checkpoint was rejected because it reported `Issues / deviations` as `None`; this evidence-only repair records the full-gate budget/sequence deviation and the preference-source no-op disposition without changing product code or rerunning verification |
 | RED evidence | The initial five-file focused run exited 1 with 12 expected failures and 54 existing tests passing; a subsequent popup review RED exited 1 with one expected unresolved-parent failure and 10 tests passing |
 | Focused GREEN | `pnpm exec vitest run src/components/triage/breakdown-panel.test.tsx src/components/triage/scratch-pool.test.tsx src/hooks/use-inbox.test.tsx src/stores/triage-store.test.ts src/stores/triage-preferences-store.test.ts src/components/bit-detail/bit-detail-popup.test.tsx` exited 0: 6 files, 98 tests |
@@ -247,8 +248,9 @@ None at kickoff.
 | Diff ownership | `scratch-pool`, `use-inbox`, `triage-store`, and `bit-detail-popup` source/tests; `triage-preferences-store.test.ts`; Task 130 evidence and captures. Canonical `triage-preferences-store.ts` was intentionally unchanged: Task 127 already supplied the exact validated, device-local Pool created-at sort API, which Task 130 consumed and covered without duplicating or widening it. This prescribed file action is reconciled as a no-op; no `VQ-01`, Pool `VQ-06`, Task 131+, canonical-plan, or unrelated path |
 | Issues / deviations | Full-gate budget/sequence deviation plus the reconciled `triage-preferences-store.ts` no-op described above. The first checkpoint was rejected because these were previously recorded as `None`; no product implementation repair was requested or made |
 | Canonical impact | `None` — both items are process/scope disposition records, not new behavior or ownership; no canonical amendment or separate end-phase tag is required |
-| Acceptance boundary | Task 130 remains `[ ]`; Task 131 was not started |
-| Next legal action | Await explicit user acceptance or targeted rejection feedback; do not create an acceptance-only commit without separate user instruction |
+| User acceptance | `Task 130 checkpoint를 acceptance합니다.` after confirming the reconciliation commit, write set, deviations, canonical impact, markers, and clean state |
+| Acceptance boundary | Task 130 only; Task 131 remains `[ ]` and was not started |
+| Next legal action | Stop after this acceptance-only commit and await separate user direction; do not start Task 131 |
 
 ### Task 130 Checkpoint Buckets
 
@@ -256,8 +258,8 @@ None at kickoff.
   same-session re-entry, reload, persisted-sort, first-printable, focus, and
   true-empty base states at the approved widths; defensive Promote visibility
   guard.
-- **Review now:** Task 130 behavior, six captures, focused/full evidence, and
-  explicit user acceptance.
+- **Review now:** accepted Task 130 behavior, six captures, focused/full
+  evidence, and durable process reconciliation.
 - **Planned later:** Task 141 owns `VQ-01`; Task 144 owns Pool `VQ-06`; Task
   131 and later tasks own their exact candidate and downstream surfaces.
 - **Unowned:** None.
