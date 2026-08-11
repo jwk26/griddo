@@ -317,12 +317,44 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `132` — implement Context and Breakdown base lifecycle |
-| State | `In Progress` — approved implementation has started; canonical Task 132 marker remains `[ ]` |
+| State | `Implemented` — green checkpoint reached and awaiting explicit user acceptance; canonical Task 132 marker remains `[ ]` |
 | Approved scope | Modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx`, and `src/stores/triage-preferences-store.ts` and `.test.ts`; create Task 132 route evidence/captures; implement standalone Context, full title/time/sort, repository-backed active/staged/consumed-removal lifecycle, visible grip/Edit/Trash slots, and non-false never-used/all-deleted/ordinary/completion states; add no VQ editor/status behavior, staged-row interaction/strike-through, retained consumed row, Task 133+, or unowned behavior |
 | Work order | User-approved Task 132-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
 | Entrypoint / recovery anchor | `05d1e39fa77588b0b90d66422eedffdd5586e00a` |
 | Dependencies | Task 120 and Tasks 127–131 are accepted, and their implementation/acceptance history is contained in the recovery anchor |
-| Issues / deviations | None |
+| Issues / deviations | One prescribed-source disposition: `src/stores/triage-preferences-store.ts` is an intentional no-op because accepted Task 127 already supplies the exact independent persisted Breakdown-sort API; its test and Task 132 consumer are updated. The all-deleted evidence harness required one bounded repair from direct IndexedDB deletion to the visible Trash flow, and focused review repairs resolved full-title truncation, fail-open completion authority, cross-Scratch history loss, semantic-role coverage, ID tie-break coverage, and a ref-based lint failure before the full gate. These were ordinary in-scope repair cycles; no process deviation occurred, and the full gate ran exactly once after final repair. |
 | Canonical impact | `None` — Task 132 implements the already-reflected SPEC/DESIGN_TOKENS/EXECUTION_PLAN Context and Breakdown base lifecycle |
-| Next legal action | Write failing Task 132 component/hook/preference tests, implement only the approved base lifecycle, complete focused and visible route evidence plus final repairs, then run the full gate exactly once and stop at the green checkpoint |
+| Next legal action | Stop at this green checkpoint and request explicit user acceptance; do not mark Task 132 `[x]`, create an acceptance-only commit, or start Task 133 without separate user instruction |
+
+## Task 132 Implementation Evidence
+
+| Field | Durable value |
+| --- | --- |
+| Durable start commit | `3212f9a8939ccd57114d7a8345870a303eb701c1` — ledger-only `In Progress` signal before Task 132 production/test writes |
+| Implementation commit | `e18a18b7e1e8c590384ffb045ee82a1592c646f9` — Context/Breakdown base, focused tests, Task 132 evidence document, and twelve captures |
+| RED evidence | Initial three-file focused run exited `1` with `15` expected failures and `38` passes. Full-title review RED exited `1` with the retained `truncate` class. Independent-review RED exited `1` with `11` failures and `41` passes after adding repository-eligibility, missing-selected-Scratch, per-Scratch history, semantic-role, and exact-ID tie-break expectations. A later targeted semantic-role RED exited `1` before repair |
+| Repair cycles | Replaced compact/truncated Context with the standalone wrapping signature plate; connected deterministic sort and lifecycle states; used exact Task 125 repository Archive eligibility to fail completion closed while retaining Task 131 as staged-row authority; retained mounted deletion history per Scratch; corrected Context/Add roles and ID tie-break coverage; replaced render-time ref history with immutable React state. The first all-deleted capture attempt was repaired to use the mounted visible Trash flow rather than non-notifying native IndexedDB deletion |
+| Focused GREEN | Final selected component/hook/preference run exited `0`: `3` files and `52` tests passed. Target-path ESLint, `pnpm typecheck`, and `git diff --check` exited `0` after final repair |
+| Full gate | Exactly one post-final-repair serial sequence: `pnpm test` exited `0` (`90` files, `728` tests); `pnpm lint` exited `0` with `0` errors and the unchanged `11` pre-existing warnings; `pnpm typecheck` exited `0`; `pnpm build` exited `0` with Next.js `16.2.1` and seven routes. No relevant production/test input changed afterward |
+| Implemented behavior | Standalone `104px` working Context with full wrapping title, creation date/time, visible Edit slot, and independent persisted Breakdown ASC/DESC sort; deterministic `createdAt` direction → `order` → ID projection; `48px` active and Task 131-backed staged rows with stable grip/Edit/Trash geometry; staged disabled/non-struck treatment; consumed-row removal; repository-authoritative completion and non-completing never-used/all-deleted/ordinary states; no VQ editor/status, retained consumed row, Archive action, or Task 133 behavior |
+| Visible evidence | `docs/verification/inbox-triage/task-132.md` plus twelve committed `1440×900` default GridDO light/dark captures covering never-used, all-deleted, active, staged, consumed-removal, and completed seeds; sort order/focus, canonical roles, `104px` Context, `48px` rows, zero horizontal overflow, and a fresh-target zero-error console interaction were verified |
+| Review | Independent code review initially found two Important and three Minor issues; all were repaired before the full gate. Final bounded re-review found no remaining Critical or Important Task 132 issue |
+| Diff ownership | Production/test changes are limited to `breakdown-panel.tsx` and test, `use-scratch-breakdowns.ts` and test, plus the preference-store test; `triage-preferences-store.ts` is the documented intentional no-op. Evidence is limited to the Task 132 document, twelve captures, and this Task 132 ledger record |
+| Issues / deviations | One prescribed-source no-op and bounded in-scope TDD/review/evidence repairs as recorded above; no premature/additional full gate and no unresolved product, scope, or process deviation |
+| Canonical impact | `None` — Task 132 implements the already-reflected SPEC/DESIGN_TOKENS/EXECUTION_PLAN contract without amendment |
+| Acceptance boundary | Task 132 remains `[ ]`; no acceptance-only commit, Task 133 work, publication, integration, or cleanup has started |
+| Next legal action | Await explicit user acceptance at this green checkpoint |
+
+### Task 132 Checkpoint Buckets
+
+- **Visible now:** Standalone working Context; full title/time and persisted
+  Breakdown sort; active/staged rows with visible slots; consumed-row removal;
+  never-used, all-deleted, ordinary, and consumed-completion base states.
+- **Review now:** Task 125 fail-closed completion authority, Task 131 staged
+  projection consumption, mounted history lifetime, stable sorting, semantic
+  roles, focused/full verification, and light/dark route evidence.
+- **Planned later:** Task 133 owns Staging base; Tasks 136–140 own mutation
+  reliability and editors; later tasks own VQ status realizations, placement,
+  Undo, and Archive completion flow.
+- **Unowned:** None.
