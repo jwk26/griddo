@@ -21,6 +21,7 @@ import {
   type PendingPlacement,
   type TriageDragItem,
 } from "@/hooks/use-dnd";
+import { useStagedCandidates } from "@/hooks/use-staged-candidates";
 import {
   getTriageRemoveDropId,
   triageCollisionDetection,
@@ -30,6 +31,10 @@ import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import { cn } from "@/lib/utils";
 import { useTriageStore } from "@/stores/triage-store";
 import type { Node } from "@/types";
+
+function formatStagingHeading(label: string, count: number) {
+  return count >= 2 ? `${count} ${label}` : label;
+}
 
 // Positions the compact drag token center at the cursor rather than the
 // original draggable element's top-left. Without this, grabbing a staged
@@ -108,6 +113,8 @@ function TriageRemoveDropTarget({
 
 export function TriageWorkspace({ node }: { node: Node }) {
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
+  const { counts: stagedCandidateCounts } =
+    useStagedCandidates(selectedScratchId);
   const addStagedCandidate = useTriageStore(
     (state) => state.addStagedCandidate,
   );
@@ -221,7 +228,10 @@ export function TriageWorkspace({ node }: { node: Node }) {
               >
                 <div className="flex min-w-0 basis-[35%] flex-col">
                   <h3 className="triage-shell__subsection-heading">
-                    {INBOX_TRIAGE_COPY.sectionNames.stagingNodes}
+                    {formatStagingHeading(
+                      INBOX_TRIAGE_COPY.sectionNames.stagingNodes,
+                      stagedCandidateCounts.nodes,
+                    )}
                   </h3>
                   <div
                     className="flex min-h-0 flex-1 overflow-y-auto p-3"
@@ -237,7 +247,10 @@ export function TriageWorkspace({ node }: { node: Node }) {
 
                 <div className="flex min-w-0 basis-[65%] flex-col border-l border-dashed border-border/80">
                   <h3 className="triage-shell__subsection-heading">
-                    {INBOX_TRIAGE_COPY.sectionNames.stagingBits}
+                    {formatStagingHeading(
+                      INBOX_TRIAGE_COPY.sectionNames.stagingBits,
+                      stagedCandidateCounts.bits,
+                    )}
                   </h3>
                   <div
                     className="flex min-h-0 flex-1 overflow-y-auto p-3"

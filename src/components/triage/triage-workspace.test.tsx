@@ -7,11 +7,16 @@ import type { Node } from "@/types";
 import { TriageWorkspace } from "./triage-workspace";
 
 const useTriageDndMock = vi.hoisted(() => vi.fn());
+const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
 const handlePlacementConfirmMock = vi.hoisted(() => vi.fn());
 const handlePlacementCancelMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/hooks/use-dnd", () => ({
   useTriageDnd: useTriageDndMock,
+}));
+
+vi.mock("@/hooks/use-staged-candidates", () => ({
+  useStagedCandidates: useStagedCandidatesMock,
 }));
 
 vi.mock("@/components/triage/scratch-pool", () => ({
@@ -107,6 +112,10 @@ beforeEach(() => {
   });
   useTriageDndMock.mockReset();
   useTriageDndMock.mockReturnValue(createDndState());
+  useStagedCandidatesMock.mockReset();
+  useStagedCandidatesMock.mockReturnValue({
+    counts: { nodes: 0, bits: 0 },
+  });
 });
 
 afterEach(() => {
@@ -181,6 +190,33 @@ describe("TriageWorkspace", () => {
         '[data-triage-role="internal-scroll-viewport"]',
       ),
     ).toHaveLength(5);
+  });
+
+  it("prefixes subsection headings only when authoritative type counts reach two", () => {
+    useStagedCandidatesMock.mockReturnValue({
+      counts: { nodes: 2, bits: 3 },
+    });
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(useStagedCandidatesMock).toHaveBeenCalledWith("scratch-1");
+    expect(screen.getByRole("heading", { level: 3, name: "2 Nodes" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "3 Bits" })).toBeInTheDocument();
+    expect(screen.getByTestId("triage-staging-columns")).toHaveAttribute(
+      "data-layout-ratio",
+      "35/65",
+    );
+  });
+
+  it("keeps bare subsection headings at zero or one authoritative candidate", () => {
+    useStagedCandidatesMock.mockReturnValue({
+      counts: { nodes: 1, bits: 0 },
+    });
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.getByRole("heading", { level: 3, name: "Nodes" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "Bits" })).toBeInTheDocument();
   });
 
   it("shows the remove-from-staging strip only while dragging a staged candidate", () => {

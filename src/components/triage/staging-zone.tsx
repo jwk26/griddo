@@ -1,18 +1,22 @@
 "use client";
 
 import { useDraggable, useDroppable } from "@dnd-kit/core";
-import { Folder, ListTodo } from "lucide-react";
+import { Folder } from "lucide-react";
 import type { TriageDragItem } from "@/hooks/use-dnd";
+import {
+  useStagedCandidates,
+  type StagedCandidateProjection,
+} from "@/hooks/use-staged-candidates";
 import {
   getTriageBitZoneDropId,
   getTriageNodeZoneDropId,
   type TriageDropData,
 } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
-import { useTriageStore, type StagedCandidate } from "@/stores/triage-store";
+import { useTriageStore } from "@/stores/triage-store";
 
 interface StagingZoneProps {
-  type: StagedCandidate["type"];
+  type: StagedCandidateProjection["resultType"];
   activeDragItem?: TriageDragItem;
   overTargetId?: string | null;
 }
@@ -26,7 +30,7 @@ type DropZoneState =
   | "pending-confirmation";
 
 const DROP_ZONE_BASE_CLASS =
-  "min-h-full w-full rounded-lg border border-transparent transition-[background-color,border-color,box-shadow,color]";
+  "h-full min-h-0 max-h-full w-full overflow-y-auto rounded-lg border border-transparent [contain:size] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden transition-[background-color,border-color,box-shadow,color] motion-reduce:transition-none";
 
 const DROP_ZONE_STATE_CLASSES: Record<DropZoneState, string> = {
   default: "",
@@ -62,10 +66,16 @@ export function StagingZone({
   overTargetId = null,
 }: StagingZoneProps) {
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
-  const stagedCandidates = useTriageStore((state) => state.stagedCandidates);
-  const candidates = (stagedCandidates[selectedScratchId ?? ""] ?? []).filter(
-    (candidate) => candidate.type === type,
-  );
+  const { candidates: stagedCandidates } =
+    useStagedCandidates(selectedScratchId);
+  const candidates = stagedCandidates
+    .filter((candidate) => candidate.resultType === type)
+    .toSorted((left, right) => {
+      const createdAtDifference = right.createdAt - left.createdAt;
+      return createdAtDifference !== 0
+        ? createdAtDifference
+        : left.id.localeCompare(right.id);
+    });
 
   if (type === "node") {
     return (
@@ -92,7 +102,7 @@ function NodeStagingZone({
   overTargetId,
 }: {
   activeDragItem: TriageDragItem;
-  candidates: StagedCandidate[];
+  candidates: StagedCandidateProjection[];
   overTargetId: string | null;
 }) {
   const dropId = getTriageNodeZoneDropId();
@@ -113,17 +123,16 @@ function NodeStagingZone({
       ref={setNodeRef}
       aria-label="Node staging zone"
       className={cn(DROP_ZONE_BASE_CLASS, DROP_ZONE_STATE_CLASSES[state])}
+      data-empty={candidates.length === 0}
       data-testid="node-staging-zone"
     >
-      {candidates.length === 0 ? (
-        <NodeEmptyState />
-      ) : (
-        <div className="grid w-full grid-cols-2 gap-2">
+      {candidates.length > 0 ? (
+        <div className="grid w-full grid-cols-2 gap-2 pb-1">
           {candidates.map((candidate) => (
             <NodeCandidateCard key={candidate.id} candidate={candidate} />
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -134,7 +143,7 @@ function BitStagingZone({
   overTargetId,
 }: {
   activeDragItem: TriageDragItem;
-  candidates: StagedCandidate[];
+  candidates: StagedCandidateProjection[];
   overTargetId: string | null;
 }) {
   const dropId = getTriageBitZoneDropId();
@@ -155,28 +164,31 @@ function BitStagingZone({
       ref={setNodeRef}
       aria-label="Bit staging zone"
       className={cn(DROP_ZONE_BASE_CLASS, DROP_ZONE_STATE_CLASSES[state])}
+      data-empty={candidates.length === 0}
       data-testid="bit-staging-zone"
     >
-      {candidates.length === 0 ? (
-        <BitEmptyState />
-      ) : (
-        <div className="flex w-full flex-col gap-1.5">
+      {candidates.length > 0 ? (
+        <div className="flex w-full flex-col gap-1.5 pb-1">
           {candidates.map((candidate) => (
             <BitCandidateRow key={candidate.id} candidate={candidate} />
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
 
-function NodeCandidateCard({ candidate }: { candidate: StagedCandidate }) {
+function NodeCandidateCard({
+  candidate,
+}: {
+  candidate: StagedCandidateProjection;
+}) {
   const { attributes, isDragging, listeners, setNodeRef } = useDraggable({
     id: `triage-staged-node:${candidate.id}`,
     data: {
       kind: "triage-staged-node",
       id: candidate.id,
-      label: candidate.label,
+      label: candidate.content,
       sourceBreakdownId: candidate.sourceBreakdownId,
     },
   });
@@ -184,9 +196,9 @@ function NodeCandidateCard({ candidate }: { candidate: StagedCandidate }) {
   return (
     <div
       ref={setNodeRef}
-      aria-label={`Drag ${candidate.label} staged node`}
+      aria-label={`Drag ${candidate.content} staged node`}
       className={cn(
-        "mx-auto aspect-square h-auto w-full max-w-[80px] cursor-grab select-none overflow-hidden rounded-lg border border-border/80 bg-background transition-[background-color,border-color,color,opacity] active:cursor-grabbing",
+        "mx-auto aspect-square h-auto w-full max-w-[80px] touch-none cursor-grab select-none overflow-hidden rounded-lg border border-border/80 bg-background transition-[background-color,border-color,color,opacity] active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
         isDragging && "opacity-30 border-dashed border-muted bg-transparent",
       )}
       data-testid="node-candidate-card"
@@ -207,20 +219,24 @@ function NodeCandidateCard({ candidate }: { candidate: StagedCandidate }) {
             isDragging ? "text-muted-foreground" : "text-foreground",
           )}
         >
-          {candidate.label}
+          {candidate.content}
         </div>
       </div>
     </div>
   );
 }
 
-function BitCandidateRow({ candidate }: { candidate: StagedCandidate }) {
+function BitCandidateRow({
+  candidate,
+}: {
+  candidate: StagedCandidateProjection;
+}) {
   const { attributes, isDragging, listeners, setNodeRef } = useDraggable({
     id: `triage-staged-bit:${candidate.id}`,
     data: {
       kind: "triage-staged-bit",
       id: candidate.id,
-      label: candidate.label,
+      label: candidate.content,
       sourceBreakdownId: candidate.sourceBreakdownId,
     },
   });
@@ -228,9 +244,9 @@ function BitCandidateRow({ candidate }: { candidate: StagedCandidate }) {
   return (
     <div
       ref={setNodeRef}
-      aria-label={`Drag ${candidate.label} staged bit`}
+      aria-label={`Drag ${candidate.content} staged bit`}
       className={cn(
-        "flex min-h-[2rem] w-full cursor-grab select-none items-center rounded-lg border border-border/60 bg-background px-3 py-1.5 transition-[background-color,border-color,color,opacity] active:cursor-grabbing",
+        "flex min-h-[2rem] w-full touch-none cursor-grab select-none items-center rounded-lg border border-border/60 bg-background px-3 py-1.5 transition-[background-color,border-color,color,opacity] active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
         isDragging && "opacity-30 border-dashed border-muted bg-transparent",
       )}
       data-testid="bit-candidate-row"
@@ -243,35 +259,7 @@ function BitCandidateRow({ candidate }: { candidate: StagedCandidate }) {
           isDragging ? "text-muted-foreground" : "text-foreground",
         )}
       >
-        {candidate.label}
-      </div>
-    </div>
-  );
-}
-
-function NodeEmptyState() {
-  return (
-    <div className="flex min-h-[96px] w-full flex-col items-center justify-center rounded-lg border border-dashed border-border/50 bg-transparent p-4">
-      <Folder
-        aria-hidden="true"
-        className="h-5 w-5 text-muted-foreground/30"
-      />
-      <div className="mt-1 text-center text-[10px] text-pretty text-muted-foreground/50">
-        No node candidates
-      </div>
-    </div>
-  );
-}
-
-function BitEmptyState() {
-  return (
-    <div className="flex min-h-[64px] w-full flex-col items-center justify-center rounded-lg border border-dashed border-border/50 bg-transparent p-4">
-      <ListTodo
-        aria-hidden="true"
-        className="h-5 w-5 text-muted-foreground/30"
-      />
-      <div className="mt-1 text-center text-[10px] text-muted-foreground/50">
-        No bit candidates
+        {candidate.content}
       </div>
     </div>
   );

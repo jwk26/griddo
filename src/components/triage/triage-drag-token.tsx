@@ -22,7 +22,7 @@ export function TriageDragToken({ item }: TriageDragTokenProps) {
   return (
     <div
       className={cn(
-        "pointer-events-none inline-flex h-8 select-none items-center justify-center gap-1.5 rounded-full border bg-popover px-2 text-foreground shadow-lg",
+        "pointer-events-none inline-flex h-8 max-w-40 select-none items-center justify-center gap-1.5 rounded-full border bg-popover px-2 text-foreground shadow-lg",
         "cursor-grabbing",
         item.kind === "triage-staged-node" ? "w-8 border-primary px-0" : "border-border",
       )}
