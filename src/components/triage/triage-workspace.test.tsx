@@ -123,17 +123,64 @@ describe("TriageWorkspace", () => {
     expect(within(workspace).getByTestId("breakdown-panel")).toBeInTheDocument();
   });
 
-  it("keeps staging zones and the hierarchy explorer visible without visible section headings", () => {
+  it("renders one semantic shell with visible identities for all four areas", () => {
     render(<TriageWorkspace node={createNode()} />);
 
-    // heading text must NOT be visible
-    expect(screen.queryByText("Hierarchy Explorer")).not.toBeInTheDocument();
-    expect(screen.queryByText("Breakdown / Scribble")).not.toBeInTheDocument();
+    const workspace = screen.getByRole("region", {
+      name: "Inbox triage workspace",
+    });
 
-    // structural elements must still render
+    expect(workspace).toHaveAttribute(
+      "data-triage-role",
+      "shell-background",
+    );
+    expect(workspace).toHaveAttribute("data-triage-state", "default");
+
+    for (const name of [
+      "Scratch Pool",
+      "Breakdown",
+      "Staging",
+      "Grid Explorer",
+    ]) {
+      const region = within(workspace).getByRole("region", { name });
+      const heading = within(region).getByRole("heading", { name });
+
+      expect(region).toHaveAttribute("data-triage-role", "section-surface");
+      expect(region).toHaveAttribute("data-triage-state", "default");
+      expect(heading).toHaveAttribute("tabindex", "-1");
+      expect(heading).toHaveAttribute("data-triage-role", "section-header");
+    }
+
     expect(screen.getByTestId("hierarchy-explorer")).toBeInTheDocument();
     expect(screen.getByTestId("node-staging-zone")).toBeInTheDocument();
     expect(screen.getByTestId("bit-staging-zone")).toBeInTheDocument();
+  });
+
+  it("declares the approved shell ratios, desktop minimum, and hidden-scroll viewports", () => {
+    render(<TriageWorkspace node={createNode()} />);
+
+    const workspace = screen.getByTestId("triage-workspace");
+
+    expect(workspace).toHaveClass("triage-shell");
+    expect(workspace).toHaveAttribute("data-min-viewport", "1024px");
+    expect(screen.getByTestId("triage-main-work-area")).toHaveAttribute(
+      "data-layout-ratio",
+      "60/40",
+    );
+    expect(screen.getByTestId("triage-top-work-area")).toHaveAttribute(
+      "data-layout-ratio",
+      "60/40",
+    );
+    expect(screen.getByTestId("triage-staging-columns")).toHaveAttribute(
+      "data-layout-ratio",
+      "35/65",
+    );
+
+    expect(
+      workspace.querySelectorAll(
+        '[data-triage-role="internal-scroll-viewport"]',
+      ),
+    ).toHaveLength(5);
   });
 
   it("shows the remove-from-staging strip only while dragging a staged candidate", () => {
