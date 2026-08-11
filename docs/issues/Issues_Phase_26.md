@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–132 accepted; Task 133 not started
+> State: Tasks 127–132 accepted; Task 133 blocked before implementation start
 
 ## Status Legend
 
@@ -359,3 +359,20 @@ None at kickoff.
   reliability and editors; later tasks own VQ status realizations, placement,
   Undo, and Archive completion flow.
 - **Unowned:** None.
+
+## Task 133 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `133` — implement source-backed Staging base |
+| State | `Awaiting User Decision` — stopped before the durable `In Progress` signal and before any production/test write |
+| Approved scope | Modify only `src/components/triage/staging-zone.tsx` and `.test.tsx`, plus `src/components/triage/triage-drag-token.tsx` and `.test.tsx`; Task-owned evidence and this ledger record are allowed; implement the exact canonical Task 133 contract without Task 134+ or unowned behavior |
+| Work order | User-approved Task 133-only ad-hoc work order; the Gate C Task 127 receipt remains historical authority and is not widened |
+| Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
+| Entrypoint / recovery anchor | `7dd0b2ec50daba1f63f586f4517fdb735be24e0b` |
+| Dependencies | Tasks 129 and 131 are accepted and contained in the recovery anchor |
+| Durable blocker | The adopted Staging recipe requires the subsection heading itself to render bare `Nodes` / `Bits` at counts zero or one and prefixed `2 Nodes` / `3 Bits` at counts two or more. Those headings are fixed in `src/components/triage/triage-workspace.tsx` (outside the approved write set), and `StagingZone` has no heading-content extension point. The four approved production/test files cannot implement that visible heading contract exactly. Adding duplicate labels or imperatively mutating an ancestor heading from `StagingZone` would infer unowned behavior and violate the scope boundary. |
+| Writes / verification | No production, test, or Task 133 evidence-capture file was changed. No RED/focused/full gate or runtime/visual review was started; therefore no premature or additional full-gate sequence occurred. |
+| Issues / deviations | One scope/contract conflict recorded at discovery time; no implementation or process deviation occurred |
+| Canonical impact | `Tagged` — the Task 133 file/action boundary in `docs/EXECUTION_PLAN.md` requires explicit user disposition before implementation can start |
+| Next legal action | User must either approve `src/components/triage/triage-workspace.tsx` and its test as additional Task 133 write scope for dynamic subsection headings, or explicitly amend the visible count-prefix acceptance. Do not start Task 133 implementation or Task 134 meanwhile. |
