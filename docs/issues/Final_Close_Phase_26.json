@@ -1,0 +1,67 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "final-close",
+  "approved_repository": "jwk26/griddo",
+  "approved_base": "cb09da04557bad3b253b87581a70d7ee24e630b6",
+  "approved_branch": "phase-26/lifetime-copy-base-surfaces",
+  "approved_scope": {
+    "lifecycle": "end-phase",
+    "phase": 26,
+    "worktree_role": "feature"
+  },
+  "user_disposition": "approved",
+  "next_legal_action": "execute-final-close",
+  "transaction": {
+    "workflow_candidate": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
+    "pre_close_head": "cb09da04557bad3b253b87581a70d7ee24e630b6",
+    "candidate_a": {
+      "commit": "5f0fd3e6c4c5b66f45b0cc2800a5492c628ab557",
+      "parent": "cb09da04557bad3b253b87581a70d7ee24e630b6",
+      "tree": "216e6723d8eb37a992c67cfcd4dd5346f850ca97",
+      "diff_hash_domain": "git-diff-binary-parent-to-candidate",
+      "diff_sha256": "c28609a3c86c638661a2ce6dc6551692f69de201793f931f236be74601bef415"
+    },
+    "receipt_path": "docs/issues/Final_Close_Phase_26.json",
+    "receipt_commit_message": "docs: record Phase 26 final close receipt",
+    "publication_head_construction": "fast-forward the clean feature branch from pre_close_head to candidate_a.commit, add only this exact receipt file, and create receipt commit B with B^ equal to candidate_a.commit",
+    "publication": {
+      "provider": "github",
+      "command": "scripts/codex-gh",
+      "remote": "origin",
+      "remote_url": "https://github.com/jwk26/griddo.git",
+      "integration_base_oid": "f91bf0529961541d9b7fa1645ee3aded081eaea3",
+      "base_branch": "main",
+      "head_branch": "phase-26/lifetime-copy-base-surfaces",
+      "pr_action": "create",
+      "pr_number": null,
+      "pr_url": null,
+      "title": "feat(triage): land Phase 26 base surfaces",
+      "body": "## Summary\n\n- land accepted Phase 26 lifetime, copy, and source-backed base-surface owners\n- add durable candidate projection and dedicated headless Explorer query lifecycle\n- reconcile Task 133 count-heading and Task 134 stale-placement canonical boundaries\n- archive Phase 26 and resolve deferred P23-03\n\n## Validation\n\n- pnpm test - 92 files / 743 tests\n- pnpm lint - 0 errors / 11 pre-existing warnings\n- pnpm typecheck\n- pnpm build - seven static routes and one dynamic route\n- git diff --check and exact-main merge-tree passed in the detached close preview",
+      "draft": false,
+      "merge_method": "merge",
+      "expected_head": "receipt commit B",
+      "expected_head_mechanism": "scripts/codex-gh pr merge --merge --match-head-commit B",
+      "status_source": "GitHub PR headRefOid, mergeStateStatus, statusCheckRollup, branch protection, and repository rulesets",
+      "required_checks": "all reported required checks reach terminal success",
+      "queue": "forbidden",
+      "auto_merge": "forbidden",
+      "admin_bypass": "forbidden",
+      "implicit_branch_deletion": "forbidden",
+      "bounded_wait_retry": "at most 20 status reads at 15-second intervals"
+    },
+    "integration_sync": {
+      "primary_worktree": "/Users/jwk/Documents/griddo2-codex-integration",
+      "branch": "main",
+      "method": "fetch then fast-forward-only sync followed by method-neutral candidate inclusion proof"
+    },
+    "cleanup": {
+      "preview_worktree": "/Users/jwk/Documents/griddo2-codex-phase-26-final-close-preview",
+      "preview_cleanup_timing": "after candidate_a is moved to the feature branch and receipt commit B is verified, remove clean preview non-force",
+      "remote_ref": "refs/heads/phase-26/lifetime-copy-base-surfaces",
+      "feature_worktree": "/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces",
+      "local_branch": "phase-26/lifetime-copy-base-surfaces",
+      "policy": "guarded non-force only after exact merge proof and primary integration sync"
+    }
+  }
+}
