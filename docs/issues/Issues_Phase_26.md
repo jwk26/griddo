@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–132 accepted; Task 133 blocked before implementation start
+> State: Tasks 127–132 accepted; Task 133 in progress
 
 ## Status Legend
 
@@ -365,14 +365,14 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `133` — implement source-backed Staging base |
-| State | `Awaiting User Decision` — stopped before the durable `In Progress` signal and before any production/test write |
-| Approved scope | Modify only `src/components/triage/staging-zone.tsx` and `.test.tsx`, plus `src/components/triage/triage-drag-token.tsx` and `.test.tsx`; Task-owned evidence and this ledger record are allowed; implement the exact canonical Task 133 contract without Task 134+ or unowned behavior |
+| State | `In Progress` — scope expansion approved; this ledger-only start signal precedes every Task 133 production/test write |
+| Approved scope | Modify `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/components/triage/triage-drag-token.tsx` and `.test.tsx`, plus `src/components/triage/triage-workspace.tsx` and `.test.tsx`; the added workspace scope is limited to projecting Task 131 authoritative counts into the existing Nodes/Bits headings while preserving IDs, semantics, focus structure, and the 35/65 layout; Task-owned evidence and this ledger record are allowed; implement no other shell, Task 134+, or unowned behavior |
 | Work order | User-approved Task 133-only ad-hoc work order; the Gate C Task 127 receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
-| Entrypoint / recovery anchor | `7dd0b2ec50daba1f63f586f4517fdb735be24e0b` |
+| Entrypoint / recovery anchor | `52f3b0c2f88ea25e627a6c3c2cf00fd7f19ef237` (ledger-only blocker commit; parent `7dd0b2ec50daba1f63f586f4517fdb735be24e0b`) |
 | Dependencies | Tasks 129 and 131 are accepted and contained in the recovery anchor |
-| Durable blocker | The adopted Staging recipe requires the subsection heading itself to render bare `Nodes` / `Bits` at counts zero or one and prefixed `2 Nodes` / `3 Bits` at counts two or more. Those headings are fixed in `src/components/triage/triage-workspace.tsx` (outside the approved write set), and `StagingZone` has no heading-content extension point. The four approved production/test files cannot implement that visible heading contract exactly. Adding duplicate labels or imperatively mutating an ancestor heading from `StagingZone` would infer unowned behavior and violate the scope boundary. |
-| Writes / verification | No production, test, or Task 133 evidence-capture file was changed. No RED/focused/full gate or runtime/visual review was started; therefore no premature or additional full-gate sequence occurred. |
-| Issues / deviations | One scope/contract conflict recorded at discovery time; no implementation or process deviation occurred |
-| Canonical impact | `Tagged` — the Task 133 file/action boundary in `docs/EXECUTION_PLAN.md` requires explicit user disposition before implementation can start |
-| Next legal action | User must either approve `src/components/triage/triage-workspace.tsx` and its test as additional Task 133 write scope for dynamic subsection headings, or explicitly amend the visible count-prefix acceptance. Do not start Task 133 implementation or Task 134 meanwhile. |
+| Blocker disposition | Resolved by explicit user approval of Option 1: add `triage-workspace.tsx` and its test only for dynamic authoritative count-prefix headings; visible count-prefix acceptance remains unchanged |
+| Writes / verification | Before this durable start signal, no production, test, or Task 133 evidence-capture file was changed and no RED/focused/full gate or runtime/visual review was run; no premature or additional full-gate sequence occurred |
+| Issues / deviations | The scope/contract conflict is resolved by the approved bounded scope expansion; no implementation or process deviation has occurred |
+| Canonical impact | `Tagged` — end-phase must reconcile the user-approved Task 133 `triage-workspace.tsx` / test expansion into the Task 133 file/action boundary in `docs/EXECUTION_PLAN.md`; no current canonical file is modified by this ad-hoc work order |
+| Next legal action | Commit this ledger-only `In Progress` signal, then execute Task 133 with TDD inside the expanded scope; do not start Task 134 |
