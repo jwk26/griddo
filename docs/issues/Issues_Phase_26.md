@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–129 accepted; Task 130 not started
+> State: Tasks 127–129 accepted; Task 130 in progress
 
 ## Status Legend
 
@@ -215,3 +215,18 @@ None at kickoff.
 - **Planned later:** Task 130 owns Pool behavior; Task 134 owns full Explorer
   item labels; later approved tasks own their exact state and receipt surfaces.
 - **Unowned:** None.
+
+## Task 130 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `130` — implement Pool selection, tools, collapse, and re-entry |
+| State | `In Progress` — implementation started; canonical Task 130 marker remains `[ ]` pending explicit user acceptance |
+| Approved scope | Modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/hooks/use-inbox.ts` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, `src/stores/triage-preferences-store.ts` and `.test.ts`, and `src/components/bit-detail/bit-detail-popup.tsx` and `.test.tsx`; create `docs/verification/inbox-triage/task-130.md` and its Task 130 captures; implement only the canonical Pool base flow and exact `P23-03` popup visibility guard; add no `VQ-01`, Pool `VQ-06`, Task 131+, or unowned behavior |
+| Work order | User-approved Task 130-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
+| Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
+| Entrypoint / recovery anchor | `dcced04c15d2c09f09e16ab84b8176689c672d76` |
+| Dependencies | Task 105A and Tasks 127–129 are accepted and ancestors of the recovery anchor |
+| Issues / deviations | None |
+| Canonical impact | `None` — Task 130 implements the already-reflected SPEC/SCHEMA/DESIGN_TOKENS/EXECUTION_PLAN and Scratch Pool recipe boundary |
+| Next legal action | Execute Task 130 tests, implementation, focused/runtime evidence, one relevant full gate, review, and implementation/evidence commits; stop at the green checkpoint with Task 130 `[ ]` |
