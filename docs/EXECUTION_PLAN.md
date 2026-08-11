@@ -1212,7 +1212,7 @@ publish, or close the phase.
 
 ## Phase 26 — Lifetime, Copy, And Base-Surface Owners
 
-### Task 127: [ ] Establish canonical session and two-preference ownership
+### Task 127: [x] Establish canonical session and two-preference ownership
 
 **Files and actions:** modify `src/stores/triage-store.ts` and `.test.ts`; create `src/stores/triage-preferences-store.ts` and `.test.ts`. Add app-session selected Scratch, Pool expanded/manual-reopen/query/result/scroll, and Explorer path/open-columns/column-scroll ownership without removing or renaming the candidate fields/actions that current consumers still call. Retain those candidate fields/actions unchanged as explicitly deprecated, non-authoritative compatibility state; no new consumer may adopt them, and they must not become persisted candidate truth. Task 163 alone removes the compatibility API after every consumer has migrated to the Task 131 durable candidate boundary. Prohibit adding Newly, drafts, active/interrupted Explorer search, placement, completion, or recovery state. Persist and validate exactly Pool created-at sort and Breakdown created-at sort in the preference store, default each independently to DESC, and expose no other persistence.
 

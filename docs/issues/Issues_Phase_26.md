@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Task 127 implemented and awaiting user review; canonical marker remains `[ ]`
+> State: Task 127 accepted; Task 128 not started
 
 ## Status Legend
 
@@ -90,7 +90,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `127` — establish canonical session and two-preference ownership |
-| State | `Implemented` — awaiting user review; implementation is not user acceptance and the canonical marker remains `[ ]` |
+| State | `Accepted` — explicitly accepted by the user; canonical Task 127 marker is `[x]` |
 | Approved scope | Modify `src/stores/triage-store.ts` and `.test.ts`; create `src/stores/triage-preferences-store.ts` and `.test.ts`; retain the deprecated candidate compatibility API unchanged; implement no Task 128+ behavior |
 | Kickoff receipt | `docs/issues/Issues_Phase_26.gate-c.json` (`gate-c`, Task 127-only first bounded batch) |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -113,6 +113,9 @@ None at kickoff.
 | Diff ownership | `src/stores/triage-store.ts`, `src/stores/triage-store.test.ts`, `src/stores/triage-preferences-store.ts`, and `src/stores/triage-preferences-store.test.ts`; no Task 128+ or unrelated path |
 | Issues / deviations | None |
 | Canonical impact | `None` — no canonical amendment or end-phase tag is required |
+| User acceptance | `Task 127 checkpoint를 acceptance합니다.` |
+| Acceptance boundary | Task 127 only; Task 128 remains `[ ]` and was not started |
+| Next legal action | Stop after this acceptance-only commit and await separate user direction; do not start Task 128 |
 
 ### Task 127 Checkpoint Buckets
 
