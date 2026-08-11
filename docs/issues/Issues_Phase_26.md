@@ -415,7 +415,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `134` — implement Explorer columns, full labels, session restoration, and remote anchoring |
-| State | `In Progress` — resumed after explicit disposition of the stale-placement callback blocker; canonical Task 134 marker remains `[ ]` pending explicit user acceptance |
+| State | `Implemented` — green checkpoint awaiting explicit user review; canonical Task 134 marker remains `[ ]` |
 | Approved scope | Modify `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`; additionally modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` only to connect and test the existing `handlePlacementCancel` callback when Explorer validation invalidates a stale placement; create `docs/verification/inbox-triage/task-134.md` and Task 134 captures; implement app-session Explorer path/open-column/column-scroll ownership, full Home/ancestor/column labels, validated same-session restoration with reload-at-Home defaults, stable-ID/offset remote anchoring, nearest-valid-ancestor-only fallback, deterministic heading/ancestor focus, and stale-placement closure without write; remove component-local abbreviated labels and active-column filtering; add no `use-dnd.ts`, other workspace behavior, Task 135+, or Task 151 search body/query lifecycle |
 | Work order | User-approved Task 134-only ad-hoc work order; the Gate C Task 127 receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -423,4 +423,38 @@ None at kickoff.
 | Dependencies | Tasks 127–133 are accepted and contained in the recovery anchor; current reactive Grid reads are present |
 | Issues / deviations | Resolved by explicit user approval of the smallest bounded expansion: add only `triage-workspace.tsx` and `.test.tsx` callback wiring so Explorer invalidation invokes the existing `handlePlacementCancel`; no `use-dnd.ts`, other workspace behavior, mutation, Task 135+, or Task 151 work is authorized. The original four-file partial changes remain task-owned and preserved across this ledger-only resume signal. |
 | Canonical impact | `Tagged` — end-phase must add `src/components/triage/triage-workspace.tsx` and `.test.tsx` callback wiring to the canonical Task 134 file/action boundary in `docs/EXECUTION_PLAN.md`; reason: the component-only approved boundary could suppress stale target presentation but could not close the actual workspace-owned Placement Affordance state |
-| Next legal action | Resume only the approved six-file Task 134 implementation and evidence loop through a green checkpoint; keep Tasks 134 and 135 `[ ]`, and do not push, publish, close the phase, or start later work |
+| Next legal action | Stop at the Task 134 green checkpoint and await explicit user acceptance or targeted rejection; keep Tasks 134 and 135 `[ ]`, and do not push, publish, close the phase, or start later work |
+
+## Task 134 Implementation Evidence
+
+| Field | Durable value |
+| --- | --- |
+| Durable start / blocker / resume | `445fd4f9d34f86207e338a49b9a6f629cfba865f` → `4a0f09f891720b68cfa007894daf06f169991bc7` → `c6b2fc1b54d51c1777139e10b749467f70545cfa`; every production/test change follows the original start, and the approved six-file continuation follows the ledger-only resume signal |
+| Implementation commit | `bc12c2d982ae52de913ae5140c4f5d5e4feb9579` — exactly the approved six production/test files, Task 134 evidence document, and fourteen captures |
+| RED evidence | Initial Explorer/store run exited `1` with ten expected Task 134 failures and eleven passes; scope-expansion run exited `1` with two expected stale-callback failures and 34 passes; review RED reproduced child-column anchor loss during loading and the associated repeated null-anchor update loop |
+| Focused GREEN | Final Explorer/Workspace/store run exited `0`: three files and 37 tests passed; six-file target ESLint, `pnpm typecheck`, and `git diff --check` exited `0` |
+| Full gate | Exactly one post-final-repair serial sequence: `pnpm test` exited `0` (90 files, 733 tests); `pnpm lint` exited `0` with 0 errors and the unchanged 11 warnings; `pnpm typecheck` exited `0`; `pnpm build` exited `0` with Next.js 16.2.1 production artifacts, build ID `A8Oy1A3jLxkf70atESyde`, seven static routes and one dynamic route. No production/test input changed afterward |
+| Implemented behavior | Zustand app-session Explorer path/open-column/column-scroll consumption; full `Home` / `Level 1` / `Level 2` / `Level 3` headings and full ancestor breadcrumb; no component-local search/filter; Scratch-independent context; validated re-entry with loading-safe scroll restoration and reload-at-Home defaults; first-visible stable-ID/offset compensation; exact longest-prefix delete/move fallback without sibling/ghost substitution; deterministic ancestor/heading focus; stale placement invalidation wired to the existing workspace cancel owner without repository write; existing DnD destination breadcrumb retained |
+| Visible evidence | `docs/verification/inbox-triage/task-134.md` plus fourteen `1024×768` / `1920×1080` Home, deep, re-entry, reload, remote-insert, remote-delete, and remote-move captures. Both widths proved full labels, zero searchbox, zero horizontal overflow, exact scrolled re-entry restoration, insert anchor `ID+offset` stability with focus/selection/path preservation, nearest-ancestor focus on delete/move, and zero runtime exceptions |
+| Review | Concrete blocker/review findings were repaired before the full gate: actual workspace placement closure, preserved DnD target breadcrumbs, loading-safe saved anchors, and the null-anchor update loop. Final React/state/diff/visual review found no remaining concrete Critical or Important Task 134 issue |
+| Diff ownership | Production/test changes are limited to `hierarchy-explorer.tsx` and test, `triage-store.ts` and test, plus the explicitly approved stale-callback-only changes in `triage-workspace.tsx` and test; evidence is limited to the Task 134 document and fourteen captures |
+| Issues / deviations | The recorded four-file scope blocker was resolved by explicit approval of the bounded two-file workspace callback expansion. Evidence used the same documented isolated Chrome CDP fallback as prior tasks because the in-app Browser Node REPL was unavailable. No `use-dnd.ts`, other workspace behavior, Task 135+, Task 151, publication, or integration change occurred |
+| Canonical impact | `Tagged` — end-phase must reflect `triage-workspace.tsx` and `.test.tsx` callback wiring in the canonical Task 134 file/action boundary because actual stale Placement Affordance state is workspace-owned |
+| User acceptance | Pending explicit Task 134 checkpoint disposition; `[ ]` remains unchanged |
+| Acceptance boundary | Task 134 only; Task 135 remains `[ ]` and unstarted |
+| Next legal action | Stop and await explicit user acceptance or targeted feedback; do not write `[x]`, start Task 135, push, publish, close the phase, integrate, or clean up |
+
+### Task 134 Checkpoint Buckets
+
+- **Visible now:** Four full-label Explorer columns and full ancestor path;
+  Scratch-independent app-session context; validated same-session path/scroll
+  re-entry; reload-at-Home; remote insertion anchor/selection/focus stability;
+  nearest-valid-ancestor-only delete/move fallback and deterministic focus;
+  stale placement cancellation through the existing workspace owner.
+- **Review now:** Six-file implementation boundary, store reconciliation API,
+  loading-safe stable-ID/offset algorithm, fallback/focus semantics, stale
+  callback wiring, focused/full verification, and two-width capture evidence.
+- **Planned later:** Task 149 owns Explorer drag edge auto-scroll/targeting;
+  Task 150 owns remote count/status/dismissal presentation; Tasks 135 and 151
+  own the dedicated whole-hierarchy query lifecycle and search body.
+- **Unowned:** None.
