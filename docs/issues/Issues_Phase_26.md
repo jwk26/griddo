@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Task 127 in progress; durable start recorded before production changes
+> State: Task 127 implemented and awaiting user review; canonical marker remains `[ ]`
 
 ## Status Legend
 
@@ -90,7 +90,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `127` — establish canonical session and two-preference ownership |
-| State | `In Progress` — implementation is not user acceptance and the canonical marker remains `[ ]` |
+| State | `Implemented` — awaiting user review; implementation is not user acceptance and the canonical marker remains `[ ]` |
 | Approved scope | Modify `src/stores/triage-store.ts` and `.test.ts`; create `src/stores/triage-preferences-store.ts` and `.test.ts`; retain the deprecated candidate compatibility API unchanged; implement no Task 128+ behavior |
 | Kickoff receipt | `docs/issues/Issues_Phase_26.gate-c.json` (`gate-c`, Task 127-only first bounded batch) |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -98,3 +98,29 @@ None at kickoff.
 | Dependency | Accepted Task 101 commit `4a7865ad9fdc88ee40d1cca5ff476a2b2dc9bbc0` is an ancestor of the approved base |
 | Issues / deviations | None |
 | Canonical impact | `None` — Task 127 is implementation-local against the already-reflected SPEC/SCHEMA/EXECUTION_PLAN authority |
+
+## Task 127 Implementation Evidence
+
+| Field | Durable value |
+| --- | --- |
+| Durable start commit | `677b927` — ledger-only `In Progress` signal before production changes |
+| Implementation commit | `775045f535aa7d95b99c0fb2ebd24f7692767a2b` — exactly the two Task 127 stores and their tests |
+| RED evidence | `pnpm test -- src/stores/triage-store.test.ts src/stores/triage-preferences-store.test.ts` exited 1: the new preference module and session actions/defaults were absent while all 679 baseline tests passed |
+| Focused GREEN | `pnpm exec vitest run src/stores/triage-store.test.ts src/stores/triage-preferences-store.test.ts` exited 0: 2 files, 14 tests |
+| Focused constraints | `pnpm typecheck` exited 0; `git diff --check` exited 0 |
+| Full gate | Exactly one post-repair serial run: `pnpm test` exited 0 (88 files, 688 tests); `pnpm lint` exited 0 (0 errors, unchanged 11 warnings); `pnpm typecheck` exited 0; `pnpm build` exited 0 (Next.js 16.2.1, seven routes) |
+| Review | One concrete medium finding: hydration discarded unknown persisted keys in memory but left them in `localStorage`; repaired by canonicalizing storage to the two validated sort keys during hydration and adding post-hydration storage evidence. No remaining concrete findings |
+| Diff ownership | `src/stores/triage-store.ts`, `src/stores/triage-store.test.ts`, `src/stores/triage-preferences-store.ts`, and `src/stores/triage-preferences-store.test.ts`; no Task 128+ or unrelated path |
+| Issues / deviations | None |
+| Canonical impact | `None` — no canonical amendment or end-phase tag is required |
+
+### Task 127 Checkpoint Buckets
+
+- **Visible now:** None — Task 127 adds base owners only; no UI consumer was in
+  scope.
+- **Review now:** Store API/lifetime behavior, focused/full evidence, and user
+  acceptance of Task 127.
+- **Planned later:** Task 130 consumes Pool session/preferences; Task 134 and
+  later approved Explorer work consume Explorer session state; Task 163 removes
+  the deprecated candidate compatibility API after Task 131 migration.
+- **Unowned:** None.
