@@ -409,3 +409,18 @@ None at kickoff.
   Stage/Unstage mutation locks and adapters; Task 147 alone owns Staging
   `VQ-06` status appearance.
 - **Unowned:** None.
+
+## Task 134 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `134` — implement Explorer columns, full labels, session restoration, and remote anchoring |
+| State | `In Progress` — implementation has started; canonical Task 134 marker remains `[ ]` pending explicit user acceptance |
+| Approved scope | Modify `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`; create `docs/verification/inbox-triage/task-134.md` and Task 134 captures; implement app-session Explorer path/open-column/column-scroll ownership, full Home/ancestor/column labels, validated same-session restoration with reload-at-Home defaults, stable-ID/offset remote anchoring, nearest-valid-ancestor-only fallback, deterministic heading/ancestor focus, and stale-placement visual closure without write; remove component-local abbreviated labels and active-column filtering; add no Task 135+ or Task 151 search body/query lifecycle |
+| Work order | User-approved Task 134-only ad-hoc work order; the Gate C Task 127 receipt remains historical authority and is not widened |
+| Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
+| Entrypoint / recovery anchor | `5d8e2d317d55d599daa24a229a483fba6230b8a8` |
+| Dependencies | Tasks 127–133 are accepted and contained in the recovery anchor; current reactive Grid reads are present |
+| Issues / deviations | None |
+| Canonical impact | `None` — Task 134 implements the already-reflected SPEC/EXECUTION_PLAN Explorer base contract; the accepted Task 133 `Tagged` reconciliation remains end-phase-owned and unchanged |
+| Next legal action | Execute only Task 134 through its green checkpoint; keep Task 134 `[ ]`, do not start Task 135, and await explicit user acceptance |
