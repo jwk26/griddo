@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Gate C approved and kickoff baseline green; Task 127 not started
+> State: Task 127 in progress; durable start recorded before production changes
 
 ## Status Legend
 
@@ -84,3 +84,17 @@ started and `$run-task` was not invoked.
 ## Active Issues
 
 None at kickoff.
+
+## Task 127 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `127` — establish canonical session and two-preference ownership |
+| State | `In Progress` — implementation is not user acceptance and the canonical marker remains `[ ]` |
+| Approved scope | Modify `src/stores/triage-store.ts` and `.test.ts`; create `src/stores/triage-preferences-store.ts` and `.test.ts`; retain the deprecated candidate compatibility API unchanged; implement no Task 128+ behavior |
+| Kickoff receipt | `docs/issues/Issues_Phase_26.gate-c.json` (`gate-c`, Task 127-only first bounded batch) |
+| Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
+| Entrypoint / recovery anchor | `761ac9a3f676b11559ad7f9d84ca6d64d2672f91` |
+| Dependency | Accepted Task 101 commit `4a7865ad9fdc88ee40d1cca5ff476a2b2dc9bbc0` is an ancestor of the approved base |
+| Issues / deviations | None |
+| Canonical impact | `None` — Task 127 is implementation-local against the already-reflected SPEC/SCHEMA/EXECUTION_PLAN authority |
