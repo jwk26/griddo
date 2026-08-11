@@ -458,3 +458,18 @@ None at kickoff.
   Task 150 owns remote count/status/dismissal presentation; Tasks 135 and 151
   own the dedicated whole-hierarchy query lifecycle and search body.
 - **Unowned:** None.
+
+## Task 135 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `135` — build the dedicated whole-hierarchy Explorer query lifecycle |
+| State | `In Progress` — implementation has started; canonical Task 135 marker remains `[ ]` pending explicit user acceptance |
+| Approved scope | Create only `src/lib/utils/grid-explorer-search.ts` and `.test.ts`, plus `src/hooks/use-grid-explorer-search.ts` and `.test.tsx`; implement active/reachable Node/Bit traversal from visible Home roots, exclusions, whitespace-AND matching, canonical rank/tie order, duplicate identity, and a mounted-page hook owning request identity/cancellation, loading/error/stale-response, reactive updates, active versus DnD-interrupted query, result scroll/focus/disappearance, and route-exit/reload reset; do not connect a UI consumer or global Search |
+| Work order | User-approved Task 135-only ad-hoc work order; the Gate C Task 127 receipt remains historical kickoff authority and is not widened |
+| Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
+| Entrypoint / recovery anchor | `2a4dabc359cff0e5554a5a2c54593e031895dcd0` |
+| Dependencies | Task 101 and Tasks 127–134 are accepted and contained in the recovery anchor; current reactive Grid reads and `DataStore.getAllActiveNodes()` / `getAllActiveBits()` are present |
+| Issues / deviations | None |
+| Canonical impact | `None` — Task 135 implements the already-reflected SPEC/EXECUTION_PLAN query-lifecycle contract; accepted Tasks 133–134 `Tagged` reconciliation remains end-phase-owned and unchanged |
+| Next legal action | Execute only Task 135 through its green checkpoint; keep Task 135 `[ ]`, do not start Task 136 or end-phase, and await explicit user acceptance |
