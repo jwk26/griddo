@@ -1,18 +1,15 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type KeyboardEvent,
-} from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import {
-  Archive,
+  ArrowDownUp,
   CheckCircle2,
   GripVertical,
   Inbox,
+  Lightbulb,
+  Pencil,
+  RotateCcw,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,13 +23,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useArchiveScratch } from "@/hooks/use-archive-scratch";
-import { useCanArchiveScratch } from "@/hooks/use-can-archive-scratch";
 import { useInbox } from "@/hooks/use-inbox";
 import { useScratchBreakdowns } from "@/hooks/use-scratch-breakdowns";
+import { useStagedCandidates } from "@/hooks/use-staged-candidates";
+import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import type { ScratchBreakdown } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
-import { formatRelativeTime } from "@/lib/utils/relative-time";
+import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
 import { useTriageStore } from "@/stores/triage-store";
 
 function BreakdownRow({
@@ -53,8 +50,8 @@ function BreakdownRow({
   } = useDraggable({
     id: `triage-breakdown:${row.id}`,
     data: { kind: "triage-breakdown", id: row.id, label: row.content },
+    disabled: isStaged,
   });
-  const isConsumed = row.consumedAt !== null;
   const isMuted = isStaged || isDragging;
   const gripColorClass =
     isStaged && !isDragging
@@ -66,9 +63,12 @@ function BreakdownRow({
   return (
     <div
       ref={setNodeRef}
-      data-testid={isConsumed ? "breakdown-row-consumed" : undefined}
+      data-testid="breakdown-row"
+      data-triage-role={isStaged ? "breakdown-staged-row" : "breakdown-active-row"}
+      data-triage-state={isStaged ? "staged" : "active"}
+      role="listitem"
       className={cn(
-        "group flex items-start gap-2 border-b border-border/30 py-2 transition-[background-color,border-color,color,opacity] last:border-b-0",
+        "group flex min-h-12 items-center gap-2 border-b border-border/30 py-2 transition-[background-color,border-color,color,opacity] last:border-b-0 motion-reduce:transition-none",
         isStaged && !isDragging && "opacity-50 transition-opacity duration-200",
         isDragging &&
           "opacity-30 border border-dashed border-muted bg-transparent",
@@ -77,6 +77,7 @@ function BreakdownRow({
       <button
         ref={setActivatorNodeRef}
         aria-label="Drag breakdown"
+        disabled={isStaged}
         className={cn(
           "mt-0.5 flex h-7 w-7 flex-shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-muted-foreground/60 hover:border-border hover:bg-muted hover:text-foreground active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
         )}
@@ -94,31 +95,31 @@ function BreakdownRow({
         <div
           className={cn(
             "whitespace-pre-wrap break-words text-sm leading-5 transition-colors",
-            isConsumed
-              ? "line-through text-muted-foreground/40"
-              : isMuted
-                ? "text-muted-foreground"
-                : "text-foreground",
+            isMuted ? "text-muted-foreground" : "text-foreground",
           )}
         >
           {row.content}
         </div>
-        <div
-          className={cn(
-            "mt-1 text-[10px] transition-colors",
-            isMuted ? "text-muted-foreground/40" : "text-muted-foreground/70",
-          )}
-        >
-          {formatRelativeTime(row.createdAt)}
-        </div>
       </div>
       <button
-        aria-label="Delete breakdown"
+        aria-label={INBOX_TRIAGE_COPY.baseActions.edit}
+        className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+        data-triage-role="breakdown-row-action"
+        disabled
+        title={INBOX_TRIAGE_COPY.baseActions.edit}
+        type="button"
+      >
+        <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+      <button
+        aria-label={INBOX_TRIAGE_COPY.baseActions.delete}
         className={cn(
           "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-destructive/10 hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           isDragging && "text-muted-foreground",
         )}
-        title="Delete breakdown"
+        data-triage-role="breakdown-row-action"
+        disabled={isStaged}
+        title={INBOX_TRIAGE_COPY.baseActions.delete}
         type="button"
         onClick={() => onDelete(row.id)}
       >
@@ -128,88 +129,15 @@ function BreakdownRow({
   );
 }
 
-function ArchiveScratchBar({ scratchId }: { scratchId: string }) {
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const clearSelection = useTriageStore((state) => state.clearSelection);
-  const [isArchiving, setIsArchiving] = useState(false);
-  const isArchivingRef = useRef(false);
-  const { archiveScratch } = useArchiveScratch();
-
-  async function handleConfirmArchive(): Promise<void> {
-    if (isArchivingRef.current) return;
-
-    isArchivingRef.current = true;
-    setIsArchiving(true);
-
-    try {
-      await archiveScratch(scratchId);
-      setIsConfirmOpen(false);
-      clearSelection();
-    } finally {
-      isArchivingRef.current = false;
-      setIsArchiving(false);
-    }
-  }
-
-  return (
-    <>
-      <div
-        data-testid="archive-scratch-bar"
-        className="mx-3 mb-2 flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 shadow-sm"
-      >
-        <div className="flex min-w-0 items-center gap-2">
-          <CheckCircle2
-            aria-hidden="true"
-            className="h-4 w-4 flex-shrink-0 text-primary/80"
-          />
-          <span className="min-w-0 truncate text-xs text-muted-foreground">
-            All items processed
-          </span>
-        </div>
-        <Button
-          className="focus-visible:ring-2 focus-visible:ring-ring"
-          size="sm"
-          variant="outline"
-          onClick={() => setIsConfirmOpen(true)}
-        >
-          <Archive aria-hidden="true" className="h-4 w-4" />
-          Archive Scratch
-        </Button>
-      </div>
-
-      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Archive this Scratch?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This Scratch and its processed breakdown rows will be moved to
-              your archive. You can access, view, or restore them at any time
-              from the Archive View.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setIsConfirmOpen(false)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              disabled={isArchiving}
-              onClick={(event) => {
-                event.preventDefault();
-                void handleConfirmArchive();
-              }}
-            >
-              Archive Scratch
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
+function formatScratchTimestamp(createdAt: number): string {
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(createdAt);
 }
 
 export function BreakdownPanel() {
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
-  const stagedCandidates = useTriageStore((state) => state.stagedCandidates);
   const scratchPoolExpanded = useTriageStore(
     (state) => state.scratchPoolExpanded,
   );
@@ -219,32 +147,45 @@ export function BreakdownPanel() {
   const setScratchPoolExpanded = useTriageStore(
     (state) => state.setScratchPoolExpanded,
   );
-  const { activeScratchBits } = useInbox();
-  const { breakdowns, createBreakdown, deleteBreakdown } =
-    useScratchBreakdowns(selectedScratchId);
-  const canArchiveScratch = useCanArchiveScratch(
-    selectedScratchId,
-    breakdowns,
+  const breakdownCreatedAtSort = useTriagePreferencesStore(
+    (state) => state.breakdownCreatedAtSort,
   );
+  const setBreakdownCreatedAtSort = useTriagePreferencesStore(
+    (state) => state.setBreakdownCreatedAtSort,
+  );
+  const { activeScratchBits } = useInbox();
+  const {
+    breakdowns,
+    consumedBreakdownCount,
+    hasObservedBreakdownHistory,
+    isArchiveEligible,
+    createBreakdown,
+    deleteBreakdown,
+  } = useScratchBreakdowns(
+    selectedScratchId,
+    breakdownCreatedAtSort,
+  );
+  const { counts: stagedCandidateCounts, eligibility: stagedEligibility } =
+    useStagedCandidates(selectedScratchId);
   const [isAdding, setIsAdding] = useState(false);
   const [newContent, setNewContent] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const isSubmittingRef = useRef(false);
   const isComposingRef = useRef(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const selectedScratch = useMemo(
-    () => activeScratchBits.find((bit) => bit.id === selectedScratchId) ?? null,
-    [activeScratchBits, selectedScratchId],
-  );
-  const stagedSourceBreakdownIds = useMemo(
-    () =>
-      new Set(
-        (stagedCandidates[selectedScratchId ?? ""] ?? []).map(
-          (candidate) => candidate.sourceBreakdownId,
-        ),
-      ),
-    [selectedScratchId, stagedCandidates],
-  );
+  const selectedScratch =
+    activeScratchBits.find((bit) => bit.id === selectedScratchId) ?? null;
+  const isConsumedCompletion =
+    selectedScratch !== null &&
+    isArchiveEligible &&
+    breakdowns.length === 0;
+  const emptyState = isConsumedCompletion
+    ? "consumed-completion"
+    : consumedBreakdownCount > 0 || stagedCandidateCounts.authoritative > 0
+      ? "ordinary"
+      : hasObservedBreakdownHistory
+        ? "all-deleted"
+        : "never-used";
 
   useEffect(() => {
     if (!isAdding) return;
@@ -347,49 +288,115 @@ export function BreakdownPanel() {
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
         <div
           aria-label={`Selected Scratch: ${selectedScratch?.title ?? "Unknown Scratch"}`}
-          className="mt-2 flex min-w-0 items-center gap-2 rounded-lg border border-border/70 bg-muted/30 px-2.5 py-1.5"
+          className="mt-2 flex min-h-[104px] min-w-0 items-center gap-3 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card px-4 py-4 shadow-sm"
+          data-testid="selected-scratch-context"
+          data-triage-role="context-signature-plate"
+          data-triage-state="working"
         >
           <Inbox
             aria-hidden="true"
-            className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground"
+            className="h-5 w-5 flex-shrink-0 text-primary/70"
           />
           <div className="min-w-0 flex-1">
-            <div className="truncate text-xs font-medium text-foreground">
+            <div
+              className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+              data-triage-role="context-eyebrow-meta"
+            >
+              Selected Scratch
+            </div>
+            <div
+              className="mt-1 whitespace-pre-wrap break-words text-lg font-semibold text-foreground"
+              data-triage-role="context-title"
+            >
               {selectedScratch?.title ?? "Unknown Scratch"}
             </div>
             {selectedScratch !== null && (
-              <div className="text-[10px] text-muted-foreground/70">
-                {formatRelativeTime(selectedScratch.createdAt)}
+              <div className="mt-1 text-xs tabular-nums text-muted-foreground">
+                {formatScratchTimestamp(selectedScratch.createdAt)}
               </div>
             )}
           </div>
+          <div className="flex flex-shrink-0 items-center gap-2" data-triage-role="context-action-cluster">
+            <Button
+              disabled
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              <Pencil aria-hidden="true" className="h-3.5 w-3.5" />
+              {INBOX_TRIAGE_COPY.baseActions.edit}
+            </Button>
+            <Button
+              aria-label={
+                breakdownCreatedAtSort === "DESC"
+                  ? INBOX_TRIAGE_COPY.baseActions.sortNewestFirst
+                  : INBOX_TRIAGE_COPY.baseActions.sortOldestFirst
+              }
+              data-triage-role="context-sort-control"
+              size="sm"
+              type="button"
+              variant="outline"
+              onClick={() =>
+                setBreakdownCreatedAtSort(
+                  breakdownCreatedAtSort === "DESC" ? "ASC" : "DESC",
+                )
+              }
+            >
+              <ArrowDownUp aria-hidden="true" className="h-3.5 w-3.5" />
+              {breakdownCreatedAtSort}
+            </Button>
+          </div>
         </div>
 
-        {breakdowns.map((row) => {
-          const isStaged = stagedSourceBreakdownIds.has(row.id);
-
-          return (
-            <BreakdownRow
-              key={row.id}
-              isStaged={isStaged}
-              row={row}
-              onDelete={setPendingDeleteId}
-            />
-          );
-        })}
+        {breakdowns.length > 0 ? (
+          <div className="mt-2" role="list">
+            {breakdowns.map((row) => (
+              <BreakdownRow
+                key={row.id}
+                isStaged={stagedEligibility.stagedSourceIds.has(row.id)}
+                row={row}
+                onDelete={setPendingDeleteId}
+              />
+            ))}
+          </div>
+        ) : (
+          <div
+            className={cn(
+              "mt-3 flex min-h-24 flex-col items-center justify-center rounded-xl border px-4 py-5 text-center",
+              isConsumedCompletion
+                ? "border-primary/25 bg-primary/5"
+                : "border-dashed border-border bg-muted/20",
+            )}
+            data-testid="breakdown-empty-state"
+            data-triage-role={
+              isConsumedCompletion
+                ? "breakdown-consumed-completion"
+                : "breakdown-ordinary-empty"
+            }
+            data-triage-state={emptyState}
+          >
+            {isConsumedCompletion ? (
+              <CheckCircle2 aria-hidden="true" className="h-6 w-6 text-primary/70" />
+            ) : emptyState === "all-deleted" ? (
+              <RotateCcw aria-hidden="true" className="h-6 w-6 text-muted-foreground/55" />
+            ) : (
+              <Lightbulb aria-hidden="true" className="h-6 w-6 text-muted-foreground/55" />
+            )}
+            <span className="mt-2 text-xs font-medium text-muted-foreground">
+              {isConsumedCompletion ? "All items processed" : "Add a note..."}
+            </span>
+          </div>
+        )}
       </div>
 
-      {canArchiveScratch && selectedScratchId !== null && (
-        <ArchiveScratchBar scratchId={selectedScratchId} />
-      )}
-
       <div className="border-t border-border px-3 py-2">
-        {isAdding ? (
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+          {isAdding ? (
             <input
               ref={inputRef}
               className="block h-8 w-full appearance-none rounded-md border border-border bg-background px-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
+              data-triage-role="breakdown-add-field"
               maxLength={500}
-              onBlur={() => void handleAdd()}
               onChange={(event) => setNewContent(event.target.value)}
               onCompositionEnd={() => {
                 isComposingRef.current = false;
@@ -404,7 +411,8 @@ export function BreakdownPanel() {
             />
           ) : (
             <div
-              className="flex h-8 cursor-text items-center rounded-md px-2 text-sm text-muted-foreground hover:bg-accent/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-8 cursor-text items-center rounded-md border border-transparent px-2 text-sm text-muted-foreground hover:border-border hover:bg-accent/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              data-triage-role="breakdown-add-field"
               role="button"
               tabIndex={0}
               onClick={() => setIsAdding(true)}
@@ -413,7 +421,17 @@ export function BreakdownPanel() {
               Add a note...
             </div>
           )}
+          <Button
+            data-triage-role="breakdown-add-control"
+            disabled={!isAdding || newContent.trim().length === 0}
+            size="sm"
+            type="button"
+            onClick={() => void handleAdd({ keepInputOpen: true })}
+          >
+            {INBOX_TRIAGE_COPY.baseActions.add}
+          </Button>
         </div>
+      </div>
 
       <AlertDialog
         open={pendingDeleteId !== null}

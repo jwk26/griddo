@@ -10,6 +10,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ScratchBreakdown } from "@/lib/db/schema";
 import type { Bit } from "@/types";
+import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
 import { BreakdownPanel } from "./breakdown-panel";
 
 const hookState = vi.hoisted(() => ({
@@ -35,6 +36,7 @@ const triageStoreState = vi.hoisted(() => ({
   setScratchPoolExpanded: vi.fn() as ReturnType<typeof vi.fn>,
 }));
 const useScratchBreakdownsMock = vi.hoisted(() => vi.fn());
+const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
 const useTriageStoreMock = vi.hoisted(() => vi.fn());
 const getDataStoreMock = vi.hoisted(() => vi.fn());
 const archiveBitMock = vi.hoisted(() => vi.fn());
@@ -47,6 +49,10 @@ vi.mock("@/hooks/use-scratch-breakdowns", () => ({
 
 vi.mock("@/hooks/use-inbox", () => ({
   useInbox: useInboxMock,
+}));
+
+vi.mock("@/hooks/use-staged-candidates", () => ({
+  useStagedCandidates: useStagedCandidatesMock,
 }));
 
 vi.mock("@/stores/triage-store", () => ({
@@ -104,19 +110,50 @@ beforeEach(() => {
   triageStoreState.scratchPoolExpanded = true;
   triageStoreState.scratchPoolManualExpandedForId = null;
   triageStoreState.setScratchPoolExpanded.mockReset();
-  useInboxMock.mockReturnValue({ activeScratchBits: [] });
+  useInboxMock.mockReturnValue({
+    activeScratchBits: [createBit({ id: "scratch-1" })],
+  });
   useTriageStoreMock.mockImplementation(
     (selector: (state: typeof triageStoreState) => unknown) =>
       selector(triageStoreState),
   );
-  useScratchBreakdownsMock.mockImplementation((scratchBitId: string | null) => ({
-    breakdowns:
+  useScratchBreakdownsMock.mockImplementation((scratchBitId: string | null) => {
+    const rows =
       scratchBitId === null
         ? []
-        : (hookState.breakdownsByScratch[scratchBitId] ?? []),
-    createBreakdown: hookState.createBreakdown,
-    deleteBreakdown: hookState.deleteBreakdown,
-  }));
+        : ((hookState.breakdownsByScratch[scratchBitId] ?? []) as ScratchBreakdown[]);
+    const activeRows = rows.filter((row) => row.consumedAt === null);
+    const consumedRows = rows.filter((row) => row.consumedAt !== null);
+    const stagedCount =
+      scratchBitId === null
+        ? 0
+        : (triageStoreState.stagedCandidates[scratchBitId] ?? []).length;
+    return {
+      breakdowns: activeRows,
+      consumedBreakdownCount: consumedRows.length,
+      hasObservedBreakdownHistory: rows.length > 0,
+      isArchiveEligible:
+        consumedRows.length > 0 && activeRows.length === 0 && stagedCount === 0,
+      createBreakdown: hookState.createBreakdown,
+      deleteBreakdown: hookState.deleteBreakdown,
+    };
+  });
+  useStagedCandidatesMock.mockImplementation((scratchBitId: string | null) => {
+    const candidates =
+      scratchBitId === null
+        ? []
+        : (triageStoreState.stagedCandidates[scratchBitId] ?? []);
+    return {
+      candidates,
+      counts: { authoritative: candidates.length },
+      eligibility: {
+        stagedSourceIds: new Set(
+          candidates.map((candidate) => candidate.sourceBreakdownId),
+        ),
+      },
+    };
+  });
+  useTriagePreferencesStore.setState({ breakdownCreatedAtSort: "DESC" });
   getDataStoreMock.mockResolvedValue({
     archiveBit: archiveBitMock,
   });
@@ -137,7 +174,7 @@ describe("BreakdownPanel", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders breakdown content with relative-time labels", () => {
+  it("renders breakdown content without row time labels", () => {
     triageStoreState.selectedScratchId = "scratch-1";
     hookState.breakdownsByScratch["scratch-1"] = [
       createScratchBreakdown({
@@ -155,9 +192,9 @@ describe("BreakdownPanel", () => {
     render(<BreakdownPanel />);
 
     expect(screen.getByText("First note")).toBeInTheDocument();
-    expect(screen.getByText("45m ago")).toBeInTheDocument();
     expect(screen.getByText("Older note")).toBeInTheDocument();
-    expect(screen.getByText("2h ago")).toBeInTheDocument();
+    expect(screen.queryByText("45m ago")).not.toBeInTheDocument();
+    expect(screen.queryByText("2h ago")).not.toBeInTheDocument();
   });
 
   it("activates the input when clicking the add-note placeholder", () => {
@@ -165,9 +202,19 @@ describe("BreakdownPanel", () => {
 
     render(<BreakdownPanel />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const addEntry = screen.getByRole("button", { name: "Add a note..." });
+    expect(addEntry).toHaveAttribute("data-triage-role", "breakdown-add-field");
+    expect(screen.getByRole("button", { name: "Add" })).toHaveAttribute(
+      "data-triage-role",
+      "breakdown-add-control",
+    );
+    fireEvent.click(addEntry);
 
     expect(screen.getByPlaceholderText("Add a note...")).toHaveFocus();
+    expect(screen.getByPlaceholderText("Add a note...")).toHaveAttribute(
+      "data-triage-role",
+      "breakdown-add-field",
+    );
   });
 
   it("creates a trimmed breakdown when pressing Enter", async () => {
@@ -185,7 +232,7 @@ describe("BreakdownPanel", () => {
     });
   });
 
-  it("shows the archive affordance alongside the add-note input when every breakdown is consumed and no candidates are staged", () => {
+  it("shows consumed completion without exposing the later Archive action", () => {
     triageStoreState.selectedScratchId = "scratch-1";
     hookState.breakdownsByScratch["scratch-1"] = [
       createScratchBreakdown({
@@ -199,9 +246,11 @@ describe("BreakdownPanel", () => {
 
     expect(screen.getByText("All items processed")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Archive Scratch" }),
+      screen.queryByRole("button", { name: "Archive Scratch" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Add a note..." }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Add a note...")).toBeInTheDocument();
   });
 
   it("keeps the add-note bar when consumed breakdowns still have staged candidates", () => {
@@ -226,97 +275,14 @@ describe("BreakdownPanel", () => {
 
     render(<BreakdownPanel />);
 
+    expect(screen.getByTestId("breakdown-empty-state")).toHaveAttribute(
+      "data-triage-state",
+      "ordinary",
+    );
     expect(screen.queryByText("All items processed")).not.toBeInTheDocument();
-    expect(screen.getByText("Add a note...")).toBeInTheDocument();
-  });
-
-  it("archives the selected Scratch after confirmation", async () => {
-    triageStoreState.selectedScratchId = "scratch-1";
-    hookState.breakdownsByScratch["scratch-1"] = [
-      createScratchBreakdown({
-        id: "row-1",
-        content: "Processed note",
-        consumedAt: currentTime,
-      }),
-    ];
-
-    render(<BreakdownPanel />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Archive Scratch" }));
-
-    const dialog = await screen.findByRole("alertdialog");
     expect(
-      within(dialog).getByText(
-        "This Scratch and its processed breakdown rows will be moved to your archive. You can access, view, or restore them at any time from the Archive View.",
-      ),
+      screen.getByRole("button", { name: "Add a note..." }),
     ).toBeInTheDocument();
-
-    fireEvent.click(
-      within(dialog).getByRole("button", { name: "Archive Scratch" }),
-    );
-
-    await waitFor(() => {
-      expect(archiveBitMock).toHaveBeenCalledWith("scratch-1");
-    });
-    expect(clearSelectionMock).toHaveBeenCalledTimes(1);
-  });
-
-  it("leaves the selected Scratch active when archive confirmation is cancelled", async () => {
-    triageStoreState.selectedScratchId = "scratch-1";
-    hookState.breakdownsByScratch["scratch-1"] = [
-      createScratchBreakdown({
-        id: "row-1",
-        content: "Processed note",
-        consumedAt: currentTime,
-      }),
-    ];
-
-    render(<BreakdownPanel />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Archive Scratch" }));
-    const dialog = await screen.findByRole("alertdialog");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
-
-    expect(archiveBitMock).not.toHaveBeenCalled();
-    await waitFor(() => {
-      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
-    });
-  });
-
-  it("prevents archiveBit from being called twice when confirm is clicked rapidly", async () => {
-    triageStoreState.selectedScratchId = "scratch-1";
-    hookState.breakdownsByScratch["scratch-1"] = [
-      createScratchBreakdown({ id: "row-1", consumedAt: currentTime }),
-    ];
-
-    let resolveArchive!: () => void;
-    archiveBitMock.mockReturnValue(
-      new Promise<void>((resolve) => {
-        resolveArchive = resolve;
-      }),
-    );
-
-    render(<BreakdownPanel />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Archive Scratch" }));
-    const dialog = await screen.findByRole("alertdialog");
-
-    const confirmButton = within(dialog).getByRole("button", {
-      name: "Archive Scratch",
-    });
-    fireEvent.click(confirmButton);
-    fireEvent.click(confirmButton);
-
-    await waitFor(() => {
-      expect(archiveBitMock).toHaveBeenCalledTimes(1);
-    });
-    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
-
-    resolveArchive();
-
-    await waitFor(() => {
-      expect(clearSelectionMock).toHaveBeenCalledTimes(1);
-    });
   });
 
   it("does not create a breakdown for empty blur or Escape cancels", () => {
@@ -325,10 +291,9 @@ describe("BreakdownPanel", () => {
     render(<BreakdownPanel />);
 
     fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
-    fireEvent.blur(screen.getByPlaceholderText("Add a note..."));
-
-    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
-    fireEvent.keyDown(screen.getByPlaceholderText("Add a note..."), {
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.blur(input);
+    fireEvent.keyDown(input, {
       key: "Escape",
     });
 
@@ -343,7 +308,7 @@ describe("BreakdownPanel", () => {
 
     render(<BreakdownPanel />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Delete breakdown" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
 
     expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
     expect(hookState.deleteBreakdown).not.toHaveBeenCalled();
@@ -357,7 +322,7 @@ describe("BreakdownPanel", () => {
 
     render(<BreakdownPanel />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Delete breakdown" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     const dialog = await screen.findByRole("alertdialog");
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
 
@@ -377,7 +342,7 @@ describe("BreakdownPanel", () => {
 
     render(<BreakdownPanel />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Delete breakdown" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     const dialog = await screen.findByRole("alertdialog");
     fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
 
@@ -452,10 +417,9 @@ describe("BreakdownPanel", () => {
     expect(row).toHaveClass("opacity-50", "transition-opacity", "duration-200");
     expect(text).toHaveClass("text-muted-foreground");
     expect(grip).toHaveClass("text-muted-foreground/20");
-    expect(screen.getByText("45m ago")).toHaveClass("text-muted-foreground/40");
   });
 
-  it("renders a consumed row with line-through and muted-foreground/40 text when consumedAt is set and no staged candidate", () => {
+  it("does not retain a consumed row in the active Breakdown list", () => {
     triageStoreState.selectedScratchId = "scratch-1";
     hookState.breakdownsByScratch["scratch-1"] = [
       createScratchBreakdown({
@@ -467,11 +431,11 @@ describe("BreakdownPanel", () => {
 
     render(<BreakdownPanel />);
 
-    const consumedRow = screen.getByTestId("breakdown-row-consumed");
-    expect(consumedRow).toBeInTheDocument();
-    const text = within(consumedRow).getByText("Consumed note");
-    expect(text).toHaveClass("line-through");
-    expect(text).toHaveClass("text-muted-foreground/40");
+    expect(screen.queryByText("Consumed note")).not.toBeInTheDocument();
+    expect(screen.getByTestId("breakdown-empty-state")).toHaveAttribute(
+      "data-triage-state",
+      "consumed-completion",
+    );
   });
 
   it("does not add line-through styling to a staged row", () => {
@@ -525,7 +489,6 @@ describe("BreakdownPanel", () => {
     expect(text).toHaveClass("text-foreground");
     expect(text).not.toHaveClass("text-muted-foreground");
     expect(grip).toHaveClass("text-muted-foreground/45");
-    expect(screen.getByText("45m ago")).toHaveClass("text-muted-foreground/70");
   });
 
   it("clears the confirmation dialog on Escape without deleting", async () => {
@@ -536,7 +499,7 @@ describe("BreakdownPanel", () => {
 
     render(<BreakdownPanel />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Delete breakdown" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
 
     fireEvent.keyDown(document, { key: "Escape" });
@@ -555,7 +518,7 @@ describe("BreakdownPanel", () => {
 
     const { rerender } = render(<BreakdownPanel />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Delete breakdown" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
 
     triageStoreState.selectedScratchId = "scratch-2";
@@ -567,7 +530,7 @@ describe("BreakdownPanel", () => {
     expect(hookState.deleteBreakdown).not.toHaveBeenCalled();
   });
 
-  it("renders the selected Scratch context strip with title and relative time", () => {
+  it("renders the selected Scratch Context with title and full time", () => {
     triageStoreState.selectedScratchId = "scratch-1";
     useInboxMock.mockReturnValue({
       activeScratchBits: [
@@ -584,8 +547,9 @@ describe("BreakdownPanel", () => {
     const strip = screen.getByLabelText("Selected Scratch: Inbox planning note");
     expect(strip).toBeInTheDocument();
     const title = within(strip).getByText("Inbox planning note");
-    expect(title).toHaveClass("truncate");
-    expect(within(strip).getByText("45m ago")).toBeInTheDocument();
+    expect(title).toHaveClass("break-words", "whitespace-pre-wrap");
+    expect(title).not.toHaveClass("truncate");
+    expect(within(strip).getByText(/Jun 17, 2026, 11:15 AM/)).toBeInTheDocument();
   });
 
   it("clicking the add-note placeholder does not collapse the Scratch Pool", () => {
@@ -707,25 +671,194 @@ describe("BreakdownPanel", () => {
     expect(rowContainer).not.toHaveAttribute("aria-label", "Drag breakdown");
   });
 
-  it("ArchiveScratchBar renders with completion affordance styling", () => {
+  it("renders a standalone Context with full created time, Edit, and Breakdown sort", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({
+          id: "scratch-1",
+          title: "Inbox planning note",
+          createdAt: new Date(2026, 5, 17, 11, 15, 0).getTime(),
+        }),
+      ],
+    });
+
+    render(<BreakdownPanel />);
+
+    const context = screen.getByTestId("selected-scratch-context");
+    expect(context).toHaveAttribute(
+      "data-triage-role",
+      "context-signature-plate",
+    );
+    expect(context).toHaveClass("min-h-[104px]");
+    expect(within(context).getByText("Selected Scratch")).toHaveAttribute(
+      "data-triage-role",
+      "context-eyebrow-meta",
+    );
+    expect(within(context).getByText("Inbox planning note")).toHaveAttribute(
+      "data-triage-role",
+      "context-title",
+    );
+    expect(within(context).getByText(/Jun 17, 2026/)).toBeVisible();
+    expect(within(context).getByText(/11:15/)).toBeVisible();
+    const contextEdit = within(context).getByRole("button", { name: "Edit" });
+    expect(contextEdit).toBeVisible();
+    expect(contextEdit).not.toHaveAttribute(
+      "data-triage-role",
+      "breakdown-row-action",
+    );
+    expect(
+      within(context).getByRole("button", { name: "Sort: newest first" }),
+    ).toBeVisible();
+  });
+
+  it("toggles stable Breakdown created-at ordering without row time labels", () => {
     triageStoreState.selectedScratchId = "scratch-1";
     hookState.breakdownsByScratch["scratch-1"] = [
-      createScratchBreakdown({
-        id: "row-1",
-        content: "Processed note",
-        consumedAt: currentTime,
+      createScratchBreakdown({ id: "older", content: "Older", createdAt: 10 }),
+      createScratchBreakdown({ id: "newer", content: "Newer", createdAt: 20 }),
+    ];
+    useScratchBreakdownsMock.mockImplementation(
+      (_scratchBitId: string | null, sort: "ASC" | "DESC") => ({
+        breakdowns: (hookState.breakdownsByScratch["scratch-1"] as ScratchBreakdown[])
+          .toSorted((left, right) =>
+            sort === "ASC"
+              ? left.createdAt - right.createdAt
+              : right.createdAt - left.createdAt,
+          ),
+        consumedBreakdownCount: 0,
+        hasObservedBreakdownHistory: true,
+        isArchiveEligible: false,
+        createBreakdown: hookState.createBreakdown,
+        deleteBreakdown: hookState.deleteBreakdown,
       }),
+    );
+
+    render(<BreakdownPanel />);
+
+    expect(screen.getAllByTestId("breakdown-row").map((row) => row.textContent)).toEqual([
+      "Newer",
+      "Older",
+    ]);
+    expect(screen.queryByText("45m ago")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Sort: newest first" }));
+
+    expect(screen.getAllByTestId("breakdown-row").map((row) => row.textContent)).toEqual([
+      "Older",
+      "Newer",
+    ]);
+  });
+
+  it("keeps staged rows visible, non-struck, and interaction-disabled from Task 131 truth", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    triageStoreState.stagedCandidates = {
+      "scratch-1": [
+        {
+          id: "candidate-1",
+          type: "node",
+          sourceBreakdownId: "row-1",
+          label: "Staged note",
+        },
+      ],
+    };
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Staged note" }),
     ];
 
     render(<BreakdownPanel />);
 
-    const bar = screen.getByTestId("archive-scratch-bar");
-    expect(bar).toBeInTheDocument();
-    expect(bar).toHaveClass("rounded-lg");
-    expect(bar).toHaveClass("border-primary/20");
-    expect(bar).toHaveClass("bg-primary/5");
-    expect(
-      screen.getByRole("button", { name: "Archive Scratch" }),
-    ).toBeInTheDocument();
+    const row = screen.getByTestId("breakdown-row");
+    expect(row).toHaveAttribute("data-triage-state", "staged");
+    expect(within(row).getByText("Staged note")).not.toHaveClass("line-through");
+    expect(within(row).getByRole("button", { name: "Drag breakdown" })).toBeDisabled();
+    expect(within(row).getByRole("button", { name: "Edit" })).toBeDisabled();
+    expect(within(row).getByRole("button", { name: "Delete" })).toBeDisabled();
+  });
+
+  it("removes consumed rows and shows completion only with consumed history and no staged candidate", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "consumed", content: "Done", consumedAt: 30 }),
+    ];
+
+    render(<BreakdownPanel />);
+
+    expect(screen.queryByText("Done")).not.toBeInTheDocument();
+    expect(screen.getByTestId("breakdown-empty-state")).toHaveAttribute(
+      "data-triage-state",
+      "consumed-completion",
+    );
+    expect(screen.getByText("All items processed")).toBeVisible();
+  });
+
+  it("does not imply completion for never-used or observed all-deleted empty states", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    useScratchBreakdownsMock.mockReturnValue({
+      breakdowns: [],
+      consumedBreakdownCount: 0,
+      hasObservedBreakdownHistory: false,
+      isArchiveEligible: false,
+      createBreakdown: hookState.createBreakdown,
+      deleteBreakdown: hookState.deleteBreakdown,
+    });
+    const { rerender } = render(<BreakdownPanel />);
+
+    expect(screen.getByTestId("breakdown-empty-state")).toHaveAttribute(
+      "data-triage-state",
+      "never-used",
+    );
+    expect(screen.queryByText("All items processed")).not.toBeInTheDocument();
+
+    useScratchBreakdownsMock.mockReturnValue({
+      breakdowns: [],
+      consumedBreakdownCount: 0,
+      hasObservedBreakdownHistory: true,
+      isArchiveEligible: false,
+      createBreakdown: hookState.createBreakdown,
+      deleteBreakdown: hookState.deleteBreakdown,
+    });
+    rerender(<BreakdownPanel />);
+
+    expect(screen.getByTestId("breakdown-empty-state")).toHaveAttribute(
+      "data-triage-state",
+      "all-deleted",
+    );
+    expect(screen.queryByText("All items processed")).not.toBeInTheDocument();
+  });
+
+  it("fails completion closed for a missing selected Scratch or delayed eligibility", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    useInboxMock.mockReturnValue({ activeScratchBits: [] });
+    useScratchBreakdownsMock.mockReturnValue({
+      breakdowns: [],
+      consumedBreakdownCount: 1,
+      hasObservedBreakdownHistory: true,
+      isArchiveEligible: true,
+      createBreakdown: hookState.createBreakdown,
+      deleteBreakdown: hookState.deleteBreakdown,
+    });
+
+    const { rerender } = render(<BreakdownPanel />);
+    expect(screen.queryByText("All items processed")).not.toBeInTheDocument();
+
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [createBit({ id: "scratch-1" })],
+    });
+    useScratchBreakdownsMock.mockReturnValue({
+      breakdowns: [],
+      consumedBreakdownCount: 1,
+      hasObservedBreakdownHistory: true,
+      isArchiveEligible: false,
+      createBreakdown: hookState.createBreakdown,
+      deleteBreakdown: hookState.deleteBreakdown,
+    });
+    rerender(<BreakdownPanel />);
+
+    expect(screen.getByTestId("breakdown-empty-state")).toHaveAttribute(
+      "data-triage-state",
+      "ordinary",
+    );
+    expect(screen.queryByText("All items processed")).not.toBeInTheDocument();
   });
 });
