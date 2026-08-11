@@ -133,7 +133,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `128` — create the single core-English copy owner |
-| State | `In Progress` — implementation started; canonical Task 128 marker remains `[ ]` pending user acceptance |
+| State | `Implemented` — awaiting user review; canonical Task 128 marker remains `[ ]` pending user acceptance |
 | Approved scope | Create `src/lib/copy/inbox-triage.ts` and `.test.ts`; provide typed source-approved base copy and explicitly unavailable receipt-dependent keys; add no component consumer, locale provider/toggle, Task 129 shell, or later-task behavior |
 | Work order | User-approved Task 128-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -141,3 +141,30 @@ None at kickoff.
 | Dependency | Plan approval/lifecycle only; Task 127 is accepted at the recovery anchor and Task 129 remains unstarted |
 | Issues / deviations | None |
 | Canonical impact | `None` — Task 128 implements the already-reflected SPEC/EXECUTION_PLAN copy boundary |
+
+## Task 128 Implementation Evidence
+
+| Field | Durable value |
+| --- | --- |
+| Durable start commit | `6cc02885867ef8e603824e43ee1270897eb1b9eb` — ledger-only `In Progress` signal before production changes |
+| Implementation commit | `f57d1d5ca7666e501707fbab1638718214f4c845` — exactly the Task 128 copy resource and test |
+| RED evidence | `pnpm exec vitest run src/lib/copy/inbox-triage.test.ts` exited 1 with the expected missing `./inbox-triage` import; no production module existed |
+| Focused GREEN | `pnpm exec vitest run src/lib/copy/inbox-triage.test.ts` exited 0: 1 file, 4 tests |
+| Focused constraints | `pnpm typecheck` exited 0; `git diff --check` exited 0; receipt-string `rg` over `src/components/triage` found no newly distributed receipt copy and no component path changed |
+| Full gate | Exactly one post-repair serial run: `pnpm test` exited 0 (89 files, 692 tests); `pnpm lint` exited 0 (0 errors, unchanged 11 warnings); `pnpm typecheck` exited 0; `pnpm build` exited 0 (Next.js 16.2.1, seven routes) |
+| Review | Two concrete findings were repaired before the full gate: an invented expanded clear-search accessible name was narrowed to canonical `Clear search`; receipt-owned category types now admit a later approved string while every current value remains the non-string unavailable sentinel. No remaining concrete findings |
+| Diff ownership | `src/lib/copy/inbox-triage.ts` and `src/lib/copy/inbox-triage.test.ts`; no component, locale, Task 129+, or unrelated path |
+| Issues / deviations | None |
+| Canonical impact | `None` — no canonical amendment or end-phase tag is required |
+| User acceptance | Pending — stop at the Task 128 green checkpoint; do not write `[x]` or start Task 129 |
+
+### Task 128 Checkpoint Buckets
+
+- **Visible now:** None — Task 128 adds a typed nonvisual owner and no component
+  consumer is in scope.
+- **Review now:** Copy API, unavailable-sentinel boundary, focused/full evidence,
+  and user acceptance of Task 128.
+- **Planned later:** Task 129 consumes base shell copy; Tasks 138, 140, 141,
+  143, 144, 147, 148, 150, 151, 153, 154, 157, 160, and 162 populate only
+  their approved receipt-owned copy keys.
+- **Unowned:** None.
