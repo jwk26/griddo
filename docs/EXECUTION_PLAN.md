@@ -1276,7 +1276,7 @@ publish, or close the phase.
 
 **Commit contract:** Pool/Inbox/state-owner integration, the exact P23-03 popup visibility guard, tests, and Task 130 evidence only; `feat(triage): implement scratch pool base flow`.
 
-### Task 131: [ ] Add the durable candidate reactive boundary
+### Task 131: [x] Add the durable candidate reactive boundary
 
 **Files and actions:** create `src/hooks/use-staged-candidates.ts` and `.test.tsx` to subscribe to durable candidates, join authoritative Breakdown content, dispatch Task 121 Stage/Unstage and Task 122 confirmed-orphan commands, project pending/unknown separately from durable truth, and expose authoritative count/eligibility inputs. A cache/offline/delayed miss remains unresolved; it is neither a renderable candidate nor orphan proof. Import no candidate state from Zustand and sequence no component writes.
 

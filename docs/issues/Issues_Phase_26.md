@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–130 accepted; Task 131 implemented awaiting user review
+> State: Tasks 127–131 accepted; Task 132 not started
 
 ## Status Legend
 
@@ -269,7 +269,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `131` — add the durable candidate reactive boundary |
-| State | `Implemented` — focused/full evidence is green and user review is pending; canonical Task 131 marker remains `[ ]` |
+| State | `Accepted` — explicitly accepted by the user; canonical Task 131 marker is `[x]` |
 | Approved scope | Create `src/hooks/use-staged-candidates.ts` and `.test.tsx`; subscribe to durable candidates, join authoritative Breakdown content, dispatch the accepted Task 121 Stage/Unstage and Task 122 confirmed-orphan commands, keep pending/unknown projections separate from durable truth, expose authoritative counts/eligibility, and add no Zustand candidate authority, component write sequencing, speculative orphan cleanup, Task 132+, or unowned behavior |
 | Work order | User-approved Task 131-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -277,7 +277,7 @@ None at kickoff.
 | Dependencies | Tasks 121 and 122 are accepted, and their implementation/acceptance history is contained in the current recovery anchor |
 | Issues / deviations | None — both bounded repair cycles were ordinary in-scope TDD/review repairs; the full gate ran exactly once after final repair |
 | Canonical impact | `None` — Task 131 implements the already-reflected SPEC/SCHEMA/EXECUTION_PLAN durable-candidate boundary |
-| Next legal action | Stop at the Task 131 green checkpoint and await explicit user acceptance; do not write `[x]` or start Task 132 |
+| Next legal action | Stop after this acceptance-only commit and await separate user direction; do not start Task 132 |
 
 ## Task 131 Implementation Evidence
 
@@ -295,16 +295,17 @@ None at kickoff.
 | Diff ownership | `src/hooks/use-staged-candidates.ts` and `src/hooks/use-staged-candidates.test.tsx` only; no Zustand store, component, DataStore interface/implementation, Task 132+, canonical-plan, or unrelated path |
 | Issues / deviations | None |
 | Canonical impact | `None` — no canonical amendment or end-phase tag is required |
-| Acceptance boundary | Task 131 remains `[ ]`; no acceptance-only commit has been created and Task 132 has not started |
-| Next legal action | Await explicit user acceptance or targeted rejection at this Task 131 checkpoint |
+| User acceptance | `Task 131 checkpoint를 acceptance합니다.` after confirming the exact HEAD, direct durable-start → implementation → evidence ancestry, two-file production/test write set, marker/ledger/bucket consistency, `Issues / deviations: None`, `Canonical impact: None`, clean worktree, and unchanged candidate/receipt identity; existing verification evidence was not rerun |
+| Acceptance boundary | Task 131 only; Task 132 remains `[ ]` and was not started |
+| Next legal action | Stop after this acceptance-only commit and await separate user direction; do not start Task 132 |
 
 ### Task 131 Checkpoint Buckets
 
 - **Visible now:** None — Task 131 adds a nonvisual hook boundary and no component
   consumer is in scope.
-- **Review now:** Hook API and projections, delayed-source/orphan safety,
-  command-result handling, counts/eligibility, focused/full evidence, and user
-  acceptance of Task 131.
+- **Review now:** Accepted Task 131 hook API and projections,
+  delayed-source/orphan safety, command-result handling, counts/eligibility,
+  and focused/full evidence.
 - **Planned later:** Tasks 132–133 consume the base projections; Task 145 connects
   Stage/Unstage interaction locks and adapters; Task 146 owns remote candidate
   reconciliation and confirmed-orphan invocation; Task 163 removes the
