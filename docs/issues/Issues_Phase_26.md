@@ -464,12 +464,43 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `135` — build the dedicated whole-hierarchy Explorer query lifecycle |
-| State | `In Progress` — implementation has started; canonical Task 135 marker remains `[ ]` pending explicit user acceptance |
+| State | `Implemented` — green checkpoint awaiting explicit user review; canonical Task 135 marker remains `[ ]` |
 | Approved scope | Create only `src/lib/utils/grid-explorer-search.ts` and `.test.ts`, plus `src/hooks/use-grid-explorer-search.ts` and `.test.tsx`; implement active/reachable Node/Bit traversal from visible Home roots, exclusions, whitespace-AND matching, canonical rank/tie order, duplicate identity, and a mounted-page hook owning request identity/cancellation, loading/error/stale-response, reactive updates, active versus DnD-interrupted query, result scroll/focus/disappearance, and route-exit/reload reset; do not connect a UI consumer or global Search |
 | Work order | User-approved Task 135-only ad-hoc work order; the Gate C Task 127 receipt remains historical kickoff authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
 | Entrypoint / recovery anchor | `2a4dabc359cff0e5554a5a2c54593e031895dcd0` |
 | Dependencies | Task 101 and Tasks 127–134 are accepted and contained in the recovery anchor; current reactive Grid reads and `DataStore.getAllActiveNodes()` / `getAllActiveBits()` are present |
-| Issues / deviations | None |
+| Issues / deviations | None — implementation remained inside the approved four-file production/test scope; Tasks 133–134 canonical tags were not modified |
 | Canonical impact | `None` — Task 135 implements the already-reflected SPEC/EXECUTION_PLAN query-lifecycle contract; accepted Tasks 133–134 `Tagged` reconciliation remains end-phase-owned and unchanged |
-| Next legal action | Execute only Task 135 through its green checkpoint; keep Task 135 `[ ]`, do not start Task 136 or end-phase, and await explicit user acceptance |
+| Next legal action | Stop at the Task 135 green checkpoint and await explicit user acceptance or targeted rejection; keep Task 135 `[ ]`, and do not start Task 136, end-phase, publication, integration, or cleanup |
+
+## Task 135 Implementation Evidence
+
+| Field | Durable value |
+| --- | --- |
+| Durable start | `d0a752ba3597980057cdca91126f93ebfa003d33` — ledger-only `In Progress` signal committed before all four production/test files |
+| Implementation commit | `d3f7726322ac95f05d68e94d93f4c9beb5c8e4ac` — exactly the approved utility/hook and their tests |
+| RED evidence | Initial focused run exited `1`: both suites failed at import resolution because the approved production modules did not exist |
+| Repair cycles | Cycle 1 reached 8/10 passing and exposed one fixture expectation omission plus an actual active→interrupted request restart; cycle 2 fixed both and reached 10/10. Focused constraints then exposed one React 19 effect-state lint error, repaired by request-guarded asynchronous projection transitions. Final review added locale-independent normalization, query-change scroll reset, and direct stale-refresh retention evidence; no failure signature persisted twice |
+| Focused GREEN | Final utility/hook run exited `0`: 2 files and 10 tests passed; four-file target ESLint, `pnpm typecheck`, `git diff --check`, and the forbidden global Search dependency `rg` check all exited `0` |
+| Full gate | Exactly one post-final-repair serial sequence: `pnpm test` exited `0` (92 files, 743 tests); `pnpm lint` exited `0` with 0 errors and the unchanged 11 warnings; `pnpm typecheck` exited `0`; `pnpm build` exited `0` with Next.js 16.2.1, seven static routes and one dynamic route. No production/test input changed afterward |
+| Implemented behavior | Pure visible-Home-root traversal of active reachable Nodes/Bits only; Chunk-free archived/trashed/system/hidden/orphan exclusion; normalized whitespace-AND matching; canonical five-rank order and deterministic hierarchy ties; typed path/ancestor/icon/color/duplicate identity; mounted-page reactive subscription; AbortController plus request-ID stale protection; loading/refreshing/error/retry; active versus DnD-interrupted query; scroll/focus ownership and focused-result disappearance handoff; close/unmount/reload-local reset; no UI rendering or global Search dependency |
+| Review | Concrete findings repaired before the full gate: DnD interruption no longer restarts the same request; normalization no longer depends on runtime locale; query edits reset old result scroll while reactive refresh and interrupted reopen retain it; React effect state transitions satisfy the project lint rule. Final async/state/traversal/diff review found no remaining concrete Critical or Important Task 135 issue |
+| Diff ownership | Exactly `src/lib/utils/grid-explorer-search.ts`, `src/lib/utils/grid-explorer-search.test.ts`, `src/hooks/use-grid-explorer-search.ts`, and `src/hooks/use-grid-explorer-search.test.tsx`; no existing production/test file, UI consumer, global Search, Task 136+, or Task 151 body changed |
+| Issues / deviations | None |
+| Canonical impact | `None` — implementation matches the already-reflected Task 135 contract; Tasks 133–134 remain `Tagged` for end-phase reconciliation without modification here |
+| User acceptance | Pending explicit Task 135 checkpoint disposition; `[ ]` remains unchanged |
+| Acceptance boundary | Task 135 only; Task 136 and end-phase remain unstarted |
+| Next legal action | Stop and await explicit user acceptance or targeted feedback; do not write `[x]`, start Task 136/end-phase, push, publish, integrate, sync, or clean up |
+
+### Task 135 Checkpoint Buckets
+
+- **Visible now:** None — Task 135 is a headless query/lifecycle owner and no UI
+  consumer was connected in the approved scope.
+- **Review now:** Utility result API and rank/traversal semantics; hook request,
+  refresh, interruption, scroll/focus, disappearance, cancellation, and reset
+  semantics; focused/full verification and diff ownership.
+- **Planned later:** Task 151 owns the approved dedicated Explorer search body,
+  selection/reveal/close realization; Task 152 consumes headless search for
+  placement coordination; Task 158 owns search-result Undo integration.
+- **Unowned:** None.
