@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–128 accepted; Task 129 not started
+> State: Tasks 127–128 accepted; Task 129 in progress
 
 ## Status Legend
 
@@ -170,3 +170,17 @@ None at kickoff.
   143, 144, 147, 148, 150, 151, 153, 154, 157, 160, and 162 populate only
   their approved receipt-owned copy keys.
 - **Unowned:** None.
+
+## Task 129 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `129` — build the semantic four-area Inbox shell |
+| State | `In Progress` — implementation started; canonical Task 129 marker remains `[ ]` pending user acceptance |
+| Approved scope | Modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` plus `src/app/globals.css`; create `docs/verification/inbox-triage/task-129.md`; implement one semantic tree with visible Scratch Pool, Breakdown, Staging, and Grid Explorer identities, exact 60/40 main and top ratios, 35/65 Staging ratio, theme envelope/data-state roles, 1024px desktop minimum, hidden-scrollbar treatment, and stable focus landmarks; add no Explorer item labels, prototype state/handlers, Task 130 behavior, or later-task implementation |
+| Work order | User-approved Task 129-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
+| Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
+| Entrypoint / recovery anchor | `0079dc319e7f2ab16c3e9a14ff48c37c148bab4f` |
+| Dependency | Tasks 127–128 are accepted at the recovery anchor; existing canonical Inbox route dispatch is covered by focused runtime evidence and remains unchanged |
+| Issues / deviations | None |
+| Canonical impact | `None` — Task 129 implements the already-reflected SPEC/DESIGN_TOKENS/EXECUTION_PLAN shell boundary |
