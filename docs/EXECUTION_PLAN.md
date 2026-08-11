@@ -1324,7 +1324,7 @@ publish, or close the phase.
 
 **Commit contract:** Staging/token base, tests, and Task 133 evidence only; `feat(triage): render durable staging base`.
 
-### Task 134: [ ] Implement Explorer columns, full labels, session restoration, and remote anchoring
+### Task 134: [x] Implement Explorer columns, full labels, session restoration, and remote anchoring
 
 **Files and actions:** modify `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`. Move hierarchy path/open columns/column scroll to app-session ownership; render Home plus full ancestor/column labels; validate re-entry; anchor remote insertions by first visible stable ID plus offset; fall to nearest valid ancestor without sibling/ghost substitution; restore deterministic heading/ancestor focus; and close stale placement without write. Remove component-local abbreviated labels and active-column filtering, leaving the dedicated search body absent until Task 151.
 

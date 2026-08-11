@@ -415,7 +415,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `134` — implement Explorer columns, full labels, session restoration, and remote anchoring |
-| State | `Implemented` — green checkpoint awaiting explicit user review; canonical Task 134 marker remains `[ ]` |
+| State | `Accepted` — the user explicitly accepted the Task 134 checkpoint; canonical Task 134 marker is `[x]` |
 | Approved scope | Modify `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`; additionally modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` only to connect and test the existing `handlePlacementCancel` callback when Explorer validation invalidates a stale placement; create `docs/verification/inbox-triage/task-134.md` and Task 134 captures; implement app-session Explorer path/open-column/column-scroll ownership, full Home/ancestor/column labels, validated same-session restoration with reload-at-Home defaults, stable-ID/offset remote anchoring, nearest-valid-ancestor-only fallback, deterministic heading/ancestor focus, and stale-placement closure without write; remove component-local abbreviated labels and active-column filtering; add no `use-dnd.ts`, other workspace behavior, Task 135+, or Task 151 search body/query lifecycle |
 | Work order | User-approved Task 134-only ad-hoc work order; the Gate C Task 127 receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -423,7 +423,7 @@ None at kickoff.
 | Dependencies | Tasks 127–133 are accepted and contained in the recovery anchor; current reactive Grid reads are present |
 | Issues / deviations | Resolved by explicit user approval of the smallest bounded expansion: add only `triage-workspace.tsx` and `.test.tsx` callback wiring so Explorer invalidation invokes the existing `handlePlacementCancel`; no `use-dnd.ts`, other workspace behavior, mutation, Task 135+, or Task 151 work is authorized. The original four-file partial changes remain task-owned and preserved across this ledger-only resume signal. |
 | Canonical impact | `Tagged` — end-phase must add `src/components/triage/triage-workspace.tsx` and `.test.tsx` callback wiring to the canonical Task 134 file/action boundary in `docs/EXECUTION_PLAN.md`; reason: the component-only approved boundary could suppress stale target presentation but could not close the actual workspace-owned Placement Affordance state |
-| Next legal action | Stop at the Task 134 green checkpoint and await explicit user acceptance or targeted rejection; keep Tasks 134 and 135 `[ ]`, and do not push, publish, close the phase, or start later work |
+| Next legal action | Stop after the Task 134 acceptance-only commit and await separate user direction; keep Task 135 `[ ]` and unstarted, and do not push, publish, close the phase, or start later work |
 
 ## Task 134 Implementation Evidence
 
@@ -440,9 +440,9 @@ None at kickoff.
 | Diff ownership | Production/test changes are limited to `hierarchy-explorer.tsx` and test, `triage-store.ts` and test, plus the explicitly approved stale-callback-only changes in `triage-workspace.tsx` and test; evidence is limited to the Task 134 document and fourteen captures |
 | Issues / deviations | The recorded four-file scope blocker was resolved by explicit approval of the bounded two-file workspace callback expansion. Evidence used the same documented isolated Chrome CDP fallback as prior tasks because the in-app Browser Node REPL was unavailable. No `use-dnd.ts`, other workspace behavior, Task 135+, Task 151, publication, or integration change occurred |
 | Canonical impact | `Tagged` — end-phase must reflect `triage-workspace.tsx` and `.test.tsx` callback wiring in the canonical Task 134 file/action boundary because actual stale Placement Affordance state is workspace-owned |
-| User acceptance | Pending explicit Task 134 checkpoint disposition; `[ ]` remains unchanged |
-| Acceptance boundary | Task 134 only; Task 135 remains `[ ]` and unstarted |
-| Next legal action | Stop and await explicit user acceptance or targeted feedback; do not write `[x]`, start Task 135, push, publish, close the phase, integrate, or clean up |
+| User acceptance | Explicitly accepted by the user: `Task 134 checkpoint를 acceptance합니다.` Existing verification and runtime review were not rerun, per instruction |
+| Acceptance boundary | Task 134 only is accepted and marked `[x]`; Task 135 remains `[ ]` and unstarted |
+| Next legal action | Stop after the acceptance-only commit and await separate user direction; do not start Task 135, push, publish, close the phase, integrate, or clean up |
 
 ### Task 134 Checkpoint Buckets
 
