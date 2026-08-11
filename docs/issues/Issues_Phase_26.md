@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–128 accepted; Task 129 implemented and awaiting user acceptance
+> State: Tasks 127–129 accepted; Task 130 not started
 
 ## Status Legend
 
@@ -176,7 +176,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `129` — build the semantic four-area Inbox shell |
-| State | `Implemented` — green checkpoint prepared; canonical Task 129 marker remains `[ ]` pending user acceptance |
+| State | `Accepted` — explicitly accepted by the user; canonical Task 129 marker is `[x]` |
 | Approved scope | Modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` plus `src/app/globals.css`; create `docs/verification/inbox-triage/task-129.md`; implement one semantic tree with visible Scratch Pool, Breakdown, Staging, and Grid Explorer identities, exact 60/40 main and top ratios, 35/65 Staging ratio, theme envelope/data-state roles, 1024px desktop minimum, hidden-scrollbar treatment, and stable focus landmarks; add no Explorer item labels, prototype state/handlers, Task 130 behavior, or later-task implementation |
 | Work order | User-approved Task 129-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -200,8 +200,9 @@ None at kickoff.
 | Diff ownership | `src/components/triage/triage-workspace.tsx`, `.test.tsx`, `src/app/globals.css`, and `docs/verification/inbox-triage/task-129.md` plus its four captures; no route dispatcher, Explorer item-label owner, Task 130+, or unrelated path |
 | Issues / deviations | None |
 | Canonical impact | `None` — no canonical amendment or end-phase tag is required |
-| Acceptance boundary | Task 129 remains `[ ]`; Task 130 was not started |
-| Next legal action | Stop at this green checkpoint and request Task 129 user acceptance; do not write `[x]` or start Task 130 |
+| User acceptance | `Task 129 checkpoint를 acceptance합니다.` |
+| Acceptance boundary | Task 129 only; Task 130 remains `[ ]` and was not started |
+| Next legal action | Stop after this acceptance-only commit and await separate user direction; do not start Task 130 |
 
 ### Task 129 Checkpoint Buckets
 

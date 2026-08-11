@@ -1244,7 +1244,7 @@ publish, or close the phase.
 
 **Commit contract:** copy resource and its test only; `feat(triage): centralize inbox copy`.
 
-### Task 129: [ ] Build the semantic four-area Inbox shell
+### Task 129: [x] Build the semantic four-area Inbox shell
 
 **Files and actions:** modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` plus `src/app/globals.css` to implement one semantic tree with visible Scratch Pool, Breakdown, Staging, and Grid Explorer section identities; exact 60/40 main and 60/40 top ratios; theme envelope/data-state roles; desktop 1024px minimum; hidden-scrollbar treatment; and stable focus landmarks. Do not own Explorer item labels, which belong to Task 134, and do not copy prototype state/handlers.
 
