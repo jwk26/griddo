@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–131 accepted; Task 132 not started
+> State: Tasks 127–131 accepted; Task 132 in progress
 
 ## Status Legend
 
@@ -311,3 +311,18 @@ None at kickoff.
   reconciliation and confirmed-orphan invocation; Task 163 removes the
   deprecated Zustand compatibility candidate API after all consumers migrate.
 - **Unowned:** None.
+
+## Task 132 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `132` — implement Context and Breakdown base lifecycle |
+| State | `In Progress` — approved implementation has started; canonical Task 132 marker remains `[ ]` |
+| Approved scope | Modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx`, and `src/stores/triage-preferences-store.ts` and `.test.ts`; create Task 132 route evidence/captures; implement standalone Context, full title/time/sort, repository-backed active/staged/consumed-removal lifecycle, visible grip/Edit/Trash slots, and non-false never-used/all-deleted/ordinary/completion states; add no VQ editor/status behavior, staged-row interaction/strike-through, retained consumed row, Task 133+, or unowned behavior |
+| Work order | User-approved Task 132-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
+| Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
+| Entrypoint / recovery anchor | `05d1e39fa77588b0b90d66422eedffdd5586e00a` |
+| Dependencies | Task 120 and Tasks 127–131 are accepted, and their implementation/acceptance history is contained in the recovery anchor |
+| Issues / deviations | None |
+| Canonical impact | `None` — Task 132 implements the already-reflected SPEC/DESIGN_TOKENS/EXECUTION_PLAN Context and Breakdown base lifecycle |
+| Next legal action | Write failing Task 132 component/hook/preference tests, implement only the approved base lifecycle, complete focused and visible route evidence plus final repairs, then run the full gate exactly once and stop at the green checkpoint |
