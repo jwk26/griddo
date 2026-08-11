@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–131 accepted; Task 132 implemented and awaiting user acceptance
+> State: Tasks 127–132 accepted; Task 133 not started
 
 ## Status Legend
 
@@ -317,7 +317,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `132` — implement Context and Breakdown base lifecycle |
-| State | `Implemented` — green checkpoint reached and awaiting explicit user acceptance; canonical Task 132 marker remains `[ ]` |
+| State | `Accepted` — explicitly accepted by the user; canonical Task 132 marker is `[x]` |
 | Approved scope | Modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx`, and `src/stores/triage-preferences-store.ts` and `.test.ts`; create Task 132 route evidence/captures; implement standalone Context, full title/time/sort, repository-backed active/staged/consumed-removal lifecycle, visible grip/Edit/Trash slots, and non-false never-used/all-deleted/ordinary/completion states; add no VQ editor/status behavior, staged-row interaction/strike-through, retained consumed row, Task 133+, or unowned behavior |
 | Work order | User-approved Task 132-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -325,7 +325,7 @@ None at kickoff.
 | Dependencies | Task 120 and Tasks 127–131 are accepted, and their implementation/acceptance history is contained in the recovery anchor |
 | Issues / deviations | One prescribed-source disposition: `src/stores/triage-preferences-store.ts` is an intentional no-op because accepted Task 127 already supplies the exact independent persisted Breakdown-sort API; its test and Task 132 consumer are updated. The all-deleted evidence harness required one bounded repair from direct IndexedDB deletion to the visible Trash flow, and focused review repairs resolved full-title truncation, fail-open completion authority, cross-Scratch history loss, semantic-role coverage, ID tie-break coverage, and a ref-based lint failure before the full gate. These were ordinary in-scope repair cycles; no process deviation occurred, and the full gate ran exactly once after final repair. |
 | Canonical impact | `None` — Task 132 implements the already-reflected SPEC/DESIGN_TOKENS/EXECUTION_PLAN Context and Breakdown base lifecycle |
-| Next legal action | Stop at this green checkpoint and request explicit user acceptance; do not mark Task 132 `[x]`, create an acceptance-only commit, or start Task 133 without separate user instruction |
+| Next legal action | Stop after this acceptance-only commit and await the separately issued Task 133 prompt; do not start Task 133 |
 
 ## Task 132 Implementation Evidence
 
@@ -343,8 +343,9 @@ None at kickoff.
 | Diff ownership | Production/test changes are limited to `breakdown-panel.tsx` and test, `use-scratch-breakdowns.ts` and test, plus the preference-store test; `triage-preferences-store.ts` is the documented intentional no-op. Evidence is limited to the Task 132 document, twelve captures, and this Task 132 ledger record |
 | Issues / deviations | One prescribed-source no-op and bounded in-scope TDD/review/evidence repairs as recorded above; no premature/additional full gate and no unresolved product, scope, or process deviation |
 | Canonical impact | `None` — Task 132 implements the already-reflected SPEC/DESIGN_TOKENS/EXECUTION_PLAN contract without amendment |
-| Acceptance boundary | Task 132 remains `[ ]`; no acceptance-only commit, Task 133 work, publication, integration, or cleanup has started |
-| Next legal action | Await explicit user acceptance at this green checkpoint |
+| User acceptance | `Task 132 checkpoint를 acceptance합니다.` after confirming HEAD `5236400206da470f99d540b4ca148e04a063913d`, parent `f814b6c14c1c8adeb5ab9eff76c102e49518eed9`, the one-file targeted repair write set, reconciled ledger state, unchanged `[ ]` markers, clean worktree, and retained verification evidence; verification was not rerun |
+| Acceptance boundary | Task 132 is accepted and `[x]`; Task 133 remains `[ ]`, and no Task 133 work, publication, integration, or cleanup has started |
+| Next legal action | Await the separately issued Task 133 prompt; do not start Task 133 |
 
 ### Task 132 Checkpoint Buckets
 

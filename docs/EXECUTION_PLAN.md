@@ -1292,7 +1292,7 @@ publish, or close the phase.
 
 **Commit contract:** candidate hook/test only; `feat(triage): add reactive staged candidates`.
 
-### Task 132: [ ] Implement Context and Breakdown base lifecycle
+### Task 132: [x] Implement Context and Breakdown base lifecycle
 
 **Files and actions:** modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx`, and `src/stores/triage-preferences-store.ts` and `.test.ts`. Render standalone signature Context, full title/time/sort, active/staged/consumed-removal rows, grip/actions, and distinct never-used/all-deleted/ordinary/completion states from repository data and Task 131 projections. Staged rows remain disabled/non-struck; consumed rows leave active Breakdown; preserve visible Edit/Trash slots without implementing VQ editors/statuses.
 
