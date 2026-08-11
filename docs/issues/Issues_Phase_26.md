@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–129 accepted; Task 130 in progress
+> State: Tasks 127–129 accepted; Task 130 implemented and awaiting user acceptance
 
 ## Status Legend
 
@@ -221,7 +221,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `130` — implement Pool selection, tools, collapse, and re-entry |
-| State | `In Progress` — implementation started; canonical Task 130 marker remains `[ ]` pending explicit user acceptance |
+| State | `Implemented — awaiting user review` — green checkpoint reached; canonical Task 130 marker remains `[ ]` pending explicit user acceptance |
 | Approved scope | Modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/hooks/use-inbox.ts` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, `src/stores/triage-preferences-store.ts` and `.test.ts`, and `src/components/bit-detail/bit-detail-popup.tsx` and `.test.tsx`; create `docs/verification/inbox-triage/task-130.md` and its Task 130 captures; implement only the canonical Pool base flow and exact `P23-03` popup visibility guard; add no `VQ-01`, Pool `VQ-06`, Task 131+, or unowned behavior |
 | Work order | User-approved Task 130-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -229,4 +229,34 @@ None at kickoff.
 | Dependencies | Task 105A and Tasks 127–129 are accepted and ancestors of the recovery anchor |
 | Issues / deviations | None |
 | Canonical impact | `None` — Task 130 implements the already-reflected SPEC/SCHEMA/DESIGN_TOKENS/EXECUTION_PLAN and Scratch Pool recipe boundary |
-| Next legal action | Execute Task 130 tests, implementation, focused/runtime evidence, one relevant full gate, review, and implementation/evidence commits; stop at the green checkpoint with Task 130 `[ ]` |
+| Next legal action | Stop at the Task 130 green checkpoint and request explicit user acceptance; do not mark Task 130 `[x]` or start Task 131 |
+
+## Task 130 Implementation Evidence
+
+| Field | Durable value |
+| --- | --- |
+| Durable start commit | `f5964294be915b6eea979da9f744cde935bc2bcc` — ledger-only `In Progress` signal before production and test writes |
+| Implementation commit | `3eed3a9a1b29d3ec23f09d87dff7119e33dd5367` — Task 130 Pool base-flow code/tests, exact popup guard, route evidence, and six captures only |
+| RED evidence | The initial five-file focused run exited 1 with 12 expected failures and 54 existing tests passing; a subsequent popup review RED exited 1 with one expected unresolved-parent failure and 10 tests passing |
+| Focused GREEN | `pnpm exec vitest run src/components/triage/breakdown-panel.test.tsx src/components/triage/scratch-pool.test.tsx src/hooks/use-inbox.test.tsx src/stores/triage-store.test.ts src/stores/triage-preferences-store.test.ts src/components/bit-detail/bit-detail-popup.test.tsx` exited 0: 6 files, 98 tests |
+| Focused constraints | Targeted `eslint` for `use-inbox.ts`, `pnpm typecheck`, and `git diff --check` exited 0 after repair |
+| Full gate | The first full attempt passed tests (89 files, 707 tests), typecheck, and build but exposed one new `react-hooks/set-state-in-effect` lint error; after moving the readiness reset into the async Inbox-identity callback, the single post-repair `pnpm test && pnpm lint && pnpm typecheck && pnpm build` run exited 0: 89 files and 707 tests, 0 lint errors with unchanged 11 warnings, `tsc --noEmit` pass, and Next.js 16.2.1 seven-route build pass. The successful gate was not repeated after relevant inputs stabilized |
+| Visible evidence | `docs/verification/inbox-triage/task-130.md` plus six committed captures; populated, filtered, collapsed, re-entry, reload, persisted-sort, first-printable, focus, and true-empty behavior verified at `1024×768` and `1920×1080`, with zero console errors and no horizontal overflow |
+| Review | Repaired two concrete findings: unresolved parent identity could transiently expose Promote, and a synchronous readiness reset violated the React hooks lint rule. Promotion now fails closed until an ordinary non-Inbox parent is confirmed; no remaining concrete Task 130 finding |
+| Diff ownership | `scratch-pool`, `use-inbox`, `triage-store`, and `bit-detail-popup` source/tests; `triage-preferences-store.test.ts`; Task 130 evidence and captures. The Task 127 preference source already supplied the required persisted-sort API and was consumed unchanged. No `VQ-01`, Pool `VQ-06`, Task 131+, canonical-plan, or unrelated path |
+| Issues / deviations | None |
+| Canonical impact | `None` — no canonical amendment or end-phase tag is required |
+| Acceptance boundary | Task 130 remains `[ ]`; Task 131 was not started |
+| Next legal action | Await explicit user acceptance or targeted rejection feedback; do not create an acceptance-only commit without separate user instruction |
+
+### Task 130 Checkpoint Buckets
+
+- **Visible now:** canonical Inbox Scratch Pool populated, filtered, collapsed,
+  same-session re-entry, reload, persisted-sort, first-printable, focus, and
+  true-empty base states at the approved widths; defensive Promote visibility
+  guard.
+- **Review now:** Task 130 behavior, six captures, focused/full evidence, and
+  explicit user acceptance.
+- **Planned later:** Task 141 owns `VQ-01`; Task 144 owns Pool `VQ-06`; Task
+  131 and later tasks own their exact candidate and downstream surfaces.
+- **Unowned:** None.
