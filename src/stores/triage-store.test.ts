@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   type StagedCandidate,
   useTriageStore,
@@ -18,6 +18,14 @@ function createCandidate(
 beforeEach(() => {
   useTriageStore.setState({
     selectedScratchId: null,
+    scratchPoolExpanded: true,
+    scratchPoolManualExpandedForId: null,
+    scratchPoolQuery: "",
+    scratchPoolResultIds: [],
+    scratchPoolScroll: { anchorId: null, offset: 0 },
+    explorerPathIds: [],
+    explorerOpenColumnIds: [],
+    explorerColumnScroll: {},
     stagedCandidates: {},
   });
 });
@@ -25,7 +33,104 @@ beforeEach(() => {
 afterEach(() => {
   useTriageStore.setState({
     selectedScratchId: null,
+    scratchPoolExpanded: true,
+    scratchPoolManualExpandedForId: null,
+    scratchPoolQuery: "",
+    scratchPoolResultIds: [],
+    scratchPoolScroll: { anchorId: null, offset: 0 },
+    explorerPathIds: [],
+    explorerOpenColumnIds: [],
+    explorerColumnScroll: {},
     stagedCandidates: {},
+  });
+});
+
+describe("useTriageStore app-session ownership", () => {
+  it("owns exactly the approved session state plus deprecated candidate compatibility", () => {
+    expect(Object.keys(useTriageStore.getState()).sort()).toEqual([
+      "addStagedCandidate",
+      "clearScratchCandidates",
+      "clearSelection",
+      "explorerColumnScroll",
+      "explorerOpenColumnIds",
+      "explorerPathIds",
+      "removeStagedCandidate",
+      "scratchPoolExpanded",
+      "scratchPoolManualExpandedForId",
+      "scratchPoolQuery",
+      "scratchPoolResultIds",
+      "scratchPoolScroll",
+      "selectScratch",
+      "selectedScratchId",
+      "setExplorerColumnScroll",
+      "setExplorerOpenColumnIds",
+      "setExplorerPathIds",
+      "setScratchPoolExpanded",
+      "setScratchPoolManualExpandedForId",
+      "setScratchPoolQuery",
+      "setScratchPoolResultIds",
+      "setScratchPoolScroll",
+      "stagedCandidates",
+    ]);
+  });
+
+  it("retains Pool and Explorer context for same-session route re-entry", () => {
+    const store = useTriageStore.getState();
+
+    store.selectScratch("scratch-1");
+    store.setScratchPoolExpanded(false);
+    store.setScratchPoolQuery("project");
+    store.setScratchPoolResultIds(["scratch-2"]);
+    store.setScratchPoolScroll({ anchorId: "scratch-2", offset: 18 });
+    store.setExplorerPathIds(["node-1", "node-2"]);
+    store.setExplorerOpenColumnIds(["home", "node-1", "node-2"]);
+    store.setExplorerColumnScroll("node-1", {
+      anchorId: "node-3",
+      offset: 24,
+    });
+
+    expect(useTriageStore.getState()).toMatchObject({
+      selectedScratchId: "scratch-1",
+      scratchPoolExpanded: false,
+      scratchPoolQuery: "project",
+      scratchPoolResultIds: ["scratch-2"],
+      scratchPoolScroll: { anchorId: "scratch-2", offset: 18 },
+      explorerPathIds: ["node-1", "node-2"],
+      explorerOpenColumnIds: ["home", "node-1", "node-2"],
+      explorerColumnScroll: {
+        "node-1": { anchorId: "node-3", offset: 24 },
+      },
+    });
+  });
+
+  it("starts a new app session with deterministic Pool and Explorer defaults", async () => {
+    useTriageStore.setState({
+      selectedScratchId: "scratch-1",
+      scratchPoolExpanded: false,
+      scratchPoolQuery: "project",
+      scratchPoolResultIds: ["scratch-1"],
+      scratchPoolScroll: { anchorId: "scratch-1", offset: 12 },
+      explorerPathIds: ["node-1"],
+      explorerOpenColumnIds: ["home", "node-1"],
+      explorerColumnScroll: {
+        home: { anchorId: "node-1", offset: 8 },
+      },
+    });
+
+    vi.resetModules();
+    const { useTriageStore: reloadedStore } = await import("./triage-store");
+
+    expect(reloadedStore.getState()).toMatchObject({
+      selectedScratchId: null,
+      scratchPoolExpanded: true,
+      scratchPoolManualExpandedForId: null,
+      scratchPoolQuery: "",
+      scratchPoolResultIds: [],
+      scratchPoolScroll: { anchorId: null, offset: 0 },
+      explorerPathIds: [],
+      explorerOpenColumnIds: [],
+      explorerColumnScroll: {},
+    });
   });
 });
 
