@@ -1,0 +1,180 @@
+export const RECEIPT_COPY_UNAVAILABLE = Object.freeze({
+  status: "unavailable",
+  reason: "receipt-dependent",
+} as const);
+
+export type ReceiptCopyUnavailable = typeof RECEIPT_COPY_UNAVAILABLE;
+export type InboxTriageCopyValue = string | ReceiptCopyUnavailable;
+
+type ReceiptCopyTask =
+  | 138
+  | 140
+  | 141
+  | 143
+  | 144
+  | 147
+  | 148
+  | 150
+  | 151
+  | 153
+  | 154
+  | 157
+  | 160
+  | 162;
+
+export interface InboxTriageCopy {
+  readonly sectionNames: {
+    readonly scratchPool: string;
+    readonly breakdown: string;
+    readonly staging: string;
+    readonly stagingNodes: string;
+    readonly stagingBits: string;
+    readonly gridExplorer: string;
+  };
+  readonly baseActions: {
+    readonly add: string;
+    readonly edit: string;
+    readonly delete: string;
+    readonly save: string;
+    readonly cancel: string;
+    readonly clearSearch: string;
+    readonly expandScratchPool: string;
+    readonly collapseScratchPool: string;
+    readonly sortNewestFirst: string;
+    readonly sortOldestFirst: string;
+  };
+  readonly validation: {
+    readonly scratchTitleRequired: InboxTriageCopyValue;
+    readonly breakdownContentRequired: InboxTriageCopyValue;
+    readonly resultTitleRequired: InboxTriageCopyValue;
+    readonly resultTitleTooLong: InboxTriageCopyValue;
+  };
+  readonly lifecycleReasons: {
+    readonly externalScratchRemoval: InboxTriageCopyValue;
+    readonly poolLifecycleUpdate: InboxTriageCopyValue;
+    readonly stagingSourceUnavailable: InboxTriageCopyValue;
+    readonly explorerPathFallback: InboxTriageCopyValue;
+    readonly placementStale: InboxTriageCopyValue;
+    readonly undoUnavailable: InboxTriageCopyValue;
+    readonly completionWithdrawal: InboxTriageCopyValue;
+    readonly archiveRecovery: InboxTriageCopyValue;
+  };
+  readonly liveRegions: {
+    readonly inlineEditor: InboxTriageCopyValue;
+    readonly departure: InboxTriageCopyValue;
+    readonly externalRemoval: InboxTriageCopyValue;
+    readonly reliability: InboxTriageCopyValue;
+    readonly poolActivity: InboxTriageCopyValue;
+    readonly stagingActivity: InboxTriageCopyValue;
+    readonly success: InboxTriageCopyValue;
+    readonly explorerActivity: InboxTriageCopyValue;
+    readonly explorerSearch: InboxTriageCopyValue;
+    readonly placement: InboxTriageCopyValue;
+    readonly resultTitle: InboxTriageCopyValue;
+    readonly newlyPlacedUndo: InboxTriageCopyValue;
+    readonly completion: InboxTriageCopyValue;
+    readonly archive: InboxTriageCopyValue;
+  };
+  readonly accessibleNames: {
+    readonly scratchPool: string;
+    readonly breakdown: string;
+    readonly staging: string;
+    readonly stagingNodes: string;
+    readonly stagingBits: string;
+    readonly gridExplorer: string;
+    readonly searchScratches: string;
+    readonly clearPoolSearch: string;
+  };
+  readonly receiptDependent: Readonly<
+    Record<ReceiptCopyTask, ReceiptCopyUnavailable>
+  >;
+}
+
+const UNAVAILABLE = RECEIPT_COPY_UNAVAILABLE;
+
+export const INBOX_TRIAGE_COPY = {
+  sectionNames: {
+    scratchPool: "Scratch Pool",
+    breakdown: "Breakdown",
+    staging: "Staging",
+    stagingNodes: "Nodes",
+    stagingBits: "Bits",
+    gridExplorer: "Grid Explorer",
+  },
+  baseActions: {
+    add: "Add",
+    edit: "Edit",
+    delete: "Delete",
+    save: "Save",
+    cancel: "Cancel",
+    clearSearch: "Clear search",
+    expandScratchPool: "Expand Scratch Pool",
+    collapseScratchPool: "Collapse Scratch Pool",
+    sortNewestFirst: "Sort: newest first",
+    sortOldestFirst: "Sort: oldest first",
+  },
+  validation: {
+    scratchTitleRequired: UNAVAILABLE,
+    breakdownContentRequired: UNAVAILABLE,
+    resultTitleRequired: UNAVAILABLE,
+    resultTitleTooLong: UNAVAILABLE,
+  },
+  lifecycleReasons: {
+    externalScratchRemoval: UNAVAILABLE,
+    poolLifecycleUpdate: UNAVAILABLE,
+    stagingSourceUnavailable: UNAVAILABLE,
+    explorerPathFallback: UNAVAILABLE,
+    placementStale: UNAVAILABLE,
+    undoUnavailable: UNAVAILABLE,
+    completionWithdrawal: UNAVAILABLE,
+    archiveRecovery: UNAVAILABLE,
+  },
+  liveRegions: {
+    inlineEditor: UNAVAILABLE,
+    departure: UNAVAILABLE,
+    externalRemoval: UNAVAILABLE,
+    reliability: UNAVAILABLE,
+    poolActivity: UNAVAILABLE,
+    stagingActivity: UNAVAILABLE,
+    success: UNAVAILABLE,
+    explorerActivity: UNAVAILABLE,
+    explorerSearch: UNAVAILABLE,
+    placement: UNAVAILABLE,
+    resultTitle: UNAVAILABLE,
+    newlyPlacedUndo: UNAVAILABLE,
+    completion: UNAVAILABLE,
+    archive: UNAVAILABLE,
+  },
+  accessibleNames: {
+    scratchPool: "Scratch Pool",
+    breakdown: "Breakdown",
+    staging: "Staging",
+    stagingNodes: "Node staging zone",
+    stagingBits: "Bit staging zone",
+    gridExplorer: "Grid Explorer",
+    searchScratches: "Search scratches",
+    clearPoolSearch: "Clear search",
+  },
+  receiptDependent: {
+    138: UNAVAILABLE,
+    140: UNAVAILABLE,
+    141: UNAVAILABLE,
+    143: UNAVAILABLE,
+    144: UNAVAILABLE,
+    147: UNAVAILABLE,
+    148: UNAVAILABLE,
+    150: UNAVAILABLE,
+    151: UNAVAILABLE,
+    153: UNAVAILABLE,
+    154: UNAVAILABLE,
+    157: UNAVAILABLE,
+    160: UNAVAILABLE,
+    162: UNAVAILABLE,
+  },
+} as const satisfies InboxTriageCopy;
+
+export function isInboxTriageCopyAvailable(
+  value: InboxTriageCopyValue,
+): value is string {
+  return typeof value === "string";
+}
