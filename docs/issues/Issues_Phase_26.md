@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–130 accepted; Task 131 not started
+> State: Tasks 127–130 accepted; Task 131 in progress
 
 ## Status Legend
 
@@ -263,3 +263,18 @@ None at kickoff.
 - **Planned later:** Task 141 owns `VQ-01`; Task 144 owns Pool `VQ-06`; Task
   131 and later tasks own their exact candidate and downstream surfaces.
 - **Unowned:** None.
+
+## Task 131 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `131` — add the durable candidate reactive boundary |
+| State | `In Progress` — approved implementation has started; canonical Task 131 marker remains `[ ]` |
+| Approved scope | Create `src/hooks/use-staged-candidates.ts` and `.test.tsx`; subscribe to durable candidates, join authoritative Breakdown content, dispatch the accepted Task 121 Stage/Unstage and Task 122 confirmed-orphan commands, keep pending/unknown projections separate from durable truth, expose authoritative counts/eligibility, and add no Zustand candidate authority, component write sequencing, speculative orphan cleanup, Task 132+, or unowned behavior |
+| Work order | User-approved Task 131-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
+| Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
+| Entrypoint / recovery anchor | `3ba4d720080f17930133d791861cd4edab79f333` |
+| Dependencies | Tasks 121 and 122 are accepted, and their implementation/acceptance history is contained in the current recovery anchor |
+| Issues / deviations | None |
+| Canonical impact | `None` — Task 131 implements the already-reflected SPEC/SCHEMA/EXECUTION_PLAN durable-candidate boundary |
+| Next legal action | Write failing Task 131 hook tests, implement only the approved hook boundary, complete focused evidence and final repairs, then run the full gate exactly once and stop at the green checkpoint |
