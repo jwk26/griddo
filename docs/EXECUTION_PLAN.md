@@ -1340,7 +1340,7 @@ publish, or close the phase.
 
 **Commit contract:** Explorer base/state ownership, tests, and Task 134 evidence only; `feat(triage): build explorer session columns`.
 
-### Task 135: [ ] Build dedicated whole-hierarchy Explorer query lifecycle
+### Task 135: [x] Build dedicated whole-hierarchy Explorer query lifecycle
 
 **Files and actions:** create `src/lib/utils/grid-explorer-search.ts` and `.test.ts`; create `src/hooks/use-grid-explorer-search.ts` and `.test.tsx`. The pure utility traverses all active reachable Node/Bit descendants from every visible Home root; excludes Chunks, archived/trashed/system/hidden/unreachable items; uses whitespace AND matching and exact canonical rank/tie order; preserves type/path/ancestor identity for duplicates. The mounted-page hook owns request identity, cancellation, loading/error/stale response, reactive updates, active/interrupted query, result scroll/focus, and result disappearance. It never imports/extends `useSearch()` or `searchAll()` and renders no unsupported body.
 

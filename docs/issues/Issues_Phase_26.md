@@ -464,7 +464,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `135` — build the dedicated whole-hierarchy Explorer query lifecycle |
-| State | `Implemented` — green checkpoint awaiting explicit user review; canonical Task 135 marker remains `[ ]` |
+| State | `Accepted` — the user explicitly accepted the Task 135 checkpoint; canonical Task 135 marker is `[x]` |
 | Approved scope | Create only `src/lib/utils/grid-explorer-search.ts` and `.test.ts`, plus `src/hooks/use-grid-explorer-search.ts` and `.test.tsx`; implement active/reachable Node/Bit traversal from visible Home roots, exclusions, whitespace-AND matching, canonical rank/tie order, duplicate identity, and a mounted-page hook owning request identity/cancellation, loading/error/stale-response, reactive updates, active versus DnD-interrupted query, result scroll/focus/disappearance, and route-exit/reload reset; do not connect a UI consumer or global Search |
 | Work order | User-approved Task 135-only ad-hoc work order; the Gate C Task 127 receipt remains historical kickoff authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -472,7 +472,7 @@ None at kickoff.
 | Dependencies | Task 101 and Tasks 127–134 are accepted and contained in the recovery anchor; current reactive Grid reads and `DataStore.getAllActiveNodes()` / `getAllActiveBits()` are present |
 | Issues / deviations | None — implementation remained inside the approved four-file production/test scope; Tasks 133–134 canonical tags were not modified |
 | Canonical impact | `None` — Task 135 implements the already-reflected SPEC/EXECUTION_PLAN query-lifecycle contract; accepted Tasks 133–134 `Tagged` reconciliation remains end-phase-owned and unchanged |
-| Next legal action | Stop at the Task 135 green checkpoint and await explicit user acceptance or targeted rejection; keep Task 135 `[ ]`, and do not start Task 136, end-phase, publication, integration, or cleanup |
+| Next legal action | Stop after the Task 135 acceptance-only commit and await separate user direction; keep Task 136 `[ ]` and unstarted, and do not begin end-phase, publication, integration, or cleanup |
 
 ## Task 135 Implementation Evidence
 
@@ -489,9 +489,9 @@ None at kickoff.
 | Diff ownership | Exactly `src/lib/utils/grid-explorer-search.ts`, `src/lib/utils/grid-explorer-search.test.ts`, `src/hooks/use-grid-explorer-search.ts`, and `src/hooks/use-grid-explorer-search.test.tsx`; no existing production/test file, UI consumer, global Search, Task 136+, or Task 151 body changed |
 | Issues / deviations | None |
 | Canonical impact | `None` — implementation matches the already-reflected Task 135 contract; Tasks 133–134 remain `Tagged` for end-phase reconciliation without modification here |
-| User acceptance | Pending explicit Task 135 checkpoint disposition; `[ ]` remains unchanged |
-| Acceptance boundary | Task 135 only; Task 136 and end-phase remain unstarted |
-| Next legal action | Stop and await explicit user acceptance or targeted feedback; do not write `[x]`, start Task 136/end-phase, push, publish, integrate, sync, or clean up |
+| User acceptance | Explicitly accepted by the user: `Task 135 checkpoint를 acceptance합니다.` Existing verification was not rerun, per instruction |
+| Acceptance boundary | Task 135 only is accepted and marked `[x]`; Task 136 remains `[ ]`, and no Task 136 or end-phase work has started |
+| Next legal action | Stop after the acceptance-only commit and await separate user direction; do not start Task 136/end-phase, push, publish, integrate, sync, or clean up |
 
 ### Task 135 Checkpoint Buckets
 
