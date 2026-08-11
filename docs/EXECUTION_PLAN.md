@@ -1308,7 +1308,7 @@ publish, or close the phase.
 
 **Commit contract:** Context/Breakdown base, tests, and Task 132 evidence only; `feat(triage): build breakdown base surfaces`.
 
-### Task 133: [ ] Implement source-backed Staging base
+### Task 133: [x] Implement source-backed Staging base
 
 **Files and actions:** modify `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/components/triage/triage-drag-token.tsx` and `.test.tsx`. Render Task 131 candidates with visible Staging/Nodes/Bits identity, exact 35/65 split, stable createdAt DESC then ID order, count prefixes at 2+, quiet empty wells, independent hidden-scroll lists, distinct Node-card/Bit-row shapes, whole-root activation semantics, and compact pointer-centered overlay. No large empty cards, internal handles, primary click, permanent Unstage, or `VQ-06` state appearance.
 
