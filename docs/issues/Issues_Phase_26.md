@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–130 accepted; Task 131 in progress
+> State: Tasks 127–130 accepted; Task 131 implemented awaiting user review
 
 ## Status Legend
 
@@ -269,12 +269,44 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `131` — add the durable candidate reactive boundary |
-| State | `In Progress` — approved implementation has started; canonical Task 131 marker remains `[ ]` |
+| State | `Implemented` — focused/full evidence is green and user review is pending; canonical Task 131 marker remains `[ ]` |
 | Approved scope | Create `src/hooks/use-staged-candidates.ts` and `.test.tsx`; subscribe to durable candidates, join authoritative Breakdown content, dispatch the accepted Task 121 Stage/Unstage and Task 122 confirmed-orphan commands, keep pending/unknown projections separate from durable truth, expose authoritative counts/eligibility, and add no Zustand candidate authority, component write sequencing, speculative orphan cleanup, Task 132+, or unowned behavior |
 | Work order | User-approved Task 131-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
 | Entrypoint / recovery anchor | `3ba4d720080f17930133d791861cd4edab79f333` |
 | Dependencies | Tasks 121 and 122 are accepted, and their implementation/acceptance history is contained in the current recovery anchor |
-| Issues / deviations | None |
+| Issues / deviations | None — both bounded repair cycles were ordinary in-scope TDD/review repairs; the full gate ran exactly once after final repair |
 | Canonical impact | `None` — Task 131 implements the already-reflected SPEC/SCHEMA/EXECUTION_PLAN durable-candidate boundary |
-| Next legal action | Write failing Task 131 hook tests, implement only the approved hook boundary, complete focused evidence and final repairs, then run the full gate exactly once and stop at the green checkpoint |
+| Next legal action | Stop at the Task 131 green checkpoint and await explicit user acceptance; do not write `[x]` or start Task 132 |
+
+## Task 131 Implementation Evidence
+
+| Field | Durable value |
+| --- | --- |
+| Durable start commit | `84ac49e27b267017857719d5fc7c61228c1587c8` — ledger-only `In Progress` signal before Task 131 test and production writes |
+| Implementation commit | `6ee8d4ace2172713ccb95e1c85bfe87d10899e89` — exactly the Task 131 candidate hook and test |
+| RED evidence | Required `pnpm test -- src/hooks/use-staged-candidates.test.tsx` exited 1 because the hook module was absent; the new file failed to import while 89 existing files and 707 existing tests passed. Review RED later ran the directly selected file and exited 1 with exactly one pending-count failure while 11 tests passed |
+| Repair cycles | Cycle 1 connected the test's prepared Dexie `liveQuery` harness after five subscription-derived failures; Cycle 2 repaired the concrete review finding where a Stage begun before the initial subscription snapshot was absent from visible type counts. No assertion/error signature persisted for two consecutive cycles and each failure set shrank to zero |
+| Focused GREEN | Direct selected-target `pnpm exec vitest run src/hooks/use-staged-candidates.test.tsx` exited 0: 1 file, 12 tests. The exact plan command `pnpm test -- src/hooks/use-staged-candidates.test.tsx` also exited 0 after final repair; under this package script it executed 90 files and 719 tests |
+| Focused constraints | `pnpm typecheck`, `git diff --check`, and targeted ESLint over the Task 131 hook/test exited 0 after final repair |
+| Full gate | Exactly one post-final-repair serial sequence: `pnpm test` exited 0 (90 files, 719 tests); `pnpm lint` exited 0 with 0 errors and the unchanged 11 pre-existing warnings; `pnpm typecheck` exited 0; `pnpm build` exited 0 with Next.js 16.2.1 and seven routes |
+| Implemented behavior | Reactive durable candidate/source subscription reconstructs across remount and reflects authoritative source edits; missing/mismatched/consumed sources remain unresolved and non-renderable without cleanup; repository Stage/Unstage/confirmed-orphan execute/reconcile calls preserve all terminal result families and keep pending/unknown projections outside durable truth; authoritative/renderable/type/visible counts and staged-source/archive inputs are exposed |
+| Review | One concrete finding was repaired before the full gate: when initial subscription delivery was delayed, a pending Stage was omitted from visible type counts. The pending projection now counts independently of the first durable snapshot. No remaining concrete Task 131 finding |
+| Diff ownership | `src/hooks/use-staged-candidates.ts` and `src/hooks/use-staged-candidates.test.tsx` only; no Zustand store, component, DataStore interface/implementation, Task 132+, canonical-plan, or unrelated path |
+| Issues / deviations | None |
+| Canonical impact | `None` — no canonical amendment or end-phase tag is required |
+| Acceptance boundary | Task 131 remains `[ ]`; no acceptance-only commit has been created and Task 132 has not started |
+| Next legal action | Await explicit user acceptance or targeted rejection at this Task 131 checkpoint |
+
+### Task 131 Checkpoint Buckets
+
+- **Visible now:** None — Task 131 adds a nonvisual hook boundary and no component
+  consumer is in scope.
+- **Review now:** Hook API and projections, delayed-source/orphan safety,
+  command-result handling, counts/eligibility, focused/full evidence, and user
+  acceptance of Task 131.
+- **Planned later:** Tasks 132–133 consume the base projections; Task 145 connects
+  Stage/Unstage interaction locks and adapters; Task 146 owns remote candidate
+  reconciliation and confirmed-orphan invocation; Task 163 removes the
+  deprecated Zustand compatibility candidate API after all consumers migrate.
+- **Unowned:** None.
