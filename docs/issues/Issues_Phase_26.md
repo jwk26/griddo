@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Tasks 127–132 accepted; Task 133 in progress
+> State: Tasks 127–132 accepted; Task 133 implemented awaiting user review
 
 ## Status Legend
 
@@ -365,7 +365,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `133` — implement source-backed Staging base |
-| State | `In Progress` — scope expansion approved; this ledger-only start signal precedes every Task 133 production/test write |
+| State | `Implemented` — green checkpoint awaiting explicit user review; canonical Task 133 marker remains `[ ]` |
 | Approved scope | Modify `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/components/triage/triage-drag-token.tsx` and `.test.tsx`, plus `src/components/triage/triage-workspace.tsx` and `.test.tsx`; the added workspace scope is limited to projecting Task 131 authoritative counts into the existing Nodes/Bits headings while preserving IDs, semantics, focus structure, and the 35/65 layout; Task-owned evidence and this ledger record are allowed; implement no other shell, Task 134+, or unowned behavior |
 | Work order | User-approved Task 133-only ad-hoc work order; the Gate C Task 127 receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -375,4 +375,35 @@ None at kickoff.
 | Writes / verification | Before this durable start signal, no production, test, or Task 133 evidence-capture file was changed and no RED/focused/full gate or runtime/visual review was run; no premature or additional full-gate sequence occurred |
 | Issues / deviations | The scope/contract conflict is resolved by the approved bounded scope expansion; no implementation or process deviation has occurred |
 | Canonical impact | `Tagged` — end-phase must reconcile the user-approved Task 133 `triage-workspace.tsx` / test expansion into the Task 133 file/action boundary in `docs/EXECUTION_PLAN.md`; no current canonical file is modified by this ad-hoc work order |
-| Next legal action | Commit this ledger-only `In Progress` signal, then execute Task 133 with TDD inside the expanded scope; do not start Task 134 |
+| Next legal action | Present the Task 133 green checkpoint and await explicit user acceptance or targeted rejection; do not mark `[x]` or start Task 134 |
+
+## Task 133 Implementation Evidence
+
+| Field | Durable value |
+| --- | --- |
+| Durable start commit | `6ef38a499599698837beb97a1b9aaf80a61974f8` — ledger-only scope expansion, blocker disposition, `Tagged` impact, and `In Progress` signal before every production/test write |
+| Implementation commit | `bf872fe84c7e9ac14473547462292c7c05a1bdfa` — exactly the six approved Task 133 production/test files, Task 133 evidence document, and twelve captures |
+| RED evidence | Initial selected run exited `1` with eight expected failures and 28 passes; accessibility review RED failed the missing focus/touch/reduced-motion classes; runtime review found overflow wells expanding from `370px` / `557px` to `1138px` / `1316px`, and the focused containment expectation failed before repair |
+| Repair cycles | Replaced deprecated Zustand candidates with current Task 131 source joins; removed large empty cards; added deterministic `createdAt DESC` then ID ordering, stable whole-root drag/focus treatment, compact bounded token, authoritative count headings, and size-contained hidden scroll. Two pre-runtime CDP harness setup failures and one focus/scroll measurement-order correction changed evidence tooling only; no production/test input or full gate was involved |
+| Focused GREEN | Final selected run exited `0`: three files and 36 tests passed; target-path ESLint, `pnpm typecheck`, and `git diff --check` exited `0` after the final repair |
+| Full gate | Exactly one post-final-repair serial sequence: `pnpm test` exited `0` (90 files, 733 tests); `pnpm lint` exited `0` with 0 errors and the unchanged 11 warnings; `pnpm typecheck` exited `0`; `pnpm build` exited `0` with Next.js 16.2.1 and seven routes. No relevant production/test input changed afterward |
+| Implemented behavior | Task 131 durable candidates and remote source content; exact Node/Bit type projection; `createdAt DESC` then ID order; bare headings at zero/one and count-prefixed headings at two or more; quiet empty wells; stable `35/65`; independently bounded hidden-scroll zones; square icon-centered Node cards and text Bit rows; whole-root drag semantics without internal grip or primary-click mutation; compact pointer-centered type tokens; no permanent Unstage or `VQ-06` appearance |
+| Visible evidence | `docs/verification/inbox-triage/task-133.md` plus twelve `1024×768` / `1920×1080` captures covering empty, one, multi, overflow, Node token, and Bit token states; exact counts/order, `0.5384` measured 35/65 ratio, fixed well heights, bottom reachability, hidden scrollbar chrome, focus, mutation-free click, token geometry, zero horizontal overflow, and zero runtime console errors were verified |
+| Review | Adopted-recipe and Web Interface Guidelines review found missing whole-root focus/touch/reduced-motion treatment and the runtime panel-resize defect; both were repaired before the full gate. Final bounded source/diff/visual review found no remaining concrete Critical or Important Task 133 issue |
+| Diff ownership | Production/test changes are limited to `staging-zone.tsx` and test, `triage-drag-token.tsx` and test, plus the user-approved count-heading-only changes in `triage-workspace.tsx` and test; evidence is limited to the Task 133 document, twelve captures, and this ledger record |
+| Issues / deviations | The recorded scope blocker was resolved by explicit Option 1 approval. Evidence-harness setup/measurement repairs and the in-scope runtime repair are fully recorded; no premature/additional full gate or unresolved product, scope, or process deviation occurred |
+| Canonical impact | `Tagged` — end-phase must reconcile the user-approved `triage-workspace.tsx` / test scope expansion into the canonical Task 133 file/action boundary; no other canonical amendment is required |
+| Acceptance boundary | Task 133 remains `[ ]`; Task 134, publication, integration, and cleanup have not started |
+
+### Task 133 Checkpoint Buckets
+
+- **Visible now:** Source-backed Staging with quiet empty wells, exact Node/Bit
+  shapes, stable order/count headings, fixed 35/65 layout, independent hidden
+  scroll reachability, whole-root pointer drag, and compact type tokens.
+- **Review now:** Task 131 projection consumption, count-prefix semantics,
+  deterministic ordering, focus/click behavior, overflow containment, focused/
+  full verification, and two-width route captures.
+- **Planned later:** Task 134 owns Explorer base; Task 145 owns repository-backed
+  Stage/Unstage mutation locks and adapters; Task 147 alone owns Staging
+  `VQ-06` status appearance.
+- **Unowned:** None.
