@@ -1228,7 +1228,7 @@ publish, or close the phase.
 
 **Commit contract:** the two state owners and tests only; `feat(triage): establish inbox state lifetimes`.
 
-### Task 128: [ ] Create the single core-English copy owner
+### Task 128: [x] Create the single core-English copy owner
 
 **Files and actions:** create `src/lib/copy/inbox-triage.ts` and `.test.ts` with typed keys for source-approved section names, base actions, validation, lifecycle reasons, live regions, and accessible names. Represent each unresolved receipt-dependent key as explicitly unavailable—never inferred text. Components may import only this owner for new Inbox/Triage system wording. Tasks 138, 140, 141, 143, 144, 147, 148, 150, 151, 153, 154, 157, 160, and 162 populate only their accepted receipt keys under the `copy` mutex.
 

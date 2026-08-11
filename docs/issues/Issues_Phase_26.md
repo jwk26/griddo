@@ -3,7 +3,7 @@
 > Branch: `phase-26/lifetime-copy-base-surfaces`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-26-lifetime-copy-base-surfaces`
 > Kickoff date: 2026-08-11
-> State: Task 127 accepted; Task 128 not started
+> State: Tasks 127–128 accepted; Task 129 not started
 
 ## Status Legend
 
@@ -133,7 +133,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `128` — create the single core-English copy owner |
-| State | `Implemented` — awaiting user review; canonical Task 128 marker remains `[ ]` pending user acceptance |
+| State | `Accepted` — explicitly accepted by the user; canonical Task 128 marker is `[x]` |
 | Approved scope | Create `src/lib/copy/inbox-triage.ts` and `.test.ts`; provide typed source-approved base copy and explicitly unavailable receipt-dependent keys; add no component consumer, locale provider/toggle, Task 129 shell, or later-task behavior |
 | Work order | User-approved Task 128-only ad-hoc work order; the Gate C Task 127 first-batch receipt remains historical authority and is not widened |
 | Approved base | `f91bf0529961541d9b7fa1645ee3aded081eaea3` |
@@ -156,7 +156,9 @@ None at kickoff.
 | Diff ownership | `src/lib/copy/inbox-triage.ts` and `src/lib/copy/inbox-triage.test.ts`; no component, locale, Task 129+, or unrelated path |
 | Issues / deviations | None |
 | Canonical impact | `None` — no canonical amendment or end-phase tag is required |
-| User acceptance | Pending — stop at the Task 128 green checkpoint; do not write `[x]` or start Task 129 |
+| User acceptance | `Task 128 checkpoint를 acceptance합니다.` |
+| Acceptance boundary | Task 128 only; Task 129 remains `[ ]` and was not started |
+| Next legal action | Stop after this acceptance-only commit and await separate user direction; do not start Task 129 |
 
 ### Task 128 Checkpoint Buckets
 
