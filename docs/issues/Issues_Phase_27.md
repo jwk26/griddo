@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: kickoff green; Task 136 not started
+> State: Task 136 in progress; durable start recorded
 
 ## Status Legend
 
@@ -90,8 +90,13 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `136` — connect headless Add and Delete interaction behavior |
-| State | Not started; remains `[ ]` |
+| State | `In Progress`; remains `[ ]` pending explicit user acceptance |
+| Approved scope | Gate C `task_scope.task_136` plus the explicit Task 136-only user approval; only the listed Breakdown, Workspace, Pool, scratch-breakdown hook/tests, new operation-lock hook/tests, and Task 136 verification evidence |
+| Kickoff receipt | `docs/issues/Issues_Phase_27.gate-c.json` at Git blob `08c7a5e524f7a89bd10adc5cea71963f54870d38` |
+| Start base / recovery anchor | `f10638ce84c4503c88dc8212c46431f91f709e34` |
 | Dependencies | Accepted Tasks 120, 128, 130, and 132 are ancestors of the approved base |
 | Deferred ownership | `P23-02` is included only in Task 136 hook/test replacement scope |
 | Visual boundary | Headless only; Task 143 owns `DP-VQ05` Add/Delete reliability realization |
-| Next legal action | Fresh candidate-pinned `$run-task` session for Task 136 only |
+| Issues / deviations | None |
+| Canonical impact | `None` — implementation-local; no canonical document change is authorized or required |
+| Next legal action | Execute and verify Task 136 only; stop at its green checkpoint |
