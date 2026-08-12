@@ -23,6 +23,10 @@ import {
 } from "@/hooks/use-dnd";
 import { useStagedCandidates } from "@/hooks/use-staged-candidates";
 import {
+  TriageOperationLockContext,
+  useTriageOperationLock,
+} from "@/hooks/use-triage-operation-lock";
+import {
   getTriageRemoveDropId,
   triageCollisionDetection,
   type TriageDropData,
@@ -112,6 +116,22 @@ function TriageRemoveDropTarget({
 }
 
 export function TriageWorkspace({ node }: { node: Node }) {
+  const operationLock = useTriageOperationLock();
+
+  return (
+    <TriageOperationLockContext.Provider value={operationLock}>
+      <TriageWorkspaceContent node={node} operationLock={operationLock} />
+    </TriageOperationLockContext.Provider>
+  );
+}
+
+function TriageWorkspaceContent({
+  node,
+  operationLock,
+}: {
+  node: Node;
+  operationLock: ReturnType<typeof useTriageOperationLock>;
+}) {
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
   const { counts: stagedCandidateCounts } =
     useStagedCandidates(selectedScratchId);
@@ -142,6 +162,7 @@ export function TriageWorkspace({ node }: { node: Node }) {
       className="triage-shell flex h-full min-h-0 w-full overflow-hidden bg-background"
       data-min-viewport="1024px"
       data-testid="triage-workspace"
+      data-triage-operation-kind={operationLock.activeOperation?.kind}
       data-triage-role="shell-background"
       data-triage-state="default"
     >

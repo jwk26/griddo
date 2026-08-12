@@ -17,6 +17,7 @@ import {
   useState,
 } from "react";
 import { useInbox } from "@/hooks/use-inbox";
+import { useTriageOperationLockContext } from "@/hooks/use-triage-operation-lock";
 import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils/relative-time";
@@ -97,6 +98,7 @@ function ScratchRow({
 }
 
 export function ScratchPool() {
+  const { isLocked } = useTriageOperationLockContext();
   const { activeScratchBits } = useInbox();
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
   const selectScratch = useTriageStore((state) => state.selectScratch);
@@ -201,9 +203,10 @@ export function ScratchPool() {
 
   const handleSelect = useCallback(
     (id: string) => {
+      if (isLocked()) return;
       selectScratch(id);
     },
-    [selectScratch],
+    [isLocked, selectScratch],
   );
 
   const handleSortToggle = useCallback(

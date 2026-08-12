@@ -1,6 +1,10 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { DataStore } from "@/lib/db/datastore";
+import type {
+  AddBreakdownCommand,
+  DataStore,
+  DeleteBreakdownCommand,
+} from "@/lib/db/datastore";
 import type { ScratchBreakdown } from "@/lib/db/schema";
 import type { CreatedAtSortDirection } from "@/stores/triage-preferences-store";
 import { useScratchBreakdowns } from "./use-scratch-breakdowns";
@@ -59,15 +63,37 @@ function createDataStore() {
       unconsumedCount: 0,
       stagedCandidateCount: 0,
     }),
-    createScratchBreakdown: vi.fn().mockResolvedValue(undefined),
-    deleteScratchBreakdown: vi.fn().mockResolvedValue(undefined),
-    deleteScratchBreakdownsByScratch: vi.fn().mockResolvedValue(undefined),
+    addBreakdown: vi.fn(),
+    reconcileAddBreakdown: vi.fn(),
+    deleteBreakdown: vi.fn(),
+    reconcileDeleteBreakdown: vi.fn(),
   } as unknown as DataStore & {
     getScratchBreakdowns: ReturnType<typeof vi.fn>;
     getScratchArchiveEligibility: ReturnType<typeof vi.fn>;
-    createScratchBreakdown: ReturnType<typeof vi.fn>;
-    deleteScratchBreakdown: ReturnType<typeof vi.fn>;
-    deleteScratchBreakdownsByScratch: ReturnType<typeof vi.fn>;
+    addBreakdown: ReturnType<typeof vi.fn>;
+    reconcileAddBreakdown: ReturnType<typeof vi.fn>;
+    deleteBreakdown: ReturnType<typeof vi.fn>;
+    reconcileDeleteBreakdown: ReturnType<typeof vi.fn>;
+  };
+}
+
+function addCommand(): AddBreakdownCommand {
+  return {
+    operationId: "11111111-1111-4111-8111-111111111111",
+    breakdownId: "22222222-2222-4222-8222-222222222222",
+    scratchBitId: "33333333-3333-4333-8333-333333333333",
+    scratchExpectedVersion: 4,
+    content: "first note",
+  };
+}
+
+function deleteCommand(): DeleteBreakdownCommand {
+  return {
+    operationId: "44444444-4444-4444-8444-444444444444",
+    breakdownId: "55555555-5555-4555-8555-555555555555",
+    expectedVersion: 2,
+    scratchBitId: "33333333-3333-4333-8333-333333333333",
+    scratchExpectedVersion: 4,
   };
 }
 
@@ -145,56 +171,135 @@ describe("useScratchBreakdowns", () => {
     expect(result.current.breakdowns).toEqual(rows);
   });
 
-  it("creates the first breakdown at order zero", async () => {
-    const { result } = renderHook(() => useScratchBreakdowns("scratch-1"));
+  it("dispatches the authoritative Add command and retains its terminal state slot", async () => {
+    const command = addCommand();
+    dataStore.addBreakdown.mockResolvedValue({
+      operationId: command.operationId,
+      status: "applied",
+      breakdown: null,
+      scratch: null,
+    });
+    const { result } = renderHook(() =>
+      useScratchBreakdowns(command.scratchBitId),
+    );
 
     await waitFor(() => {
-      expect(dataStore.getScratchBreakdowns).toHaveBeenCalledWith("scratch-1");
+      expect(dataStore.getScratchBreakdowns).toHaveBeenCalledWith(
+        command.scratchBitId,
+      );
     });
 
     await act(async () => {
-      await result.current.createBreakdown("first note");
+      await expect(result.current.addBreakdown(command)).resolves.toMatchObject({
+        status: "applied",
+      });
     });
 
-    expect(dataStore.createScratchBreakdown).toHaveBeenCalledWith({
-      scratchBitId: "scratch-1",
-      content: "first note",
-      order: 0,
-    });
+    expect(dataStore.addBreakdown).toHaveBeenCalledWith(command);
+    expect(result.current.operations).toEqual([
+      expect.objectContaining({
+        kind: "add",
+        operationId: command.operationId,
+        phase: "terminal",
+        status: "applied",
+      }),
+    ]);
   });
 
-  it("creates the next breakdown after the current max order", async () => {
-    const rows = [
-      createScratchBreakdown({ id: "row-1", order: 0 }),
-      createScratchBreakdown({ id: "row-2", order: 2 }),
-    ];
-    const { result } = renderHook(() => useScratchBreakdowns("scratch-1"));
-
-    await waitFor(() => {
-      expect(dataStore.getScratchBreakdowns).toHaveBeenCalledWith("scratch-1");
+  it("preserves an unknown Add identity and reconciles without resending Add", async () => {
+    const command = addCommand();
+    dataStore.addBreakdown.mockRejectedValue(new Error("unknown transport outcome"));
+    dataStore.reconcileAddBreakdown.mockResolvedValue({
+      operationId: command.operationId,
+      status: "not_applied",
+      breakdown: null,
+      scratch: null,
     });
-    emitBreakdowns(rows);
+    const { result } = renderHook(() =>
+      useScratchBreakdowns(command.scratchBitId),
+    );
 
     await act(async () => {
-      await result.current.createBreakdown("third note");
+      await expect(result.current.addBreakdown(command)).resolves.toEqual({
+        operationId: command.operationId,
+        outcome: "unknown",
+      });
+    });
+    expect(result.current.operations).toEqual([
+      expect.objectContaining({ phase: "unknown", operationId: command.operationId }),
+    ]);
+
+    await act(async () => {
+      await expect(
+        result.current.reconcileAddBreakdown(command),
+      ).resolves.toMatchObject({ status: "not_applied" });
     });
 
-    expect(dataStore.createScratchBreakdown).toHaveBeenCalledWith({
-      scratchBitId: "scratch-1",
-      content: "third note",
-      order: 3,
-    });
+    expect(dataStore.addBreakdown).toHaveBeenCalledTimes(1);
+    expect(dataStore.reconcileAddBreakdown).toHaveBeenCalledWith(command);
+    expect(result.current.operations).toEqual([
+      expect.objectContaining({ phase: "terminal", status: "not_applied" }),
+    ]);
   });
 
-  it("deletes a single breakdown by id", async () => {
+  it("dispatches and reconciles the authoritative Delete command identity", async () => {
+    const command = deleteCommand();
+    dataStore.deleteBreakdown.mockRejectedValue(new Error("unknown transport outcome"));
+    dataStore.reconcileDeleteBreakdown.mockResolvedValue({
+      operationId: command.operationId,
+      status: "applied",
+      breakdown: null,
+      candidate: null,
+      scratch: null,
+    });
     const { result } = renderHook(() => useScratchBreakdowns("scratch-1"));
 
     await act(async () => {
-      await result.current.deleteBreakdown("row-2");
+      await expect(result.current.deleteBreakdown(command)).resolves.toEqual({
+        operationId: command.operationId,
+        outcome: "unknown",
+      });
+      await expect(
+        result.current.reconcileDeleteBreakdown(command),
+      ).resolves.toMatchObject({ status: "applied" });
     });
 
-    expect(dataStore.deleteScratchBreakdown).toHaveBeenCalledWith("row-2");
-    expect(dataStore.deleteScratchBreakdownsByScratch).not.toHaveBeenCalled();
+    expect(dataStore.deleteBreakdown).toHaveBeenCalledWith(command);
+    expect(dataStore.reconcileDeleteBreakdown).toHaveBeenCalledWith(command);
+  });
+
+  it("retains the Delete source snapshot when reactive truth disappears during an unknown outcome", async () => {
+    const command = deleteCommand();
+    const source = createScratchBreakdown({
+      id: command.breakdownId,
+      scratchBitId: command.scratchBitId,
+      content: "Retained source",
+      version: command.expectedVersion,
+    });
+    dataStore.deleteBreakdown.mockRejectedValue(
+      new Error("commit may have applied before transport failed"),
+    );
+    const { result } = renderHook(() =>
+      useScratchBreakdowns(command.scratchBitId),
+    );
+    emitBreakdowns([source], false, command.scratchBitId);
+
+    await act(async () => {
+      await expect(result.current.deleteBreakdown(command)).resolves.toEqual({
+        operationId: command.operationId,
+        outcome: "unknown",
+      });
+    });
+    emitBreakdowns([], false, command.scratchBitId);
+
+    expect(result.current.operations).toEqual([
+      expect.objectContaining({
+        kind: "delete",
+        phase: "unknown",
+        sourceSnapshot: source,
+      }),
+    ]);
+    expect(result.current.breakdowns).toEqual([source]);
   });
 
   it.each([

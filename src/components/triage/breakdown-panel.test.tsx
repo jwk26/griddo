@@ -18,6 +18,11 @@ const hookState = vi.hoisted(() => ({
   createBreakdown: vi.fn(),
   deleteBreakdown: vi.fn(),
 }));
+const operationLockState = vi.hoisted(() => ({
+  activeOperation: null as null | { kind: "add" | "delete"; operationId: string },
+  acquire: vi.fn(),
+  release: vi.fn(),
+}));
 const clearSelectionMock = vi.hoisted(() => vi.fn());
 const triageStoreState = vi.hoisted(() => ({
   selectedScratchId: null as string | null,
@@ -53,6 +58,13 @@ vi.mock("@/hooks/use-inbox", () => ({
 
 vi.mock("@/hooks/use-staged-candidates", () => ({
   useStagedCandidates: useStagedCandidatesMock,
+}));
+
+vi.mock("@/hooks/use-triage-operation-lock", () => ({
+  useTriageOperationLockContext: () => ({
+    ...operationLockState,
+    isLocked: () => operationLockState.activeOperation !== null,
+  }),
 }));
 
 vi.mock("@/stores/triage-store", () => ({
@@ -103,8 +115,32 @@ function createBit(overrides: Partial<Bit> = {}): Bit {
 beforeEach(() => {
   vi.spyOn(Date, "now").mockReturnValue(currentTime);
   hookState.breakdownsByScratch = {};
-  hookState.createBreakdown.mockResolvedValue(undefined);
-  hookState.deleteBreakdown.mockResolvedValue(undefined);
+  hookState.createBreakdown.mockImplementation(async (command) => ({
+    operationId: command.operationId,
+    status: "applied",
+    breakdown: null,
+    scratch: null,
+  }));
+  hookState.deleteBreakdown.mockImplementation(async (command) => ({
+    operationId: command.operationId,
+    status: "applied",
+    breakdown: null,
+    candidate: null,
+    scratch: null,
+  }));
+  operationLockState.activeOperation = null;
+  operationLockState.acquire.mockReset();
+  operationLockState.acquire.mockImplementation((kind, operationId) => {
+    if (operationLockState.activeOperation !== null) return false;
+    operationLockState.activeOperation = { kind, operationId };
+    return true;
+  });
+  operationLockState.release.mockReset();
+  operationLockState.release.mockImplementation((operationId) => {
+    if (operationLockState.activeOperation?.operationId !== operationId) return false;
+    operationLockState.activeOperation = null;
+    return true;
+  });
   triageStoreState.selectedScratchId = null;
   triageStoreState.stagedCandidates = {};
   triageStoreState.scratchPoolExpanded = true;
@@ -134,8 +170,11 @@ beforeEach(() => {
       hasObservedBreakdownHistory: rows.length > 0,
       isArchiveEligible:
         consumedRows.length > 0 && activeRows.length === 0 && stagedCount === 0,
-      createBreakdown: hookState.createBreakdown,
+      operations: [],
+      addBreakdown: hookState.createBreakdown,
+      reconcileAddBreakdown: vi.fn(),
       deleteBreakdown: hookState.deleteBreakdown,
+      reconcileDeleteBreakdown: vi.fn(),
     };
   });
   useStagedCandidatesMock.mockImplementation((scratchBitId: string | null) => {
@@ -228,7 +267,139 @@ describe("BreakdownPanel", () => {
     fireEvent.keyDown(input, { key: "Enter" });
 
     await waitFor(() => {
-      expect(hookState.createBreakdown).toHaveBeenCalledWith("Follow up");
+      expect(hookState.createBreakdown).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: "Follow up",
+          scratchBitId: "scratch-1",
+          scratchExpectedVersion: 1,
+        }),
+      );
+    });
+  });
+
+  it("dispatches one Add for duplicate Enter/click and releases only its terminal identity", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    let resolveAdd!: (value: {
+      operationId: string;
+      status: "applied";
+      breakdown: null;
+      scratch: null;
+    }) => void;
+    hookState.createBreakdown.mockImplementation(
+      (command) =>
+        new Promise((resolve) => {
+          resolveAdd = resolve;
+        }).then(() => ({
+          operationId: command.operationId,
+          status: "applied" as const,
+          breakdown: null,
+          scratch: null,
+        })),
+    );
+
+    render(<BreakdownPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.change(input, { target: { value: "Only once" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    fireEvent.keyDown(input, { key: "Enter" });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+
+    expect(hookState.createBreakdown).toHaveBeenCalledTimes(1);
+    const command = hookState.createBreakdown.mock.calls[0][0];
+    resolveAdd({
+      operationId: command.operationId,
+      status: "applied",
+      breakdown: null,
+      scratch: null,
+    });
+    await waitFor(() => {
+      expect(operationLockState.release).toHaveBeenCalledWith(
+        command.operationId,
+        "applied",
+      );
+    });
+  });
+
+  it("retains an unknown Add draft and denies Escape without releasing the lock", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.createBreakdown.mockImplementation(async (command) => ({
+      operationId: command.operationId,
+      outcome: "unknown",
+    }));
+
+    render(<BreakdownPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.change(input, { target: { value: "Protected draft" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    await waitFor(() => expect(hookState.createBreakdown).toHaveBeenCalledOnce());
+    fireEvent.keyDown(input, { key: "Escape" });
+
+    expect(screen.getByPlaceholderText("Add a note...")).toHaveValue(
+      "Protected draft",
+    );
+    expect(operationLockState.activeOperation?.kind).toBe("add");
+    expect(operationLockState.release).not.toHaveBeenCalled();
+  });
+
+  it("retains an Add draft but releases the lock on terminal not_applied", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.createBreakdown.mockImplementation(async (command) => ({
+      operationId: command.operationId,
+      status: "not_applied",
+      breakdown: null,
+      scratch: null,
+    }));
+
+    render(<BreakdownPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.change(input, { target: { value: "Try later" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(operationLockState.release).toHaveBeenCalledWith(
+        expect.any(String),
+        "not_applied",
+      );
+    });
+    expect(input).toHaveValue("Try later");
+    expect(operationLockState.activeOperation).toBeNull();
+  });
+
+  it("scrolls the confirmed Add row into view under the active sort", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    const scrollIntoView = vi.fn();
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoView,
+    });
+
+    const view = render(<BreakdownPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.change(input, { target: { value: "New confirmed row" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    await waitFor(() => expect(hookState.createBreakdown).toHaveBeenCalledOnce());
+
+    const command = hookState.createBreakdown.mock.calls[0][0];
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({
+        id: command.breakdownId,
+        content: "New confirmed row",
+      }),
+    ];
+    view.rerender(<BreakdownPanel />);
+
+    await waitFor(() => {
+      expect(scrollIntoView).toHaveBeenCalledWith({ block: "start" });
+    });
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: originalScrollIntoView,
     });
   });
 
@@ -327,10 +498,158 @@ describe("BreakdownPanel", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
 
     await waitFor(() => {
-      expect(hookState.deleteBreakdown).toHaveBeenCalledWith("row-1");
+      expect(hookState.deleteBreakdown).toHaveBeenCalledWith(
+        expect.objectContaining({
+          breakdownId: "row-1",
+          expectedVersion: 1,
+          scratchBitId: "scratch-1",
+          scratchExpectedVersion: 1,
+        }),
+      );
     });
     await waitFor(() => {
       expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    });
+  });
+
+  it("retains an unknown Delete row and denies Cancel/Escape without replay", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Still here" }),
+    ];
+    hookState.deleteBreakdown.mockImplementation(async (command) => ({
+      operationId: command.operationId,
+      outcome: "unknown",
+    }));
+
+    const view = render(<BreakdownPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    const dialog = await screen.findByRole("alertdialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
+
+    await waitFor(() => expect(hookState.deleteBreakdown).toHaveBeenCalledOnce());
+    view.rerender(<BreakdownPanel />);
+    expect(screen.getByText("Still here")).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeDisabled();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+    expect(hookState.deleteBreakdown).toHaveBeenCalledTimes(1);
+    expect(operationLockState.release).not.toHaveBeenCalled();
+  });
+
+  it("focuses the next visible row after confirmed Delete", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Delete first" }),
+      createScratchBreakdown({ id: "row-2", content: "Focus next" }),
+    ];
+
+    const view = render(<BreakdownPanel />);
+    const firstRow = screen.getByText("Delete first").closest("[role=listitem]");
+    fireEvent.click(within(firstRow as HTMLElement).getByRole("button", { name: "Delete" }));
+    fireEvent.click(
+      within(await screen.findByRole("alertdialog")).getByRole("button", {
+        name: "Delete",
+      }),
+    );
+    await waitFor(() => expect(hookState.deleteBreakdown).toHaveBeenCalledOnce());
+
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-2", content: "Focus next" }),
+    ];
+    view.rerender(<BreakdownPanel />);
+
+    const nextRow = screen.getByText("Focus next").closest("[role=listitem]");
+    await waitFor(() => {
+      expect(
+        within(nextRow as HTMLElement).getByRole("button", { name: "Delete" }),
+      ).toHaveFocus();
+    });
+  });
+
+  it("focuses the previous visible row when confirmed Delete has no next row", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Focus previous" }),
+      createScratchBreakdown({ id: "row-2", content: "Delete last" }),
+    ];
+
+    const view = render(<BreakdownPanel />);
+    const lastRow = screen.getByText("Delete last").closest("[role=listitem]");
+    fireEvent.click(within(lastRow as HTMLElement).getByRole("button", { name: "Delete" }));
+    fireEvent.click(
+      within(await screen.findByRole("alertdialog")).getByRole("button", {
+        name: "Delete",
+      }),
+    );
+    await waitFor(() => expect(hookState.deleteBreakdown).toHaveBeenCalledOnce());
+
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Focus previous" }),
+    ];
+    view.rerender(<BreakdownPanel />);
+
+    const previousRow = screen
+      .getByText("Focus previous")
+      .closest("[role=listitem]");
+    await waitFor(() => {
+      expect(
+        within(previousRow as HTMLElement).getByRole("button", {
+          name: "Delete",
+        }),
+      ).toHaveFocus();
+    });
+  });
+
+  it("focuses Add after confirmed Delete leaves an ordinary empty state", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Delete only" }),
+    ];
+
+    const view = render(<BreakdownPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    fireEvent.click(
+      within(await screen.findByRole("alertdialog")).getByRole("button", {
+        name: "Delete",
+      }),
+    );
+    await waitFor(() => expect(hookState.deleteBreakdown).toHaveBeenCalledOnce());
+
+    hookState.breakdownsByScratch["scratch-1"] = [];
+    view.rerender(<BreakdownPanel />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Add a note..." })).toHaveFocus();
+    });
+  });
+
+  it("focuses Context after confirmed Delete creates consumed completion", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Delete final active" }),
+    ];
+
+    const view = render(<BreakdownPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    fireEvent.click(
+      within(await screen.findByRole("alertdialog")).getByRole("button", {
+        name: "Delete",
+      }),
+    );
+    await waitFor(() => expect(hookState.deleteBreakdown).toHaveBeenCalledOnce());
+
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({
+        id: "consumed-row",
+        content: "Already processed",
+        consumedAt: currentTime,
+      }),
+    ];
+    view.rerender(<BreakdownPanel />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("selected-scratch-context")).toHaveFocus();
     });
   });
 
@@ -616,7 +935,9 @@ describe("BreakdownPanel", () => {
     fireEvent.keyDown(input, { key: "Enter" });
 
     await waitFor(() => {
-      expect(hookState.createBreakdown).toHaveBeenCalledWith("Follow up");
+      expect(hookState.createBreakdown).toHaveBeenCalledWith(
+        expect.objectContaining({ content: "Follow up" }),
+      );
     });
     expect(screen.getByPlaceholderText("Add a note...")).toBeInTheDocument();
     await waitFor(() => {
@@ -729,8 +1050,11 @@ describe("BreakdownPanel", () => {
         consumedBreakdownCount: 0,
         hasObservedBreakdownHistory: true,
         isArchiveEligible: false,
-        createBreakdown: hookState.createBreakdown,
+        operations: [],
+        addBreakdown: hookState.createBreakdown,
+        reconcileAddBreakdown: vi.fn(),
         deleteBreakdown: hookState.deleteBreakdown,
+        reconcileDeleteBreakdown: vi.fn(),
       }),
     );
 
@@ -799,8 +1123,11 @@ describe("BreakdownPanel", () => {
       consumedBreakdownCount: 0,
       hasObservedBreakdownHistory: false,
       isArchiveEligible: false,
-      createBreakdown: hookState.createBreakdown,
+      operations: [],
+      addBreakdown: hookState.createBreakdown,
+      reconcileAddBreakdown: vi.fn(),
       deleteBreakdown: hookState.deleteBreakdown,
+      reconcileDeleteBreakdown: vi.fn(),
     });
     const { rerender } = render(<BreakdownPanel />);
 
@@ -815,8 +1142,11 @@ describe("BreakdownPanel", () => {
       consumedBreakdownCount: 0,
       hasObservedBreakdownHistory: true,
       isArchiveEligible: false,
-      createBreakdown: hookState.createBreakdown,
+      operations: [],
+      addBreakdown: hookState.createBreakdown,
+      reconcileAddBreakdown: vi.fn(),
       deleteBreakdown: hookState.deleteBreakdown,
+      reconcileDeleteBreakdown: vi.fn(),
     });
     rerender(<BreakdownPanel />);
 
@@ -835,8 +1165,11 @@ describe("BreakdownPanel", () => {
       consumedBreakdownCount: 1,
       hasObservedBreakdownHistory: true,
       isArchiveEligible: true,
-      createBreakdown: hookState.createBreakdown,
+      operations: [],
+      addBreakdown: hookState.createBreakdown,
+      reconcileAddBreakdown: vi.fn(),
       deleteBreakdown: hookState.deleteBreakdown,
+      reconcileDeleteBreakdown: vi.fn(),
     });
 
     const { rerender } = render(<BreakdownPanel />);
@@ -850,8 +1183,11 @@ describe("BreakdownPanel", () => {
       consumedBreakdownCount: 1,
       hasObservedBreakdownHistory: true,
       isArchiveEligible: false,
-      createBreakdown: hookState.createBreakdown,
+      operations: [],
+      addBreakdown: hookState.createBreakdown,
+      reconcileAddBreakdown: vi.fn(),
       deleteBreakdown: hookState.deleteBreakdown,
+      reconcileDeleteBreakdown: vi.fn(),
     });
     rerender(<BreakdownPanel />);
 

@@ -137,6 +137,7 @@ describe("TriageWorkspace", () => {
 
     expect(within(workspace).getByTestId("scratch-pool")).toBeInTheDocument();
     expect(within(workspace).getByTestId("breakdown-panel")).toBeInTheDocument();
+    expect(workspace).not.toHaveAttribute("data-triage-operation-kind");
   });
 
   it("renders one semantic shell with visible identities for all four areas", () => {

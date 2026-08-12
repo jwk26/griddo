@@ -13,9 +13,19 @@ import { useTriageStore } from "@/stores/triage-store";
 import { ScratchPool } from "./scratch-pool";
 
 const useInboxMock = vi.hoisted(() => vi.fn());
+const operationLockState = vi.hoisted(() => ({
+  activeOperation: null as null | { kind: "add"; operationId: string },
+}));
 
 vi.mock("@/hooks/use-inbox", () => ({
   useInbox: useInboxMock,
+}));
+
+vi.mock("@/hooks/use-triage-operation-lock", () => ({
+  useTriageOperationLockContext: () => ({
+    ...operationLockState,
+    isLocked: () => operationLockState.activeOperation !== null,
+  }),
 }));
 
 function createBit(overrides: Partial<Bit> = {}): Bit {
@@ -58,6 +68,7 @@ beforeEach(() => {
   });
   useTriagePreferencesStore.setState({ poolCreatedAtSort: "DESC" });
   useInboxMock.mockReturnValue({ activeScratchBits: [] });
+  operationLockState.activeOperation = null;
 });
 
 afterEach(() => {
@@ -405,6 +416,29 @@ describe("ScratchPool", () => {
     fireEvent.click(screen.getByRole("button", { name: "Scratch one" }));
 
     expect(pool).toHaveClass("w-72");
+  });
+
+  it("denies expanded and collapsed Scratch switches while an operation owns the lock", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "scratch-1", title: "Scratch one" }),
+        createBit({ id: "scratch-2", title: "Scratch two" }),
+      ],
+    });
+    useTriageStore.setState({ selectedScratchId: "scratch-1" });
+    operationLockState.activeOperation = {
+      kind: "add",
+      operationId: "add-1",
+    };
+
+    render(<ScratchPool />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Scratch two" }));
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-1");
+
+    fireEvent.click(screen.getByLabelText("Collapse Scratch Pool"));
+    fireEvent.click(screen.getByRole("button", { name: "Scratch two" }));
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-1");
   });
 
   it("collapsed pills have accessible labels with scratch titles", () => {

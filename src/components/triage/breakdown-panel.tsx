@@ -26,8 +26,16 @@ import {
 import { useInbox } from "@/hooks/use-inbox";
 import { useScratchBreakdowns } from "@/hooks/use-scratch-breakdowns";
 import { useStagedCandidates } from "@/hooks/use-staged-candidates";
+import { useTriageOperationLockContext } from "@/hooks/use-triage-operation-lock";
 import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
-import type { ScratchBreakdown } from "@/lib/db/schema";
+import type {
+  AddBreakdownCommand,
+  DeleteBreakdownCommand,
+} from "@/lib/db/datastore";
+import type {
+  RepositoryOperationStatus,
+  ScratchBreakdown,
+} from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
 import { useTriageStore } from "@/stores/triage-store";
@@ -35,11 +43,15 @@ import { useTriageStore } from "@/stores/triage-store";
 function BreakdownRow({
   row,
   isStaged,
+  isOperationLocked,
   onDelete,
+  onRowRef,
 }: {
   row: ScratchBreakdown;
   isStaged: boolean;
+  isOperationLocked: boolean;
   onDelete: (id: string) => void;
+  onRowRef: (id: string, element: HTMLDivElement | null) => void;
 }) {
   const {
     attributes,
@@ -62,7 +74,10 @@ function BreakdownRow({
 
   return (
     <div
-      ref={setNodeRef}
+      ref={(element) => {
+        setNodeRef(element);
+        onRowRef(row.id, element);
+      }}
       data-testid="breakdown-row"
       data-triage-role={isStaged ? "breakdown-staged-row" : "breakdown-active-row"}
       data-triage-state={isStaged ? "staged" : "active"}
@@ -77,7 +92,7 @@ function BreakdownRow({
       <button
         ref={setActivatorNodeRef}
         aria-label="Drag breakdown"
-        disabled={isStaged}
+        disabled={isStaged || isOperationLocked}
         className={cn(
           "mt-0.5 flex h-7 w-7 flex-shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-muted-foreground/60 hover:border-border hover:bg-muted hover:text-foreground active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
         )}
@@ -118,7 +133,7 @@ function BreakdownRow({
           isDragging && "text-muted-foreground",
         )}
         data-triage-role="breakdown-row-action"
-        disabled={isStaged}
+        disabled={isStaged || isOperationLocked}
         title={INBOX_TRIAGE_COPY.baseActions.delete}
         type="button"
         onClick={() => onDelete(row.id)}
@@ -137,6 +152,7 @@ function formatScratchTimestamp(createdAt: number): string {
 }
 
 export function BreakdownPanel() {
+  const operationLock = useTriageOperationLockContext();
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
   const scratchPoolExpanded = useTriageStore(
     (state) => state.scratchPoolExpanded,
@@ -159,7 +175,7 @@ export function BreakdownPanel() {
     consumedBreakdownCount,
     hasObservedBreakdownHistory,
     isArchiveEligible,
-    createBreakdown,
+    addBreakdown,
     deleteBreakdown,
   } = useScratchBreakdowns(
     selectedScratchId,
@@ -170,9 +186,31 @@ export function BreakdownPanel() {
   const [isAdding, setIsAdding] = useState(false);
   const [newContent, setNewContent] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const isSubmittingRef = useRef(false);
+  const addEntryRef = useRef<HTMLInputElement | HTMLDivElement | null>(null);
+  const contextRef = useRef<HTMLDivElement>(null);
+  const rowRefs = useRef(new Map<string, HTMLDivElement>());
+  const pendingAddedRowIdRef = useRef<string | null>(null);
+  const pendingDeleteFocusRef = useRef<{
+    deletedId: string;
+    nextId: string | null;
+    previousId: string | null;
+  } | null>(null);
+  const failedDeleteFocusIdRef = useRef<string | null>(null);
   const isComposingRef = useRef(false);
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{
+    scratchBitId: string;
+    breakdownId: string;
+  } | null>(null);
+  if (
+    pendingDelete !== null &&
+    pendingDelete.scratchBitId !== selectedScratchId
+  ) {
+    setPendingDelete(null);
+  }
+  const pendingDeleteId =
+    pendingDelete?.scratchBitId === selectedScratchId
+      ? pendingDelete.breakdownId
+      : null;
   const selectedScratch =
     activeScratchBits.find((bit) => bit.id === selectedScratchId) ?? null;
   const isConsumedCompletion =
@@ -193,8 +231,57 @@ export function BreakdownPanel() {
   }, [isAdding]);
 
   useEffect(() => {
-    setPendingDeleteId(null);
-  }, [selectedScratchId]);
+    const addedRowId = pendingAddedRowIdRef.current;
+    if (addedRowId === null) return;
+    const row = rowRefs.current.get(addedRowId);
+    if (row === undefined) return;
+
+    pendingAddedRowIdRef.current = null;
+    row.scrollIntoView({
+      block: breakdownCreatedAtSort === "DESC" ? "start" : "end",
+    });
+  }, [breakdownCreatedAtSort, breakdowns, newContent]);
+
+  useEffect(() => {
+    const focusTarget = pendingDeleteFocusRef.current;
+    if (
+      focusTarget === null ||
+      breakdowns.some((row) => row.id === focusTarget.deletedId)
+    ) {
+      return;
+    }
+
+    pendingDeleteFocusRef.current = null;
+    const nextRow =
+      focusTarget.nextId === null
+        ? undefined
+        : rowRefs.current.get(focusTarget.nextId);
+    const previousRow =
+      focusTarget.previousId === null
+        ? undefined
+        : rowRefs.current.get(focusTarget.previousId);
+    const rowAction = (nextRow ?? previousRow)?.querySelector<HTMLButtonElement>(
+      'button[aria-label="Delete"]',
+    );
+
+    if (rowAction !== undefined && rowAction !== null) {
+      rowAction.focus();
+    } else if (isConsumedCompletion) {
+      contextRef.current?.focus();
+    } else {
+      addEntryRef.current?.focus();
+    }
+  }, [breakdowns, isConsumedCompletion, pendingDeleteId]);
+
+  useEffect(() => {
+    if (pendingDeleteId !== null || failedDeleteFocusIdRef.current === null) return;
+    const failedRowId = failedDeleteFocusIdRef.current;
+    failedDeleteFocusIdRef.current = null;
+    rowRefs.current
+      .get(failedRowId)
+      ?.querySelector<HTMLButtonElement>('button[aria-label="Delete"]')
+      ?.focus();
+  }, [pendingDeleteId]);
 
   function collapsePoolIfArmed() {
     if (
@@ -209,7 +296,6 @@ export function BreakdownPanel() {
   async function handleAdd({
     keepInputOpen = false,
   }: { keepInputOpen?: boolean } = {}): Promise<void> {
-    if (isSubmittingRef.current) return;
     const trimmed = newContent.trim();
     if (!trimmed) {
       if (!keepInputOpen) {
@@ -219,9 +305,22 @@ export function BreakdownPanel() {
       return;
     }
 
-    isSubmittingRef.current = true;
-    try {
-      await createBreakdown(trimmed);
+    if (selectedScratch === null) return;
+    const command: AddBreakdownCommand = {
+      operationId: crypto.randomUUID(),
+      breakdownId: crypto.randomUUID(),
+      scratchBitId: selectedScratch.id,
+      scratchExpectedVersion: selectedScratch.version,
+      content: trimmed,
+    };
+    if (!operationLock.acquire("add", command.operationId)) return;
+
+    const outcome = await addBreakdown(command);
+    if ("outcome" in outcome) return;
+
+    operationLock.release(command.operationId, outcome.status);
+    if (isConfirmedSuccess(outcome.status)) {
+      pendingAddedRowIdRef.current = command.breakdownId;
       setNewContent("");
       if (keepInputOpen) {
         setIsAdding(true);
@@ -229,8 +328,6 @@ export function BreakdownPanel() {
       } else {
         setIsAdding(false);
       }
-    } finally {
-      isSubmittingRef.current = false;
     }
   }
 
@@ -243,6 +340,7 @@ export function BreakdownPanel() {
     }
 
     if (event.key === "Escape") {
+      if (operationLock.isLocked()) return;
       setIsAdding(false);
       setNewContent("");
       return;
@@ -264,13 +362,38 @@ export function BreakdownPanel() {
   function handlePlaceholderKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
+    if (operationLock.isLocked()) return;
     setIsAdding(true);
   }
 
   async function handleConfirmDelete(): Promise<void> {
-    if (pendingDeleteId === null) return;
-    await deleteBreakdown(pendingDeleteId);
-    setPendingDeleteId(null);
+    if (pendingDeleteId === null || selectedScratch === null) return;
+    const rowIndex = breakdowns.findIndex((row) => row.id === pendingDeleteId);
+    const row = breakdowns[rowIndex];
+    if (row === undefined) return;
+    const command: DeleteBreakdownCommand = {
+      operationId: crypto.randomUUID(),
+      breakdownId: row.id,
+      expectedVersion: row.version,
+      scratchBitId: selectedScratch.id,
+      scratchExpectedVersion: selectedScratch.version,
+    };
+    if (!operationLock.acquire("delete", command.operationId)) return;
+
+    const outcome = await deleteBreakdown(command);
+    if ("outcome" in outcome) return;
+
+    operationLock.release(command.operationId, outcome.status);
+    if (isConfirmedSuccess(outcome.status)) {
+      pendingDeleteFocusRef.current = {
+        deletedId: row.id,
+        nextId: breakdowns[rowIndex + 1]?.id ?? null,
+        previousId: breakdowns[rowIndex - 1]?.id ?? null,
+      };
+    } else {
+      failedDeleteFocusIdRef.current = row.id;
+    }
+    setPendingDelete(null);
   }
 
   if (selectedScratchId === null) {
@@ -287,11 +410,13 @@ export function BreakdownPanel() {
     <div className="flex flex-col h-full">
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
         <div
+          ref={contextRef}
           aria-label={`Selected Scratch: ${selectedScratch?.title ?? "Unknown Scratch"}`}
           className="mt-2 flex min-h-[104px] min-w-0 items-center gap-3 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card px-4 py-4 shadow-sm"
           data-testid="selected-scratch-context"
           data-triage-role="context-signature-plate"
           data-triage-state="working"
+          tabIndex={-1}
         >
           <Inbox
             aria-hidden="true"
@@ -354,8 +479,18 @@ export function BreakdownPanel() {
               <BreakdownRow
                 key={row.id}
                 isStaged={stagedEligibility.stagedSourceIds.has(row.id)}
+                isOperationLocked={operationLock.activeOperation !== null}
                 row={row}
-                onDelete={setPendingDeleteId}
+                onDelete={(breakdownId) =>
+                  setPendingDelete({
+                    scratchBitId: selectedScratchId,
+                    breakdownId,
+                  })
+                }
+                onRowRef={(id, element) => {
+                  if (element === null) rowRefs.current.delete(id);
+                  else rowRefs.current.set(id, element);
+                }}
               />
             ))}
           </div>
@@ -393,7 +528,10 @@ export function BreakdownPanel() {
         <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
           {isAdding ? (
             <input
-              ref={inputRef}
+              ref={(element) => {
+                inputRef.current = element;
+                addEntryRef.current = element;
+              }}
               className="block h-8 w-full appearance-none rounded-md border border-border bg-background px-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
               data-triage-role="breakdown-add-field"
               maxLength={500}
@@ -406,16 +544,22 @@ export function BreakdownPanel() {
               }}
               onKeyDown={handleInputKeyDown}
               placeholder="Add a note..."
+              readOnly={operationLock.activeOperation !== null}
               type="text"
               value={newContent}
             />
           ) : (
             <div
+              ref={(element) => {
+                addEntryRef.current = element;
+              }}
               className="flex h-8 cursor-text items-center rounded-md border border-transparent px-2 text-sm text-muted-foreground hover:border-border hover:bg-accent/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               data-triage-role="breakdown-add-field"
               role="button"
               tabIndex={0}
-              onClick={() => setIsAdding(true)}
+              onClick={() => {
+                if (operationLock.activeOperation === null) setIsAdding(true);
+              }}
               onKeyDown={handlePlaceholderKeyDown}
             >
               Add a note...
@@ -423,7 +567,11 @@ export function BreakdownPanel() {
           )}
           <Button
             data-triage-role="breakdown-add-control"
-            disabled={!isAdding || newContent.trim().length === 0}
+            disabled={
+              operationLock.activeOperation !== null ||
+              !isAdding ||
+              newContent.trim().length === 0
+            }
             size="sm"
             type="button"
             onClick={() => void handleAdd({ keepInputOpen: true })}
@@ -436,7 +584,9 @@ export function BreakdownPanel() {
       <AlertDialog
         open={pendingDeleteId !== null}
         onOpenChange={(open) => {
-          if (!open) setPendingDeleteId(null);
+          if (!open && !operationLock.isLocked()) {
+            setPendingDelete(null);
+          }
         }}
       >
         <AlertDialogContent>
@@ -447,10 +597,18 @@ export function BreakdownPanel() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPendingDeleteId(null)}>
+            <AlertDialogCancel
+              disabled={operationLock.activeOperation !== null}
+              onClick={() => {
+                if (!operationLock.isLocked()) {
+                  setPendingDelete(null);
+                }
+              }}
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
+              disabled={operationLock.activeOperation !== null}
               variant="destructive"
               onClick={() => void handleConfirmDelete()}
             >
@@ -461,4 +619,8 @@ export function BreakdownPanel() {
       </AlertDialog>
     </div>
   );
+}
+
+function isConfirmedSuccess(status: RepositoryOperationStatus): boolean {
+  return status === "applied" || status === "already_applied";
 }
