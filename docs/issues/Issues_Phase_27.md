@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Task 136 in progress; durable start recorded
+> State: Task 136 implemented; awaiting explicit user acceptance
 
 ## Status Legend
 
@@ -90,7 +90,7 @@ None at kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | `136` — connect headless Add and Delete interaction behavior |
-| State | `In Progress`; remains `[ ]` pending explicit user acceptance |
+| State | `Implemented`; awaiting explicit user acceptance and remains `[ ]` |
 | Approved scope | Gate C `task_scope.task_136` plus the explicit Task 136-only user approval; only the listed Breakdown, Workspace, Pool, scratch-breakdown hook/tests, new operation-lock hook/tests, and Task 136 verification evidence |
 | Kickoff receipt | `docs/issues/Issues_Phase_27.gate-c.json` at Git blob `08c7a5e524f7a89bd10adc5cea71963f54870d38` |
 | Start base / recovery anchor | `f10638ce84c4503c88dc8212c46431f91f709e34` |
@@ -99,4 +99,6 @@ None at kickoff.
 | Visual boundary | Headless only; Task 143 owns `DP-VQ05` Add/Delete reliability realization |
 | Issues / deviations | None |
 | Canonical impact | `None` — implementation-local; no canonical document change is authorized or required |
-| Next legal action | Execute and verify Task 136 only; stop at its green checkpoint |
+| Implementation | `cf0b08db8d9be2a8c8653fa773c969b35d034569` — `feat(triage): connect locked breakdown commands` |
+| Verification | `docs/verification/inbox-triage/task-136.md`; focused 5 files / 110 tests, changed-file lint pass, typecheck and diff-check pass; single adapter full gate passed 93 files / 769 tests, lint with 0 errors and 11 existing warnings, typecheck, and build |
+| Next legal action | Green checkpoint: wait for explicit user acceptance or targeted rejection; do not write `[x]` or start Task 137 |
