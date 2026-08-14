@@ -1406,9 +1406,9 @@ publish, or close the phase.
 
 **Observable acceptance:** blur never submits; duplicate Enter/click or a competing operation produces one command total; unknown Add keeps draft, operation identity, and the complete shared lock; Delete keeps row until terminal success; terminal results release once; Scratch switch and Cancel/Escape are denied while locked without mutation or queued replay; focus/scroll handoff follows the exact order.
 
-**Verification:** focused operation-lock/Breakdown/Workspace/Pool/hook tests; assert every operation kind against the complete mutual-exclusion matrix and terminal release contract, then run Enter/Add, blur, duplicate/competing intent, Scratch switch, Cancel/Escape, unknown reconcile, failed Delete, and confirmed focus paths in the canonical route and record interactions/focus in `docs/verification/inbox-triage/task-136.md`; `pnpm typecheck`.
+**Verification:** focused operation-lock/Breakdown/Workspace/Pool/hook tests; assert every operation kind against the complete mutual-exclusion matrix and terminal release contract, including authoritative Add/Delete reconciliation and terminal release at hook level. In the canonical route, run Enter/Add, blur, duplicate/competing intent, Scratch switch, Cancel/Escape, unknown row/lock retention and blocked actions, failed Delete, and confirmed focus/scroll paths, recording interactions/focus in `docs/verification/inbox-triage/task-136.md`. Task 143 owns route-level `Check again` → reconciliation → terminal release/focus because it adds that production trigger; `pnpm typecheck`.
 
-**Commit contract:** mounted-page operation lock, headless Add/Delete adapter, the exact `P23-02` stale-test cleanup, owner tests, and Task 136 evidence only; `feat(triage): connect locked breakdown commands`.
+**Commit contract:** mounted-page operation lock, headless Add/Delete adapter, the exact `P23-02` stale-test cleanup, owner tests, and Task 136 evidence only; `feat(triage): connect locked breakdown commands`. The user-approved `P27-01` canonical repair is a documentation-only exception limited to this Task 136 verification clause, Task 143's verification clause, the Phase 27 issue ledger, and Task 136 evidence; it changes no product code, tests, or task marker.
 
 ### Task 137: [ ] Build headless conditional editor and blocker state
 
@@ -1518,7 +1518,7 @@ publish, or close the phase.
 
 **Observable acceptance:** Add/Delete states are section-local and distinct; any Add Retry exists only for authoritative `not_applied`; every Delete failure/unknown leaves the row in place and offers Check again/reconciliation without a dedicated Retry or resend; focus/copy/theme exactly match receipt.
 
-**Verification:** focused Breakdown/copy state-table tests, including row retention and the absence of a Delete Retry action for every Delete failure/unknown result; run every authoritative result, focus, reduced motion, and theme mapping, recording `docs/verification/inbox-triage/task-143.md`; `pnpm typecheck`.
+**Verification:** focused Breakdown/copy state-table tests, including row retention and the absence of a Delete Retry action for every Delete failure/unknown result; run every authoritative result, focus, reduced motion, and theme mapping in the canonical route, including `Check again` from a Delete failure/unknown result → reconciliation with the preserved operation identity → terminal release and deterministic focus, recording `docs/verification/inbox-triage/task-143.md`; `pnpm typecheck`.
 
 **Commit contract:** DP-VQ05 copy/realization, tests, styles, and Task 143 evidence only; `feat(triage): render breakdown reliability states`.
 

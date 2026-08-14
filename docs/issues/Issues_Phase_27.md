@@ -83,7 +83,12 @@ started and `$run-task`, relay, and Control Tower were not invoked.
 
 ## Active Issues
 
-None at kickoff.
+None remain active. The Task 136 evidence review identified and resolved the
+following phase-local verification-staging conflict:
+
+| ID | Status | Finding | Approved disposition | Canonical impact |
+| --- | --- | --- | --- | --- |
+| `P27-01` | Promoted to Execution Plan | Task 136 required canonical-route `unknown reconcile`, but its production route can only enter and retain unknown state; Task 143 owns the `Check again` production trigger that starts reconciliation. A test-only trigger would not prove a production consumer. | On 2026-08-14 the user approved route verification through unknown row/lock/focus and blocked actions in Task 136, retained Add/Delete reconciliation and terminal-release verification at hook level in Task 136, and kept route `Check again` → reconciliation → terminal/focus in Task 143. | `Reflected` in the Task 136 and Task 143 verification clauses of `docs/EXECUTION_PLAN.md`; no product/test/marker change. |
 
 ## Task 136 Run State
 
@@ -91,14 +96,14 @@ None at kickoff.
 | --- | --- |
 | Task | `136` — connect headless Add and Delete interaction behavior |
 | State | `Implemented`; awaiting explicit user acceptance and remains `[ ]` |
-| Approved scope | Gate C `task_scope.task_136` plus the explicit Task 136-only user approval; only the listed Breakdown, Workspace, Pool, scratch-breakdown hook/tests, new operation-lock hook/tests, and Task 136 verification evidence |
+| Approved scope | Gate C `task_scope.task_136` plus the explicit Task 136-only user approval and the 2026-08-14 targeted canonical-repair approval; implementation remains limited to the listed Breakdown, Workspace, Pool, scratch-breakdown hook/tests, new operation-lock hook/tests, and Task 136 evidence, while this repair changes only `docs/EXECUTION_PLAN.md`, this ledger, and Task 136 evidence |
 | Kickoff receipt | `docs/issues/Issues_Phase_27.gate-c.json` at Git blob `08c7a5e524f7a89bd10adc5cea71963f54870d38` |
 | Start base / recovery anchor | `f10638ce84c4503c88dc8212c46431f91f709e34` |
 | Dependencies | Accepted Tasks 120, 128, 130, and 132 are ancestors of the approved base |
 | Deferred ownership | `P23-02` is included only in Task 136 hook/test replacement scope |
 | Visual boundary | Headless only; Task 143 owns `DP-VQ05` Add/Delete reliability realization |
-| Issues / deviations | None |
-| Canonical impact | `None` — implementation-local; no canonical document change is authorized or required |
+| Issues / deviations | `P27-01` — verification-staging conflict, user-approved and `Promoted to Execution Plan`; no product-scope deviation |
+| Canonical impact | `Reflected` — Task 136 now owns route evidence through retained unknown/blocked actions plus hook-level reconciliation, while Task 143 retains route `Check again` → reconciliation → terminal/focus |
 | Implementation | `cf0b08db8d9be2a8c8653fa773c969b35d034569` — `feat(triage): connect locked breakdown commands` |
-| Verification | `docs/verification/inbox-triage/task-136.md`; focused 5 files / 110 tests, changed-file lint pass, typecheck and diff-check pass; single adapter full gate passed 93 files / 769 tests, lint with 0 errors and 11 existing warnings, typecheck, and build |
+| Verification | `docs/verification/inbox-triage/task-136.md`; focused 5 files / 110 tests, changed-file lint pass, typecheck and diff-check pass; canonical-route Add/Delete/lock/focus/scroll observations recorded; single adapter full gate passed 93 files / 769 tests, lint with 0 errors and 11 existing warnings, typecheck, and build and was not rerun for the documentation-only repair |
 | Next legal action | Green checkpoint: wait for explicit user acceptance or targeted rejection; do not write `[x]` or start Task 137 |

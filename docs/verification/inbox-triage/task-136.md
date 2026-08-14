@@ -42,9 +42,41 @@ Implementation commit: `cf0b08db8d9be2a8c8653fa773c969b35d034569`.
 
 The canonical Inbox route continues to mount `TriageWorkspace`; its focused
 test proves the idle mounted owner/composition, while the full suite retains
-the existing `GridRuntime` system-Inbox route dispatch coverage. Interaction
-and focus claims above are exercised headlessly against that production
-Workspace/Breakdown/Pool component tree without selecting `DP-VQ05` visuals.
+the existing `GridRuntime` system-Inbox route dispatch coverage. Task 136's
+reconciliation APIs and terminal release remain covered at hook/owner level:
+Task 143 owns the planned production `Check again` trigger and its route-level
+reconciliation/focus evidence.
+
+## Canonical-route interaction evidence
+
+On 2026-08-14, the production development app was mounted in a fresh temporary
+Chrome profile at its generated system-Inbox `/grid/<inbox-id>` route. The app
+created the system nodes and first Scratch through production flows; a second
+Scratch and bounded Breakdown rows were inserted into that temporary profile
+as same-schema route fixtures. Chrome DevTools Protocol drove the production
+Workspace/Breakdown/Pool DOM. No product component, hook, or test mock was
+substituted. The temporary server, browser, profile, and fixture data were
+removed after observation.
+
+| Intent | Canonical-route action | Observed result |
+| --- | --- | --- |
+| Blur / Escape | Opened Add, blurred the empty field, then entered a non-empty draft and pressed Escape. | Blur dispatched no command; Escape cleared the draft and restored the Add placeholder; the selected Scratch still had zero rows. |
+| Enter Add / focus / scroll | Submitted `Enter route addition` with Enter while wrapping the native `scrollIntoView` only to record its production call. | Exactly one authoritative row appeared, the Add field stayed focused with an empty value, and the confirmed row received `scrollIntoView({ block: "start" })` under `DESC`. |
+| Duplicate / competing intent | In one synchronous interaction cluster, dispatched Enter, clicked explicit Add, and clicked the other Scratch before the first asynchronous gap. | Exactly one row with the submitted content existed, the competing Add was not replayed, selection remained on the source Scratch, and Add focus returned after terminal success. |
+| Scratch switch | Clicked the other Scratch after the Add reached terminal success. | Selection changed and its 14 fixture rows rendered, proving switch denial ended with terminal lock release. |
+| Delete Cancel / Escape | Opened Delete confirmation for the newest row, closed once with Escape and once with Cancel. | The dialog moved to `data-state="closed"` both times and the row count/content did not change. |
+| Confirmed Delete focus | Confirmed deletion of the newest visible row. | The row disappeared and focus moved to the next visible row's Delete button. |
+| Failed Delete | Advanced the selected row's authoritative version between opening confirmation and confirming Delete. | The terminal conflict retained the row, closed the dialog, released the lock, and returned focus to that row's Delete button. |
+| Unknown lock / blocked actions | Injected one browser IndexedDB Delete transport exception before confirmation, then attempted Escape and the other Scratch. | Workspace reported operation kind `delete`; the exact row and open dialog remained; Cancel/Delete were disabled; Escape and Scratch switch were denied without replay or mutation. No `Check again`, reconcile, or retry production control existed. |
+
+The last observation exposed `P27-01`: Task 136 can enter and preserve unknown
+route state but cannot initiate reconciliation from that route. The planned
+production reconciliation trigger is the `Check again` control owned by Task
+143. The user approved a canonical ownership repair: Task 136 retains its
+focused hook-level Add/Delete reconciliation and terminal-release proof and
+route evidence through unknown retention/blocking; Task 143 retains
+`Check again` → reconciliation with the preserved identity → terminal
+release/focus in the canonical route.
 
 ## Adapter full gate
 
@@ -68,9 +100,12 @@ The adapter full gate was run serially exactly once after final focused repair:
 - Concrete preflight findings repaired: synchronous reset effects in
   `BreakdownPanel` and `useScratchBreakdowns` were replaced by Scratch-keyed
   ownership/filtering.
-- Remaining blocking, medium, or low concrete findings: None.
-- Issues / deviations: None.
-- Canonical impact: `None` — implementation-local.
+- Remaining blocking, medium, or low concrete implementation findings: None.
+- Issues / deviations: `P27-01` verification-staging conflict, user-approved
+  and promoted to the execution plan; no product-scope deviation.
+- Canonical impact: `Reflected` — Task 136 owns route evidence through unknown
+  retention/blocking plus hook-level reconciliation; Task 143 owns route
+  `Check again` → reconciliation → terminal/focus.
 
 ## Checkpoint buckets
 
@@ -79,6 +114,7 @@ The adapter full gate was run serially exactly once after final focused repair:
   locked, successful Add/Delete perform the verified scroll/focus handoffs.
 - Review now: Task 136 implementation and this evidence; user acceptance is
   still required and Task 136 remains `[ ]`.
-- Planned later: `DP-VQ05` appearance/copy (Task 143) and the remaining exact
-  lock consumers owned by Tasks 137, 139, 145, 152, 156, and 161.
+- Planned later: `DP-VQ05` appearance/copy and route `Check again` →
+  reconciliation → terminal/focus (Task 143), plus the remaining exact lock
+  consumers owned by Tasks 137, 139, 145, 152, 156, and 161.
 - Unowned: None.
