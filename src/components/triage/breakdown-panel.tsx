@@ -1,6 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ChangeEvent,
+  type FocusEvent,
+  type KeyboardEvent,
+  type RefObject,
+} from "react";
 import { useDraggable } from "@dnd-kit/core";
 import {
   ArrowDownUp,
@@ -27,6 +37,8 @@ import { useInbox } from "@/hooks/use-inbox";
 import {
   useScratchBreakdowns,
   useScratchTitleBlockerContext,
+  type ConditionalEditor,
+  type ConditionalEditorSnapshot,
 } from "@/hooks/use-scratch-breakdowns";
 import { useStagedCandidates } from "@/hooks/use-staged-candidates";
 import { useTriageOperationLockContext } from "@/hooks/use-triage-operation-lock";
@@ -43,17 +55,346 @@ import { cn } from "@/lib/utils";
 import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
 import { useTriageStore } from "@/stores/triage-store";
 
+type OpenEditorSnapshot = NonNullable<ConditionalEditorSnapshot>;
+
+function subscribeToBrowserConnectivity(onStoreChange: () => void) {
+  window.addEventListener("online", onStoreChange);
+  window.addEventListener("offline", onStoreChange);
+  return () => {
+    window.removeEventListener("online", onStoreChange);
+    window.removeEventListener("offline", onStoreChange);
+  };
+}
+
+function getBrowserOnlineSnapshot() {
+  return navigator.onLine;
+}
+
+function InlineEditor({
+  editor,
+  onSave,
+  onUseMine,
+  snapshot,
+}: {
+  editor: ConditionalEditor;
+  onSave: () => Promise<boolean>;
+  onUseMine: () => Promise<boolean>;
+  snapshot: OpenEditorSnapshot;
+}) {
+  const copy = INBOX_TRIAGE_COPY.inlineEditor;
+  const isScratchTitle = snapshot.target.kind === "scratch-title";
+  const surface = isScratchTitle ? "scratch-title" : "breakdown-content";
+  const surfaceRole = isScratchTitle
+    ? "context-inline-editor"
+    : "breakdown-inline-editor";
+  const fieldLabel = isScratchTitle ? "Scratch title" : "Breakdown content";
+  const validationCopy = isScratchTitle
+    ? INBOX_TRIAGE_COPY.validation.scratchTitleRequired
+    : INBOX_TRIAGE_COPY.validation.breakdownContentRequired;
+  const fieldId = useId();
+  const statusId = `${fieldId}-status`;
+  const fieldRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const surfaceRef = useRef<HTMLDivElement>(null);
+  const isComposingRef = useRef(false);
+  const latestVersionRef = useRef(snapshot.latest?.version ?? null);
+  const [copyStatus, setCopyStatus] = useState("");
+  const [latestStatus, setLatestStatus] = useState("");
+  const isBrowserOnline = useSyncExternalStore(
+    subscribeToBrowserConnectivity,
+    getBrowserOnlineSnapshot,
+    () => true,
+  );
+
+  useEffect(() => {
+    const field = fieldRef.current;
+    if (field === null || snapshot.phase === "invalidated") return;
+    if (snapshot.focusIntent !== "field" && snapshot.focusIntent !== "field-end") {
+      return;
+    }
+    field.focus();
+    if (snapshot.focusIntent === "field-end") {
+      const end = field.value.length;
+      field.setSelectionRange(end, end);
+    }
+  }, [snapshot.focusIntent, snapshot.phase, snapshot.target.id]);
+
+  useEffect(() => {
+    const nextVersion = snapshot.latest?.version ?? null;
+    if (
+      latestVersionRef.current !== null &&
+      nextVersion !== null &&
+      latestVersionRef.current !== nextVersion
+    ) {
+      setLatestStatus(copy.conflict.latestUpdated);
+    }
+    latestVersionRef.current = nextVersion;
+  }, [copy.conflict.latestUpdated, snapshot.latest?.version]);
+
+  const statusCopy =
+    snapshot.phase === "validation"
+      ? validationCopy
+      : snapshot.phase === "not_applied"
+        ? copy.status.notApplied
+        : snapshot.phase === "saving" && snapshot.pendingIntent
+          ? copy.status.savingBeforeContinuing
+          : snapshot.phase === "pristine" ||
+              snapshot.phase === "dirty" ||
+              snapshot.phase === "saving" ||
+              snapshot.phase === "offline" ||
+              snapshot.phase === "reconciling"
+            ? copy.status[snapshot.phase]
+            : snapshot.phase === "conflict"
+              ? copy.conflict.heading
+              : copy.recovery.heading;
+
+  function handleFieldBlur(
+    event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) {
+    if (isComposingRef.current) return;
+    const nextTarget = event.relatedTarget;
+    if (nextTarget instanceof Node && surfaceRef.current?.contains(nextTarget)) {
+      return;
+    }
+    if (
+      nextTarget instanceof HTMLElement &&
+      (nextTarget.getAttribute("aria-label") === "Toggle theme" ||
+        nextTarget.getAttribute("aria-label") === "Change color theme")
+    ) {
+      return;
+    }
+    if (
+      snapshot.phase !== "saving" &&
+      snapshot.phase !== "reconciling" &&
+      snapshot.phase !== "conflict"
+    ) {
+      void onSave();
+    }
+  }
+
+  function handleFieldKeyDown(
+    event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) {
+    if (
+      event.key !== "Escape" ||
+      isComposingRef.current ||
+      event.nativeEvent.isComposing
+    ) {
+      return;
+    }
+    event.preventDefault();
+    editor.cancel();
+  }
+
+  async function copyDraft() {
+    const draft = snapshot.copyableDraft ?? snapshot.draft;
+    try {
+      await navigator.clipboard.writeText(draft);
+      setCopyStatus(copy.recovery.copied);
+    } catch {
+      setCopyStatus("");
+    }
+  }
+
+  const commonFieldProps = {
+    "aria-describedby": statusId,
+    "aria-invalid": snapshot.phase === "validation" || undefined,
+    "aria-label": fieldLabel,
+    className: "triage-inline-editor__field",
+    "data-triage-role": "inline-editor-field",
+    id: fieldId,
+    onBlur: handleFieldBlur,
+    onChange: (
+      event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => editor.changeDraft(event.target.value),
+    onCompositionEnd: () => {
+      isComposingRef.current = false;
+    },
+    onCompositionStart: () => {
+      isComposingRef.current = true;
+    },
+    onKeyDown: handleFieldKeyDown,
+    readOnly:
+      snapshot.phase === "saving" || snapshot.phase === "reconciling",
+    value: snapshot.draft,
+  };
+
+  return (
+    <div
+      ref={surfaceRef}
+      className="triage-inline-editor"
+      data-triage-editor-state={snapshot.phase.replace("_", "-")}
+      data-triage-editor-surface={surface}
+      data-triage-role={surfaceRole}
+    >
+      {snapshot.phase === "invalidated" ? (
+        <div data-triage-role="inline-editor-recovery">
+          <strong>{copy.recovery.heading}</strong>
+          <p>
+            {isScratchTitle
+              ? copy.recovery.scratchInvalid
+              : copy.recovery.breakdownInvalid}
+          </p>
+          <p>{copy.recovery.review}</p>
+          <div className="triage-inline-editor__value" data-triage-role="inline-editor-draft">
+            <span>{copy.conflict.draft}</span>
+            <p>{snapshot.copyableDraft ?? snapshot.draft}</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <label className="sr-only" htmlFor={fieldId}>
+            {fieldLabel}
+          </label>
+          {isScratchTitle ? (
+            <input ref={fieldRef as RefObject<HTMLInputElement>} type="text" {...commonFieldProps} />
+          ) : (
+            <textarea ref={fieldRef as RefObject<HTMLTextAreaElement>} rows={2} {...commonFieldProps} />
+          )}
+          {snapshot.phase === "conflict" && snapshot.latest !== null && (
+            <div className="triage-inline-editor__compare" data-triage-role="inline-editor-compare">
+              <div className="triage-inline-editor__value" data-triage-role="inline-editor-latest">
+                <span>{copy.conflict.latest}</span>
+                <p>{snapshot.latest.value}</p>
+              </div>
+              <div className="triage-inline-editor__value" data-triage-role="inline-editor-draft">
+                <span>{copy.conflict.draft}</span>
+                <p>{snapshot.draft}</p>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      <div
+        id={statusId}
+        aria-atomic="true"
+        aria-live="polite"
+        className="triage-inline-editor__status"
+        data-triage-role="inline-editor-status"
+      >
+        {statusCopy}
+        {latestStatus && <span> {latestStatus}</span>}
+        {copyStatus && (
+          <span data-triage-role="inline-editor-copy-status"> {copyStatus}</span>
+        )}
+      </div>
+
+      <div className="triage-inline-editor__actions" data-triage-role="inline-editor-actions">
+        {(snapshot.phase === "pristine" ||
+          snapshot.phase === "dirty" ||
+          snapshot.phase === "validation") && (
+          <>
+            <Button
+              disabled={snapshot.phase !== "dirty"}
+              size="xs"
+              type="button"
+              onClick={() => void onSave()}
+            >
+              {INBOX_TRIAGE_COPY.baseActions.save}
+            </Button>
+            <Button size="xs" type="button" variant="outline" onClick={() => editor.cancel()}>
+              {INBOX_TRIAGE_COPY.baseActions.cancel}
+            </Button>
+          </>
+        )}
+        {snapshot.phase === "saving" && (
+          <>
+            <Button disabled size="xs" type="button">
+              {snapshot.pendingIntent
+                ? copy.status.savingBeforeContinuing
+                : copy.status.saving}
+            </Button>
+            {snapshot.pendingIntent && (
+              <Button size="xs" type="button" variant="outline" onClick={editor.stayHere}>
+                {copy.actions.stayHere}
+              </Button>
+            )}
+          </>
+        )}
+        {snapshot.phase === "offline" && (
+          <>
+            <Button
+              disabled={!isBrowserOnline}
+              size="xs"
+              type="button"
+              onClick={() => void onSave()}
+            >
+              {copy.actions.retrySave}
+            </Button>
+            <Button size="xs" type="button" variant="outline" onClick={() => editor.cancel()}>
+              {INBOX_TRIAGE_COPY.baseActions.cancel}
+            </Button>
+          </>
+        )}
+        {snapshot.phase === "not_applied" && (
+          <>
+            <Button size="xs" type="button" onClick={() => void onSave()}>
+              {copy.actions.retrySave}
+            </Button>
+            <Button size="xs" type="button" variant="outline" onClick={() => editor.cancel()}>
+              {INBOX_TRIAGE_COPY.baseActions.cancel}
+            </Button>
+          </>
+        )}
+        {snapshot.phase === "reconciling" && (
+          <>
+            <Button disabled size="xs" type="button">{copy.status.reconciling}</Button>
+            {snapshot.pendingIntent && (
+              <Button size="xs" type="button" variant="outline" onClick={editor.stayHere}>
+                {copy.actions.stayHere}
+              </Button>
+            )}
+          </>
+        )}
+        {snapshot.phase === "conflict" && (
+          <>
+            <Button size="xs" type="button" onClick={() => void onUseMine()}>
+              {copy.conflict.useMine}
+            </Button>
+            <Button size="xs" type="button" variant="outline" onClick={editor.useLatest}>
+              {copy.conflict.useLatest}
+            </Button>
+            <Button size="xs" type="button" variant="ghost" onClick={() => void copyDraft()}>
+              {copy.conflict.copyDraft}
+            </Button>
+          </>
+        )}
+        {snapshot.phase === "invalidated" && (
+          <>
+            <Button size="xs" type="button" onClick={() => void copyDraft()}>
+              {copy.conflict.copyDraft}
+            </Button>
+            <Button size="xs" type="button" variant="outline" onClick={() => editor.cancel()}>
+              {copy.recovery.close}
+            </Button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function BreakdownRow({
   row,
   isStaged,
   isOperationLocked,
+  editor,
+  onEdit,
   onDelete,
+  onEditRef,
+  onSave,
+  onUseMine,
   onRowRef,
 }: {
   row: ScratchBreakdown;
   isStaged: boolean;
   isOperationLocked: boolean;
+  editor: ConditionalEditor;
+  onEdit: (row: ScratchBreakdown, isStaged: boolean) => void;
   onDelete: (id: string) => void;
+  onEditRef: (id: string, element: HTMLButtonElement | null) => void;
+  onSave: () => Promise<boolean>;
+  onUseMine: () => Promise<boolean>;
   onRowRef: (id: string, element: HTMLDivElement | null) => void;
 }) {
   const {
@@ -74,6 +415,11 @@ function BreakdownRow({
       : isMuted
         ? "text-muted-foreground"
         : "text-muted-foreground/45";
+  const editorSnapshot =
+    editor.snapshot?.target.kind === "breakdown" &&
+    editor.snapshot.target.id === row.id
+      ? editor.snapshot
+      : null;
 
   return (
     <div
@@ -109,40 +455,90 @@ function BreakdownRow({
           data-testid="breakdown-grip"
         />
       </button>
-      <div className="min-w-0 flex-1">
-        <div
-          className={cn(
-            "whitespace-pre-wrap break-words text-sm leading-5 transition-colors",
-            isMuted ? "text-muted-foreground" : "text-foreground",
-          )}
-        >
-          {row.content}
-        </div>
-      </div>
+      {editorSnapshot !== null ? (
+        <InlineEditor
+          editor={editor}
+          onSave={onSave}
+          onUseMine={onUseMine}
+          snapshot={editorSnapshot}
+        />
+      ) : (
+        <>
+          <div className="min-w-0 flex-1">
+            <div
+              className={cn(
+                "whitespace-pre-wrap break-words text-sm leading-5 transition-colors",
+                isMuted ? "text-muted-foreground" : "text-foreground",
+              )}
+            >
+              {row.content}
+            </div>
+          </div>
+          <button
+            ref={(element) => onEditRef(row.id, element)}
+            aria-label={INBOX_TRIAGE_COPY.baseActions.edit}
+            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            data-triage-role="breakdown-row-action"
+            disabled={isStaged || isOperationLocked || editor.snapshot !== null}
+            title={INBOX_TRIAGE_COPY.baseActions.edit}
+            type="button"
+            onClick={() => onEdit(row, isStaged)}
+          >
+            <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+          <button
+            aria-label={INBOX_TRIAGE_COPY.baseActions.delete}
+            className={cn(
+              "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-destructive/10 hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              isDragging && "text-muted-foreground",
+            )}
+            data-triage-role="breakdown-row-action"
+            disabled={isStaged || isOperationLocked || editor.snapshot !== null}
+            title={INBOX_TRIAGE_COPY.baseActions.delete}
+            type="button"
+            onClick={() => onDelete(row.id)}
+          >
+            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+function InvalidatedBreakdownRecoveryRow({
+  editor,
+  onSave,
+  onUseMine,
+  snapshot,
+}: {
+  editor: ConditionalEditor;
+  onSave: () => Promise<boolean>;
+  onUseMine: () => Promise<boolean>;
+  snapshot: OpenEditorSnapshot;
+}) {
+  return (
+    <div
+      className="group flex min-h-12 items-start gap-2 border-b border-border/30 py-2 last:border-b-0"
+      data-testid="breakdown-row"
+      data-triage-role="breakdown-active-row"
+      data-triage-state="invalidated"
+      role="listitem"
+    >
       <button
-        aria-label={INBOX_TRIAGE_COPY.baseActions.edit}
-        className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-        data-triage-role="breakdown-row-action"
+        aria-label="Drag breakdown"
+        className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/20"
         disabled
-        title={INBOX_TRIAGE_COPY.baseActions.edit}
         type="button"
       >
-        <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+        <GripVertical aria-hidden="true" className="h-4 w-4" />
       </button>
-      <button
-        aria-label={INBOX_TRIAGE_COPY.baseActions.delete}
-        className={cn(
-          "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-destructive/10 hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          isDragging && "text-muted-foreground",
-        )}
-        data-triage-role="breakdown-row-action"
-        disabled={isStaged || isOperationLocked}
-        title={INBOX_TRIAGE_COPY.baseActions.delete}
-        type="button"
-        onClick={() => onDelete(row.id)}
-      >
-        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-      </button>
+      <InlineEditor
+        editor={editor}
+        onSave={onSave}
+        onUseMine={onUseMine}
+        snapshot={snapshot}
+      />
     </div>
   );
 }
@@ -194,7 +590,15 @@ export function BreakdownPanel() {
   const inputRef = useRef<HTMLInputElement>(null);
   const addEntryRef = useRef<HTMLInputElement | HTMLDivElement | null>(null);
   const contextRef = useRef<HTMLDivElement>(null);
+  const contextEditRef = useRef<HTMLButtonElement>(null);
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
+  const rowEditRefs = useRef(new Map<string, HTMLButtonElement>());
+  const lastEditorTargetRef = useRef<OpenEditorSnapshot["target"] | null>(null);
+  const [invalidatedRowPosition, setInvalidatedRowPosition] = useState<{
+    id: string;
+    index: number;
+  } | null>(null);
+  const [editorAnnouncement, setEditorAnnouncement] = useState("");
   const pendingAddedRowIdRef = useRef<string | null>(null);
   const pendingDeleteFocusRef = useRef<{
     deletedId: string;
@@ -219,6 +623,60 @@ export function BreakdownPanel() {
       : null;
   const selectedScratch =
     activeScratchBits.find((bit) => bit.id === selectedScratchId) ?? null;
+
+  async function handleEditorSave(): Promise<boolean> {
+    const snapshot = editor.snapshot;
+    const changed = snapshot !== null && snapshot.draft !== snapshot.base.value;
+    const applied = await editor.save();
+    if (applied && changed) {
+      setEditorAnnouncement(INBOX_TRIAGE_COPY.inlineEditor.status.saved);
+    }
+    return applied;
+  }
+
+  async function handleEditorUseMine(): Promise<boolean> {
+    const applied = await editor.useMine();
+    if (applied) {
+      setEditorAnnouncement(INBOX_TRIAGE_COPY.inlineEditor.status.saved);
+    }
+    return applied;
+  }
+
+  function handleOpenScratchTitle() {
+    if (selectedScratch === null || !editor.openScratchTitle(selectedScratch)) return;
+    setEditorAnnouncement("");
+  }
+
+  function handleOpenBreakdown(row: ScratchBreakdown, isStaged: boolean) {
+    if (!editor.openBreakdown(row, isStaged)) return;
+    setInvalidatedRowPosition({
+      id: row.id,
+      index: breakdowns.findIndex((candidate) => candidate.id === row.id),
+    });
+    setEditorAnnouncement("");
+  }
+
+  useEffect(() => {
+    if (editor.snapshot !== null) {
+      lastEditorTargetRef.current = editor.snapshot.target;
+      return;
+    }
+    const lastTarget = lastEditorTargetRef.current;
+    if (lastTarget === null) return;
+    if (editor.focusIntent === "edit-trigger") {
+      if (lastTarget.kind === "scratch-title") contextEditRef.current?.focus();
+      else rowEditRefs.current.get(lastTarget.id)?.focus();
+    } else if (editor.focusIntent === "active-scratch-fallback") {
+      if (lastTarget.kind === "scratch-title") contextRef.current?.focus();
+      else {
+        const rowIndex = breakdowns.findIndex((row) => row.id === lastTarget.id);
+        const nextRow = breakdowns[rowIndex + 1] ?? breakdowns[rowIndex - 1];
+        if (nextRow !== undefined) rowEditRefs.current.get(nextRow.id)?.focus();
+        else addEntryRef.current?.focus();
+      }
+    }
+    lastEditorTargetRef.current = null;
+  }, [breakdowns, editor.focusIntent, editor.snapshot]);
 
   useEffect(() => {
     const editorSnapshot = editor.snapshot;
@@ -431,8 +889,37 @@ export function BreakdownPanel() {
     );
   }
 
+  const missingInvalidatedBreakdown =
+    editor.snapshot?.phase === "invalidated" &&
+    editor.snapshot.target.kind === "breakdown" &&
+    !breakdowns.some((row) => row.id === editor.snapshot?.target.id)
+      ? editor.snapshot
+      : null;
+  const invalidatedInsertIndex =
+    missingInvalidatedBreakdown === null
+      ? -1
+      : Math.min(
+          invalidatedRowPosition?.id === missingInvalidatedBreakdown.target.id
+            ? invalidatedRowPosition.index
+            : breakdowns.length,
+          breakdowns.length,
+        );
+  const breakdownRenderItems: Array<
+    | { kind: "row"; row: ScratchBreakdown }
+    | { kind: "recovery"; snapshot: OpenEditorSnapshot }
+  > = breakdowns.map((row) => ({ kind: "row", row }));
+  if (missingInvalidatedBreakdown !== null) {
+    breakdownRenderItems.splice(invalidatedInsertIndex, 0, {
+      kind: "recovery",
+      snapshot: missingInvalidatedBreakdown,
+    });
+  }
+
   return (
     <div className="flex flex-col h-full">
+      <div aria-atomic="true" aria-live="polite" className="sr-only">
+        {editorAnnouncement}
+      </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
         <div
           ref={contextRef}
@@ -454,12 +941,21 @@ export function BreakdownPanel() {
             >
               Selected Scratch
             </div>
-            <div
-              className="mt-1 whitespace-pre-wrap break-words text-lg font-semibold text-foreground"
-              data-triage-role="context-title"
-            >
-              {selectedScratch?.title ?? "Unknown Scratch"}
-            </div>
+            {editor.snapshot?.target.kind === "scratch-title" ? (
+              <InlineEditor
+                editor={editor}
+                onSave={handleEditorSave}
+                onUseMine={handleEditorUseMine}
+                snapshot={editor.snapshot}
+              />
+            ) : (
+              <div
+                className="mt-1 whitespace-pre-wrap break-words text-lg font-semibold text-foreground"
+                data-triage-role="context-title"
+              >
+                {selectedScratch?.title ?? "Unknown Scratch"}
+              </div>
+            )}
             {selectedScratch !== null && (
               <div className="mt-1 text-xs tabular-nums text-muted-foreground">
                 {formatScratchTimestamp(selectedScratch.createdAt)}
@@ -468,10 +964,16 @@ export function BreakdownPanel() {
           </div>
           <div className="flex flex-shrink-0 items-center gap-2" data-triage-role="context-action-cluster">
             <Button
-              disabled
+              ref={contextEditRef}
+              disabled={
+                selectedScratch === null ||
+                operationLock.activeOperation !== null ||
+                editor.snapshot !== null
+              }
               size="sm"
               type="button"
               variant="outline"
+              onClick={handleOpenScratchTitle}
             >
               <Pencil aria-hidden="true" className="h-3.5 w-3.5" />
               {INBOX_TRIAGE_COPY.baseActions.edit}
@@ -483,6 +985,9 @@ export function BreakdownPanel() {
                   : INBOX_TRIAGE_COPY.baseActions.sortOldestFirst
               }
               data-triage-role="context-sort-control"
+              disabled={
+                operationLock.activeOperation !== null || editor.snapshot !== null
+              }
               size="sm"
               type="button"
               variant="outline"
@@ -498,26 +1003,44 @@ export function BreakdownPanel() {
           </div>
         </div>
 
-        {breakdowns.length > 0 ? (
+        {breakdownRenderItems.length > 0 ? (
           <div className="mt-2" role="list">
-            {breakdowns.map((row) => (
-              <BreakdownRow
-                key={row.id}
-                isStaged={stagedEligibility.stagedSourceIds.has(row.id)}
-                isOperationLocked={operationLock.activeOperation !== null}
-                row={row}
-                onDelete={(breakdownId) =>
-                  setPendingDelete({
-                    scratchBitId: selectedScratchId,
-                    breakdownId,
-                  })
-                }
-                onRowRef={(id, element) => {
-                  if (element === null) rowRefs.current.delete(id);
-                  else rowRefs.current.set(id, element);
-                }}
-              />
-            ))}
+            {breakdownRenderItems.map((item) =>
+              item.kind === "recovery" ? (
+                <InvalidatedBreakdownRecoveryRow
+                  key={`recovery:${item.snapshot.target.id}`}
+                  editor={editor}
+                  onSave={handleEditorSave}
+                  onUseMine={handleEditorUseMine}
+                  snapshot={item.snapshot}
+                />
+              ) : (
+                <BreakdownRow
+                  key={item.row.id}
+                  isStaged={stagedEligibility.stagedSourceIds.has(item.row.id)}
+                  isOperationLocked={operationLock.activeOperation !== null}
+                  editor={editor}
+                  onEdit={handleOpenBreakdown}
+                  onSave={handleEditorSave}
+                  onUseMine={handleEditorUseMine}
+                  row={item.row}
+                  onDelete={(breakdownId) =>
+                    setPendingDelete({
+                      scratchBitId: selectedScratchId,
+                      breakdownId,
+                    })
+                  }
+                  onEditRef={(id, element) => {
+                    if (element === null) rowEditRefs.current.delete(id);
+                    else rowEditRefs.current.set(id, element);
+                  }}
+                  onRowRef={(id, element) => {
+                    if (element === null) rowRefs.current.delete(id);
+                    else rowRefs.current.set(id, element);
+                  }}
+                />
+              ),
+            )}
           </div>
         ) : (
           <div

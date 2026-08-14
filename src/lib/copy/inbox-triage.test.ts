@@ -31,8 +31,8 @@ describe("Inbox/Triage core-English copy", () => {
 
   it("types validation, lifecycle, and live-region keys without inventing reserved copy", () => {
     expect(Object.values(INBOX_TRIAGE_COPY.validation)).toEqual([
-      RECEIPT_COPY_UNAVAILABLE,
-      RECEIPT_COPY_UNAVAILABLE,
+      "Enter a Scratch title.",
+      "Enter breakdown content.",
       RECEIPT_COPY_UNAVAILABLE,
       RECEIPT_COPY_UNAVAILABLE,
     ]);
@@ -64,9 +64,48 @@ describe("Inbox/Triage core-English copy", () => {
     });
   });
 
+  it("owns the complete approved DP-VQ04 inline-editor wording", () => {
+    expect(INBOX_TRIAGE_COPY.inlineEditor).toEqual({
+      status: {
+        pristine: "No changes.",
+        dirty: "Unsaved changes.",
+        saving: "Saving…",
+        savingBeforeContinuing: "Saving before continuing…",
+        offline: "Offline. Your draft is still here.",
+        notApplied: "Not saved. Your draft is still here.",
+        reconciling: "Checking whether your changes were saved…",
+        saved: "Saved.",
+      },
+      conflict: {
+        heading: "This changed elsewhere.",
+        latest: "Latest version",
+        draft: "Your draft",
+        useMine: "Use mine",
+        useLatest: "Use latest",
+        copyDraft: "Copy draft",
+        latestUpdated: "Latest version updated.",
+      },
+      recovery: {
+        heading: "Draft not saved",
+        scratchInvalid: "This Scratch is no longer editable.",
+        breakdownInvalid: "This breakdown is no longer editable.",
+        review: "Review or copy your draft before closing.",
+        copied: "Copied.",
+        close: "Close",
+      },
+      actions: {
+        retrySave: "Retry save",
+        stayHere: "Stay here",
+      },
+    });
+    expect(INBOX_TRIAGE_COPY.liveRegions.inlineEditor).toBe(
+      RECEIPT_COPY_UNAVAILABLE,
+    );
+  });
+
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      138, 140, 141, 143, 144, 147, 148, 150, 151, 153, 154, 157, 160, 162,
+      140, 141, 143, 144, 147, 148, 150, 151, 153, 154, 157, 160, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {

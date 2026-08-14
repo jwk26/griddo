@@ -7,7 +7,6 @@ export type ReceiptCopyUnavailable = typeof RECEIPT_COPY_UNAVAILABLE;
 export type InboxTriageCopyValue = string | ReceiptCopyUnavailable;
 
 type ReceiptCopyTask =
-  | 138
   | 140
   | 141
   | 143
@@ -48,6 +47,39 @@ export interface InboxTriageCopy {
     readonly breakdownContentRequired: InboxTriageCopyValue;
     readonly resultTitleRequired: InboxTriageCopyValue;
     readonly resultTitleTooLong: InboxTriageCopyValue;
+  };
+  readonly inlineEditor: {
+    readonly status: {
+      readonly pristine: string;
+      readonly dirty: string;
+      readonly saving: string;
+      readonly savingBeforeContinuing: string;
+      readonly offline: string;
+      readonly notApplied: string;
+      readonly reconciling: string;
+      readonly saved: string;
+    };
+    readonly conflict: {
+      readonly heading: string;
+      readonly latest: string;
+      readonly draft: string;
+      readonly useMine: string;
+      readonly useLatest: string;
+      readonly copyDraft: string;
+      readonly latestUpdated: string;
+    };
+    readonly recovery: {
+      readonly heading: string;
+      readonly scratchInvalid: string;
+      readonly breakdownInvalid: string;
+      readonly review: string;
+      readonly copied: string;
+      readonly close: string;
+    };
+    readonly actions: {
+      readonly retrySave: string;
+      readonly stayHere: string;
+    };
   };
   readonly lifecycleReasons: {
     readonly externalScratchRemoval: InboxTriageCopyValue;
@@ -114,10 +146,43 @@ export const INBOX_TRIAGE_COPY = {
     sortOldestFirst: "Sort: oldest first",
   },
   validation: {
-    scratchTitleRequired: UNAVAILABLE,
-    breakdownContentRequired: UNAVAILABLE,
+    scratchTitleRequired: "Enter a Scratch title.",
+    breakdownContentRequired: "Enter breakdown content.",
     resultTitleRequired: UNAVAILABLE,
     resultTitleTooLong: UNAVAILABLE,
+  },
+  inlineEditor: {
+    status: {
+      pristine: "No changes.",
+      dirty: "Unsaved changes.",
+      saving: "Saving…",
+      savingBeforeContinuing: "Saving before continuing…",
+      offline: "Offline. Your draft is still here.",
+      notApplied: "Not saved. Your draft is still here.",
+      reconciling: "Checking whether your changes were saved…",
+      saved: "Saved.",
+    },
+    conflict: {
+      heading: "This changed elsewhere.",
+      latest: "Latest version",
+      draft: "Your draft",
+      useMine: "Use mine",
+      useLatest: "Use latest",
+      copyDraft: "Copy draft",
+      latestUpdated: "Latest version updated.",
+    },
+    recovery: {
+      heading: "Draft not saved",
+      scratchInvalid: "This Scratch is no longer editable.",
+      breakdownInvalid: "This breakdown is no longer editable.",
+      review: "Review or copy your draft before closing.",
+      copied: "Copied.",
+      close: "Close",
+    },
+    actions: {
+      retrySave: "Retry save",
+      stayHere: "Stay here",
+    },
   },
   lifecycleReasons: {
     externalScratchRemoval: UNAVAILABLE,
@@ -156,7 +221,6 @@ export const INBOX_TRIAGE_COPY = {
     clearPoolSearch: "Clear search",
   },
   receiptDependent: {
-    138: UNAVAILABLE,
     140: UNAVAILABLE,
     141: UNAVAILABLE,
     143: UNAVAILABLE,
