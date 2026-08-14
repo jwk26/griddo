@@ -45,11 +45,51 @@ Automated interaction capture in
   themes (`griddo`, `tiny-desk`, `neumorphism`, `claymorphism`, `origami`,
   `terminal`, `retro-mac`, `graphite`).
 
-The in-app browser plugin was present but its required Node REPL execution tool
-was not exposed in this session, so `browser-client` could not be bootstrapped
-and no raster screenshot was manufactured through an unapproved fallback.
-Automated DOM/interaction/theme evidence is complete; raster visual judgment
-remains in `Review now` at the user checkpoint.
+## Browser Visual And Interaction Evidence
+
+The user explicitly approved external `mcp__playwright__*` for this Task 138
+verification-only repair as a separate evidence modality, not as a
+`browser-client` fallback. The production consumer was exercised at
+`/grid/887acc49-6441-4ba6-b2e5-851a0d9d8c3f` with a 1440 x 900 viewport, a
+real Quick Capture Scratch named `Phase 27 visual review scratch`, and a real
+Breakdown row named `Confirm venue, budget, and launch checklist`.
+
+Durable raster artifacts are under
+`docs/verification/inbox-triage/captures/`:
+
+- `task-138-title-dirty-{theme}-{light|dark}-1440x900.png`: 16 captures;
+- `task-138-row-dirty-{theme}-{light|dark}-1440x900.png`: 16 captures;
+- `task-138-title-{pristine|validation}-griddo-light-1440x900.png`: two
+  representative state captures;
+- `task-138-row-{pristine|validation}-griddo-light-1440x900.png`: two
+  representative state captures.
+
+For both editors, every dirty-state raster was inspected in light and dark for
+all eight themes (`griddo`, `tiny-desk`, `neumorphism`, `claymorphism`,
+`origami`, `terminal`, `retro-mac`, `graphite`). The inline source placement,
+field and focus-ring visibility, status/action hierarchy, disabled surrounding
+controls, typography, contrast, and container geometry remained legible and
+coherent. No clipping, overflow, detached editor, obscured action, or visual
+product defect was found. The representative pristine and validation captures
+also show disabled Save for unchanged input and the inline error with disabled
+Save for empty input.
+
+The same production session confirmed actual interaction behavior:
+
+- title Escape restored the authoritative title and returned focus to its
+  Context Edit trigger;
+- row Cancel restored the authoritative content and returned focus to the
+  exact row Edit trigger;
+- the real color-theme control and light/dark control were each activated
+  while the row editor was dirty; the draft and `Unsaved changes.` remained,
+  with no blur-save or editor dismissal;
+- the title and row empty-input Save attempts exposed the expected invalid
+  field and validation copy without dispatching a save.
+
+Keyboard composition/IME protection and the remaining asynchronous state
+matrix are covered by the committed automated interaction evidence above;
+external Playwright was used to add raster judgment and production-route
+interaction evidence, not to replace those deterministic tests.
 
 ## Verification Commands
 
@@ -64,14 +104,18 @@ remains in `Review now` at the user checkpoint.
 | `pnpm typecheck` | 0 | `tsc --noEmit` passed in the serial full gate |
 | `pnpm build` | 0 | Next.js 16.2.1 production build passed; seven routes generated |
 
+The successful gates above were not rerun during the verification-only repair:
+their product/test inputs did not change, and `HEAD:src` remained
+`ff50e3e769543faca79b15e3fcc115895ccf0f28` before the evidence commit.
+
 ## Review
 
 - Blocking findings: None.
 - Repaired findings: removed an unapproved invented live-region label; enabled
   Offline Retry only after reconnect; replaced effect-derived render state that
   caused duplicate invalidation and React Compiler lint errors.
-- Remaining risk: raster appearance and manual pointer/keyboard review were not
-  available because the required in-app browser execution tool was absent.
+- Remaining risk: None identified within the canonical Task 138 visual and
+  interaction scope.
 - Canonical impact: `None`; implementation consumes already-approved
   `DP-VQ04` without changing product, design, schema, or policy authority.
 
@@ -80,8 +124,9 @@ remains in `Review now` at the user checkpoint.
 - Visible now: Both approved inline editors, their complete state/copy/action
   treatments, focus behavior, recovery surfaces, static reduced-motion styling,
   and theme-variable realization.
-- Review now: Raster visual judgment across representative theme/mode states;
-  no screenshot was captured in this session.
+- Review now: None; both editors were raster-reviewed across all eight themes
+  in light and dark, with representative pristine and validation states plus
+  production-route focus and theme-switch interactions.
 - Planned later: Task 139+ coordinators and Task 143 route `Check again` →
   reconciliation → terminal focus/release UI.
 - Unowned: None.
