@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Task 136 accepted; Task 137 not started
+> State: Task 136 accepted; Task 137 in progress
 
 ## Status Legend
 
@@ -108,3 +108,20 @@ following phase-local verification-staging conflict:
 | Verification | `docs/verification/inbox-triage/task-136.md`; focused 5 files / 110 tests, changed-file lint pass, typecheck and diff-check pass; canonical-route Add/Delete/lock/focus/scroll observations recorded; single adapter full gate passed 93 files / 769 tests, lint with 0 errors and 11 existing warnings, typecheck, and build and was not rerun for the documentation-only repair |
 | Acceptance | On 2026-08-14 the user explicitly accepted checkpoint `318739fe1a528b2b8e62153bdd9b77905142b919` and approved this acceptance-only marker/ledger update; existing successful verification evidence was reused |
 | Next legal action | Stop at the clean Task 136 acceptance checkpoint; do not start Task 137 without a separate user-approved run-task scope |
+
+## Task 137 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `137` — build headless conditional editor and blocker state |
+| State | `In Progress`; user-approved implementation scope, with `[ ]` retained pending checkpoint acceptance |
+| Approved scope | The committed canonical Task 137 contract in `docs/EXECUTION_PLAN.md` plus the explicit 2026-08-14 Task 137-only user approval: modify only the named scratch-breakdown hook/tests, Breakdown/Workspace component/tests, extend the operation-lock test, and record Task 137 verification evidence; consume Task 136's shared operation lock for the headless conditional Scratch-title/row editor and synchronous blocker state |
+| Kickoff receipt | Run-phase Gate C receipt `docs/issues/Issues_Phase_27.gate-c.json` at Git blob `08c7a5e524f7a89bd10adc5cea71963f54870d38`; intentionally not passed to the run-task resolver |
+| Start base / entrypoint / recovery anchor | `02675c3c2c44939bb71506eb64dd1904d8e0bfa7` |
+| Dependencies | Accepted Tasks 120, 132, and 136 are ancestors of the approved Task 137 entrypoint |
+| Excluded | `DP-VQ04` visual/copy realization, generic dialog, Task 139+, and Task 143 route `Check again` reconciliation UI |
+| Issues / deviations | None |
+| Canonical impact | `None` — Task 137 executes the already-reflected canonical contract without changing product/design/policy authority |
+| Implementation | Not yet committed |
+| Verification | Failing evidence and bounded verification loop not yet recorded |
+| Next legal action | Write failing Task 137 behavior tests before production changes, then implement and stop at the user checkpoint with Task 137 still `[ ]` |
