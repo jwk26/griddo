@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Task 136 implemented; awaiting explicit user acceptance
+> State: Task 136 accepted; Task 137 not started
 
 ## Status Legend
 
@@ -95,7 +95,7 @@ following phase-local verification-staging conflict:
 | Field | Durable value |
 | --- | --- |
 | Task | `136` — connect headless Add and Delete interaction behavior |
-| State | `Implemented`; awaiting explicit user acceptance and remains `[ ]` |
+| State | `Accepted`; user-approved and marked `[x]` |
 | Approved scope | Gate C `task_scope.task_136` plus the explicit Task 136-only user approval and the 2026-08-14 targeted canonical-repair approval; implementation remains limited to the listed Breakdown, Workspace, Pool, scratch-breakdown hook/tests, new operation-lock hook/tests, and Task 136 evidence, while this repair changes only `docs/EXECUTION_PLAN.md`, this ledger, and Task 136 evidence |
 | Kickoff receipt | `docs/issues/Issues_Phase_27.gate-c.json` at Git blob `08c7a5e524f7a89bd10adc5cea71963f54870d38` |
 | Start base / recovery anchor | `f10638ce84c4503c88dc8212c46431f91f709e34` |
@@ -106,4 +106,5 @@ following phase-local verification-staging conflict:
 | Canonical impact | `Reflected` — Task 136 now owns route evidence through retained unknown/blocked actions plus hook-level reconciliation, while Task 143 retains route `Check again` → reconciliation → terminal/focus |
 | Implementation | `cf0b08db8d9be2a8c8653fa773c969b35d034569` — `feat(triage): connect locked breakdown commands` |
 | Verification | `docs/verification/inbox-triage/task-136.md`; focused 5 files / 110 tests, changed-file lint pass, typecheck and diff-check pass; canonical-route Add/Delete/lock/focus/scroll observations recorded; single adapter full gate passed 93 files / 769 tests, lint with 0 errors and 11 existing warnings, typecheck, and build and was not rerun for the documentation-only repair |
-| Next legal action | Green checkpoint: wait for explicit user acceptance or targeted rejection; do not write `[x]` or start Task 137 |
+| Acceptance | On 2026-08-14 the user explicitly accepted checkpoint `318739fe1a528b2b8e62153bdd9b77905142b919` and approved this acceptance-only marker/ledger update; existing successful verification evidence was reused |
+| Next legal action | Stop at the clean Task 136 acceptance checkpoint; do not start Task 137 without a separate user-approved run-task scope |
