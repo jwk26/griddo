@@ -104,4 +104,3 @@ suite, lint, typecheck, build, and diff-check were rerun after that repair.
   own their declared coordinators; Task 143 retains route `Check again` →
   reconciliation → terminal/focus ownership.
 - Unowned: None.
-
