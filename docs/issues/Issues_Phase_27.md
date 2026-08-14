@@ -140,6 +140,6 @@ following phase-local verification-staging conflict:
 | Excluded | Generic Dialog/AlertDialog or detached fallback surfaces, Task 139+, and Task 143 route `Check again` reconciliation UI |
 | Issues / deviations | None |
 | Canonical impact | `None` — Task 138 executes the already-reflected `DP-VQ04` contract without changing product/design/policy authority |
-| Implementation | `ba643c8bbd7ab19af6546956426e119baabfa80f` — `feat(triage): render conditional inline editors` |
+| Implementation | `ba643c8335fce9c72b39e10104c320b919b7ec02` — `feat(triage): render conditional inline editors` |
 | Verification | `docs/verification/inbox-triage/task-138.md`; three bounded RED cycles; final focused 2 files / 77 tests, changed-file lint, typecheck, and diff-check; adapter full gate passed 93 files / 811 tests, lint with 0 errors and 11 existing warnings, typecheck, and build; automated 18-case dual-editor state matrix plus IME/blur/reconnect/conflict/focus and light/dark eight-theme interaction evidence passed; raster capture remained unavailable because the required in-app browser Node REPL tool was not exposed |
 | Next legal action | Stop at the clean Task 138 user checkpoint; await explicit acceptance or targeted feedback and do not start Task 139, Task 143 route reconciliation UI, or mark Task 138 `[x]` |
