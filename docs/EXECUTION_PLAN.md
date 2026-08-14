@@ -1410,7 +1410,7 @@ publish, or close the phase.
 
 **Commit contract:** mounted-page operation lock, headless Add/Delete adapter, the exact `P23-02` stale-test cleanup, owner tests, and Task 136 evidence only; `feat(triage): connect locked breakdown commands`. The user-approved `P27-01` canonical repair is a documentation-only exception limited to this Task 136 verification clause, Task 143's verification clause, the Phase 27 issue ledger, and Task 136 evidence; it changes no product code, tests, or task marker.
 
-### Task 137: [ ] Build headless conditional editor and blocker state
+### Task 137: [x] Build headless conditional editor and blocker state
 
 **Files and actions:** modify `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, and `src/components/triage/triage-workspace.tsx` and `.test.tsx`; extend `src/hooks/use-triage-operation-lock.test.tsx`. Model mounted-page Scratch-title/row base snapshot, draft, pristine/dirty/validation/saving/offline/not-applied/reconciling/conflict/invalidation, acknowledged latest version, copyable invalidated draft, and save-before-action intent over Task 120. Consume Task 136's shared signal: another active operation blocks opening/saving Edit, while an Edit save synchronously acquires `edit` before dispatch and retains the full matrix through unknown/reconciling until terminal release. Expose a synchronous typed Scratch-title blocker snapshot (`open|dirty|saving|conflicted|reconciling`) to external-removal/completion/Archive coordinators. Implement conditional command/focus semantics in tests but render no missing VQ-04 surface and no generic dialog.
 

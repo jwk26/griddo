@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Task 136 accepted; Task 137 implemented awaiting user review
+> State: Tasks 136–137 accepted; Task 138 not started
 
 ## Status Legend
 
@@ -114,7 +114,7 @@ following phase-local verification-staging conflict:
 | Field | Durable value |
 | --- | --- |
 | Task | `137` — build headless conditional editor and blocker state |
-| State | `Implemented`; awaiting user checkpoint acceptance with `[ ]` retained |
+| State | `Accepted`; user-approved and marked `[x]` |
 | Approved scope | The committed canonical Task 137 contract in `docs/EXECUTION_PLAN.md` plus the explicit 2026-08-14 Task 137-only user approval: modify only the named scratch-breakdown hook/tests, Breakdown/Workspace component/tests, extend the operation-lock test, and record Task 137 verification evidence; consume Task 136's shared operation lock for the headless conditional Scratch-title/row editor and synchronous blocker state |
 | Kickoff receipt | Run-phase Gate C receipt `docs/issues/Issues_Phase_27.gate-c.json` at Git blob `08c7a5e524f7a89bd10adc5cea71963f54870d38`; intentionally not passed to the run-task resolver |
 | Start base / entrypoint / recovery anchor | `02675c3c2c44939bb71506eb64dd1904d8e0bfa7` |
@@ -124,4 +124,5 @@ following phase-local verification-staging conflict:
 | Canonical impact | `None` — Task 137 executes the already-reflected canonical contract without changing product/design/policy authority |
 | Implementation | `bba0da00e5191364592931f612e016d2765acca6` — `feat(triage): model conditional inline edits` |
 | Verification | `docs/verification/inbox-triage/task-137.md`; initial missing-editor RED plus duplicate-open RED; final focused 4 files / 98 tests, changed-file lint and diff-check, typecheck; post-repair adapter full gate passed 93 files / 783 tests, lint with 0 errors and 11 existing warnings, typecheck, and build |
-| Next legal action | Stop at the clean Task 137 user checkpoint; await explicit acceptance or targeted feedback and do not start Task 138 or mark Task 137 `[x]` |
+| Acceptance | On 2026-08-14 the user explicitly accepted checkpoint `d0bc011383b40c382b2ca46cd78653397f9b1e64` and approved this acceptance-only marker/ledger update; existing successful verification evidence was reused without rerunning tests |
+| Next legal action | Stop at the clean Task 137 acceptance checkpoint; do not start Task 138 without a separate user-approved run-task scope |
