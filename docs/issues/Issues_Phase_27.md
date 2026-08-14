@@ -132,7 +132,7 @@ following phase-local verification-staging conflict:
 | Field | Durable value |
 | --- | --- |
 | Task | `138` — render `DP-VQ04` inline editors |
-| State | `Implemented`; awaiting user checkpoint acceptance with Task 138 `[ ]` retained |
+| State | `Accepted`; user-approved and marked `[x]` |
 | Approved scope | The committed canonical Task 138 contract in `docs/EXECUTION_PLAN.md` plus the explicit 2026-08-14 Task 138-only user approval: populate only approved `DP-VQ04` editor copy and render the existing Task 137 Scratch-title/Breakdown-content state machines in `src/components/triage/breakdown-panel.tsx` and tests, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and tests, plus Task 138 verification evidence |
 | Kickoff receipt | Run-phase Gate C receipt `docs/issues/Issues_Phase_27.gate-c.json` at Git blob `08c7a5e524f7a89bd10adc5cea71963f54870d38`; intentionally not passed to the run-task resolver |
 | Start base / entrypoint / recovery anchor | `47269fb9f191541f9f74c1407dc82be85e34e1a0` |
@@ -142,4 +142,5 @@ following phase-local verification-staging conflict:
 | Canonical impact | `None` — Task 138 executes the already-reflected `DP-VQ04` contract without changing product/design/policy authority |
 | Implementation | `ba643c8335fce9c72b39e10104c320b919b7ec02` — `feat(triage): render conditional inline editors` |
 | Verification | `docs/verification/inbox-triage/task-138.md`; three bounded RED cycles; final focused 2 files / 77 tests, changed-file lint, typecheck, and diff-check; adapter full gate passed 93 files / 811 tests, lint with 0 errors and 11 existing warnings, typecheck, and build; automated 18-case dual-editor state matrix plus IME/blur/reconnect/conflict/focus passed; user-approved external Playwright verification added 36 production-route captures covering both dirty editors across light/dark and all eight themes plus representative pristine/validation states, Escape/Cancel focus return, and theme-switch draft retention, with no visual defect found; successful gates were not rerun because product/test inputs were unchanged |
-| Next legal action | Stop at the clean Task 138 user checkpoint; await explicit acceptance or targeted feedback and do not start Task 139, Task 143 route reconciliation UI, or mark Task 138 `[x]` |
+| Acceptance | On 2026-08-14 the user explicitly accepted checkpoint `813c40a6445d1774b9c03a0f8d97f4fcee9ae9c5` and approved this acceptance-only marker/ledger update; existing implementation, successful verification, and visual evidence were reused without rerunning tests |
+| Next legal action | Stop at the clean Task 138 acceptance checkpoint; do not start Task 139 without a separate user-approved fresh run-task scope, and do not start Task 143 route reconciliation UI |

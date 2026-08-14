@@ -1426,7 +1426,7 @@ publish, or close the phase.
 
 **Commit contract:** headless editor/blocker model and tests only; `feat(triage): model conditional inline edits`.
 
-### Task 138: [ ] Render `DP-VQ04` inline editors
+### Task 138: [x] Render `DP-VQ04` inline editors
 
 **Files and actions:** after `DP-VQ04`, modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate only approved editor wording and render the Task 137 Scratch/row state machines exactly across validation, saving, offline/not-applied, reconcile, conflict/use-mine/use-latest, invalidation, draft review/copy, actions, focus, reduced motion, and all themes. Never use generic Dialog/AlertDialog.
 
