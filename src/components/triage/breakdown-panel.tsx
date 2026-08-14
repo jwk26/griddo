@@ -24,7 +24,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useInbox } from "@/hooks/use-inbox";
-import { useScratchBreakdowns } from "@/hooks/use-scratch-breakdowns";
+import {
+  useScratchBreakdowns,
+  useScratchTitleBlockerContext,
+} from "@/hooks/use-scratch-breakdowns";
 import { useStagedCandidates } from "@/hooks/use-staged-candidates";
 import { useTriageOperationLockContext } from "@/hooks/use-triage-operation-lock";
 import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
@@ -153,6 +156,7 @@ function formatScratchTimestamp(createdAt: number): string {
 
 export function BreakdownPanel() {
   const operationLock = useTriageOperationLockContext();
+  const titleBlockerHandle = useScratchTitleBlockerContext();
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
   const scratchPoolExpanded = useTriageStore(
     (state) => state.scratchPoolExpanded,
@@ -175,11 +179,13 @@ export function BreakdownPanel() {
     consumedBreakdownCount,
     hasObservedBreakdownHistory,
     isArchiveEligible,
+    editor,
     addBreakdown,
     deleteBreakdown,
   } = useScratchBreakdowns(
     selectedScratchId,
     breakdownCreatedAtSort,
+    { operationLock, titleBlockerHandle },
   );
   const { counts: stagedCandidateCounts, eligibility: stagedEligibility } =
     useStagedCandidates(selectedScratchId);
@@ -213,6 +219,25 @@ export function BreakdownPanel() {
       : null;
   const selectedScratch =
     activeScratchBits.find((bit) => bit.id === selectedScratchId) ?? null;
+
+  useEffect(() => {
+    const editorSnapshot = editor.snapshot;
+    if (editorSnapshot === null || editorSnapshot.phase === "invalidated") return;
+    if (
+      editorSnapshot.target.kind === "scratch-title" &&
+      editorSnapshot.target.id !== selectedScratch?.id
+    ) {
+      editor.invalidate();
+      return;
+    }
+    if (
+      editorSnapshot.target.kind === "breakdown" &&
+      (!breakdowns.some((row) => row.id === editorSnapshot.target.id) ||
+        stagedEligibility.stagedSourceIds.has(editorSnapshot.target.id))
+    ) {
+      editor.invalidate();
+    }
+  }, [breakdowns, editor, selectedScratch?.id, stagedEligibility.stagedSourceIds]);
   const isConsumedCompletion =
     selectedScratch !== null &&
     isArchiveEligible &&

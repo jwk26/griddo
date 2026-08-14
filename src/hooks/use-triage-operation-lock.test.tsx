@@ -81,4 +81,24 @@ describe("useTriageOperationLock", () => {
       operationId: "archive-1",
     });
   });
+
+  it("retains an Edit owner across pending and reconciliation until its terminal result", () => {
+    const { result } = renderHook(() => useTriageOperationLock());
+
+    act(() => {
+      expect(result.current.acquire("edit", "edit-1")).toBe(true);
+      expect(result.current.isLocked()).toBe(true);
+      expect(result.current.acquire("delete", "delete-1")).toBe(false);
+    });
+    expect(result.current.activeOperation).toEqual({
+      kind: "edit",
+      operationId: "edit-1",
+    });
+
+    act(() => {
+      expect(result.current.release("edit-1", "conflict")).toBe(true);
+    });
+    expect(result.current.isLocked()).toBe(false);
+    expect(result.current.activeOperation).toBeNull();
+  });
 });

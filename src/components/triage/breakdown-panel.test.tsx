@@ -41,6 +41,20 @@ const triageStoreState = vi.hoisted(() => ({
   setScratchPoolExpanded: vi.fn() as ReturnType<typeof vi.fn>,
 }));
 const useScratchBreakdownsMock = vi.hoisted(() => vi.fn());
+const editorState = vi.hoisted(() => ({
+  snapshot: null as null | { target: { kind: "scratch-title" | "breakdown"; id: string }; phase: string },
+  titleBlocker: null,
+  openScratchTitle: vi.fn(),
+  openBreakdown: vi.fn(),
+  changeDraft: vi.fn(),
+  save: vi.fn(),
+  reconcile: vi.fn(),
+  useMine: vi.fn(),
+  useLatest: vi.fn(),
+  cancel: vi.fn(),
+  invalidate: vi.fn(),
+  stayHere: vi.fn(),
+}));
 const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
 const useTriageStoreMock = vi.hoisted(() => vi.fn());
 const getDataStoreMock = vi.hoisted(() => vi.fn());
@@ -50,6 +64,10 @@ const currentTime = new Date(2026, 5, 17, 12, 0, 0).getTime();
 
 vi.mock("@/hooks/use-scratch-breakdowns", () => ({
   useScratchBreakdowns: useScratchBreakdownsMock,
+  useScratchTitleBlockerContext: () => ({
+    getSnapshot: () => null,
+    setSnapshot: vi.fn(),
+  }),
 }));
 
 vi.mock("@/hooks/use-inbox", () => ({
@@ -142,6 +160,12 @@ beforeEach(() => {
     return true;
   });
   triageStoreState.selectedScratchId = null;
+  editorState.snapshot = null;
+  editorState.openScratchTitle.mockReset();
+  editorState.openScratchTitle.mockReturnValue(true);
+  editorState.openBreakdown.mockReset();
+  editorState.openBreakdown.mockReturnValue(true);
+  editorState.invalidate.mockReset();
   triageStoreState.stagedCandidates = {};
   triageStoreState.scratchPoolExpanded = true;
   triageStoreState.scratchPoolManualExpandedForId = null;
@@ -171,6 +195,7 @@ beforeEach(() => {
       isArchiveEligible:
         consumedRows.length > 0 && activeRows.length === 0 && stagedCount === 0,
       operations: [],
+      editor: editorState,
       addBreakdown: hookState.createBreakdown,
       reconcileAddBreakdown: vi.fn(),
       deleteBreakdown: hookState.deleteBreakdown,
@@ -234,6 +259,64 @@ describe("BreakdownPanel", () => {
     expect(screen.getByText("Older note")).toBeInTheDocument();
     expect(screen.queryByText("45m ago")).not.toBeInTheDocument();
     expect(screen.queryByText("2h ago")).not.toBeInTheDocument();
+  });
+
+  it("keeps Task 137 headless without opening a VQ-04 editor surface", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    const row = createScratchBreakdown({ id: "row-1", content: "Editable" });
+    hookState.breakdownsByScratch["scratch-1"] = [row];
+
+    render(<BreakdownPanel />);
+
+    for (const edit of screen.getAllByRole("button", { name: "Edit" })) {
+      expect(edit).toBeDisabled();
+    }
+    expect(editorState.openScratchTitle).not.toHaveBeenCalled();
+    expect(editorState.openBreakdown).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: /Scratch title/i })).not.toBeInTheDocument();
+  });
+
+  it("blocks both Edit entries while another shared operation is active", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Locked" }),
+    ];
+    operationLockState.activeOperation = { kind: "add", operationId: "add-1" };
+
+    render(<BreakdownPanel />);
+
+    expect(screen.getAllByRole("button", { name: "Edit" })).toHaveLength(2);
+    for (const edit of screen.getAllByRole("button", { name: "Edit" })) {
+      expect(edit).toBeDisabled();
+    }
+    expect(editorState.openScratchTitle).not.toHaveBeenCalled();
+    expect(editorState.openBreakdown).not.toHaveBeenCalled();
+  });
+
+  it("invalidates an open row editor when authoritative staging makes the row unsaveable", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    triageStoreState.stagedCandidates = {
+      "scratch-1": [
+        {
+          id: "candidate-1",
+          type: "node",
+          sourceBreakdownId: "row-1",
+          label: "Staged",
+        },
+      ],
+    };
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Staged" }),
+    ];
+    editorState.snapshot = {
+      target: { kind: "breakdown", id: "row-1" },
+      phase: "dirty",
+    };
+
+    render(<BreakdownPanel />);
+
+    expect(editorState.invalidate).toHaveBeenCalledTimes(1);
   });
 
   it("activates the input when clicking the add-note placeholder", () => {
@@ -1051,6 +1134,7 @@ describe("BreakdownPanel", () => {
         hasObservedBreakdownHistory: true,
         isArchiveEligible: false,
         operations: [],
+        editor: editorState,
         addBreakdown: hookState.createBreakdown,
         reconcileAddBreakdown: vi.fn(),
         deleteBreakdown: hookState.deleteBreakdown,
@@ -1124,6 +1208,7 @@ describe("BreakdownPanel", () => {
       hasObservedBreakdownHistory: false,
       isArchiveEligible: false,
       operations: [],
+      editor: editorState,
       addBreakdown: hookState.createBreakdown,
       reconcileAddBreakdown: vi.fn(),
       deleteBreakdown: hookState.deleteBreakdown,
@@ -1143,6 +1228,7 @@ describe("BreakdownPanel", () => {
       hasObservedBreakdownHistory: true,
       isArchiveEligible: false,
       operations: [],
+      editor: editorState,
       addBreakdown: hookState.createBreakdown,
       reconcileAddBreakdown: vi.fn(),
       deleteBreakdown: hookState.deleteBreakdown,
@@ -1166,6 +1252,7 @@ describe("BreakdownPanel", () => {
       hasObservedBreakdownHistory: true,
       isArchiveEligible: true,
       operations: [],
+      editor: editorState,
       addBreakdown: hookState.createBreakdown,
       reconcileAddBreakdown: vi.fn(),
       deleteBreakdown: hookState.deleteBreakdown,
@@ -1184,6 +1271,7 @@ describe("BreakdownPanel", () => {
       hasObservedBreakdownHistory: true,
       isArchiveEligible: false,
       operations: [],
+      editor: editorState,
       addBreakdown: hookState.createBreakdown,
       reconcileAddBreakdown: vi.fn(),
       deleteBreakdown: hookState.deleteBreakdown,

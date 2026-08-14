@@ -27,6 +27,10 @@ import {
   useTriageOperationLock,
 } from "@/hooks/use-triage-operation-lock";
 import {
+  createScratchTitleBlockerHandle,
+  ScratchTitleBlockerContext,
+} from "@/hooks/use-scratch-breakdowns";
+import {
   getTriageRemoveDropId,
   triageCollisionDetection,
   type TriageDropData,
@@ -117,10 +121,13 @@ function TriageRemoveDropTarget({
 
 export function TriageWorkspace({ node }: { node: Node }) {
   const operationLock = useTriageOperationLock();
+  const [titleBlockerHandle] = useState(createScratchTitleBlockerHandle);
 
   return (
     <TriageOperationLockContext.Provider value={operationLock}>
-      <TriageWorkspaceContent node={node} operationLock={operationLock} />
+      <ScratchTitleBlockerContext.Provider value={titleBlockerHandle}>
+        <TriageWorkspaceContent node={node} operationLock={operationLock} />
+      </ScratchTitleBlockerContext.Provider>
     </TriageOperationLockContext.Provider>
   );
 }

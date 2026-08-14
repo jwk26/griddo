@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTriageStore } from "@/stores/triage-store";
 import type { PendingPlacement, TriageDragItem } from "@/hooks/use-dnd";
+import type { ScratchTitleBlockerHandle } from "@/hooks/use-scratch-breakdowns";
 import type { Node } from "@/types";
 import { TriageWorkspace } from "./triage-workspace";
 
@@ -11,6 +12,9 @@ const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
 const handlePlacementConfirmMock = vi.hoisted(() => vi.fn());
 const handlePlacementCancelMock = vi.hoisted(() => vi.fn());
 const useGridDataMock = vi.hoisted(() => vi.fn());
+const titleBlockerHandleState = vi.hoisted(() => ({
+  handle: null as ScratchTitleBlockerHandle | null,
+}));
 
 vi.mock("@/hooks/use-dnd", () => ({
   useTriageDnd: useTriageDndMock,
@@ -28,9 +32,17 @@ vi.mock("@/components/triage/scratch-pool", () => ({
   ScratchPool: () => <div data-testid="scratch-pool" />,
 }));
 
-vi.mock("@/components/triage/breakdown-panel", () => ({
-  BreakdownPanel: () => <div data-testid="breakdown-panel" />,
-}));
+vi.mock("@/components/triage/breakdown-panel", async () => {
+  const { useScratchTitleBlockerContext } = await import(
+    "@/hooks/use-scratch-breakdowns"
+  );
+  return {
+    BreakdownPanel: () => {
+      titleBlockerHandleState.handle = useScratchTitleBlockerContext();
+      return <div data-testid="breakdown-panel" />;
+    },
+  };
+});
 
 vi.mock("@/components/triage/staging-zone", () => ({
   StagingZone: ({ type }: { type: string }) => (
@@ -108,6 +120,7 @@ function createDirectPendingPlacement(
 }
 
 beforeEach(() => {
+  titleBlockerHandleState.handle = null;
   handlePlacementConfirmMock.mockReset();
   handlePlacementConfirmMock.mockResolvedValue(undefined);
   handlePlacementCancelMock.mockReset();
@@ -138,6 +151,14 @@ describe("TriageWorkspace", () => {
     expect(within(workspace).getByTestId("scratch-pool")).toBeInTheDocument();
     expect(within(workspace).getByTestId("breakdown-panel")).toBeInTheDocument();
     expect(workspace).not.toHaveAttribute("data-triage-operation-kind");
+  });
+
+  it("owns one mounted-page synchronous Scratch-title blocker handle", () => {
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(titleBlockerHandleState.handle?.getSnapshot()).toBeNull();
+    titleBlockerHandleState.handle?.setSnapshot("dirty");
+    expect(titleBlockerHandleState.handle?.getSnapshot()).toBe("dirty");
   });
 
   it("renders one semantic shell with visible identities for all four areas", () => {
