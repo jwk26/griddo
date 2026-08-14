@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–137 accepted; Task 138 in progress
+> State: Tasks 136–137 accepted; Task 138 implemented awaiting user review
 
 ## Status Legend
 
@@ -132,7 +132,7 @@ following phase-local verification-staging conflict:
 | Field | Durable value |
 | --- | --- |
 | Task | `138` — render `DP-VQ04` inline editors |
-| State | `In Progress`; implementation remains distinct from user acceptance and Task 138 remains `[ ]` |
+| State | `Implemented`; awaiting user checkpoint acceptance with Task 138 `[ ]` retained |
 | Approved scope | The committed canonical Task 138 contract in `docs/EXECUTION_PLAN.md` plus the explicit 2026-08-14 Task 138-only user approval: populate only approved `DP-VQ04` editor copy and render the existing Task 137 Scratch-title/Breakdown-content state machines in `src/components/triage/breakdown-panel.tsx` and tests, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and tests, plus Task 138 verification evidence |
 | Kickoff receipt | Run-phase Gate C receipt `docs/issues/Issues_Phase_27.gate-c.json` at Git blob `08c7a5e524f7a89bd10adc5cea71963f54870d38`; intentionally not passed to the run-task resolver |
 | Start base / entrypoint / recovery anchor | `47269fb9f191541f9f74c1407dc82be85e34e1a0` |
@@ -140,6 +140,6 @@ following phase-local verification-staging conflict:
 | Excluded | Generic Dialog/AlertDialog or detached fallback surfaces, Task 139+, and Task 143 route `Check again` reconciliation UI |
 | Issues / deviations | None |
 | Canonical impact | `None` — Task 138 executes the already-reflected `DP-VQ04` contract without changing product/design/policy authority |
-| Implementation | In progress |
-| Verification | Pending focused RED, editor/copy tests, adapter gates, and Task 138 interaction/capture evidence |
-| Next legal action | Execute only Task 138 and stop at its clean user checkpoint with the task marker unchanged |
+| Implementation | `ba643c8bbd7ab19af6546956426e119baabfa80f` — `feat(triage): render conditional inline editors` |
+| Verification | `docs/verification/inbox-triage/task-138.md`; three bounded RED cycles; final focused 2 files / 77 tests, changed-file lint, typecheck, and diff-check; adapter full gate passed 93 files / 811 tests, lint with 0 errors and 11 existing warnings, typecheck, and build; automated 18-case dual-editor state matrix plus IME/blur/reconnect/conflict/focus and light/dark eight-theme interaction evidence passed; raster capture remained unavailable because the required in-app browser Node REPL tool was not exposed |
+| Next legal action | Stop at the clean Task 138 user checkpoint; await explicit acceptance or targeted feedback and do not start Task 139, Task 143 route reconciliation UI, or mark Task 138 `[x]` |
