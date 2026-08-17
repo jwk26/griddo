@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–138 accepted; Task 139 in progress
+> State: Tasks 136–138 accepted; Task 139 awaiting user decision
 
 ## Status Legend
 
@@ -83,13 +83,15 @@ started and `$run-task`, relay, and Control Tower were not invoked.
 
 ## Active Issues
 
-None remain active. The ledger retains the terminal Task 136 verification-
-staging conflict and accepted Task 138 targeted canonical repair:
+Task 139 discovered one active canonical-scope conflict. The ledger also retains
+the terminal Task 136 verification-staging conflict and accepted Task 138
+targeted canonical repair:
 
 | ID | Status | Finding | Approved disposition | Canonical impact |
 | --- | --- | --- | --- | --- |
 | `P27-01` | Promoted to Execution Plan | Task 136 required canonical-route `unknown reconcile`, but its production route can only enter and retain unknown state; Task 143 owns the `Check again` production trigger that starts reconciliation. A test-only trigger would not prove a production consumer. | On 2026-08-14 the user approved route verification through unknown row/lock/focus and blocked actions in Task 136, retained Add/Delete reconciliation and terminal-release verification at hook level in Task 136, and kept route `Check again` → reconciliation → terminal/focus in Task 143. | `Reflected` in the Task 136 and Task 143 verification clauses of `docs/EXECUTION_PLAN.md`; no product/test/marker change. |
 | `P27-02` | Closed | The accepted Task 138 realization and its two active visual recipes allowed editor state content to expand the source geometry; the experiment also initially imposed a no-horizontal-movement stop condition. | On 2026-08-18 the user approved the bounded fixed-geometry repair, disclosed caret-following result, recipe correction, exact-source browser evidence, Task 160 compatibility deferral, and repaired checkpoint `a7ab647d3b6733c9452979bac4a9ef5cbba9a9b4`; experiment commit `4c22b8c` records the stop-condition change. | `Reflected` in `DP-VQ04` in `docs/DESIGN_TOKENS.md`, accepted Task 138 and the retained Task 160 compatibility tag in `docs/EXECUTION_PLAN.md`, both active visual recipes, Task 138 evidence, and this ledger. |
+| `P27-03` | Awaiting User Decision | Task 139 requires synchronous pre-mutation capture/blocking for Scratch, Explorer path, and app-route destinations plus destination focus handoff, but its canonical file list names only the new hook, Workspace, Breakdown, and operation-lock tests. The actual pre-mutation owners are Scratch Pool/store selection, Hierarchy Explorer path actions, and route-navigation owners above the Workspace. A Workspace Zustand subscriber can only roll back after forbidden state was observable, while the generic controller alone cannot block real path/route exits. | Choose either a targeted Task 139 canonical scope expansion to the actual consumer owners and tests, or narrow/defer the affected observable acceptance in a canonical amendment. Do not ship the post-mutation rollback or claim path/route coverage from controller-only tests. | `Tagged` for the Task 139 files/actions and observable-acceptance clauses in `docs/EXECUTION_PLAN.md`; no canonical amendment or later-task implementation has been made. |
 
 ## Task 136 Run State
 
@@ -153,14 +155,14 @@ staging conflict and accepted Task 138 targeted canonical repair:
 | Field | Durable value |
 | --- | --- |
 | Task | `139` — build headless Add-draft departure coordination |
-| State | `In Progress`; implementation is not user-accepted and Task 139 remains `[ ]` |
+| State | `Awaiting User Decision`; implementation is not user-accepted and Task 139 remains `[ ]` |
 | Approved scope | The committed canonical Task 139 contract in `docs/EXECUTION_PLAN.md` plus the explicit 2026-08-18 Task 139-only user approval: create the headless departure coordinator and tests, modify only the named Workspace/Breakdown component tests and wiring, extend shared operation-lock coverage, and record Task 139 verification evidence |
 | Kickoff receipt | Run-phase Gate C receipt `docs/issues/Issues_Phase_27.gate-c.json` at Git blob `08c7a5e524f7a89bd10adc5cea71963f54870d38`; intentionally not passed to the run-task resolver |
 | Start base / entrypoint / recovery anchor | `17babba46969b4b1981fca91c57acc85f1eaf62a`; exact entrypoint `src` tree `9375974b616ae6d6b891937ad04dc6a99d5fbb88` |
 | Dependencies | Accepted Tasks 136 and 137 are ancestors of the approved Task 139 entrypoint |
 | Excluded | Any `DP-VQ03` or other VQ DOM/copy/style realization, Task 138 repair, Task 140+, Task 143 reconciliation UI, and Task 160 compatibility work |
-| Issues / deviations | None |
-| Canonical impact | `None` — Task 139 executes the already-reflected headless coordination contract without changing product/design/policy authority |
-| Implementation | Pending |
-| Verification | Pending focused controller/operation-lock/Workspace/Breakdown evidence and adapter-declared gates |
-| Next legal action | Execute Task 139 only and stop at its clean user checkpoint with Tasks 139 and 140 still `[ ]` |
+| Issues / deviations | `P27-03` — actual synchronous Scratch/path/route and focus consumers fall outside the canonical Task 139 file list; user disposition is required before affected writes |
+| Canonical impact | `Tagged` — reconcile Task 139's files/actions and observable acceptance in `docs/EXECUTION_PLAN.md` after the user chooses expansion or deferral |
+| Implementation | Uncommitted TDD work is preserved in the worktree for inspection; independent review found three blocking Important gaps, so no implementation commit exists |
+| Verification | RED/GREEN controller and component cycles completed; focused 4 files / 145 tests, full 94 files / 852 tests, lint with 0 errors and 11 existing warnings, typecheck, build, and diff-check passed before blocking review; passing checks do not satisfy the missing real-consumer contract |
+| Next legal action | User disposition of `P27-03`; do not continue affected production writes, mark Task 139 `[x]`, or start Task 140 |
