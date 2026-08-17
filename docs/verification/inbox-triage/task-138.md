@@ -1,5 +1,85 @@
 # Task 138 Verification — `DP-VQ04` Inline Editors
 
+## Targeted Fixed-Geometry Repair — 2026-08-18
+
+This section is the current canonical verification evidence for reopened Task
+138. The later sections in this file document the prior accepted realization
+and remain historical evidence only where their geometry or raster judgment
+conflicts with this repair.
+
+### Approved scope and provenance
+
+- Durable start/canonical reflection: `6c2e5095e87f77d8f3c2d4e9ee9814ffb9227503`.
+- Implementation: `68534d00217230529b1988d251a48f66ab6d1ed4`.
+- Approved clean TDD input: `8eb0aec73965d0dd477bdefc7975026a43aa1c5e`.
+- Canonical implementation `src` tree:
+  `9375974b616ae6d6b891937ad04dc6a99d5fbb88`, exactly equal to the approved
+  input tree and reached by changing only `src/components/triage/breakdown-panel.tsx`,
+  its test, and `src/app/globals.css` from the required start.
+- The experiment changed the earlier no-horizontal-movement stop condition at
+  `4c22b8c`; the user subsequently smoke-reviewed and approved browser-managed
+  caret-following horizontal movement. That smoke is approved design/input
+  compatibility evidence, not acceptance of this canonical checkpoint.
+
+### Bounded RED / GREEN evidence
+
+| Step | Command | Exit | Relevant result |
+| --- | --- | ---: | --- |
+| RED | `pnpm test src/components/triage/breakdown-panel.test.tsx` after applying only the approved test diff | 1 | 1 file / 81 tests selected; 33 expected failures exposed missing permanent slots, ordinary status rows, uncapped/multiline fields, and absent source-bound overlays |
+| GREEN | Same focused command after applying the two approved production diffs | 0 | 1 file / 81 tests passed |
+| Exact input check | `git diff --exit-code 8eb0aec73965d0dd477bdefc7975026a43aa1c5e -- <three approved src paths>` | 0 | Canonical working files were byte-for-byte equal to the approved input |
+| Focused lint | `pnpm exec eslint src/components/triage/breakdown-panel.tsx src/components/triage/breakdown-panel.test.tsx` | 0 | No findings |
+| Focused typecheck | `pnpm typecheck` | 0 | `tsc --noEmit` passed |
+| Focused diff check | `git diff --check` | 0 | No whitespace errors |
+
+No repair cycle was needed after GREEN, and no failure signature repeated.
+
+### Adapter full gate
+
+The adapter-declared gate ran once, serially, after focused GREEN:
+
+| Command | Exit | Relevant result |
+| --- | ---: | --- |
+| `pnpm test` | 0 | 93 files / 820 tests passed |
+| `pnpm lint` | 0 | 0 errors; the same 11 existing warnings |
+| `pnpm typecheck` | 0 | `tsc --noEmit` passed |
+| `pnpm build` | 0 | Next.js 16.2.1 production build passed; seven routes generated |
+
+### Interaction and visual evidence boundary
+
+The focused DOM interaction suite directly proves the fixed Context and row
+slots, stable drag/content/action anchors, single-line input elements and
+60/120 limits, absent ordinary status rows, read-only progress states, blurred
+content/source-bound overlays, conflict actions, and keyboard/IME behavior.
+Exact-input comparison and diff review confirm the `9.5rem` action-region CSS
+contract and the absence of custom `Home`/`End` interception; the approved
+experiment smoke is the direct interaction evidence for browser-managed
+caret-following movement.
+
+The in-app browser runtime could not be started because its required Node REPL
+execution tool was not available in this session. The latest Web Interface
+Guidelines helper source also returned timeout/HTTP 429, so no claim is made
+for a fresh browser raster or that auxiliary guideline audit. The 36 existing
+Task 138 captures below describe the prior realization and are not current
+fixed-geometry acceptance evidence. Current visual judgment remains in
+`Review now`; the user-provided experiment smoke establishes compatibility of
+the approved input, not canonical task acceptance.
+
+### Review and checkpoint buckets
+
+- Blocking findings: None in the exact diff, focused behavior evidence, React
+  implementation review, or adapter full gate.
+- Remaining risk: fresh canonical browser raster review was unavailable in
+  this session and remains user-owned at the checkpoint.
+- Canonical impact: `Reflected` in `docs/DESIGN_TOKENS.md`, the reopened Task
+  138 contract in `docs/EXECUTION_PLAN.md`, and the Phase 27 ledger. No archived
+  Phase 24 receipt was changed.
+- Visible now: fixed Scratch-title and Breakdown-content editor geometry,
+  limits, text-style actions, progress action, and source-bound issue overlays.
+- Review now: canonical fixed-geometry visual judgment and acceptance.
+- Planned later: Task 139+ and Task 143 route reconciliation UI.
+- Unowned: None.
+
 ## Scope
 
 - Rendered the accepted `DP-VQ04` Scratch-title and Breakdown-content editors
