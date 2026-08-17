@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–138 accepted; Task 139 not started
+> State: Tasks 136–138 accepted; Task 139 in progress
 
 ## Status Legend
 
@@ -147,3 +147,20 @@ staging conflict and accepted Task 138 targeted canonical repair:
 | Planned later | `DP-VQ11` Scratch-title completion-blocker compatibility belongs only to Task 160: choose and obtain authority for an expression that preserves the fixed Context/action/progress/overlay geometry; no Task 160 UI or product code started here |
 | Acceptance | On 2026-08-18 the user explicitly accepted repaired checkpoint `a7ab647d3b6733c9452979bac4a9ef5cbba9a9b4`, including the exact-source browser evidence and passed user smoke, and directly approved this acceptance-only `[x]`/ledger commit; existing focused/full verification and browser evidence were reused without rerunning gates |
 | Next legal action | Stop at the clean Task 138 acceptance checkpoint; Task 139 remains `[ ]` and may start only through a separate user-approved run-task scope, while `DP-VQ11` fixed-geometry compatibility remains Planned later under Task 160 |
+
+## Task 139 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `139` — build headless Add-draft departure coordination |
+| State | `In Progress`; implementation is not user-accepted and Task 139 remains `[ ]` |
+| Approved scope | The committed canonical Task 139 contract in `docs/EXECUTION_PLAN.md` plus the explicit 2026-08-18 Task 139-only user approval: create the headless departure coordinator and tests, modify only the named Workspace/Breakdown component tests and wiring, extend shared operation-lock coverage, and record Task 139 verification evidence |
+| Kickoff receipt | Run-phase Gate C receipt `docs/issues/Issues_Phase_27.gate-c.json` at Git blob `08c7a5e524f7a89bd10adc5cea71963f54870d38`; intentionally not passed to the run-task resolver |
+| Start base / entrypoint / recovery anchor | `17babba46969b4b1981fca91c57acc85f1eaf62a`; exact entrypoint `src` tree `9375974b616ae6d6b891937ad04dc6a99d5fbb88` |
+| Dependencies | Accepted Tasks 136 and 137 are ancestors of the approved Task 139 entrypoint |
+| Excluded | Any `DP-VQ03` or other VQ DOM/copy/style realization, Task 138 repair, Task 140+, Task 143 reconciliation UI, and Task 160 compatibility work |
+| Issues / deviations | None |
+| Canonical impact | `None` — Task 139 executes the already-reflected headless coordination contract without changing product/design/policy authority |
+| Implementation | Pending |
+| Verification | Pending focused controller/operation-lock/Workspace/Breakdown evidence and adapter-declared gates |
+| Next legal action | Execute Task 139 only and stop at its clean user checkpoint with Tasks 139 and 140 still `[ ]` |
