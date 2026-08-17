@@ -1,7 +1,7 @@
 # Inbox/Triage Breakdown Rows And Empty States — Visual Recipe
 
 > Status: **Proposed — recipe-package user gate pending**
-> Verification: **source-only; no rendered route/state was checked**
+> Verification: **source-only except the exact-source `DP-VQ04` fixed-editor evidence recorded in `docs/verification/inbox-triage/task-138.md`**
 > Production owner: `BreakdownPanel` row list and Add surface (`LAND-BREAKDOWN`, `LAND-THEME`)
 
 ## Authority And Source Regions
@@ -265,80 +265,63 @@ Theme IDs never branch trigger logic, copy, action order, or focus behavior.
 
 ## `DP-VQ04` Approved Breakdown-Content Inline Editor
 
-The Breakdown editor replaces only the active source row's content region with
-a labelled `Breakdown content` text control. It stays in that row and never
-uses a Dialog/AlertDialog, popover, detached conflict card, toast, or another
-row's chrome.
+The Breakdown editor replaces only the active source row's content slot with a
+labelled field. View and edit retain the same row, drag/content/action anchors,
+sorted position, and outer geometry. It never uses a Dialog/AlertDialog,
+popover, detached conflict card, toast, or another row's chrome.
 
-### In-Place Structure And Entry
+### Fixed Structure And Entry
 
-- Keep the row in its current sorted position. The content slot becomes the
-  field; the ordinary Edit/Trash cluster becomes the inline editor action row.
-  The disabled grip remains a stable non-color source cue. The row may grow
-  vertically for status, comparison, or recovery but never changes width or
-  becomes draggable while editing.
-- Place the field first, a persistent status line second, then actions. `Save`
-  is primary and `Cancel` secondary. On entry, focus the field with the caret
-  at the end; do not select all text automatically.
-- `Save` commits, valid blur saves, unchanged content exits without a write,
-  and `Cancel`/`Escape` restores current authoritative content. A surviving
-  row returns focus to Edit. Theme/locale activation and IME composition are
-  explicit no-blur-save boundaries.
+- Keep the row at its existing fixed geometry in every editor state. The drag
+  slot stays fixed and disabled while editing; reserve the existing fixed
+  `9.5rem` action region.
+- Use one labelled, single-line `Breakdown content` text input capped at 120
+  characters. Do not render a textarea, resize affordance, vertical scrolling,
+  or visible scrollbar.
+- Long values use browser-managed caret-following horizontal movement. `Home`
+  returns to `scrollLeft=0`; `End` exposes the terminal caret without
+  entering or overlapping the action region.
+- Keep text-style `Save` and `Cancel` in the fixed action region. Dirty
+  `Save` uses destructive/red emphasis. Entry focuses the field at the end
+  without selecting all text.
+- Save, valid blur, unchanged exit, Cancel/Escape, focus return,
+  theme/locale activation, and IME boundaries preserve Task 137 semantics.
 
-### Exact State And Copy Matrix
+### Fixed State Matrix
 
-| State | Exact visible treatment and copy | Available actions |
+| State | Fixed visible treatment | Fixed action region |
 |---|---|---|
-| Pristine | Field contains base content; status `No changes.` | Disabled `Save`; `Cancel` |
-| Dirty | Field contains protected draft; status `Unsaved changes.` | `Save`; `Cancel` |
-| Validation | Empty field remains open with inline error `Enter breakdown content.` linked to the field | Disabled `Save`; `Cancel` |
-| Saving | Draft remains visible/read-only; status and disabled primary label `Saving…` | Other edit/row actions locked; optional pending-intent `Stay here` remains available |
-| Offline | Draft remains editable; status `Offline. Your draft is still here.` | Disabled `Retry save` until reconnect; `Cancel` |
-| Not applied | Draft remains editable; status `Not saved. Your draft is still here.` | `Retry save`; `Cancel` |
-| Reconciling | Draft remains visible/read-only; status `Checking whether your changes were saved…` | All mutation/dismiss actions locked; optional pending-intent `Stay here` remains available |
-| Conflict | Field keeps the user's draft; in-row comparison heading `This changed elsewhere.` with `Latest version` and `Your draft` full-value regions | `Use mine`; `Use latest`; `Copy draft` |
-| Lifecycle invalidated | Former row position becomes an inline recovery strip: `Draft not saved`, `This breakdown is no longer editable.`, `Review or copy your draft before closing.`, and full `Your draft` value | `Copy draft`; `Close` |
+| Pristine | Editable field with base content; no visible status line | Disabled text-style `Save`; `Cancel` |
+| Dirty | Editable protected draft; no visible status line | Destructive/red text-style `Save`; `Cancel` |
+| Validation | Empty field with in-field/attached `Enter breakdown content.`; no status row | Disabled `Save`; `Cancel` |
+| Saving | Same field retained read-only | Fixed `Saving…` progress action; optional pending-intent `Stay here` preserves existing semantics |
+| Reconciling | Same field retained read-only | Fixed `Checking whether your changes were saved…` progress action; optional `Stay here` |
+| Offline | Source-bound fixed issue overlay over blurred underlying content | `Retry save` remains disabled until reconnect; `Cancel` |
+| Not applied | Source-bound fixed issue overlay over blurred underlying content | `Retry save`; `Cancel` |
+| Conflict | Source-bound fixed issue overlay; no full `Latest version` / `Your draft` comparison regions | `Use mine`; `Use latest`; `Copy draft` |
+| Lifecycle invalidated | Fixed overlay remains at the former source-row position over blurred/protected draft content; no expanding recovery strip | `Copy draft`; `Close` |
 
-`Copy draft` reports `Copied.` once in the row's polite atomic status without
-moving focus or changing state. A newer remote value replaces only `Latest
-version`, announces `Latest version updated.` once, and preserves the full
-user draft and composition/focus.
+The issue overlay carries the existing authoritative status/recovery copy and
+copy acknowledgement without changing row geometry. Conflict preserves the
+acknowledged-latest CAS rule but exposes only `Use mine`, `Use latest`, and
+`Copy draft`, not expanding comparison regions.
 
-### Conflict, Lifecycle, Focus, And Motion
+### Focus, Lifetime, Motion, And Themes
 
-- `Use mine` is primary and starts one new CAS Save against only the latest
-  version the user acknowledged. `Use latest` is secondary, writes nothing,
-  adopts current truth, exits, and returns focus to Edit if the row survives.
-  `Copy draft` is tertiary.
-- When save-before-action owns one pending intent, replace the saving status
-  with `Saving before continuing…`. `Stay here` cancels only that intent, never
-  the Save or draft. Only an applied Save runs the remaining intent once.
+- Validation, offline, not-applied, and conflict preserve Task 137 logical
+  focus. Saving/reconciling retain the focused read-only field. Applied Save
+  announces `Saved.` once and returns to surviving Edit unless a pending
+  intent owns the destination.
 - A staged, consumed, deleted, remotely invalid, or owner-Scratch-invalid row
-  cannot Save or Use mine. The recovery strip remains at the former row
-  position for review/copy; logical focus follows the canonical next-visible
-  row, then Add input fallback. `Close` removes only the recovery strip.
-- Validation, offline, not-applied, and conflict retain logical field focus.
-  Saving/reconciling keep that field mounted and read-only. Applied Save
-  announces `Saved.` once and returns to surviving Edit unless a pending intent
-  owns the next focus destination.
-- State changes use no spinner rotation, pulse, bounce, blink, scale, or layout
-  transition. Reduced motion is identical. Draft, conflict, copy, and recovery
-  state remain mounted-page memory and never survive reload.
-
-### Eight-Theme Mapping
-
-Every theme preserves row identity, exact copy, action order, and state logic:
-
-| Theme | Exact Breakdown editor mapping |
-|---|---|
-| GridDO | The content slot becomes a restrained semantic field; status/comparison use technical rules within the same product row. |
-| Tiny Desk | The row remains the same paper slip with an editable ruled line and inline margin/status sections. |
-| Neumorphism | The content slot becomes an inset channel inside the existing raised row; comparisons remain embedded in that row. |
-| Claymorphism | The row silhouette remains fixed while an inset field and restrained state seams expose editing and recovery. |
-| Origami | The source paper row opens into inline field/comparison folds without becoming a detached card. |
-| Terminal | The source record becomes one editable variable-driven line with static status/diff blocks and no blinking state. |
-| Retro Mac | The list row becomes an in-place 1-bit field and hard inline comparison pane, never a new window. |
-| Graphite | The row becomes an editorial text field with labelled manuscript comparison/recovery blocks and strengthened rules. |
+  cannot Save or Use mine. Invalidation keeps review/copy at the former source
+  position; closing follows the canonical next-visible row, then Add fallback.
+- Draft/conflict/recovery state is mounted-page memory only. Every transition
+  is static and reduced-motion-identical, with no spinner rotation, pulse,
+  bounce, blink, scale, or layout transition.
+- Every theme keeps the same fixed row geometry and semantic tree. Theme
+  variables may style the field, text actions, progress action, blur, and
+  source-bound overlay, but may not add a status row, comparison region,
+  recovery expansion, or theme-specific behavior/copy branch.
 
 ## `DP-VQ05` Approved Add/Delete Attached Reliability States
 
@@ -499,4 +482,4 @@ not prototype or adjacent-surface literals:
 ## Exclusions And Verification
 
 - Excluded: detached or non-source-attached `VQ-11` blockers, source mutation behavior, Add-on-blur, mock delete/placement, row dates/numbers, consumed strike-through, repeated pulse/bounce, and route copy as authority.
-- No row height, list density, staged distinction, empty/completion distinction, focus-visible action, overflow, scroll, contrast, success effect, deletion state, or reduced-motion equivalence was rendered or verified.
+- Task 138 exact-source browser evidence verifies the fixed row/editor geometry, drag/content/action anchors, 120-character caret-following boundary, representative themes, issue overlay, and view/edit stability at source tree `9375974b616ae6d6b891937ad04dc6a99d5fbb88`. Other row, staging, empty/completion, reliability, success, deletion, and reduced-motion recipe concerns remain source-only until their owning tasks verify them.

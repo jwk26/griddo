@@ -1792,7 +1792,7 @@ publish, or close the phase.
 
 ### Task 160: [ ] Render `DP-VQ11` completion blockers and withdrawal
 
-**Files and actions:** after `DP-VQ11`, modify `src/hooks/use-can-archive-scratch.ts` and `.test.ts`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Populate approved wording and render non-empty Add-draft and each Scratch-title blocker plus remote eligibility-withdrawal realization, exact actions/focus/effects/reduced-motion/themes, without altering text or falling back to toast/empty state.
+**Files and actions:** after `DP-VQ11`, modify `src/hooks/use-can-archive-scratch.ts` and `.test.ts`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Populate approved wording and render non-empty Add-draft and each Scratch-title blocker plus remote eligibility-withdrawal realization, exact actions/focus/effects/reduced-motion/themes, without altering text or falling back to toast/empty state. **Planned later compatibility:** before any Task 160 product write, select and reflect a source-bound Scratch-title blocker expression compatible with Task 138's fixed Context geometry, fixed `9.5rem` action region, absent ordinary status line, fixed progress action, and issue overlay; the superseded persistent editor-status placement is not implementation authority, and this Task 138 repair does not choose its replacement.
 
 **Dependencies:** Tasks 118, 128, 137, and 159.
 
@@ -1800,7 +1800,7 @@ publish, or close the phase.
 
 **Recipe:** [`Selected Scratch Context`](recipes/inbox-triage-selected-scratch-context-visual-recipe.md), [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md), and [`Archive completion`](recipes/inbox-triage-archive-completion-visual-recipe.md).
 
-**Observable acceptance:** blocker actions preserve draft/editor and logical focus; loss of eligibility withdraws overlay/complete/reopen with exact reason; recovery follows truth; no blocker auto-saves/submits/persists.
+**Observable acceptance:** blocker actions preserve draft/editor, logical focus, and fixed Task 138 geometry without introducing an ordinary status row or displacing progress/issue actions; loss of eligibility withdraws overlay/complete/reopen with exact reason; recovery follows truth; no blocker auto-saves/submits/persists.
 
 **Verification:** focused hook/Breakdown/Workspace/copy state tests; run both blocker families, every editor state, remote candidate/row change, withdrawal/recovery, focus, reduced motion, and themes, recording `docs/verification/inbox-triage/task-160.md`; `pnpm typecheck`.
 

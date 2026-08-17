@@ -56,28 +56,56 @@ contract and the absence of custom `Home`/`End` interception; the approved
 experiment smoke is the direct interaction evidence for browser-managed
 caret-following movement.
 
-The in-app browser runtime could not be started because its required Node REPL
-execution tool was not available in this session. The latest Web Interface
-Guidelines helper source also returned timeout/HTTP 429, so no claim is made
-for a fresh browser raster or that auxiliary guideline audit. The 36 existing
-Task 138 captures below describe the prior realization and are not current
-fixed-geometry acceptance evidence. Current visual judgment remains in
-`Review now`; the user-provided experiment smoke establishes compatibility of
-the approved input, not canonical task acceptance.
+The in-app browser runtime could not be started by Codex because its required
+Node REPL execution tool was unavailable, and the Web Interface Guidelines
+helper source returned timeout/HTTP 429. The user subsequently supplied the
+exact-source browser measurements and smoke results recorded below. The 36
+existing capture files remain unchanged and describe the prior realization;
+the measurements below, not those old rasters, are the current fixed-geometry
+browser evidence. They do not mark Task 138 accepted.
+
+### Exact-Source Browser Evidence
+
+- Source tree: `9375974b616ae6d6b891937ad04dc6a99d5fbb88`.
+- Route: `/grid/eab62b76-64d7-4410-b089-6bbdf33e3a11`.
+- Viewport: `1440×900`.
+- View/edit transition: no geometry value below changed.
+
+| Region | x | y | width | height |
+| --- | ---: | ---: | ---: | ---: |
+| Context | 348 | 48 | 637.39 | 104 |
+| Context content | 397 | 65 | 407.39 | 70 |
+| Context actions | 816.39 | 65 | 152 | 70 |
+| Row | 348 | 160 | 637.39 | 48 |
+| Row drag | 348 | 160 | 28 | 48 |
+| Row content | 376 | 160 | 457.39 | 48 |
+| Row actions | 833.39 | 160 | 152 | 48 |
+
+| Boundary | clientWidth | scrollWidth | Home `scrollLeft` | End `scrollLeft` | Vertical result |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Scratch title, 60 characters | 401 | 453 | 0 | 52 | `clientHeight === scrollHeight` |
+| Breakdown content, 120 characters | 451 | 933 | 0 | 482 | `clientHeight === scrollHeight` |
+
+Both fields had no visible scrollbar and no text/caret/action overlap. Browser
+review covered GridDO light/dark, Tiny Desk light, Claymorphism dark, Terminal
+dark, Retro Mac light, and Graphite dark. It also confirmed the offline
+source-bound overlay and the offline → saving transition. User smoke passed.
 
 ### Review and checkpoint buckets
 
 - Blocking findings: None in the exact diff, focused behavior evidence, React
   implementation review, or adapter full gate.
-- Remaining risk: fresh canonical browser raster review was unavailable in
-  this session and remains user-owned at the checkpoint.
+- Remaining risk: None identified within the approved Task 138 repair scope;
+  Task 138 acceptance remains separately user-owned.
 - Canonical impact: `Reflected` in `docs/DESIGN_TOKENS.md`, the reopened Task
-  138 contract in `docs/EXECUTION_PLAN.md`, and the Phase 27 ledger. No archived
+  138 and Task 160 compatibility contracts in `docs/EXECUTION_PLAN.md`, both
+  active `DP-VQ04` recipes, this evidence, and the Phase 27 ledger. No archived
   Phase 24 receipt was changed.
 - Visible now: fixed Scratch-title and Breakdown-content editor geometry,
   limits, text-style actions, progress action, and source-bound issue overlays.
-- Review now: canonical fixed-geometry visual judgment and acceptance.
-- Planned later: Task 139+ and Task 143 route reconciliation UI.
+- Review now: Task 138 acceptance.
+- Planned later: Task 139+, Task 143 route reconciliation UI, and Task 160's
+  fixed-geometry-compatible `DP-VQ11` completion-blocker expression.
 - Unowned: None.
 
 ## Scope
