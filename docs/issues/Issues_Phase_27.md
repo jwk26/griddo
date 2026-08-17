@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–138 accepted; Task 139 in progress
+> State: Tasks 136–139 accepted; Task 140 in progress
 
 ## Status Legend
 
@@ -168,3 +168,19 @@ targeted canonical repair:
 | Verification | `docs/verification/inbox-triage/task-139.md`; final focused 8 files / 213 tests, full 94 files / 855 tests, lint with 0 errors and 11 existing warnings, typecheck, production build, and diff-check passed; final independent review reported no Critical or Important findings |
 | Acceptance | On 2026-08-18 the user explicitly accepted checkpoint `0dcaf26c2c1843870771bde10b307d2b124f8326` and approved this acceptance-only marker/ledger update; existing successful verification evidence was reused without rerunning gates |
 | Next legal action | Stop at the clean Task 139 acceptance checkpoint; Task 140 remains `[ ]` and may start only through a separate user-approved run-task scope |
+
+## Task 140 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `140` — render `DP-VQ03` departure confirmation |
+| State | `In Progress`; implementation is not user acceptance and Task 140 remains `[ ]` |
+| Approved scope | The committed canonical Task 140 contract in `docs/EXECUTION_PLAN.md` plus the explicit 2026-08-18 Task 140-only work order: modify only `src/components/triage/triage-workspace.tsx` and its test, `src/components/triage/breakdown-panel.tsx` and its test, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and its test, and Task 140 verification/ledger records to realize the accepted `DP-VQ03` contract on Task 139's exact headless transitions |
+| Kickoff authority | The user supplied an approved Task 140 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; the candidate-pinned resolver returned `approval_required` with `contract_ready=true` as compatibility evidence only |
+| Start base / entrypoint / recovery anchor | `23da87d6ac8a74c35efc425cb8cdb54e2b3246d4`; exact entrypoint `src` tree `a717e61a866fcb28c5139f19c6dab0d394733f76` |
+| Dependencies | Accepted Tasks 108, 128, and 139 are ancestors of the approved Task 140 entrypoint; `DP-VQ03` is accepted and `P27-03` is closed |
+| Excluded | Task 141+, Task 143 reconciliation UI, Task 160 compatibility, Task 138 experiment cleanup, native unload UI, unrelated confirmations, and unrelated code |
+| Issues / deviations | None |
+| Canonical impact | `None` — Task 140 executes the already-reflected and accepted `DP-VQ03` contract without changing product/design/policy authority |
+| Recovery note | Reconciled the stale ledger summary from “Task 139 in progress” to the accepted Task 139 state already proven by the Task 139 section, `docs/EXECUTION_PLAN.md`, and recovery anchor |
+| Next legal action | Commit this durable start signal before production writes, then execute only Task 140 with test-first evidence |
