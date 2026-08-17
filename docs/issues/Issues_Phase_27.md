@@ -155,14 +155,15 @@ targeted canonical repair:
 | Field | Durable value |
 | --- | --- |
 | Task | `139` — build headless Add-draft departure coordination |
-| State | `In Progress`; implementation is not user-accepted and Task 139 remains `[ ]` |
+| State | `Implemented; awaiting user acceptance`; Task 139 remains `[ ]` |
 | Approved scope | The committed canonical Task 139 contract in `docs/EXECUTION_PLAN.md`, the explicit 2026-08-18 Task 139-only approval, and the 2026-08-18 `P27-03` targeted scope expansion: retain the existing hook/Workspace/Breakdown/operation-lock scope and add only the actual Scratch Pool, Hierarchy Explorer, Sidebar, and global Search route owners with their tests for pre-mutation coordination and destination focus |
 | Kickoff receipt | Run-phase Gate C receipt `docs/issues/Issues_Phase_27.gate-c.json` at Git blob `08c7a5e524f7a89bd10adc5cea71963f54870d38`; intentionally not passed to the run-task resolver |
 | Start base / entrypoint / recovery anchor | `17babba46969b4b1981fca91c57acc85f1eaf62a`; exact entrypoint `src` tree `9375974b616ae6d6b891937ad04dc6a99d5fbb88` |
 | Dependencies | Accepted Tasks 136 and 137 are ancestors of the approved Task 139 entrypoint |
 | Excluded | Any `DP-VQ03` or other VQ DOM/copy/style realization, Task 138 repair, Task 140+, Task 143 reconciliation UI, and Task 160 compatibility work |
-| Issues / deviations | `P27-03` — targeted scope expansion approved and canonical impact reflected; repair the three blocking review findings inside the expanded exact owner set |
+| Issues / deviations | `P27-03` — targeted scope expansion approved and canonical impact reflected; all blocking review findings were repaired inside the expanded exact owner set, with final review reporting no Critical or Important findings |
 | Canonical impact | `Reflected` — Task 139's exact files/actions and observable acceptance now name the verified actual owners, pre-mutation requirement, route coverage, and destination-focus handoff |
-| Implementation | Uncommitted TDD work is preserved in the worktree and continues from the existing prototype; no duplicate durable start or replacement implementation is authorized |
-| Verification | Prior RED/GREEN controller and component cycles completed; focused 4 files / 145 tests, full 94 files / 852 tests, lint with 0 errors and 11 existing warnings, typecheck, build, and diff-check passed before blocking review; expanded-owner tests and invalidated gates remain required |
-| Next legal action | Continue Task 139 TDD repair only across the expanded exact owner set and stop at a clean awaiting-acceptance checkpoint with Tasks 139 and 140 still `[ ]` |
+| Implementation | `d987ed2e221999dd27f3050c5352b1771fa4458f` — `feat(triage): coordinate add draft departure`; exact implementation `src` tree `a717e61a866fcb28c5139f19c6dab0d394733f76` |
+| Checkpoint chain | `97129620cdf0e08f015c4c95734bf7946ae105c8` durable start → `e854e75597f47ceddeb50c44fac0df3dab863a42` scope-conflict record → `3d96e6e83bd6c1e8076b22c48c12912ac2ebd5dd` user-approved canonical expansion → `d987ed2e221999dd27f3050c5352b1771fa4458f` implementation |
+| Verification | `docs/verification/inbox-triage/task-139.md`; final focused 8 files / 213 tests, full 94 files / 855 tests, lint with 0 errors and 11 existing warnings, typecheck, production build, and diff-check passed; final independent review reported no Critical or Important findings |
+| Next legal action | Stop at this clean Task 139 awaiting-acceptance checkpoint; keep Tasks 139 and 140 `[ ]` and do not start Task 140 without separate approval |
