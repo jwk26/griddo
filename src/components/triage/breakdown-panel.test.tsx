@@ -264,6 +264,103 @@ describe("BreakdownPanel", () => {
     expect(screen.queryByText("2h ago")).not.toBeInTheDocument();
   });
 
+  it("keeps permanent fixed Context and Breakdown slots in view and edit modes", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Fixed geometry row" }),
+    ];
+
+    const view = render(<BreakdownPanel />);
+
+    const expectContextSlots = () => {
+      const context = screen.getByTestId("selected-scratch-context");
+      expect(context).toHaveAttribute(
+        "data-triage-layout",
+        "fixed-inline-editor",
+      );
+      expect(within(context).getByTestId("context-content-slot")).toHaveAttribute(
+        "data-triage-role",
+        "context-content-slot",
+      );
+      expect(within(context).getByTestId("context-content-slot")).toHaveAttribute(
+        "data-triage-block-slot",
+        "stretch",
+      );
+      expect(within(context).getByTestId("context-action-slot")).toHaveAttribute(
+        "data-triage-role",
+        "context-action-slot",
+      );
+      expect(within(context).getByTestId("context-action-slot")).toHaveAttribute(
+        "data-triage-block-slot",
+        "stretch",
+      );
+    };
+    const expectBreakdownSlots = () => {
+      const row = screen.getByTestId("breakdown-row");
+      expect(row).toHaveAttribute("data-triage-layout", "fixed-inline-editor");
+      expect(within(row).getByTestId("breakdown-drag-slot")).toHaveAttribute(
+        "data-triage-role",
+        "breakdown-drag-slot",
+      );
+      expect(within(row).getByTestId("breakdown-drag-slot")).toHaveAttribute(
+        "data-triage-block-slot",
+        "stretch",
+      );
+      expect(within(row).getByTestId("breakdown-content-slot")).toHaveAttribute(
+        "data-triage-role",
+        "breakdown-content-slot",
+      );
+      expect(within(row).getByTestId("breakdown-content-slot")).toHaveAttribute(
+        "data-triage-block-slot",
+        "stretch",
+      );
+      expect(within(row).getByTestId("breakdown-action-slot")).toHaveAttribute(
+        "data-triage-role",
+        "breakdown-action-slot",
+      );
+      expect(within(row).getByTestId("breakdown-action-slot")).toHaveAttribute(
+        "data-triage-block-slot",
+        "stretch",
+      );
+    };
+
+    expectContextSlots();
+    expectBreakdownSlots();
+    expect(screen.getByText("Fixed geometry row")).toHaveAttribute(
+      "data-triage-role",
+      "breakdown-view-text",
+    );
+
+    editorState.snapshot = {
+      target: { kind: "scratch-title", id: "scratch-1" },
+      phase: "dirty",
+      base: { value: "Scratch", version: 1 },
+      draft: "Scratch title draft",
+      latest: null,
+      copyableDraft: null,
+      pendingIntent: false,
+      focusIntent: "field",
+      command: null,
+    };
+    view.rerender(<BreakdownPanel />);
+    expectContextSlots();
+
+    editorState.snapshot = {
+      target: { kind: "breakdown", id: "row-1" },
+      phase: "dirty",
+      base: { value: "Fixed geometry row", version: 1, order: 0 },
+      draft: "Breakdown draft",
+      latest: null,
+      copyableDraft: null,
+      pendingIntent: false,
+      focusIntent: "field",
+      command: null,
+    };
+    view.rerender(<BreakdownPanel />);
+    expectContextSlots();
+    expectBreakdownSlots();
+  });
+
   it("opens both DP-VQ04 editors from their exact source surfaces", () => {
     triageStoreState.selectedScratchId = "scratch-1";
     const row = createScratchBreakdown({ id: "row-1", content: "Editable" });
@@ -305,9 +402,18 @@ describe("BreakdownPanel", () => {
       .closest('[data-triage-editor-surface="scratch-title"]');
     expect(surface).toHaveAttribute("data-triage-role", "context-inline-editor");
     expect(surface).toHaveAttribute("data-triage-editor-state", "dirty");
-    expect(within(surface as HTMLElement).getByText("Unsaved changes.")).toHaveAttribute(
-      "data-triage-role",
-      "inline-editor-status",
+    expect(
+      within(surface as HTMLElement).queryByText("Unsaved changes."),
+    ).not.toBeInTheDocument();
+    const actionSlot = screen.getByTestId("context-action-slot");
+    const save = within(actionSlot).getByRole("button", { name: "Save" });
+    expect(save).toHaveAttribute("data-triage-emphasis", "destructive");
+    expect(save).toHaveAttribute("data-triage-contrast", "adaptive");
+    expect(
+      within(actionSlot).getByRole("button", { name: "Cancel" }),
+    ).toHaveAttribute(
+      "data-triage-treatment",
+      "text",
     );
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
@@ -337,8 +443,51 @@ describe("BreakdownPanel", () => {
       .closest('[data-triage-editor-surface="breakdown-content"]');
     expect(surface).toHaveAttribute("data-triage-role", "breakdown-inline-editor");
     expect(surface).toHaveAttribute("data-triage-editor-state", "validation");
-    expect(within(surface as HTMLElement).getByText("Enter breakdown content.")).toBeVisible();
+    expect(
+      within(surface as HTMLElement).getByText("Enter breakdown content."),
+    ).toHaveAttribute("data-triage-role", "inline-editor-required");
   });
+
+  it.each([
+    ["scratch-title", "Scratch title", 60],
+    ["breakdown", "Breakdown content", 120],
+  ] as const)(
+    "renders %s as a capped single-line field",
+    (targetKind, fieldLabel, limit) => {
+      triageStoreState.selectedScratchId = "scratch-1";
+      if (targetKind === "breakdown") {
+        hookState.breakdownsByScratch["scratch-1"] = [
+          createScratchBreakdown({ id: "row-1", content: "Current row" }),
+        ];
+      }
+      editorState.snapshot = {
+        target:
+          targetKind === "scratch-title"
+            ? { kind: "scratch-title", id: "scratch-1" }
+            : { kind: "breakdown", id: "row-1" },
+        phase: "dirty",
+        base: {
+          value: targetKind === "scratch-title" ? "Scratch" : "Current row",
+          version: 1,
+          ...(targetKind === "breakdown" ? { order: 0 } : {}),
+        },
+        draft: "Protected draft",
+        latest: null,
+        copyableDraft: null,
+        pendingIntent: false,
+        focusIntent: "field",
+        command: null,
+      };
+
+      render(<BreakdownPanel />);
+
+      const field = screen.getByRole("textbox", { name: fieldLabel });
+      expect(field.tagName).toBe("INPUT");
+      expect(field).toHaveAttribute("type", "text");
+      expect(field).toHaveAttribute("maxlength", String(limit));
+      expect(document.querySelector("textarea")).not.toBeInTheDocument();
+    },
+  );
 
   it("announces an applied Save once and returns focus to the surviving Edit", async () => {
     triageStoreState.selectedScratchId = "scratch-1";
@@ -404,13 +553,105 @@ describe("BreakdownPanel", () => {
 
     const rows = screen.getAllByRole("listitem");
     expect(within(rows[0]).getByText("Draft to recover")).toBeVisible();
-    expect(rows[0].querySelector("strong")).toHaveTextContent("Draft not saved");
+    expect(
+      within(rows[0]).getByTestId("inline-editor-issue-overlay"),
+    ).toHaveTextContent("Draft not saved");
     expect(within(rows[1]).getByText("Survivor")).toBeVisible();
   });
 
   it.each([
-    ["scratch-title", "pristine", "No changes."],
-    ["scratch-title", "dirty", "Unsaved changes."],
+    ["offline", "Offline. Your draft is still here."],
+    ["not_applied", "Not saved. Your draft is still here."],
+    ["conflict", "This changed elsewhere."],
+    ["invalidated", "Draft not saved"],
+  ] as const)(
+    "renders Breakdown %s in one fixed source-bound issue overlay",
+    (phase, expectedStatus) => {
+      triageStoreState.selectedScratchId = "scratch-1";
+      hookState.breakdownsByScratch["scratch-1"] = [
+        createScratchBreakdown({ id: "row-1", content: "Authority" }),
+      ];
+      if (phase === "offline") {
+        vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+      }
+      editorState.snapshot = {
+        target: { kind: "breakdown", id: "row-1" },
+        phase,
+        base: { value: "Authority", version: 1, order: 0 },
+        draft: "Protected draft",
+        latest:
+          phase === "conflict"
+            ? { value: "Latest authority", version: 2, order: 0 }
+            : null,
+        copyableDraft: phase === "invalidated" ? "Protected draft" : null,
+        pendingIntent: false,
+        focusIntent:
+          phase === "invalidated" ? "active-scratch-fallback" : "field",
+        command: null,
+      };
+
+      render(<BreakdownPanel />);
+
+      const row = screen.getByTestId("breakdown-row");
+      expect(
+        within(row).getByTestId("inline-editor-content-layer"),
+      ).toHaveAttribute("data-triage-obscured", "true");
+      const overlay = within(row).getByTestId("inline-editor-issue-overlay");
+      expect(overlay).toHaveAttribute(
+        "data-triage-role",
+        "inline-editor-issue-overlay",
+      );
+      expect(overlay).toHaveTextContent(expectedStatus);
+      expect(
+        overlay.querySelectorAll(
+          '[data-triage-role="inline-editor-issue-status"]',
+        ),
+      ).toHaveLength(1);
+
+      if (phase === "offline" || phase === "not_applied") {
+        const retry = within(overlay).getByRole("button", {
+          name: "Retry save",
+        });
+        if (phase === "offline") expect(retry).toBeDisabled();
+        else expect(retry).toBeEnabled();
+        expect(
+          within(overlay).getByRole("button", { name: "Cancel" }),
+        ).toBeVisible();
+      }
+      if (phase === "conflict") {
+        expect(
+          within(overlay).getByRole("button", { name: "Use mine" }),
+        ).toBeVisible();
+        expect(
+          within(overlay).getByRole("button", { name: "Use latest" }),
+        ).toBeVisible();
+        expect(
+          within(overlay).getByRole("button", { name: "Copy draft" }),
+        ).toBeVisible();
+        expect(
+          row.querySelector('[data-triage-role="inline-editor-compare"]'),
+        ).not.toBeInTheDocument();
+        expect(
+          row.querySelector('[data-triage-role="inline-editor-latest"]'),
+        ).not.toBeInTheDocument();
+        expect(
+          row.querySelector('[data-triage-role="inline-editor-draft"]'),
+        ).not.toBeInTheDocument();
+      }
+      if (phase === "invalidated") {
+        expect(
+          within(overlay).getByRole("button", { name: "Copy draft" }),
+        ).toBeVisible();
+        expect(
+          within(overlay).getByRole("button", { name: "Close" }),
+        ).toBeVisible();
+      }
+    },
+  );
+
+  it.each([
+    ["scratch-title", "pristine", null],
+    ["scratch-title", "dirty", null],
     ["scratch-title", "validation", "Enter a Scratch title."],
     ["scratch-title", "saving", "Saving…"],
     ["scratch-title", "offline", "Offline. Your draft is still here."],
@@ -418,8 +659,8 @@ describe("BreakdownPanel", () => {
     ["scratch-title", "reconciling", "Checking whether your changes were saved…"],
     ["scratch-title", "conflict", "This changed elsewhere."],
     ["scratch-title", "invalidated", "Draft not saved"],
-    ["breakdown", "pristine", "No changes."],
-    ["breakdown", "dirty", "Unsaved changes."],
+    ["breakdown", "pristine", null],
+    ["breakdown", "dirty", null],
     ["breakdown", "validation", "Enter breakdown content."],
     ["breakdown", "saving", "Saving…"],
     ["breakdown", "offline", "Offline. Your draft is still here."],
@@ -469,18 +710,65 @@ describe("BreakdownPanel", () => {
         "data-triage-editor-state",
         phase.replace("_", "-"),
       );
-      expect(within(surface as HTMLElement).getAllByText(expectedStatus).length).toBeGreaterThan(0);
+      if (expectedStatus === null) {
+        expect(
+          within(surface as HTMLElement).queryByTestId("inline-editor-status"),
+        ).not.toBeInTheDocument();
+        expect(
+          (surface as HTMLElement).querySelector(
+            '[data-triage-role="inline-editor-status"]',
+          ),
+        ).not.toBeInTheDocument();
+      } else {
+        const statusOwner =
+          phase === "offline" ||
+          phase === "not_applied" ||
+          phase === "conflict" ||
+          phase === "invalidated"
+            ? (surface as HTMLElement).closest(
+                '[data-triage-layout="fixed-inline-editor"]',
+              )
+            : surface;
+        expect(
+          within(statusOwner as HTMLElement).getAllByText(expectedStatus).length,
+        ).toBeGreaterThan(0);
+      }
       if (phase === "saving" || phase === "reconciling") {
-        expect(within(surface as HTMLElement).getByRole("textbox")).toHaveAttribute(
-          "readonly",
+        const field = within(surface as HTMLElement).getByRole("textbox");
+        expect(field).toHaveAttribute("readonly");
+        expect(field).toHaveFocus();
+        const sourceSurface = (surface as HTMLElement).closest(
+          '[data-triage-layout="fixed-inline-editor"]',
+        );
+        expect(
+          within(sourceSurface as HTMLElement).getByTestId(
+            targetKind === "scratch-title"
+              ? "context-action-slot"
+              : "breakdown-action-slot",
+          ),
+        ).toHaveTextContent(
+          phase === "saving"
+            ? "Saving…"
+            : "Checking whether your changes were saved…",
         );
       }
       if (phase === "validation") {
-        expect(within(surface as HTMLElement).getByRole("textbox")).toHaveAttribute(
-          "aria-invalid",
-          "true",
+        expect(
+          within(surface as HTMLElement).getByRole("textbox"),
+        ).toHaveAttribute("aria-invalid", "true");
+        expect(
+          (surface as HTMLElement).querySelector(
+            '[data-triage-role="inline-editor-required"]',
+          ),
+        ).toHaveTextContent(expectedStatus);
+        const sourceSurface = (surface as HTMLElement).closest(
+          '[data-triage-layout="fixed-inline-editor"]',
         );
-        expect(within(surface as HTMLElement).getByRole("button", { name: "Save" })).toBeDisabled();
+        expect(
+          within(sourceSurface as HTMLElement).getByRole("button", {
+            name: "Save",
+          }),
+        ).toBeDisabled();
       }
     },
   );
@@ -517,13 +805,78 @@ describe("BreakdownPanel", () => {
     expect(editorState.save).not.toHaveBeenCalled();
     themeToggle.remove();
 
+    const themeDialog = document.createElement("div");
+    themeDialog.setAttribute("role", "dialog");
+    const themeOption = document.createElement("button");
+    themeOption.setAttribute("aria-pressed", "false");
+    themeOption.textContent = "Terminal";
+    themeDialog.append(themeOption);
+    document.body.append(themeDialog);
+    fireEvent.blur(field, { relatedTarget: themeOption });
+    expect(editorState.save).not.toHaveBeenCalled();
+    themeDialog.remove();
+
     fireEvent.blur(field, { relatedTarget: null });
     expect(editorState.save).toHaveBeenCalledTimes(1);
     fireEvent.keyDown(field, { key: "Escape" });
     expect(editorState.cancel).toHaveBeenCalledTimes(1);
   });
 
-  it("renders conflict comparison and dispatches only the approved resolver actions", async () => {
+  it.each([
+    ["scratch-title", "Scratch title"],
+    ["breakdown", "Breakdown content"],
+  ] as const)(
+    "submits %s on Enter while preserving IME and Escape boundaries",
+    (targetKind, fieldLabel) => {
+      triageStoreState.selectedScratchId = "scratch-1";
+      if (targetKind === "breakdown") {
+        hookState.breakdownsByScratch["scratch-1"] = [
+          createScratchBreakdown({ id: "row-1", content: "Current row" }),
+        ];
+      }
+      const draft =
+        targetKind === "scratch-title" ? "Protected title" : "Protected row";
+      editorState.snapshot = {
+        target:
+          targetKind === "scratch-title"
+            ? { kind: "scratch-title", id: "scratch-1" }
+            : { kind: "breakdown", id: "row-1" },
+        phase: "dirty",
+        base: {
+          value: targetKind === "scratch-title" ? "Scratch" : "Current row",
+          version: 1,
+          ...(targetKind === "breakdown" ? { order: 0 } : {}),
+        },
+        draft,
+        latest: null,
+        copyableDraft: null,
+        pendingIntent: false,
+        focusIntent: "field-end",
+        command: null,
+      };
+
+      render(<BreakdownPanel />);
+
+      const field = screen.getByRole("textbox", { name: fieldLabel });
+      expect(field).toHaveFocus();
+      expect((field as HTMLInputElement).selectionStart).toBe(draft.length);
+
+      fireEvent.keyDown(field, { key: "Enter" });
+      expect(editorState.save).toHaveBeenCalledTimes(1);
+
+      fireEvent.compositionStart(field);
+      fireEvent.keyDown(field, { key: "Enter", isComposing: true });
+      expect(editorState.save).toHaveBeenCalledTimes(1);
+      fireEvent.keyDown(field, { key: "Escape", isComposing: true });
+      expect(editorState.cancel).not.toHaveBeenCalled();
+      fireEvent.compositionEnd(field);
+
+      fireEvent.keyDown(field, { key: "Escape" });
+      expect(editorState.cancel).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("renders Scratch conflict as a fixed overlay and dispatches only the approved resolver actions", async () => {
     triageStoreState.selectedScratchId = "scratch-1";
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
@@ -543,17 +896,24 @@ describe("BreakdownPanel", () => {
     };
     render(<BreakdownPanel />);
 
-    expect(screen.getByText("Latest authority").parentElement).toHaveAttribute(
-      "data-triage-role",
-      "inline-editor-latest",
-    );
-    expect(screen.getByText("Your protected draft", { selector: "p" }).parentElement).toHaveAttribute(
-      "data-triage-role",
-      "inline-editor-draft",
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Use mine" }));
-    fireEvent.click(screen.getByRole("button", { name: "Use latest" }));
-    fireEvent.click(screen.getByRole("button", { name: "Copy draft" }));
+    const context = screen.getByTestId("selected-scratch-context");
+    expect(
+      within(context).getByTestId("inline-editor-content-layer"),
+    ).toHaveAttribute("data-triage-obscured", "true");
+    const overlay = within(context).getByTestId("inline-editor-issue-overlay");
+    expect(overlay).toHaveTextContent("This changed elsewhere.");
+    expect(
+      context.querySelector('[data-triage-role="inline-editor-compare"]'),
+    ).not.toBeInTheDocument();
+    expect(
+      context.querySelector('[data-triage-role="inline-editor-latest"]'),
+    ).not.toBeInTheDocument();
+    expect(
+      context.querySelector('[data-triage-role="inline-editor-draft"]'),
+    ).not.toBeInTheDocument();
+    fireEvent.click(within(overlay).getByRole("button", { name: "Use mine" }));
+    fireEvent.click(within(overlay).getByRole("button", { name: "Use latest" }));
+    fireEvent.click(within(overlay).getByRole("button", { name: "Copy draft" }));
 
     expect(editorState.useMine).toHaveBeenCalledTimes(1);
     expect(editorState.useLatest).toHaveBeenCalledTimes(1);
@@ -646,7 +1006,15 @@ describe("BreakdownPanel", () => {
           .getByRole("textbox", { name: "Scratch title" })
           .closest('[data-triage-editor-surface="scratch-title"]');
         expect(surface).toHaveAttribute("data-triage-editor-state", "dirty");
-        expect(within(surface as HTMLElement).getByText("Unsaved changes.")).toBeVisible();
+        expect(
+          within(surface as HTMLElement).queryByText("Unsaved changes."),
+        ).not.toBeInTheDocument();
+        expect(
+          within(screen.getByTestId("context-action-slot")).getByRole(
+            "button",
+            { name: "Save" },
+          ),
+        ).toHaveAttribute("data-triage-emphasis", "destructive");
       }
     }
     document.documentElement.classList.remove("dark");

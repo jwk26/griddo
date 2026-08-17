@@ -9,7 +9,7 @@ import {
   type ChangeEvent,
   type FocusEvent,
   type KeyboardEvent,
-  type RefObject,
+  type ReactNode,
 } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import {
@@ -57,6 +57,9 @@ import { useTriageStore } from "@/stores/triage-store";
 
 type OpenEditorSnapshot = NonNullable<ConditionalEditorSnapshot>;
 
+const SCRATCH_TITLE_INLINE_LIMIT = 60;
+const BREAKDOWN_CONTENT_INLINE_LIMIT = 120;
+
 function subscribeToBrowserConnectivity(onStoreChange: () => void) {
   window.addEventListener("online", onStoreChange);
   window.addEventListener("offline", onStoreChange);
@@ -71,15 +74,29 @@ function getBrowserOnlineSnapshot() {
 }
 
 function InlineEditor({
+  contentAfter,
+  contentBefore,
+  contentClassName,
+  contentRole,
+  contentTestId,
   editor,
   onSave,
   onUseMine,
   snapshot,
+  actionRole,
+  actionTestId,
 }: {
+  contentAfter?: ReactNode;
+  contentBefore?: ReactNode;
+  contentClassName: string;
+  contentRole: string;
+  contentTestId: string;
   editor: ConditionalEditor;
   onSave: () => Promise<boolean>;
   onUseMine: () => Promise<boolean>;
   snapshot: OpenEditorSnapshot;
+  actionRole: string;
+  actionTestId: string;
 }) {
   const copy = INBOX_TRIAGE_COPY.inlineEditor;
   const isScratchTitle = snapshot.target.kind === "scratch-title";
@@ -93,8 +110,7 @@ function InlineEditor({
     : INBOX_TRIAGE_COPY.validation.breakdownContentRequired;
   const fieldId = useId();
   const statusId = `${fieldId}-status`;
-  const fieldRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-  const surfaceRef = useRef<HTMLDivElement>(null);
+  const fieldRef = useRef<HTMLInputElement>(null);
   const isComposingRef = useRef(false);
   const latestVersionRef = useRef(snapshot.latest?.version ?? null);
   const [copyStatus, setCopyStatus] = useState("");
@@ -148,17 +164,22 @@ function InlineEditor({
               : copy.recovery.heading;
 
   function handleFieldBlur(
-    event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: FocusEvent<HTMLInputElement>,
   ) {
     if (isComposingRef.current) return;
     const nextTarget = event.relatedTarget;
-    if (nextTarget instanceof Node && surfaceRef.current?.contains(nextTarget)) {
+    const sourceSurface = event.currentTarget.closest(
+      '[data-triage-layout="fixed-inline-editor"]',
+    );
+    if (nextTarget instanceof Node && sourceSurface?.contains(nextTarget)) {
       return;
     }
     if (
       nextTarget instanceof HTMLElement &&
       (nextTarget.getAttribute("aria-label") === "Toggle theme" ||
-        nextTarget.getAttribute("aria-label") === "Change color theme")
+        nextTarget.getAttribute("aria-label") === "Change color theme" ||
+        (nextTarget.matches('button[aria-pressed]') &&
+          nextTarget.closest('[role="dialog"]') !== null))
     ) {
       return;
     }
@@ -172,17 +193,20 @@ function InlineEditor({
   }
 
   function handleFieldKeyDown(
-    event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: KeyboardEvent<HTMLInputElement>,
   ) {
-    if (
-      event.key !== "Escape" ||
-      isComposingRef.current ||
-      event.nativeEvent.isComposing
-    ) {
+    if (isComposingRef.current || event.nativeEvent.isComposing) return;
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      void onSave();
       return;
     }
-    event.preventDefault();
-    editor.cancel();
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      editor.cancel();
+    }
   }
 
   async function copyDraft() {
@@ -196,16 +220,21 @@ function InlineEditor({
   }
 
   const commonFieldProps = {
-    "aria-describedby": statusId,
+    "aria-describedby":
+      snapshot.phase === "pristine" || snapshot.phase === "dirty"
+        ? undefined
+        : statusId,
     "aria-invalid": snapshot.phase === "validation" || undefined,
     "aria-label": fieldLabel,
     className: "triage-inline-editor__field",
     "data-triage-role": "inline-editor-field",
     id: fieldId,
     onBlur: handleFieldBlur,
-    onChange: (
-      event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    ) => editor.changeDraft(event.target.value),
+    maxLength: isScratchTitle
+      ? SCRATCH_TITLE_INLINE_LIMIT
+      : BREAKDOWN_CONTENT_INLINE_LIMIT,
+    onChange: (event: ChangeEvent<HTMLInputElement>) =>
+      editor.changeDraft(event.target.value),
     onCompositionEnd: () => {
       isComposingRef.current = false;
     },
@@ -217,160 +246,240 @@ function InlineEditor({
       snapshot.phase === "saving" || snapshot.phase === "reconciling",
     value: snapshot.draft,
   };
+  const isIssuePhase =
+    snapshot.phase === "offline" ||
+    snapshot.phase === "not_applied" ||
+    snapshot.phase === "conflict" ||
+    snapshot.phase === "invalidated";
 
   return (
-    <div
-      ref={surfaceRef}
-      className="triage-inline-editor"
-      data-triage-editor-state={snapshot.phase.replace("_", "-")}
-      data-triage-editor-surface={surface}
-      data-triage-role={surfaceRole}
-    >
-      {snapshot.phase === "invalidated" ? (
-        <div data-triage-role="inline-editor-recovery">
-          <strong>{copy.recovery.heading}</strong>
-          <p>
-            {isScratchTitle
-              ? copy.recovery.scratchInvalid
-              : copy.recovery.breakdownInvalid}
-          </p>
-          <p>{copy.recovery.review}</p>
-          <div className="triage-inline-editor__value" data-triage-role="inline-editor-draft">
-            <span>{copy.conflict.draft}</span>
-            <p>{snapshot.copyableDraft ?? snapshot.draft}</p>
+    <>
+      <div
+        className={contentClassName}
+        data-testid={contentTestId}
+        data-triage-block-slot="stretch"
+        data-triage-role={contentRole}
+      >
+        <div
+          className="triage-inline-editor__content-layer"
+          data-testid="inline-editor-content-layer"
+          data-triage-obscured={isIssuePhase ? "true" : "false"}
+        >
+          {contentBefore}
+          <div
+            className="triage-inline-editor"
+            data-triage-editor-state={snapshot.phase.replace("_", "-")}
+            data-triage-editor-surface={surface}
+            data-triage-role={surfaceRole}
+          >
+            {snapshot.phase === "invalidated" ? (
+              <p data-triage-role="inline-editor-protected-draft">
+                {snapshot.copyableDraft ?? snapshot.draft}
+              </p>
+            ) : (
+              <>
+                <label className="sr-only" htmlFor={fieldId}>
+                  {fieldLabel}
+                </label>
+                <input ref={fieldRef} type="text" {...commonFieldProps} />
+              </>
+            )}
+            {snapshot.phase === "validation" ? (
+              <span
+                id={statusId}
+                aria-live="polite"
+                className="triage-inline-editor__required"
+                data-triage-role="inline-editor-required"
+              >
+                {validationCopy}
+              </span>
+            ) : (snapshot.phase === "saving" ||
+                snapshot.phase === "reconciling") ? (
+              <div
+                id={statusId}
+                aria-atomic="true"
+                aria-live="polite"
+                className="sr-only"
+                data-triage-role="inline-editor-announcement"
+              >
+                {statusCopy}
+              </div>
+            ) : null}
+          </div>
+          {contentAfter}
+        </div>
+      </div>
+      <div
+        className="triage-fixed-action-slot"
+        data-testid={actionTestId}
+        data-triage-block-slot="stretch"
+        data-triage-role={actionRole}
+      >
+        {!isIssuePhase && (
+          <div
+            className="triage-inline-editor__actions"
+            data-triage-role="inline-editor-actions"
+          >
+            {(snapshot.phase === "pristine" ||
+              snapshot.phase === "dirty" ||
+              snapshot.phase === "validation") && (
+              <>
+                <Button
+                  className={cn(
+                    snapshot.phase === "dirty" &&
+                      "hover:bg-destructive/10",
+                  )}
+                  data-triage-contrast={
+                    snapshot.phase === "dirty" ? "adaptive" : undefined
+                  }
+                  data-triage-emphasis={
+                    snapshot.phase === "dirty" ? "destructive" : undefined
+                  }
+                  disabled={snapshot.phase !== "dirty"}
+                  size="xs"
+                  type="button"
+                  variant="ghost"
+                  onClick={() => void onSave()}
+                >
+                  {INBOX_TRIAGE_COPY.baseActions.save}
+                </Button>
+                <Button
+                  data-triage-treatment="text"
+                  size="xs"
+                  type="button"
+                  variant="ghost"
+                  onClick={() => editor.cancel()}
+                >
+                  {INBOX_TRIAGE_COPY.baseActions.cancel}
+                </Button>
+              </>
+            )}
+            {snapshot.phase === "saving" && (
+              <>
+                <span data-triage-role="inline-editor-progress">
+                  {snapshot.pendingIntent
+                    ? copy.status.savingBeforeContinuing
+                    : copy.status.saving}
+                </span>
+                {snapshot.pendingIntent && (
+                  <Button
+                    size="xs"
+                    type="button"
+                    variant="outline"
+                    onClick={editor.stayHere}
+                  >
+                    {copy.actions.stayHere}
+                  </Button>
+                )}
+              </>
+            )}
+            {snapshot.phase === "reconciling" && (
+              <>
+                <span data-triage-role="inline-editor-progress">
+                  {copy.status.reconciling}
+                </span>
+                {snapshot.pendingIntent && (
+                  <Button
+                    size="xs"
+                    type="button"
+                    variant="outline"
+                    onClick={editor.stayHere}
+                  >
+                    {copy.actions.stayHere}
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+      {isIssuePhase && (
+        <div
+          className="triage-inline-editor__issue-overlay"
+          data-testid="inline-editor-issue-overlay"
+          data-triage-role="inline-editor-issue-overlay"
+        >
+          <span
+            id={statusId}
+            aria-atomic="true"
+            aria-live="polite"
+            data-triage-role="inline-editor-issue-status"
+          >
+            {statusCopy}
+            {latestStatus && <span> {latestStatus}</span>}
+            {copyStatus && (
+              <span data-triage-role="inline-editor-copy-status">
+                {" "}
+                {copyStatus}
+              </span>
+            )}
+          </span>
+          <div data-triage-role="inline-editor-issue-actions">
+            {(snapshot.phase === "offline" ||
+              snapshot.phase === "not_applied") && (
+              <>
+                <Button
+                  disabled={
+                    snapshot.phase === "offline" && !isBrowserOnline
+                  }
+                  size="xs"
+                  type="button"
+                  onClick={() => void onSave()}
+                >
+                  {copy.actions.retrySave}
+                </Button>
+                <Button
+                  size="xs"
+                  type="button"
+                  variant="outline"
+                  onClick={() => editor.cancel()}
+                >
+                  {INBOX_TRIAGE_COPY.baseActions.cancel}
+                </Button>
+              </>
+            )}
+            {snapshot.phase === "conflict" && (
+              <>
+                <Button size="xs" type="button" onClick={() => void onUseMine()}>
+                  {copy.conflict.useMine}
+                </Button>
+                <Button
+                  size="xs"
+                  type="button"
+                  variant="outline"
+                  onClick={editor.useLatest}
+                >
+                  {copy.conflict.useLatest}
+                </Button>
+                <Button
+                  size="xs"
+                  type="button"
+                  variant="ghost"
+                  onClick={() => void copyDraft()}
+                >
+                  {copy.conflict.copyDraft}
+                </Button>
+              </>
+            )}
+            {snapshot.phase === "invalidated" && (
+              <>
+                <Button size="xs" type="button" onClick={() => void copyDraft()}>
+                  {copy.conflict.copyDraft}
+                </Button>
+                <Button
+                  size="xs"
+                  type="button"
+                  variant="outline"
+                  onClick={() => editor.cancel()}
+                >
+                  {copy.recovery.close}
+                </Button>
+              </>
+            )}
           </div>
         </div>
-      ) : (
-        <>
-          <label className="sr-only" htmlFor={fieldId}>
-            {fieldLabel}
-          </label>
-          {isScratchTitle ? (
-            <input ref={fieldRef as RefObject<HTMLInputElement>} type="text" {...commonFieldProps} />
-          ) : (
-            <textarea ref={fieldRef as RefObject<HTMLTextAreaElement>} rows={2} {...commonFieldProps} />
-          )}
-          {snapshot.phase === "conflict" && snapshot.latest !== null && (
-            <div className="triage-inline-editor__compare" data-triage-role="inline-editor-compare">
-              <div className="triage-inline-editor__value" data-triage-role="inline-editor-latest">
-                <span>{copy.conflict.latest}</span>
-                <p>{snapshot.latest.value}</p>
-              </div>
-              <div className="triage-inline-editor__value" data-triage-role="inline-editor-draft">
-                <span>{copy.conflict.draft}</span>
-                <p>{snapshot.draft}</p>
-              </div>
-            </div>
-          )}
-        </>
       )}
-
-      <div
-        id={statusId}
-        aria-atomic="true"
-        aria-live="polite"
-        className="triage-inline-editor__status"
-        data-triage-role="inline-editor-status"
-      >
-        {statusCopy}
-        {latestStatus && <span> {latestStatus}</span>}
-        {copyStatus && (
-          <span data-triage-role="inline-editor-copy-status"> {copyStatus}</span>
-        )}
-      </div>
-
-      <div className="triage-inline-editor__actions" data-triage-role="inline-editor-actions">
-        {(snapshot.phase === "pristine" ||
-          snapshot.phase === "dirty" ||
-          snapshot.phase === "validation") && (
-          <>
-            <Button
-              disabled={snapshot.phase !== "dirty"}
-              size="xs"
-              type="button"
-              onClick={() => void onSave()}
-            >
-              {INBOX_TRIAGE_COPY.baseActions.save}
-            </Button>
-            <Button size="xs" type="button" variant="outline" onClick={() => editor.cancel()}>
-              {INBOX_TRIAGE_COPY.baseActions.cancel}
-            </Button>
-          </>
-        )}
-        {snapshot.phase === "saving" && (
-          <>
-            <Button disabled size="xs" type="button">
-              {snapshot.pendingIntent
-                ? copy.status.savingBeforeContinuing
-                : copy.status.saving}
-            </Button>
-            {snapshot.pendingIntent && (
-              <Button size="xs" type="button" variant="outline" onClick={editor.stayHere}>
-                {copy.actions.stayHere}
-              </Button>
-            )}
-          </>
-        )}
-        {snapshot.phase === "offline" && (
-          <>
-            <Button
-              disabled={!isBrowserOnline}
-              size="xs"
-              type="button"
-              onClick={() => void onSave()}
-            >
-              {copy.actions.retrySave}
-            </Button>
-            <Button size="xs" type="button" variant="outline" onClick={() => editor.cancel()}>
-              {INBOX_TRIAGE_COPY.baseActions.cancel}
-            </Button>
-          </>
-        )}
-        {snapshot.phase === "not_applied" && (
-          <>
-            <Button size="xs" type="button" onClick={() => void onSave()}>
-              {copy.actions.retrySave}
-            </Button>
-            <Button size="xs" type="button" variant="outline" onClick={() => editor.cancel()}>
-              {INBOX_TRIAGE_COPY.baseActions.cancel}
-            </Button>
-          </>
-        )}
-        {snapshot.phase === "reconciling" && (
-          <>
-            <Button disabled size="xs" type="button">{copy.status.reconciling}</Button>
-            {snapshot.pendingIntent && (
-              <Button size="xs" type="button" variant="outline" onClick={editor.stayHere}>
-                {copy.actions.stayHere}
-              </Button>
-            )}
-          </>
-        )}
-        {snapshot.phase === "conflict" && (
-          <>
-            <Button size="xs" type="button" onClick={() => void onUseMine()}>
-              {copy.conflict.useMine}
-            </Button>
-            <Button size="xs" type="button" variant="outline" onClick={editor.useLatest}>
-              {copy.conflict.useLatest}
-            </Button>
-            <Button size="xs" type="button" variant="ghost" onClick={() => void copyDraft()}>
-              {copy.conflict.copyDraft}
-            </Button>
-          </>
-        )}
-        {snapshot.phase === "invalidated" && (
-          <>
-            <Button size="xs" type="button" onClick={() => void copyDraft()}>
-              {copy.conflict.copyDraft}
-            </Button>
-            <Button size="xs" type="button" variant="outline" onClick={() => editor.cancel()}>
-              {copy.recovery.close}
-            </Button>
-          </>
-        )}
-      </div>
-    </div>
+    </>
   );
 }
 
@@ -428,35 +537,48 @@ function BreakdownRow({
         onRowRef(row.id, element);
       }}
       data-testid="breakdown-row"
+      data-triage-layout="fixed-inline-editor"
       data-triage-role={isStaged ? "breakdown-staged-row" : "breakdown-active-row"}
       data-triage-state={isStaged ? "staged" : "active"}
       role="listitem"
       className={cn(
-        "group flex min-h-12 items-center gap-2 border-b border-border/30 py-2 transition-[background-color,border-color,color,opacity] last:border-b-0 motion-reduce:transition-none",
+        "group triage-fixed-breakdown-row border-b border-border/30 transition-[background-color,border-color,color,opacity] last:border-b-0 motion-reduce:transition-none",
         isStaged && !isDragging && "opacity-50 transition-opacity duration-200",
         isDragging &&
           "opacity-30 border border-dashed border-muted bg-transparent",
       )}
     >
-      <button
-        ref={setActivatorNodeRef}
-        aria-label="Drag breakdown"
-        disabled={isStaged || isOperationLocked}
-        className={cn(
-          "mt-0.5 flex h-7 w-7 flex-shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-muted-foreground/60 hover:border-border hover:bg-muted hover:text-foreground active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-        )}
-        type="button"
-        {...attributes}
-        {...listeners}
+      <div
+        className="triage-fixed-breakdown-row__drag"
+        data-testid="breakdown-drag-slot"
+        data-triage-block-slot="stretch"
+        data-triage-role="breakdown-drag-slot"
       >
-        <GripVertical
-          aria-hidden="true"
-          className={cn("h-4 w-4 transition-colors", gripColorClass)}
-          data-testid="breakdown-grip"
-        />
-      </button>
+        <button
+          ref={setActivatorNodeRef}
+          aria-label="Drag breakdown"
+          disabled={isStaged || isOperationLocked}
+          className={cn(
+            "flex h-7 w-7 flex-shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-muted-foreground/60 hover:border-border hover:bg-muted hover:text-foreground active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+          )}
+          type="button"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical
+            aria-hidden="true"
+            className={cn("h-4 w-4 transition-colors", gripColorClass)}
+            data-testid="breakdown-grip"
+          />
+        </button>
+      </div>
       {editorSnapshot !== null ? (
         <InlineEditor
+          actionRole="breakdown-action-slot"
+          actionTestId="breakdown-action-slot"
+          contentClassName="triage-fixed-breakdown-row__content"
+          contentRole="breakdown-content-slot"
+          contentTestId="breakdown-content-slot"
           editor={editor}
           onSave={onSave}
           onUseMine={onUseMine}
@@ -464,42 +586,55 @@ function BreakdownRow({
         />
       ) : (
         <>
-          <div className="min-w-0 flex-1">
+          <div
+            className="triage-fixed-breakdown-row__content"
+            data-testid="breakdown-content-slot"
+            data-triage-block-slot="stretch"
+            data-triage-role="breakdown-content-slot"
+          >
             <div
               className={cn(
-                "whitespace-pre-wrap break-words text-sm leading-5 transition-colors",
+                "text-sm leading-5 transition-colors",
                 isMuted ? "text-muted-foreground" : "text-foreground",
               )}
+              data-triage-role="breakdown-view-text"
             >
               {row.content}
             </div>
           </div>
-          <button
-            ref={(element) => onEditRef(row.id, element)}
-            aria-label={INBOX_TRIAGE_COPY.baseActions.edit}
-            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            data-triage-role="breakdown-row-action"
-            disabled={isStaged || isOperationLocked || editor.snapshot !== null}
-            title={INBOX_TRIAGE_COPY.baseActions.edit}
-            type="button"
-            onClick={() => onEdit(row, isStaged)}
+          <div
+            className="triage-fixed-action-slot"
+            data-testid="breakdown-action-slot"
+            data-triage-block-slot="stretch"
+            data-triage-role="breakdown-action-slot"
           >
-            <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
-          <button
-            aria-label={INBOX_TRIAGE_COPY.baseActions.delete}
-            className={cn(
-              "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-destructive/10 hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              isDragging && "text-muted-foreground",
-            )}
-            data-triage-role="breakdown-row-action"
-            disabled={isStaged || isOperationLocked || editor.snapshot !== null}
-            title={INBOX_TRIAGE_COPY.baseActions.delete}
-            type="button"
-            onClick={() => onDelete(row.id)}
-          >
-            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
+            <button
+              ref={(element) => onEditRef(row.id, element)}
+              aria-label={INBOX_TRIAGE_COPY.baseActions.edit}
+              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              data-triage-role="breakdown-row-action"
+              disabled={isStaged || isOperationLocked || editor.snapshot !== null}
+              title={INBOX_TRIAGE_COPY.baseActions.edit}
+              type="button"
+              onClick={() => onEdit(row, isStaged)}
+            >
+              <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+            <button
+              aria-label={INBOX_TRIAGE_COPY.baseActions.delete}
+              className={cn(
+                "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-destructive/10 hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                isDragging && "text-muted-foreground",
+              )}
+              data-triage-role="breakdown-row-action"
+              disabled={isStaged || isOperationLocked || editor.snapshot !== null}
+              title={INBOX_TRIAGE_COPY.baseActions.delete}
+              type="button"
+              onClick={() => onDelete(row.id)}
+            >
+              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          </div>
         </>
       )}
     </div>
@@ -519,21 +654,34 @@ function InvalidatedBreakdownRecoveryRow({
 }) {
   return (
     <div
-      className="group flex min-h-12 items-start gap-2 border-b border-border/30 py-2 last:border-b-0"
+      className="group triage-fixed-breakdown-row border-b border-border/30 last:border-b-0"
       data-testid="breakdown-row"
+      data-triage-layout="fixed-inline-editor"
       data-triage-role="breakdown-active-row"
       data-triage-state="invalidated"
       role="listitem"
     >
-      <button
-        aria-label="Drag breakdown"
-        className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/20"
-        disabled
-        type="button"
+      <div
+        className="triage-fixed-breakdown-row__drag"
+        data-testid="breakdown-drag-slot"
+        data-triage-block-slot="stretch"
+        data-triage-role="breakdown-drag-slot"
       >
-        <GripVertical aria-hidden="true" className="h-4 w-4" />
-      </button>
+        <button
+          aria-label="Drag breakdown"
+          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/20"
+          disabled
+          type="button"
+        >
+          <GripVertical aria-hidden="true" className="h-4 w-4" />
+        </button>
+      </div>
       <InlineEditor
+        actionRole="breakdown-action-slot"
+        actionTestId="breakdown-action-slot"
+        contentClassName="triage-fixed-breakdown-row__content"
+        contentRole="breakdown-content-slot"
+        contentTestId="breakdown-content-slot"
         editor={editor}
         onSave={onSave}
         onUseMine={onUseMine}
@@ -924,8 +1072,9 @@ export function BreakdownPanel() {
         <div
           ref={contextRef}
           aria-label={`Selected Scratch: ${selectedScratch?.title ?? "Unknown Scratch"}`}
-          className="mt-2 flex min-h-[104px] min-w-0 items-center gap-3 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card px-4 py-4 shadow-sm"
+          className="triage-fixed-context mt-2 min-h-[104px] min-w-0 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card px-4 py-4 shadow-sm"
           data-testid="selected-scratch-context"
+          data-triage-layout="fixed-inline-editor"
           data-triage-role="context-signature-plate"
           data-triage-state="working"
           tabIndex={-1}
@@ -934,73 +1083,105 @@ export function BreakdownPanel() {
             aria-hidden="true"
             className="h-5 w-5 flex-shrink-0 text-primary/70"
           />
-          <div className="min-w-0 flex-1">
-            <div
-              className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
-              data-triage-role="context-eyebrow-meta"
-            >
-              Selected Scratch
-            </div>
-            {editor.snapshot?.target.kind === "scratch-title" ? (
-              <InlineEditor
-                editor={editor}
-                onSave={handleEditorSave}
-                onUseMine={handleEditorUseMine}
-                snapshot={editor.snapshot}
-              />
-            ) : (
+          {editor.snapshot?.target.kind === "scratch-title" ? (
+            <InlineEditor
+              actionRole="context-action-slot"
+              actionTestId="context-action-slot"
+              contentBefore={
+                <div
+                  className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+                  data-triage-role="context-eyebrow-meta"
+                >
+                  Selected Scratch
+                </div>
+              }
+              contentAfter={
+                selectedScratch !== null ? (
+                  <div className="mt-1 text-xs tabular-nums text-muted-foreground">
+                    {formatScratchTimestamp(selectedScratch.createdAt)}
+                  </div>
+                ) : null
+              }
+              contentClassName="triage-fixed-context__content"
+              contentRole="context-content-slot"
+              contentTestId="context-content-slot"
+              editor={editor}
+              onSave={handleEditorSave}
+              onUseMine={handleEditorUseMine}
+              snapshot={editor.snapshot}
+            />
+          ) : (
+            <>
               <div
-                className="mt-1 whitespace-pre-wrap break-words text-lg font-semibold text-foreground"
-                data-triage-role="context-title"
+                className="triage-fixed-context__content"
+                data-testid="context-content-slot"
+                data-triage-block-slot="stretch"
+                data-triage-role="context-content-slot"
               >
-                {selectedScratch?.title ?? "Unknown Scratch"}
+                <div
+                  className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+                  data-triage-role="context-eyebrow-meta"
+                >
+                  Selected Scratch
+                </div>
+                <div
+                  className="mt-1 whitespace-pre-wrap break-words text-lg font-semibold text-foreground"
+                  data-triage-role="context-title"
+                >
+                  {selectedScratch?.title ?? "Unknown Scratch"}
+                </div>
+                {selectedScratch !== null && (
+                  <div className="mt-1 text-xs tabular-nums text-muted-foreground">
+                    {formatScratchTimestamp(selectedScratch.createdAt)}
+                  </div>
+                )}
               </div>
-            )}
-            {selectedScratch !== null && (
-              <div className="mt-1 text-xs tabular-nums text-muted-foreground">
-                {formatScratchTimestamp(selectedScratch.createdAt)}
+              <div
+                className="triage-fixed-action-slot"
+                data-testid="context-action-slot"
+                data-triage-block-slot="stretch"
+                data-triage-role="context-action-slot"
+              >
+                <div className="flex items-center gap-2" data-triage-role="context-action-cluster">
+                  <Button
+                    ref={contextEditRef}
+                    disabled={
+                      selectedScratch === null ||
+                      operationLock.activeOperation !== null ||
+                      editor.snapshot !== null
+                    }
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                    onClick={handleOpenScratchTitle}
+                  >
+                    <Pencil aria-hidden="true" className="h-3.5 w-3.5" />
+                    {INBOX_TRIAGE_COPY.baseActions.edit}
+                  </Button>
+                  <Button
+                    aria-label={
+                      breakdownCreatedAtSort === "DESC"
+                        ? INBOX_TRIAGE_COPY.baseActions.sortNewestFirst
+                        : INBOX_TRIAGE_COPY.baseActions.sortOldestFirst
+                    }
+                    data-triage-role="context-sort-control"
+                    disabled={operationLock.activeOperation !== null}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      setBreakdownCreatedAtSort(
+                        breakdownCreatedAtSort === "DESC" ? "ASC" : "DESC",
+                      )
+                    }
+                  >
+                    <ArrowDownUp aria-hidden="true" className="h-3.5 w-3.5" />
+                    {breakdownCreatedAtSort}
+                  </Button>
+                </div>
               </div>
-            )}
-          </div>
-          <div className="flex flex-shrink-0 items-center gap-2" data-triage-role="context-action-cluster">
-            <Button
-              ref={contextEditRef}
-              disabled={
-                selectedScratch === null ||
-                operationLock.activeOperation !== null ||
-                editor.snapshot !== null
-              }
-              size="sm"
-              type="button"
-              variant="outline"
-              onClick={handleOpenScratchTitle}
-            >
-              <Pencil aria-hidden="true" className="h-3.5 w-3.5" />
-              {INBOX_TRIAGE_COPY.baseActions.edit}
-            </Button>
-            <Button
-              aria-label={
-                breakdownCreatedAtSort === "DESC"
-                  ? INBOX_TRIAGE_COPY.baseActions.sortNewestFirst
-                  : INBOX_TRIAGE_COPY.baseActions.sortOldestFirst
-              }
-              data-triage-role="context-sort-control"
-              disabled={
-                operationLock.activeOperation !== null || editor.snapshot !== null
-              }
-              size="sm"
-              type="button"
-              variant="outline"
-              onClick={() =>
-                setBreakdownCreatedAtSort(
-                  breakdownCreatedAtSort === "DESC" ? "ASC" : "DESC",
-                )
-              }
-            >
-              <ArrowDownUp aria-hidden="true" className="h-3.5 w-3.5" />
-              {breakdownCreatedAtSort}
-            </Button>
-          </div>
+            </>
+          )}
         </div>
 
         {breakdownRenderItems.length > 0 ? (

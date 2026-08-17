@@ -699,6 +699,9 @@
 
 /* Inbox/Triage semantic shell */
 .triage-shell {
+  --triage-fixed-action-inline-size: 9.5rem;
+  --triage-fixed-context-block-size: 6.5rem;
+  --triage-fixed-row-block-size: 3rem;
   min-inline-size: 0;
 }
 
@@ -781,45 +784,96 @@
   display: none;
 }
 
+.triage-fixed-breakdown-row {
+  align-items: center;
+  block-size: var(--triage-fixed-row-block-size);
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr) var(--triage-fixed-action-inline-size);
+  overflow: clip;
+  position: relative;
+}
+
+.triage-fixed-breakdown-row__drag {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+[data-triage-block-slot="stretch"] {
+  align-self: stretch;
+}
+
+.triage-fixed-breakdown-row__content {
+  align-items: center;
+  display: flex;
+  min-inline-size: 0;
+  overflow: hidden;
+}
+
+.triage-fixed-context__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-inline-size: 0;
+  overflow: hidden;
+}
+
+.triage-fixed-context {
+  align-items: center;
+  block-size: var(--triage-fixed-context-block-size);
+  column-gap: 0.75rem;
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr) var(--triage-fixed-action-inline-size);
+  overflow: clip;
+  position: relative;
+}
+
+.triage-fixed-action-slot {
+  align-items: center;
+  display: flex;
+  inline-size: var(--triage-fixed-action-inline-size);
+  justify-content: flex-end;
+  min-inline-size: 0;
+  padding-inline: 0.25rem;
+}
+
+[data-triage-role="breakdown-view-text"],
+[data-triage-role="context-title"] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* DP-VQ04 stays embedded in the source Context or Breakdown row across themes. */
 .triage-inline-editor {
-  background: hsl(var(--background) / 0.58);
-  border: var(--theme-border-width) solid hsl(var(--border));
+  background: transparent;
+  border: 0;
   border-radius: var(--theme-radius);
   color: hsl(var(--foreground));
-  display: grid;
-  flex: 1 1 auto;
-  gap: 0.45rem;
+  display: block;
   min-inline-size: 0;
-  padding: 0.625rem;
-}
-
-.triage-inline-editor[data-triage-editor-surface="scratch-title"] {
-  margin-block-start: 0.25rem;
-}
-
-.triage-inline-editor[data-triage-editor-state="validation"],
-.triage-inline-editor[data-triage-editor-state="offline"],
-.triage-inline-editor[data-triage-editor-state="not-applied"],
-.triage-inline-editor[data-triage-editor-state="conflict"],
-.triage-inline-editor[data-triage-editor-state="invalidated"] {
-  border-color: hsl(var(--destructive) / 0.55);
+  padding-inline: 2px;
+  position: relative;
 }
 
 .triage-inline-editor__field {
   appearance: none;
   background: hsl(var(--background));
+  block-size: 2rem;
   border: var(--theme-border-width) solid hsl(var(--input));
   border-radius: calc(var(--theme-radius) * 0.7);
+  box-sizing: border-box;
   color: hsl(var(--foreground));
   font-family: var(--theme-font);
   font-size: 0.875rem;
   inline-size: 100%;
   line-height: 1.35rem;
-  min-block-size: 2rem;
+  min-block-size: 0;
   outline: none;
+  overflow: hidden;
   padding: 0.35rem 0.5rem;
-  resize: vertical;
+  resize: none;
+  white-space: nowrap;
 }
 
 .triage-inline-editor__field:focus-visible {
@@ -836,52 +890,99 @@
   cursor: progress;
 }
 
-.triage-inline-editor__status {
-  border-block-start: var(--theme-border-width) solid hsl(var(--border) / 0.7);
-  color: hsl(var(--muted-foreground));
+.triage-inline-editor[data-triage-editor-state="validation"]
+  .triage-inline-editor__field {
+  padding-inline-end: 9rem;
+}
+
+.triage-inline-editor__required {
+  color: hsl(var(--destructive));
   font-family: var(--theme-font);
   font-size: 0.6875rem;
   line-height: 1rem;
-  padding-block-start: 0.35rem;
+  inset-inline-end: 0.5rem;
+  max-inline-size: 8rem;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
 }
 
 .triage-inline-editor__actions {
+  align-items: center;
   display: flex;
-  flex-wrap: wrap;
   gap: 0.375rem;
+  justify-content: flex-end;
+  min-inline-size: 0;
+  white-space: nowrap;
 }
 
-.triage-inline-editor__compare,
-[data-triage-role="inline-editor-recovery"] {
-  border-block: var(--theme-border-width) solid hsl(var(--border));
+.triage-inline-editor__actions [data-triage-role="inline-editor-progress"] {
+  color: hsl(var(--muted-foreground));
+  font-family: var(--theme-font);
+  font-size: 0.75rem;
+}
+
+[data-triage-emphasis="destructive"][data-triage-contrast="adaptive"] {
+  color: hsl(var(--destructive));
+  color: color-mix(
+    in srgb,
+    hsl(var(--destructive)) 45%,
+    hsl(var(--foreground))
+  );
+}
+
+.triage-inline-editor__content-layer {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.triage-inline-editor__content-layer[data-triage-obscured="true"] {
+  filter: blur(2px);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.triage-inline-editor__issue-overlay {
+  align-items: center;
+  background: hsl(var(--background) / 0.9);
   display: grid;
   gap: 0.5rem;
-  padding-block: 0.5rem;
-}
-
-.triage-inline-editor__value {
-  background: hsl(var(--muted) / 0.35);
-  border-inline-start: 2px solid hsl(var(--primary));
+  grid-template-columns: minmax(0, 1fr) auto;
+  inset: 0;
   min-inline-size: 0;
-  padding: 0.4rem 0.5rem;
+  padding-inline: 0.5rem;
+  position: absolute;
+  z-index: 2;
 }
 
-.triage-inline-editor__value > span {
+.triage-inline-editor__issue-overlay
+  [data-triage-role="inline-editor-issue-status"] {
   color: hsl(var(--muted-foreground));
-  display: block;
   font-family: var(--theme-font);
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  margin-block-end: 0.2rem;
-  text-transform: uppercase;
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.triage-inline-editor__value > p,
-[data-triage-role="inline-editor-recovery"] > p {
+.triage-inline-editor__issue-overlay
+  [data-triage-role="inline-editor-issue-actions"] {
+  align-items: center;
+  display: flex;
+  gap: 0.375rem;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+[data-triage-role="inline-editor-protected-draft"] {
   margin: 0;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {
