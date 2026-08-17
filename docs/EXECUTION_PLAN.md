@@ -1426,9 +1426,9 @@ publish, or close the phase.
 
 **Commit contract:** headless editor/blocker model and tests only; `feat(triage): model conditional inline edits`.
 
-### Task 138: [x] Render `DP-VQ04` inline editors
+### Task 138: [ ] Render `DP-VQ04` inline editors
 
-**Files and actions:** after `DP-VQ04`, modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate only approved editor wording and render the Task 137 Scratch/row state machines exactly across validation, saving, offline/not-applied, reconcile, conflict/use-mine/use-latest, invalidation, draft review/copy, actions, focus, reduced motion, and all themes. Never use generic Dialog/AlertDialog.
+**Files and actions:** after `DP-VQ04`, modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx` plus `src/app/globals.css` to replace only the Scratch-title and Breakdown-content inline-editor visual realization with the user-approved fixed geometry. Preserve view/edit outer geometry and drag/content/action anchors; reserve a fixed `9.5rem` action region; keep text-style Save/Cancel with dirty Save in destructive/red emphasis; cap the single-line Scratch title at 60 characters and Breakdown content at 120; allow browser-managed caret-following horizontal movement with `Home` returning to the start and `End` exposing the terminal caret; render no textarea, resize, vertical scrolling, or visible scrollbar. Ordinary states have no visible status row, saving/reconciling retain the read-only field with a fixed progress action, and offline/not-applied/conflict/invalidated use the source-bound fixed overlay over blurred underlying content. Conflict exposes Use mine, Use latest, and Copy draft without expanding comparison regions. Preserve all Task 137 state/lock/blocker/focus semantics and never use generic Dialog/AlertDialog.
 
 **Dependencies:** Tasks 109, 128, and 137.
 
@@ -1436,9 +1436,9 @@ publish, or close the phase.
 
 **Recipe:** [`Selected Scratch Context`](recipes/inbox-triage-selected-scratch-context-visual-recipe.md) and [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md).
 
-**Observable acceptance:** both editors match every accepted state/copy/focus mapping; Cancel restores current truth; invalidation preserves review/copy; no inline literal or adjacent fallback appears.
+**Observable acceptance:** both editors retain their source geometry and fixed action/content boundary in every state; limits, single-line behavior, and `Home`/`End` caret-following movement match the approved contract; ordinary status rows stay absent; progress and source-bound overlay states do not move anchors or expand comparison regions; Cancel restores current truth; invalidation preserves review/copy; no inline literal or adjacent fallback appears.
 
-**Verification:** focused editor/copy tests; run both editors through every receipt state, keyboard/IME boundary, focus, light/dark, and eight color themes, recording captures/interactions in `docs/verification/inbox-triage/task-138.md`; `pnpm lint`; `pnpm typecheck`.
+**Verification:** focused editor tests for both surfaces' fixed geometry, limits, action boundary, ordinary/progress/overlay states, and `Home`/`End` caret-following behavior; retain the previously accepted Task 138 state/keyboard/IME/focus contract and record canonical repair evidence/captures in `docs/verification/inbox-triage/task-138.md`; run the adapter-declared full gate.
 
 **Commit contract:** DP-VQ04 copy, realization, tests, styles, and Task 138 evidence only; `feat(triage): render conditional inline editors`.
 

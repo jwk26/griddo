@@ -677,15 +677,24 @@ Breakdown content directly inside their source Context/title and row/content
 regions. One common state vocabulary drives both surfaces; Task 137 remains the
 headless owner and Task 138 alone consumes this visual/copy contract.
 
+**User-approved targeted repair 2026-08-18:** replace only the two inline
+editors' visual realization with the fixed geometry below. The clean TDD
+experiment changed its earlier no-horizontal-movement stop condition at
+`4c22b8c`; the user subsequently smoke-reviewed and approved browser-managed
+caret-following horizontal movement. All Task 137 state, lock, blocker, and
+focus semantics remain unchanged.
+
 | Contract | Exact token requirement |
 |---|---|
 | Surface binding | `data-triage-editor-surface="scratch-title"` or `"breakdown-content"`; `context-inline-editor` stays inside Context and `breakdown-inline-editor` inside the exact source/former row position |
 | State binding | `data-triage-editor-state="pristine|dirty|validation|saving|offline|not-applied|reconciling|conflict|invalidated"`; no theme-ID or copy branch |
 | Common roles | `inline-editor-field`, `inline-editor-status`, `inline-editor-actions`, `inline-editor-compare`, `inline-editor-latest`, `inline-editor-draft`, `inline-editor-recovery`, and `inline-editor-copy-status` |
-| Base actions | Primary `Save`, secondary `Cancel`; pristine/validation Save disabled; unchanged Save/valid blur exits without a write; theme/locale activation and IME composition do not blur-save |
-| State copy | `No changes.`, `Unsaved changes.`, surface-specific empty validation, `Saving…`, `Offline. Your draft is still here.`, `Not saved. Your draft is still here.`, and `Checking whether your changes were saved…` |
-| Conflict | `This changed elsewhere.`, full labelled `Latest version` / `Your draft`, primary `Use mine`, secondary `Use latest`, tertiary `Copy draft`; latest refresh copy `Latest version updated.` |
-| Recovery | `Draft not saved`, surface-specific no-longer-editable reason, `Review or copy your draft before closing.`, full `Your draft`, primary `Copy draft`, secondary `Close`; copy status `Copied.` |
+| Fixed source geometry | View/edit outer geometry and existing drag/content/action anchors do not move. Reserve a fixed `9.5rem` action region; editor content and caret never enter it. Scratch title is limited to 60 characters and Breakdown content to 120. Both are single-line fields with no textarea, resize control, vertical scrolling, or visible scrollbar. Overflow may use browser-managed caret-following horizontal movement: `Home` returns to `scrollLeft=0` and `End` exposes the terminal caret. |
+| Base actions | Existing text-style `Save` and `Cancel`; dirty Save uses the approved destructive/red emphasis; pristine/validation Save disabled; unchanged Save/valid blur exits without a write; theme/locale activation and IME composition do not blur-save |
+| Ordinary and progress states | Pristine, dirty, and validation keep the fixed field/action geometry with no visible status row. Saving and reconciling retain the read-only field and replace the fixed action region with the corresponding progress action; the existing state copy remains available to that progress treatment without expanding the source region. |
+| Source-bound overlay | Offline, not-applied, conflict, and invalidated use a fixed overlay bound to the source editor, with underlying content blurred and no outer-geometry or anchor movement. |
+| Conflict | `This changed elsewhere.`; expose `Use mine`, `Use latest`, and `Copy draft` in the fixed overlay without expanding labelled latest/draft comparison regions; latest refresh copy remains `Latest version updated.` |
+| Recovery | `Draft not saved`, surface-specific no-longer-editable reason, `Review or copy your draft before closing.`, `Copy draft`, and `Close` remain source-bound in the fixed overlay; copy status `Copied.` |
 | Pending intent | `Saving before continuing…` replaces ordinary saving copy; `Stay here` cancels only the pending intent, never the in-flight Save or draft |
 | Completion / focus | Applied copy `Saved.` once; surviving Save/Cancel/Use latest returns to Edit; validation/conflict/offline/not-applied retain field focus; invalid row uses next-visible then Add fallback; invalid Scratch uses canonical Pool/selection fallback |
 | Motion / lifetime | Static transitions only; no spinner rotation, pulse, bounce, blink, scale, or layout-transition animation; reduced motion is identical; all drafts/resolvers/recovery are mounted-page memory only |

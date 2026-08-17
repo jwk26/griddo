@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–137 accepted; Task 138 implemented awaiting user review
+> State: Tasks 136–137 accepted; Task 138 targeted canonical repair in progress
 
 ## Status Legend
 
@@ -83,12 +83,13 @@ started and `$run-task`, relay, and Control Tower were not invoked.
 
 ## Active Issues
 
-None remain active. The Task 136 evidence review identified and resolved the
-following phase-local verification-staging conflict:
+Task 138 is reopened for the user-approved targeted canonical repair. The
+ledger also retains the resolved Task 136 verification-staging conflict:
 
 | ID | Status | Finding | Approved disposition | Canonical impact |
 | --- | --- | --- | --- | --- |
 | `P27-01` | Promoted to Execution Plan | Task 136 required canonical-route `unknown reconcile`, but its production route can only enter and retain unknown state; Task 143 owns the `Check again` production trigger that starts reconciliation. A test-only trigger would not prove a production consumer. | On 2026-08-14 the user approved route verification through unknown row/lock/focus and blocked actions in Task 136, retained Add/Delete reconciliation and terminal-release verification at hook level in Task 136, and kept route `Check again` → reconciliation → terminal/focus in Task 143. | `Reflected` in the Task 136 and Task 143 verification clauses of `docs/EXECUTION_PLAN.md`; no product/test/marker change. |
+| `P27-02` | In Progress | The accepted Task 138 realization allowed editor state content to expand the source geometry and its experiment initially imposed a no-horizontal-movement stop condition. | On 2026-08-18 the user approved the bounded fixed-geometry repair and the disclosed caret-following result after smoke review; experiment commit `4c22b8c` records the stop-condition change. | `Reflected` in `DP-VQ04` in `docs/DESIGN_TOKENS.md`, the reopened Task 138 contract in `docs/EXECUTION_PLAN.md`, and this ledger. |
 
 ## Task 136 Run State
 
@@ -132,15 +133,15 @@ following phase-local verification-staging conflict:
 | Field | Durable value |
 | --- | --- |
 | Task | `138` — render `DP-VQ04` inline editors |
-| State | `Accepted`; user-approved and marked `[x]` |
-| Approved scope | The committed canonical Task 138 contract in `docs/EXECUTION_PLAN.md` plus the explicit 2026-08-14 Task 138-only user approval: populate only approved `DP-VQ04` editor copy and render the existing Task 137 Scratch-title/Breakdown-content state machines in `src/components/triage/breakdown-panel.tsx` and tests, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and tests, plus Task 138 verification evidence |
+| State | `In Progress`; targeted repair reopened and `[ ]`, with acceptance pending |
+| Approved scope | The explicit 2026-08-18 ad-hoc work order: replace only the Scratch-title and Breakdown-content visual realization in `src/components/triage/breakdown-panel.tsx`, its test, and `src/app/globals.css` with the approved fixed geometry; reflect only the revised `DP-VQ04`/Task 138 contract, Phase 27 ledger state, Task 138 evidence/captures, and required marker state |
 | Kickoff receipt | Run-phase Gate C receipt `docs/issues/Issues_Phase_27.gate-c.json` at Git blob `08c7a5e524f7a89bd10adc5cea71963f54870d38`; intentionally not passed to the run-task resolver |
-| Start base / entrypoint / recovery anchor | `47269fb9f191541f9f74c1407dc82be85e34e1a0` |
+| Start base / entrypoint / recovery anchor | Required start `b3d6a8b6be45faa67756e8a698f292f53c3d7e08`; accepted input `8eb0aec73965d0dd477bdefc7975026a43aa1c5e` with exact `src` tree `9375974b616ae6d6b891937ad04dc6a99d5fbb88` |
 | Dependencies | Accepted Tasks 109, 128, and 137 are ancestors of the approved Task 138 entrypoint |
 | Excluded | Generic Dialog/AlertDialog or detached fallback surfaces, Task 139+, and Task 143 route `Check again` reconciliation UI |
-| Issues / deviations | None |
-| Canonical impact | `None` — Task 138 executes the already-reflected `DP-VQ04` contract without changing product/design/policy authority |
-| Implementation | `ba643c8335fce9c72b39e10104c320b919b7ec02` — `feat(triage): render conditional inline editors` |
-| Verification | `docs/verification/inbox-triage/task-138.md`; three bounded RED cycles; final focused 2 files / 77 tests, changed-file lint, typecheck, and diff-check; adapter full gate passed 93 files / 811 tests, lint with 0 errors and 11 existing warnings, typecheck, and build; automated 18-case dual-editor state matrix plus IME/blur/reconnect/conflict/focus passed; user-approved external Playwright verification added 36 production-route captures covering both dirty editors across light/dark and all eight themes plus representative pristine/validation states, Escape/Cancel focus return, and theme-switch draft retention, with no visual defect found; successful gates were not rerun because product/test inputs were unchanged |
-| Acceptance | On 2026-08-14 the user explicitly accepted checkpoint `813c40a6445d1774b9c03a0f8d97f4fcee9ae9c5` and approved this acceptance-only marker/ledger update; existing implementation, successful verification, and visual evidence were reused without rerunning tests |
-| Next legal action | Stop at the clean Task 138 acceptance checkpoint; do not start Task 139 without a separate user-approved fresh run-task scope, and do not start Task 143 route reconciliation UI |
+| Issues / deviations | `P27-02` — user-approved targeted canonical repair; no unowned scope deviation |
+| Canonical impact | `Reflected` — revised fixed geometry and the approved caret-following exception are present in `docs/DESIGN_TOKENS.md`, `docs/EXECUTION_PLAN.md`, and this ledger; no archived Phase 24 receipt is mutated |
+| Implementation | Pending canonical application from approved input `8eb0aec73965d0dd477bdefc7975026a43aa1c5e`; previous accepted implementation remains historical evidence only |
+| Verification | Pending run-task-owned focused/full verification and targeted repair evidence in `docs/verification/inbox-triage/task-138.md`; approved experiment gate and smoke are compatibility inputs only |
+| Acceptance | Pending. The 2026-08-14 `[x]` accepted the prior realization and is not acceptance of this repaired canonical implementation. |
+| Next legal action | Apply and verify only the approved Task 138 targeted repair, then stop at a clean awaiting-acceptance checkpoint; do not start Task 139 or later work |
