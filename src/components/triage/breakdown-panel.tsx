@@ -3,6 +3,7 @@
 import {
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   useSyncExternalStore,
@@ -703,6 +704,15 @@ export function BreakdownPanel() {
   const operationLock = useTriageOperationLockContext();
   const departure = useTriageDepartureContext();
   const { registerAddDraftOwner, setAddDraft } = departure;
+  const isDepartureDecision = departure.pendingDestination !== null;
+  const departureHeadingId = useId();
+  const departureDescriptionId = `${departureHeadingId}-departure-description`;
+  const departureContinueRef = useRef<HTMLButtonElement>(null);
+  const departureDiscardRef = useRef<HTMLButtonElement>(null);
+  const departureSheetRef = useRef<HTMLDivElement>(null);
+  const lastDepartureActionRef = useRef<HTMLButtonElement | null>(null);
+  const isResolvingDepartureRef = useRef(false);
+  const restoreAddFocusAfterDecisionRef = useRef(false);
   const titleBlockerHandle = useScratchTitleBlockerContext();
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
   const scratchPoolExpanded = useTriageStore(
@@ -786,6 +796,70 @@ export function BreakdownPanel() {
       }),
     [registerAddDraftOwner, setAddDraft],
   );
+
+  useLayoutEffect(() => {
+    if (isDepartureDecision) {
+      lastDepartureActionRef.current = departureContinueRef.current;
+      departureContinueRef.current?.focus();
+      const containDepartureFocus = (event: globalThis.FocusEvent) => {
+        if (
+          isResolvingDepartureRef.current ||
+          !(event.target instanceof Node) ||
+          departureSheetRef.current?.contains(event.target)
+        ) {
+          return;
+        }
+        lastDepartureActionRef.current?.focus();
+      };
+      document.addEventListener("focusin", containDepartureFocus);
+      return () => {
+        document.removeEventListener("focusin", containDepartureFocus);
+      };
+    }
+
+    isResolvingDepartureRef.current = false;
+    lastDepartureActionRef.current = null;
+    if (restoreAddFocusAfterDecisionRef.current) {
+      restoreAddFocusAfterDecisionRef.current = false;
+      inputRef.current?.focus();
+    }
+  }, [isDepartureDecision]);
+
+  function continueWriting() {
+    isResolvingDepartureRef.current = true;
+    if (departure.continueWriting()) {
+      restoreAddFocusAfterDecisionRef.current = true;
+    } else {
+      isResolvingDepartureRef.current = false;
+    }
+  }
+
+  function discardAndMove() {
+    isResolvingDepartureRef.current = true;
+    if (!departure.discardAndMove()) {
+      isResolvingDepartureRef.current = false;
+    }
+  }
+
+  function handleDepartureKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      continueWriting();
+      return;
+    }
+    if (event.key !== "Tab") return;
+
+    if (event.shiftKey && document.activeElement === departureContinueRef.current) {
+      event.preventDefault();
+      departureDiscardRef.current?.focus();
+    } else if (
+      !event.shiftKey &&
+      document.activeElement === departureDiscardRef.current
+    ) {
+      event.preventDefault();
+      departureContinueRef.current?.focus();
+    }
+  }
 
   function updateAddDraft(draft: string) {
     setAddDraft(draft);
@@ -1088,7 +1162,11 @@ export function BreakdownPanel() {
       <div aria-atomic="true" aria-live="polite" className="sr-only">
         {editorAnnouncement}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
+      <div
+        className="min-h-0 flex-1 overflow-y-auto px-3 py-2"
+        data-testid="breakdown-content-region"
+        inert={isDepartureDecision ? true : undefined}
+      >
         <div
           ref={contextRef}
           aria-label={`Selected Scratch: ${selectedScratch?.title ?? "Unknown Scratch"}`}
@@ -1274,7 +1352,11 @@ export function BreakdownPanel() {
       </div>
 
       <div className="border-t border-border px-3 py-2">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+        <div
+          className="grid grid-cols-[minmax(0,1fr)_auto] gap-2"
+          data-testid="breakdown-add-row"
+          inert={isDepartureDecision ? true : undefined}
+        >
           {isAdding ? (
             <input
               ref={(element) => {
@@ -1328,6 +1410,69 @@ export function BreakdownPanel() {
             {INBOX_TRIAGE_COPY.baseActions.add}
           </Button>
         </div>
+        {isDepartureDecision ? (
+          <div
+            ref={departureSheetRef}
+            aria-describedby={departureDescriptionId}
+            aria-labelledby={departureHeadingId}
+            aria-modal="true"
+            className="breakdown-departure-sheet"
+            data-triage-role="breakdown-departure-sheet"
+            data-triage-state="departure-decision"
+            role="alertdialog"
+            onKeyDown={handleDepartureKeyDown}
+          >
+            <p
+              className="breakdown-departure-sheet__eyebrow"
+              data-triage-role="breakdown-departure-eyebrow"
+            >
+              {INBOX_TRIAGE_COPY.departure.eyebrow}
+            </p>
+            <h3
+              className="breakdown-departure-sheet__heading"
+              data-triage-role="breakdown-departure-heading"
+              id={departureHeadingId}
+            >
+              {INBOX_TRIAGE_COPY.departure.heading}
+            </h3>
+            <p
+              className="breakdown-departure-sheet__description"
+              data-triage-role="breakdown-departure-description"
+              id={departureDescriptionId}
+            >
+              {INBOX_TRIAGE_COPY.departure.description}
+            </p>
+            <div
+              className="breakdown-departure-sheet__actions"
+              data-triage-role="breakdown-departure-actions"
+            >
+              <Button
+                ref={departureContinueRef}
+                data-triage-role="breakdown-departure-continue"
+                type="button"
+                onClick={continueWriting}
+                onFocus={(event) => {
+                  lastDepartureActionRef.current = event.currentTarget;
+                }}
+              >
+                {INBOX_TRIAGE_COPY.departure.continueAction}
+              </Button>
+              <Button
+                ref={departureDiscardRef}
+                className="breakdown-departure-sheet__discard"
+                data-triage-role="breakdown-departure-discard"
+                type="button"
+                variant="ghost"
+                onClick={discardAndMove}
+                onFocus={(event) => {
+                  lastDepartureActionRef.current = event.currentTarget;
+                }}
+              >
+                {INBOX_TRIAGE_COPY.departure.discardAction}
+              </Button>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <AlertDialog

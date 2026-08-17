@@ -103,9 +103,20 @@ describe("Inbox/Triage core-English copy", () => {
     );
   });
 
+  it("owns the complete approved DP-VQ03 departure wording", () => {
+    expect(INBOX_TRIAGE_COPY.departure).toEqual({
+      eyebrow: "Unsaved Add draft",
+      heading: "Keep writing?",
+      description:
+        "Continue writing here, or discard this draft and move.",
+      continueAction: "Continue writing",
+      discardAction: "Discard and move",
+    });
+  });
+
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      140, 141, 143, 144, 147, 148, 150, 151, 153, 154, 157, 160, 162,
+      141, 143, 144, 147, 148, 150, 151, 153, 154, 157, 160, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {

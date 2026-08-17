@@ -7,7 +7,6 @@ export type ReceiptCopyUnavailable = typeof RECEIPT_COPY_UNAVAILABLE;
 export type InboxTriageCopyValue = string | ReceiptCopyUnavailable;
 
 type ReceiptCopyTask =
-  | 140
   | 141
   | 143
   | 144
@@ -80,6 +79,13 @@ export interface InboxTriageCopy {
       readonly retrySave: string;
       readonly stayHere: string;
     };
+  };
+  readonly departure: {
+    readonly eyebrow: string;
+    readonly heading: string;
+    readonly description: string;
+    readonly continueAction: string;
+    readonly discardAction: string;
   };
   readonly lifecycleReasons: {
     readonly externalScratchRemoval: InboxTriageCopyValue;
@@ -184,6 +190,13 @@ export const INBOX_TRIAGE_COPY = {
       stayHere: "Stay here",
     },
   },
+  departure: {
+    eyebrow: "Unsaved Add draft",
+    heading: "Keep writing?",
+    description: "Continue writing here, or discard this draft and move.",
+    continueAction: "Continue writing",
+    discardAction: "Discard and move",
+  },
   lifecycleReasons: {
     externalScratchRemoval: UNAVAILABLE,
     poolLifecycleUpdate: UNAVAILABLE,
@@ -221,7 +234,6 @@ export const INBOX_TRIAGE_COPY = {
     clearPoolSearch: "Clear search",
   },
   receiptDependent: {
-    140: UNAVAILABLE,
     141: UNAVAILABLE,
     143: UNAVAILABLE,
     144: UNAVAILABLE,

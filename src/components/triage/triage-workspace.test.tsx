@@ -196,7 +196,7 @@ describe("TriageWorkspace", () => {
     expect(titleBlockerHandleState.handle?.getSnapshot()).toBe("dirty");
   });
 
-  it("owns one headless departure controller without rendering VQ-03 DOM", () => {
+  it("keeps the DP-VQ03 realization scoped out without a pending destination", () => {
     render(<TriageWorkspace node={createNode()} />);
 
     expect(departureControllerState.controller).not.toBeNull();
@@ -206,6 +206,37 @@ describe("TriageWorkspace", () => {
     expect(
       document.querySelector('[data-triage-role^="breakdown-departure"]'),
     ).not.toBeInTheDocument();
+  });
+
+  it("marks the workspace decision state and makes non-Breakdown areas inert", () => {
+    render(<TriageWorkspace node={createNode()} />);
+
+    act(() => {
+      departureControllerState.controller?.setAddDraft("Protected Add draft");
+      requestActiveTriageDeparture({
+        id: "scratch-2",
+        kind: "scratch",
+        perform: vi.fn(),
+      });
+    });
+
+    const workspace = screen.getByTestId("triage-workspace");
+    expect(workspace).toHaveAttribute(
+      "data-triage-state",
+      "departure-decision",
+    );
+    expect(
+      screen.getByRole("region", { name: "Scratch Pool" }),
+    ).toHaveAttribute("inert");
+    expect(screen.getByRole("region", { name: "Staging" })).toHaveAttribute(
+      "inert",
+    );
+    expect(
+      screen.getByRole("region", { name: "Grid Explorer" }),
+    ).toHaveAttribute("inert");
+    expect(screen.getByRole("region", { name: "Breakdown" })).not.toHaveAttribute(
+      "inert",
+    );
   });
 
   it("registers the mounted controller for Inbox route owners outside the Workspace", () => {

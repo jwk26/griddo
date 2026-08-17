@@ -137,7 +137,11 @@ export function TriageWorkspace({ node }: { node: Node }) {
     <TriageOperationLockContext.Provider value={operationLock}>
       <TriageDepartureContext.Provider value={departure}>
         <ScratchTitleBlockerContext.Provider value={titleBlockerHandle}>
-          <TriageWorkspaceContent node={node} operationLock={operationLock} />
+          <TriageWorkspaceContent
+            isDepartureDecision={departure.pendingDestination !== null}
+            node={node}
+            operationLock={operationLock}
+          />
         </ScratchTitleBlockerContext.Provider>
       </TriageDepartureContext.Provider>
     </TriageOperationLockContext.Provider>
@@ -145,9 +149,11 @@ export function TriageWorkspace({ node }: { node: Node }) {
 }
 
 function TriageWorkspaceContent({
+  isDepartureDecision,
   node,
   operationLock,
 }: {
+  isDepartureDecision: boolean;
   node: Node;
   operationLock: ReturnType<typeof useTriageOperationLock>;
 }) {
@@ -183,13 +189,14 @@ function TriageWorkspaceContent({
       data-testid="triage-workspace"
       data-triage-operation-kind={operationLock.activeOperation?.kind}
       data-triage-role="shell-background"
-      data-triage-state="default"
+      data-triage-state={isDepartureDecision ? "departure-decision" : "default"}
     >
       <section
         aria-labelledby="triage-scratch-pool-heading"
         className="triage-shell__pool relative flex h-full min-h-0 shrink-0"
         data-triage-role="section-surface"
         data-triage-state="default"
+        inert={isDepartureDecision ? true : undefined}
       >
         <h2
           className="triage-shell__pool-heading"
@@ -252,6 +259,7 @@ function TriageWorkspaceContent({
               className="flex min-h-0 min-w-0 flex-col bg-card"
               data-triage-role="section-surface"
               data-triage-state="default"
+              inert={isDepartureDecision ? true : undefined}
             >
               <h2
                 className="triage-shell__section-heading"
@@ -320,6 +328,7 @@ function TriageWorkspaceContent({
             className="flex min-h-0 flex-col bg-background"
             data-triage-role="section-surface"
             data-triage-state="default"
+            inert={isDepartureDecision ? true : undefined}
           >
             <h2
               className="triage-shell__section-heading"

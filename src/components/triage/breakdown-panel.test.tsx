@@ -1,4 +1,5 @@
 import "@testing-library/jest-dom/vitest";
+import { useEffect } from "react";
 import {
   act,
   cleanup,
@@ -10,6 +11,11 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ConditionalEditorSnapshot } from "@/hooks/use-scratch-breakdowns";
+import {
+  TriageDepartureContext,
+  useTriageDeparture,
+  type TriageDepartureController,
+} from "@/hooks/use-triage-departure";
 import type { ScratchBreakdown } from "@/lib/db/schema";
 import type { Bit } from "@/types";
 import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
@@ -26,9 +32,16 @@ const operationLockState = vi.hoisted(() => ({
   release: vi.fn(),
 }));
 const departureState = vi.hoisted(() => ({
+  useRealContext: false,
   owner: null as null | { clearDraft: () => void; focusDraft: () => void },
+  pendingDestination: null as null | { id: string; kind: "scratch" | "path" | "route" },
+  continueWriting: vi.fn(),
+  discardAndMove: vi.fn(),
   setAddDraft: vi.fn(),
   registerAddDraftOwner: vi.fn(),
+}));
+const integrationControllerState = vi.hoisted(() => ({
+  controller: null as TriageDepartureController | null,
 }));
 const clearSelectionMock = vi.hoisted(() => vi.fn());
 const triageStoreState = vi.hoisted(() => ({
@@ -93,18 +106,27 @@ vi.mock("@/hooks/use-triage-operation-lock", () => ({
   }),
 }));
 
-vi.mock("@/hooks/use-triage-departure", () => ({
-  useTriageDepartureContext: () => ({
-    pendingDestination: null,
-    continueWriting: vi.fn(),
-    discardAndMove: vi.fn(),
-    hasAddDraft: vi.fn(() => false),
-    isExitBlocked: vi.fn(() => false),
-    requestDeparture: vi.fn(),
-    setAddDraft: departureState.setAddDraft,
-    registerAddDraftOwner: departureState.registerAddDraftOwner,
-  }),
-}));
+vi.mock("@/hooks/use-triage-departure", async (importOriginal) => {
+  const actual = await importOriginal<
+    typeof import("@/hooks/use-triage-departure")
+  >();
+  return {
+    ...actual,
+    useTriageDepartureContext: () =>
+      departureState.useRealContext
+        ? actual.useTriageDepartureContext()
+        : {
+            pendingDestination: departureState.pendingDestination,
+            continueWriting: departureState.continueWriting,
+            discardAndMove: departureState.discardAndMove,
+            hasAddDraft: vi.fn(() => false),
+            isExitBlocked: vi.fn(() => false),
+            requestDeparture: vi.fn(),
+            setAddDraft: departureState.setAddDraft,
+            registerAddDraftOwner: departureState.registerAddDraftOwner,
+          },
+  };
+});
 
 vi.mock("@/stores/triage-store", () => ({
   useTriageStore: useTriageStoreMock,
@@ -151,6 +173,30 @@ function createBit(overrides: Partial<Bit> = {}): Bit {
   };
 }
 
+const integrationOperationLock = {
+  activeOperation: null,
+  acquire: vi.fn(() => true),
+  isLocked: vi.fn(() => false),
+  release: vi.fn(() => true),
+};
+
+function DepartureIntegrationHarness() {
+  const departure = useTriageDeparture(integrationOperationLock);
+  useEffect(() => {
+    integrationControllerState.controller = departure;
+    return () => {
+      if (integrationControllerState.controller === departure) {
+        integrationControllerState.controller = null;
+      }
+    };
+  }, [departure]);
+  return (
+    <TriageDepartureContext.Provider value={departure}>
+      <BreakdownPanel />
+    </TriageDepartureContext.Provider>
+  );
+}
+
 beforeEach(() => {
   vi.spyOn(Date, "now").mockReturnValue(currentTime);
   hookState.breakdownsByScratch = {};
@@ -181,6 +227,13 @@ beforeEach(() => {
     return true;
   });
   departureState.owner = null;
+  departureState.useRealContext = false;
+  integrationControllerState.controller = null;
+  departureState.pendingDestination = null;
+  departureState.continueWriting.mockReset();
+  departureState.continueWriting.mockReturnValue(true);
+  departureState.discardAndMove.mockReset();
+  departureState.discardAndMove.mockReturnValue(true);
   departureState.setAddDraft.mockReset();
   departureState.registerAddDraftOwner.mockReset();
   departureState.registerAddDraftOwner.mockImplementation((owner) => {
@@ -274,7 +327,7 @@ describe("BreakdownPanel", () => {
     render(<BreakdownPanel />);
 
     fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
-    const input = screen.getByRole("textbox", { name: "" });
+    const input = screen.getByRole("textbox", { name: "" }) as HTMLInputElement;
     fireEvent.change(input, { target: { value: "Protected Add draft" } });
 
     expect(departureState.setAddDraft).toHaveBeenLastCalledWith(
@@ -288,6 +341,218 @@ describe("BreakdownPanel", () => {
     act(() => departureState.owner?.clearDraft());
     expect(input).toHaveValue("");
     expect(departureState.setAddDraft).toHaveBeenLastCalledWith("");
+  });
+
+  it("renders the approved Add-adjacent departure sheet only for a pending destination", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    const view = render(<BreakdownPanel />);
+
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    fireEvent.change(screen.getByRole("textbox", { name: "" }), {
+      target: { value: "Protected Add draft" },
+    });
+    departureState.pendingDestination = { id: "scratch-2", kind: "scratch" };
+    view.rerender(<BreakdownPanel />);
+
+    const sheet = screen.getByRole("alertdialog", { name: "Keep writing?" });
+    expect(sheet).toHaveAttribute(
+      "aria-describedby",
+      expect.stringMatching(/departure-description/),
+    );
+    expect(sheet).toHaveAttribute("data-triage-state", "departure-decision");
+    expect(within(sheet).getByText("Unsaved Add draft")).toBeInTheDocument();
+    expect(
+      within(sheet).getByText(
+        "Continue writing here, or discard this draft and move.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "" })).toHaveValue(
+      "Protected Add draft",
+    );
+
+    const addRow = screen.getByTestId("breakdown-add-row");
+    expect(
+      addRow.compareDocumentPosition(sheet) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(screen.getByTestId("breakdown-content-region")).toHaveAttribute(
+      "inert",
+    );
+    expect(addRow).toHaveAttribute("inert");
+  });
+
+  it("orders the default Continue action before destructive Discard and calls only the selected transition", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    departureState.pendingDestination = { id: "/trash", kind: "route" };
+    render(<BreakdownPanel />);
+
+    const sheet = screen.getByRole("alertdialog");
+    const actions = within(sheet).getAllByRole("button");
+    expect(actions.map((action) => action.textContent)).toEqual([
+      "Continue writing",
+      "Discard and move",
+    ]);
+    expect(actions[0]).toHaveAttribute(
+      "data-triage-role",
+      "breakdown-departure-continue",
+    );
+    expect(actions[1]).toHaveAttribute(
+      "data-triage-role",
+      "breakdown-departure-discard",
+    );
+    expect(within(sheet).queryByRole("button", { name: /close/i })).toBeNull();
+
+    fireEvent.click(actions[1]);
+    expect(departureState.discardAndMove).toHaveBeenCalledTimes(1);
+    expect(departureState.continueWriting).not.toHaveBeenCalled();
+  });
+
+  it("focuses Continue, contains sequential focus, and maps Escape to Continue", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    departureState.pendingDestination = { id: "parent-1", kind: "path" };
+    render(<BreakdownPanel />);
+
+    const continueAction = screen.getByRole("button", {
+      name: "Continue writing",
+    });
+    const discardAction = screen.getByRole("button", {
+      name: "Discard and move",
+    });
+    expect(continueAction).toHaveFocus();
+
+    discardAction.focus();
+    fireEvent.keyDown(screen.getByRole("alertdialog"), { key: "Tab" });
+    expect(continueAction).toHaveFocus();
+
+    fireEvent.keyDown(screen.getByRole("alertdialog"), {
+      key: "Tab",
+      shiftKey: true,
+    });
+    expect(discardAction).toHaveFocus();
+
+    fireEvent.keyDown(screen.getByRole("alertdialog"), { key: "Escape" });
+    expect(departureState.continueWriting).toHaveBeenCalledTimes(1);
+    expect(departureState.discardAndMove).not.toHaveBeenCalled();
+  });
+
+  it("returns attempted outside focus to the last focused departure action", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    departureState.pendingDestination = { id: "/trash", kind: "route" };
+    render(<BreakdownPanel />);
+    const discardAction = screen.getByRole("button", {
+      name: "Discard and move",
+    });
+    discardAction.focus();
+    const outsideButton = document.createElement("button");
+    document.body.append(outsideButton);
+
+    outsideButton.focus();
+
+    expect(discardAction).toHaveFocus();
+    outsideButton.remove();
+  });
+
+  it("restores the Add input and its selection after Continue closes the inert sheet", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    const view = render(<BreakdownPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByRole("textbox", { name: "" }) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "Protected Add draft" } });
+    input.setSelectionRange(3, 9);
+
+    departureState.pendingDestination = { id: "scratch-2", kind: "scratch" };
+    view.rerender(<BreakdownPanel />);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Continue writing" }),
+    );
+    departureState.pendingDestination = null;
+    view.rerender(<BreakdownPanel />);
+
+    expect(input).toHaveFocus();
+    expect(input.selectionStart).toBe(3);
+    expect(input.selectionEnd).toBe(9);
+  });
+
+  it("keeps one static sheet and focused action when the pending destination is replaced", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    departureState.pendingDestination = { id: "scratch-2", kind: "scratch" };
+    const view = render(<BreakdownPanel />);
+    const sheet = screen.getByRole("alertdialog");
+    const discardAction = screen.getByRole("button", {
+      name: "Discard and move",
+    });
+    discardAction.focus();
+
+    departureState.pendingDestination = { id: "/trash", kind: "route" };
+    view.rerender(<BreakdownPanel />);
+
+    expect(screen.getByRole("alertdialog")).toBe(sheet);
+    expect(discardAction).toHaveFocus();
+    expect(sheet).not.toHaveTextContent("scratch-2");
+    expect(sheet).not.toHaveTextContent("/trash");
+  });
+
+  it("connects the real Task 139 controller to both actions and the latest destination", () => {
+    departureState.useRealContext = true;
+    triageStoreState.selectedScratchId = "scratch-1";
+    const firstPerform = vi.fn();
+    const firstFocus = vi.fn();
+    const latestPerform = vi.fn();
+    const latestFocus = vi.fn();
+    render(<DepartureIntegrationHarness />);
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByRole("textbox", { name: "" });
+    fireEvent.change(input, { target: { value: "Protected Add draft" } });
+
+    act(() => {
+      expect(
+        integrationControllerState.controller?.requestDeparture({
+          id: "scratch-2",
+          kind: "scratch",
+          perform: firstPerform,
+          focus: firstFocus,
+        }),
+      ).toBe("decision-required");
+      expect(
+        integrationControllerState.controller?.requestDeparture({
+          id: "parent-1",
+          kind: "path",
+          perform: latestPerform,
+          focus: latestFocus,
+        }),
+      ).toBe("decision-required");
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Discard and move" }),
+    );
+
+    expect(input).toHaveValue("");
+    expect(firstPerform).not.toHaveBeenCalled();
+    expect(firstFocus).not.toHaveBeenCalled();
+    expect(latestPerform).toHaveBeenCalledTimes(1);
+    expect(latestFocus).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+
+    fireEvent.change(input, { target: { value: "Keep this draft" } });
+    const routePerform = vi.fn();
+    act(() => {
+      expect(
+        integrationControllerState.controller?.requestDeparture({
+          id: "/trash",
+          kind: "route",
+          perform: routePerform,
+        }),
+      ).toBe("decision-required");
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Continue writing" }),
+    );
+
+    expect(input).toHaveValue("Keep this draft");
+    expect(input).toHaveFocus();
+    expect(routePerform).not.toHaveBeenCalled();
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
   });
 
   it("renders breakdown content without row time labels", () => {
