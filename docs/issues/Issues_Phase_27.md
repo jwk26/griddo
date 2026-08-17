@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–139 accepted; Task 140 in progress
+> State: Tasks 136–139 accepted; Task 140 implemented and awaiting user acceptance
 
 ## Status Legend
 
@@ -174,7 +174,7 @@ targeted canonical repair:
 | Field | Durable value |
 | --- | --- |
 | Task | `140` — render `DP-VQ03` departure confirmation |
-| State | `In Progress`; implementation is not user acceptance and Task 140 remains `[ ]` |
+| State | `Implemented`; awaiting user acceptance and Task 140 remains `[ ]` |
 | Approved scope | The committed canonical Task 140 contract in `docs/EXECUTION_PLAN.md` plus the explicit 2026-08-18 Task 140-only work order: modify only `src/components/triage/triage-workspace.tsx` and its test, `src/components/triage/breakdown-panel.tsx` and its test, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and its test, and Task 140 verification/ledger records to realize the accepted `DP-VQ03` contract on Task 139's exact headless transitions |
 | Kickoff authority | The user supplied an approved Task 140 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; the candidate-pinned resolver returned `approval_required` with `contract_ready=true` as compatibility evidence only |
 | Start base / entrypoint / recovery anchor | `23da87d6ac8a74c35efc425cb8cdb54e2b3246d4`; exact entrypoint `src` tree `a717e61a866fcb28c5139f19c6dab0d394733f76` |
@@ -183,4 +183,8 @@ targeted canonical repair:
 | Issues / deviations | None |
 | Canonical impact | `None` — Task 140 executes the already-reflected and accepted `DP-VQ03` contract without changing product/design/policy authority |
 | Recovery note | Reconciled the stale ledger summary from “Task 139 in progress” to the accepted Task 139 state already proven by the Task 139 section, `docs/EXECUTION_PLAN.md`, and recovery anchor |
-| Next legal action | Commit this durable start signal before production writes, then execute only Task 140 with test-first evidence |
+| Implementation | `0e2abd690d315f4452750cfeaef570f28a1438ac` — `feat(triage): render add draft departure`; exact implementation `src` tree `02990def33a836d0475b4d745c537d12f8d29492` |
+| Checkpoint chain | `a1abd41d0ac3466960f2b9ed21f1810bd45ae1e5` durable start → `0e2abd690d315f4452750cfeaef570f28a1438ac` implementation |
+| Verification | `docs/verification/inbox-triage/task-140.md`; final focused 8 files / 203 tests, changed-file lint, typecheck, and diff-check passed; adapter full gate passed 94 files / 864 tests, lint with 0 errors and 11 existing warnings, typecheck, and production build; HTTP smoke returned 200 for root and the existing canonical route; follow-up independent review reported no Critical or Important findings |
+| Review limitation | The required in-app browser backend was unavailable because this session exposed no Node REPL `js` tool. No fallback browser or fixture injection was used; live eight-theme appearance remains explicit user review evidence |
+| Next legal action | Stop at the clean Task 140 awaiting-acceptance checkpoint; keep Tasks 140 and 141 `[ ]` until explicit user acceptance and do not start Task 141 |
