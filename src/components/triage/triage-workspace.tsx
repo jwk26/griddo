@@ -2,7 +2,7 @@
 
 import { DndContext, DragOverlay, useDroppable, type Modifier } from "@dnd-kit/core";
 import { AlertTriangle, Folder, ListTodo, X } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,6 +22,11 @@ import {
   type TriageDragItem,
 } from "@/hooks/use-dnd";
 import { useStagedCandidates } from "@/hooks/use-staged-candidates";
+import {
+  registerActiveTriageDeparture,
+  TriageDepartureContext,
+  useTriageDeparture,
+} from "@/hooks/use-triage-departure";
 import {
   TriageOperationLockContext,
   useTriageOperationLock,
@@ -121,13 +126,20 @@ function TriageRemoveDropTarget({
 
 export function TriageWorkspace({ node }: { node: Node }) {
   const operationLock = useTriageOperationLock();
+  const departure = useTriageDeparture(operationLock);
   const [titleBlockerHandle] = useState(createScratchTitleBlockerHandle);
+
+  useEffect(() => {
+    return registerActiveTriageDeparture(departure);
+  }, [departure]);
 
   return (
     <TriageOperationLockContext.Provider value={operationLock}>
-      <ScratchTitleBlockerContext.Provider value={titleBlockerHandle}>
-        <TriageWorkspaceContent node={node} operationLock={operationLock} />
-      </ScratchTitleBlockerContext.Provider>
+      <TriageDepartureContext.Provider value={departure}>
+        <ScratchTitleBlockerContext.Provider value={titleBlockerHandle}>
+          <TriageWorkspaceContent node={node} operationLock={operationLock} />
+        </ScratchTitleBlockerContext.Provider>
+      </TriageDepartureContext.Provider>
     </TriageOperationLockContext.Provider>
   );
 }

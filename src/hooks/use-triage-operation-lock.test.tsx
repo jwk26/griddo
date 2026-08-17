@@ -101,4 +101,25 @@ describe("useTriageOperationLock", () => {
     expect(result.current.isLocked()).toBe(false);
     expect(result.current.activeOperation).toBeNull();
   });
+
+  it.each(TRIAGE_OPERATION_KINDS)(
+    "exposes the active %s owner synchronously to shared exit blockers",
+    (kind) => {
+      const { result } = renderHook(() => useTriageOperationLock());
+
+      act(() => {
+        expect(result.current.acquire(kind, `${kind}-exit`)).toBe(true);
+        expect(result.current.isLocked()).toBe(true);
+      });
+      expect(result.current.activeOperation).toEqual({
+        kind,
+        operationId: `${kind}-exit`,
+      });
+
+      act(() => {
+        expect(result.current.release(`${kind}-exit`, "not_applied")).toBe(true);
+      });
+      expect(result.current.isLocked()).toBe(false);
+    },
+  );
 });

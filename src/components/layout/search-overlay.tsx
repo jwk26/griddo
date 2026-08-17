@@ -5,7 +5,11 @@ import { CheckSquare, Folder, ListChecks, Search } from "lucide-react";
 import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { useSearch } from "@/hooks/use-search";
+import { useSearch, type SearchResult } from "@/hooks/use-search";
+import {
+  captureTriageRouteFocus,
+  requestActiveTriageDeparture,
+} from "@/hooks/use-triage-departure";
 import { searchOverlayVariants } from "@/lib/animations/layout";
 import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/stores/search-store";
@@ -22,6 +26,21 @@ function getResultIcon(type: "node" | "bit" | "chunk") {
   return ListChecks;
 }
 
+function getResultHref(result: SearchResult): string | null {
+  if (result.type === "node") return `/grid/${result.id}`;
+  if (result.type === "bit" && result.parentNodeId) {
+    return `/grid/${result.parentNodeId}?bit=${result.id}`;
+  }
+  if (
+    result.type === "chunk" &&
+    result.grandparentNodeId &&
+    result.parentBitId
+  ) {
+    return `/grid/${result.grandparentNodeId}?bit=${result.parentBitId}`;
+  }
+  return null;
+}
+
 export function SearchOverlay() {
   const router = useRouter();
   const isOpen = useSearchStore((state) => state.isOpen);
@@ -32,6 +51,18 @@ export function SearchOverlay() {
   const { results } = useSearch(normalizedQuery);
   const [selection, setSelection] = useState({ query: "", index: -1 });
   const selectedIndex = selection.query === normalizedQuery && isOpen ? selection.index : -1;
+
+  function navigateToResult(result: SearchResult) {
+    const href = getResultHref(result);
+    if (href === null) return;
+    const outcome = requestActiveTriageDeparture({
+      focus: captureTriageRouteFocus(href),
+      id: href,
+      kind: "route",
+      perform: () => router.push(href),
+    });
+    if (outcome !== "blocked") close();
+  }
 
   return (
     <AnimatePresence>
@@ -69,16 +100,7 @@ export function SearchOverlay() {
               if (event.key === "Enter" && selectedIndex >= 0) {
                 const result = results[selectedIndex];
                 if (!result) return;
-                if (result.type === "node") {
-                  router.push(`/grid/${result.id}`);
-                  close();
-                } else if (result.type === "bit" && result.parentNodeId) {
-                  router.push(`/grid/${result.parentNodeId}?bit=${result.id}`);
-                  close();
-                } else if (result.type === "chunk" && result.grandparentNodeId && result.parentBitId) {
-                  router.push(`/grid/${result.grandparentNodeId}?bit=${result.parentBitId}`);
-                  close();
-                }
+                navigateToResult(result);
               }
             }}
             variants={searchOverlayVariants}
@@ -125,24 +147,7 @@ export function SearchOverlay() {
                       )}
                       id={`result-${index}`}
                       role="option"
-                      onClick={() => {
-                        if (result.type === "node") {
-                          router.push(`/grid/${result.id}`);
-                          close();
-                          return;
-                        }
-
-                        if (result.type === "bit" && result.parentNodeId) {
-                          router.push(`/grid/${result.parentNodeId}?bit=${result.id}`);
-                          close();
-                          return;
-                        }
-
-                        if (result.type === "chunk" && result.grandparentNodeId && result.parentBitId) {
-                          router.push(`/grid/${result.grandparentNodeId}?bit=${result.parentBitId}`);
-                          close();
-                        }
-                      }}
+                      onClick={() => navigateToResult(result)}
                       type="button"
                     >
                       <Icon className="h-4 w-4 text-muted-foreground" />

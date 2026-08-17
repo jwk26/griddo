@@ -11,6 +11,7 @@ import {
   type UIEvent,
 } from "react";
 import { useGridData } from "@/hooks/use-grid-data";
+import { useTriageDepartureContext } from "@/hooks/use-triage-departure";
 import type { TriageDragItem } from "@/hooks/use-dnd";
 import {
   getTriageHierarchyDropId,
@@ -137,6 +138,7 @@ export function HierarchyExplorer({
   overTargetId,
   pendingPlacementDropId,
 }: HierarchyExplorerProps) {
+  const departure = useTriageDepartureContext();
   const explorerPathIds = useTriageStore((state) => state.explorerPathIds);
   const explorerColumnScroll = useTriageStore(
     (state) => state.explorerColumnScroll,
@@ -273,8 +275,25 @@ export function HierarchyExplorer({
   ]);
 
   function selectPath(pathIds: string[]) {
-    setExplorerPathIds(pathIds);
-    setExplorerOpenColumnIds(["home", ...pathIds]);
+    if (
+      pathIds.length === explorerPathIds.length &&
+      pathIds.every((id, index) => id === explorerPathIds[index])
+    ) {
+      return;
+    }
+    const focusTarget =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    departure.requestDeparture({
+      id: pathIds.join("/") || "home",
+      focus: () => focusTarget?.focus(),
+      kind: "path",
+      perform: () => {
+        setExplorerPathIds(pathIds);
+        setExplorerOpenColumnIds(["home", ...pathIds]);
+      },
+    });
   }
 
   const visibleDropIds = useMemo(() => {

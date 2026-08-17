@@ -4,8 +4,8 @@ import { useDroppable } from "@dnd-kit/core";
 import type { LucideIcon } from "lucide-react";
 import { Calendar, Home, Inbox, Layers, Pencil, Plus, Search, Trash2, X, Zap } from "lucide-react";
 import { motion, type HTMLMotionProps, type MotionProps, useReducedMotion } from "motion/react";
-import { usePathname, useRouter } from "next/navigation";
-import { forwardRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { forwardRef, Suspense, useState } from "react";
 import { ColorThemeToggle } from "@/components/layout/color-theme-toggle";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import {
@@ -26,6 +26,11 @@ import { useGlobalUrgency } from "@/hooks/use-global-urgency";
 import type { DragActiveItem } from "@/hooks/use-dnd";
 import { useInbox } from "@/hooks/use-inbox";
 import { useNodeActions } from "@/hooks/use-node-actions";
+import {
+  captureTriageRouteFocus,
+  requestActiveTriageDeparture,
+  useTriageRouteFocusHandoff,
+} from "@/hooks/use-triage-departure";
 import {
   sidebarDragTargetActive,
   sidebarDragTargetRest,
@@ -121,6 +126,14 @@ function DeleteDropTarget() {
       <X className="h-5 w-5" />
     </div>
   );
+}
+
+function TriageRouteFocusOwner() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams.toString();
+  useTriageRouteFocusHandoff(search ? `${pathname}?${search}` : pathname);
+  return null;
 }
 
 const noop = () => {};
@@ -312,15 +325,31 @@ export function Sidebar({
   const isSystemNodeRoute = systemNodes.some((n) => pathname === `/grid/${n.id}`);
   const isGridItemDrag = dragActiveItem?.type === "node" || dragActiveItem?.type === "bit";
 
+  function navigate(href: string) {
+    if (href === pathname) {
+      router.push(href);
+      return;
+    }
+    requestActiveTriageDeparture({
+      focus: captureTriageRouteFocus(href),
+      id: href,
+      kind: "route",
+      perform: () => router.push(href),
+    });
+  }
+
   return (
     <TooltipProvider>
+      <Suspense fallback={null}>
+        <TriageRouteFocusOwner />
+      </Suspense>
       <aside className="fixed left-0 top-0 z-40 flex h-full w-12 flex-col items-center gap-1 border-r border-border bg-background py-3">
       {(isCalendarRoute || isSystemNodeRoute) ? (
         <SidebarIconButton
           className="active:scale-95"
           icon={Home}
           label="Home"
-          onClick={() => router.push("/")}
+          onClick={() => navigate("/")}
         />
       ) : null}
       {isCalendarRoute ? (
@@ -411,7 +440,7 @@ export function Sidebar({
             <SidebarIconButton
               icon={Calendar}
               label="Calendar"
-              onClick={() => router.push("/calendar/weekly")}
+              onClick={() => navigate("/calendar/weekly")}
               isActive={isCalendarRoute}
             />
             {globalUrgency ? (
@@ -437,7 +466,7 @@ export function Sidebar({
               node={node}
               pathname={pathname}
               scratchCount={scratchCount}
-              onNavigate={(href) => router.push(href)}
+              onNavigate={navigate}
             />
           ))}
         </div>
@@ -447,7 +476,7 @@ export function Sidebar({
           <SidebarIconButton
             icon={Trash2}
             label="Trash"
-            onClick={() => router.push("/trash")}
+            onClick={() => navigate("/trash")}
             isActive={isTrashRoute}
           />
         </div>

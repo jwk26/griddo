@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -23,6 +24,11 @@ const operationLockState = vi.hoisted(() => ({
   activeOperation: null as null | { kind: "add" | "delete"; operationId: string },
   acquire: vi.fn(),
   release: vi.fn(),
+}));
+const departureState = vi.hoisted(() => ({
+  owner: null as null | { clearDraft: () => void; focusDraft: () => void },
+  setAddDraft: vi.fn(),
+  registerAddDraftOwner: vi.fn(),
 }));
 const clearSelectionMock = vi.hoisted(() => vi.fn());
 const triageStoreState = vi.hoisted(() => ({
@@ -84,6 +90,19 @@ vi.mock("@/hooks/use-triage-operation-lock", () => ({
   useTriageOperationLockContext: () => ({
     ...operationLockState,
     isLocked: () => operationLockState.activeOperation !== null,
+  }),
+}));
+
+vi.mock("@/hooks/use-triage-departure", () => ({
+  useTriageDepartureContext: () => ({
+    pendingDestination: null,
+    continueWriting: vi.fn(),
+    discardAndMove: vi.fn(),
+    hasAddDraft: vi.fn(() => false),
+    isExitBlocked: vi.fn(() => false),
+    requestDeparture: vi.fn(),
+    setAddDraft: departureState.setAddDraft,
+    registerAddDraftOwner: departureState.registerAddDraftOwner,
   }),
 }));
 
@@ -160,6 +179,15 @@ beforeEach(() => {
     if (operationLockState.activeOperation?.operationId !== operationId) return false;
     operationLockState.activeOperation = null;
     return true;
+  });
+  departureState.owner = null;
+  departureState.setAddDraft.mockReset();
+  departureState.registerAddDraftOwner.mockReset();
+  departureState.registerAddDraftOwner.mockImplementation((owner) => {
+    departureState.owner = owner;
+    return () => {
+      if (departureState.owner === owner) departureState.owner = null;
+    };
   });
   triageStoreState.selectedScratchId = null;
   editorState.snapshot = null;
@@ -239,6 +267,27 @@ describe("BreakdownPanel", () => {
     expect(
       screen.getByText("Select a Scratch to view breakdowns"),
     ).toBeInTheDocument();
+  });
+
+  it("publishes the Add draft synchronously and registers clear and focus intents", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    render(<BreakdownPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByRole("textbox", { name: "" });
+    fireEvent.change(input, { target: { value: "Protected Add draft" } });
+
+    expect(departureState.setAddDraft).toHaveBeenLastCalledWith(
+      "Protected Add draft",
+    );
+    expect(departureState.owner).not.toBeNull();
+
+    act(() => departureState.owner?.focusDraft());
+    expect(input).toHaveFocus();
+
+    act(() => departureState.owner?.clearDraft());
+    expect(input).toHaveValue("");
+    expect(departureState.setAddDraft).toHaveBeenLastCalledWith("");
   });
 
   it("renders breakdown content without row time labels", () => {

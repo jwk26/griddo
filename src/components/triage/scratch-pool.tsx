@@ -17,6 +17,7 @@ import {
   useState,
 } from "react";
 import { useInbox } from "@/hooks/use-inbox";
+import { useTriageDepartureContext } from "@/hooks/use-triage-departure";
 import { useTriageOperationLockContext } from "@/hooks/use-triage-operation-lock";
 import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import { cn } from "@/lib/utils";
@@ -48,7 +49,7 @@ function ScratchRow({
   bit: Bit;
   isSelected: boolean;
   reducedMotion: boolean;
-  onSelect: (id: string) => void;
+  onSelect: (id: string, focus: () => void) => void;
 }) {
   return (
     <button
@@ -67,7 +68,10 @@ function ScratchRow({
             : "transition-colors duration-150 ease-out",
       )}
       type="button"
-      onClick={() => onSelect(bit.id)}
+      onClick={(event) => {
+        const target = event.currentTarget;
+        onSelect(bit.id, () => target.focus());
+      }}
     >
       {isSelected ? (
         <span
@@ -99,6 +103,7 @@ function ScratchRow({
 
 export function ScratchPool() {
   const { isLocked } = useTriageOperationLockContext();
+  const departure = useTriageDepartureContext();
   const { activeScratchBits } = useInbox();
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
   const selectScratch = useTriageStore((state) => state.selectScratch);
@@ -202,11 +207,17 @@ export function ScratchPool() {
   ]);
 
   const handleSelect = useCallback(
-    (id: string) => {
+    (id: string, focus: () => void) => {
       if (isLocked()) return;
-      selectScratch(id);
+      if (id === selectedScratchId) return;
+      departure.requestDeparture({
+        id,
+        focus,
+        kind: "scratch",
+        perform: () => selectScratch(id),
+      });
     },
-    [isLocked, selectScratch],
+    [departure, isLocked, selectScratch, selectedScratchId],
   );
 
   const handleSortToggle = useCallback(
@@ -445,7 +456,10 @@ export function ScratchPool() {
                     data-triage-role="pool-compact-switcher"
                     data-triage-state={isSelected ? "selected" : "default"}
                     title={bit.title}
-                    onClick={() => handleSelect(bit.id)}
+                    onClick={(event) => {
+                      const target = event.currentTarget;
+                      handleSelect(bit.id, () => target.focus());
+                    }}
                     className={cn(
                       "w-2 rounded-full",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",

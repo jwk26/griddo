@@ -1,9 +1,13 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTriageStore } from "@/stores/triage-store";
 import type { PendingPlacement, TriageDragItem } from "@/hooks/use-dnd";
 import type { ScratchTitleBlockerHandle } from "@/hooks/use-scratch-breakdowns";
+import {
+  requestActiveTriageDeparture,
+  type TriageDepartureController,
+} from "@/hooks/use-triage-departure";
 import type { Node } from "@/types";
 import { TriageWorkspace } from "./triage-workspace";
 
@@ -14,6 +18,9 @@ const handlePlacementCancelMock = vi.hoisted(() => vi.fn());
 const useGridDataMock = vi.hoisted(() => vi.fn());
 const titleBlockerHandleState = vi.hoisted(() => ({
   handle: null as ScratchTitleBlockerHandle | null,
+}));
+const departureControllerState = vi.hoisted(() => ({
+  controller: null as TriageDepartureController | null,
 }));
 
 vi.mock("@/hooks/use-dnd", () => ({
@@ -28,17 +35,44 @@ vi.mock("@/hooks/use-grid-data", () => ({
   useGridData: useGridDataMock,
 }));
 
-vi.mock("@/components/triage/scratch-pool", () => ({
-  ScratchPool: () => <div data-testid="scratch-pool" />,
-}));
+vi.mock("@/components/triage/scratch-pool", async () => {
+  const { useTriageStore } = await import("@/stores/triage-store");
+  return {
+    ScratchPool: () => (
+      <div data-testid="scratch-pool">
+        {[
+          ["scratch-2", "Second Scratch"],
+          ["scratch-3", "Third Scratch"],
+        ].map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => useTriageStore.getState().selectScratch(id)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                useTriageStore.getState().selectScratch(id);
+              }
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    ),
+  };
+});
 
 vi.mock("@/components/triage/breakdown-panel", async () => {
   const { useScratchTitleBlockerContext } = await import(
     "@/hooks/use-scratch-breakdowns"
   );
+  const { useTriageDepartureContext } = await import(
+    "@/hooks/use-triage-departure"
+  );
   return {
     BreakdownPanel: () => {
       titleBlockerHandleState.handle = useScratchTitleBlockerContext();
+      departureControllerState.controller = useTriageDepartureContext();
       return <div data-testid="breakdown-panel" />;
     },
   };
@@ -121,6 +155,7 @@ function createDirectPendingPlacement(
 
 beforeEach(() => {
   titleBlockerHandleState.handle = null;
+  departureControllerState.controller = null;
   handlePlacementConfirmMock.mockReset();
   handlePlacementConfirmMock.mockResolvedValue(undefined);
   handlePlacementCancelMock.mockReset();
@@ -159,6 +194,40 @@ describe("TriageWorkspace", () => {
     expect(titleBlockerHandleState.handle?.getSnapshot()).toBeNull();
     titleBlockerHandleState.handle?.setSnapshot("dirty");
     expect(titleBlockerHandleState.handle?.getSnapshot()).toBe("dirty");
+  });
+
+  it("owns one headless departure controller without rendering VQ-03 DOM", () => {
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(departureControllerState.controller).not.toBeNull();
+    expect(
+      document.querySelector('[data-triage-state="departure-decision"]'),
+    ).not.toBeInTheDocument();
+    expect(
+      document.querySelector('[data-triage-role^="breakdown-departure"]'),
+    ).not.toBeInTheDocument();
+  });
+
+  it("registers the mounted controller for Inbox route owners outside the Workspace", () => {
+    const perform = vi.fn();
+    render(<TriageWorkspace node={createNode()} />);
+
+    act(() => {
+      departureControllerState.controller?.setAddDraft("Protected Add draft");
+      expect(
+        requestActiveTriageDeparture({
+          id: "/trash",
+          kind: "route",
+          perform,
+        }),
+      ).toBe("decision-required");
+    });
+
+    expect(perform).not.toHaveBeenCalled();
+    expect(departureControllerState.controller?.pendingDestination).toEqual({
+      id: "/trash",
+      kind: "route",
+    });
   });
 
   it("renders one semantic shell with visible identities for all four areas", () => {

@@ -41,6 +41,7 @@ import {
   type ConditionalEditorSnapshot,
 } from "@/hooks/use-scratch-breakdowns";
 import { useStagedCandidates } from "@/hooks/use-staged-candidates";
+import { useTriageDepartureContext } from "@/hooks/use-triage-departure";
 import { useTriageOperationLockContext } from "@/hooks/use-triage-operation-lock";
 import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import type {
@@ -700,6 +701,8 @@ function formatScratchTimestamp(createdAt: number): string {
 
 export function BreakdownPanel() {
   const operationLock = useTriageOperationLockContext();
+  const departure = useTriageDepartureContext();
+  const { registerAddDraftOwner, setAddDraft } = departure;
   const titleBlockerHandle = useScratchTitleBlockerContext();
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
   const scratchPoolExpanded = useTriageStore(
@@ -771,6 +774,23 @@ export function BreakdownPanel() {
       : null;
   const selectedScratch =
     activeScratchBits.find((bit) => bit.id === selectedScratchId) ?? null;
+
+  useEffect(
+    () =>
+      registerAddDraftOwner({
+        clearDraft: () => {
+          setAddDraft("");
+          setNewContent("");
+        },
+        focusDraft: () => inputRef.current?.focus(),
+      }),
+    [registerAddDraftOwner, setAddDraft],
+  );
+
+  function updateAddDraft(draft: string) {
+    setAddDraft(draft);
+    setNewContent(draft);
+  }
 
   async function handleEditorSave(): Promise<boolean> {
     const snapshot = editor.snapshot;
@@ -931,7 +951,7 @@ export function BreakdownPanel() {
     if (!trimmed) {
       if (!keepInputOpen) {
         setIsAdding(false);
-        setNewContent("");
+        updateAddDraft("");
       }
       return;
     }
@@ -952,7 +972,7 @@ export function BreakdownPanel() {
     operationLock.release(command.operationId, outcome.status);
     if (isConfirmedSuccess(outcome.status)) {
       pendingAddedRowIdRef.current = command.breakdownId;
-      setNewContent("");
+      updateAddDraft("");
       if (keepInputOpen) {
         setIsAdding(true);
         inputRef.current?.focus();
@@ -973,7 +993,7 @@ export function BreakdownPanel() {
     if (event.key === "Escape") {
       if (operationLock.isLocked()) return;
       setIsAdding(false);
-      setNewContent("");
+      updateAddDraft("");
       return;
     }
 
@@ -1264,7 +1284,7 @@ export function BreakdownPanel() {
               className="block h-8 w-full appearance-none rounded-md border border-border bg-background px-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
               data-triage-role="breakdown-add-field"
               maxLength={500}
-              onChange={(event) => setNewContent(event.target.value)}
+              onChange={(event) => updateAddDraft(event.target.value)}
               onCompositionEnd={() => {
                 isComposingRef.current = false;
               }}

@@ -13,6 +13,15 @@ import { useTriageStore } from "@/stores/triage-store";
 import { ScratchPool } from "./scratch-pool";
 
 const useInboxMock = vi.hoisted(() => vi.fn());
+const departureState = vi.hoisted(() => ({
+  destination: null as null | {
+    id: string;
+    focus?: () => void;
+    kind: "scratch";
+    perform: () => void;
+  },
+  requestDeparture: vi.fn(),
+}));
 const operationLockState = vi.hoisted(() => ({
   activeOperation: null as null | { kind: "add"; operationId: string },
 }));
@@ -25,6 +34,12 @@ vi.mock("@/hooks/use-triage-operation-lock", () => ({
   useTriageOperationLockContext: () => ({
     ...operationLockState,
     isLocked: () => operationLockState.activeOperation !== null,
+  }),
+}));
+
+vi.mock("@/hooks/use-triage-departure", () => ({
+  useTriageDepartureContext: () => ({
+    requestDeparture: departureState.requestDeparture,
   }),
 }));
 
@@ -69,6 +84,14 @@ beforeEach(() => {
   useTriagePreferencesStore.setState({ poolCreatedAtSort: "DESC" });
   useInboxMock.mockReturnValue({ activeScratchBits: [] });
   operationLockState.activeOperation = null;
+  departureState.destination = null;
+  departureState.requestDeparture.mockReset();
+  departureState.requestDeparture.mockImplementation((destination) => {
+    departureState.destination = destination;
+    destination.perform();
+    destination.focus?.();
+    return "performed";
+  });
 });
 
 afterEach(() => {
@@ -438,6 +461,54 @@ describe("ScratchPool", () => {
 
     fireEvent.click(screen.getByLabelText("Collapse Scratch Pool"));
     fireEvent.click(screen.getByRole("button", { name: "Scratch two" }));
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-1");
+  });
+
+  it("captures a Scratch destination before selection mutation and preserves its focus owner", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "scratch-1", title: "Scratch one" }),
+        createBit({ id: "scratch-2", title: "Scratch two" }),
+      ],
+    });
+    useTriageStore.setState({ selectedScratchId: "scratch-1" });
+    departureState.requestDeparture.mockImplementation((destination) => {
+      departureState.destination = destination;
+      return "decision-required";
+    });
+
+    render(<ScratchPool />);
+    const destinationButton = screen.getByRole("button", {
+      name: "Scratch two",
+    });
+    fireEvent.click(destinationButton);
+
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-1");
+    expect(departureState.destination).toMatchObject({
+      id: "scratch-2",
+      kind: "scratch",
+    });
+
+    departureState.destination?.perform();
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-2");
+
+    screen.getByLabelText("Collapse Scratch Pool").focus();
+    departureState.destination?.focus?.();
+    expect(destinationButton).toHaveFocus();
+  });
+
+  it("does not request departure when selecting the current Scratch", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "scratch-1", title: "Current Scratch" }),
+      ],
+    });
+    useTriageStore.setState({ selectedScratchId: "scratch-1" });
+
+    render(<ScratchPool />);
+    fireEvent.click(screen.getByRole("button", { name: "Current Scratch" }));
+
+    expect(departureState.requestDeparture).not.toHaveBeenCalled();
     expect(useTriageStore.getState().selectedScratchId).toBe("scratch-1");
   });
 

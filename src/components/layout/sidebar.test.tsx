@@ -14,10 +14,27 @@ const updateNodeMock = vi.hoisted(() => vi.fn());
 const getGridOccupancyMock = vi.hoisted(() => vi.fn());
 const findNearestEmptyCellMock = vi.hoisted(() => vi.fn());
 const toastErrorMock = vi.hoisted(() => vi.fn());
+const departureState = vi.hoisted(() => ({
+  focus: vi.fn(),
+  destination: null as null | {
+    focus?: () => void;
+    id: string;
+    kind: "route";
+    perform: () => void;
+  },
+  requestDeparture: vi.fn(),
+}));
 
 vi.mock("next/navigation", () => ({
   usePathname: usePathnameMock,
+  useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ push: pushMock }),
+}));
+
+vi.mock("@/hooks/use-triage-departure", () => ({
+  captureTriageRouteFocus: vi.fn(() => departureState.focus),
+  requestActiveTriageDeparture: departureState.requestDeparture,
+  useTriageRouteFocusHandoff: vi.fn(),
 }));
 
 vi.mock("@dnd-kit/core", () => ({
@@ -332,6 +349,13 @@ beforeEach(() => {
   getGridOccupancyMock.mockResolvedValue(new Set<string>());
   updateNodeMock.mockResolvedValue(undefined);
   findNearestEmptyCellMock.mockReturnValue(null);
+  departureState.destination = null;
+  departureState.requestDeparture.mockReset();
+  departureState.requestDeparture.mockImplementation((destination) => {
+    departureState.destination = destination;
+    destination.perform();
+    return "performed";
+  });
 });
 
 describe("Sidebar", () => {
@@ -367,6 +391,35 @@ describe("Sidebar", () => {
 
     expect(screen.getByRole("button", { name: "Home" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Home" }));
+    expect(pushMock).toHaveBeenCalledWith("/");
+  });
+
+  it("captures an Inbox SPA route before calling the router", () => {
+    const inbox = createNode({ id: "inbox-id", systemRole: "inbox" });
+    usePathnameMock.mockReturnValue("/grid/inbox-id");
+    useInboxMock.mockReturnValue({
+      inboxNodeId: inbox.id,
+      createScratchBit: vi.fn(),
+      scratchCount: 0,
+      systemNodes: [inbox],
+    });
+    departureState.requestDeparture.mockImplementation((destination) => {
+      departureState.destination = destination;
+      return "decision-required";
+    });
+
+    render(<Sidebar />);
+    fireEvent.click(screen.getByRole("button", { name: "Home" }));
+
+    expect(pushMock).not.toHaveBeenCalled();
+    expect(departureState.destination).toMatchObject({
+      id: "/",
+      kind: "route",
+    });
+    expect(departureState.destination?.focus).toBe(departureState.focus);
+
+    departureState.destination?.perform();
+    expect(pushMock).toHaveBeenCalledOnce();
     expect(pushMock).toHaveBeenCalledWith("/");
   });
 
