@@ -1426,7 +1426,7 @@ publish, or close the phase.
 
 **Commit contract:** headless editor/blocker model and tests only; `feat(triage): model conditional inline edits`.
 
-### Task 138: [ ] Render `DP-VQ04` inline editors
+### Task 138: [x] Render `DP-VQ04` inline editors
 
 **Files and actions:** after `DP-VQ04`, modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx` plus `src/app/globals.css` to replace only the Scratch-title and Breakdown-content inline-editor visual realization with the user-approved fixed geometry. Preserve view/edit outer geometry and drag/content/action anchors; reserve a fixed `9.5rem` action region; keep text-style Save/Cancel with dirty Save in destructive/red emphasis; cap the single-line Scratch title at 60 characters and Breakdown content at 120; allow browser-managed caret-following horizontal movement with `Home` returning to the start and `End` exposing the terminal caret; render no textarea, resize, vertical scrolling, or visible scrollbar. Ordinary states have no visible status row, saving/reconciling retain the read-only field with a fixed progress action, and offline/not-applied/conflict/invalidated use the source-bound fixed overlay over blurred underlying content. Conflict exposes Use mine, Use latest, and Copy draft without expanding comparison regions. Preserve all Task 137 state/lock/blocker/focus semantics and never use generic Dialog/AlertDialog.
 
