@@ -78,6 +78,7 @@ beforeEach(() => {
     scratchPoolExpanded: true,
     scratchPoolManualExpandedForId: null,
     scratchPoolQuery: "",
+    scratchPoolActiveIds: [],
     scratchPoolResultIds: [],
     scratchPoolScroll: { anchorId: null, offset: 0 },
   });
@@ -103,6 +104,7 @@ afterEach(() => {
     scratchPoolExpanded: true,
     scratchPoolManualExpandedForId: null,
     scratchPoolQuery: "",
+    scratchPoolActiveIds: [],
     scratchPoolResultIds: [],
     scratchPoolScroll: { anchorId: null, offset: 0 },
   });
@@ -143,7 +145,14 @@ describe("ScratchPool", () => {
   it("renders the expanded empty state", () => {
     render(<ScratchPool />);
 
-    expect(screen.getByText("No active scratches")).toBeInTheDocument();
+    expect(screen.getByText("No active scratches")).toHaveAttribute(
+      "data-external-removal-focus",
+      "inbox-empty",
+    );
+    expect(screen.getByText("No active scratches")).toHaveAttribute(
+      "tabindex",
+      "-1",
+    );
     expect(screen.getByText("Captured items will appear here.")).toBeInTheDocument();
   });
 
@@ -252,7 +261,11 @@ describe("ScratchPool", () => {
       target: { value: "zzz" },
     });
 
-    expect(screen.getByText("No matches")).toBeInTheDocument();
+    expect(screen.getByText("No matches")).toHaveAttribute(
+      "data-external-removal-focus",
+      "search-empty",
+    );
+    expect(screen.getByText("No matches")).toHaveAttribute("tabindex", "-1");
     expect(screen.queryByRole("button", { name: "Alpha task" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Beta task" })).not.toBeInTheDocument();
   });
@@ -534,6 +547,10 @@ describe("ScratchPool", () => {
     const row = screen.getByRole("button", { name: "Scratch one" });
     expect(row).toHaveClass("focus-visible:ring-2");
     expect(row).toHaveClass("focus-visible:ring-ring");
+    expect(row).toHaveAttribute(
+      "data-external-removal-destination",
+      "scratch-1",
+    );
   });
 
   it("collapsed pill button has focus-visible ring classes", () => {

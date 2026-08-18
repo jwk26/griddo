@@ -22,11 +22,13 @@ beforeEach(() => {
     scratchPoolManualExpandedForId: null,
     scratchPoolQuery: "",
     scratchPoolResultIds: [],
+    scratchPoolActiveIds: [],
     scratchPoolScroll: { anchorId: null, offset: 0 },
     explorerPathIds: [],
     explorerOpenColumnIds: [],
     explorerColumnScroll: {},
     stagedCandidates: {},
+    externalScratchRemoval: null,
   });
 });
 
@@ -37,11 +39,13 @@ afterEach(() => {
     scratchPoolManualExpandedForId: null,
     scratchPoolQuery: "",
     scratchPoolResultIds: [],
+    scratchPoolActiveIds: [],
     scratchPoolScroll: { anchorId: null, offset: 0 },
     explorerPathIds: [],
     explorerOpenColumnIds: [],
     explorerColumnScroll: {},
     stagedCandidates: {},
+    externalScratchRemoval: null,
   });
 });
 
@@ -54,9 +58,12 @@ describe("useTriageStore app-session ownership", () => {
       "explorerColumnScroll",
       "explorerOpenColumnIds",
       "explorerPathIds",
+      "externalScratchRemoval",
+      "finishExternalScratchRemoval",
       "reconcileExplorerContext",
       "reconcileScratchPoolContext",
       "removeStagedCandidate",
+      "scratchPoolActiveIds",
       "scratchPoolExpanded",
       "scratchPoolManualExpandedForId",
       "scratchPoolQuery",
@@ -67,6 +74,7 @@ describe("useTriageStore app-session ownership", () => {
       "setExplorerColumnScroll",
       "setExplorerOpenColumnIds",
       "setExplorerPathIds",
+      "setExternalScratchRemovalLifecycle",
       "setScratchPoolExpanded",
       "setScratchPoolManualExpandedForId",
       "setScratchPoolQuery",
@@ -74,6 +82,160 @@ describe("useTriageStore app-session ownership", () => {
       "setScratchPoolScroll",
       "stagedCandidates",
     ]);
+  });
+
+  it("holds an externally removed selection and computes next-visible then previous-visible", () => {
+    useTriageStore.setState({
+      selectedScratchId: "selected",
+      scratchPoolResultIds: ["previous", "selected", "next"],
+      scratchPoolActiveIds: ["previous", "selected", "next"],
+      scratchPoolScroll: { anchorId: "selected", offset: 18 },
+    });
+
+    useTriageStore.getState().reconcileScratchPoolContext({
+      activeIds: ["previous", "next"],
+      visibleIds: ["previous", "next"],
+    });
+
+    expect(useTriageStore.getState()).toMatchObject({
+      selectedScratchId: "selected",
+      externalScratchRemoval: {
+        scratchId: "selected",
+        lifecycle: null,
+        destinationId: "next",
+        destinationKind: "scratch",
+      },
+    });
+
+    useTriageStore.getState().reconcileScratchPoolContext({
+      activeIds: ["previous"],
+      visibleIds: ["previous"],
+    });
+    expect(useTriageStore.getState().externalScratchRemoval).toMatchObject({
+      destinationId: "previous",
+      destinationKind: "scratch",
+    });
+  });
+
+  it("keeps a paused external-removal lifecycle until authoritative restore", () => {
+    useTriageStore.setState({
+      selectedScratchId: "selected",
+      scratchPoolResultIds: ["selected"],
+      scratchPoolActiveIds: ["selected"],
+    });
+    const store = useTriageStore.getState();
+    store.reconcileScratchPoolContext({ activeIds: [], visibleIds: [] });
+    store.setExternalScratchRemovalLifecycle("selected", "archive");
+
+    expect(useTriageStore.getState().externalScratchRemoval).toMatchObject({
+      lifecycle: "archive",
+      destinationKind: "inbox-empty",
+    });
+
+    useTriageStore.getState().reconcileScratchPoolContext({
+      activeIds: ["selected"],
+      visibleIds: ["selected"],
+    });
+    expect(useTriageStore.getState()).toMatchObject({
+      selectedScratchId: "selected",
+      externalScratchRemoval: null,
+    });
+  });
+
+  it("does not treat a deleted identity reappearing as an archive restore", () => {
+    useTriageStore.setState({
+      selectedScratchId: "selected",
+      scratchPoolActiveIds: ["selected", "next"],
+      scratchPoolResultIds: ["selected", "next"],
+    });
+    const store = useTriageStore.getState();
+    store.reconcileScratchPoolContext({
+      activeIds: ["next"],
+      visibleIds: ["next"],
+    });
+    store.setExternalScratchRemovalLifecycle("selected", "delete");
+
+    useTriageStore.getState().reconcileScratchPoolContext({
+      activeIds: ["selected", "next"],
+      visibleIds: ["selected", "next"],
+    });
+
+    expect(useTriageStore.getState()).toMatchObject({
+      selectedScratchId: "selected",
+      externalScratchRemoval: {
+        scratchId: "selected",
+        lifecycle: "delete",
+        destinationId: "next",
+      },
+    });
+  });
+
+  it("revalidates the latest destination atomically at terminal handoff", () => {
+    useTriageStore.setState({
+      selectedScratchId: "selected",
+      scratchPoolResultIds: ["selected", "stale-next", "previous"],
+      scratchPoolActiveIds: ["selected", "stale-next", "previous"],
+    });
+    useTriageStore.getState().reconcileScratchPoolContext({
+      activeIds: ["stale-next", "previous"],
+      visibleIds: ["stale-next", "previous"],
+    });
+
+    const destination = useTriageStore
+      .getState()
+      .finishExternalScratchRemoval({
+        activeIds: ["replacement", "previous"],
+        visibleIds: ["replacement", "previous"],
+      });
+
+    expect(destination).toEqual({
+      id: "previous",
+      kind: "scratch",
+    });
+    expect(useTriageStore.getState()).toMatchObject({
+      selectedScratchId: "previous",
+      externalScratchRemoval: null,
+    });
+  });
+
+  it("uses distinct search-empty and Inbox-empty terminal destinations", () => {
+    useTriageStore.setState({
+      selectedScratchId: "selected",
+      scratchPoolQuery: "missing",
+      scratchPoolResultIds: ["selected"],
+      scratchPoolActiveIds: ["selected", "hidden"],
+    });
+    useTriageStore.getState().reconcileScratchPoolContext({
+      activeIds: ["hidden"],
+      visibleIds: [],
+    });
+    expect(useTriageStore.getState().externalScratchRemoval).toMatchObject({
+      destinationKind: "search-empty",
+    });
+
+    expect(
+      useTriageStore.getState().finishExternalScratchRemoval({
+        activeIds: ["hidden"],
+        visibleIds: [],
+      }),
+    ).toEqual({ id: null, kind: "search-empty" });
+
+    useTriageStore.setState({
+      selectedScratchId: "selected",
+      scratchPoolQuery: "",
+      scratchPoolResultIds: ["selected"],
+      scratchPoolActiveIds: ["selected"],
+    });
+    useTriageStore.getState().reconcileScratchPoolContext({
+      activeIds: [],
+      visibleIds: [],
+    });
+    expect(
+      useTriageStore.getState().finishExternalScratchRemoval({
+        activeIds: [],
+        visibleIds: [],
+      }),
+    ).toEqual({ id: null, kind: "inbox-empty" });
   });
 
   it("retains Pool and Explorer context for same-session route re-entry", () => {
@@ -105,7 +267,7 @@ describe("useTriageStore app-session ownership", () => {
     });
   });
 
-  it("reconciles invalid selection, result context, and scroll against visible active Scratches", () => {
+  it("reconciles an invalid prior selection without manufacturing an external removal", () => {
     useTriageStore.setState({
       selectedScratchId: "removed",
       scratchPoolQuery: "project",
@@ -123,10 +285,11 @@ describe("useTriageStore app-session ownership", () => {
       scratchPoolManualExpandedForId: null,
       scratchPoolResultIds: ["scratch-project"],
       scratchPoolScroll: { anchorId: "scratch-project", offset: 0 },
+      externalScratchRemoval: null,
     });
   });
 
-  it("uses null instead of a hidden mismatch when a non-empty query has no result", () => {
+  it("uses null for an invalid prior selection with no visible search result", () => {
     useTriageStore.setState({
       selectedScratchId: "removed",
       scratchPoolQuery: "missing",
@@ -138,6 +301,7 @@ describe("useTriageStore app-session ownership", () => {
     });
 
     expect(useTriageStore.getState().selectedScratchId).toBeNull();
+    expect(useTriageStore.getState().externalScratchRemoval).toBeNull();
   });
 
   it("retains a valid search-hidden selection and its manual-reopen exception", () => {
@@ -180,6 +344,7 @@ describe("useTriageStore app-session ownership", () => {
       scratchPoolExpanded: false,
       scratchPoolQuery: "project",
       scratchPoolResultIds: ["scratch-1"],
+      scratchPoolActiveIds: ["scratch-1"],
       scratchPoolScroll: { anchorId: "scratch-1", offset: 12 },
       explorerPathIds: ["node-1"],
       explorerOpenColumnIds: ["home", "node-1"],
@@ -197,6 +362,7 @@ describe("useTriageStore app-session ownership", () => {
       scratchPoolManualExpandedForId: null,
       scratchPoolQuery: "",
       scratchPoolResultIds: [],
+      scratchPoolActiveIds: [],
       scratchPoolScroll: { anchorId: null, offset: 0 },
       explorerPathIds: [],
       explorerOpenColumnIds: [],

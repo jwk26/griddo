@@ -7,7 +7,6 @@ export type ReceiptCopyUnavailable = typeof RECEIPT_COPY_UNAVAILABLE;
 export type InboxTriageCopyValue = string | ReceiptCopyUnavailable;
 
 type ReceiptCopyTask =
-  | 141
   | 143
   | 144
   | 147
@@ -86,6 +85,34 @@ export interface InboxTriageCopy {
     readonly description: string;
     readonly continueAction: string;
     readonly discardAction: string;
+  };
+  readonly externalRemoval: {
+    readonly title: {
+      readonly archive: string;
+      readonly delete: string;
+    };
+    readonly destination: {
+      readonly running: string;
+      readonly runningSearchEmpty: string;
+      readonly runningInboxEmpty: string;
+      readonly paused: string;
+      readonly pausedSearchEmpty: string;
+      readonly pausedInboxEmpty: string;
+    };
+    readonly drafts: {
+      readonly heading: string;
+      readonly explanation: string;
+      readonly add: string;
+      readonly scratchTitle: string;
+      readonly breakdown: string;
+      readonly copy: string;
+      readonly copied: string;
+    };
+    readonly actions: {
+      readonly moveNow: string;
+      readonly pause: string;
+      readonly resume: string;
+    };
   };
   readonly lifecycleReasons: {
     readonly externalScratchRemoval: InboxTriageCopyValue;
@@ -197,6 +224,35 @@ export const INBOX_TRIAGE_COPY = {
     continueAction: "Continue writing",
     discardAction: "Discard and move",
   },
+  externalRemoval: {
+    title: {
+      archive: "This Scratch was archived elsewhere",
+      delete: "This Scratch was deleted elsewhere",
+    },
+    destination: {
+      running: "Moving to “{title}” in {seconds} seconds.",
+      runningSearchEmpty:
+        "No matching Scratch is visible. Clearing the selection in {seconds} seconds.",
+      runningInboxEmpty:
+        "No active Scratches remain. Opening the empty Inbox in {seconds} seconds.",
+      paused: "Movement paused. Destination: “{title}”.",
+      pausedSearchEmpty:
+        "Movement paused. No matching Scratch is visible; the selection will clear.",
+      pausedInboxEmpty:
+        "Movement paused. No active Scratches remain; the empty Inbox will open.",
+    },
+    drafts: {
+      heading: "Copy drafts before moving",
+      explanation:
+        "These drafts exist only on this page and will not move with the Scratch.",
+      add: "New Breakdown draft",
+      scratchTitle: "Scratch title draft",
+      breakdown: "Breakdown draft",
+      copy: "Copy full draft",
+      copied: "Copied",
+    },
+    actions: { moveNow: "Move now", pause: "Pause", resume: "Resume" },
+  },
   lifecycleReasons: {
     externalScratchRemoval: UNAVAILABLE,
     poolLifecycleUpdate: UNAVAILABLE,
@@ -234,7 +290,6 @@ export const INBOX_TRIAGE_COPY = {
     clearPoolSearch: "Clear search",
   },
   receiptDependent: {
-    141: UNAVAILABLE,
     143: UNAVAILABLE,
     144: UNAVAILABLE,
     147: UNAVAILABLE,

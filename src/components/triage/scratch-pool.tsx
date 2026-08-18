@@ -30,7 +30,11 @@ function EmptyState() {
   return (
     <div className="flex h-full flex-col items-center justify-center px-4 py-8 text-center">
       <Inbox className="h-8 w-8 text-muted-foreground/25" aria-hidden="true" />
-      <div className="mt-2 text-xs font-medium text-muted-foreground">
+      <div
+        className="mt-2 text-xs font-medium text-muted-foreground"
+        data-external-removal-focus="inbox-empty"
+        tabIndex={-1}
+      >
         No active scratches
       </div>
       <div className="mt-1 text-[10px] text-muted-foreground/50">
@@ -55,6 +59,7 @@ function ScratchRow({
     <button
       aria-label={bit.title}
       aria-pressed={isSelected}
+      data-external-removal-destination={bit.id}
       data-triage-role={isSelected ? "pool-selected-row" : undefined}
       data-triage-state={isSelected ? "selected" : "default"}
       className={cn(
@@ -368,7 +373,11 @@ export function ScratchPool() {
             {activeScratchBits.length === 0 ? (
               <EmptyState />
             ) : sortedFilteredBits.length === 0 ? (
-              <div className="px-3 py-4 text-center text-[10px] text-muted-foreground/60">
+              <div
+                className="px-3 py-4 text-center text-[10px] text-muted-foreground/60"
+                data-external-removal-focus="search-empty"
+                tabIndex={-1}
+              >
                 No matches
               </div>
             ) : (

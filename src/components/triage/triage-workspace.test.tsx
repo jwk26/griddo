@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTriageStore } from "@/stores/triage-store";
 import type { PendingPlacement, TriageDragItem } from "@/hooks/use-dnd";
@@ -16,6 +16,12 @@ const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
 const handlePlacementConfirmMock = vi.hoisted(() => vi.fn());
 const handlePlacementCancelMock = vi.hoisted(() => vi.fn());
 const useGridDataMock = vi.hoisted(() => vi.fn());
+const useInboxMock = vi.hoisted(() => vi.fn());
+const inboxState = vi.hoisted(() => ({ activeScratchBits: [] as Array<{ id: string; title: string }> }));
+const breakdownSurfaceState = vi.hoisted(() => ({
+  addDraft: "",
+  editorDrafts: [] as Array<{ kind: "scratch-title" | "breakdown"; value: string }>,
+}));
 const titleBlockerHandleState = vi.hoisted(() => ({
   handle: null as ScratchTitleBlockerHandle | null,
 }));
@@ -33,6 +39,10 @@ vi.mock("@/hooks/use-staged-candidates", () => ({
 
 vi.mock("@/hooks/use-grid-data", () => ({
   useGridData: useGridDataMock,
+}));
+
+vi.mock("@/hooks/use-inbox", () => ({
+  useInbox: useInboxMock,
 }));
 
 vi.mock("@/components/triage/scratch-pool", async () => {
@@ -69,11 +79,42 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
   const { useTriageDepartureContext } = await import(
     "@/hooks/use-triage-departure"
   );
+  const { useTriageStore } = await import("@/stores/triage-store");
   return {
     BreakdownPanel: () => {
       titleBlockerHandleState.handle = useScratchTitleBlockerContext();
       departureControllerState.controller = useTriageDepartureContext();
-      return <div data-testid="breakdown-panel" />;
+      const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
+      return (
+        <div data-testid="breakdown-panel">
+          <div data-testid="selected-scratch-context" tabIndex={-1}>
+            Context for {selectedScratchId ?? "none"}
+            {breakdownSurfaceState.editorDrafts
+              .filter((draft) => draft.kind === "scratch-title")
+              .map((draft) => (
+                <div className="triage-inline-editor" data-triage-editor-state="dirty" key={draft.value}>
+                  <input data-triage-role="inline-editor-field" readOnly value={draft.value} />
+                </div>
+              ))}
+          </div>
+          {breakdownSurfaceState.editorDrafts
+            .filter((draft) => draft.kind === "breakdown")
+            .map((draft) => (
+              <div data-testid="breakdown-row" key={draft.value}>
+                <div className="triage-inline-editor" data-triage-editor-state="dirty">
+                  <input data-triage-role="inline-editor-field" readOnly value={draft.value} />
+                </div>
+              </div>
+            ))}
+          {breakdownSurfaceState.addDraft ? (
+            <input
+              data-triage-role="breakdown-add-field"
+              readOnly
+              value={breakdownSurfaceState.addDraft}
+            />
+          ) : null}
+        </div>
+      );
     },
   };
 });
@@ -161,8 +202,20 @@ beforeEach(() => {
   handlePlacementCancelMock.mockReset();
   useGridDataMock.mockReset();
   useGridDataMock.mockReturnValue({ nodes: [], bits: [], isLoading: false });
+  inboxState.activeScratchBits = [
+    { id: "scratch-2", title: "Second Scratch" },
+    { id: "scratch-3", title: "Third Scratch" },
+  ];
+  useInboxMock.mockReset();
+  useInboxMock.mockImplementation(() => inboxState);
+  breakdownSurfaceState.addDraft = "";
+  breakdownSurfaceState.editorDrafts = [];
   useTriageStore.setState({
     selectedScratchId: "scratch-1",
+    externalScratchRemoval: null,
+    scratchPoolQuery: "",
+    scratchPoolActiveIds: ["scratch-1", "scratch-2", "scratch-3"],
+    scratchPoolResultIds: ["scratch-1", "scratch-2", "scratch-3"],
     stagedCandidates: {},
   });
   useTriageDndMock.mockReset();
@@ -175,6 +228,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
 });
 
 describe("TriageWorkspace", () => {
@@ -259,6 +313,172 @@ describe("TriageWorkspace", () => {
       id: "/trash",
       kind: "route",
     });
+  });
+
+  it("renders the dedicated DP-VQ01 surface paused with every full source-labeled draft", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    breakdownSurfaceState.addDraft = "Complete Add draft";
+    breakdownSurfaceState.editorDrafts = [
+      { kind: "scratch-title", value: "Complete title draft" },
+      { kind: "breakdown", value: "Complete row draft" },
+    ];
+    render(<TriageWorkspace node={createNode()} />);
+    act(() => {
+      useTriageStore.setState({ externalScratchRemoval: {
+        scratchId: "scratch-1",
+        lifecycle: "delete",
+        destinationId: "scratch-2",
+        destinationKind: "scratch",
+        removalOrder: ["scratch-1", "scratch-2", "scratch-3"],
+      } });
+    });
+
+    const dialog = screen.getByRole("alertdialog", {
+      name: "This Scratch was deleted elsewhere",
+    });
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog).toHaveTextContent(
+      "Movement paused. Destination: “Second Scratch”.",
+    );
+    expect(screen.getByText("Complete Add draft")).toBeInTheDocument();
+    expect(screen.getByText("Complete title draft")).toBeInTheDocument();
+    expect(screen.getByText("Complete row draft")).toBeInTheDocument();
+    expect(screen.getByText("New Breakdown draft")).toBeInTheDocument();
+    expect(screen.getByText("Scratch title draft")).toBeInTheDocument();
+    expect(screen.getByText("Breakdown draft")).toBeInTheDocument();
+    const copyActions = screen.getAllByRole("button", { name: "Copy full draft" });
+    expect(copyActions[0]).toHaveFocus();
+
+    fireEvent.click(copyActions[0]!);
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith("Complete Add draft"));
+    expect(copyActions[0]).toHaveFocus();
+    expect(screen.getByRole("button", { name: "Copied" })).toBeInTheDocument();
+    expect(screen.getByText("Complete Add draft")).toBeInTheDocument();
+
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+  });
+
+  it("pauses and resumes the exact remainder before terminal destination focus", () => {
+    vi.useFakeTimers();
+    render(<TriageWorkspace node={createNode()} />);
+    act(() => {
+      useTriageStore.setState({ externalScratchRemoval: {
+        scratchId: "scratch-1",
+        lifecycle: "archive",
+        destinationId: "scratch-2",
+        destinationKind: "scratch",
+        removalOrder: ["scratch-1", "scratch-2", "scratch-3"],
+      } });
+    });
+    expect(
+      document.querySelector('[data-triage-role="external-removal-destination"]'),
+    ).toHaveTextContent("Moving to “Second Scratch” in 5 seconds.");
+    const pause = screen.getByRole("button", { name: "Pause" });
+    expect(pause).toHaveFocus();
+
+    act(() => vi.advanceTimersByTime(2100));
+    expect(
+      document.querySelector('[data-triage-role="external-removal-destination"]'),
+    ).toHaveTextContent("Moving to “Second Scratch” in 3 seconds.");
+    fireEvent.click(pause);
+    expect(
+      document.querySelector('[data-triage-role="external-removal-destination"]'),
+    ).toHaveTextContent("Movement paused. Destination: “Second Scratch”.");
+    const frozenWidth = screen.getByTestId("external-removal-countdown-fill").getAttribute("style");
+
+    act(() => vi.advanceTimersByTime(2000));
+    expect(screen.getByTestId("external-removal-countdown-fill")).toHaveAttribute(
+      "style",
+      frozenWidth,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Resume" }));
+    act(() => vi.advanceTimersByTime(3000));
+
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-2");
+    expect(screen.getByTestId("selected-scratch-context")).toHaveFocus();
+    vi.useRealTimers();
+  });
+
+  it("restarts only a running countdown when the destination changes", () => {
+    vi.useFakeTimers();
+    render(<TriageWorkspace node={createNode()} />);
+    act(() => {
+      useTriageStore.setState({ externalScratchRemoval: {
+        scratchId: "scratch-1",
+        lifecycle: "delete",
+        destinationId: "scratch-2",
+        destinationKind: "scratch",
+        removalOrder: ["scratch-1", "scratch-2", "scratch-3"],
+      } });
+    });
+    act(() => vi.advanceTimersByTime(2200));
+    expect(
+      document.querySelector('[data-triage-role="external-removal-destination"]'),
+    ).toHaveTextContent("Moving to “Second Scratch” in 3 seconds.");
+
+    inboxState.activeScratchBits = [{ id: "scratch-3", title: "Third Scratch" }];
+    act(() => {
+      useTriageStore.getState().reconcileScratchPoolContext({
+        activeIds: ["scratch-3"],
+        visibleIds: ["scratch-3"],
+      });
+    });
+    act(() => vi.runAllTicks());
+
+    expect(
+      document.querySelector('[data-triage-role="external-removal-destination"]'),
+    ).toHaveTextContent("Moving to “Third Scratch” in 5 seconds.");
+    fireEvent.click(screen.getByRole("button", { name: "Pause" }));
+    inboxState.activeScratchBits = [{ id: "scratch-2", title: "Second Scratch" }];
+    act(() => {
+      useTriageStore.getState().reconcileScratchPoolContext({
+        activeIds: ["scratch-2"],
+        visibleIds: ["scratch-2"],
+      });
+    });
+    expect(
+      document.querySelector('[data-triage-role="external-removal-destination"]'),
+    ).toHaveTextContent("Movement paused. Destination: “Second Scratch”.");
+    vi.useRealTimers();
+  });
+
+  it("cancels only on authoritative archive restore and retains page-memory drafts", () => {
+    breakdownSurfaceState.addDraft = "Retained Add draft";
+    inboxState.activeScratchBits = [{ id: "scratch-1", title: "Restored Scratch" }];
+    render(<TriageWorkspace node={createNode()} />);
+    const context = screen.getByTestId("selected-scratch-context");
+    context.focus();
+
+    inboxState.activeScratchBits = [{ id: "scratch-2", title: "Second Scratch" }];
+    act(() => {
+      useTriageStore.getState().reconcileScratchPoolContext({
+        activeIds: ["scratch-2"],
+        visibleIds: ["scratch-2"],
+      });
+      useTriageStore
+        .getState()
+        .setExternalScratchRemovalLifecycle("scratch-1", "archive");
+    });
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+
+    inboxState.activeScratchBits = [{ id: "scratch-1", title: "Restored Scratch" }];
+    act(() => {
+      useTriageStore.getState().reconcileScratchPoolContext({
+        activeIds: ["scratch-1"],
+        visibleIds: ["scratch-1"],
+      });
+    });
+
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-1");
+    expect(screen.getByDisplayValue("Retained Add draft")).toBeInTheDocument();
+    expect(context).toHaveFocus();
   });
 
   it("renders one semantic shell with visible identities for all four areas", () => {

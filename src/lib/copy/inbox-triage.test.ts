@@ -114,9 +114,41 @@ describe("Inbox/Triage core-English copy", () => {
     });
   });
 
+  it("owns the complete approved DP-VQ01 external-removal wording", () => {
+    expect(INBOX_TRIAGE_COPY.externalRemoval).toEqual({
+      title: {
+        archive: "This Scratch was archived elsewhere",
+        delete: "This Scratch was deleted elsewhere",
+      },
+      destination: {
+        running: "Moving to “{title}” in {seconds} seconds.",
+        runningSearchEmpty:
+          "No matching Scratch is visible. Clearing the selection in {seconds} seconds.",
+        runningInboxEmpty:
+          "No active Scratches remain. Opening the empty Inbox in {seconds} seconds.",
+        paused: "Movement paused. Destination: “{title}”.",
+        pausedSearchEmpty:
+          "Movement paused. No matching Scratch is visible; the selection will clear.",
+        pausedInboxEmpty:
+          "Movement paused. No active Scratches remain; the empty Inbox will open.",
+      },
+      drafts: {
+        heading: "Copy drafts before moving",
+        explanation:
+          "These drafts exist only on this page and will not move with the Scratch.",
+        add: "New Breakdown draft",
+        scratchTitle: "Scratch title draft",
+        breakdown: "Breakdown draft",
+        copy: "Copy full draft",
+        copied: "Copied",
+      },
+      actions: { moveNow: "Move now", pause: "Pause", resume: "Resume" },
+    });
+  });
+
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      141, 143, 144, 147, 148, 150, 151, 153, 154, 157, 160, 162,
+      143, 144, 147, 148, 150, 151, 153, 154, 157, 160, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {
