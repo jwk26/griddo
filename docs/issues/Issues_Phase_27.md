@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–139 accepted; Task 140 implemented and awaiting user acceptance
+> State: Tasks 136–139 accepted; Task 140 fourth bounded repair cycle in progress
 
 ## Status Legend
 
@@ -83,15 +83,16 @@ started and `$run-task`, relay, and Control Tower were not invoked.
 
 ## Active Issues
 
-Task 139 discovered one active canonical-scope conflict. The ledger also retains
-the terminal Task 136 verification-staging conflict and accepted Task 138
-targeted canonical repair:
+Tasks 139–140 discovered two targeted canonical-scope conflicts. The ledger
+also retains the terminal Task 136 verification-staging conflict and accepted
+Task 138 targeted canonical repair:
 
 | ID | Status | Finding | Approved disposition | Canonical impact |
 | --- | --- | --- | --- | --- |
 | `P27-01` | Promoted to Execution Plan | Task 136 required canonical-route `unknown reconcile`, but its production route can only enter and retain unknown state; Task 143 owns the `Check again` production trigger that starts reconciliation. A test-only trigger would not prove a production consumer. | On 2026-08-14 the user approved route verification through unknown row/lock/focus and blocked actions in Task 136, retained Add/Delete reconciliation and terminal-release verification at hook level in Task 136, and kept route `Check again` → reconciliation → terminal/focus in Task 143. | `Reflected` in the Task 136 and Task 143 verification clauses of `docs/EXECUTION_PLAN.md`; no product/test/marker change. |
 | `P27-02` | Closed | The accepted Task 138 realization and its two active visual recipes allowed editor state content to expand the source geometry; the experiment also initially imposed a no-horizontal-movement stop condition. | On 2026-08-18 the user approved the bounded fixed-geometry repair, disclosed caret-following result, recipe correction, exact-source browser evidence, Task 160 compatibility deferral, and repaired checkpoint `a7ab647d3b6733c9452979bac4a9ef5cbba9a9b4`; experiment commit `4c22b8c` records the stop-condition change. | `Reflected` in `DP-VQ04` in `docs/DESIGN_TOKENS.md`, accepted Task 138 and the retained Task 160 compatibility tag in `docs/EXECUTION_PLAN.md`, both active visual recipes, Task 138 evidence, and this ledger. |
 | `P27-03` | Closed | Task 139 requires synchronous pre-mutation capture/blocking for Scratch, Explorer path, and app-route destinations plus destination focus handoff, but its original canonical file list named only the new hook, Workspace, Breakdown, and operation-lock tests. The actual pre-mutation owners are Scratch Pool selection, Hierarchy Explorer path actions, Sidebar route actions, and the globally mounted Search result route action; a Workspace Zustand subscriber can only roll back after forbidden state was observable. | On 2026-08-18 the user approved targeted Task 139 canonical scope expansion to the exact actual Scratch, Explorer path, and Inbox SPA navigation owners/tests plus the minimum common coordination owner. `docs/EXECUTION_PLAN.md` now names `scratch-pool`, `hierarchy-explorer`, `sidebar`, and `search-overlay` with their tests, preserves the existing hook/Workspace/Breakdown/lock scope, requires pre-mutation guards and destination focus, and excludes inactive Inbox Breadcrumbs/GridView owners. The accepted implementation repaired every resulting blocking review finding inside that exact owner set. | `Reflected` in Task 139's exact files/actions and observable acceptance in `docs/EXECUTION_PLAN.md`; implementation checkpoint `0dcaf26c2c1843870771bde10b307d2b124f8326` was accepted and no Task 140 surface was started. |
+| `P27-04` | Promoted to Execution Plan | Task 140 canonical-route verification proved that Discard synchronously calls the captured destination focus while the departure sheet and surrounding `inert` state are still committed. Scratch selection and draft clearing succeed, but the inert Scratch-row focus is rejected and the Discard action's later unmount leaves focus on `BODY`. | On 2026-08-18 the user approved a bounded Task 140 fourth-cycle expansion to only `src/hooks/use-triage-departure.ts` and its test. Preserve the latest destination focus intent and execute it exactly once in layout phase after `pendingDestination=null` commits; keep destination mutation synchronous and exactly once, and preserve Continue, blocked/failed Discard, direct no-draft, replacement, navigation, no-queue, and no-replay semantics. Any additional Path/Route consumer repair requires another stop. | `Reflected` as a timing-only accepted-Task-139 dependency repair in Task 139 and Task 140 in `docs/EXECUTION_PLAN.md`; Task 139 remains `[x]`, Tasks 140–141 remain `[ ]`, and canonical impact is limited to the approved focus-handoff timing. |
 
 ## Task 136 Run State
 
@@ -161,8 +162,8 @@ targeted canonical repair:
 | Start base / entrypoint / recovery anchor | `17babba46969b4b1981fca91c57acc85f1eaf62a`; exact entrypoint `src` tree `9375974b616ae6d6b891937ad04dc6a99d5fbb88` |
 | Dependencies | Accepted Tasks 136 and 137 are ancestors of the approved Task 139 entrypoint |
 | Excluded | Any `DP-VQ03` or other VQ DOM/copy/style realization, Task 138 repair, Task 140+, Task 143 reconciliation UI, and Task 160 compatibility work |
-| Issues / deviations | `P27-03` — targeted scope expansion approved and canonical impact reflected; all blocking review findings were repaired inside the expanded exact owner set, with final review reporting no Critical or Important findings |
-| Canonical impact | `Reflected` — Task 139's exact files/actions and observable acceptance now name the verified actual owners, pre-mutation requirement, route coverage, and destination-focus handoff |
+| Issues / deviations | `P27-03` — accepted implementation scope expansion; `P27-04` — post-acceptance focus-handoff timing dependency repair approved inside Task 140's fourth bounded repair cycle without changing Task 139 meaning |
+| Canonical impact | `Reflected` — Task 139's exact files/actions and observable acceptance name the verified owners and semantics; `P27-04` additionally fixes only when the already-required destination focus executes after the Task 140 decision DOM commits closed |
 | Implementation | `d987ed2e221999dd27f3050c5352b1771fa4458f` — `feat(triage): coordinate add draft departure`; exact implementation `src` tree `a717e61a866fcb28c5139f19c6dab0d394733f76` |
 | Checkpoint chain | `97129620cdf0e08f015c4c95734bf7946ae105c8` durable start → `e854e75597f47ceddeb50c44fac0df3dab863a42` scope-conflict record → `3d96e6e83bd6c1e8076b22c48c12912ac2ebd5dd` user-approved canonical expansion → `d987ed2e221999dd27f3050c5352b1771fa4458f` implementation |
 | Verification | `docs/verification/inbox-triage/task-139.md`; final focused 8 files / 213 tests, full 94 files / 855 tests, lint with 0 errors and 11 existing warnings, typecheck, production build, and diff-check passed; final independent review reported no Critical or Important findings |
@@ -174,17 +175,17 @@ targeted canonical repair:
 | Field | Durable value |
 | --- | --- |
 | Task | `140` — render `DP-VQ03` departure confirmation |
-| State | `Implemented`; awaiting user acceptance and Task 140 remains `[ ]` |
-| Approved scope | The committed canonical Task 140 contract in `docs/EXECUTION_PLAN.md` plus the explicit 2026-08-18 Task 140-only work order: modify only `src/components/triage/triage-workspace.tsx` and its test, `src/components/triage/breakdown-panel.tsx` and its test, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and its test, and Task 140 verification/ledger records to realize the accepted `DP-VQ03` contract on Task 139's exact headless transitions |
+| State | `In Progress`; user-approved fourth bounded repair cycle and Task 140 remains `[ ]` |
+| Approved scope | The committed canonical Task 140 contract, the explicit 2026-08-18 Task 140-only work order, the verification-only browser repair, the user-approved DP-VQ03 contrast repair in `src/app/globals.css` and `src/components/triage/breakdown-panel.test.tsx`, and the `P27-04` expansion to only `src/hooks/use-triage-departure.ts` and `.test.tsx`; final evidence remains limited to `docs/verification/inbox-triage/task-140.md`, this ledger, and `task-140-*.png` captures |
 | Kickoff authority | The user supplied an approved Task 140 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; the candidate-pinned resolver returned `approval_required` with `contract_ready=true` as compatibility evidence only |
 | Start base / entrypoint / recovery anchor | `23da87d6ac8a74c35efc425cb8cdb54e2b3246d4`; exact entrypoint `src` tree `a717e61a866fcb28c5139f19c6dab0d394733f76` |
 | Dependencies | Accepted Tasks 108, 128, and 139 are ancestors of the approved Task 140 entrypoint; `DP-VQ03` is accepted and `P27-03` is closed |
 | Excluded | Task 141+, Task 143 reconciliation UI, Task 160 compatibility, Task 138 experiment cleanup, native unload UI, unrelated confirmations, and unrelated code |
-| Issues / deviations | None |
-| Canonical impact | `None` — Task 140 executes the already-reflected and accepted `DP-VQ03` contract without changing product/design/policy authority |
+| Issues / deviations | `P27-04` — canonical-route Scratch Discard exposed pre-commit destination focus loss; the user approved the minimum Task 139 hook/test timing repair while retaining every existing semantic boundary |
+| Canonical impact | `Reflected` — Task 140 still executes accepted `DP-VQ03`; the only canonical repair is `P27-04` focus timing in accepted Task 139, with no new product/design policy |
 | Recovery note | Reconciled the stale ledger summary from “Task 139 in progress” to the accepted Task 139 state already proven by the Task 139 section, `docs/EXECUTION_PLAN.md`, and recovery anchor |
 | Implementation | `0e2abd690d315f4452750cfeaef570f28a1438ac` — `feat(triage): render add draft departure`; exact implementation `src` tree `02990def33a836d0475b4d745c537d12f8d29492` |
 | Checkpoint chain | `a1abd41d0ac3466960f2b9ed21f1810bd45ae1e5` durable start → `0e2abd690d315f4452750cfeaef570f28a1438ac` implementation |
 | Verification | `docs/verification/inbox-triage/task-140.md`; final focused 8 files / 203 tests, changed-file lint, typecheck, and diff-check passed; adapter full gate passed 94 files / 864 tests, lint with 0 errors and 11 existing warnings, typecheck, and production build; HTTP smoke returned 200 for root and the existing canonical route; follow-up independent review reported no Critical or Important findings |
 | Review limitation | The required in-app browser backend was unavailable because this session exposed no Node REPL `js` tool. No fallback browser or fixture injection was used; live eight-theme appearance remains explicit user review evidence |
-| Next legal action | Stop at the clean Task 140 awaiting-acceptance checkpoint; keep Tasks 140 and 141 `[ ]` until explicit user acceptance and do not start Task 141 |
+| Next legal action | Commit this docs-only `P27-04` expansion separately, then continue the same Task 140 fourth repair cycle with RED/GREEN hook evidence, invalidated gates, and canonical-route verification; keep Tasks 140 and 141 `[ ]` |

@@ -1454,13 +1454,26 @@ publish, or close the phase.
 
 **Observable acceptance:** Scratch selection, Explorer path, and Inbox SPA route are synchronously blocked or captured before their actual state/router mutation; Continue performs no destination, preserves the Add draft, and restores its focus; Discard clears only that draft, performs the latest captured destination exactly once, and hands off destination focus; every shared-lock kind blocks internal and browser exit without state/router mutation, clear, queue, or replay; competing/stale destinations never leak; external-removal/completion logic can query the headless controller without Task 140; no post-mutation rollback or `DP-VQ03` DOM/copy/style exists.
 
+**Accepted dependency repair — `P27-04` (2026-08-18):** Task 140's
+canonical-route verification proved that synchronous Discard destination focus
+can run while the decision sheet and surrounding `inert` state are still
+committed, so the focus attempt is rejected and focus falls to `BODY` when the
+Discard action unmounts. The user approved reopening only
+`src/hooks/use-triage-departure.ts` and its test inside Task 140's fourth
+bounded repair cycle. Preserve the latest destination's focus intent and run
+that focus exactly once in the layout phase after `pendingDestination=null`
+has committed; keep the destination mutation synchronous and exactly once.
+This is a timing-only dependency repair: Task 139 remains accepted and its
+meaning, direct no-draft behavior, Continue behavior, blocking, replacement,
+and no-queue/no-replay contracts do not change.
+
 **Verification:** focused operation-lock/controller/Workspace/Breakdown tests for every lock kind against internal route and `beforeunload` exit, mouse/keyboard destinations, replacement, cancellation, focus intent, no queued replay, and no VQ DOM; `pnpm typecheck`.
 
 **Commit contract:** headless departure controller and tests only; `feat(triage): coordinate add draft departure`.
 
 ### Task 140: [ ] Render `DP-VQ03` departure confirmation
 
-**Files and actions:** after `DP-VQ03`, modify `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate approved wording and render Task 139's Continue writing / Discard and move surface, hierarchy, focus containment/return, theme mapping, and scope-out behavior exactly.
+**Files and actions:** after `DP-VQ03`, modify `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate approved wording and render Task 139's Continue writing / Discard and move surface, hierarchy, focus containment/return, theme mapping, and scope-out behavior exactly. The user-approved fourth bounded repair cycle additionally reopens only `src/hooks/use-triage-departure.ts` and `.test.tsx` for the accepted `P27-04` post-commit destination-focus dependency repair; it changes no Task 139 meaning, consumer, destination mutation, navigation, queue, or replay behavior.
 
 **Dependencies:** Tasks 108, 128, and 139.
 
