@@ -1471,7 +1471,7 @@ and no-queue/no-replay contracts do not change.
 
 **Commit contract:** headless departure controller and tests only; `feat(triage): coordinate add draft departure`.
 
-### Task 140: [ ] Render `DP-VQ03` departure confirmation
+### Task 140: [x] Render `DP-VQ03` departure confirmation
 
 **Files and actions:** after `DP-VQ03`, modify `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate approved wording and render Task 139's Continue writing / Discard and move surface, hierarchy, focus containment/return, theme mapping, and scope-out behavior exactly. The user-approved fourth bounded repair cycle additionally reopens only `src/hooks/use-triage-departure.ts` and `.test.tsx` for the accepted `P27-04` post-commit destination-focus dependency repair; it changes no Task 139 meaning, consumer, destination mutation, navigation, queue, or replay behavior.
 
