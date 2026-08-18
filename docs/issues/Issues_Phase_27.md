@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–143 accepted; Task 144 not started
+> State: Tasks 136–143 accepted; Task 144 awaiting user decision before durable start
 
 ## Status Legend
 
@@ -83,7 +83,8 @@ started and `$run-task`, relay, and Control Tower were not invoked.
 
 ## Active Issues
 
-Tasks 139–140 discovered two targeted canonical-scope conflicts. The ledger
+Tasks 139–140 discovered two targeted canonical-scope conflicts. Task 144
+discovered one pre-implementation canonical write-set/API conflict. The ledger
 also retains the terminal Task 136 verification-staging conflict and accepted
 Task 138 targeted canonical repair:
 
@@ -93,6 +94,7 @@ Task 138 targeted canonical repair:
 | `P27-02` | Closed | The accepted Task 138 realization and its two active visual recipes allowed editor state content to expand the source geometry; the experiment also initially imposed a no-horizontal-movement stop condition. | On 2026-08-18 the user approved the bounded fixed-geometry repair, disclosed caret-following result, recipe correction, exact-source browser evidence, Task 160 compatibility deferral, and repaired checkpoint `a7ab647d3b6733c9452979bac4a9ef5cbba9a9b4`; experiment commit `4c22b8c` records the stop-condition change. | `Reflected` in `DP-VQ04` in `docs/DESIGN_TOKENS.md`, accepted Task 138 and the retained Task 160 compatibility tag in `docs/EXECUTION_PLAN.md`, both active visual recipes, Task 138 evidence, and this ledger. |
 | `P27-03` | Closed | Task 139 requires synchronous pre-mutation capture/blocking for Scratch, Explorer path, and app-route destinations plus destination focus handoff, but its original canonical file list named only the new hook, Workspace, Breakdown, and operation-lock tests. The actual pre-mutation owners are Scratch Pool selection, Hierarchy Explorer path actions, Sidebar route actions, and the globally mounted Search result route action; a Workspace Zustand subscriber can only roll back after forbidden state was observable. | On 2026-08-18 the user approved targeted Task 139 canonical scope expansion to the exact actual Scratch, Explorer path, and Inbox SPA navigation owners/tests plus the minimum common coordination owner. `docs/EXECUTION_PLAN.md` now names `scratch-pool`, `hierarchy-explorer`, `sidebar`, and `search-overlay` with their tests, preserves the existing hook/Workspace/Breakdown/lock scope, requires pre-mutation guards and destination focus, and excludes inactive Inbox Breadcrumbs/GridView owners. The accepted implementation repaired every resulting blocking review finding inside that exact owner set. | `Reflected` in Task 139's exact files/actions and observable acceptance in `docs/EXECUTION_PLAN.md`; implementation checkpoint `0dcaf26c2c1843870771bde10b307d2b124f8326` was accepted and no Task 140 surface was started. |
 | `P27-04` | Closed | Task 140 canonical-route verification proved that Discard synchronously calls the captured destination focus while the departure sheet and surrounding `inert` state are still committed. Scratch selection and draft clearing succeed, but the inert Scratch-row focus is rejected and the Discard action's later unmount leaves focus on `BODY`. | On 2026-08-18 the user approved a bounded Task 140 fourth-cycle expansion to only `src/hooks/use-triage-departure.ts` and its test. The repair preserves the latest successful Discard focus intent and consumes it once in layout phase after `pendingDestination=null` commits, while destination mutation remains synchronous and exactly once. Continue, blocked/no-pending/failed Discard, direct no-draft, replacement, navigation, no-queue, no-replay, and stale-intent contracts are covered. Canonical Scratch, Path, and Route verification passed without opening another owner. | `Reflected` as a timing-only accepted-Task-139 dependency repair in Task 139 and accepted Task 140 in `docs/EXECUTION_PLAN.md`; final hook tests pass 21/21, canonical Scratch/Path/Route focus handoff passes, Tasks 139–140 remain `[x]`, Task 141 remains `[ ]`, and canonical impact is limited to the approved focus-handoff timing. |
+| `P27-05` | Awaiting User Decision | Task 144 requires exact mounted-page remote-arrival and archive/delete/restore aggregates while excluding local creation. Its canonical production write set names only `ScratchPool`, centralized copy, CSS, tests, and evidence, but the component's sole authoritative input, `useInbox().activeScratchBits`, exposes only the current active projection. A disappeared row carries no archive-versus-delete cause, and an appearing active row carries no local-create-versus-remote-arrival-versus-restore provenance. | No production or test write started. A targeted canonical scope/API decision is required: authorize the minimum lifecycle/provenance projection owner and its test in Task 144, or revise the accepted `DP-VQ06-POOL` behavior. Do not infer provenance from timestamps, classify every projection change as remote, query repository lifecycle directly from the component, or absorb Task 145+ behavior. | `Tagged` to Task 144 before durable start; `docs/EXECUTION_PLAN.md` remains unchanged pending explicit user disposition. |
 
 ## Task 136 Run State
 
@@ -250,3 +252,20 @@ Task 138 targeted canonical repair:
 | Verification | `docs/verification/inbox-triage/task-143.md`: focused 2 files / 115 tests; full 94 files / 909 tests; lint 0 errors with the same 11 out-of-scope warnings; typecheck and Next.js 16.2.1 seven-route build passed; local Playwright/system Chrome 151 canonical route passed authoritative Add/Delete unknown → reconciliation → terminal identity/focus, reduced motion, and 8-theme light/dark evidence with no console/page errors |
 | Acceptance | On 2026-08-18 the user explicitly accepted checkpoint `5ce2ddf0310e68b56b49d699856a179a7c7c7b1f` and approved this acceptance-only marker/ledger update; the existing successful focused/full gates and canonical 16 theme-mode browser evidence were reused without rerunning verification |
 | Next legal action | Stop at the clean Task 143 acceptance checkpoint; wait for a separately approved Task 144 run-task scope and do not start Task 144 or Task 145 |
+
+## Task 144 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `144` — render `DP-VQ06-POOL` Pool statuses |
+| State | `Awaiting User Decision`; blocked before durable start and before any production/test write; Task 144 and Task 145 remain `[ ]` |
+| Approved scope | The committed canonical Task 144 contract plus the explicit 2026-08-18 Task 144-only work order: modify only `src/components/triage/scratch-pool.tsx` and test, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and test, and Task 144 verification evidence/ledger records; implement only `DP-VQ06-POOL` and do not borrow Staging/Explorer or Task 145+ authority |
+| Kickoff authority | The user supplied an approved Task 144 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; pinned candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned receipt-less `approval_required` with `contract_ready=true` as compatibility evidence only |
+| Requested start base / entrypoint / recovery anchor | `8022301e9d198560378ac3f9bd2e29bdf8dfd86f`; exact entrypoint `src` tree `940c5ce559c1de68bba71435d81ee4b7a3207cc9` |
+| Dependencies | Tasks 111, 128, and 130 are accepted and marked `[x]`; Task 143 is the accepted immediate predecessor |
+| Blocking evidence | `DP-VQ06-POOL` requires local creation exclusion plus distinct remote arrival, external archive, external delete, and restore aggregates. `src/components/triage/scratch-pool.tsx` receives only `useInbox().activeScratchBits`; `src/hooks/use-inbox.ts` filters to `deletedAt === null` and `archivedAt === null` and returns no mutation origin or lifecycle transition. Therefore removal cause and appearance provenance cannot be observed inside the approved production write set. |
+| Issues / deviations | `P27-05` — canonical write-set/API conflict awaiting explicit user disposition |
+| Canonical impact | `Tagged` — Task 144 needs a targeted canonical scope/API decision; no canonical document was changed |
+| Writes performed | Ledger record only. No durable `In Progress` start signal, production code, tests, styles, copy, or Task 144 verification artifact was written. |
+| Verification | Read-only reconciliation: candidate/worktree/branch/HEAD/entrypoint pins matched; resolver returned `approval_required` with `contract_ready=true`; worktree was clean before this ledger-only record. No implementation gate was run because TDD/production work cannot start with unresolved plan/API drift. |
+| Next legal action | User disposition of `P27-05`. Do not start Task 144 production work or Task 145; preserve both markers as `[ ]`. |
