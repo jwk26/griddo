@@ -39,6 +39,7 @@ import { useInbox } from "@/hooks/use-inbox";
 import {
   useScratchBreakdowns,
   useScratchTitleBlockerContext,
+  type BreakdownOperationProjection,
   type ConditionalEditor,
   type ConditionalEditorSnapshot,
 } from "@/hooks/use-scratch-breakdowns";
@@ -486,6 +487,86 @@ function InlineEditor({
   );
 }
 
+type ReliabilityState =
+  | "pending"
+  | "unknown"
+  | "reconciling"
+  | "not-applied"
+  | "rejected"
+  | "conflict";
+
+function getReliabilityState(
+  operation: BreakdownOperationProjection | null,
+): ReliabilityState | null {
+  if (operation === null) return null;
+  if (operation.phase !== "terminal") return operation.phase;
+  if (operation.status === "not_applied") return "not-applied";
+  if (operation.status === "rejected" || operation.status === "conflict") {
+    return operation.status;
+  }
+  return null;
+}
+
+function ReliabilityLine({
+  action,
+  actionRef,
+  copy,
+  isReconciling,
+  onAction,
+  surface,
+  state,
+}: {
+  action: string | null;
+  actionRef?: (element: HTMLButtonElement | null) => void;
+  copy: string;
+  isReconciling: boolean;
+  onAction?: () => void;
+  surface: "add" | "delete";
+  state: ReliabilityState;
+}) {
+  return (
+    <div
+      className={cn(
+        "breakdown-reliability",
+        surface === "add"
+          ? "breakdown-add-reliability"
+          : "breakdown-delete-reliability",
+      )}
+      data-triage-role="breakdown-reliability"
+    >
+      <span
+        aria-atomic="true"
+        aria-live="polite"
+        className="breakdown-reliability__status"
+        data-triage-reliability-state={state}
+        role="status"
+      >
+        {copy}
+      </span>
+      {action !== null ? (
+        <Button
+          ref={actionRef}
+          aria-disabled={isReconciling ? "true" : undefined}
+          className="breakdown-reliability__action"
+          data-triage-role="breakdown-reliability-action"
+          size="xs"
+          type="button"
+          variant={
+            action === INBOX_TRIAGE_COPY.reliability.actions.retryAdd
+              ? "default"
+              : "ghost"
+          }
+          onClick={() => {
+            if (!isReconciling) onAction?.();
+          }}
+        >
+          {action}
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
 function BreakdownRow({
   row,
   isStaged,
@@ -497,6 +578,9 @@ function BreakdownRow({
   onSave,
   onUseMine,
   onRowRef,
+  deleteOperation,
+  onDeleteReliabilityActionRef,
+  onReconcileDelete,
 }: {
   row: ScratchBreakdown;
   isStaged: boolean;
@@ -508,6 +592,12 @@ function BreakdownRow({
   onSave: () => Promise<boolean>;
   onUseMine: () => Promise<boolean>;
   onRowRef: (id: string, element: HTMLDivElement | null) => void;
+  deleteOperation: BreakdownOperationProjection | null;
+  onDeleteReliabilityActionRef: (
+    id: string,
+    element: HTMLButtonElement | null,
+  ) => void;
+  onReconcileDelete: (operationId: string) => void;
 }) {
   const {
     attributes,
@@ -553,6 +643,21 @@ function BreakdownRow({
     editor.snapshot.target.id === row.id
       ? editor.snapshot
       : null;
+  const deleteReliabilityState = getReliabilityState(deleteOperation);
+  const deleteReliabilityCopy =
+    deleteReliabilityState === null
+      ? null
+      : INBOX_TRIAGE_COPY.reliability.delete[
+          deleteReliabilityState === "not-applied"
+            ? "notApplied"
+            : deleteReliabilityState
+        ];
+  const deleteReliabilityAction =
+    deleteReliabilityState === null || deleteReliabilityState === "pending"
+      ? null
+      : INBOX_TRIAGE_COPY.reliability.actions.checkAgain;
+  const isDeleteInFlight =
+    deleteOperation !== null && deleteOperation.phase !== "terminal";
 
   return (
     <div
@@ -564,9 +669,14 @@ function BreakdownRow({
       data-triage-layout="fixed-inline-editor"
       data-triage-role={isStaged ? "breakdown-staged-row" : "breakdown-active-row"}
       data-triage-state={isStaged ? "staged" : "active"}
+      data-triage-reliability-state={deleteReliabilityState ?? undefined}
+      data-triage-reliability-surface={
+        deleteReliabilityState === null ? undefined : "delete"
+      }
       role="listitem"
       className={cn(
         "group triage-fixed-breakdown-row border-b border-border/30 transition-[background-color,border-color,color,opacity] last:border-b-0 motion-reduce:transition-none",
+        deleteReliabilityState !== null && "triage-fixed-breakdown-row--reliability",
         isStaged && !isDragging && "opacity-50 transition-opacity duration-200",
         isDragging &&
           "opacity-30 border border-dashed border-muted bg-transparent",
@@ -583,7 +693,7 @@ function BreakdownRow({
           aria-label="Drag breakdown"
           data-source-version={row.version}
           data-triage-drag-source="breakdown-grip"
-          disabled={isStaged || isOperationLocked}
+          disabled={isStaged || isOperationLocked || isDeleteInFlight}
           className={cn(
             "flex h-7 w-7 flex-shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-muted-foreground/60 hover:border-border hover:bg-muted hover:text-foreground active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
           )}
@@ -639,7 +749,12 @@ function BreakdownRow({
               aria-label={INBOX_TRIAGE_COPY.baseActions.edit}
               className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               data-triage-role="breakdown-row-action"
-              disabled={isStaged || isOperationLocked || editor.snapshot !== null}
+              disabled={
+                isStaged ||
+                isOperationLocked ||
+                isDeleteInFlight ||
+                editor.snapshot !== null
+              }
               title={INBOX_TRIAGE_COPY.baseActions.edit}
               type="button"
               onClick={() => onEdit(row, isStaged)}
@@ -653,7 +768,12 @@ function BreakdownRow({
                 isDragging && "text-muted-foreground",
               )}
               data-triage-role="breakdown-row-action"
-              disabled={isStaged || isOperationLocked || editor.snapshot !== null}
+              disabled={
+                isStaged ||
+                isOperationLocked ||
+                isDeleteInFlight ||
+                editor.snapshot !== null
+              }
               title={INBOX_TRIAGE_COPY.baseActions.delete}
               type="button"
               onClick={() => onDelete(row.id)}
@@ -663,6 +783,23 @@ function BreakdownRow({
           </div>
         </>
       )}
+      {deleteReliabilityState !== null && deleteReliabilityCopy !== null ? (
+        <ReliabilityLine
+          action={deleteReliabilityAction}
+          actionRef={(element) =>
+            onDeleteReliabilityActionRef(row.id, element)
+          }
+          copy={deleteReliabilityCopy}
+          isReconciling={deleteReliabilityState === "reconciling"}
+          state={deleteReliabilityState}
+          surface="delete"
+          onAction={() => {
+            if (deleteOperation !== null) {
+              onReconcileDelete(deleteOperation.operationId);
+            }
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -760,9 +897,12 @@ export function BreakdownPanel() {
     consumedBreakdownCount,
     hasObservedBreakdownHistory,
     isArchiveEligible,
+    operations,
     editor,
     addBreakdown,
+    reconcileAddBreakdown,
     deleteBreakdown,
+    reconcileDeleteBreakdown,
   } = useScratchBreakdowns(
     selectedScratchId,
     breakdownCreatedAtSort,
@@ -774,6 +914,12 @@ export function BreakdownPanel() {
   const [newContent, setNewContent] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const addEntryRef = useRef<HTMLInputElement | HTMLDivElement | null>(null);
+  const addCommandRef = useRef<AddBreakdownCommand | null>(null);
+  const deleteCommandRefs = useRef(new Map<string, DeleteBreakdownCommand>());
+  const addReliabilityActionRef = useRef<HTMLButtonElement>(null);
+  const deleteReliabilityActionRefs = useRef(
+    new Map<string, HTMLButtonElement>(),
+  );
   const contextRef = useRef<HTMLDivElement>(null);
   const contextEditRef = useRef<HTMLButtonElement>(null);
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
@@ -791,6 +937,14 @@ export function BreakdownPanel() {
     previousId: string | null;
   } | null>(null);
   const failedDeleteFocusIdRef = useRef<string | null>(null);
+  const pendingReliabilityFocusRef = useRef<
+    | { target: "add-input" | "add-action" }
+    | { target: "delete-action" | "delete-trash"; rowId: string }
+    | null
+  >(null);
+  const [reliabilityFocusRevision, setReliabilityFocusRevision] = useState(0);
+  const [hiddenReliabilityOperationIds, setHiddenReliabilityOperationIds] =
+    useState<ReadonlySet<string>>(() => new Set());
   const isComposingRef = useRef(false);
   const [pendingDelete, setPendingDelete] = useState<{
     scratchBitId: string;
@@ -808,6 +962,38 @@ export function BreakdownPanel() {
       : null;
   const selectedScratch =
     activeScratchBits.find((bit) => bit.id === selectedScratchId) ?? null;
+  const rawAddOperation =
+    operations.find((operation) => operation.kind === "add") ?? null;
+  const addOperation =
+    rawAddOperation !== null &&
+    hiddenReliabilityOperationIds.has(rawAddOperation.operationId)
+      ? null
+      : rawAddOperation;
+  const addReliabilityState = getReliabilityState(addOperation);
+  const addReliabilityCopy =
+    addReliabilityState === null
+      ? null
+      : INBOX_TRIAGE_COPY.reliability.add[
+          addReliabilityState === "not-applied"
+            ? "notApplied"
+            : addReliabilityState
+        ];
+  const addReliabilityAction =
+    addReliabilityState === "unknown" ||
+    addReliabilityState === "reconciling"
+      ? INBOX_TRIAGE_COPY.reliability.actions.checkAgain
+      : addReliabilityState === "not-applied"
+        ? INBOX_TRIAGE_COPY.reliability.actions.retryAdd
+        : null;
+  const deleteOperationsByBreakdownId = new Map(
+    operations
+      .filter(
+        (operation) =>
+          operation.kind === "delete" &&
+          !hiddenReliabilityOperationIds.has(operation.operationId),
+      )
+      .map((operation) => [operation.breakdownId, operation] as const),
+  );
 
   useEffect(
     () =>
@@ -820,6 +1006,63 @@ export function BreakdownPanel() {
       }),
     [registerAddDraftOwner, setAddDraft],
   );
+
+  const reliabilityScopeRef = useRef({
+    scratchBitId: selectedScratchId,
+    operationIds: operations.map((operation) => operation.operationId),
+  });
+  useLayoutEffect(() => {
+    const previousScope = reliabilityScopeRef.current;
+    if (previousScope.scratchBitId !== selectedScratchId) {
+      setHiddenReliabilityOperationIds((current) => {
+        const next = new Set(current);
+        for (const operationId of previousScope.operationIds) {
+          next.add(operationId);
+        }
+        return next;
+      });
+      addCommandRef.current = null;
+      deleteCommandRefs.current.clear();
+    }
+    reliabilityScopeRef.current = {
+      scratchBitId: selectedScratchId,
+      operationIds: operations.map((operation) => operation.operationId),
+    };
+  }, [operations, selectedScratchId]);
+
+  useLayoutEffect(() => {
+    const focusIntent = pendingReliabilityFocusRef.current;
+    if (focusIntent === null) return;
+    pendingReliabilityFocusRef.current = null;
+    if (focusIntent.target === "add-input") {
+      inputRef.current?.focus();
+    } else if (focusIntent.target === "add-action") {
+      addReliabilityActionRef.current?.focus();
+    } else if (focusIntent.target === "delete-action") {
+      deleteReliabilityActionRefs.current.get(focusIntent.rowId)?.focus();
+    } else if ("rowId" in focusIntent) {
+      rowRefs.current
+        .get(focusIntent.rowId)
+        ?.querySelector<HTMLButtonElement>('button[aria-label="Delete"]')
+        ?.focus();
+    }
+  }, [operations, reliabilityFocusRevision]);
+
+  function requestReliabilityFocus(
+    intent: NonNullable<typeof pendingReliabilityFocusRef.current>,
+  ) {
+    pendingReliabilityFocusRef.current = intent;
+    setReliabilityFocusRevision((current) => current + 1);
+  }
+
+  function hideReliabilityOperation(operationId: string) {
+    setHiddenReliabilityOperationIds((current) => {
+      if (current.has(operationId)) return current;
+      const next = new Set(current);
+      next.add(operationId);
+      return next;
+    });
+  }
 
   useLayoutEffect(() => {
     if (isDepartureDecision) {
@@ -886,6 +1129,13 @@ export function BreakdownPanel() {
   }
 
   function updateAddDraft(draft: string) {
+    if (
+      rawAddOperation?.phase === "terminal" &&
+      getReliabilityState(rawAddOperation) !== null &&
+      draft !== newContent
+    ) {
+      hideReliabilityOperation(rawAddOperation.operationId);
+    }
     setAddDraft(draft);
     setNewContent(draft);
   }
@@ -915,6 +1165,16 @@ export function BreakdownPanel() {
 
   function handleOpenBreakdown(row: ScratchBreakdown, isStaged: boolean) {
     if (!editor.openBreakdown(row, isStaged)) return;
+    const deleteOperation = operations.find(
+      (operation) =>
+        operation.kind === "delete" && operation.breakdownId === row.id,
+    );
+    if (
+      deleteOperation?.phase === "terminal" &&
+      getReliabilityState(deleteOperation) !== null
+    ) {
+      hideReliabilityOperation(deleteOperation.operationId);
+    }
     setInvalidatedRowPosition({
       id: row.id,
       index: breakdowns.findIndex((candidate) => candidate.id === row.id),
@@ -1042,6 +1302,40 @@ export function BreakdownPanel() {
     }
   }
 
+  async function finishAddCommand(
+    command: AddBreakdownCommand,
+    outcome: Awaited<ReturnType<typeof addBreakdown>>,
+    keepInputOpen: boolean,
+  ): Promise<void> {
+    if ("outcome" in outcome) return;
+
+    operationLock.release(command.operationId, outcome.status);
+    if (isConfirmedSuccess(outcome.status)) {
+      addCommandRef.current = null;
+      pendingAddedRowIdRef.current = command.breakdownId;
+      updateAddDraft("");
+      if (keepInputOpen) {
+        setIsAdding(true);
+        requestReliabilityFocus({ target: "add-input" });
+      } else {
+        setIsAdding(false);
+      }
+    } else if (outcome.status === "not_applied") {
+      requestReliabilityFocus({ target: "add-action" });
+    } else {
+      requestReliabilityFocus({ target: "add-input" });
+    }
+  }
+
+  async function dispatchAddCommand(
+    command: AddBreakdownCommand,
+    keepInputOpen: boolean,
+  ): Promise<void> {
+    addCommandRef.current = command;
+    const outcome = await addBreakdown(command);
+    await finishAddCommand(command, outcome, keepInputOpen);
+  }
+
   async function handleAdd({
     keepInputOpen = false,
   }: { keepInputOpen?: boolean } = {}): Promise<void> {
@@ -1063,21 +1357,42 @@ export function BreakdownPanel() {
       content: trimmed,
     };
     if (!operationLock.acquire("add", command.operationId)) return;
+    await dispatchAddCommand(command, keepInputOpen);
+  }
 
-    const outcome = await addBreakdown(command);
-    if ("outcome" in outcome) return;
-
-    operationLock.release(command.operationId, outcome.status);
-    if (isConfirmedSuccess(outcome.status)) {
-      pendingAddedRowIdRef.current = command.breakdownId;
-      updateAddDraft("");
-      if (keepInputOpen) {
-        setIsAdding(true);
-        inputRef.current?.focus();
-      } else {
-        setIsAdding(false);
-      }
+  async function handleReconcileAdd(): Promise<void> {
+    const command = addCommandRef.current;
+    if (
+      command === null ||
+      addOperation === null ||
+      command.operationId !== addOperation.operationId ||
+      addOperation.phase === "reconciling"
+    ) {
+      return;
     }
+    const activeOperation = operationLock.activeOperation;
+    if (activeOperation === null) {
+      if (!operationLock.acquire("add", command.operationId)) return;
+    } else if (activeOperation.operationId !== command.operationId) return;
+
+    addReliabilityActionRef.current?.focus();
+    const outcome = await reconcileAddBreakdown(command);
+    await finishAddCommand(command, outcome, true);
+  }
+
+  async function handleRetryAdd(): Promise<void> {
+    const command = addCommandRef.current;
+    if (
+      command === null ||
+      addOperation?.operationId !== command.operationId ||
+      addOperation.phase !== "terminal" ||
+      addOperation.status !== "not_applied"
+    ) {
+      return;
+    }
+    inputRef.current?.focus();
+    if (!operationLock.acquire("add", command.operationId)) return;
+    await dispatchAddCommand(command, true);
   }
 
   function handleInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -1128,21 +1443,78 @@ export function BreakdownPanel() {
       scratchExpectedVersion: selectedScratch.version,
     };
     if (!operationLock.acquire("delete", command.operationId)) return;
-
+    deleteCommandRefs.current.set(command.operationId, command);
+    setPendingDelete(null);
+    requestReliabilityFocus({ target: "delete-trash", rowId: row.id });
     const outcome = await deleteBreakdown(command);
-    if ("outcome" in outcome) return;
+    await finishDeleteCommand(command, outcome, {
+      deletedId: row.id,
+      nextId: breakdowns[rowIndex + 1]?.id ?? null,
+      previousId: breakdowns[rowIndex - 1]?.id ?? null,
+    });
+  }
+
+  async function finishDeleteCommand(
+    command: DeleteBreakdownCommand,
+    outcome: Awaited<ReturnType<typeof deleteBreakdown>>,
+    focusTarget: NonNullable<typeof pendingDeleteFocusRef.current>,
+  ): Promise<void> {
+    if ("outcome" in outcome) {
+      requestReliabilityFocus({
+        target: "delete-action",
+        rowId: command.breakdownId,
+      });
+      return;
+    }
 
     operationLock.release(command.operationId, outcome.status);
     if (isConfirmedSuccess(outcome.status)) {
+      deleteCommandRefs.current.delete(command.operationId);
       pendingDeleteFocusRef.current = {
-        deletedId: row.id,
-        nextId: breakdowns[rowIndex + 1]?.id ?? null,
-        previousId: breakdowns[rowIndex - 1]?.id ?? null,
+        deletedId: focusTarget.deletedId,
+        nextId: focusTarget.nextId,
+        previousId: focusTarget.previousId,
       };
     } else {
-      failedDeleteFocusIdRef.current = row.id;
+      failedDeleteFocusIdRef.current = command.breakdownId;
+      requestReliabilityFocus({
+        target: "delete-trash",
+        rowId: command.breakdownId,
+      });
     }
-    setPendingDelete(null);
+  }
+
+  async function handleReconcileDelete(operationId: string): Promise<void> {
+    const command = deleteCommandRefs.current.get(operationId);
+    const operation = operations.find(
+      (candidate) =>
+        candidate.kind === "delete" && candidate.operationId === operationId,
+    );
+    if (
+      command === undefined ||
+      operation === undefined ||
+      operation.phase === "reconciling"
+    ) {
+      return;
+    }
+    const activeOperation = operationLock.activeOperation;
+    if (activeOperation === null) {
+      if (!operationLock.acquire("delete", command.operationId)) return;
+    } else if (activeOperation.operationId !== command.operationId) return;
+
+    deleteReliabilityActionRefs.current
+      .get(command.breakdownId)
+      ?.focus();
+    const rowIndex = breakdowns.findIndex(
+      (row) => row.id === command.breakdownId,
+    );
+    const focusTarget = {
+      deletedId: command.breakdownId,
+      nextId: breakdowns[rowIndex + 1]?.id ?? null,
+      previousId: breakdowns[rowIndex - 1]?.id ?? null,
+    };
+    const outcome = await reconcileDeleteBreakdown(command);
+    await finishDeleteCommand(command, outcome, focusTarget);
   }
 
   if (selectedScratchId === null) {
@@ -1320,6 +1692,9 @@ export function BreakdownPanel() {
               ) : (
                 <BreakdownRow
                   key={item.row.id}
+                  deleteOperation={
+                    deleteOperationsByBreakdownId.get(item.row.id) ?? null
+                  }
                   isStaged={stagedEligibility.stagedSourceIds.has(item.row.id)}
                   isOperationLocked={operationLock.activeOperation !== null}
                   editor={editor}
@@ -1327,11 +1702,26 @@ export function BreakdownPanel() {
                   onSave={handleEditorSave}
                   onUseMine={handleEditorUseMine}
                   row={item.row}
-                  onDelete={(breakdownId) =>
+                  onDelete={(breakdownId) => {
+                    const previousOperation =
+                      deleteOperationsByBreakdownId.get(breakdownId);
+                    if (previousOperation?.phase === "terminal") {
+                      hideReliabilityOperation(previousOperation.operationId);
+                    }
                     setPendingDelete({
                       scratchBitId: selectedScratchId,
                       breakdownId,
-                    })
+                    });
+                  }}
+                  onDeleteReliabilityActionRef={(id, element) => {
+                    if (element === null) {
+                      deleteReliabilityActionRefs.current.delete(id);
+                    } else {
+                      deleteReliabilityActionRefs.current.set(id, element);
+                    }
+                  }}
+                  onReconcileDelete={(operationId) =>
+                    void handleReconcileDelete(operationId)
                   }
                   onEditRef={(id, element) => {
                     if (element === null) rowEditRefs.current.delete(id);
@@ -1377,11 +1767,15 @@ export function BreakdownPanel() {
 
       <div className="border-t border-border px-3 py-2">
         <div
-          className="grid grid-cols-[minmax(0,1fr)_auto] gap-2"
+          className="breakdown-add-region grid grid-cols-[minmax(0,1fr)_auto] gap-2"
           data-testid="breakdown-add-row"
+          data-triage-reliability-state={addReliabilityState ?? undefined}
+          data-triage-reliability-surface={
+            addReliabilityState === null ? undefined : "add"
+          }
           inert={isDepartureDecision ? true : undefined}
         >
-          {isAdding ? (
+          {isAdding || addReliabilityState !== null ? (
             <input
               ref={(element) => {
                 inputRef.current = element;
@@ -1399,7 +1793,12 @@ export function BreakdownPanel() {
               }}
               onKeyDown={handleInputKeyDown}
               placeholder="Add a note..."
-              readOnly={operationLock.activeOperation !== null}
+              readOnly={
+                operationLock.activeOperation !== null ||
+                addReliabilityState === "pending" ||
+                addReliabilityState === "unknown" ||
+                addReliabilityState === "reconciling"
+              }
               type="text"
               value={newContent}
             />
@@ -1433,6 +1832,23 @@ export function BreakdownPanel() {
           >
             {INBOX_TRIAGE_COPY.baseActions.add}
           </Button>
+          {addReliabilityState !== null && addReliabilityCopy !== null ? (
+            <ReliabilityLine
+              action={addReliabilityAction}
+              actionRef={(element) => {
+                addReliabilityActionRef.current = element;
+              }}
+              copy={addReliabilityCopy}
+              isReconciling={addReliabilityState === "reconciling"}
+              state={addReliabilityState}
+              surface="add"
+              onAction={
+                addReliabilityState === "not-applied"
+                  ? () => void handleRetryAdd()
+                  : () => void handleReconcileAdd()
+              }
+            />
+          ) : null}
         </div>
         {isDepartureDecision ? (
           <div

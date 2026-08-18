@@ -298,6 +298,12 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+
+    .breakdown-reliability,
+    .breakdown-reliability * {
+      animation: none !important;
+      transition: none !important;
+    }
   }
 }
 
@@ -1207,6 +1213,22 @@
   position: relative;
 }
 
+.triage-fixed-breakdown-row--reliability {
+  block-size: auto;
+  grid-template-rows: var(--triage-fixed-row-block-size) auto;
+  min-block-size: var(--triage-fixed-row-block-size);
+  overflow: visible;
+}
+
+.triage-fixed-breakdown-row--reliability
+  > .triage-fixed-breakdown-row__drag,
+.triage-fixed-breakdown-row--reliability
+  > .triage-fixed-breakdown-row__content,
+.triage-fixed-breakdown-row--reliability > .triage-fixed-action-slot,
+.triage-fixed-breakdown-row--reliability > .triage-inline-editor {
+  grid-row: 1;
+}
+
 .triage-fixed-breakdown-row__drag {
   align-items: center;
   display: flex;
@@ -1256,6 +1278,152 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* DP-VQ05 stays attached to the originating Add region or exact Delete row. */
+.breakdown-add-region {
+  column-gap: 0.5rem;
+  row-gap: 0;
+}
+
+.breakdown-reliability {
+  align-items: center;
+  background: hsl(var(--muted) / 0.28);
+  border-block-start: var(--theme-border-width) solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  column-gap: 0.5rem;
+  display: grid;
+  font-family: var(--theme-font);
+  font-size: 0.75rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  line-height: 1rem;
+  min-block-size: 1.75rem;
+  min-inline-size: 0;
+  padding: 0.25rem 0.375rem;
+}
+
+.breakdown-add-reliability {
+  grid-column: 1 / -1;
+}
+
+.breakdown-delete-reliability {
+  grid-column: 2 / -1;
+  grid-row: 2;
+}
+
+.breakdown-reliability__status {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.breakdown-reliability__action,
+.breakdown-reliability__action:hover,
+.breakdown-reliability__action:focus-visible,
+.breakdown-reliability__action:active {
+  transition: none;
+}
+
+.breakdown-reliability__action[aria-disabled="true"] {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+:root[data-color-theme="tiny-desk"] .breakdown-reliability,
+:root[data-color-theme="tiny-desk"] .breakdown-reliability__status {
+  border-block-start-style: double;
+  box-shadow: inset 0 2px 0 hsl(var(--border) / 0.16);
+}
+
+:root[data-color-theme="tiny-desk"] .breakdown-reliability__action {
+  box-shadow: var(--theme-shadow);
+}
+
+:root[data-color-theme="neumorphism"] .breakdown-reliability,
+:root[data-color-theme="neumorphism"] .breakdown-reliability__status {
+  border: 0;
+  box-shadow: inset 3px 3px 6px hsl(var(--foreground) / 0.12),
+    inset -3px -3px 6px hsl(var(--background) / 0.86);
+}
+
+:root[data-color-theme="neumorphism"] .breakdown-reliability__action {
+  border: 0;
+  box-shadow: var(--theme-shadow);
+}
+
+:root[data-color-theme="claymorphism"] .breakdown-reliability,
+:root[data-color-theme="claymorphism"] .breakdown-reliability__status {
+  border: 0;
+  border-radius: calc(var(--theme-radius) * 0.45);
+  box-shadow: inset 2px 2px 5px hsl(var(--foreground) / 0.12),
+    inset -2px -2px 5px hsl(var(--background) / 0.8);
+}
+
+:root[data-color-theme="claymorphism"] .breakdown-reliability__action {
+  border: 0;
+  box-shadow: 2px 2px 4px hsl(var(--foreground) / 0.18),
+    -1px -1px 3px hsl(var(--background) / 0.8);
+}
+
+:root[data-color-theme="origami"] .breakdown-reliability,
+:root[data-color-theme="origami"] .breakdown-reliability__status {
+  border-inline: 0;
+  border-radius: 0;
+  box-shadow: inset 0 -1px 0 hsl(var(--foreground) / 0.1);
+  clip-path: polygon(0 0, 98% 0, 100% 24%, 100% 100%, 2% 100%, 0 76%);
+}
+
+:root[data-color-theme="origami"] .breakdown-reliability__action {
+  border-radius: 0;
+  box-shadow: 1px 1px 0 hsl(var(--border));
+}
+
+:root[data-color-theme="terminal"] .breakdown-reliability,
+:root[data-color-theme="terminal"] .breakdown-reliability__action {
+  background: hsl(var(--background));
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:root[data-color-theme="terminal"]
+  .breakdown-reliability__action::before {
+  content: "[";
+}
+
+:root[data-color-theme="terminal"]
+  .breakdown-reliability__action::after {
+  content: "]";
+}
+
+:root[data-color-theme="retro-mac"] .breakdown-reliability,
+:root[data-color-theme="retro-mac"] .breakdown-reliability__status {
+  background: hsl(var(--background));
+  border-radius: 0;
+  box-shadow: 1px 1px 0 hsl(var(--foreground));
+}
+
+:root[data-color-theme="retro-mac"] .breakdown-reliability__action {
+  border: 1px solid hsl(var(--foreground));
+  border-radius: 0;
+  box-shadow: 1px 1px 0 hsl(var(--foreground));
+}
+
+:root[data-color-theme="graphite"] .breakdown-reliability,
+:root[data-color-theme="graphite"] .breakdown-reliability__status {
+  background: transparent;
+  border-block-end: 1px solid hsl(var(--border));
+  border-inline-end: 0;
+  border-inline-start: 3px solid hsl(var(--foreground));
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:root[data-color-theme="graphite"] .breakdown-reliability__action {
+  background: transparent;
+  border: 1px solid hsl(var(--foreground));
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* DP-VQ04 stays embedded in the source Context or Breakdown row across themes. */
@@ -1554,6 +1722,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .breakdown-reliability,
+  .breakdown-reliability *,
   .triage-inline-editor,
   .triage-inline-editor * {
     animation: none !important;

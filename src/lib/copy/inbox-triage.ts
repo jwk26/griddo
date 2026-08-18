@@ -7,7 +7,6 @@ export type ReceiptCopyUnavailable = typeof RECEIPT_COPY_UNAVAILABLE;
 export type InboxTriageCopyValue = string | ReceiptCopyUnavailable;
 
 type ReceiptCopyTask =
-  | 143
   | 144
   | 147
   | 148
@@ -112,6 +111,28 @@ export interface InboxTriageCopy {
       readonly moveNow: string;
       readonly pause: string;
       readonly resume: string;
+    };
+  };
+  readonly reliability: {
+    readonly add: {
+      readonly pending: string;
+      readonly unknown: string;
+      readonly reconciling: string;
+      readonly notApplied: string;
+      readonly rejected: string;
+      readonly conflict: string;
+    };
+    readonly delete: {
+      readonly pending: string;
+      readonly unknown: string;
+      readonly reconciling: string;
+      readonly notApplied: string;
+      readonly rejected: string;
+      readonly conflict: string;
+    };
+    readonly actions: {
+      readonly checkAgain: string;
+      readonly retryAdd: string;
     };
   };
   readonly lifecycleReasons: {
@@ -253,6 +274,28 @@ export const INBOX_TRIAGE_COPY = {
     },
     actions: { moveNow: "Move now", pause: "Pause", resume: "Resume" },
   },
+  reliability: {
+    add: {
+      pending: "Adding…",
+      unknown: "We couldn’t confirm whether it was added.",
+      reconciling: "Checking whether it was added…",
+      notApplied: "Not added. Your draft is still here.",
+      rejected: "Add unavailable. Your draft is still here.",
+      conflict: "This Scratch changed. Your draft is still here.",
+    },
+    delete: {
+      pending: "Deleting…",
+      unknown: "We couldn’t confirm whether it was deleted.",
+      reconciling: "Checking whether it was deleted…",
+      notApplied: "Not deleted. This breakdown is still here.",
+      rejected: "Delete unavailable. This breakdown is still here.",
+      conflict: "This breakdown changed. Delete was not completed.",
+    },
+    actions: {
+      checkAgain: "Check again",
+      retryAdd: "Retry Add",
+    },
+  },
   lifecycleReasons: {
     externalScratchRemoval: UNAVAILABLE,
     poolLifecycleUpdate: UNAVAILABLE,
@@ -290,7 +333,6 @@ export const INBOX_TRIAGE_COPY = {
     clearPoolSearch: "Clear search",
   },
   receiptDependent: {
-    143: UNAVAILABLE,
     144: UNAVAILABLE,
     147: UNAVAILABLE,
     148: UNAVAILABLE,

@@ -146,9 +146,34 @@ describe("Inbox/Triage core-English copy", () => {
     });
   });
 
+  it("owns the complete approved DP-VQ05 Add/Delete reliability wording", () => {
+    expect(INBOX_TRIAGE_COPY.reliability).toEqual({
+      add: {
+        pending: "Adding…",
+        unknown: "We couldn’t confirm whether it was added.",
+        reconciling: "Checking whether it was added…",
+        notApplied: "Not added. Your draft is still here.",
+        rejected: "Add unavailable. Your draft is still here.",
+        conflict: "This Scratch changed. Your draft is still here.",
+      },
+      delete: {
+        pending: "Deleting…",
+        unknown: "We couldn’t confirm whether it was deleted.",
+        reconciling: "Checking whether it was deleted…",
+        notApplied: "Not deleted. This breakdown is still here.",
+        rejected: "Delete unavailable. This breakdown is still here.",
+        conflict: "This breakdown changed. Delete was not completed.",
+      },
+      actions: {
+        checkAgain: "Check again",
+        retryAdd: "Retry Add",
+      },
+    });
+  });
+
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      143, 144, 147, 148, 150, 151, 153, 154, 157, 160, 162,
+      144, 147, 148, 150, 151, 153, 154, 157, 160, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {

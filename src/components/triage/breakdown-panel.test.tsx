@@ -12,7 +12,10 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ConditionalEditorSnapshot } from "@/hooks/use-scratch-breakdowns";
+import type {
+  BreakdownOperationProjection,
+  ConditionalEditorSnapshot,
+} from "@/hooks/use-scratch-breakdowns";
 import {
   TriageDepartureContext,
   useTriageDeparture,
@@ -25,8 +28,11 @@ import { BreakdownPanel } from "./breakdown-panel";
 
 const hookState = vi.hoisted(() => ({
   breakdownsByScratch: {} as Record<string, unknown[]>,
+  operations: [] as BreakdownOperationProjection[],
   createBreakdown: vi.fn(),
+  reconcileAddBreakdown: vi.fn(),
   deleteBreakdown: vi.fn(),
+  reconcileDeleteBreakdown: vi.fn(),
 }));
 const operationLockState = vi.hoisted(() => ({
   activeOperation: null as null | { kind: "add" | "delete"; operationId: string },
@@ -262,6 +268,7 @@ function DepartureIntegrationHarness() {
 beforeEach(() => {
   vi.spyOn(Date, "now").mockReturnValue(currentTime);
   hookState.breakdownsByScratch = {};
+  hookState.operations = [];
   hookState.createBreakdown.mockImplementation(async (command) => ({
     operationId: command.operationId,
     status: "applied",
@@ -271,6 +278,21 @@ beforeEach(() => {
   hookState.deleteBreakdown.mockImplementation(async (command) => ({
     operationId: command.operationId,
     status: "applied",
+    breakdown: null,
+    candidate: null,
+    scratch: null,
+  }));
+  hookState.reconcileAddBreakdown.mockReset();
+  hookState.reconcileAddBreakdown.mockImplementation(async (command) => ({
+    operationId: command.operationId,
+    status: "not_applied",
+    breakdown: null,
+    scratch: null,
+  }));
+  hookState.reconcileDeleteBreakdown.mockReset();
+  hookState.reconcileDeleteBreakdown.mockImplementation(async (command) => ({
+    operationId: command.operationId,
+    status: "not_applied",
     breakdown: null,
     candidate: null,
     scratch: null,
@@ -340,12 +362,14 @@ beforeEach(() => {
       hasObservedBreakdownHistory: rows.length > 0,
       isArchiveEligible:
         consumedRows.length > 0 && activeRows.length === 0 && stagedCount === 0,
-      operations: [],
+      operations: hookState.operations.filter(
+        (operation) => operation.scratchBitId === scratchBitId,
+      ),
       editor: editorState,
       addBreakdown: hookState.createBreakdown,
-      reconcileAddBreakdown: vi.fn(),
+      reconcileAddBreakdown: hookState.reconcileAddBreakdown,
       deleteBreakdown: hookState.deleteBreakdown,
-      reconcileDeleteBreakdown: vi.fn(),
+      reconcileDeleteBreakdown: hookState.reconcileDeleteBreakdown,
     };
   });
   useStagedCandidatesMock.mockImplementation((scratchBitId: string | null) => {
@@ -504,6 +528,31 @@ describe("BreakdownPanel", () => {
 .breakdown-departure-sheet__discard:active`,
     );
     expect(discardAction).toContain("color: hsl(var(--foreground));");
+  });
+
+  it("maps DP-VQ05 through all eight theme families with reduced-motion-identical static treatment", () => {
+    expect(globalsCss).toContain(".breakdown-add-reliability");
+    expect(globalsCss).toContain(".breakdown-delete-reliability");
+    for (const theme of [
+      "tiny-desk",
+      "neumorphism",
+      "claymorphism",
+      "origami",
+      "terminal",
+      "retro-mac",
+      "graphite",
+    ]) {
+      expect(globalsCss).toContain(
+        `:root[data-color-theme="${theme}"] .breakdown-reliability`,
+      );
+    }
+    expect(globalsCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.breakdown-reliability,[\s\S]*\.breakdown-reliability \*[\s\S]*animation: none !important;[\s\S]*transition: none !important;/,
+    );
+    const reliabilityBlock = getCssBlock(".breakdown-reliability");
+    expect(reliabilityBlock).not.toMatch(
+      /animation|transform|transition|blink|pulse|bounce|spin/i,
+    );
   });
 
   it("orders the default Continue action before destructive Discard and calls only the selected transition", () => {
@@ -1641,6 +1690,206 @@ describe("BreakdownPanel", () => {
     expect(operationLockState.activeOperation).toBeNull();
   });
 
+  it.each([
+    ["pending", undefined, "Adding…", null],
+    [
+      "unknown",
+      undefined,
+      "We couldn’t confirm whether it was added.",
+      "Check again",
+    ],
+    [
+      "reconciling",
+      undefined,
+      "Checking whether it was added…",
+      "Check again",
+    ],
+    [
+      "terminal",
+      "not_applied",
+      "Not added. Your draft is still here.",
+      "Retry Add",
+    ],
+    [
+      "terminal",
+      "rejected",
+      "Add unavailable. Your draft is still here.",
+      null,
+    ],
+    [
+      "terminal",
+      "conflict",
+      "This Scratch changed. Your draft is still here.",
+      null,
+    ],
+  ] as const)(
+    "renders the authoritative Add %s/%s reliability state",
+    (phase, status, copy, action) => {
+      triageStoreState.selectedScratchId = "scratch-1";
+      hookState.operations = [
+        {
+          kind: "add",
+          operationId: "add-operation",
+          scratchBitId: "scratch-1",
+          breakdownId: "new-row",
+          phase,
+          ...(status === undefined ? {} : { status }),
+        },
+      ];
+
+      render(<BreakdownPanel />);
+
+      const statusText = screen.getByText(copy);
+      const reliability = statusText.closest(
+        '[data-triage-reliability-surface="add"]',
+      );
+      const reliabilityLine = statusText.closest(
+        '[data-triage-role="breakdown-reliability"]',
+      );
+      expect(reliability).toHaveAttribute(
+        "data-triage-reliability-state",
+        phase === "terminal" ? status?.replace("_", "-") : phase,
+      );
+      expect(statusText).toHaveAttribute("role", "status");
+      expect(statusText).toHaveAttribute("aria-live", "polite");
+      expect(statusText).toHaveAttribute("aria-atomic", "true");
+      if (action === null) {
+        expect(
+          within(reliabilityLine as HTMLElement).queryByRole("button"),
+        ).toBeNull();
+      } else {
+        const button = within(reliabilityLine as HTMLElement).getByRole("button", {
+          name: action,
+        });
+        if (phase === "reconciling") {
+          expect(button).toHaveAttribute("aria-disabled", "true");
+          expect(button).not.toBeDisabled();
+        }
+      }
+      expect(screen.queryByRole("button", { name: "Retry Delete" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "Delete again" })).toBeNull();
+    },
+  );
+
+  it("reconciles and retries Add with the preserved command identity and focus", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.createBreakdown
+      .mockImplementationOnce(async (command) => {
+        hookState.operations = [
+          {
+            kind: "add",
+            operationId: command.operationId,
+            scratchBitId: command.scratchBitId,
+            breakdownId: command.breakdownId,
+            phase: "unknown",
+          },
+        ];
+        return { operationId: command.operationId, outcome: "unknown" };
+      })
+      .mockImplementationOnce(
+        (command) =>
+          new Promise(() => {
+            hookState.operations = [
+              {
+                kind: "add",
+                operationId: command.operationId,
+                scratchBitId: command.scratchBitId,
+                breakdownId: command.breakdownId,
+                phase: "pending",
+              },
+            ];
+          }),
+      );
+    let resolveReconcile!: (value: {
+      operationId: string;
+      status: "not_applied";
+      breakdown: null;
+      scratch: null;
+    }) => void;
+    hookState.reconcileAddBreakdown.mockImplementation(
+      (command) =>
+        new Promise((resolve) => {
+          hookState.operations = [
+            {
+              kind: "add",
+              operationId: command.operationId,
+              scratchBitId: command.scratchBitId,
+              breakdownId: command.breakdownId,
+              phase: "reconciling",
+            },
+          ];
+          resolveReconcile = resolve;
+        }),
+    );
+
+    const view = render(<BreakdownPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.change(input, { target: { value: "Preserved Add" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    await waitFor(() => expect(hookState.createBreakdown).toHaveBeenCalledOnce());
+    view.rerender(<BreakdownPanel />);
+
+    const checkAgain = screen.getByRole("button", { name: "Check again" });
+    fireEvent.click(checkAgain);
+    view.rerender(<BreakdownPanel />);
+    expect(checkAgain).toHaveFocus();
+    expect(checkAgain).toHaveAttribute("aria-disabled", "true");
+
+    const originalCommand = hookState.createBreakdown.mock.calls[0][0];
+    expect(hookState.reconcileAddBreakdown).toHaveBeenCalledWith(originalCommand);
+    await act(async () => {
+      hookState.operations = [
+        {
+          kind: "add",
+          operationId: originalCommand.operationId,
+          scratchBitId: originalCommand.scratchBitId,
+          breakdownId: originalCommand.breakdownId,
+          phase: "terminal",
+          status: "not_applied",
+        },
+      ];
+      resolveReconcile({
+        operationId: originalCommand.operationId,
+        status: "not_applied",
+        breakdown: null,
+        scratch: null,
+      });
+    });
+    view.rerender(<BreakdownPanel />);
+
+    const retryAdd = screen.getByRole("button", { name: "Retry Add" });
+    await waitFor(() => expect(retryAdd).toHaveFocus());
+    expect(operationLockState.release).toHaveBeenCalledWith(
+      originalCommand.operationId,
+      "not_applied",
+    );
+    fireEvent.click(retryAdd);
+    expect(input).toHaveFocus();
+    expect(hookState.createBreakdown).toHaveBeenLastCalledWith(originalCommand);
+  });
+
+  it("withdraws authoritative not_applied Retry Add when the retained draft changes", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.operations = [
+      {
+        kind: "add",
+        operationId: "add-operation",
+        scratchBitId: "scratch-1",
+        breakdownId: "new-row",
+        phase: "terminal",
+        status: "not_applied",
+      },
+    ];
+
+    render(<BreakdownPanel />);
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.change(input, { target: { value: "Edited draft" } });
+
+    expect(screen.queryByRole("button", { name: "Retry Add" })).toBeNull();
+    expect(screen.queryByText("Not added. Your draft is still here.")).toBeNull();
+  });
+
   it("scrolls the confirmed Add row into view under the active sort", async () => {
     triageStoreState.selectedScratchId = "scratch-1";
     const scrollIntoView = vi.fn();
@@ -1656,6 +1905,7 @@ describe("BreakdownPanel", () => {
     fireEvent.change(input, { target: { value: "New confirmed row" } });
     fireEvent.keyDown(input, { key: "Enter" });
     await waitFor(() => expect(hookState.createBreakdown).toHaveBeenCalledOnce());
+    await waitFor(() => expect(operationLockState.release).toHaveBeenCalled());
 
     const command = hookState.createBreakdown.mock.calls[0][0];
     hookState.breakdownsByScratch["scratch-1"] = [
@@ -1784,29 +2034,205 @@ describe("BreakdownPanel", () => {
     });
   });
 
-  it("retains an unknown Delete row and denies Cancel/Escape without replay", async () => {
+  it("reconciles an unknown Delete without resend and preserves terminal release/focus", async () => {
     triageStoreState.selectedScratchId = "scratch-1";
     hookState.breakdownsByScratch["scratch-1"] = [
       createScratchBreakdown({ id: "row-1", content: "Still here" }),
+      createScratchBreakdown({ id: "row-2", content: "Focus next" }),
     ];
-    hookState.deleteBreakdown.mockImplementation(async (command) => ({
-      operationId: command.operationId,
-      outcome: "unknown",
-    }));
+    hookState.deleteBreakdown.mockImplementation(async (command) => {
+      hookState.operations = [
+        {
+          kind: "delete",
+          operationId: command.operationId,
+          scratchBitId: command.scratchBitId,
+          breakdownId: command.breakdownId,
+          phase: "unknown",
+          sourceSnapshot: hookState.breakdownsByScratch["scratch-1"][0],
+        } as BreakdownOperationProjection,
+      ];
+      return {
+        operationId: command.operationId,
+        outcome: "unknown",
+      };
+    });
+    let resolveReconcile!: (value: {
+      operationId: string;
+      status: "applied";
+      breakdown: null;
+      candidate: null;
+      scratch: null;
+    }) => void;
+    hookState.reconcileDeleteBreakdown.mockImplementation(
+      (command) =>
+        new Promise((resolve) => {
+          hookState.operations = [
+            {
+              kind: "delete",
+              operationId: command.operationId,
+              scratchBitId: command.scratchBitId,
+              breakdownId: command.breakdownId,
+              phase: "reconciling",
+            },
+          ];
+          resolveReconcile = resolve;
+        }),
+    );
 
     const view = render(<BreakdownPanel />);
-    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    const sourceRow = screen.getByText("Still here").closest("[role=listitem]");
+    fireEvent.click(
+      within(sourceRow as HTMLElement).getByRole("button", { name: "Delete" }),
+    );
     const dialog = await screen.findByRole("alertdialog");
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
 
     await waitFor(() => expect(hookState.deleteBreakdown).toHaveBeenCalledOnce());
     view.rerender(<BreakdownPanel />);
     expect(screen.getByText("Still here")).toBeInTheDocument();
-    expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeDisabled();
-    fireEvent.keyDown(document, { key: "Escape" });
-    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    const checkAgain = within(sourceRow as HTMLElement).getByRole("button", {
+      name: "Check again",
+    });
+    await waitFor(() => expect(checkAgain).toHaveFocus());
+    fireEvent.click(checkAgain);
+    view.rerender(<BreakdownPanel />);
+    expect(checkAgain).toHaveFocus();
+    expect(checkAgain).toHaveAttribute("aria-disabled", "true");
+    const originalCommand = hookState.deleteBreakdown.mock.calls[0][0];
+    expect(hookState.reconcileDeleteBreakdown).toHaveBeenCalledWith(originalCommand);
     expect(hookState.deleteBreakdown).toHaveBeenCalledTimes(1);
-    expect(operationLockState.release).not.toHaveBeenCalled();
+
+    await act(async () => {
+      hookState.operations = [];
+      hookState.breakdownsByScratch["scratch-1"] = [
+        createScratchBreakdown({ id: "row-2", content: "Focus next" }),
+      ];
+      resolveReconcile({
+        operationId: originalCommand.operationId,
+        status: "applied",
+        breakdown: null,
+        candidate: null,
+        scratch: null,
+      });
+    });
+    view.rerender(<BreakdownPanel />);
+
+    expect(operationLockState.release).toHaveBeenCalledWith(
+      originalCommand.operationId,
+      "applied",
+    );
+    const nextRow = screen.getByText("Focus next").closest("[role=listitem]");
+    await waitFor(() =>
+      expect(
+        within(nextRow as HTMLElement).getByRole("button", { name: "Delete" }),
+      ).toHaveFocus(),
+    );
+  });
+
+  it.each([
+    ["pending", undefined, "Deleting…"],
+    ["unknown", undefined, "We couldn’t confirm whether it was deleted."],
+    ["reconciling", undefined, "Checking whether it was deleted…"],
+    ["terminal", "not_applied", "Not deleted. This breakdown is still here."],
+    ["terminal", "rejected", "Delete unavailable. This breakdown is still here."],
+    ["terminal", "conflict", "This breakdown changed. Delete was not completed."],
+  ] as const)(
+    "retains the source row for Delete %s/%s without a retry or resend action",
+    (phase, status, copy) => {
+      triageStoreState.selectedScratchId = "scratch-1";
+      hookState.breakdownsByScratch["scratch-1"] = [
+        createScratchBreakdown({ id: "row-1", content: "Retained row" }),
+      ];
+      hookState.operations = [
+        {
+          kind: "delete",
+          operationId: "delete-operation",
+          scratchBitId: "scratch-1",
+          breakdownId: "row-1",
+          phase,
+          ...(status === undefined ? {} : { status }),
+        },
+      ];
+
+      render(<BreakdownPanel />);
+
+      const row = screen.getByText("Retained row").closest("[role=listitem]");
+      expect(row).toBeInTheDocument();
+      expect(within(row as HTMLElement).getByText(copy)).toBeInTheDocument();
+      expect(within(row as HTMLElement).queryByRole("button", { name: "Retry" })).toBeNull();
+      expect(
+        within(row as HTMLElement).queryByRole("button", { name: "Retry Delete" }),
+      ).toBeNull();
+      expect(
+        within(row as HTMLElement).queryByRole("button", { name: "Delete again" }),
+      ).toBeNull();
+      if (phase === "unknown" || phase === "reconciling" || status !== undefined) {
+        expect(
+          within(row as HTMLElement).getByRole("button", { name: "Check again" }),
+        ).toBeInTheDocument();
+      }
+    },
+  );
+
+  it("clears a terminal Delete reliability line when the retained row starts a new source interaction", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Review then edit" }),
+    ];
+    hookState.operations = [
+      {
+        kind: "delete",
+        operationId: "delete-operation",
+        scratchBitId: "scratch-1",
+        breakdownId: "row-1",
+        phase: "terminal",
+        status: "not_applied",
+      },
+    ];
+
+    render(<BreakdownPanel />);
+    const row = screen.getByText("Review then edit").closest("[role=listitem]");
+    expect(
+      within(row as HTMLElement).getByText(
+        "Not deleted. This breakdown is still here.",
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      within(row as HTMLElement).getByRole("button", { name: "Edit" }),
+    );
+
+    expect(
+      screen.queryByText("Not deleted. This breakdown is still here."),
+    ).toBeNull();
+  });
+
+  it("does not restore a terminal reliability line after leaving and returning to its Scratch", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.operations = [
+      {
+        kind: "add",
+        operationId: "add-operation",
+        scratchBitId: "scratch-1",
+        breakdownId: "new-row",
+        phase: "terminal",
+        status: "rejected",
+      },
+    ];
+    const view = render(<BreakdownPanel />);
+    expect(
+      screen.getByText("Add unavailable. Your draft is still here."),
+    ).toBeInTheDocument();
+
+    triageStoreState.selectedScratchId = "scratch-2";
+    view.rerender(<BreakdownPanel />);
+    triageStoreState.selectedScratchId = "scratch-1";
+    view.rerender(<BreakdownPanel />);
+
+    expect(
+      screen.queryByText("Add unavailable. Your draft is still here."),
+    ).toBeNull();
   });
 
   it("focuses the next visible row after confirmed Delete", async () => {
