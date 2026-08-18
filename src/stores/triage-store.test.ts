@@ -170,6 +170,32 @@ describe("useTriageStore app-session ownership", () => {
     });
   });
 
+  it("does not restore an identity before its external lifecycle is classified", () => {
+    useTriageStore.setState({
+      selectedScratchId: "selected",
+      scratchPoolActiveIds: ["selected", "next"],
+      scratchPoolResultIds: ["selected", "next"],
+    });
+    useTriageStore.getState().reconcileScratchPoolContext({
+      activeIds: ["next"],
+      visibleIds: ["next"],
+    });
+
+    useTriageStore.getState().reconcileScratchPoolContext({
+      activeIds: ["selected", "next"],
+      visibleIds: ["selected", "next"],
+    });
+
+    expect(useTriageStore.getState()).toMatchObject({
+      selectedScratchId: "selected",
+      externalScratchRemoval: {
+        scratchId: "selected",
+        lifecycle: null,
+        destinationId: "next",
+      },
+    });
+  });
+
   it("revalidates the latest destination atomically at terminal handoff", () => {
     useTriageStore.setState({
       selectedScratchId: "selected",

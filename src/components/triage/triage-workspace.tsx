@@ -8,7 +8,6 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -154,7 +153,7 @@ function ExternalScratchRemovalTransition({
 }: {
   destinationTitle: string | null;
   drafts: ExternalRemovalDraft[];
-  onFinish: () => void;
+  onFinish: () => void | Promise<void>;
   removal: ExternalScratchRemovalState;
 }) {
   const headingId = useId();
@@ -181,6 +180,15 @@ function ExternalScratchRemovalTransition({
     seconds,
   );
   const [announcement, setAnnouncement] = useState(message);
+
+  const requestFinish = useCallback(() => {
+    if (finishRef.current) return;
+    finishRef.current = true;
+    void Promise.resolve(onFinish()).catch((error) => {
+      finishRef.current = false;
+      console.error("external Scratch terminal validation error:", error);
+    });
+  }, [onFinish]);
 
   useLayoutEffect(() => {
     const initialFocus =
@@ -271,16 +279,15 @@ function ExternalScratchRemovalTransition({
       remainingRef.current = next;
       setRemainingMs(next);
       if (next === 0 && !finishRef.current) {
-        finishRef.current = true;
         window.clearInterval(timer);
-        onFinish();
+        requestFinish();
       }
     }, 100);
     return () => {
       window.clearInterval(timer);
       runningStartedAtRef.current = null;
     };
-  }, [destinationKey, onFinish, paused]);
+  }, [destinationKey, paused, requestFinish]);
 
   const handlePause = () => {
     if (!paused && runningStartedAtRef.current !== null) {
@@ -417,11 +424,7 @@ function ExternalScratchRemovalTransition({
           <button
             data-triage-role="external-removal-primary-action"
             type="button"
-            onClick={() => {
-              if (finishRef.current) return;
-              finishRef.current = true;
-              onFinish();
-            }}
+            onClick={requestFinish}
             onFocus={(event) => {
               lastFocusedRef.current = event.currentTarget;
             }}
@@ -529,36 +532,79 @@ export function TriageWorkspace({ node }: { node: Node }) {
   const externalScratchRemoval = useTriageStore(
     (state) => state.externalScratchRemoval,
   );
+  const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
   const setExternalScratchRemovalLifecycle = useTriageStore(
     (state) => state.setExternalScratchRemovalLifecycle,
   );
+  const observedLifecycleRef = useRef<{
+    scratchId: string;
+    lifecycle: "archive" | "delete";
+  } | null>(null);
 
   useEffect(() => {
     return registerActiveTriageDeparture(departure);
   }, [departure]);
 
   useEffect(() => {
-    if (
-      externalScratchRemoval === null ||
-      externalScratchRemoval.lifecycle !== null
-    ) {
-      return;
-    }
-    const scratchId = externalScratchRemoval.scratchId;
+    if (selectedScratchId === null) return;
+    const scratchId = selectedScratchId;
     const subscription = liveQuery(async () => {
       const dataStore = await getDataStore();
       return dataStore.getBit(scratchId);
     }).subscribe({
       next: (scratch) => {
-        if (scratch?.archivedAt !== null && scratch?.archivedAt !== undefined) {
-          setExternalScratchRemovalLifecycle(scratchId, "archive");
-        } else if (scratch === undefined || scratch.deletedAt !== null) {
-          setExternalScratchRemovalLifecycle(scratchId, "delete");
+        const lifecycle =
+          scratch?.archivedAt !== null && scratch?.archivedAt !== undefined
+            ? "archive"
+            : scratch === undefined || scratch.deletedAt !== null
+              ? "delete"
+              : null;
+        if (lifecycle === null) return;
+        observedLifecycleRef.current = { scratchId, lifecycle };
+        if (
+          useTriageStore.getState().externalScratchRemoval?.scratchId ===
+          scratchId
+        ) {
+          setExternalScratchRemovalLifecycle(scratchId, lifecycle);
         }
       },
-      error: (error) => console.error("external Scratch lifecycle error:", error),
+      error: (error) =>
+        console.error("selected Scratch lifecycle error:", error),
     });
     return () => subscription.unsubscribe();
+  }, [selectedScratchId, setExternalScratchRemovalLifecycle]);
+
+  useEffect(() => {
+    if (externalScratchRemoval === null) {
+      observedLifecycleRef.current = null;
+      return;
+    }
+    if (externalScratchRemoval.lifecycle !== null) {
+      return;
+    }
+    const scratchId = externalScratchRemoval.scratchId;
+    const observed = observedLifecycleRef.current;
+    if (observed?.scratchId === scratchId) {
+      setExternalScratchRemovalLifecycle(scratchId, observed.lifecycle);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const dataStore = await getDataStore();
+      const scratch = await dataStore.getBit(scratchId);
+      if (cancelled) return;
+      const lifecycle =
+        scratch?.archivedAt !== null && scratch?.archivedAt !== undefined
+          ? "archive"
+          : "delete";
+      observedLifecycleRef.current = { scratchId, lifecycle };
+      setExternalScratchRemovalLifecycle(scratchId, lifecycle);
+    })().catch((error) =>
+      console.error("external Scratch lifecycle error:", error),
+    );
+    return () => {
+      cancelled = true;
+    };
   }, [externalScratchRemoval, setExternalScratchRemovalLifecycle]);
 
   return (
@@ -600,23 +646,6 @@ function TriageWorkspaceContent({
     (state) => state.poolCreatedAtSort,
   );
   const { activeScratchBits } = useInbox();
-  const orderedActiveScratchBits = useMemo(
-    () =>
-      activeScratchBits.toSorted((left, right) =>
-        poolCreatedAtSort === "ASC"
-          ? left.createdAt - right.createdAt
-          : right.createdAt - left.createdAt,
-      ),
-    [activeScratchBits, poolCreatedAtSort],
-  );
-  const visibleScratchBits = useMemo(() => {
-    const normalizedQuery = scratchPoolQuery.toLocaleLowerCase();
-    return normalizedQuery.length === 0
-      ? orderedActiveScratchBits
-      : orderedActiveScratchBits.filter((scratch) =>
-          scratch.title.toLocaleLowerCase().includes(normalizedQuery),
-        );
-  }, [orderedActiveScratchBits, scratchPoolQuery]);
   const workspaceRef = useRef<HTMLElement>(null);
   const preTransitionFocusRef = useRef<HTMLElement | null>(null);
   const previousRemovalIdRef = useRef<string | null>(null);
@@ -715,19 +744,68 @@ function TriageWorkspaceContent({
     previousRemovalIdRef.current = null;
   }, [externalScratchRemoval, selectedScratchId]);
 
-  const finishExternalRemoval = useCallback(() => {
-    const destination = finishExternalScratchRemoval({
-      activeIds: orderedActiveScratchBits.map((scratch) => scratch.id),
-      visibleIds: visibleScratchBits.map((scratch) => scratch.id),
-    });
-    if (destination === null) return;
-    pendingTerminalFocusRef.current = destination.kind;
+  const finishExternalRemoval = useCallback(async () => {
+    const removal = useTriageStore.getState().externalScratchRemoval;
+    if (removal === null) return;
+    const dataStore = await getDataStore();
+    const projectedActiveScratchBits = await dataStore.getBits(node.id);
+    const source = await dataStore.getBit(removal.scratchId);
+    if (
+      useTriageStore.getState().externalScratchRemoval?.scratchId !==
+      removal.scratchId
+    ) {
+      return;
+    }
+    if (source?.archivedAt !== null && source?.archivedAt !== undefined) {
+      useTriageStore
+        .getState()
+        .setExternalScratchRemovalLifecycle(removal.scratchId, "archive");
+    } else if (source === undefined || source.deletedAt !== null) {
+      useTriageStore
+        .getState()
+        .setExternalScratchRemovalLifecycle(removal.scratchId, "delete");
+    }
+    const sourceIsActive =
+      source !== undefined &&
+      source.deletedAt === null &&
+      source.archivedAt === null;
+    const latestActiveScratchBits = projectedActiveScratchBits.filter(
+      (scratch) => scratch.id !== removal.scratchId,
+    );
+    if (sourceIsActive) latestActiveScratchBits.push(source);
+    const latestOrderedScratchBits = latestActiveScratchBits.toSorted(
+      (left, right) =>
+        poolCreatedAtSort === "ASC"
+          ? left.createdAt - right.createdAt
+          : right.createdAt - left.createdAt,
+    );
+    const normalizedQuery = scratchPoolQuery.toLocaleLowerCase();
+    const latestVisibleScratchBits =
+      normalizedQuery.length === 0
+        ? latestOrderedScratchBits
+        : latestOrderedScratchBits.filter((scratch) =>
+            scratch.title.toLocaleLowerCase().includes(normalizedQuery),
+          );
+    const latestContext = {
+      activeIds: latestOrderedScratchBits.map((scratch) => scratch.id),
+      visibleIds: latestVisibleScratchBits.map((scratch) => scratch.id),
+    };
+    useTriageStore.getState().reconcileScratchPoolContext(latestContext);
+    const validatedRemoval = useTriageStore.getState().externalScratchRemoval;
+    if (validatedRemoval === null) return;
+    pendingTerminalFocusRef.current = validatedRemoval.destinationKind;
+    const destination = finishExternalScratchRemoval(latestContext);
+    if (destination === null) {
+      pendingTerminalFocusRef.current = null;
+      return;
+    }
     departure.setAddDraft("");
   }, [
     departure,
     finishExternalScratchRemoval,
-    orderedActiveScratchBits,
-    visibleScratchBits,
+    node.id,
+    poolCreatedAtSort,
+    scratchPoolQuery,
   ]);
 
   const destinationTitle =

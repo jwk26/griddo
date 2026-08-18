@@ -1,4 +1,6 @@
 import "@testing-library/jest-dom/vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTriageStore } from "@/stores/triage-store";
@@ -11,12 +13,19 @@ import {
 import type { Node } from "@/types";
 import { TriageWorkspace } from "./triage-workspace";
 
+const globalsCss = readFileSync(
+  join(process.cwd(), "src/app/globals.css"),
+  "utf8",
+);
+
 const useTriageDndMock = vi.hoisted(() => vi.fn());
 const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
 const handlePlacementConfirmMock = vi.hoisted(() => vi.fn());
 const handlePlacementCancelMock = vi.hoisted(() => vi.fn());
 const useGridDataMock = vi.hoisted(() => vi.fn());
 const useInboxMock = vi.hoisted(() => vi.fn());
+const getBitMock = vi.hoisted(() => vi.fn());
+const getBitsMock = vi.hoisted(() => vi.fn());
 const inboxState = vi.hoisted(() => ({ activeScratchBits: [] as Array<{ id: string; title: string }> }));
 const breakdownSurfaceState = vi.hoisted(() => ({
   addDraft: "",
@@ -43,6 +52,13 @@ vi.mock("@/hooks/use-grid-data", () => ({
 
 vi.mock("@/hooks/use-inbox", () => ({
   useInbox: useInboxMock,
+}));
+
+vi.mock("@/lib/db/datastore", () => ({
+  getDataStore: vi.fn().mockResolvedValue({
+    getBit: getBitMock,
+    getBits: getBitsMock,
+  }),
 }));
 
 vi.mock("@/components/triage/scratch-pool", async () => {
@@ -206,6 +222,19 @@ beforeEach(() => {
     { id: "scratch-2", title: "Second Scratch" },
     { id: "scratch-3", title: "Third Scratch" },
   ];
+  getBitMock.mockReset();
+  getBitMock.mockResolvedValue({
+    id: "scratch-1",
+    archivedAt: null,
+    deletedAt: null,
+  });
+  getBitsMock.mockReset();
+  getBitsMock.mockImplementation(async () =>
+    inboxState.activeScratchBits.map((scratch, index) => ({
+      ...scratch,
+      createdAt: index + 1,
+    })),
+  );
   useInboxMock.mockReset();
   useInboxMock.mockImplementation(() => inboxState);
   breakdownSurfaceState.addDraft = "";
@@ -336,7 +365,6 @@ describe("TriageWorkspace", () => {
         removalOrder: ["scratch-1", "scratch-2", "scratch-3"],
       } });
     });
-
     const dialog = screen.getByRole("alertdialog", {
       name: "This Scratch was deleted elsewhere",
     });
@@ -363,7 +391,28 @@ describe("TriageWorkspace", () => {
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
   });
 
-  it("pauses and resumes the exact remainder before terminal destination focus", () => {
+  it("binds every exact DP-VQ01 theme role family without JSX branches", () => {
+    for (const requiredBinding of [
+      'data-color-theme="tiny-desk"]\n  [data-triage-role="external-removal-countdown-track"]',
+      'data-color-theme="tiny-desk"]\n  [data-triage-role^="external-removal-"][data-triage-role$="action"]',
+      'data-color-theme="neumorphism"]\n  .external-removal-panel__actions button',
+      'data-color-theme="claymorphism"]\n  [data-triage-role="external-removal-countdown-track"]',
+      'data-color-theme="claymorphism"]\n  .external-removal-panel__actions button',
+      'data-color-theme="origami"]\n  [data-triage-role="external-removal-countdown-track"]',
+      'data-color-theme="origami"]\n  [data-triage-role="external-removal-secondary-action"]',
+      'data-color-theme="terminal"]\n  [data-triage-role="external-removal-countdown-fill"]',
+      'data-color-theme="retro-mac"] .external-removal-panel__title',
+      'data-color-theme="retro-mac"]\n  [data-triage-role="external-removal-draft-card"]',
+      'data-color-theme="retro-mac"]\n  .external-removal-panel__actions button',
+      'data-color-theme="graphite"]\n  [data-triage-role="external-removal-draft-card"]',
+      'data-color-theme="graphite"]\n  [data-triage-role="external-removal-countdown-track"]',
+    ]) {
+      expect(globalsCss).toContain(requiredBinding);
+    }
+    expect(globalsCss).not.toMatch(/colorTheme\s*[=!]=/);
+  });
+
+  it("pauses and resumes the exact remainder before terminal destination focus", async () => {
     vi.useFakeTimers();
     render(<TriageWorkspace node={createNode()} />);
     act(() => {
@@ -374,6 +423,11 @@ describe("TriageWorkspace", () => {
         destinationKind: "scratch",
         removalOrder: ["scratch-1", "scratch-2", "scratch-3"],
       } });
+    });
+    getBitMock.mockResolvedValue({
+      id: "scratch-1",
+      archivedAt: 100,
+      deletedAt: null,
     });
     expect(
       document.querySelector('[data-triage-role="external-removal-destination"]'),
@@ -397,12 +451,112 @@ describe("TriageWorkspace", () => {
       frozenWidth,
     );
     fireEvent.click(screen.getByRole("button", { name: "Resume" }));
-    act(() => vi.advanceTimersByTime(3000));
+    await act(async () => {
+      vi.advanceTimersByTime(3000);
+      await Promise.resolve();
+    });
 
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
     expect(useTriageStore.getState().selectedScratchId).toBe("scratch-2");
     expect(screen.getByTestId("selected-scratch-context")).toHaveFocus();
     vi.useRealTimers();
+  });
+
+  it("rereads the authoritative destination immediately before terminal handoff", async () => {
+    const node = createNode({ id: "inbox-node" });
+    render(<TriageWorkspace node={node} />);
+    act(() => {
+      useTriageStore.setState({
+        externalScratchRemoval: {
+          scratchId: "scratch-1",
+          lifecycle: "delete",
+          destinationId: "scratch-2",
+          destinationKind: "scratch",
+          removalOrder: ["scratch-1", "scratch-2", "scratch-3"],
+        },
+      });
+    });
+    getBitMock.mockResolvedValue(undefined);
+    getBitsMock.mockResolvedValue([
+      { id: "scratch-1", title: "Stale Source", createdAt: 4 },
+      { id: "scratch-3", title: "Third Scratch", createdAt: 3 },
+    ]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Move now" }));
+
+    await waitFor(() =>
+      expect(useTriageStore.getState().selectedScratchId).toBe("scratch-3"),
+    );
+    expect(getBitsMock).toHaveBeenLastCalledWith("inbox-node");
+    expect(screen.getByTestId("selected-scratch-context")).toHaveFocus();
+  });
+
+  it("honors an authoritative archive restore discovered at terminal validation", async () => {
+    breakdownSurfaceState.addDraft = "Retained terminal draft";
+    const node = createNode({ id: "inbox-node" });
+    render(<TriageWorkspace node={node} />);
+    const context = screen.getByTestId("selected-scratch-context");
+    context.focus();
+    act(() => {
+      useTriageStore.setState({
+        externalScratchRemoval: {
+          scratchId: "scratch-1",
+          lifecycle: "archive",
+          destinationId: "scratch-2",
+          destinationKind: "scratch",
+          removalOrder: ["scratch-1", "scratch-2", "scratch-3"],
+        },
+      });
+    });
+    getBitMock.mockResolvedValue({
+      id: "scratch-1",
+      archivedAt: null,
+      deletedAt: null,
+    });
+    getBitsMock.mockResolvedValue([
+      { id: "scratch-2", title: "Second Scratch", createdAt: 2 },
+    ]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Move now" }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument(),
+    );
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-1");
+    expect(screen.getByDisplayValue("Retained terminal draft")).toBeInTheDocument();
+    expect(context).toHaveFocus();
+  });
+
+  it("excludes a stale active projection when the final source read is archived", async () => {
+    render(<TriageWorkspace node={createNode({ id: "inbox-node" })} />);
+    act(() => {
+      useTriageStore.setState({
+        externalScratchRemoval: {
+          scratchId: "scratch-1",
+          lifecycle: "archive",
+          destinationId: "scratch-2",
+          destinationKind: "scratch",
+          removalOrder: ["scratch-1", "scratch-2", "scratch-3"],
+        },
+      });
+    });
+    getBitsMock.mockResolvedValue([
+      { id: "scratch-1", title: "Stale Source", createdAt: 4 },
+      { id: "scratch-3", title: "Third Scratch", createdAt: 3 },
+    ]);
+    getBitMock.mockResolvedValue({
+      id: "scratch-1",
+      archivedAt: 100,
+      deletedAt: null,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Move now" }));
+
+    await waitFor(() =>
+      expect(useTriageStore.getState().selectedScratchId).toBe("scratch-3"),
+    );
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(screen.getByTestId("selected-scratch-context")).toHaveFocus();
   });
 
   it("restarts only a running countdown when the destination changes", () => {

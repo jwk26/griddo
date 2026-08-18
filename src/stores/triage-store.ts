@@ -162,7 +162,7 @@ export const useTriageStore = create<TriageState>((set) => ({
       const restoredExternalSelection =
         selectionIsActive &&
         state.externalScratchRemoval?.scratchId === state.selectedScratchId &&
-        state.externalScratchRemoval.lifecycle !== "delete";
+        state.externalScratchRemoval.lifecycle === "archive";
       const shouldHoldExternalRemoval =
         state.selectedScratchId !== null &&
         !restoredExternalSelection &&
