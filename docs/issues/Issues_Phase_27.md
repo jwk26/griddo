@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–142 accepted; Task 143 in progress
+> State: Tasks 136–142 accepted; Task 143 implemented and awaiting acceptance
 
 ## Status Legend
 
@@ -237,14 +237,14 @@ Task 138 targeted canonical repair:
 | Field | Durable value |
 | --- | --- |
 | Task | `143` — render `DP-VQ05` Add/Delete reliability states |
-| State | `In Progress`; Task 143 implementation is active while Task 143 and Task 144 remain `[ ]` |
+| State | `Implemented; Awaiting Acceptance`; implementation `593656908584358ca3bd77ff5f7983fca9f0335c` and Task 143 evidence are committed at the awaiting-acceptance checkpoint while Task 143 and Task 144 remain `[ ]` |
 | Approved scope | The committed canonical Task 143 contract plus the explicit 2026-08-18 Task 143-only work order: modify only `src/components/triage/breakdown-panel.tsx` and test, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and test, and Task 143 verification evidence/ledger records |
 | Kickoff authority | The user supplied an approved Task 143 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; pinned candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned receipt-less `approval_required` with `contract_ready=true` as compatibility evidence only |
 | Start base / entrypoint / recovery anchor | `e323a4ab2c3d5932bc65ec99d4c9755073c5f0ae`; exact entrypoint `src` tree `9a4ca20e70de4925e1aa1be889dad4c677252136` |
 | Dependencies | Tasks 110, 128, 136, and 142 are accepted and marked `[x]`; `P27-01` retains Task 143 ownership of production `Check again` reconciliation and terminal release/focus |
 | Behavior | Render the committed `DP-VQ05` Add pending/failure/reconcile states and Delete deleting/failure/check-again states over Task 136 authoritative operation identities, including exact copy, actions, focus, static/reduced-motion behavior, and eight-theme mappings; Add Retry is limited to receipt-authorized authoritative `not_applied`; Delete retains its source row and uses read-only `Check again` reconciliation without Retry/resend; production reconciliation preserves the operation identity through terminal release and deterministic focus |
 | Excluded | Pool `VQ-06`; Task 144 status UI; Task 145 adapters; generic dialog; unrelated behavior; publication/integration/phase-close/worktree cleanup |
-| Issues / deviations | None |
+| Issues / deviations | No contract deviation. Canonical Chrome exposed the existing base-layer `0.01ms` reduced-motion rule outranking the reliability override; the Task 143 CSS now applies a scoped same-layer `animation: none` / `transition: none`, verified as computed `none` / `0s` |
 | Canonical impact | `None` — Task 143 executes the already reflected and accepted `DP-VQ05` contract without changing product/design/policy authority |
-| Verification | Pending focused Breakdown/copy state-table RED/GREEN evidence, adapter focused/full gates, scoped review, and approved local Playwright/system Chrome canonical-route evidence for authoritative results, focus, reduced motion, 8-theme light/dark mappings, and `Check again` reconciliation |
-| Next legal action | Implement and verify only Task 143, commit implementation/evidence, and stop at a clean awaiting-acceptance checkpoint without changing Task 143 or Task 144 `[ ]` markers |
+| Verification | `docs/verification/inbox-triage/task-143.md`: focused 2 files / 115 tests; full 94 files / 909 tests; lint 0 errors with the same 11 out-of-scope warnings; typecheck and Next.js 16.2.1 seven-route build passed; local Playwright/system Chrome 151 canonical route passed authoritative Add/Delete unknown → reconciliation → terminal identity/focus, reduced motion, and 8-theme light/dark evidence with no console/page errors |
+| Next legal action | Stop at the clean Task 143 awaiting-acceptance checkpoint and request explicit acceptance or targeted rejection feedback; do not mark Task 143 or Task 144 `[x]`, and do not start Task 144 or Task 145 |

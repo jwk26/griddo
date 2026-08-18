@@ -1,0 +1,423 @@
+{
+  "chrome": "151.0.7922.138",
+  "route": "http://localhost:3001/grid/11111111-1111-4111-8111-111111111111",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "add": {
+    "unknown": {
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was added.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": false,
+      "rect": {
+        "x": 348,
+        "y": 466,
+        "width": 637.390625,
+        "height": 65
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    "reconciling": {
+      "state": "reconciling",
+      "copy": "Checking whether it was added…",
+      "action": "Check again",
+      "actionDisabled": "true",
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 466,
+        "width": 637.390625,
+        "height": 65
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    "terminal": {
+      "state": "not-applied",
+      "copy": "Not added. Your draft is still here.",
+      "action": "Retry Add",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 466,
+        "width": 637.390625,
+        "height": 65
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    "uuidBefore": 2,
+    "uuidAfter": 2
+  },
+  "delete": {
+    "unknown": {
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 81
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    "reconciling": {
+      "state": "reconciling",
+      "copy": "Checking whether it was deleted…",
+      "action": "Check again",
+      "actionDisabled": "true",
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 83
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    "terminal": {
+      "state": "not-applied",
+      "copy": "Not deleted. This breakdown is still here.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": false,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 83
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    "uuidBefore": 3,
+    "uuidAfter": 3
+  },
+  "reducedMotion": {
+    "state": "not-applied",
+    "copy": "Not deleted. This breakdown is still here.",
+    "action": "Check again",
+    "actionDisabled": null,
+    "focused": false,
+    "rect": {
+      "x": 348,
+      "y": 160,
+      "width": 637.390625,
+      "height": 83
+    },
+    "overflow": 0,
+    "animation": "none",
+    "transition": "0s"
+  },
+  "themes": [
+    {
+      "theme": "griddo",
+      "mode": "light",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 81
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "tiny-desk",
+      "mode": "light",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 83
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "neumorphism",
+      "mode": "light",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 80
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "claymorphism",
+      "mode": "light",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 80
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "origami",
+      "mode": "light",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 81
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "terminal",
+      "mode": "light",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 82
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "retro-mac",
+      "mode": "light",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 82
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "graphite",
+      "mode": "light",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 83
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "griddo",
+      "mode": "dark",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 81
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "tiny-desk",
+      "mode": "dark",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 83
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "neumorphism",
+      "mode": "dark",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 80
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "claymorphism",
+      "mode": "dark",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 80
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "origami",
+      "mode": "dark",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 81
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "terminal",
+      "mode": "dark",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 82
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "retro-mac",
+      "mode": "dark",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 82
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    },
+    {
+      "theme": "graphite",
+      "mode": "dark",
+      "state": "unknown",
+      "copy": "We couldn’t confirm whether it was deleted.",
+      "action": "Check again",
+      "actionDisabled": null,
+      "focused": true,
+      "rect": {
+        "x": 348,
+        "y": 160,
+        "width": 637.390625,
+        "height": 83
+      },
+      "overflow": 0,
+      "animation": "none",
+      "transition": "0s"
+    }
+  ],
+  "datastore": {
+    "sourcePresent": true,
+    "rowCount": 1
+  },
+  "consoleErrors": []
+}
