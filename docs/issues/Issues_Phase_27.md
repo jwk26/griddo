@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–140 accepted; Task 141 awaits a separately approved run-task scope
+> State: Tasks 136–140 accepted; Task 141 implementation in progress
 
 ## Status Legend
 
@@ -190,3 +190,19 @@ Task 138 targeted canonical repair:
 | Review limitation | None. The user explicitly authorized MCP Playwright or equivalent local Playwright/Chromium for Task 140; final GREEN rasters and numerical evidence are recorded without requiring the in-app Node REPL |
 | Acceptance | On 2026-08-18 the user explicitly accepted repaired checkpoint `fba3e8165197c9e1165440e8f5af9777d5be391e` and approved this acceptance-only marker/ledger update; existing successful focused/full gates and canonical browser evidence were reused without rerunning verification |
 | Next legal action | Stop at the clean Task 140 acceptance checkpoint; wait for a separately approved Task 141 run-task scope and do not start Task 141 |
+
+## Task 141 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `141` — render `DP-VQ01` external Scratch-removal transition |
+| State | `In Progress`; implementation and evidence are not user acceptance, and Task 141 remains `[ ]` |
+| Approved scope | The committed canonical Task 141 contract plus the explicit 2026-08-18 Task 141-only work order: modify only `src/components/triage/scratch-pool.tsx` and test, `src/components/triage/triage-workspace.tsx` and test, `src/stores/triage-store.ts` and test, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and test, and Task 141 verification evidence/ledger records |
+| Kickoff authority | The user supplied an approved Task 141 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned receipt-less `approval_required` with `contract_ready=true` as compatibility evidence only |
+| Start base / entrypoint / recovery anchor | `8015a986da743fbdff8ccc49edabeb44fcc15cfb`; exact entrypoint `src` tree `e84c5967f5fba8dfc3c8625fb644516dcc3673ce` |
+| Dependencies | Tasks 106, 128, 130, 136, 137, and 139 are accepted ancestors; Tasks 139–140 are accepted at the approved entrypoint and `P27-04` is Closed; Task 140 is deliberately not a dependency |
+| Behavior | Realize the accepted external archive/delete countdown, pause/resume, destination revalidation/replacement, full source-labeled draft copy/status, authoritative archive restore, terminal selection/removal, and exact focus contract using Task 137/139 headless behavior |
+| Excluded | Task 138 inline-editor visuals, Task 140 departure sheet, Archive/dialog/Pool chrome, Task 142+, Task 143 reconciliation UI, Task 160 compatibility, experiment cleanup, publication/integration/phase-close/worktree cleanup, and unrelated code |
+| Issues / deviations | None |
+| Canonical impact | `None` — Task 141 consumes the already accepted `DP-VQ01` receipt and canonical recipe without changing product/design/policy authority |
+| Next legal action | Create the separate durable start commit, then execute only Task 141 through focused RED/GREEN, adapter gates, canonical-route all-theme browser evidence, scoped review, implementation/evidence commits, and the user-owned acceptance checkpoint |
