@@ -1503,7 +1503,7 @@ and no-queue/no-replay contracts do not change.
 
 **Commit contract:** DP-VQ01 copy/transition, tests, styles, and Task 141 evidence only; `feat(triage): handle external scratch removal`.
 
-### Task 142: [ ] Define triage pointer sources and lifecycle snapshots in existing DnD owner
+### Task 142: [x] Define triage pointer sources and lifecycle snapshots in existing DnD owner
 
 **Files and actions:** modify existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/staging-zone.tsx` and `.test.tsx`, and `src/components/triage/triage-drag-token.tsx` and `.test.tsx`. Keep general Grid/Calendar DnD behavior separate. `useTriageDnd` uses Mouse 8px and Touch 250ms/5px, captures stable source/candidate/version/type at activation, starts Breakdown only from grip and staged items from whole root, distinguishes Stage/Unstage/Placement intent, keeps a compact pointer-centered token, and cancels mutation on remote invalidation. Add no second triage DnD hook owner.
 

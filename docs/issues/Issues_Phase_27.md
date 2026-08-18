@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–141 accepted; Task 142 implemented and awaiting acceptance
+> State: Tasks 136–142 accepted; Task 143 not started
 
 ## Status Legend
 
@@ -217,7 +217,7 @@ Task 138 targeted canonical repair:
 | Field | Durable value |
 | --- | --- |
 | Task | `142` — define triage pointer sources and lifecycle snapshots in the existing DnD owner |
-| State | `Implemented; awaiting user acceptance`; Task 142 remains `[ ]` and Task 143 remains `[ ]` |
+| State | `Accepted`; the user-approved Task 142 checkpoint is committed and Task 142 is marked `[x]`; Task 143 remains `[ ]` |
 | Approved scope | The committed canonical Task 142 contract plus the explicit 2026-08-18 Task 142-only work order: modify only `src/hooks/use-dnd.ts`, `src/hooks/use-triage-dnd.test.ts`, `src/components/triage/breakdown-panel.tsx` and test, `src/components/triage/staging-zone.tsx` and test, `src/components/triage/triage-drag-token.tsx` and test, and Task 142 verification evidence/ledger records |
 | Kickoff authority | The user supplied an approved Task 142 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; pinned candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned receipt-less `approval_required` with `contract_ready=true` as compatibility evidence only |
 | Start base / entrypoint / recovery anchor | `310b575738710178151423b6df11dc34611bdb1e`; exact entrypoint `src` tree `a4db699808f6c63018fe608ec2d6d88846cd0957` |
@@ -229,4 +229,5 @@ Task 138 targeted canonical repair:
 | Implementation | `a851f35f6499d8a64f930da2b675e9b1e2e532f1` — `feat(triage): define triage pointer sources` |
 | Verification | `docs/verification/inbox-triage/task-142.md`; focused 4 files / 141 tests, full 94 files / 891 tests, changed-file lint, full lint with 0 errors and 11 existing warnings, typecheck, production build, and diff-check passed; approved local Playwright/system Chrome passed canonical-route grip/root ownership, Mouse/Touch activation, Escape, retain-through-release invalidation, and pointer-centered alignment with no page errors |
 | Review limitation | None. The user explicitly authorized local Playwright/Chrome; the in-app Node REPL was not required. |
-| Next legal action | Stop at this clean awaiting-user-acceptance checkpoint. Accept or reject Task 142 only; do not start Task 143, mark either task `[x]`, or perform publication/integration/cleanup without separate authority |
+| Acceptance | On 2026-08-18 the user explicitly accepted checkpoint `52d8fd446b17ca3a39361ed861454d1575de24db` and approved this acceptance-only marker/ledger update; the existing successful focused/full gates and canonical browser evidence were reused without rerunning verification |
+| Next legal action | Stop at the clean Task 142 acceptance checkpoint; wait for a separately approved Task 143 run-task scope and do not start Task 143 |
