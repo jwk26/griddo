@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–139 accepted; Task 140 fourth bounded repair cycle in progress
+> State: Tasks 136–139 accepted; Task 140 implemented and awaiting user acceptance
 
 ## Status Legend
 
@@ -175,7 +175,7 @@ Task 138 targeted canonical repair:
 | Field | Durable value |
 | --- | --- |
 | Task | `140` — render `DP-VQ03` departure confirmation |
-| State | `In Progress`; user-approved fourth bounded repair cycle and Task 140 remains `[ ]` |
+| State | `Implemented; awaiting user acceptance`; Task 140 remains `[ ]` |
 | Approved scope | The committed canonical Task 140 contract, the explicit 2026-08-18 Task 140-only work order, the verification-only browser repair, the user-approved DP-VQ03 contrast repair in `src/app/globals.css` and `src/components/triage/breakdown-panel.test.tsx`, and the `P27-04` expansion to only `src/hooks/use-triage-departure.ts` and `.test.tsx`; final evidence remains limited to `docs/verification/inbox-triage/task-140.md`, this ledger, and `task-140-*.png` captures |
 | Kickoff authority | The user supplied an approved Task 140 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; the candidate-pinned resolver returned `approval_required` with `contract_ready=true` as compatibility evidence only |
 | Start base / entrypoint / recovery anchor | `23da87d6ac8a74c35efc425cb8cdb54e2b3246d4`; exact entrypoint `src` tree `a717e61a866fcb28c5139f19c6dab0d394733f76` |
@@ -184,8 +184,8 @@ Task 138 targeted canonical repair:
 | Issues / deviations | `P27-04` — canonical-route Scratch Discard exposed pre-commit destination focus loss; the user approved the minimum Task 139 hook/test timing repair while retaining every existing semantic boundary |
 | Canonical impact | `Reflected` — Task 140 still executes accepted `DP-VQ03`; the only canonical repair is `P27-04` focus timing in accepted Task 139, with no new product/design policy |
 | Recovery note | Reconciled the stale ledger summary from “Task 139 in progress” to the accepted Task 139 state already proven by the Task 139 section, `docs/EXECUTION_PLAN.md`, and recovery anchor |
-| Implementation | `0e2abd690d315f4452750cfeaef570f28a1438ac` — `feat(triage): render add draft departure`; exact implementation `src` tree `02990def33a836d0475b4d745c537d12f8d29492` |
-| Checkpoint chain | `a1abd41d0ac3466960f2b9ed21f1810bd45ae1e5` durable start → `0e2abd690d315f4452750cfeaef570f28a1438ac` implementation → `c914be6cb6f359296fd74ab506f62a4de853feba` initial evidence → `de04fbb` separate `P27-04` scope record |
+| Implementation | `0e2abd690d315f4452750cfeaef570f28a1438ac` — `feat(triage): render add draft departure`; repaired implementation/evidence `303514e5bf1281580c9c2e83bc3b667b8042d152` — `fix(triage): repair Task 140 verification findings`; exact repaired `src` tree `e84c5967f5fba8dfc3c8625fb644516dcc3673ce` |
+| Checkpoint chain | `a1abd41d0ac3466960f2b9ed21f1810bd45ae1e5` durable start → `0e2abd690d315f4452750cfeaef570f28a1438ac` implementation → `c914be6cb6f359296fd74ab506f62a4de853feba` initial evidence → `de04fbb1be5068515fe7a69eb6be708e9d345c17` separate `P27-04` scope record → `303514e5bf1281580c9c2e83bc3b667b8042d152` repair/evidence checkpoint |
 | Verification | `docs/verification/inbox-triage/task-140.md`; contrast RED failed 1/90 and hook timing RED failed 3/20 as expected; final focused gate passed 8 files / 208 tests, changed-file lint and typecheck passed, full gate passed 94 files / 869 tests, lint with 0 errors and 11 existing warnings, typecheck, and production build; local Playwright/Chrome on the canonical route passed 16 theme-mode contrast/geometry/capture checks plus Scratch/path/route Continue/Discard, post-commit focus, containment, replacement, scope-out, and native-unload separation |
 | Review limitation | None. The user explicitly authorized MCP Playwright or equivalent local Playwright/Chromium for Task 140; final GREEN rasters and numerical evidence are recorded without requiring the in-app Node REPL |
-| Next legal action | Create one repair/evidence commit, confirm a clean worktree, and stop at the awaiting-acceptance checkpoint; keep Tasks 140 and 141 `[ ]` and do not start follow-up work |
+| Next legal action | Stop at the clean Task 140 awaiting-acceptance checkpoint; keep Tasks 140 and 141 `[ ]` and do not start follow-up work |
