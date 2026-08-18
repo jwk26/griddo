@@ -1487,7 +1487,7 @@ and no-queue/no-replay contracts do not change.
 
 **Commit contract:** DP-VQ03 copy/realization, tests, styles, and Task 140 evidence only; `feat(triage): render add draft departure`.
 
-### Task 141: [ ] Render `DP-VQ01` external Scratch-removal transition
+### Task 141: [x] Render `DP-VQ01` external Scratch-removal transition
 
 **Files and actions:** after `DP-VQ01`, modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Use headless Tasks 137/139—not VQ-03/04 visuals—to realize external archive/delete countdown, pause/resume, destination revalidation/replacement, full draft copy/status, authoritative restore, terminal removal, selection, and focus exactly. Do not borrow Archive/dialog/Pool chrome.
 
