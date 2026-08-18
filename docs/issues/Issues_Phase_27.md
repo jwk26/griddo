@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–140 accepted; Task 141 implementation in progress
+> State: Tasks 136–140 accepted; Task 141 awaiting user acceptance
 
 ## Status Legend
 
@@ -196,7 +196,7 @@ Task 138 targeted canonical repair:
 | Field | Durable value |
 | --- | --- |
 | Task | `141` — render `DP-VQ01` external Scratch-removal transition |
-| State | `In Progress`; implementation and evidence are not user acceptance, and Task 141 remains `[ ]` |
+| State | `Awaiting user acceptance`; implementation and evidence are committed, and Task 141 remains `[ ]` |
 | Approved scope | The committed canonical Task 141 contract plus the explicit 2026-08-18 Task 141-only work order: modify only `src/components/triage/scratch-pool.tsx` and test, `src/components/triage/triage-workspace.tsx` and test, `src/stores/triage-store.ts` and test, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and test, and Task 141 verification evidence/ledger records |
 | Kickoff authority | The user supplied an approved Task 141 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned receipt-less `approval_required` with `contract_ready=true` as compatibility evidence only |
 | Start base / entrypoint / recovery anchor | `8015a986da743fbdff8ccc49edabeb44fcc15cfb`; exact entrypoint `src` tree `e84c5967f5fba8dfc3c8625fb644516dcc3673ce` |
@@ -205,4 +205,8 @@ Task 138 targeted canonical repair:
 | Excluded | Task 138 inline-editor visuals, Task 140 departure sheet, Archive/dialog/Pool chrome, Task 142+, Task 143 reconciliation UI, Task 160 compatibility, experiment cleanup, publication/integration/phase-close/worktree cleanup, and unrelated code |
 | Issues / deviations | None |
 | Canonical impact | `None` — Task 141 consumes the already accepted `DP-VQ01` receipt and canonical recipe without changing product/design/policy authority |
-| Next legal action | Create the separate durable start commit, then execute only Task 141 through focused RED/GREEN, adapter gates, canonical-route all-theme browser evidence, scoped review, implementation/evidence commits, and the user-owned acceptance checkpoint |
+| Implementation | `9a804f6` — `feat(triage): handle external scratch removal`; review repair `df085f65c41b2345f54fa863727788b03fedc91c` — `fix(triage): repair Task 141 review findings`; exact repaired `src` tree `a4db699808f6c63018fe608ec2d6d88846cd0957` |
+| Checkpoint chain | `c483b049568c6fdb97372a74fb073ca9fd27c9cf` durable start → `9a804f6` implementation and initial rasters → `df085f65c41b2345f54fa863727788b03fedc91c` authoritative-race/theme repair and regenerated rasters → evidence/ledger checkpoint awaiting user acceptance |
+| Verification | `docs/verification/inbox-triage/task-141.md`; final focused 8 files / 226 tests, full 94 files / 884 tests, changed-file lint, full lint with 0 errors and 11 existing warnings, typecheck, production build, and diff-check passed; local Playwright/system Chrome passed 16 theme-mode geometry/capture runs plus focus containment, paused destination replacement, archive restore, delete no-restore, and terminal selection/focus/draft clearing; final independent re-review reported no Critical or Important findings |
+| Review limitation | None. The user explicitly authorized local Playwright/Chrome; the in-app Node REPL was not required. Latest Web Interface Guidelines were applied to the scoped surface. |
+| Next legal action | Stop at the clean Task 141 awaiting-acceptance checkpoint; do not mark Task 141 `[x]` or start Task 142 without explicit user acceptance and a separate approved scope |
