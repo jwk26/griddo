@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, renderHook } from "@testing-library/react";
+import { act, cleanup, render, renderHook, screen } from "@testing-library/react";
+import { useLayoutEffect } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   TRIAGE_OPERATION_KINDS,
@@ -12,6 +13,7 @@ import {
   useTriageRouteFocusHandoff,
   useTriageDeparture,
 } from "./use-triage-departure";
+import type { TriageDepartureController } from "./use-triage-departure";
 
 function renderDeparture() {
   return renderHook(() => {
@@ -19,6 +21,33 @@ function renderDeparture() {
     const departure = useTriageDeparture(operationLock);
     return { departure, operationLock };
   });
+}
+
+function DepartureCommitHarness({
+  controllerRef,
+}: {
+  controllerRef: { current: TriageDepartureController | null };
+}) {
+  const operationLock = useTriageOperationLock();
+  const departure = useTriageDeparture(operationLock);
+  useLayoutEffect(() => {
+    controllerRef.current = departure;
+    return () => {
+      controllerRef.current = null;
+    };
+  }, [controllerRef, departure]);
+
+  return (
+    <>
+      <div
+        data-testid="departure-surface"
+        inert={departure.pendingDestination === null ? undefined : true}
+      />
+      {departure.pendingDestination === null ? null : (
+        <div data-testid="departure-sheet" />
+      )}
+    </>
+  );
 }
 
 afterEach(() => {
@@ -96,8 +125,47 @@ describe("useTriageDeparture", () => {
     expect(result.current.departure.pendingDestination).toBeNull();
   });
 
+  it("performs Discard immediately but defers destination focus until the closed state commits", () => {
+    const perform = vi.fn();
+    const focusCommitStates: Array<{
+      inert: boolean;
+      sheetPresent: boolean;
+    }> = [];
+    const controllerRef: { current: TriageDepartureController | null } = {
+      current: null,
+    };
+    const focus = vi.fn(() => {
+      focusCommitStates.push({
+        inert: screen.getByTestId("departure-surface").hasAttribute("inert"),
+        sheetPresent: screen.queryByTestId("departure-sheet") !== null,
+      });
+    });
+    render(<DepartureCommitHarness controllerRef={controllerRef} />);
+
+    act(() => {
+      controllerRef.current?.setAddDraft("Leave after commit");
+      controllerRef.current?.requestDeparture({
+        id: "scratch-2",
+        focus,
+        kind: "scratch",
+        perform,
+      });
+    });
+
+    act(() => {
+      expect(controllerRef.current?.discardAndMove()).toBe(true);
+      expect(perform).toHaveBeenCalledOnce();
+      expect(focus).not.toHaveBeenCalled();
+    });
+
+    expect(controllerRef.current?.pendingDestination).toBeNull();
+    expect(focus).toHaveBeenCalledOnce();
+    expect(focusCommitStates).toEqual([{ inert: false, sheetPresent: false }]);
+  });
+
   it("continues writing with the intact draft and its logical focus intent", () => {
     const perform = vi.fn();
+    const destinationFocus = vi.fn();
     const clearDraft = vi.fn();
     const focusDraft = vi.fn();
     const { result } = renderDeparture();
@@ -110,6 +178,7 @@ describe("useTriageDeparture", () => {
       result.current.departure.setAddDraft("Continue here");
       result.current.departure.requestDeparture({
         id: "scratch-2",
+        focus: destinationFocus,
         kind: "scratch",
         perform,
       });
@@ -118,9 +187,102 @@ describe("useTriageDeparture", () => {
 
     expect(clearDraft).not.toHaveBeenCalled();
     expect(perform).not.toHaveBeenCalled();
+    expect(destinationFocus).not.toHaveBeenCalled();
     expect(focusDraft).toHaveBeenCalledOnce();
     expect(result.current.departure.hasAddDraft()).toBe(true);
     expect(result.current.departure.pendingDestination).toBeNull();
+  });
+
+  it("does not retain destination focus after Continue for a later departure", () => {
+    const staleFocus = vi.fn();
+    const laterFocus = vi.fn();
+    const { result } = renderDeparture();
+
+    act(() => {
+      result.current.departure.setAddDraft("First draft");
+      result.current.departure.requestDeparture({
+        id: "scratch-1",
+        focus: staleFocus,
+        kind: "scratch",
+        perform: vi.fn(),
+      });
+      expect(result.current.departure.continueWriting()).toBe(true);
+    });
+
+    act(() => {
+      result.current.departure.requestDeparture({
+        id: "scratch-2",
+        focus: laterFocus,
+        kind: "scratch",
+        perform: vi.fn(),
+      });
+    });
+
+    act(() => {
+      expect(result.current.departure.discardAndMove()).toBe(true);
+      expect(laterFocus).not.toHaveBeenCalled();
+    });
+
+    expect(staleFocus).not.toHaveBeenCalled();
+    expect(laterFocus).toHaveBeenCalledOnce();
+  });
+
+  it("does not create a focus intent when Discard is blocked or has no pending destination", () => {
+    const perform = vi.fn();
+    const focus = vi.fn();
+    const { result } = renderDeparture();
+
+    act(() => {
+      result.current.departure.setAddDraft("Locked draft");
+      result.current.departure.requestDeparture({
+        id: "/calendar/weekly",
+        focus,
+        kind: "route",
+        perform,
+      });
+      expect(result.current.operationLock.acquire("edit", "edit-1")).toBe(true);
+      expect(result.current.departure.discardAndMove()).toBe(false);
+    });
+
+    expect(perform).not.toHaveBeenCalled();
+    expect(focus).not.toHaveBeenCalled();
+
+    act(() => {
+      expect(result.current.operationLock.release("edit-1", "not_applied")).toBe(true);
+      expect(result.current.departure.discardAndMove()).toBe(true);
+      expect(perform).toHaveBeenCalledOnce();
+      expect(focus).not.toHaveBeenCalled();
+    });
+
+    expect(focus).toHaveBeenCalledOnce();
+
+    act(() => {
+      expect(result.current.departure.discardAndMove()).toBe(false);
+    });
+    expect(focus).toHaveBeenCalledOnce();
+  });
+
+  it("drops destination focus when the Discard mutation fails", () => {
+    const focus = vi.fn();
+    const mutationError = new Error("destination failed");
+    const { result } = renderDeparture();
+
+    act(() => {
+      result.current.departure.setAddDraft("Failed departure");
+      result.current.departure.requestDeparture({
+        id: "/calendar/weekly",
+        focus,
+        kind: "route",
+        perform: () => {
+          throw mutationError;
+        },
+      });
+    });
+
+    expect(() => {
+      act(() => result.current.departure.discardAndMove());
+    }).toThrow(mutationError);
+    expect(focus).not.toHaveBeenCalled();
   });
 
   it.each(TRIAGE_OPERATION_KINDS)(

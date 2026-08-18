@@ -1,4 +1,6 @@
 import "@testing-library/jest-dom/vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { useEffect } from "react";
 import {
   act,
@@ -82,6 +84,66 @@ const getDataStoreMock = vi.hoisted(() => vi.fn());
 const archiveBitMock = vi.hoisted(() => vi.fn());
 const useInboxMock = vi.hoisted(() => vi.fn());
 const currentTime = new Date(2026, 5, 17, 12, 0, 0).getTime();
+const globalsCss = readFileSync(
+  join(process.cwd(), "src/app/globals.css"),
+  "utf8",
+);
+
+function getCssBlock(selector: string) {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = globalsCss.match(
+    new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`, "s"),
+  );
+  expect(match, `missing CSS block for ${selector}`).not.toBeNull();
+  return match?.[1] ?? "";
+}
+
+function getHslToken(block: string, token: string) {
+  const match = block.match(
+    new RegExp(`--${token}:\\s*([\\d.]+)\\s+([\\d.]+)%\\s+([\\d.]+)%`),
+  );
+  expect(match, `missing --${token}`).not.toBeNull();
+  return [Number(match?.[1]), Number(match?.[2]), Number(match?.[3])] as const;
+}
+
+function hslToRgb([hue, saturation, lightness]: readonly number[]) {
+  const saturationUnit = saturation / 100;
+  const lightnessUnit = lightness / 100;
+  const chroma = (1 - Math.abs(2 * lightnessUnit - 1)) * saturationUnit;
+  const segment = ((hue % 360) + 360) % 360 / 60;
+  const secondary = chroma * (1 - Math.abs((segment % 2) - 1));
+  const [red, green, blue] =
+    segment < 1
+      ? [chroma, secondary, 0]
+      : segment < 2
+        ? [secondary, chroma, 0]
+        : segment < 3
+          ? [0, chroma, secondary]
+          : segment < 4
+            ? [0, secondary, chroma]
+            : segment < 5
+              ? [secondary, 0, chroma]
+              : [chroma, 0, secondary];
+  const match = lightnessUnit - chroma / 2;
+  return [red + match, green + match, blue + match];
+}
+
+function contrastRatio(first: readonly number[], second: readonly number[]) {
+  const luminance = (hsl: readonly number[]) => {
+    const [red, green, blue] = hslToRgb(hsl).map((channel) =>
+      channel <= 0.04045
+        ? channel / 12.92
+        : ((channel + 0.055) / 1.055) ** 2.4,
+    );
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+  };
+  const firstLuminance = luminance(first);
+  const secondLuminance = luminance(second);
+  return (
+    (Math.max(firstLuminance, secondLuminance) + 0.05) /
+    (Math.min(firstLuminance, secondLuminance) + 0.05)
+  );
+}
 
 vi.mock("@/hooks/use-scratch-breakdowns", () => ({
   useScratchBreakdowns: useScratchBreakdownsMock,
@@ -380,6 +442,68 @@ describe("BreakdownPanel", () => {
       "inert",
     );
     expect(addRow).toHaveAttribute("inert");
+  });
+
+  it("keeps every DP-VQ03 normal-text role at 4.5:1 across all theme surfaces and interaction states", () => {
+    const themeSelectors = [
+      ["griddo-light", ":root"],
+      ["griddo-dark", ".dark"],
+      ["tiny-desk-light", ':root[data-color-theme="tiny-desk"]'],
+      ["tiny-desk-dark", '.dark[data-color-theme="tiny-desk"]'],
+      ["neumorphism-light", ':root[data-color-theme="neumorphism"]'],
+      ["neumorphism-dark", '.dark[data-color-theme="neumorphism"]'],
+      ["claymorphism-light", ':root[data-color-theme="claymorphism"]'],
+      ["claymorphism-dark", '.dark[data-color-theme="claymorphism"]'],
+      ["origami-light", ':root[data-color-theme="origami"]'],
+      ["origami-dark", '.dark[data-color-theme="origami"]'],
+      ["terminal-light", ':root[data-color-theme="terminal"]'],
+      ["terminal-dark", '.dark[data-color-theme="terminal"]'],
+      ["retro-mac-light", ':root[data-color-theme="retro-mac"]'],
+      ["retro-mac-dark", '.dark[data-color-theme="retro-mac"]'],
+      ["graphite-light", ':root[data-color-theme="graphite"]'],
+      ["graphite-dark", '.dark[data-color-theme="graphite"]'],
+    ] as const;
+
+    for (const [name, selector] of themeSelectors) {
+      const theme = getCssBlock(selector);
+      const background = getHslToken(theme, "background");
+      const card = getHslToken(theme, "card");
+      const foreground = getHslToken(theme, "foreground");
+
+      expect(
+        contrastRatio(foreground, card),
+        `${name} foreground/card`,
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrastRatio(foreground, background),
+        `${name} foreground/background`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+
+    const readableCopy = getCssBlock(
+      `.breakdown-departure-sheet__eyebrow,
+.breakdown-departure-sheet__description`,
+    );
+    expect(readableCopy).toContain("color: hsl(var(--foreground));");
+
+    const continueAction = getCssBlock(
+      `[data-triage-role="breakdown-departure-continue"],
+[data-triage-role="breakdown-departure-continue"]:hover,
+[data-triage-role="breakdown-departure-continue"]:focus-visible,
+[data-triage-role="breakdown-departure-continue"]:active`,
+    );
+    expect(continueAction).toContain(
+      "background-color: hsl(var(--foreground));",
+    );
+    expect(continueAction).toContain("color: hsl(var(--background));");
+
+    const discardAction = getCssBlock(
+      `.breakdown-departure-sheet__discard,
+.breakdown-departure-sheet__discard:hover,
+.breakdown-departure-sheet__discard:focus-visible,
+.breakdown-departure-sheet__discard:active`,
+    );
+    expect(discardAction).toContain("color: hsl(var(--foreground));");
   });
 
   it("orders the default Continue action before destructive Discard and calls only the selected transition", () => {

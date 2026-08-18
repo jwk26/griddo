@@ -1032,6 +1032,11 @@
   margin-block-start: 0.25rem;
 }
 
+.breakdown-departure-sheet__eyebrow,
+.breakdown-departure-sheet__description {
+  color: hsl(var(--foreground));
+}
+
 .breakdown-departure-sheet__actions {
   align-items: center;
   display: flex;
@@ -1039,8 +1044,36 @@
   margin-block-start: 0.625rem;
 }
 
+[data-triage-role="breakdown-departure-continue"],
+[data-triage-role="breakdown-departure-continue"]:hover,
+[data-triage-role="breakdown-departure-continue"]:focus-visible,
+[data-triage-role="breakdown-departure-continue"]:active {
+  background-color: hsl(var(--foreground));
+  color: hsl(var(--background));
+}
+
+.breakdown-departure-sheet__discard,
+.breakdown-departure-sheet__discard:hover,
+.breakdown-departure-sheet__discard:focus-visible,
+.breakdown-departure-sheet__discard:active {
+  color: hsl(var(--foreground));
+}
+
 .breakdown-departure-sheet__discard {
-  color: hsl(var(--destructive));
+  background-color: transparent;
+  box-shadow: inset 3px 0 0 hsl(var(--destructive));
+}
+
+.breakdown-departure-sheet__discard:hover,
+.breakdown-departure-sheet__discard:focus-visible,
+.breakdown-departure-sheet__discard:active {
+  background-color: hsl(var(--background));
+}
+
+[data-triage-role="breakdown-departure-continue"]:focus-visible,
+.breakdown-departure-sheet__discard:focus-visible {
+  outline: 2px solid hsl(var(--foreground));
+  outline-offset: 2px;
 }
 
 :root[data-color-theme="tiny-desk"] .breakdown-departure-sheet {

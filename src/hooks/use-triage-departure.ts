@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -133,6 +134,7 @@ export function useTriageDeparture(
   const addDraftOwnerRef = useRef<AddDraftOwner | null>(null);
   const pendingDestinationRef =
     useRef<TriageDepartureDestination | null>(null);
+  const pendingDestinationFocusRef = useRef<(() => void) | null>(null);
   const [pendingDestination, setPendingDestination] =
     useState<PendingTriageDestination | null>(null);
 
@@ -181,6 +183,7 @@ export function useTriageDeparture(
         return "performed";
       }
 
+      pendingDestinationFocusRef.current = null;
       pendingDestinationRef.current = destination;
       setPendingDestination({ id: destination.id, kind: destination.kind });
       return "decision-required";
@@ -191,6 +194,7 @@ export function useTriageDeparture(
   const continueWriting = useCallback(() => {
     if (pendingDestinationRef.current === null) return false;
 
+    pendingDestinationFocusRef.current = null;
     clearPendingDestination();
     addDraftOwnerRef.current?.focusDraft();
     return true;
@@ -200,13 +204,26 @@ export function useTriageDeparture(
     const destination = pendingDestinationRef.current;
     if (destination === null || operationLock.isLocked()) return false;
 
+    pendingDestinationFocusRef.current = destination.focus ?? null;
     clearPendingDestination();
     addDraftRef.current = "";
     addDraftOwnerRef.current?.clearDraft();
-    destination.perform();
-    destination.focus?.();
+    try {
+      destination.perform();
+    } catch (error) {
+      pendingDestinationFocusRef.current = null;
+      throw error;
+    }
     return true;
   }, [clearPendingDestination, operationLock]);
+
+  useLayoutEffect(() => {
+    if (pendingDestination !== null) return;
+
+    const focus = pendingDestinationFocusRef.current;
+    pendingDestinationFocusRef.current = null;
+    focus?.();
+  }, [pendingDestination]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
