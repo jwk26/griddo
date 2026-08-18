@@ -1519,7 +1519,7 @@ and no-queue/no-replay contracts do not change.
 
 **Commit contract:** existing DnD triage intent slice, source adapters/tests, and Task 142 evidence only; `feat(triage): define triage pointer sources`.
 
-### Task 143: [ ] Render `DP-VQ05` Add/Delete reliability states
+### Task 143: [x] Render `DP-VQ05` Add/Delete reliability states
 
 **Files and actions:** after `DP-VQ05`, modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate approved wording and render Add pending/failure/reconcile states plus Delete deleting/failure/check-again states over Task 136 authoritative operation identities, with exact timing/actions/focus/theme mappings. Add may expose Retry only from authoritative `not_applied` when the receipt specifies it. Delete failure or unknown keeps the row in place and exposes only Check again/reconciliation; Delete has no dedicated Retry action. Do not include Pool `VQ-06`.
 
