@@ -211,3 +211,20 @@ Task 138 targeted canonical repair:
 | Review limitation | None. The user explicitly authorized local Playwright/Chrome; the in-app Node REPL was not required. Latest Web Interface Guidelines were applied to the scoped surface. |
 | Acceptance | On 2026-08-18 the user explicitly accepted checkpoint `383ae7df45de9d60a276ff74db82be251d9b0a05` and approved this acceptance-only marker/ledger update; the existing successful focused/full gates and canonical 16 theme-mode browser evidence were reused without rerunning verification |
 | Next legal action | Stop at the clean Task 141 acceptance checkpoint; wait for a separately approved Task 142 run-task scope and do not start Task 142 |
+
+## Task 142 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `142` — define triage pointer sources and lifecycle snapshots in the existing DnD owner |
+| State | `In Progress`; implementation is not user-accepted and Task 142 remains `[ ]` |
+| Approved scope | The committed canonical Task 142 contract plus the explicit 2026-08-18 Task 142-only work order: modify only `src/hooks/use-dnd.ts`, `src/hooks/use-triage-dnd.test.ts`, `src/components/triage/breakdown-panel.tsx` and test, `src/components/triage/staging-zone.tsx` and test, `src/components/triage/triage-drag-token.tsx` and test, and Task 142 verification evidence/ledger records |
+| Kickoff authority | The user supplied an approved Task 142 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; pinned candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned receipt-less `approval_required` with `contract_ready=true` as compatibility evidence only |
+| Start base / entrypoint / recovery anchor | `310b575738710178151423b6df11dc34611bdb1e`; exact entrypoint `src` tree `a4db699808f6c63018fe608ec2d6d88846cd0957` |
+| Dependencies | Tasks 131–133 are accepted and marked `[x]`; Task 141 is accepted at the approved entrypoint |
+| Behavior | Preserve general Grid/Calendar DnD while the existing `useTriageDnd` owner uses Mouse `8px` and Touch `250ms`/`5px`, captures one stable source/candidate/version/type activation snapshot, keeps Breakdown grip-only and staged whole-root activation, distinguishes Stage/Unstage/Placement intent, keeps the compact pointer-centered token, and cancels mutation after Escape or remote invalidation |
+| Excluded | A second triage DnD hook owner; Task 143 reliability UI; Task 145 Stage/Unstage command adapters; Task 149 auto-scroll; Task 152 Placement execution; new copy/styles; unrelated behavior; publication/integration/phase-close/worktree cleanup |
+| Issues / deviations | None |
+| Canonical impact | `None` — Task 142 executes the already reflected pointer-source and lifecycle-snapshot contract without changing product/design/policy authority |
+| Verification target | Focused existing DnD/Breakdown/Staging/token tests; adapter `diff-check`, `typecheck`, `test`, `lint`, and `build`; approved local Playwright/system Chrome canonical-route mouse/touch activation, invalidation, Escape, and overlay-alignment evidence in `docs/verification/inbox-triage/task-142.md` |
+| Next legal action | Write a failing focused test, implement only Task 142, commit implementation/evidence, then stop at a clean awaiting-user-acceptance checkpoint with Tasks 142–143 still `[ ]` |
