@@ -1,6 +1,6 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, fireEvent, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useTriageDnd } from "./use-dnd";
+import { invalidateTriageDragSource, useTriageDnd } from "./use-dnd";
 
 const addStagedCandidateMock = vi.hoisted(() => vi.fn());
 const removeStagedCandidateMock = vi.hoisted(() => vi.fn());
@@ -10,10 +10,13 @@ const createNodeMock = vi.hoisted(() => vi.fn());
 const createBitMock = vi.hoisted(() => vi.fn());
 const markScratchBreakdownConsumedMock = vi.hoisted(() => vi.fn());
 const findNearestEmptyCellMock = vi.hoisted(() => vi.fn());
+const useSensorMock = vi.hoisted(() =>
+  vi.fn((sensor: unknown, options: unknown) => ({ sensor, options })),
+);
 
 vi.mock("@dnd-kit/core", () => ({
   useSensors: (...sensors: unknown[]) => sensors,
-  useSensor: () => ({}),
+  useSensor: useSensorMock,
   MouseSensor: class {},
   TouchSensor: class {},
 }));
@@ -48,18 +51,84 @@ vi.mock("@/lib/utils/breadcrumb-zone", () => ({
 type DragEndEvent = Parameters<
   ReturnType<typeof useTriageDnd>["handleDragEnd"]
 >[0];
+type TriageDndController = ReturnType<typeof useTriageDnd>;
 
 function makeDragEndEvent(
   dragData: unknown,
   dropData: unknown | null,
 ): DragEndEvent {
+  const normalizedDragData =
+    typeof dragData === "object" &&
+    dragData !== null &&
+    "kind" in dragData &&
+    (dragData.kind === "triage-breakdown" ||
+      dragData.kind === "triage-staged-node" ||
+      dragData.kind === "triage-staged-bit")
+      ? {
+          scratchId: "scratch-1",
+          sourceBreakdownId:
+            "sourceBreakdownId" in dragData
+              ? dragData.sourceBreakdownId
+              : "id" in dragData
+                ? dragData.id
+                : "row-1",
+          sourceVersion: 1,
+          sourceLifecycle: "active",
+          ...(dragData.kind === "triage-breakdown"
+            ? {}
+            : {
+                candidateVersion: 1,
+                candidateLifecycle: "staged",
+                resultType:
+                  dragData.kind === "triage-staged-node" ? "node" : "bit",
+              }),
+          ...dragData,
+        }
+      : dragData;
   return {
-    active: { id: "test-id", data: { current: dragData } },
+    active: { id: "test-id", data: { current: normalizedDragData } },
     over:
       dropData !== null
         ? { id: "test-drop", data: { current: dropData } }
         : null,
   } as DragEndEvent;
+}
+
+function completeDrag(
+  controller: TriageDndController,
+  event: DragEndEvent,
+): ReturnType<TriageDndController["handleDragEnd"]> {
+  controller.handleDragStart(event);
+  return controller.handleDragEnd(event);
+}
+
+function makeBreakdownDragData(overrides: Record<string, unknown> = {}) {
+  return {
+    kind: "triage-breakdown",
+    id: "row-1",
+    label: "My note",
+    scratchId: "scratch-1",
+    sourceBreakdownId: "row-1",
+    sourceVersion: 1,
+    sourceLifecycle: "active",
+    ...overrides,
+  };
+}
+
+function makeStagedDragData(overrides: Record<string, unknown> = {}) {
+  return {
+    kind: "triage-staged-node",
+    id: "candidate-1",
+    label: "Project",
+    scratchId: "scratch-1",
+    sourceBreakdownId: "breakdown-1",
+    sourceVersion: 3,
+    sourceLifecycle: "active",
+    candidateVersion: 2,
+    candidateLifecycle: "staged",
+    resultType: "node",
+    ...overrides,
+  };
 }
 
 beforeEach(() => {
@@ -74,12 +143,186 @@ beforeEach(() => {
   findNearestEmptyCellMock.mockReturnValue({ x: 0, y: 0 });
 });
 
+describe("useTriageDnd — pointer activation lifecycle", () => {
+  it("uses only the exact Mouse and Touch activation constraints", () => {
+    renderHook(() =>
+      useTriageDnd("scratch-1", {
+        addStagedCandidate: addStagedCandidateMock,
+        removeStagedCandidate: removeStagedCandidateMock,
+      }),
+    );
+
+    expect(useSensorMock).toHaveBeenCalledTimes(2);
+    expect(useSensorMock.mock.calls[0]?.[1]).toEqual({
+      activationConstraint: { distance: 8 },
+    });
+    expect(useSensorMock.mock.calls[1]?.[1]).toEqual({
+      activationConstraint: { delay: 250, tolerance: 5 },
+    });
+  });
+
+  it("keeps the activation snapshot stable when draggable data changes", () => {
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", {
+        addStagedCandidate: addStagedCandidateMock,
+        removeStagedCandidate: removeStagedCandidateMock,
+      }),
+    );
+    const dragData = makeBreakdownDragData();
+    const event = makeDragEndEvent(dragData, null);
+
+    act(() => {
+      result.current.handleDragStart(event);
+      dragData.label = "Remote replacement";
+      dragData.sourceVersion = 2;
+    });
+
+    expect(result.current.activeDragItem).toEqual(
+      expect.objectContaining({ label: "My note", sourceVersion: 1 }),
+    );
+  });
+
+  it("cancels a Breakdown drop when remote authority changes after activation", async () => {
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", {
+        addStagedCandidate: addStagedCandidateMock,
+        removeStagedCandidate: removeStagedCandidateMock,
+      }),
+    );
+
+    act(() => {
+      result.current.handleDragStart(
+        makeDragEndEvent(makeBreakdownDragData(), null),
+      );
+    });
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          makeBreakdownDragData({ label: "Remote edit", sourceVersion: 2 }),
+          { kind: "triage-node-zone-drop" },
+        ),
+      );
+    });
+
+    expect(addStagedCandidateMock).not.toHaveBeenCalled();
+    expect(getDataStoreMock).not.toHaveBeenCalled();
+    expect(result.current.activeDragItem).toBeNull();
+  });
+
+  it("cancels a staged drop when candidate authority changes after activation", async () => {
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", {
+        addStagedCandidate: addStagedCandidateMock,
+        removeStagedCandidate: removeStagedCandidateMock,
+      }),
+    );
+
+    act(() => {
+      result.current.handleDragStart(
+        makeDragEndEvent(makeStagedDragData(), null),
+      );
+    });
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(
+          makeStagedDragData({ candidateVersion: 3 }),
+          { kind: "triage-remove-drop" },
+        ),
+      );
+    });
+
+    expect(removeStagedCandidateMock).not.toHaveBeenCalled();
+    expect(getDataStoreMock).not.toHaveBeenCalled();
+  });
+
+  it("cancels when the active source unmounts even if drag-end data stays stale", async () => {
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", {
+        addStagedCandidate: addStagedCandidateMock,
+        removeStagedCandidate: removeStagedCandidateMock,
+      }),
+    );
+    const dragData = makeStagedDragData();
+
+    act(() => {
+      result.current.handleDragStart(makeDragEndEvent(dragData, null));
+      invalidateTriageDragSource(dragData);
+    });
+
+    expect(result.current.activeDragItem).toEqual(
+      expect.objectContaining({ id: "candidate-1", candidateVersion: 2 }),
+    );
+
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(dragData, { kind: "triage-remove-drop" }),
+      );
+    });
+
+    expect(result.current.activeDragItem).toBeNull();
+    expect(removeStagedCandidateMock).not.toHaveBeenCalled();
+    expect(getDataStoreMock).not.toHaveBeenCalled();
+  });
+
+  it("does not retarget a drop from invalid activation data to valid release data", async () => {
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", {
+        addStagedCandidate: addStagedCandidateMock,
+        removeStagedCandidate: removeStagedCandidateMock,
+      }),
+    );
+
+    act(() => {
+      result.current.handleDragStart(
+        makeDragEndEvent(
+          makeBreakdownDragData({ scratchId: "scratch-2" }),
+          null,
+        ),
+      );
+    });
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(makeBreakdownDragData(), {
+          kind: "triage-node-zone-drop",
+        }),
+      );
+    });
+
+    expect(addStagedCandidateMock).not.toHaveBeenCalled();
+    expect(getDataStoreMock).not.toHaveBeenCalled();
+  });
+
+  it("cancels the active lifecycle on Escape and suppresses its later drop", async () => {
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", {
+        addStagedCandidate: addStagedCandidateMock,
+        removeStagedCandidate: removeStagedCandidateMock,
+      }),
+    );
+    const dragData = makeBreakdownDragData();
+
+    act(() => {
+      result.current.handleDragStart(makeDragEndEvent(dragData, null));
+      fireEvent.keyDown(document, { key: "Escape" });
+    });
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(dragData, { kind: "triage-node-zone-drop" }),
+      );
+    });
+
+    expect(result.current.activeDragItem).toBeNull();
+    expect(addStagedCandidateMock).not.toHaveBeenCalled();
+    expect(getDataStoreMock).not.toHaveBeenCalled();
+  });
+});
+
 describe("useTriageDnd — drop matrix", () => {
   it("creates a Node candidate when a breakdown row drops on the Node Zone", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     act(() => {
-      result.current.handleDragEnd(
+      completeDrag(result.current,
         makeDragEndEvent(
           { kind: "triage-breakdown", id: "row-1", label: "My note" },
           { kind: "triage-node-zone-drop" },
@@ -102,7 +345,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     act(() => {
-      result.current.handleDragEnd(
+      completeDrag(result.current,
         makeDragEndEvent(
           { kind: "triage-breakdown", id: "row-2", label: "Call Sam" },
           { kind: "triage-bit-zone-drop" },
@@ -125,7 +368,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     act(() => {
-      result.current.handleDragEnd(
+      completeDrag(result.current,
         makeDragEndEvent(
           { kind: "triage-staged-node", id: "cand-1", label: "Project" },
           { kind: "triage-bit-zone-drop" },
@@ -140,7 +383,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     act(() => {
-      result.current.handleDragEnd(
+      completeDrag(result.current,
         makeDragEndEvent(
           { kind: "triage-staged-bit", id: "cand-2", label: "Todo" },
           { kind: "triage-node-zone-drop" },
@@ -155,7 +398,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd(null, { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     act(() => {
-      result.current.handleDragEnd(
+      completeDrag(result.current,
         makeDragEndEvent(
           { kind: "triage-breakdown", id: "row-1", label: "My note" },
           { kind: "triage-node-zone-drop" },
@@ -170,7 +413,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     act(() => {
-      result.current.handleDragEnd(
+      completeDrag(result.current,
         makeDragEndEvent(
           { kind: "triage-breakdown", id: "row-1", label: "My note" },
           null,
@@ -185,7 +428,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           {
             kind: "triage-staged-node",
@@ -224,7 +467,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           {
             kind: "triage-staged-node",
@@ -258,7 +501,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           {
             kind: "triage-breakdown",
@@ -297,7 +540,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           {
             kind: "triage-staged-node",
@@ -346,7 +589,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           {
             kind: "triage-breakdown",
@@ -391,7 +634,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           {
             kind: "triage-breakdown",
@@ -427,7 +670,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           {
             kind: "triage-staged-bit",
@@ -459,7 +702,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           {
             kind: "triage-staged-bit",
@@ -487,7 +730,7 @@ describe("useTriageDnd — drop matrix", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           {
             kind: "triage-staged-bit",
@@ -517,7 +760,7 @@ describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
     const { result } = renderHook(() => useTriageDnd(null, { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           { kind: "triage-breakdown", id: "row-1", label: "My idea" },
           {
@@ -539,7 +782,7 @@ describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           { kind: "triage-breakdown", id: "row-1", label: "My idea" },
           {
@@ -573,7 +816,7 @@ describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           { kind: "triage-breakdown", id: "row-1", label: "My idea" },
           {
@@ -603,7 +846,7 @@ describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           { kind: "triage-breakdown", id: "row-1", label: "My idea" },
           {
@@ -633,7 +876,7 @@ describe("useTriageDnd — T85 remove-from-staging drop", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           {
             kind: "triage-staged-node",
@@ -661,7 +904,7 @@ describe("useTriageDnd — T85 remove-from-staging drop", () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           { kind: "triage-breakdown", id: "breakdown-1", label: "Project" },
           { kind: "triage-remove-drop" },
@@ -682,7 +925,7 @@ describe("useTriageDnd — T85 remove-from-staging drop", () => {
     const { result } = renderHook(() => useTriageDnd(null, { addStagedCandidate: addStagedCandidateMock, removeStagedCandidate: removeStagedCandidateMock }));
 
     await act(async () => {
-      await result.current.handleDragEnd(
+      await completeDrag(result.current,
         makeDragEndEvent(
           {
             kind: "triage-staged-node",

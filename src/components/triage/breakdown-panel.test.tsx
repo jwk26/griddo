@@ -2259,6 +2259,8 @@ describe("BreakdownPanel", () => {
     expect(gripButton).toHaveClass("w-7");
     expect(gripButton).toHaveClass("rounded-md");
     expect(gripButton).toHaveClass("focus-visible:ring-2");
+    expect(gripButton).toHaveAttribute("data-triage-drag-source", "breakdown-grip");
+    expect(gripButton).toHaveAttribute("data-source-version", "1");
 
     const rowContainer = gripButton.closest(".group");
     expect(rowContainer).not.toHaveAttribute("aria-label", "Drag breakdown");

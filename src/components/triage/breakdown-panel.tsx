@@ -24,6 +24,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { invalidateTriageDragSource } from "@/hooks/use-dnd";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -516,9 +517,30 @@ function BreakdownRow({
     setNodeRef,
   } = useDraggable({
     id: `triage-breakdown:${row.id}`,
-    data: { kind: "triage-breakdown", id: row.id, label: row.content },
+    data: {
+      kind: "triage-breakdown",
+      id: row.id,
+      label: row.content,
+      scratchId: row.scratchBitId,
+      sourceBreakdownId: row.id,
+      sourceVersion: row.version,
+      sourceLifecycle: "active",
+    },
     disabled: isStaged,
   });
+  useEffect(
+    () => () =>
+      invalidateTriageDragSource({
+        kind: "triage-breakdown",
+        id: row.id,
+        label: row.content,
+        scratchId: row.scratchBitId,
+        sourceBreakdownId: row.id,
+        sourceVersion: row.version,
+        sourceLifecycle: "active",
+      }),
+    [isStaged, row.content, row.id, row.scratchBitId, row.version],
+  );
   const isMuted = isStaged || isDragging;
   const gripColorClass =
     isStaged && !isDragging
@@ -559,6 +581,8 @@ function BreakdownRow({
         <button
           ref={setActivatorNodeRef}
           aria-label="Drag breakdown"
+          data-source-version={row.version}
+          data-triage-drag-source="breakdown-grip"
           disabled={isStaged || isOperationLocked}
           className={cn(
             "flex h-7 w-7 flex-shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-muted-foreground/60 hover:border-border hover:bg-muted hover:text-foreground active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",

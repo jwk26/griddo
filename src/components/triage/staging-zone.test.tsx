@@ -183,8 +183,24 @@ describe("StagingZone", () => {
     );
     expect(root.querySelector("button, [data-dnd-handle]")).toBeNull();
     expect(root).not.toHaveAttribute("onclick");
+    expect(root).toHaveAttribute("data-triage-drag-source", "staged-root");
+    expect(root).toHaveAttribute("data-candidate-version", "1");
+    expect(root).toHaveAttribute("data-source-version", "1");
     root.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
     expect(onPointerDown).toHaveBeenCalledOnce();
+
+    expect(useDraggableMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          candidateLifecycle: "staged",
+          candidateVersion: 1,
+          resultType: "node",
+          scratchId: "scratch-1",
+          sourceLifecycle: "active",
+          sourceVersion: 1,
+        }),
+      }),
+    );
   });
 
   it("keeps overflow candidates in an independently scrollable hidden-scroll well", () => {

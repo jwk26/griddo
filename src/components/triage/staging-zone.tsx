@@ -1,8 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Folder } from "lucide-react";
-import type { TriageDragItem } from "@/hooks/use-dnd";
+import {
+  invalidateTriageDragSource,
+  type TriageDragItem,
+} from "@/hooks/use-dnd";
 import {
   useStagedCandidates,
   type StagedCandidateProjection,
@@ -189,9 +193,40 @@ function NodeCandidateCard({
       kind: "triage-staged-node",
       id: candidate.id,
       label: candidate.content,
+      scratchId: candidate.scratchBitId,
       sourceBreakdownId: candidate.sourceBreakdownId,
+      sourceVersion: candidate.source.version,
+      sourceLifecycle: "active",
+      candidateVersion: candidate.version,
+      candidateLifecycle: candidate.lifecycle,
+      resultType: candidate.resultType,
     },
   });
+  useEffect(
+    () => () =>
+      invalidateTriageDragSource({
+        kind: "triage-staged-node",
+        id: candidate.id,
+        label: candidate.content,
+        scratchId: candidate.scratchBitId,
+        sourceBreakdownId: candidate.sourceBreakdownId,
+        sourceVersion: candidate.source.version,
+        sourceLifecycle: "active",
+        candidateVersion: candidate.version,
+        candidateLifecycle: candidate.lifecycle,
+        resultType: candidate.resultType,
+      }),
+    [
+      candidate.content,
+      candidate.id,
+      candidate.lifecycle,
+      candidate.resultType,
+      candidate.scratchBitId,
+      candidate.source.version,
+      candidate.sourceBreakdownId,
+      candidate.version,
+    ],
+  );
 
   return (
     <div
@@ -201,7 +236,10 @@ function NodeCandidateCard({
         "mx-auto aspect-square h-auto w-full max-w-[80px] touch-none cursor-grab select-none overflow-hidden rounded-lg border border-border/80 bg-background transition-[background-color,border-color,color,opacity] active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
         isDragging && "opacity-30 border-dashed border-muted bg-transparent",
       )}
+      data-candidate-version={candidate.version}
+      data-source-version={candidate.source.version}
       data-testid="node-candidate-card"
+      data-triage-drag-source="staged-root"
       {...attributes}
       {...listeners}
     >
@@ -237,9 +275,40 @@ function BitCandidateRow({
       kind: "triage-staged-bit",
       id: candidate.id,
       label: candidate.content,
+      scratchId: candidate.scratchBitId,
       sourceBreakdownId: candidate.sourceBreakdownId,
+      sourceVersion: candidate.source.version,
+      sourceLifecycle: "active",
+      candidateVersion: candidate.version,
+      candidateLifecycle: candidate.lifecycle,
+      resultType: candidate.resultType,
     },
   });
+  useEffect(
+    () => () =>
+      invalidateTriageDragSource({
+        kind: "triage-staged-bit",
+        id: candidate.id,
+        label: candidate.content,
+        scratchId: candidate.scratchBitId,
+        sourceBreakdownId: candidate.sourceBreakdownId,
+        sourceVersion: candidate.source.version,
+        sourceLifecycle: "active",
+        candidateVersion: candidate.version,
+        candidateLifecycle: candidate.lifecycle,
+        resultType: candidate.resultType,
+      }),
+    [
+      candidate.content,
+      candidate.id,
+      candidate.lifecycle,
+      candidate.resultType,
+      candidate.scratchBitId,
+      candidate.source.version,
+      candidate.sourceBreakdownId,
+      candidate.version,
+    ],
+  );
 
   return (
     <div
@@ -249,7 +318,10 @@ function BitCandidateRow({
         "flex min-h-[2rem] w-full touch-none cursor-grab select-none items-center rounded-lg border border-border/60 bg-background px-3 py-1.5 transition-[background-color,border-color,color,opacity] active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
         isDragging && "opacity-30 border-dashed border-muted bg-transparent",
       )}
+      data-candidate-version={candidate.version}
+      data-source-version={candidate.source.version}
       data-testid="bit-candidate-row"
+      data-triage-drag-source="staged-root"
       {...attributes}
       {...listeners}
     >
