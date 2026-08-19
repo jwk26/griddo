@@ -1304,8 +1304,8 @@
   .pool-status-line,
   .pool-status-action,
   .pool-activity-marker {
-    animation: none;
-    transition: none;
+    animation: none !important;
+    transition: none !important;
   }
 }
 
