@@ -1535,7 +1535,7 @@ and no-queue/no-replay contracts do not change.
 
 **Commit contract:** DP-VQ05 copy/realization, tests, styles, and Task 143 evidence only; `feat(triage): render breakdown reliability states`.
 
-### Task 144: [ ] Render `DP-VQ06-POOL` Pool statuses
+### Task 144: [x] Render `DP-VQ06-POOL` Pool statuses
 
 **Files and actions:** after `DP-VQ06-POOL`, modify `src/hooks/use-inbox.ts` and `.test.tsx` so the existing authoritative repository-snapshot owner exposes typed Pool lifecycle/provenance projection that excludes the initial snapshot and current-session local `createScratchBit` results while distinguishing remote arrival, external archive, external delete, and restore. Modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate Pool-only approved wording and render hidden-selection, remote/lifecycle, count/indicator, action, focus, dismissal, and all-theme states without changing selection or borrowing Staging/Explorer presentation. Keep mounted Inbox-page activity aggregation and UI state in `ScratchPool`; do not change DataStore APIs, IndexedDB, schema, persistence, or timestamps, query repository lifecycle from the component, or add another production owner.
 
