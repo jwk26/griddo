@@ -1,4 +1,6 @@
 import "@testing-library/jest-dom/vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   cleanup,
   fireEvent,
@@ -11,6 +13,11 @@ import type { Bit } from "@/types";
 import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
 import { useTriageStore } from "@/stores/triage-store";
 import { ScratchPool } from "./scratch-pool";
+
+const globalsCss = readFileSync(
+  join(process.cwd(), "src/app/globals.css"),
+  "utf8",
+);
 
 const useInboxMock = vi.hoisted(() => vi.fn());
 const departureState = vi.hoisted(() => ({
@@ -115,6 +122,17 @@ afterEach(() => {
 });
 
 describe("ScratchPool", () => {
+  it("places the static DP-VQ06-POOL reduced-motion override in the global base layer", () => {
+    const baseLayer = globalsCss.slice(
+      globalsCss.indexOf("@layer base {"),
+      globalsCss.indexOf("@layer components {"),
+    );
+
+    expect(baseLayer).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.pool-status-band,[\s\S]*\.pool-status-line,[\s\S]*\.pool-status-action,[\s\S]*\.pool-activity-marker[\s\S]*animation: none !important;[\s\S]*transition: none !important;/,
+    );
+  });
+
   it("renders active Scratch rows newest-first with relative-time labels", () => {
     useInboxMock.mockReturnValue({
       activeScratchBits: [

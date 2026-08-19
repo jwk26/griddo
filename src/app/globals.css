@@ -304,6 +304,14 @@
       animation: none !important;
       transition: none !important;
     }
+
+    .pool-status-band,
+    .pool-status-line,
+    .pool-status-action,
+    .pool-activity-marker {
+      animation: none !important;
+      transition: none !important;
+    }
   }
 }
 
@@ -1297,16 +1305,6 @@
 :root[data-color-theme="graphite"] .pool-status-band {
   border-block-end-width: 2px;
   letter-spacing: 0.025em;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pool-status-band,
-  .pool-status-line,
-  .pool-status-action,
-  .pool-activity-marker {
-    animation: none !important;
-    transition: none !important;
-  }
 }
 
 .triage-shell [data-triage-role="internal-scroll-viewport"],
