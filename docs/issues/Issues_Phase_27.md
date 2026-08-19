@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–144 accepted; Task 145 in progress
+> State: Tasks 136–144 accepted; Task 145 implemented and awaiting acceptance
 
 ## Status Legend
 
@@ -279,12 +279,15 @@ Task 138 targeted canonical repair:
 | Field | Durable value |
 | --- | --- |
 | Task | `145` — connect Stage and Unstage interaction adapters |
-| State | `In Progress`; Task 145 and Task 146 remain `[ ]` |
+| State | `Implemented`; awaiting user acceptance; Task 145 and Task 146 remain `[ ]` |
 | Approved scope | The committed canonical Task 145 contract and the user's 2026-08-19 Task 145-only candidate-pinned work order: modify only the named Breakdown, Staging, Workspace, staged-candidate hook, existing DnD owner, their named tests, operation-lock tests, Task 145 verification evidence, and this ledger |
 | Kickoff authority | The user supplied an approved Task 145 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; pinned candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned receipt-less `approval_required` with `contract_ready=true` as compatibility evidence only |
 | Start base / recovery anchor | `cdc02433a049cf109e07010ccd309801de2961f0`; exact entrypoint `src` tree `0f7b18f359e9c433bc217136ed0f24bd66cb74a7` |
 | Dependencies | Tasks 121, 131–133, 136, 139, and 142 are accepted and marked `[x]`; Task 144 is the accepted immediate predecessor; no known Task 145 blocker exists |
 | Scope lock | Headless current-snapshot Stage/Unstage dispatch, shared-lock lifecycle, complete blocked-intent matrix, transient Unstage targets, confirmed order/focus restoration, focused tests, and evidence only; no Task 146 remote/orphan work, no `DP-VQ06-STAGING` Task 147 UI, no permanent Unstage button, no success toast, and no `P27-06` repair |
-| Issues / deviations | None at durable start |
+| Issues / deviations | The first full gate exposed one existing `grid-runtime` whole-module mock compatibility failure after a new named DnD export was introduced. The implementation kept collision ownership inside the existing `useTriageDnd` controller instead; no external test or out-of-scope owner changed. No remaining Task 145 issue or deviation. |
 | Canonical impact | `None` — implementation-local execution of the already approved Task 145 contract |
-| Next legal action | Add failing focused tests before production changes, implement only Task 145, run the declared gates and bounded review loop, commit evidence, and stop at a clean awaiting-acceptance checkpoint with Task 145 and Task 146 still `[ ]` |
+| Implementation | `21d87bd9e02633e309cda0e989d0d87cfb4aaba3` — `feat(triage): connect stage and unstage flows`; final `src` tree `923050fab27a61d186c0e45c8f3026f3c29f3b5a` |
+| Verification | `docs/verification/inbox-triage/task-145.md`; focused 7 files / 255 tests, full 94 files / 940 tests, changed-file lint, full lint with 0 errors and 11 existing warnings, typecheck, production build, and diff-check passed; canonical local Chrome passed Stage, both transient Unstage targets, source/order focus restoration, prohibited-control absence, and zero console/page errors |
+| Review | Final contract/diff/browser review found no remaining Critical or Important Task 145 issue. Task 146 remote/orphan logic, Task 147 UI, permanent controls/toasts, unrelated canonical/product files, and `P27-06` remain untouched. |
+| Next legal action | Stop at the clean Task 145 awaiting-acceptance checkpoint; wait for explicit acceptance or rejection, keep Tasks 145–146 `[ ]`, and do not start Task 146. |
