@@ -47,7 +47,6 @@ import {
 } from "@/hooks/use-scratch-breakdowns";
 import {
   getTriageRemoveDropId,
-  triageCollisionDetection,
   type TriageDropData,
 } from "@/lib/grid-dnd";
 import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
@@ -656,16 +655,37 @@ function TriageWorkspaceContent({
   const [externalRemovalDrafts, setExternalRemovalDrafts] = useState<
     ExternalRemovalDraft[]
   >([]);
-  const { counts: stagedCandidateCounts } =
-    useStagedCandidates(selectedScratchId);
-  const addStagedCandidate = useTriageStore(
-    (state) => state.addStagedCandidate,
-  );
+  const stagedCandidates = useStagedCandidates(selectedScratchId);
+  const { counts: stagedCandidateCounts } = stagedCandidates;
   const removeStagedCandidate = useTriageStore(
     (state) => state.removeStagedCandidate,
   );
+  const focusUnstagedSource = useCallback((sourceBreakdownId: string) => {
+    const focusWhenReady = (remainingFrames: number) => {
+      const row = Array.from(
+        workspaceRef.current?.querySelectorAll<HTMLElement>(
+          "[data-breakdown-id]",
+        ) ?? [],
+      ).find(
+        (candidate) =>
+          candidate.dataset.breakdownId === sourceBreakdownId,
+      );
+      const grip = row?.querySelector<HTMLButtonElement>(
+        'button[aria-label="Drag breakdown"]',
+      );
+      if (grip !== undefined && grip !== null && !grip.disabled) {
+        grip.focus();
+        return;
+      }
+      if (remainingFrames > 0) {
+        requestAnimationFrame(() => focusWhenReady(remainingFrames - 1));
+      }
+    };
+    requestAnimationFrame(() => focusWhenReady(2));
+  }, []);
   const {
     activeDragItem,
+    collisionDetection,
     handleDragEnd,
     handleDragOver,
     handlePlacementCancel,
@@ -675,8 +695,13 @@ function TriageWorkspaceContent({
     pendingPlacement,
     sensors,
   } = useTriageDnd(selectedScratchId, {
-    addStagedCandidate,
+    focusUnstagedSource,
+    operationLock,
+    reconcileStageCandidate: stagedCandidates.reconcileStageCandidate,
+    reconcileUnstageCandidate: stagedCandidates.reconcileUnstageCandidate,
     removeStagedCandidate,
+    stageCandidate: stagedCandidates.stageCandidate,
+    unstageCandidate: stagedCandidates.unstageCandidate,
   });
 
   useLayoutEffect(() => {
@@ -871,7 +896,7 @@ function TriageWorkspaceContent({
       >
         <DndContext
           autoScroll={false}
-          collisionDetection={triageCollisionDetection}
+          collisionDetection={collisionDetection}
           sensors={sensors}
           onDragEnd={handleDragEnd}
           onDragOver={handleDragOver}
@@ -900,7 +925,11 @@ function TriageWorkspaceContent({
                 className="min-h-0 flex-1 overflow-hidden"
                 data-triage-role="internal-scroll-viewport"
               >
-                <BreakdownPanel key={selectedScratchId ?? "none"} />
+                <BreakdownPanel
+                  key={selectedScratchId ?? "none"}
+                  activeDragItem={activeDragItem}
+                  overTargetId={overTargetId}
+                />
               </div>
             </section>
 

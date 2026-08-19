@@ -400,6 +400,37 @@ afterEach(() => {
 });
 
 describe("BreakdownPanel", () => {
+  it("exposes a transient Breakdown drop-back target only for a staged drag", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    render(
+      <BreakdownPanel
+        activeDragItem={{
+          kind: "triage-staged-node",
+          id: "candidate-1",
+          label: "Return me",
+          scratchId: "scratch-1",
+          sourceBreakdownId: "row-1",
+          sourceVersion: 2,
+          sourceLifecycle: "active",
+          candidateVersion: 1,
+          candidateLifecycle: "staged",
+          resultType: "node",
+        }}
+        overTargetId="triage-remove-drop:breakdown"
+      />,
+    );
+
+    expect(
+      screen.getByRole("region", { name: "Return staged item to Breakdown" }),
+    ).toHaveAttribute("data-drop-active", "true");
+
+    cleanup();
+    render(<BreakdownPanel />);
+    expect(
+      screen.queryByRole("region", { name: "Return staged item to Breakdown" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("renders the empty state when no Scratch is selected", () => {
     render(<BreakdownPanel />);
 

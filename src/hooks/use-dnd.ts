@@ -5,8 +5,10 @@ import {
   KeyboardSensor,
   MouseSensor,
   TouchSensor,
+  pointerWithin,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
@@ -14,8 +16,17 @@ import {
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { toast } from "sonner";
 import { isCalendarDropData } from "@/lib/calendar-dnd";
-import { getDataStore } from "@/lib/db/datastore";
 import {
+  getDataStore,
+  type StageCandidateCommand,
+  type StageCandidateResult,
+  type UnstageCandidateCommand,
+  type UnstageCandidateResult,
+} from "@/lib/db/datastore";
+import {
+  getTriageBitZoneDropId,
+  getTriageNodeZoneDropId,
+  getTriageRemoveDropId,
   isGridDropData,
   isTriageDropData,
   type TriageDropData,
@@ -25,7 +36,8 @@ import {
   getStaticBlockedCells,
   isCellBlocked,
 } from "@/lib/utils/breadcrumb-zone";
-import type { StagedCandidate } from "@/stores/triage-store";
+import type { CandidateCommandOutcome } from "@/hooks/use-staged-candidates";
+import type { TriageOperationLock } from "@/hooks/use-triage-operation-lock";
 
 export type DragActiveItem = {
   id: string;
@@ -104,6 +116,19 @@ export type PendingPlacement = {
   isFull: boolean;
   isDirectBreakdown: boolean;
 } | null;
+
+const TRIAGE_BREAKDOWN_UNSTAGE_DROP_ID = "triage-remove-drop:breakdown";
+
+const triageInteractionCollisionDetection: CollisionDetection = (args) =>
+  pointerWithin(args).filter(
+    (candidate) =>
+      candidate.id === getTriageNodeZoneDropId() ||
+      candidate.id === getTriageBitZoneDropId() ||
+      candidate.id === getTriageRemoveDropId() ||
+      candidate.id === TRIAGE_BREAKDOWN_UNSTAGE_DROP_ID ||
+      (typeof candidate.id === "string" &&
+        candidate.id.startsWith("triage-hierarchy:")),
+  );
 
 type PendingNodeMove = {
   itemId: string;
@@ -283,14 +308,33 @@ export function classifyTriageDropIntent(
 export function useTriageDnd(
   selectedScratchId: string | null,
   {
-    addStagedCandidate,
+    focusUnstagedSource,
+    operationLock,
+    reconcileStageCandidate,
+    reconcileUnstageCandidate,
     removeStagedCandidate,
+    stageCandidate,
+    unstageCandidate,
   }: {
-    addStagedCandidate: (scratchId: string, candidate: StagedCandidate) => void;
+    focusUnstagedSource: (sourceBreakdownId: string) => void;
+    operationLock: TriageOperationLock;
+    reconcileStageCandidate: (
+      command: StageCandidateCommand,
+    ) => Promise<CandidateCommandOutcome<StageCandidateResult>>;
+    reconcileUnstageCandidate: (
+      command: UnstageCandidateCommand,
+    ) => Promise<CandidateCommandOutcome<UnstageCandidateResult>>;
     removeStagedCandidate: (scratchId: string, candidateId: string) => void;
+    stageCandidate: (
+      command: StageCandidateCommand,
+    ) => Promise<CandidateCommandOutcome<StageCandidateResult>>;
+    unstageCandidate: (
+      command: UnstageCandidateCommand,
+    ) => Promise<CandidateCommandOutcome<UnstageCandidateResult>>;
   },
 ): {
   sensors: ReturnType<typeof useSensors>;
+  collisionDetection: CollisionDetection;
   activeDragItem: TriageDragItem;
   handleDragStart: (event: DragStartEvent) => void;
   handleDragEnd: (event: DragEndEvent) => void;
@@ -322,10 +366,34 @@ export function useTriageDnd(
 
   const handleDragStart = (event: DragStartEvent) => {
     const snapshot = readTriageDragItem(event.active.data.current);
-    const isCurrentScratch = snapshot?.scratchId === selectedScratchId;
+    const isCurrentScratch =
+      !operationLock.isLocked() && snapshot?.scratchId === selectedScratchId;
     activationSnapshotRef.current = isCurrentScratch ? snapshot : null;
     dragCancelledRef.current = false;
     setActiveDragItem(isCurrentScratch ? snapshot : null);
+  };
+
+  const finishStage = async (command: StageCandidateCommand): Promise<void> => {
+    let outcome = await stageCandidate(command);
+    if ("outcome" in outcome) {
+      outcome = await reconcileStageCandidate(command);
+    }
+    if ("outcome" in outcome) return;
+    operationLock.release(command.operationId, outcome.status);
+  };
+
+  const finishUnstage = async (
+    command: UnstageCandidateCommand,
+  ): Promise<void> => {
+    let outcome = await unstageCandidate(command);
+    if ("outcome" in outcome) {
+      outcome = await reconcileUnstageCandidate(command);
+    }
+    if ("outcome" in outcome) return;
+    operationLock.release(command.operationId, outcome.status);
+    if (outcome.status === "applied" || outcome.status === "already_applied") {
+      focusUnstagedSource(command.sourceBreakdownId);
+    }
   };
 
   useEffect(() => {
@@ -394,12 +462,16 @@ export function useTriageDnd(
       selectedScratchId !== null &&
       intent.kind === "stage"
     ) {
-      addStagedCandidate(selectedScratchId, {
-        id: crypto.randomUUID(),
-        type: intent.resultType,
-        sourceBreakdownId: dragItem.id,
-        label: dragItem.label,
-      });
+      const command: StageCandidateCommand = {
+        operationId: crypto.randomUUID(),
+        candidateId: crypto.randomUUID(),
+        scratchBitId: selectedScratchId,
+        sourceBreakdownId: dragItem.sourceBreakdownId,
+        sourceExpectedVersion: dragItem.sourceVersion,
+        resultType: intent.resultType,
+      };
+      if (!operationLock.acquire("stage", command.operationId)) return;
+      await finishStage(command);
       return;
     }
 
@@ -440,7 +512,16 @@ export function useTriageDnd(
       selectedScratchId !== null &&
       intent.kind === "unstage"
     ) {
-      removeStagedCandidate(selectedScratchId, dragItem.id);
+      const stagedSource = intent.source;
+      const command: UnstageCandidateCommand = {
+        operationId: crypto.randomUUID(),
+        candidateId: stagedSource.id,
+        candidateExpectedVersion: stagedSource.candidateVersion,
+        sourceBreakdownId: stagedSource.sourceBreakdownId,
+        sourceExpectedVersion: stagedSource.sourceVersion,
+      };
+      if (!operationLock.acquire("unstage", command.operationId)) return;
+      await finishUnstage(command);
       return;
     }
 
@@ -588,6 +669,7 @@ export function useTriageDnd(
 
   return {
     sensors,
+    collisionDetection: triageInteractionCollisionDetection,
     activeDragItem,
     handleDragStart,
     handleDragEnd,

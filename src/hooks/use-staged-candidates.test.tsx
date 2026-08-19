@@ -333,14 +333,15 @@ describe("useStagedCandidates", () => {
   it("projects pending Stage separately, then preserves an unknown identity until reconciliation is terminal", async () => {
     const command = stageCommand();
     const pending = deferred<never>();
+    const reconciling = deferred<{
+      operationId: string;
+      status: "not_applied";
+      candidate: null;
+      source: ScratchBreakdown | undefined;
+      scratch: null;
+    }>();
     dataStore.stageCandidate.mockReturnValue(pending.promise);
-    dataStore.reconcileStageCandidate.mockResolvedValue({
-      operationId: command.operationId,
-      status: "not_applied",
-      candidate: null,
-      source: sourceRows[0],
-      scratch: null,
-    });
+    dataStore.reconcileStageCandidate.mockReturnValue(reconciling.promise);
     liveQueryMock.mockImplementationOnce((query: () => Promise<unknown>) => {
       const subscription: LiveQuerySubscription = {
         query,
@@ -376,13 +377,34 @@ describe("useStagedCandidates", () => {
     expect(result.current.pendingOperations).toEqual([]);
     expect(result.current.unknownOperations).toHaveLength(1);
 
+    let reconciliation!: Promise<unknown>;
+    act(() => {
+      reconciliation = result.current.reconcileStageCandidate(command);
+    });
+    await waitFor(() =>
+      expect(result.current.reconcilingOperations).toEqual([
+        expect.objectContaining({
+          kind: "stage",
+          operationId: command.operationId,
+          phase: "reconciling",
+        }),
+      ]),
+    );
+    reconciling.resolve({
+      operationId: command.operationId,
+      status: "not_applied",
+      candidate: null,
+      source: sourceRows[0],
+      scratch: null,
+    });
     await act(async () => {
-      await expect(result.current.reconcileStageCandidate(command)).resolves.toMatchObject({
+      await expect(reconciliation).resolves.toMatchObject({
         status: "not_applied",
       });
     });
     expect(dataStore.reconcileStageCandidate).toHaveBeenCalledWith(command);
     expect(result.current.unknownOperations).toEqual([]);
+    expect(result.current.reconcilingOperations).toEqual([]);
   });
 
   it("dispatches Unstage and exact confirmed-orphan commands through the repository", async () => {

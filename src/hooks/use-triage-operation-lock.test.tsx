@@ -102,6 +102,35 @@ describe("useTriageOperationLock", () => {
     expect(result.current.activeOperation).toBeNull();
   });
 
+  it.each(["stage", "unstage"] as const)(
+    "retains the %s owner while every competing intent is rejected, then releases only its matching terminal identity",
+    (kind) => {
+      const { result } = renderHook(() => useTriageOperationLock());
+      const operationId = `${kind}-operation`;
+
+      act(() => {
+        expect(result.current.acquire(kind, operationId)).toBe(true);
+        for (const competingKind of TRIAGE_OPERATION_KINDS) {
+          expect(
+            result.current.acquire(
+              competingKind,
+              `${competingKind}-competing`,
+            ),
+          ).toBe(false);
+        }
+        expect(result.current.release(`${operationId}-stale`, "applied")).toBe(
+          false,
+        );
+      });
+      expect(result.current.activeOperation).toEqual({ kind, operationId });
+
+      act(() => {
+        expect(result.current.release(operationId, "conflict")).toBe(true);
+      });
+      expect(result.current.activeOperation).toBeNull();
+    },
+  );
+
   it.each(TRIAGE_OPERATION_KINDS)(
     "exposes the active %s owner synchronously to shared exit blockers",
     (kind) => {

@@ -20,6 +20,10 @@ const globalsCss = readFileSync(
 
 const useTriageDndMock = vi.hoisted(() => vi.fn());
 const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
+const stageCandidateMock = vi.hoisted(() => vi.fn());
+const reconcileStageCandidateMock = vi.hoisted(() => vi.fn());
+const unstageCandidateMock = vi.hoisted(() => vi.fn());
+const reconcileUnstageCandidateMock = vi.hoisted(() => vi.fn());
 const handlePlacementConfirmMock = vi.hoisted(() => vi.fn());
 const handlePlacementCancelMock = vi.hoisted(() => vi.fn());
 const useGridDataMock = vi.hoisted(() => vi.fn());
@@ -97,12 +101,27 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
   );
   const { useTriageStore } = await import("@/stores/triage-store");
   return {
-    BreakdownPanel: () => {
+    BreakdownPanel: ({
+      activeDragItem,
+      overTargetId,
+    }: {
+      activeDragItem?: TriageDragItem;
+      overTargetId?: string | null;
+    }) => {
       titleBlockerHandleState.handle = useScratchTitleBlockerContext();
       departureControllerState.controller = useTriageDepartureContext();
       const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
       return (
-        <div data-testid="breakdown-panel">
+        <div
+          data-active-drag-kind={activeDragItem?.kind}
+          data-over-target-id={overTargetId ?? undefined}
+          data-testid="breakdown-panel"
+        >
+          <div data-breakdown-id="breakdown-1">
+            <button aria-label="Drag breakdown" type="button">
+              Source grip
+            </button>
+          </div>
           <div data-testid="selected-scratch-context" tabIndex={-1}>
             Context for {selectedScratchId ?? "none"}
             {breakdownSurfaceState.editorDrafts
@@ -251,7 +270,13 @@ beforeEach(() => {
   useTriageDndMock.mockReturnValue(createDndState());
   useStagedCandidatesMock.mockReset();
   useStagedCandidatesMock.mockReturnValue({
+    candidates: [],
     counts: { nodes: 0, bits: 0 },
+    eligibility: { stagedSourceIds: new Set<string>() },
+    stageCandidate: stageCandidateMock,
+    reconcileStageCandidate: reconcileStageCandidateMock,
+    unstageCandidate: unstageCandidateMock,
+    reconcileUnstageCandidate: reconcileUnstageCandidateMock,
   });
 });
 
@@ -261,6 +286,64 @@ afterEach(() => {
 });
 
 describe("TriageWorkspace", () => {
+  it("wires the durable candidate commands and shared operation lock into the one DnD owner", () => {
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(useTriageDndMock).toHaveBeenCalledWith(
+      "scratch-1",
+      expect.objectContaining({
+        stageCandidate: stageCandidateMock,
+        reconcileStageCandidate: reconcileStageCandidateMock,
+        unstageCandidate: unstageCandidateMock,
+        reconcileUnstageCandidate: reconcileUnstageCandidateMock,
+        operationLock: expect.objectContaining({
+          acquire: expect.any(Function),
+          release: expect.any(Function),
+        }),
+        focusUnstagedSource: expect.any(Function),
+      }),
+    );
+  });
+
+  it("passes the staged drag snapshot to the transient Breakdown drop-back surface", () => {
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        activeDragItem: {
+          kind: "triage-staged-bit",
+          id: "candidate-1",
+          label: "Return me",
+        },
+        overTargetId: "triage-remove-drop:breakdown",
+      }),
+    );
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-active-drag-kind",
+      "triage-staged-bit",
+    );
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-over-target-id",
+      "triage-remove-drop:breakdown",
+    );
+  });
+
+  it("restores focus to the surviving source grip after confirmed Unstage", () => {
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      callback(0);
+      return 1;
+    });
+    render(<TriageWorkspace node={createNode()} />);
+    const options = useTriageDndMock.mock.calls[0]?.[1] as {
+      focusUnstagedSource: (sourceBreakdownId: string) => void;
+    };
+
+    options.focusUnstagedSource("breakdown-1");
+
+    expect(screen.getByRole("button", { name: "Drag breakdown" })).toHaveFocus();
+  });
+
   it("renders ScratchPool in the left panel and wires in BreakdownPanel", () => {
     render(<TriageWorkspace node={createNode()} />);
 

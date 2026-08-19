@@ -8,6 +8,9 @@ import { StagingZone } from "./staging-zone";
 const useDroppableMock = vi.hoisted(() => vi.fn());
 const useDraggableMock = vi.hoisted(() => vi.fn());
 const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
+const operationLockState = vi.hoisted(() => ({
+  activeOperation: null as null | { kind: string; operationId: string },
+}));
 
 vi.mock("@dnd-kit/core", () => ({
   useDraggable: useDraggableMock,
@@ -26,6 +29,10 @@ vi.mock("@/stores/triage-store", () => ({
 
 vi.mock("@/hooks/use-staged-candidates", () => ({
   useStagedCandidates: useStagedCandidatesMock,
+}));
+
+vi.mock("@/hooks/use-triage-operation-lock", () => ({
+  useTriageOperationLockContext: () => operationLockState,
 }));
 
 function createCandidate(
@@ -58,6 +65,7 @@ function createCandidate(
 }
 
 beforeEach(() => {
+  operationLockState.activeOperation = null;
   triageStoreState.selectedScratchId = "scratch-1";
   triageStoreState.stagedCandidates = {};
   useTriageStoreMock.mockImplementation(
@@ -199,6 +207,26 @@ describe("StagingZone", () => {
           sourceLifecycle: "active",
           sourceVersion: 1,
         }),
+      }),
+    );
+  });
+
+  it("keeps the durable candidate rendered but disables it throughout an Unstage lock", () => {
+    operationLockState.activeOperation = {
+      kind: "unstage",
+      operationId: "unstage-1",
+    };
+    useStagedCandidatesMock.mockReturnValue({
+      candidates: [createCandidate({ id: "candidate-1", content: "Returning" })],
+    });
+
+    render(<StagingZone type="node" />);
+
+    expect(screen.getByText("Returning")).toBeInTheDocument();
+    expect(useDraggableMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "triage-staged-node:candidate-1",
+        disabled: true,
       }),
     );
   });

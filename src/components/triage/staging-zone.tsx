@@ -11,6 +11,7 @@ import {
   useStagedCandidates,
   type StagedCandidateProjection,
 } from "@/hooks/use-staged-candidates";
+import { useTriageOperationLockContext } from "@/hooks/use-triage-operation-lock";
 import {
   getTriageBitZoneDropId,
   getTriageNodeZoneDropId,
@@ -70,6 +71,7 @@ export function StagingZone({
   overTargetId = null,
 }: StagingZoneProps) {
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
+  const operationLock = useTriageOperationLockContext();
   const { candidates: stagedCandidates } =
     useStagedCandidates(selectedScratchId);
   const candidates = stagedCandidates
@@ -86,6 +88,7 @@ export function StagingZone({
       <NodeStagingZone
         activeDragItem={activeDragItem}
         candidates={candidates}
+        isInteractionLocked={operationLock.activeOperation !== null}
         overTargetId={overTargetId}
       />
     );
@@ -95,6 +98,7 @@ export function StagingZone({
     <BitStagingZone
       activeDragItem={activeDragItem}
       candidates={candidates}
+      isInteractionLocked={operationLock.activeOperation !== null}
       overTargetId={overTargetId}
     />
   );
@@ -103,10 +107,12 @@ export function StagingZone({
 function NodeStagingZone({
   activeDragItem,
   candidates,
+  isInteractionLocked,
   overTargetId,
 }: {
   activeDragItem: TriageDragItem;
   candidates: StagedCandidateProjection[];
+  isInteractionLocked: boolean;
   overTargetId: string | null;
 }) {
   const dropId = getTriageNodeZoneDropId();
@@ -133,7 +139,11 @@ function NodeStagingZone({
       {candidates.length > 0 ? (
         <div className="grid w-full grid-cols-2 gap-2 pb-1">
           {candidates.map((candidate) => (
-            <NodeCandidateCard key={candidate.id} candidate={candidate} />
+            <NodeCandidateCard
+              key={candidate.id}
+              candidate={candidate}
+              disabled={isInteractionLocked}
+            />
           ))}
         </div>
       ) : null}
@@ -144,10 +154,12 @@ function NodeStagingZone({
 function BitStagingZone({
   activeDragItem,
   candidates,
+  isInteractionLocked,
   overTargetId,
 }: {
   activeDragItem: TriageDragItem;
   candidates: StagedCandidateProjection[];
+  isInteractionLocked: boolean;
   overTargetId: string | null;
 }) {
   const dropId = getTriageBitZoneDropId();
@@ -174,7 +186,11 @@ function BitStagingZone({
       {candidates.length > 0 ? (
         <div className="flex w-full flex-col gap-1.5 pb-1">
           {candidates.map((candidate) => (
-            <BitCandidateRow key={candidate.id} candidate={candidate} />
+            <BitCandidateRow
+              key={candidate.id}
+              candidate={candidate}
+              disabled={isInteractionLocked}
+            />
           ))}
         </div>
       ) : null}
@@ -184,11 +200,14 @@ function BitStagingZone({
 
 function NodeCandidateCard({
   candidate,
+  disabled,
 }: {
   candidate: StagedCandidateProjection;
+  disabled: boolean;
 }) {
   const { attributes, isDragging, listeners, setNodeRef } = useDraggable({
     id: `triage-staged-node:${candidate.id}`,
+    disabled,
     data: {
       kind: "triage-staged-node",
       id: candidate.id,
@@ -232,6 +251,7 @@ function NodeCandidateCard({
     <div
       ref={setNodeRef}
       aria-label={`Drag ${candidate.content} staged node`}
+      data-operation-locked={disabled}
       className={cn(
         "mx-auto aspect-square h-auto w-full max-w-[80px] touch-none cursor-grab select-none overflow-hidden rounded-lg border border-border/80 bg-background transition-[background-color,border-color,color,opacity] active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
         isDragging && "opacity-30 border-dashed border-muted bg-transparent",
@@ -266,11 +286,14 @@ function NodeCandidateCard({
 
 function BitCandidateRow({
   candidate,
+  disabled,
 }: {
   candidate: StagedCandidateProjection;
+  disabled: boolean;
 }) {
   const { attributes, isDragging, listeners, setNodeRef } = useDraggable({
     id: `triage-staged-bit:${candidate.id}`,
+    disabled,
     data: {
       kind: "triage-staged-bit",
       id: candidate.id,
@@ -314,6 +337,7 @@ function BitCandidateRow({
     <div
       ref={setNodeRef}
       aria-label={`Drag ${candidate.content} staged bit`}
+      data-operation-locked={disabled}
       className={cn(
         "flex min-h-[2rem] w-full touch-none cursor-grab select-none items-center rounded-lg border border-border/60 bg-background px-3 py-1.5 transition-[background-color,border-color,color,opacity] active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
         isDragging && "opacity-30 border-dashed border-muted bg-transparent",

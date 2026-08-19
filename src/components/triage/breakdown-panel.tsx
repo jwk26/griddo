@@ -12,7 +12,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { useDraggable } from "@dnd-kit/core";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 import {
   ArrowDownUp,
   CheckCircle2,
@@ -24,7 +24,10 @@ import {
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { invalidateTriageDragSource } from "@/hooks/use-dnd";
+import {
+  invalidateTriageDragSource,
+  type TriageDragItem,
+} from "@/hooks/use-dnd";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,6 +58,7 @@ import type {
   RepositoryOperationStatus,
   ScratchBreakdown,
 } from "@/lib/db/schema";
+import type { TriageDropData } from "@/lib/grid-dnd";
 import { cn } from "@/lib/utils";
 import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
 import { useTriageStore } from "@/stores/triage-store";
@@ -63,6 +67,7 @@ type OpenEditorSnapshot = NonNullable<ConditionalEditorSnapshot>;
 
 const SCRATCH_TITLE_INLINE_LIMIT = 60;
 const BREAKDOWN_CONTENT_INLINE_LIMIT = 120;
+const BREAKDOWN_UNSTAGE_DROP_ID = "triage-remove-drop:breakdown";
 
 function subscribeToBrowserConnectivity(onStoreChange: () => void) {
   window.addEventListener("online", onStoreChange);
@@ -666,6 +671,7 @@ function BreakdownRow({
         onRowRef(row.id, element);
       }}
       data-testid="breakdown-row"
+      data-breakdown-id={row.id}
       data-triage-layout="fixed-inline-editor"
       data-triage-role={isStaged ? "breakdown-staged-row" : "breakdown-active-row"}
       data-triage-state={isStaged ? "staged" : "active"}
@@ -861,8 +867,22 @@ function formatScratchTimestamp(createdAt: number): string {
   }).format(createdAt);
 }
 
-export function BreakdownPanel() {
+export function BreakdownPanel({
+  activeDragItem = null,
+  overTargetId = null,
+}: {
+  activeDragItem?: TriageDragItem;
+  overTargetId?: string | null;
+} = {}) {
   const operationLock = useTriageOperationLockContext();
+  const isStagedDrag =
+    activeDragItem?.kind === "triage-staged-node" ||
+    activeDragItem?.kind === "triage-staged-bit";
+  const { setNodeRef: setBreakdownDropRef } = useDroppable({
+    id: BREAKDOWN_UNSTAGE_DROP_ID,
+    data: { kind: "triage-remove-drop" } satisfies TriageDropData,
+    disabled: !isStagedDrag,
+  });
   const departure = useTriageDepartureContext();
   const { registerAddDraftOwner, setAddDraft } = departure;
   const isDepartureDecision = departure.pendingDestination !== null;
@@ -1519,7 +1539,7 @@ export function BreakdownPanel() {
 
   if (selectedScratchId === null) {
     return (
-      <div className="flex flex-col h-full">
+      <div ref={setBreakdownDropRef} className="flex flex-col h-full">
         <div className="flex min-h-0 flex-1 items-center justify-center px-4 text-center text-sm text-muted-foreground">
           Select a Scratch to view breakdowns
         </div>
@@ -1554,7 +1574,23 @@ export function BreakdownPanel() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div ref={setBreakdownDropRef} className="relative flex h-full flex-col">
+      {isStagedDrag ? (
+        <div
+          aria-label="Return staged item to Breakdown"
+          className={cn(
+            "pointer-events-none absolute inset-2 z-20 flex items-center justify-center rounded-xl border border-dashed bg-card/90 text-sm font-medium text-muted-foreground",
+            overTargetId === BREAKDOWN_UNSTAGE_DROP_ID &&
+              "border-solid border-primary bg-accent text-foreground",
+          )}
+          data-drop-active={
+            overTargetId === BREAKDOWN_UNSTAGE_DROP_ID
+          }
+          role="region"
+        >
+          Return to Breakdown
+        </div>
+      ) : null}
       <div aria-atomic="true" aria-live="polite" className="sr-only">
         {editorAnnouncement}
       </div>

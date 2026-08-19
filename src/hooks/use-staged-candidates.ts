@@ -31,7 +31,7 @@ export type CandidateOperationProjection = Readonly<{
   candidateId: string;
   sourceBreakdownId: string;
   kind: CandidateOperationKind;
-  phase: "pending" | "unknown";
+  phase: "pending" | "unknown" | "reconciling";
   resultType?: StagedCandidate["resultType"];
 }>;
 
@@ -72,6 +72,7 @@ type UseStagedCandidatesResult = Readonly<{
   unresolvedCandidates: StagedCandidate[];
   pendingOperations: CandidateOperationProjection[];
   unknownOperations: CandidateOperationProjection[];
+  reconcilingOperations: CandidateOperationProjection[];
   counts: StagedCandidateCounts;
   eligibility: StagedCandidateEligibility;
   stageCandidate: (
@@ -159,6 +160,10 @@ export function useStagedCandidates(
     () => operations.filter((operation) => operation.phase === "unknown"),
     [operations],
   );
+  const reconcilingOperations = useMemo(
+    () => operations.filter((operation) => operation.phase === "reconciling"),
+    [operations],
+  );
 
   const counts = useMemo<StagedCandidateCounts>(() => {
     const nodes = candidates.filter(({ resultType }) => resultType === "node").length;
@@ -212,13 +217,14 @@ export function useStagedCandidates(
       kind: CandidateOperationKind,
       command: OperationInput,
       invoke: () => Promise<TResult>,
+      phase: CandidateOperationProjection["phase"] = "pending",
     ): Promise<CandidateCommandOutcome<TResult>> => {
       const pending: CandidateOperationProjection = {
         operationId: command.operationId,
         candidateId: command.candidateId,
         sourceBreakdownId: command.sourceBreakdownId,
         kind,
-        phase: "pending",
+        phase,
         ...(command.resultType === undefined
           ? {}
           : { resultType: command.resultType }),
@@ -265,7 +271,7 @@ export function useStagedCandidates(
       dispatch("stage", command, async () => {
         const dataStore = await getDataStore();
         return dataStore.reconcileStageCandidate(command);
-      }),
+      }, "reconciling"),
     [dispatch],
   );
   const unstageCandidate = useCallback(
@@ -281,7 +287,7 @@ export function useStagedCandidates(
       dispatch("unstage", command, async () => {
         const dataStore = await getDataStore();
         return dataStore.reconcileUnstageCandidate(command);
-      }),
+      }, "reconciling"),
     [dispatch],
   );
   const cleanupConfirmedCandidateOrphan = useCallback(
@@ -306,6 +312,7 @@ export function useStagedCandidates(
     unresolvedCandidates,
     pendingOperations,
     unknownOperations,
+    reconcilingOperations,
     counts,
     eligibility,
     stageCandidate,
