@@ -133,6 +133,23 @@ describe("ScratchPool", () => {
     );
   });
 
+  it("uses the established Neumorphism and Claymorphism inset and raised shadow families", () => {
+    expect(globalsCss).not.toContain("--theme-shadow-inset");
+    expect(globalsCss).toMatch(
+      /:root\[data-color-theme="neumorphism"\] \.pool-status-band \{[\s\S]*box-shadow: inset 3px 3px 6px hsl\(var\(--foreground\) \/ 0\.12\),[\s\S]*inset -3px -3px 6px hsl\(var\(--background\) \/ 0\.86\);/,
+    );
+    expect(globalsCss).toMatch(
+      /:root\[data-color-theme="claymorphism"\] \.pool-status-band \{[\s\S]*box-shadow: inset 2px 2px 5px hsl\(var\(--foreground\) \/ 0\.12\),[\s\S]*inset -2px -2px 5px hsl\(var\(--background\) \/ 0\.8\);/,
+    );
+    for (const theme of ["neumorphism", "claymorphism"]) {
+      expect(globalsCss).toMatch(
+        new RegExp(
+          `:root\\[data-color-theme="${theme}"\\] \\.pool-activity-marker \\{[\\s\\S]*box-shadow: var\\(--theme-shadow\\);`,
+        ),
+      );
+    }
+  });
+
   it("renders active Scratch rows newest-first with relative-time labels", () => {
     useInboxMock.mockReturnValue({
       activeScratchBits: [

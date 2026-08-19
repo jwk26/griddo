@@ -1266,16 +1266,26 @@
   );
 }
 
-:root[data-color-theme="neumorphism"] .pool-status-band,
-:root[data-color-theme="neumorphism"] .pool-activity-marker {
+:root[data-color-theme="neumorphism"] .pool-status-band {
   border-radius: var(--theme-radius);
-  box-shadow: var(--theme-shadow-inset);
+  box-shadow: inset 3px 3px 6px hsl(var(--foreground) / 0.12),
+    inset -3px -3px 6px hsl(var(--background) / 0.86);
 }
 
-:root[data-color-theme="claymorphism"] .pool-status-band,
+:root[data-color-theme="neumorphism"] .pool-activity-marker {
+  border-radius: var(--theme-radius);
+  box-shadow: var(--theme-shadow);
+}
+
+:root[data-color-theme="claymorphism"] .pool-status-band {
+  border-radius: var(--theme-radius);
+  box-shadow: inset 2px 2px 5px hsl(var(--foreground) / 0.12),
+    inset -2px -2px 5px hsl(var(--background) / 0.8);
+}
+
 :root[data-color-theme="claymorphism"] .pool-activity-marker {
   border-radius: var(--theme-radius);
-  box-shadow: var(--theme-shadow-inset);
+  box-shadow: var(--theme-shadow);
 }
 
 :root[data-color-theme="origami"] .pool-status-band {
