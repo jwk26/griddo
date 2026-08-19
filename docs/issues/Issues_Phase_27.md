@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–144 accepted; Task 145 not started
+> State: Tasks 136–144 accepted; Task 145 in progress
 
 ## Status Legend
 
@@ -273,3 +273,18 @@ Task 138 targeted canonical repair:
 | Review | Final diff/interaction/visual review found and repaired the base-layer motion precedence and undefined Neumorphism/Claymorphism inset variable. No remaining Critical or Important Task 144 finding; the unchanged persisted-dark ThemeToggle hydration mismatch remains outside Task 144 per user direction. |
 | Acceptance | On 2026-08-19 the user explicitly accepted checkpoint `86efb2be79c22a476d340924ca56dc2ef8e9cf11` and approved this acceptance-only marker/ledger update; the existing successful focused/full gates and canonical 16 theme-mode browser evidence were reused without rerunning verification. |
 | Next legal action | Stop at the clean Task 144 acceptance checkpoint; wait for a separately approved Task 145 lifecycle and do not start Task 145. |
+
+## Task 145 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `145` — connect Stage and Unstage interaction adapters |
+| State | `In Progress`; Task 145 and Task 146 remain `[ ]` |
+| Approved scope | The committed canonical Task 145 contract and the user's 2026-08-19 Task 145-only candidate-pinned work order: modify only the named Breakdown, Staging, Workspace, staged-candidate hook, existing DnD owner, their named tests, operation-lock tests, Task 145 verification evidence, and this ledger |
+| Kickoff authority | The user supplied an approved Task 145 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; pinned candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned receipt-less `approval_required` with `contract_ready=true` as compatibility evidence only |
+| Start base / recovery anchor | `cdc02433a049cf109e07010ccd309801de2961f0`; exact entrypoint `src` tree `0f7b18f359e9c433bc217136ed0f24bd66cb74a7` |
+| Dependencies | Tasks 121, 131–133, 136, 139, and 142 are accepted and marked `[x]`; Task 144 is the accepted immediate predecessor; no known Task 145 blocker exists |
+| Scope lock | Headless current-snapshot Stage/Unstage dispatch, shared-lock lifecycle, complete blocked-intent matrix, transient Unstage targets, confirmed order/focus restoration, focused tests, and evidence only; no Task 146 remote/orphan work, no `DP-VQ06-STAGING` Task 147 UI, no permanent Unstage button, no success toast, and no `P27-06` repair |
+| Issues / deviations | None at durable start |
+| Canonical impact | `None` — implementation-local execution of the already approved Task 145 contract |
+| Next legal action | Add failing focused tests before production changes, implement only Task 145, run the declared gates and bounded review loop, commit evidence, and stop at a clean awaiting-acceptance checkpoint with Task 145 and Task 146 still `[ ]` |
