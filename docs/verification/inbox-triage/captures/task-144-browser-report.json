@@ -1,0 +1,401 @@
+{
+  "route": "http://localhost:3001/grid/11111111-1111-4111-8111-111111111111",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "browserVersion": "151.0.7922.140",
+  "hiddenSelection": {
+    "hiddenCopy": "Selected Scratch is hidden by this search.",
+    "filteredCopy": "1 of 4 Scratches",
+    "selectedBeforeClear": "true",
+    "selectedAfterClear": "true",
+    "clearFocus": true
+  },
+  "activity": {
+    "mixedCopy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+    "focusAfterActivity": true,
+    "selectedBeforeActivity": "true",
+    "selectedAfterActivity": "true",
+    "liveAtomic": "true",
+    "liveMode": "polite"
+  },
+  "reducedMotion": {
+    "animationName": "none",
+    "transitionDuration": "0s",
+    "width": 287,
+    "height": 55
+  },
+  "collapsed": {
+    "collapsedArrival": "+1",
+    "collapsedLifecycleRole": null,
+    "mixedAfterReentry": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored."
+  },
+  "actions": {
+    "selectionBeforeReview": "true",
+    "selectionAfterReview": "true",
+    "reviewFocus": "Remote arrival",
+    "lifecycleAfterReview": "Pool updated elsewhere: 1 archived, 1 deleted, 1 restored.",
+    "dismissFocus": true,
+    "activityAfterDismiss": 0
+  },
+  "lifetime": {
+    "activityAfterReload": 0,
+    "localCreateActivity": 0
+  },
+  "themeRuns": [
+    {
+      "theme": "griddo",
+      "mode": "light",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 55
+      },
+      "style": {
+        "background": "rgba(244, 244, 245, 0.24)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "1px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "fontFamily": "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-griddo-light.png"
+    },
+    {
+      "theme": "tiny-desk",
+      "mode": "light",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 57
+      },
+      "style": {
+        "background": "repeating-linear-gradient(rgb(240, 221, 194), rgb(240, 221, 194) 13px, rgba(115, 70, 38, 0.45) 14px)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "3px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "fontFamily": "\"Playfair Display\", \"Playfair Display Fallback\", serif"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-tiny-desk-light.png"
+    },
+    {
+      "theme": "neumorphism",
+      "mode": "light",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 54
+      },
+      "style": {
+        "background": "rgba(244, 244, 245, 0.24)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "0px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "20px",
+        "boxShadow": "rgba(51, 51, 51, 0.12) 3px 3px 6px 0px inset, rgba(224, 230, 235, 0.86) -3px -3px 6px 0px inset",
+        "fontFamily": "Inter, \"Inter Fallback\", sans-serif"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-neumorphism-light.png"
+    },
+    {
+      "theme": "claymorphism",
+      "mode": "light",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 54
+      },
+      "style": {
+        "background": "rgba(244, 244, 245, 0.24)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "0px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "32px",
+        "boxShadow": "rgba(99, 54, 69, 0.12) 2px 2px 5px 0px inset, rgba(246, 238, 241, 0.8) -2px -2px 5px 0px inset",
+        "fontFamily": "Inter, \"Inter Fallback\", sans-serif"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-claymorphism-light.png"
+    },
+    {
+      "theme": "origami",
+      "mode": "light",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 55
+      },
+      "style": {
+        "background": "rgba(244, 244, 245, 0.24)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "1px",
+        "borderLeftWidth": "4px",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "fontFamily": "\"Space Mono\", \"Space Mono Fallback\", monospace"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-origami-light.png"
+    },
+    {
+      "theme": "terminal",
+      "mode": "light",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 42
+      },
+      "style": {
+        "background": "rgb(13, 13, 13)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "2px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "fontFamily": "VT323, \"VT323 Fallback\", monospace"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-terminal-light.png"
+    },
+    {
+      "theme": "retro-mac",
+      "mode": "light",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 56
+      },
+      "style": {
+        "background": "rgba(244, 244, 245, 0.24)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "2px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "fontFamily": "\"Space Mono\", \"Space Mono Fallback\", monospace"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-retro-mac-light.png"
+    },
+    {
+      "theme": "graphite",
+      "mode": "light",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 56
+      },
+      "style": {
+        "background": "rgba(244, 244, 245, 0.24)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "2px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "fontFamily": "Inter, \"Inter Fallback\", sans-serif"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-graphite-light.png"
+    },
+    {
+      "theme": "griddo",
+      "mode": "dark",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 55
+      },
+      "style": {
+        "background": "rgba(39, 39, 42, 0.24)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "1px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "fontFamily": "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-griddo-dark.png"
+    },
+    {
+      "theme": "tiny-desk",
+      "mode": "dark",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 57
+      },
+      "style": {
+        "background": "repeating-linear-gradient(rgb(46, 28, 15), rgb(46, 28, 15) 13px, rgba(235, 209, 173, 0.45) 14px)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "3px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "fontFamily": "\"Playfair Display\", \"Playfair Display Fallback\", serif"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-tiny-desk-dark.png"
+    },
+    {
+      "theme": "neumorphism",
+      "mode": "dark",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 54
+      },
+      "style": {
+        "background": "rgba(39, 39, 42, 0.24)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "0px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "20px",
+        "boxShadow": "rgba(230, 230, 230, 0.12) 3px 3px 6px 0px inset, rgba(26, 26, 26, 0.86) -3px -3px 6px 0px inset",
+        "fontFamily": "Inter, \"Inter Fallback\", sans-serif"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-neumorphism-dark.png"
+    },
+    {
+      "theme": "claymorphism",
+      "mode": "dark",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 54
+      },
+      "style": {
+        "background": "rgba(39, 39, 42, 0.24)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "0px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "32px",
+        "boxShadow": "rgba(224, 224, 235, 0.12) 2px 2px 5px 0px inset, rgba(31, 31, 46, 0.8) -2px -2px 5px 0px inset",
+        "fontFamily": "Inter, \"Inter Fallback\", sans-serif"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-claymorphism-dark.png"
+    },
+    {
+      "theme": "origami",
+      "mode": "dark",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 55
+      },
+      "style": {
+        "background": "rgba(39, 39, 42, 0.24)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "1px",
+        "borderLeftWidth": "4px",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "fontFamily": "\"Space Mono\", \"Space Mono Fallback\", monospace"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-origami-dark.png"
+    },
+    {
+      "theme": "terminal",
+      "mode": "dark",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 42
+      },
+      "style": {
+        "background": "rgb(0, 0, 0)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "2px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "fontFamily": "VT323, \"VT323 Fallback\", monospace"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-terminal-dark.png"
+    },
+    {
+      "theme": "retro-mac",
+      "mode": "dark",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 56
+      },
+      "style": {
+        "background": "rgba(39, 39, 42, 0.24)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "2px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "fontFamily": "\"Space Mono\", \"Space Mono Fallback\", monospace"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-retro-mac-dark.png"
+    },
+    {
+      "theme": "graphite",
+      "mode": "dark",
+      "copy": "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      "rect": {
+        "x": 48,
+        "y": 64,
+        "width": 287,
+        "height": 56
+      },
+      "style": {
+        "background": "rgba(39, 39, 42, 0.24)",
+        "borderBottomStyle": "solid",
+        "borderBottomWidth": "2px",
+        "borderLeftWidth": "0px",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "fontFamily": "Inter, \"Inter Fallback\", sans-serif"
+      },
+      "overflow": 0,
+      "filename": "task-144-pool-mixed-graphite-dark.png"
+    }
+  ],
+  "errors": []
+}

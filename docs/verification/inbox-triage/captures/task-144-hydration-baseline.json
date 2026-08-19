@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "route": "http://localhost:{port}/grid/11111111-1111-4111-8111-111111111111",
+  "browserVersion": "151.0.7922.140",
+  "current": {
+    "commit": "733155a17d548a55c3d5adc132a5d2fad1ce495b",
+    "developmentPort": 3002,
+    "cleanDefault": {
+      "firstLoadErrors": 0,
+      "reloadErrors": 0,
+      "poolStatusBandsBeforeActivity": 0
+    },
+    "persistedDarkGraphite": {
+      "firstLoadErrors": 1,
+      "reloadErrors": 1,
+      "poolStatusBandsBeforeActivity": 0,
+      "mismatch": "ThemeToggle server Moon SVG versus client Sun SVG",
+      "stackOwner": "src/components/layout/theme-toggle.tsx:22"
+    },
+    "productionPort": 3001,
+    "productionMatchesDevelopmentConditions": true
+  },
+  "baseline": {
+    "commit": "18f27b790a186cbf72eb77d7560d8d7a514e1e3c",
+    "developmentPort": 3003,
+    "backend": "webpack",
+    "cleanDefault": {
+      "firstLoadErrors": 0,
+      "reloadErrors": 0,
+      "poolStatusBandsBeforeActivity": 0
+    },
+    "persistedDarkGraphite": {
+      "firstLoadErrors": 1,
+      "reloadErrors": 1,
+      "poolStatusBandsBeforeActivity": 0,
+      "mismatch": "ThemeToggle server Moon SVG versus client Sun SVG",
+      "stackOwner": "src/components/layout/theme-toggle.tsx:22"
+    }
+  },
+  "unchangedOwnerHashes": {
+    "src/app/layout.tsx": "d7df5490534f24e3582224f17fb0f79e3fdebc071b0e45f44cc4c1ac034bc5c8",
+    "src/components/layout/theme-toggle.tsx": "6685252448efa732243936be259ff781a4889b007b6d8291646b5a8e7f39d81a"
+  },
+  "classification": "Pre-existing persisted-dark ThemeToggle hydration mismatch outside Task 144; no product-code change authorized or made."
+}
