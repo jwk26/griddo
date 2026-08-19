@@ -38,7 +38,7 @@ describe("Inbox/Triage core-English copy", () => {
     ]);
     expect(Object.values(INBOX_TRIAGE_COPY.lifecycleReasons)).toEqual([
       RECEIPT_COPY_UNAVAILABLE,
-      RECEIPT_COPY_UNAVAILABLE,
+      "Pool updated elsewhere.",
       RECEIPT_COPY_UNAVAILABLE,
       RECEIPT_COPY_UNAVAILABLE,
       RECEIPT_COPY_UNAVAILABLE,
@@ -47,9 +47,13 @@ describe("Inbox/Triage core-English copy", () => {
       RECEIPT_COPY_UNAVAILABLE,
     ]);
     expect(Object.values(INBOX_TRIAGE_COPY.liveRegions)).toHaveLength(14);
+    expect(INBOX_TRIAGE_COPY.liveRegions.poolActivity).toBe(
+      "Pool updated elsewhere.",
+    );
     expect(
-      Object.values(INBOX_TRIAGE_COPY.liveRegions).every(
-        (value) => value === RECEIPT_COPY_UNAVAILABLE,
+      Object.entries(INBOX_TRIAGE_COPY.liveRegions).every(
+        ([key, value]) =>
+          key === "poolActivity" || value === RECEIPT_COPY_UNAVAILABLE,
       ),
     ).toBe(true);
     expect(INBOX_TRIAGE_COPY.accessibleNames).toEqual({
@@ -171,9 +175,37 @@ describe("Inbox/Triage core-English copy", () => {
     });
   });
 
+  it("owns the complete approved DP-VQ06-POOL wording", () => {
+    expect(INBOX_TRIAGE_COPY.poolStatus).toEqual({
+      filteredCount: "{visible} of {total} Scratches",
+      hiddenSelection: "Selected Scratch is hidden by this search.",
+      arrivalOne: "1 new Scratch arrived.",
+      arrivalMany: "{count} new Scratches arrived.",
+      archiveOne: "A Scratch was archived elsewhere.",
+      archiveMany: "{count} Scratches were archived elsewhere.",
+      deleteOne: "A Scratch was deleted elsewhere.",
+      deleteMany: "{count} Scratches were deleted elsewhere.",
+      restoreOne: "A Scratch was restored.",
+      restoreMany: "{count} Scratches were restored.",
+      mixed: "Pool updated elsewhere: {clauses}.",
+      compactLifecycle: "Pool updated elsewhere.",
+      actions: {
+        clearSearch: "Clear search",
+        reviewNew: "Review new",
+        dismiss: "Dismiss",
+      },
+    });
+    expect(INBOX_TRIAGE_COPY.lifecycleReasons.poolLifecycleUpdate).toBe(
+      "Pool updated elsewhere.",
+    );
+    expect(INBOX_TRIAGE_COPY.liveRegions.poolActivity).toBe(
+      "Pool updated elsewhere.",
+    );
+  });
+
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      144, 147, 148, 150, 151, 153, 154, 157, 160, 162,
+      147, 148, 150, 151, 153, 154, 157, 160, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {

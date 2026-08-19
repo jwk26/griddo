@@ -1191,6 +1191,124 @@
   outline-offset: -2px;
 }
 
+/* DP-VQ06-POOL stays section-local between Pool tools and its scroll viewport. */
+.pool-status-band {
+  background: hsl(var(--muted) / 0.24);
+  border-block-end: var(--theme-border-width) solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  display: grid;
+  font-family: var(--theme-font);
+  font-size: 0.625rem;
+  line-height: 0.875rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.pool-status-line {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  min-inline-size: 0;
+}
+
+.pool-status-actions {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.pool-status-action {
+  color: hsl(var(--primary));
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.125rem;
+  transition: none;
+}
+
+.pool-status-action:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.pool-activity-marker {
+  align-items: center;
+  background: hsl(var(--muted));
+  border: var(--theme-border-width) solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  display: inline-flex;
+  font-size: 0.5rem;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 0.75rem;
+  min-block-size: 0.875rem;
+  min-inline-size: 0.875rem;
+  padding-inline: 0.125rem;
+}
+
+.pool-activity-marker--lifecycle::before {
+  content: "!";
+}
+
+:root[data-color-theme="tiny-desk"] .pool-status-band {
+  background: repeating-linear-gradient(
+    to bottom,
+    hsl(var(--card)),
+    hsl(var(--card)) 0.8125rem,
+    hsl(var(--border) / 0.45) 0.875rem
+  );
+}
+
+:root[data-color-theme="neumorphism"] .pool-status-band,
+:root[data-color-theme="neumorphism"] .pool-activity-marker {
+  border-radius: var(--theme-radius);
+  box-shadow: var(--theme-shadow-inset);
+}
+
+:root[data-color-theme="claymorphism"] .pool-status-band,
+:root[data-color-theme="claymorphism"] .pool-activity-marker {
+  border-radius: var(--theme-radius);
+  box-shadow: var(--theme-shadow-inset);
+}
+
+:root[data-color-theme="origami"] .pool-status-band {
+  border-inline-start: 0.25rem solid hsl(var(--border));
+}
+
+:root[data-color-theme="terminal"] .pool-status-band,
+:root[data-color-theme="terminal"] .pool-activity-marker {
+  background: hsl(var(--background));
+  border-style: solid;
+}
+
+:root[data-color-theme="terminal"] .pool-status-action::before {
+  content: "[";
+}
+
+:root[data-color-theme="terminal"] .pool-status-action::after {
+  content: "]";
+}
+
+:root[data-color-theme="retro-mac"] .pool-status-band,
+:root[data-color-theme="retro-mac"] .pool-activity-marker {
+  border-color: hsl(var(--foreground));
+  border-radius: 0;
+}
+
+:root[data-color-theme="graphite"] .pool-status-band {
+  border-block-end-width: 2px;
+  letter-spacing: 0.025em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pool-status-band,
+  .pool-status-line,
+  .pool-status-action,
+  .pool-activity-marker {
+    animation: none;
+    transition: none;
+  }
+}
+
 .triage-shell [data-triage-role="internal-scroll-viewport"],
 .triage-shell [data-triage-role="internal-scroll-viewport"] .overflow-y-auto,
 .triage-shell [data-triage-role="internal-scroll-viewport"] .overflow-auto {

@@ -135,6 +135,25 @@ export interface InboxTriageCopy {
       readonly retryAdd: string;
     };
   };
+  readonly poolStatus: {
+    readonly filteredCount: string;
+    readonly hiddenSelection: string;
+    readonly arrivalOne: string;
+    readonly arrivalMany: string;
+    readonly archiveOne: string;
+    readonly archiveMany: string;
+    readonly deleteOne: string;
+    readonly deleteMany: string;
+    readonly restoreOne: string;
+    readonly restoreMany: string;
+    readonly mixed: string;
+    readonly compactLifecycle: string;
+    readonly actions: {
+      readonly clearSearch: string;
+      readonly reviewNew: string;
+      readonly dismiss: string;
+    };
+  };
   readonly lifecycleReasons: {
     readonly externalScratchRemoval: InboxTriageCopyValue;
     readonly poolLifecycleUpdate: InboxTriageCopyValue;
@@ -172,7 +191,7 @@ export interface InboxTriageCopy {
     readonly clearPoolSearch: string;
   };
   readonly receiptDependent: Readonly<
-    Record<ReceiptCopyTask, ReceiptCopyUnavailable>
+    Partial<Record<ReceiptCopyTask, ReceiptCopyUnavailable>>
   >;
 }
 
@@ -296,9 +315,28 @@ export const INBOX_TRIAGE_COPY = {
       retryAdd: "Retry Add",
     },
   },
+  poolStatus: {
+    filteredCount: "{visible} of {total} Scratches",
+    hiddenSelection: "Selected Scratch is hidden by this search.",
+    arrivalOne: "1 new Scratch arrived.",
+    arrivalMany: "{count} new Scratches arrived.",
+    archiveOne: "A Scratch was archived elsewhere.",
+    archiveMany: "{count} Scratches were archived elsewhere.",
+    deleteOne: "A Scratch was deleted elsewhere.",
+    deleteMany: "{count} Scratches were deleted elsewhere.",
+    restoreOne: "A Scratch was restored.",
+    restoreMany: "{count} Scratches were restored.",
+    mixed: "Pool updated elsewhere: {clauses}.",
+    compactLifecycle: "Pool updated elsewhere.",
+    actions: {
+      clearSearch: "Clear search",
+      reviewNew: "Review new",
+      dismiss: "Dismiss",
+    },
+  },
   lifecycleReasons: {
     externalScratchRemoval: UNAVAILABLE,
-    poolLifecycleUpdate: UNAVAILABLE,
+    poolLifecycleUpdate: "Pool updated elsewhere.",
     stagingSourceUnavailable: UNAVAILABLE,
     explorerPathFallback: UNAVAILABLE,
     placementStale: UNAVAILABLE,
@@ -311,7 +349,7 @@ export const INBOX_TRIAGE_COPY = {
     departure: UNAVAILABLE,
     externalRemoval: UNAVAILABLE,
     reliability: UNAVAILABLE,
-    poolActivity: UNAVAILABLE,
+    poolActivity: "Pool updated elsewhere.",
     stagingActivity: UNAVAILABLE,
     success: UNAVAILABLE,
     explorerActivity: UNAVAILABLE,
@@ -333,7 +371,6 @@ export const INBOX_TRIAGE_COPY = {
     clearPoolSearch: "Clear search",
   },
   receiptDependent: {
-    144: UNAVAILABLE,
     147: UNAVAILABLE,
     148: UNAVAILABLE,
     150: UNAVAILABLE,

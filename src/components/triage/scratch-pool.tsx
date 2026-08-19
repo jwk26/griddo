@@ -16,7 +16,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { useInbox } from "@/hooks/use-inbox";
+import {
+  useInbox,
+  type PoolLifecycleProjection,
+} from "@/hooks/use-inbox";
 import { useTriageDepartureContext } from "@/hooks/use-triage-departure";
 import { useTriageOperationLockContext } from "@/hooks/use-triage-operation-lock";
 import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
@@ -49,14 +52,17 @@ function ScratchRow({
   isSelected,
   reducedMotion,
   onSelect,
+  rowRef,
 }: {
   bit: Bit;
   isSelected: boolean;
   reducedMotion: boolean;
   onSelect: (id: string, focus: () => void) => void;
+  rowRef: (element: HTMLButtonElement | null) => void;
 }) {
   return (
     <button
+      ref={rowRef}
       aria-label={bit.title}
       aria-pressed={isSelected}
       data-external-removal-destination={bit.id}
@@ -106,10 +112,110 @@ function ScratchRow({
   );
 }
 
+type PoolActivity = Readonly<{
+  arrivalIds: ReadonlySet<string>;
+  archived: number;
+  deleted: number;
+  restored: number;
+}>;
+
+const EMPTY_POOL_ACTIVITY: PoolActivity = {
+  arrivalIds: new Set(),
+  archived: 0,
+  deleted: 0,
+  restored: 0,
+};
+
+const EMPTY_POOL_LIFECYCLE_PROJECTION: PoolLifecycleProjection = {
+  revision: 0,
+  changes: [],
+};
+
+type PoolActivityState = Readonly<{
+  revision: number;
+  activity: PoolActivity;
+}>;
+
+function accumulatePoolActivity(
+  current: PoolActivity,
+  projection: PoolLifecycleProjection,
+  selectedScratchId: string | null,
+): PoolActivity {
+  const arrivalIds = new Set(current.arrivalIds);
+  let archived = current.archived;
+  let deleted = current.deleted;
+  let restored = current.restored;
+
+  for (const change of projection.changes) {
+    if (
+      (change.kind === "archive" || change.kind === "delete") &&
+      change.scratchId === selectedScratchId
+    ) {
+      continue;
+    }
+    if (change.kind === "remote-arrival") arrivalIds.add(change.scratchId);
+    if (change.kind === "archive") archived += 1;
+    if (change.kind === "delete") deleted += 1;
+    if (change.kind === "restore") restored += 1;
+  }
+
+  return { arrivalIds, archived, deleted, restored };
+}
+
+function fillCount(template: string, count: number): string {
+  return template.replace("{count}", String(count));
+}
+
+function getPoolActivityCopy(activity: PoolActivity): string | null {
+  const arrivalCount = activity.arrivalIds.size;
+  const categories = [
+    arrivalCount > 0,
+    activity.archived > 0,
+    activity.deleted > 0,
+    activity.restored > 0,
+  ].filter(Boolean).length;
+  if (categories === 0) return null;
+
+  if (categories === 1) {
+    if (arrivalCount > 0) {
+      return arrivalCount === 1
+        ? INBOX_TRIAGE_COPY.poolStatus.arrivalOne
+        : fillCount(INBOX_TRIAGE_COPY.poolStatus.arrivalMany, arrivalCount);
+    }
+    if (activity.archived > 0) {
+      return activity.archived === 1
+        ? INBOX_TRIAGE_COPY.poolStatus.archiveOne
+        : fillCount(INBOX_TRIAGE_COPY.poolStatus.archiveMany, activity.archived);
+    }
+    if (activity.deleted > 0) {
+      return activity.deleted === 1
+        ? INBOX_TRIAGE_COPY.poolStatus.deleteOne
+        : fillCount(INBOX_TRIAGE_COPY.poolStatus.deleteMany, activity.deleted);
+    }
+    return activity.restored === 1
+      ? INBOX_TRIAGE_COPY.poolStatus.restoreOne
+      : fillCount(INBOX_TRIAGE_COPY.poolStatus.restoreMany, activity.restored);
+  }
+
+  const clauses = [
+    arrivalCount > 0 ? `${arrivalCount} new` : null,
+    activity.archived > 0 ? `${activity.archived} archived` : null,
+    activity.deleted > 0 ? `${activity.deleted} deleted` : null,
+    activity.restored > 0 ? `${activity.restored} restored` : null,
+  ].filter((clause): clause is string => clause !== null);
+  return INBOX_TRIAGE_COPY.poolStatus.mixed.replace(
+    "{clauses}",
+    clauses.join(", "),
+  );
+}
+
 export function ScratchPool() {
   const { isLocked } = useTriageOperationLockContext();
   const departure = useTriageDepartureContext();
-  const { activeScratchBits } = useInbox();
+  const inbox = useInbox();
+  const { activeScratchBits } = inbox;
+  const poolLifecycleProjection =
+    inbox.poolLifecycleProjection ?? EMPTY_POOL_LIFECYCLE_PROJECTION;
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
   const selectScratch = useTriageStore((state) => state.selectScratch);
   const scratchPoolExpanded = useTriageStore(
@@ -134,10 +240,28 @@ export function ScratchPool() {
     (state) => state.setPoolCreatedAtSort,
   );
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [activityState, setActivityState] = useState<PoolActivityState>({
+    revision: 0,
+    activity: EMPTY_POOL_ACTIVITY,
+  });
   const searchInputRef = useRef<HTMLInputElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
   const restoreToggleFocusRef = useRef(false);
+  const rowRefs = useRef(new Map<string, HTMLButtonElement>());
+
+  let activity = activityState.activity;
+  if (poolLifecycleProjection.revision > activityState.revision) {
+    activity = accumulatePoolActivity(
+      activityState.activity,
+      poolLifecycleProjection,
+      selectedScratchId,
+    );
+    setActivityState({
+      revision: poolLifecycleProjection.revision,
+      activity,
+    });
+  }
 
   const count = activeScratchBits.length;
 
@@ -158,6 +282,12 @@ export function ScratchPool() {
           bit.title.toLocaleLowerCase().includes(normalizedQuery),
         );
   }, [orderedBits, searchQuery]);
+  const selectedIsHidden =
+    searchQuery.length > 0 &&
+    selectedScratchId !== null &&
+    activeScratchBits.some((bit) => bit.id === selectedScratchId) &&
+    !sortedFilteredBits.some((bit) => bit.id === selectedScratchId);
+  const activityCopy = getPoolActivityCopy(activity);
 
   useEffect(() => {
     if (typeof window.matchMedia !== "function") {
@@ -233,6 +363,35 @@ export function ScratchPool() {
     setSearchQuery("");
     searchInputRef.current?.focus();
   }, [setSearchQuery]);
+  const handleReviewNew = useCallback(() => {
+    const firstSurviving = orderedBits.find((bit) =>
+      activity.arrivalIds.has(bit.id),
+    );
+    setActivityState((current) => ({
+      ...current,
+      activity: { ...current.activity, arrivalIds: new Set() },
+    }));
+    const row =
+      firstSurviving === undefined ? undefined : rowRefs.current.get(firstSurviving.id);
+    if (row !== undefined) {
+      row.scrollIntoView?.({ block: "nearest" });
+      row.focus();
+    } else {
+      searchInputRef.current?.focus();
+    }
+  }, [activity.arrivalIds, orderedBits]);
+  const handleDismissActivity = useCallback(() => {
+    setActivityState((current) => ({
+      ...current,
+      activity: {
+        ...current.activity,
+        archived: 0,
+        deleted: 0,
+        restored: 0,
+      },
+    }));
+    searchInputRef.current?.focus();
+  }, []);
   const handleScroll = useCallback(() => {
     const viewport = scrollViewportRef.current;
     if (viewport === null) return;
@@ -305,7 +464,7 @@ export function ScratchPool() {
               data-triage-role="pool-search-field"
               className="h-6 w-full rounded-sm bg-muted/40 pl-5 pr-1 text-[10px] text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
-            {searchQuery && (
+            {searchQuery && !selectedIsHidden ? (
               <button
                 type="button"
                 aria-label={INBOX_TRIAGE_COPY.accessibleNames.clearPoolSearch}
@@ -317,18 +476,8 @@ export function ScratchPool() {
               >
                 <X className="h-3 w-3" aria-hidden="true" />
               </button>
-            )}
+            ) : null}
           </div>
-          {searchQuery.length > 0 ? (
-            <output
-              aria-label={`${sortedFilteredBits.length}/${count}`}
-              className="shrink-0 text-[10px] tabular-nums text-muted-foreground"
-              data-testid="pool-filtered-count"
-              data-triage-role="pool-filtered-count"
-            >
-              {sortedFilteredBits.length} / {count}
-            </output>
-          ) : null}
           <button
             type="button"
             aria-label={
@@ -353,6 +502,68 @@ export function ScratchPool() {
             <ArrowDownUp className="h-3 w-3" aria-hidden="true" />
           </button>
         </div>
+
+        {searchQuery.length > 0 || activityCopy !== null ? (
+          <div className="pool-status-band" data-triage-role="pool-status-band">
+            {searchQuery.length > 0 ? (
+              <div className="pool-status-line" data-triage-role="pool-status-line">
+                <output
+                  data-testid="pool-filtered-count"
+                  data-triage-role="pool-filtered-count"
+                >
+                  {INBOX_TRIAGE_COPY.poolStatus.filteredCount
+                    .replace("{visible}", String(sortedFilteredBits.length))
+                    .replace("{total}", String(count))}
+                </output>
+                {selectedIsHidden ? (
+                  <>
+                    <span>{INBOX_TRIAGE_COPY.poolStatus.hiddenSelection}</span>
+                    <button
+                      className="pool-status-action"
+                      data-triage-role="pool-status-action"
+                      type="button"
+                      onClick={handleSearchClear}
+                    >
+                      {INBOX_TRIAGE_COPY.poolStatus.actions.clearSearch}
+                    </button>
+                  </>
+                ) : null}
+              </div>
+            ) : null}
+            {activityCopy !== null ? (
+              <div
+                aria-atomic="true"
+                aria-live="polite"
+                className="pool-status-line"
+                data-triage-role="pool-status-line"
+              >
+                <span>{activityCopy}</span>
+                <span className="pool-status-actions">
+                  {activity.arrivalIds.size > 0 ? (
+                    <button
+                      className="pool-status-action"
+                      data-triage-role="pool-status-action"
+                      type="button"
+                      onClick={handleReviewNew}
+                    >
+                      {INBOX_TRIAGE_COPY.poolStatus.actions.reviewNew}
+                    </button>
+                  ) : null}
+                  {activity.archived + activity.deleted + activity.restored > 0 ? (
+                    <button
+                      className="pool-status-action"
+                      data-triage-role="pool-status-action"
+                      type="button"
+                      onClick={handleDismissActivity}
+                    >
+                      {INBOX_TRIAGE_COPY.poolStatus.actions.dismiss}
+                    </button>
+                  ) : null}
+                </span>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         <div
           className={cn(
@@ -388,6 +599,10 @@ export function ScratchPool() {
                   isSelected={bit.id === selectedScratchId}
                   reducedMotion={reducedMotion}
                   onSelect={handleSelect}
+                  rowRef={(element) => {
+                    if (element === null) rowRefs.current.delete(bit.id);
+                    else rowRefs.current.set(bit.id, element);
+                  }}
                 />
               ))
             )}
@@ -445,6 +660,18 @@ export function ScratchPool() {
               {count}
             </span>
           )}
+          {activity.arrivalIds.size > 0 ? (
+            <span className="pool-activity-marker" data-triage-role="pool-activity-marker">
+              +{activity.arrivalIds.size}
+            </span>
+          ) : null}
+          {activity.archived + activity.deleted + activity.restored > 0 ? (
+            <span
+              aria-label={INBOX_TRIAGE_COPY.poolStatus.compactLifecycle}
+              className="pool-activity-marker pool-activity-marker--lifecycle"
+              data-triage-role="pool-activity-marker"
+            />
+          ) : null}
         </div>
 
         {activeScratchBits.length > 0 && (
