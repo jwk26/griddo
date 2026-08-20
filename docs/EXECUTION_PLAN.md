@@ -1551,7 +1551,7 @@ and no-queue/no-replay contracts do not change.
 
 **Commit contract:** DP-VQ06-POOL copy/realization, tests, styles, and Task 144 evidence only; `feat(triage): render pool statuses`.
 
-### Task 145: [ ] Connect Stage and Unstage interaction adapters
+### Task 145: [x] Connect Stage and Unstage interaction adapters
 
 **Files and actions:** modify `src/components/triage/breakdown-panel.tsx`, `src/components/triage/staging-zone.tsx`, `src/components/triage/triage-workspace.tsx`, and their tests; modify `src/hooks/use-staged-candidates.ts` and `.test.tsx` plus existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`; extend `src/hooks/use-triage-operation-lock.test.tsx`. Dispatch Task 121 commands only from current compatible drops after synchronously acquiring Task 136's shared `stage`/`unstage` lock. Retain that lock and source-backed truth through pending/unknown/reconciling; reject duplicate/competing action, Scratch switch, internal/browser exit, Edit, Placement, Undo, Archive, and Cancel/Escape with no queue or replay; release only on terminal result. Expose transient Staging/Breakdown Unstage targets during matching drags; restore original created-at sort position/source focus after confirmed Unstage; reconcile unknown before Retry; add no permanent Unstage button or success toast.
 
