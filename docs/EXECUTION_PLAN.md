@@ -1585,7 +1585,7 @@ and no-queue/no-replay contracts do not change.
 
 ### Task 147: [ ] Render `DP-VQ06-STAGING` Staging statuses
 
-**Files and actions:** after `DP-VQ06-STAGING`, modify `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate Staging-only wording and render Stage/Unstage pending/invalid/stale/failure, remote arrival, orphan, alert/count/indicator, dismissal/action/focus, reduced-motion, and all-theme states over Tasks 145–146.
+**Files and actions:** after `DP-VQ06-STAGING`, modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` only as the mounted projection owner for its existing command-bearing `useStagedCandidates` instance; modify `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate Staging-only wording and render Stage/Unstage pending/invalid/stale/failure, remote arrival, orphan, alert/count/indicator, dismissal/action/focus, reduced-motion, and all-theme states over Tasks 145–146. Do not change Task 146 hook, DnD, or integrity semantics.
 
 **Dependencies:** Tasks 112, 128, 145, and 146.
 
