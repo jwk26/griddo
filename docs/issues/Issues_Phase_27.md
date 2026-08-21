@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–145 accepted; Task 146 not started
+> State: Tasks 136–145 accepted; Task 146 in progress
 
 ## Status Legend
 
@@ -292,3 +292,18 @@ Task 138 targeted canonical repair:
 | Review | Final contract/diff/browser review found no remaining Critical or Important Task 145 issue. Task 146 remote/orphan logic, Task 147 UI, permanent controls/toasts, unrelated canonical/product files, and `P27-06` remain untouched. |
 | Acceptance | On 2026-08-20 the user explicitly accepted checkpoint `27298c15a13fa94bf53dd0d6eea28ace9d97e18d` and approved this acceptance-only marker/ledger update; the existing successful focused/full gates and canonical browser evidence were reused without rerunning verification. |
 | Next legal action | Stop at the clean Task 145 acceptance checkpoint; wait for a separately approved Task 146 lifecycle and do not start Task 146. |
+
+## Task 146 Run State
+
+| Field | Durable value |
+| --- | --- |
+| Task | `146` — reconcile remote candidates and confirmed-orphan cleanup |
+| State | `In Progress`; Task 146 and Task 147 remain `[ ]` |
+| Approved scope | The committed canonical Task 146 contract and the user's 2026-08-21 Task 146-only candidate-pinned work order: modify only `src/hooks/use-staged-candidates.ts` and `.test.tsx`, `src/components/triage/staging-zone.tsx` and `.test.tsx`, existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`, Task 146 verification evidence, and this ledger |
+| Kickoff authority | The user supplied an approved Task 146 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; pinned candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned receipt-less `approval_required` with `contract_ready=true` as compatibility evidence only |
+| Start base / entrypoint / recovery anchor | `3fb11555b57a96659694dee9729ab6169c78b6e1`; exact entrypoint `src` tree `923050fab27a61d186c0e45c8f3026f3c29f3b5a` |
+| Dependencies | Tasks 122, 131, 133, 142, and 145 are accepted and marked `[x]`; Task 145 is the accepted immediate predecessor; no known Task 146 blocker exists |
+| Scope lock | Headless remote candidate/source reconciliation, exact confirmed-orphan proof/identity cleanup, reactive count/Archive facts, release-safe active-drag invalidation, focus/selection preservation, Task 147 typed slots, focused tests, and evidence only; no unresolved subscription miss as proof, no Task 147 `DP-VQ06-STAGING` copy/DOM/style UI, no proofless cleanup or invalid drag mutation, no `P27-06` repair, and no unrelated canonical/product change |
+| Issues / deviations | None at durable start |
+| Canonical impact | `None` — implementation-local execution of the already approved Task 146 contract |
+| Next legal action | Add failing focused tests before production changes, implement only Task 146, run the declared gates and bounded review loop, commit implementation/evidence, and stop at a clean awaiting-acceptance checkpoint with Task 146 and Task 147 still `[ ]` |
