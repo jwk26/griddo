@@ -53,6 +53,7 @@ export type TriageDragKind =
 
 type TriageDragSourceBase = {
   id: string;
+  integrity: "current" | "invalidated";
   label: string;
   scratchId: string;
   sourceBreakdownId: string;
@@ -71,9 +72,12 @@ export type TriageDragSnapshot =
       resultType: "node" | "bit";
     });
 
+export type TriageActiveDragItem = TriageDragSnapshot | null;
+
 export type TriageDragItem = {
   kind: TriageDragKind;
   id: string;
+  integrity?: "current" | "invalidated";
   label: string;
   scratchId?: string;
   sourceBreakdownId?: string;
@@ -198,6 +202,7 @@ function readTriageDragItem(value: unknown): TriageDragSnapshot | null {
 
   const base: TriageDragSourceBase = {
     id: value.id,
+    integrity: "current",
     label: value.label,
     scratchId: value.scratchId,
     sourceBreakdownId: value.sourceBreakdownId,
@@ -335,7 +340,7 @@ export function useTriageDnd(
 ): {
   sensors: ReturnType<typeof useSensors>;
   collisionDetection: CollisionDetection;
-  activeDragItem: TriageDragItem;
+  activeDragItem: TriageActiveDragItem;
   handleDragStart: (event: DragStartEvent) => void;
   handleDragEnd: (event: DragEndEvent) => void;
   handleDragOver: (event: DragOverEvent) => void;
@@ -348,7 +353,7 @@ export function useTriageDnd(
   overTargetId: string | null;
 } {
   const [activeDragItem, setActiveDragItem] =
-    useState<TriageDragItem>(null);
+    useState<TriageActiveDragItem>(null);
   const [overTargetId, setOverTargetId] = useState<string | null>(null);
   const [pendingPlacement, setPendingPlacement] =
     useState<PendingPlacement>(null);
@@ -419,6 +424,10 @@ export function useTriageDnd(
       }
 
       dragCancelledRef.current = true;
+      setActiveDragItem({
+        ...activationSnapshot,
+        integrity: "invalidated",
+      });
     };
     triageDragInvalidationListeners.add(cancelOnInvalidation);
 

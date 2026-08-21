@@ -8,6 +8,7 @@ import { StagingZone } from "./staging-zone";
 const useDroppableMock = vi.hoisted(() => vi.fn());
 const useDraggableMock = vi.hoisted(() => vi.fn());
 const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
+const invalidateTriageDragSourceMock = vi.hoisted(() => vi.fn());
 const operationLockState = vi.hoisted(() => ({
   activeOperation: null as null | { kind: string; operationId: string },
 }));
@@ -15,6 +16,10 @@ const operationLockState = vi.hoisted(() => ({
 vi.mock("@dnd-kit/core", () => ({
   useDraggable: useDraggableMock,
   useDroppable: useDroppableMock,
+}));
+
+vi.mock("@/hooks/use-dnd", () => ({
+  invalidateTriageDragSource: invalidateTriageDragSourceMock,
 }));
 
 const triageStoreState = vi.hoisted(() => ({
@@ -229,6 +234,70 @@ describe("StagingZone", () => {
         disabled: true,
       }),
     );
+  });
+
+  it("preserves focus on a surviving candidate across remote arrival and removal", () => {
+    const first = createCandidate({ id: "candidate-1", content: "Focused" });
+    const remote = createCandidate({
+      id: "candidate-2",
+      content: "Remote",
+      createdAt: 2,
+    });
+    useDraggableMock.mockReturnValue({
+      setNodeRef: vi.fn(),
+      attributes: { role: "button", tabIndex: 0 },
+      listeners: {},
+      isDragging: false,
+    });
+    useStagedCandidatesMock.mockReturnValue({ candidates: [first] });
+
+    const view = render(<StagingZone type="node" />);
+    screen.getByText("Focused").closest<HTMLElement>("[role=button]")?.focus();
+    expect(document.activeElement).toHaveTextContent("Focused");
+
+    useStagedCandidatesMock.mockReturnValue({ candidates: [remote, first] });
+    view.rerender(<StagingZone type="node" />);
+    expect(document.activeElement).toHaveTextContent("Focused");
+
+    useStagedCandidatesMock.mockReturnValue({ candidates: [first] });
+    view.rerender(<StagingZone type="node" />);
+    expect(document.activeElement).toHaveTextContent("Focused");
+  });
+
+  it("releases a removed candidate DOM owner through exact drag invalidation", () => {
+    const candidate = createCandidate({
+      id: "candidate-remote-removed",
+      content: "Removed remotely",
+      source: {
+        id: "source-remote-removed",
+        scratchBitId: "scratch-1",
+        content: "Removed remotely",
+        order: 0,
+        createdAt: 1,
+        consumedAt: null,
+        version: 4,
+      },
+      sourceBreakdownId: "source-remote-removed",
+      version: 3,
+    });
+    useStagedCandidatesMock.mockReturnValue({ candidates: [candidate] });
+
+    const view = render(<StagingZone type="node" />);
+    useStagedCandidatesMock.mockReturnValue({ candidates: [] });
+    view.rerender(<StagingZone type="node" />);
+
+    expect(invalidateTriageDragSourceMock).toHaveBeenCalledWith({
+      kind: "triage-staged-node",
+      id: "candidate-remote-removed",
+      label: "Removed remotely",
+      scratchId: "scratch-1",
+      sourceBreakdownId: "source-remote-removed",
+      sourceVersion: 4,
+      sourceLifecycle: "active",
+      candidateVersion: 3,
+      candidateLifecycle: "staged",
+      resultType: "node",
+    });
   });
 
   it("keeps overflow candidates in an independently scrollable hidden-scroll well", () => {

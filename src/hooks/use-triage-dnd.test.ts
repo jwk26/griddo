@@ -440,7 +440,11 @@ describe("useTriageDnd — pointer activation lifecycle", () => {
     });
 
     expect(result.current.activeDragItem).toEqual(
-      expect.objectContaining({ label: "My note", sourceVersion: 1 }),
+      expect.objectContaining({
+        integrity: "current",
+        label: "My note",
+        sourceVersion: 1,
+      }),
     );
   });
 
@@ -503,7 +507,11 @@ describe("useTriageDnd — pointer activation lifecycle", () => {
     });
 
     expect(result.current.activeDragItem).toEqual(
-      expect.objectContaining({ id: "candidate-1", candidateVersion: 2 }),
+      expect.objectContaining({
+        id: "candidate-1",
+        candidateVersion: 2,
+        integrity: "invalidated",
+      }),
     );
 
     await act(async () => {
