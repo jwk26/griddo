@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–146 accepted; Task 147 not started
+> State: Tasks 136–146 accepted; Task 147 implemented / awaiting acceptance; Task 148 not started
 
 ## Status Legend
 
@@ -320,14 +320,17 @@ Task 138 targeted canonical repair:
 | Field | Durable value |
 | --- | --- |
 | Task | `147` — render `DP-VQ06-STAGING` Staging statuses |
-| State | `In Progress`; `P27-09` readiness ownership is durably reflected before production/test writes, Task 147 remains `[ ]`, and Task 148 remains `[ ]` and untouched |
-| Approved scope | The committed canonical Task 147 contract, accepted `DP-VQ06-STAGING` receipt, the user's 2026-08-21 Task 147-only candidate-pinned work order, and the approved `P27-07` minimum expansion: modify only the named Staging, Breakdown, centralized copy, CSS, tests, Task 147 verification/browser evidence, this ledger, and `src/components/triage/triage-workspace.tsx` plus `.test.tsx` solely to project its existing authoritative operation state |
+| State | `Implemented / Awaiting Acceptance`; Task 147 remains `[ ]`, and Task 148 remains `[ ]` and untouched |
+| Approved scope | The committed canonical Task 147 contract, accepted `DP-VQ06-STAGING` receipt, the user's 2026-08-21 Task 147-only candidate-pinned work order, and approved `P27-07` through `P27-09`: modify only the named Staging, Breakdown, centralized copy, CSS, tests, Task 147 verification/browser evidence, this ledger, `src/components/triage/triage-workspace.tsx` plus `.test.tsx` solely as the mounted authoritative projection owner, and `src/hooks/use-staged-candidates.ts` plus `.test.tsx` solely for read-only matching-snapshot readiness |
 | Kickoff authority | The user supplied an approved Task 147 ad-hoc work order. The run-phase Gate C receipt remained separate and was intentionally not passed to the run-task resolver; pinned candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned receipt-less `approval_required` with `contract_ready=true` as compatibility evidence only |
 | Start base / entrypoint / recovery anchor | `d8ba3e256b9ff7c343501a1c0e7d2c3c2bd9034c`; exact accepted entrypoint `src` tree `45e8d4401dc35ca05bd4fb8d5953fc6030f92ed6` |
 | Dependencies | Tasks 112, 128, 145, and 146 are accepted and marked `[x]`; accepted Task 146 is the immediate predecessor |
-| Scope reconciliation | `P27-07` is user-approved and canonically reflected. `TriageWorkspaceContent` and its test are added only as the mounted projection owner; Task 146 hook/DnD/integrity semantics, Task 148, `P27-06`, and all unrelated owners remain excluded. |
-| Durable resume/start | Resume checkpoint `1e296268c2b9d94c9393f42f25c08af6c661d18c`; this canonical/ledger commit precedes every production/test write |
-| Canonical impact | `Reflected` — Task 147 exact files/actions now name the minimum mounted projection owner without changing product/design meaning |
+| Scope reconciliation | `P27-07` adds only the mounted Workspace projection owner; `P27-08` binds invalidation to existing explicit signals and defers confirmed-orphan production/browser reachability; `P27-09` adds only read-only matching-snapshot readiness. Task 146 command/DnD/integrity semantics, Task 148, `P27-06`, repository behavior, orphan authority, and all unrelated owners remain excluded. |
+| Durable resume/start | `1e296268c2b9d94c9393f42f25c08af6c661d18c` P27-07 drift → `5f14f09071aaa45de42a53860e6c0a809a52cabd` reflection → `504849f7b97d046f97fc706ba90e595825e0bb5c` P27-08 drift → `bdf2b5c07f66cd58e51d079f93bd7d43e2e58b6e` reflection → `b51f65d4e9d3468295fe1c582fec1a4fc9b18b75` P27-09 drift → `8b153b32fd10cafe3c3bbca4c396a84e2be6d80c` canonical readiness start |
+| Canonical impact | `Reflected` — Task 147 exact files/actions name the minimum mounted projection and read-only readiness owners without changing product/design meaning |
 | P27-08 disposition | Invalidated drag/placement uses only the existing explicit `activeDragItem.integrity` and `onPendingPlacementInvalidated(dropId)` signals through Workspace. Confirmed-orphan copy/render is headless-only; production reachability/browser acceptance is deferred without creating authority or using disappearance inference. |
 | P27-09 disposition | The existing candidate hook may expose only matching-snapshot readiness. Initial and Scratch-switch snapshots seed the remote-arrival baseline; authoritative empty is ready and later arrival remains distinguishable without timing, first-nonempty, or render-count inference. |
-| Next legal action | Begin failing readiness and Task 147 focused tests, implement only the approved DP-VQ06-STAGING realization, and stop before Task 148. |
+| Implementation | `a9e02b20f37ca307cd249acc4a173cfdefd400dd` — `feat(triage): render staging statuses`; browser-found local-arrival repair `79a3aad09ea791d5b4aa05e78f287fc6802e118f` — `fix(triage): exclude local staging arrivals`; repaired `src` tree `a94b637c16cb407879cc7fa5736e900edb909580` |
+| Verification | `docs/verification/inbox-triage/task-147.md`; focused 5 files / 197 tests, full 94 files / 963 tests, lint with 0 errors and 11 existing warnings, typecheck, production build, and diff-check passed; actual local browser evidence covers cross-tab arrival/action/focus, terminal conflict/dismissal/focus, invalid-target lifetime, eight themes, and reduced motion; confirmed orphan is headless-only and production/browser-deferred per P27-08 |
+| Issues / deviations | Browser verification found same-tab Stage could be counted as remote when the command resolved before its authoritative snapshot; repaired within the approved Workspace projection/test scope. No remaining blocker or additional scope drift. |
+| Next legal action | Await explicit Task 147 acceptance at the clean checkpoint; do not mark Task 147 or Task 148 `[x]`, and do not start Task 148. |
