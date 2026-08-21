@@ -1567,7 +1567,7 @@ and no-queue/no-replay contracts do not change.
 
 **Commit contract:** headless Stage/Unstage adapters, tests, and Task 145 evidence only; `feat(triage): connect stage and unstage flows`.
 
-### Task 146: [ ] Reconcile remote candidates and confirmed-orphan cleanup
+### Task 146: [x] Reconcile remote candidates and confirmed-orphan cleanup
 
 **Files and actions:** modify `src/hooks/use-staged-candidates.ts` and `.test.tsx`, `src/components/triage/staging-zone.tsx` and `.test.tsx`, and existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`. Separate unresolved subscription miss from authoritative orphan proof; invoke Task 122 only with exact proof/identity; update counts/Archive facts reactively; cancel affected drags after visual snapshot release; preserve selection/focus on remote arrival/removal. Expose typed slots for Task 147 but choose no `VQ-06` appearance.
 

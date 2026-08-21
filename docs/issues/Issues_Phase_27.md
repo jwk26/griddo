@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–145 accepted; Task 146 implemented awaiting acceptance
+> State: Tasks 136–146 accepted; Task 147 not started
 
 ## Status Legend
 
@@ -298,7 +298,8 @@ Task 138 targeted canonical repair:
 | Field | Durable value |
 | --- | --- |
 | Task | `146` — reconcile remote candidates and confirmed-orphan cleanup |
-| State | `Implemented`, awaiting user acceptance; Task 146 and Task 147 remain `[ ]` |
+| State | `Accepted`; user-approved and marked `[x]`; Task 147 remains `[ ]` and was not started |
+| Acceptance | On 2026-08-21 the user approved exact checkpoint `7dc8ca657001f71eba7e87645e61817c5bd466e1` with no material finding; its parent is `43d7d1aa39dbda914d434497f680374df6e05dd7`, and the accepted `src` tree remains `45e8d4401dc35ca05bd4fb8d5953fc6030f92ed6` |
 | Approved scope | The committed canonical Task 146 contract and the user's 2026-08-21 Task 146-only candidate-pinned work order: modify only `src/hooks/use-staged-candidates.ts` and `.test.tsx`, `src/components/triage/staging-zone.tsx` and `.test.tsx`, existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`, Task 146 verification evidence, and this ledger |
 | Kickoff authority | The user supplied an approved Task 146 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; pinned candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned receipt-less `approval_required` with `contract_ready=true` as compatibility evidence only |
 | Start base / entrypoint / recovery anchor | `3fb11555b57a96659694dee9729ab6169c78b6e1`; exact entrypoint `src` tree `923050fab27a61d186c0e45c8f3026f3c29f3b5a` |
@@ -309,4 +310,4 @@ Task 138 targeted canonical repair:
 | Implementation | `8809a74c08dc7c0be49415edda1cdb257245477f` — `feat(triage): reconcile candidate integrity`; final `src` tree `45e8d4401dc35ca05bd4fb8d5953fc6030f92ed6` |
 | Verification | `docs/verification/inbox-triage/task-146.md`; focused 3 files / 79 tests, full 94 files / 949 tests, changed-file lint, full lint with 0 errors and the same 11 existing warnings, typecheck, production build, and diff-check passed. Verification-only continuation added canonical two-tab browser evidence for remote arrival/removal focus preservation and a real held drag retaining its exact token through authoritative invalidation until a mutation-free release; artifact: `docs/verification/inbox-triage/captures/task-146-browser-report.json` |
 | Review | Independent re-review found no remaining Critical or Important Task 146 issue. Unresolved subscription miss remains non-proof; cleanup and reconciliation are exact and retry-safe; Task 147 UI, `P27-06`, unrelated canonical/product files, and publication/integration remain untouched. |
-| Next legal action | Stop at the clean Task 146 awaiting-acceptance checkpoint; wait for explicit Task 146 acceptance and do not mark `[x]` or start Task 147. |
+| Next legal action | Stop at the clean Task 146 acceptance checkpoint; wait for a separately approved Task 147 lifecycle and do not start Task 147. |
