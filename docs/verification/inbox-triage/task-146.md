@@ -70,11 +70,33 @@ added the terminal no-retry guard described above.
 | `pnpm build` | 0 | Next.js 16.2.1 production build passed; seven routes generated |
 | `git diff --check` | 0 | No whitespace errors |
 
-No browser/capture artifact was produced: Task 146 is the approved headless
-remote/integrity adapter task, the canonical route has no authoritative remote
-proof injector, and `DP-VQ06-STAGING` user-visible status realization is owned
-only by Task 147. DOM-level focus and visual-snapshot-release behavior are
-covered directly by the focused Staging and DnD tests above.
+## Browser modality continuation
+
+The user's verification-only continuation reused every successful gate above
+and added `captures/task-146-browser-report.json`. Two same-origin canonical
+route tabs used only production Quick Capture, Breakdown, Stage, and Unstage
+controls with real pointer down/move/up sequences; no injector, test hook,
+product code, or Task 147 UI was added.
+
+The browser skill's persistent Node REPL was unavailable in this environment,
+so its documented Playwright fallback ran system Chrome `151.0.7922.170` at
+`1920×912` on the actual `/grid/<id>` route.
+
+- With mounted Staging focused on `Surviving candidate`, the second tab caused
+  an authoritative candidate arrival and removal. The first tab changed from
+  one to two to one staged Nodes, retained the same focused candidate after
+  both changes, retained the selected Scratch, and performed no focus theft.
+- A staged Node drag remained actively held over the Home placement target
+  while the second tab authoritatively unstaged that exact candidate. Before
+  release, its source DOM was gone but the visual token still retained kind
+  `triage-staged-node`, candidate version `1`, and source version `2`. Release
+  removed the token without another Stage/Unstage or placement mutation; the
+  staged list, Breakdown list, and empty Home state were unchanged from the
+  post-invalidation pre-release snapshot.
+- Chrome reported no console or page errors during the captured continuation.
+- Machine-readable evidence:
+  `captures/task-146-browser-report.json` — SHA-256
+  `a2892afd2e059a71a468d68f28eca980ae3a4fdec21147f233add99b685cedeb`.
 
 ## Checkpoint buckets
 
