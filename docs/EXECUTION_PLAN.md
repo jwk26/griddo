@@ -1585,7 +1585,7 @@ and no-queue/no-replay contracts do not change.
 
 ### Task 147: [ ] Render `DP-VQ06-STAGING` Staging statuses
 
-**Files and actions:** after `DP-VQ06-STAGING`, modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` only as the mounted projection owner for its existing command-bearing `useStagedCandidates` instance; modify `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate Staging-only wording and render Stage/Unstage pending/invalid/stale/failure, remote arrival, orphan, alert/count/indicator, dismissal/action/focus, reduced-motion, and all-theme states over Tasks 145–146. Do not change Task 146 hook, DnD, or integrity semantics.
+**Files and actions:** after `DP-VQ06-STAGING`, modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` only as the mounted projection owner for its existing command-bearing `useStagedCandidates` instance and existing explicit `activeDragItem.integrity === "invalidated"` plus `onPendingPlacementInvalidated(dropId)` signals; modify `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate Staging-only wording and render Stage/Unstage pending/invalid/stale/failure, remote arrival, orphan, alert/count/indicator, dismissal/action/focus, reduced-motion, and all-theme states over Tasks 145–146. Keep confirmed-orphan copy/render in the headless state matrix, but defer its production reachability and browser acceptance to a future remote-authority lifecycle because no authoritative proof producer or production caller exists. Do not infer invalidation from generic close/disappearance, create orphan authority, or change Task 146 hook, DnD, or integrity semantics.
 
 **Dependencies:** Tasks 112, 128, 145, and 146.
 
@@ -1595,7 +1595,7 @@ and no-queue/no-replay contracts do not change.
 
 **Observable acceptance:** every receipt state is section-local/distinct, remote arrival never steals focus, alert lifetime is exact, and only terminal success removes/restores durable representations.
 
-**Verification:** focused Staging/Breakdown/copy state-table tests; run each state/dismissal/focus/reduced-motion/theme mapping and record `docs/verification/inbox-triage/task-147.md`; `pnpm typecheck`.
+**Verification:** focused Workspace/Staging/Breakdown/copy state-table tests; run each production-reachable state/dismissal/focus/reduced-motion/theme mapping and record `docs/verification/inbox-triage/task-147.md`; verify confirmed-orphan copy/render headlessly and record its production/browser deferral; `pnpm typecheck`.
 
 **Commit contract:** DP-VQ06-STAGING copy/realization, tests, styles, and Task 147 evidence only; `feat(triage): render staging statuses`.
 
