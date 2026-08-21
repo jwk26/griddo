@@ -470,6 +470,63 @@ describe("TriageWorkspace", () => {
     expect(screen.queryByRole("button", { name: "Show new Nodes" })).not.toBeInTheDocument();
   });
 
+  it("excludes a local Stage identity from the remote-arrival indicator", async () => {
+    const initial = {
+      isReady: true,
+      candidates: [],
+      integrityCandidates: [],
+      pendingOperations: [],
+      unknownOperations: [],
+      reconcilingOperations: [],
+      counts: { nodes: 0, bits: 0 },
+      eligibility: { stagedSourceIds: new Set<string>() },
+      stageCandidate: stageCandidateMock,
+      reconcileStageCandidate: reconcileStageCandidateMock,
+      unstageCandidate: unstageCandidateMock,
+      reconcileUnstageCandidate: reconcileUnstageCandidateMock,
+    };
+    stageCandidateMock.mockResolvedValue({
+      operationId: "stage-local",
+      status: "applied",
+      candidate: null,
+      source: null,
+      scratch: null,
+    });
+    useStagedCandidatesMock.mockReturnValue(initial);
+    const view = render(<TriageWorkspace node={createNode()} />);
+    const options = useTriageDndMock.mock.calls[0]?.[1] as {
+      stageCandidate: (command: Record<string, unknown>) => Promise<unknown>;
+    };
+
+    await act(async () => {
+      await options.stageCandidate({
+        operationId: "stage-local",
+        candidateId: "local-node",
+        scratchBitId: "scratch-1",
+        sourceBreakdownId: "breakdown-local",
+        sourceExpectedVersion: 1,
+        resultType: "node",
+      });
+    });
+    useStagedCandidatesMock.mockReturnValue({
+      ...initial,
+      candidates: [
+        {
+          id: "local-node",
+          resultType: "node",
+          content: "Local node",
+          source: { version: 1 },
+        },
+      ],
+      counts: { nodes: 1, bits: 0 },
+    });
+    view.rerender(<TriageWorkspace node={createNode()} />);
+
+    expect(
+      screen.queryByRole("button", { name: "Show new Nodes" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("renders and dismisses a terminal Stage alert without a Retry action", async () => {
     stageCandidateMock.mockResolvedValue({
       operationId: "stage-1",

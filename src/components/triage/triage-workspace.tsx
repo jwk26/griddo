@@ -759,6 +759,9 @@ function TriageWorkspaceContent({
   );
   const operationMetaRef = useRef(operationMeta);
   const localStageCandidateIdsRef = useRef(new Set<string>());
+  const [localStageCandidateIds, setLocalStageCandidateIds] = useState(
+    new Set<string>(),
+  );
   const activeDragItemRef = useRef<TriageDragItem>(null);
   const arrivalBaselineRef = useRef<{
     scratchId: string | null;
@@ -816,7 +819,12 @@ function TriageWorkspaceContent({
       } satisfies StagingOperationMeta;
       operationMetaRef.current.set(command.operationId, meta);
       setOperationMeta(new Map(operationMetaRef.current));
-      if (kind === "stage") localStageCandidateIdsRef.current.add(command.candidateId);
+      if (kind === "stage") {
+        localStageCandidateIdsRef.current.add(command.candidateId);
+        setLocalStageCandidateIds((current) =>
+          new Set(current).add(command.candidateId),
+        );
+      }
       setStagingAlert((current) =>
         current?.candidateId === command.candidateId ? null : current,
       );
@@ -834,7 +842,14 @@ function TriageWorkspaceContent({
     ) => {
       if ("outcome" in outcome) return;
       const alert = stagingTerminalAlert(kind, outcome.status, meta);
-      if (alert !== null) localStageCandidateIdsRef.current.delete(meta.candidateId);
+      if (alert !== null) {
+        localStageCandidateIdsRef.current.delete(meta.candidateId);
+        setLocalStageCandidateIds((current) => {
+          const next = new Set(current);
+          next.delete(meta.candidateId);
+          return next;
+        });
+      }
       setStagingAlert((current) =>
         alert ?? (current?.candidateId === meta.candidateId ? null : current),
       );
@@ -1005,6 +1020,7 @@ function TriageWorkspaceContent({
       // This state mirrors an external live-query ownership boundary.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setNewCandidateIds({ node: new Set(), bit: new Set() });
+      setLocalStageCandidateIds(new Set());
       setStagingAlert(null);
     }
     if (selectedScratchId === null || !stagedCandidates.isReady) return;
@@ -1018,6 +1034,19 @@ function TriageWorkspaceContent({
       };
       return;
     }
+    const observedLocalIds = new Set(
+      authoritativeArrivalCandidates
+        .filter(
+          ({ id }) =>
+            !current.ids.has(id) &&
+            (localStageCandidateIds.has(id) ||
+              localStageCandidateIdsRef.current.has(id)),
+        )
+        .map(({ id }) => id),
+    );
+    for (const id of observedLocalIds) {
+      localStageCandidateIdsRef.current.delete(id);
+    }
     setNewCandidateIds((previous) => {
       const next = {
         node: new Set([...previous.node].filter((id) => currentIds.has(id))),
@@ -1025,11 +1054,18 @@ function TriageWorkspaceContent({
       };
       for (const candidate of authoritativeArrivalCandidates) {
         if (current.ids.has(candidate.id)) continue;
-        if (localStageCandidateIdsRef.current.delete(candidate.id)) continue;
+        if (observedLocalIds.has(candidate.id)) continue;
         next[candidate.resultType].add(candidate.id);
       }
       return next;
     });
+    if (observedLocalIds.size > 0) {
+      setLocalStageCandidateIds((currentLocalIds) => {
+        const remaining = new Set(currentLocalIds);
+        for (const id of observedLocalIds) remaining.delete(id);
+        return remaining;
+      });
+    }
     arrivalBaselineRef.current = {
       scratchId: selectedScratchId,
       ready: true,
@@ -1037,6 +1073,7 @@ function TriageWorkspaceContent({
     };
   }, [
     authoritativeArrivalCandidates,
+    localStageCandidateIds,
     selectedScratchId,
     stagedCandidates.isReady,
   ]);
