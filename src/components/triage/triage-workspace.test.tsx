@@ -26,6 +26,7 @@ const unstageCandidateMock = vi.hoisted(() => vi.fn());
 const reconcileUnstageCandidateMock = vi.hoisted(() => vi.fn());
 const handlePlacementConfirmMock = vi.hoisted(() => vi.fn());
 const handlePlacementCancelMock = vi.hoisted(() => vi.fn());
+const stagingZoneRenderMock = vi.hoisted(() => vi.fn());
 const useGridDataMock = vi.hoisted(() => vi.fn());
 const useInboxMock = vi.hoisted(() => vi.fn());
 const getBitMock = vi.hoisted(() => vi.fn());
@@ -155,9 +156,40 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
 });
 
 vi.mock("@/components/triage/staging-zone", () => ({
-  StagingZone: ({ type }: { type: string }) => (
-    <div data-testid={`${type}-staging-zone`} />
+  StagingAlertBand: ({
+    copy,
+    onDismiss,
+  }: {
+    copy: string;
+    onDismiss: () => void;
+  }) => (
+    <div data-triage-role="staging-local-alert">
+      <span>{copy}</span>
+      <button aria-label="Dismiss Staging alert" type="button" onClick={onDismiss}>
+        X
+      </button>
+    </div>
   ),
+  StagingZone: (props: {
+    type: "node" | "bit";
+    newCandidateIds?: ReadonlySet<string>;
+    projection?: { candidates?: Array<{ id: string; content: string }> };
+    onObservedTop?: () => void;
+  }) => {
+    stagingZoneRenderMock(props);
+    return (
+      <div
+        data-testid={`${props.type}-staging-zone`}
+        data-triage-role={`staging-${props.type}-well`}
+      >
+        {props.projection?.candidates?.map((candidate) => (
+          <button data-candidate-id={candidate.id} key={candidate.id} type="button">
+            {candidate.content}
+          </button>
+        ))}
+      </div>
+    );
+  },
 }));
 
 function createNode(overrides: Partial<Node> = {}): Node {
@@ -235,6 +267,11 @@ beforeEach(() => {
   handlePlacementConfirmMock.mockReset();
   handlePlacementConfirmMock.mockResolvedValue(undefined);
   handlePlacementCancelMock.mockReset();
+  stagingZoneRenderMock.mockReset();
+  stageCandidateMock.mockReset();
+  reconcileStageCandidateMock.mockReset();
+  unstageCandidateMock.mockReset();
+  reconcileUnstageCandidateMock.mockReset();
   useGridDataMock.mockReset();
   useGridDataMock.mockReturnValue({ nodes: [], bits: [], isLoading: false });
   inboxState.activeScratchBits = [
@@ -270,7 +307,12 @@ beforeEach(() => {
   useTriageDndMock.mockReturnValue(createDndState());
   useStagedCandidatesMock.mockReset();
   useStagedCandidatesMock.mockReturnValue({
+    isReady: true,
     candidates: [],
+    integrityCandidates: [],
+    pendingOperations: [],
+    unknownOperations: [],
+    reconcilingOperations: [],
     counts: { nodes: 0, bits: 0 },
     eligibility: { stagedSourceIds: new Set<string>() },
     stageCandidate: stageCandidateMock,
@@ -292,10 +334,10 @@ describe("TriageWorkspace", () => {
     expect(useTriageDndMock).toHaveBeenCalledWith(
       "scratch-1",
       expect.objectContaining({
-        stageCandidate: stageCandidateMock,
-        reconcileStageCandidate: reconcileStageCandidateMock,
-        unstageCandidate: unstageCandidateMock,
-        reconcileUnstageCandidate: reconcileUnstageCandidateMock,
+        stageCandidate: expect.any(Function),
+        reconcileStageCandidate: expect.any(Function),
+        unstageCandidate: expect.any(Function),
+        reconcileUnstageCandidate: expect.any(Function),
         operationLock: expect.objectContaining({
           acquire: expect.any(Function),
           release: expect.any(Function),
@@ -303,6 +345,305 @@ describe("TriageWorkspace", () => {
         focusUnstagedSource: expect.any(Function),
       }),
     );
+  });
+
+  it("projects the mounted authoritative candidate state into both Staging zones", () => {
+    const candidate = {
+      id: "candidate-1",
+      scratchBitId: "scratch-1",
+      sourceBreakdownId: "breakdown-1",
+      resultType: "node",
+      lifecycle: "staged",
+      createdAt: 1,
+      updatedAt: 1,
+      version: 1,
+      content: "Project",
+      source: {
+        id: "breakdown-1",
+        scratchBitId: "scratch-1",
+        content: "Project",
+        order: 0,
+        createdAt: 1,
+        consumedAt: null,
+        version: 1,
+      },
+    };
+    useStagedCandidatesMock.mockReturnValue({
+      isReady: true,
+      candidates: [candidate],
+      integrityCandidates: [],
+      pendingOperations: [],
+      unknownOperations: [
+        {
+          operationId: "unstage-1",
+          candidateId: candidate.id,
+          sourceBreakdownId: candidate.sourceBreakdownId,
+          kind: "unstage",
+          phase: "unknown",
+        },
+      ],
+      reconcilingOperations: [],
+      counts: { nodes: 1, bits: 0 },
+      eligibility: { stagedSourceIds: new Set(["breakdown-1"]) },
+      stageCandidate: stageCandidateMock,
+      reconcileStageCandidate: reconcileStageCandidateMock,
+      unstageCandidate: unstageCandidateMock,
+      reconcileUnstageCandidate: reconcileUnstageCandidateMock,
+    });
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(stagingZoneRenderMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "node",
+        projection: expect.objectContaining({
+          candidates: [candidate],
+          operations: [
+            expect.objectContaining({
+              operationId: "unstage-1",
+              title: "Project",
+              resultType: "node",
+            }),
+          ],
+        }),
+      }),
+    );
+  });
+
+  it("uses the ready empty snapshot as baseline and reports a later remote Node arrival without stealing focus", async () => {
+    const initial = {
+      isReady: true,
+      candidates: [],
+      integrityCandidates: [],
+      pendingOperations: [],
+      unknownOperations: [],
+      reconcilingOperations: [],
+      counts: { nodes: 0, bits: 0 },
+      eligibility: { stagedSourceIds: new Set<string>() },
+      stageCandidate: stageCandidateMock,
+      reconcileStageCandidate: reconcileStageCandidateMock,
+      unstageCandidate: unstageCandidateMock,
+      reconcileUnstageCandidate: reconcileUnstageCandidateMock,
+    };
+    useStagedCandidatesMock.mockReturnValue(initial);
+    const view = render(<TriageWorkspace node={createNode()} />);
+    const existingFocus = screen.getByRole("button", { name: "Drag breakdown" });
+    existingFocus.focus();
+
+    useStagedCandidatesMock.mockReturnValue({
+      ...initial,
+      candidates: [
+        {
+          id: "remote-node",
+          scratchBitId: "scratch-1",
+          sourceBreakdownId: "breakdown-remote",
+          resultType: "node",
+          lifecycle: "staged",
+          createdAt: 2,
+          updatedAt: 2,
+          version: 1,
+          content: "Remote node",
+          source: {
+            id: "breakdown-remote",
+            scratchBitId: "scratch-1",
+            content: "Remote node",
+            order: 0,
+            createdAt: 2,
+            consumedAt: null,
+            version: 1,
+          },
+        },
+      ],
+      counts: { nodes: 1, bits: 0 },
+    });
+    view.rerender(<TriageWorkspace node={createNode()} />);
+
+    const indicator = await screen.findByRole("button", { name: "Show new Nodes" });
+    expect(indicator).toHaveTextContent("1 new");
+    expect(existingFocus).toHaveFocus();
+
+    const nodeWell = screen.getByTestId("node-staging-zone");
+    nodeWell.scrollTop = 40;
+    fireEvent.click(indicator);
+    expect(nodeWell.scrollTop).toBe(0);
+    expect(screen.getByText("Remote node")).toHaveFocus();
+    expect(screen.queryByRole("button", { name: "Show new Nodes" })).not.toBeInTheDocument();
+  });
+
+  it("renders and dismisses a terminal Stage alert without a Retry action", async () => {
+    stageCandidateMock.mockResolvedValue({
+      operationId: "stage-1",
+      status: "not_applied",
+      candidate: null,
+      source: null,
+      scratch: null,
+    });
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        activeDragItem: {
+          kind: "triage-breakdown",
+          id: "breakdown-1",
+          label: "Project",
+          scratchId: "scratch-1",
+          sourceBreakdownId: "breakdown-1",
+          sourceVersion: 1,
+          sourceLifecycle: "active",
+        },
+      }),
+    );
+    render(<TriageWorkspace node={createNode()} />);
+    const options = useTriageDndMock.mock.calls[0]?.[1] as {
+      stageCandidate: (command: Record<string, unknown>) => Promise<unknown>;
+    };
+
+    await act(async () => {
+      await options.stageCandidate({
+        operationId: "stage-1",
+        candidateId: "candidate-1",
+        scratchBitId: "scratch-1",
+        sourceBreakdownId: "breakdown-1",
+        sourceExpectedVersion: 1,
+        resultType: "node",
+      });
+    });
+
+    expect(
+      within(screen.getByRole("button", { name: "Dismiss Staging alert" }).parentElement!)
+        .getByText("“Project” was not staged. Drag it again to retry."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("staging-live-region"),
+    ).toHaveTextContent("“Project” was not staged. Drag it again to retry.");
+    expect(screen.getByTestId("staging-live-region")).toHaveAttribute(
+      "aria-live",
+      "polite",
+    );
+    expect(screen.queryByRole("button", { name: /retry/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss Staging alert" }));
+    expect(screen.queryByText(/was not staged/)).not.toBeInTheDocument();
+  });
+
+  it("projects only the explicit invalidated drag signal after snapshot release", () => {
+    let activeDragItem: TriageDragItem = {
+      kind: "triage-staged-node",
+      id: "candidate-1",
+      label: "Project",
+      integrity: "invalidated",
+    };
+    useTriageDndMock.mockImplementation(() =>
+      createDndState({ activeDragItem }),
+    );
+    const view = render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.queryByText("“Project” changed elsewhere. Drop canceled.")).not.toBeInTheDocument();
+
+    activeDragItem = null;
+    view.rerender(<TriageWorkspace node={createNode()} />);
+
+    expect(
+      within(screen.getByRole("button", { name: "Dismiss Staging alert" }).parentElement!)
+        .getByText("“Project” changed elsewhere. Drop canceled."),
+    ).toBeInTheDocument();
+  });
+
+  it("clears an Unstage failure only after the authoritative candidate disappears", async () => {
+    const candidate = {
+      id: "candidate-1",
+      scratchBitId: "scratch-1",
+      sourceBreakdownId: "breakdown-1",
+      resultType: "bit" as const,
+      lifecycle: "staged" as const,
+      createdAt: 1,
+      updatedAt: 1,
+      version: 1,
+      content: "Project",
+      source: {
+        id: "breakdown-1",
+        scratchBitId: "scratch-1",
+        content: "Project",
+        order: 0,
+        createdAt: 1,
+        consumedAt: null,
+        version: 1,
+      },
+    };
+    const projection = {
+      isReady: true,
+      candidates: [candidate],
+      integrityCandidates: [],
+      pendingOperations: [],
+      unknownOperations: [],
+      reconcilingOperations: [],
+      counts: { nodes: 0, bits: 1 },
+      eligibility: { stagedSourceIds: new Set(["breakdown-1"]) },
+      stageCandidate: stageCandidateMock,
+      reconcileStageCandidate: reconcileStageCandidateMock,
+      unstageCandidate: unstageCandidateMock,
+      reconcileUnstageCandidate: reconcileUnstageCandidateMock,
+    };
+    unstageCandidateMock.mockResolvedValue({
+      operationId: "unstage-1",
+      status: "conflict",
+      candidate,
+      source: candidate.source,
+    });
+    useStagedCandidatesMock.mockReturnValue(projection);
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        activeDragItem: {
+          kind: "triage-staged-bit",
+          id: candidate.id,
+          label: candidate.content,
+        },
+      }),
+    );
+    const view = render(<TriageWorkspace node={createNode()} />);
+    const options = useTriageDndMock.mock.calls[0]?.[1] as {
+      unstageCandidate: (command: Record<string, unknown>) => Promise<unknown>;
+    };
+
+    await act(async () => {
+      await options.unstageCandidate({
+        operationId: "unstage-1",
+        candidateId: candidate.id,
+        candidateExpectedVersion: 1,
+        sourceBreakdownId: candidate.sourceBreakdownId,
+        sourceExpectedVersion: 1,
+      });
+    });
+    expect(screen.getByRole("button", { name: "Dismiss Staging alert" })).toBeInTheDocument();
+
+    useStagedCandidatesMock.mockReturnValue({
+      ...projection,
+      candidates: [],
+      counts: { nodes: 0, bits: 0 },
+    });
+    view.rerender(<TriageWorkspace node={createNode()} />);
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("button", { name: "Dismiss Staging alert" }),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  it("binds the static Staging status family to reduced motion and all eight themes", () => {
+    expect(globalsCss).toContain(".staging-operation-status");
+    expect(globalsCss).toContain(".staging-arrival-count");
+    expect(globalsCss).toContain(".staging-local-alert");
+    expect(globalsCss).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(globalsCss).toContain('[data-triage-role^="staging-"]');
+    for (const theme of [
+      "tiny-desk",
+      "neumorphism",
+      "claymorphism",
+      "origami",
+      "terminal",
+      "retro-mac",
+      "graphite",
+    ]) {
+      expect(globalsCss).toContain(`:root[data-color-theme="${theme}"]\n  .staging-local-alert`);
+    }
   });
 
   it("passes the staged drag snapshot to the transient Breakdown drop-back surface", () => {
@@ -928,6 +1269,10 @@ describe("TriageWorkspace", () => {
     await vi.waitFor(() => {
       expect(handlePlacementCancelMock).toHaveBeenCalledOnce();
     });
+    expect(
+      within(screen.getByRole("button", { name: "Dismiss Staging alert" }).parentElement!)
+        .getByText("Placement closed because “Project” changed elsewhere."),
+    ).toBeInTheDocument();
   });
 
   it("requires a type choice for direct breakdown placement and passes the selected type on confirm", () => {

@@ -39,7 +39,7 @@ describe("Inbox/Triage core-English copy", () => {
     expect(Object.values(INBOX_TRIAGE_COPY.lifecycleReasons)).toEqual([
       RECEIPT_COPY_UNAVAILABLE,
       "Pool updated elsewhere.",
-      RECEIPT_COPY_UNAVAILABLE,
+      "This item is no longer available.",
       RECEIPT_COPY_UNAVAILABLE,
       RECEIPT_COPY_UNAVAILABLE,
       RECEIPT_COPY_UNAVAILABLE,
@@ -50,10 +50,15 @@ describe("Inbox/Triage core-English copy", () => {
     expect(INBOX_TRIAGE_COPY.liveRegions.poolActivity).toBe(
       "Pool updated elsewhere.",
     );
+    expect(INBOX_TRIAGE_COPY.liveRegions.stagingActivity).toBe(
+      "Staging updated.",
+    );
     expect(
       Object.entries(INBOX_TRIAGE_COPY.liveRegions).every(
         ([key, value]) =>
-          key === "poolActivity" || value === RECEIPT_COPY_UNAVAILABLE,
+          key === "poolActivity" ||
+          key === "stagingActivity" ||
+          value === RECEIPT_COPY_UNAVAILABLE,
       ),
     ).toBe(true);
     expect(INBOX_TRIAGE_COPY.accessibleNames).toEqual({
@@ -203,9 +208,60 @@ describe("Inbox/Triage core-English copy", () => {
     );
   });
 
+  it("owns the complete approved DP-VQ06-STAGING wording", () => {
+    expect(INBOX_TRIAGE_COPY.stagingStatus).toEqual({
+      operation: {
+        stagePending: "Staging “{title}”…",
+        unstagePending: "Returning “{title}” to Breakdown…",
+        stageUnknown: "We couldn’t confirm whether “{title}” was staged.",
+        stageReconciling: "Checking whether “{title}” was staged…",
+        unstageUnknown: "We couldn’t confirm whether “{title}” was returned.",
+        unstageReconciling: "Checking whether “{title}” was returned…",
+      },
+      alert: {
+        stageNotApplied: "“{title}” was not staged. Drag it again to retry.",
+        stageRejected: "“{title}” can’t be staged from its current source.",
+        stageConflict: "“{title}” changed elsewhere and was not staged.",
+        unstageNotApplied:
+          "“{title}” is still staged. Drag it back to Breakdown to retry.",
+        unstageRejected: "“{title}” can’t be returned from its current state.",
+        unstageConflict: "“{title}” changed elsewhere and remains staged.",
+        orphanNode:
+          "A staged Node was removed because its source no longer exists.",
+        orphanBit:
+          "A staged Bit was removed because its source no longer exists.",
+        invalidatedDrag: "“{title}” changed elsewhere. Drop canceled.",
+        invalidatedPlacement:
+          "Placement closed because “{title}” changed elsewhere.",
+      },
+      integrity: {
+        node: "Checking a staged Node source…",
+        bit: "Checking a staged Bit source…",
+      },
+      target: {
+        nodeSameType: "Already in Nodes.",
+        bitSameType: "Already in Bits.",
+        oppositeType: "Return to Breakdown before changing type.",
+        unavailable: "This item is no longer available.",
+      },
+      arrival: { one: "1 new", many: "{count} new" },
+      actions: {
+        showNodes: "Show new Nodes",
+        showBits: "Show new Bits",
+        dismissAlert: "Dismiss Staging alert",
+      },
+    });
+    expect(INBOX_TRIAGE_COPY.liveRegions.stagingActivity).toBe(
+      "Staging updated.",
+    );
+    expect(INBOX_TRIAGE_COPY.lifecycleReasons.stagingSourceUnavailable).toBe(
+      "This item is no longer available.",
+    );
+  });
+
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      147, 148, 150, 151, 153, 154, 157, 160, 162,
+      148, 150, 151, 153, 154, 157, 160, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {

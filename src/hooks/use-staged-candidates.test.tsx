@@ -217,11 +217,50 @@ describe("useStagedCandidates", () => {
   it("does not subscribe without a selected Scratch", () => {
     const { result } = renderHook(() => useStagedCandidates(null));
 
+    expect(result.current.isReady).toBe(false);
     expect(result.current.candidates).toEqual([]);
     expect(result.current.unresolvedCandidates).toEqual([]);
     expect(result.current.counts.authoritative).toBe(0);
     expect(result.current.eligibility.archiveCandidateClear).toBe(true);
     expect(liveQueryMock).not.toHaveBeenCalled();
+  });
+
+  it("projects readiness only after the selected Scratch receives its matching authoritative snapshot", async () => {
+    liveQueryMock.mockImplementation((query: () => Promise<unknown>) => {
+      const subscription: LiveQuerySubscription = {
+        query,
+        unsubscribe: vi.fn(),
+      };
+      subscriptions.push(subscription);
+      return {
+        subscribe: (observer: LiveQueryObserver) => {
+          subscription.observer = observer;
+          return { unsubscribe: subscription.unsubscribe };
+        },
+      };
+    });
+
+    const { result, rerender } = renderHook(
+      ({ scratchId }) => useStagedCandidates(scratchId),
+      { initialProps: { scratchId: IDS.scratch as string | null } },
+    );
+
+    expect(result.current.isReady).toBe(false);
+    await refreshSubscription(0);
+    expect(result.current.isReady).toBe(true);
+    expect(result.current.candidates).toEqual([]);
+
+    rerender({ scratchId: IDS.otherScratch });
+    expect(result.current.isReady).toBe(false);
+
+    await refreshSubscription(0);
+    expect(result.current.isReady).toBe(false);
+
+    await refreshSubscription(1);
+    expect(result.current.isReady).toBe(true);
+
+    rerender({ scratchId: null });
+    expect(result.current.isReady).toBe(false);
   });
 
   it("reconstructs durable candidates on mount and refreshes labels from remote source edits", async () => {

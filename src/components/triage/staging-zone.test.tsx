@@ -1,9 +1,9 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { TriageDragItem } from "@/hooks/use-dnd";
 import type { StagedCandidateProjection } from "@/hooks/use-staged-candidates";
-import { StagingZone } from "./staging-zone";
+import { StagingAlertBand, StagingZone } from "./staging-zone";
 
 const useDroppableMock = vi.hoisted(() => vi.fn());
 const useDraggableMock = vi.hoisted(() => vi.fn());
@@ -98,6 +98,24 @@ afterEach(() => {
 });
 
 describe("StagingZone", () => {
+  it("keeps the confirmed-orphan alert shape headlessly renderable without a production proof caller", () => {
+    const onDismiss = vi.fn();
+    render(
+      <StagingAlertBand
+        copy="A staged Node was removed because its source no longer exists."
+        onDismiss={onDismiss}
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        "A staged Node was removed because its source no longer exists.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /retry/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss Staging alert" }));
+    expect(onDismiss).toHaveBeenCalledOnce();
+  });
   it("renders the node zone container when type is node", () => {
     render(<StagingZone type="node" />);
 
@@ -408,5 +426,130 @@ describe("StagingZone — drop zone state classes", () => {
     const zone = screen.getByTestId("bit-staging-zone");
     expect(zone).not.toHaveClass("border-dashed");
     expect(zone).not.toHaveClass("border-muted");
+  });
+});
+
+describe("StagingZone — DP-VQ06-STAGING state projection", () => {
+  it("renders Stage pending in a non-draggable final Node shape", () => {
+    render(
+      <StagingZone
+        type="node"
+        projection={{
+          candidates: [],
+          integrityCandidates: [],
+          operations: [
+            {
+              operationId: "stage-1",
+              candidateId: "candidate-pending",
+              sourceBreakdownId: "breakdown-1",
+              kind: "stage",
+              phase: "pending",
+              resultType: "node",
+              title: "Project plan",
+            },
+          ],
+        }}
+      />,
+    );
+
+    const status = screen.getByText("Staging “Project plan”…");
+    expect(status).toHaveAttribute("data-triage-role", "staging-operation-status");
+    expect(status).toHaveAttribute("data-triage-state", "pending");
+    expect(status.closest('[data-testid="node-operation-card"]')).toBeInTheDocument();
+    expect(useDraggableMock).not.toHaveBeenCalled();
+  });
+
+  it("attaches Unstage unknown to the durable candidate without removing it", () => {
+    const staged = createCandidate({ id: "candidate-1", content: "Keep me" });
+    render(
+      <StagingZone
+        type="node"
+        projection={{
+          candidates: [staged],
+          integrityCandidates: [],
+          operations: [
+            {
+              operationId: "unstage-1",
+              candidateId: staged.id,
+              sourceBreakdownId: staged.sourceBreakdownId,
+              kind: "unstage",
+              phase: "unknown",
+              resultType: "node",
+              title: staged.content,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(screen.getByText("Keep me")).toBeInTheDocument();
+    expect(
+      screen.getByText("We couldn’t confirm whether “Keep me” was returned."),
+    ).toHaveAttribute("data-triage-state", "unknown");
+    expect(useDraggableMock).toHaveBeenCalledOnce();
+  });
+
+  it("renders unresolved source as a type-shaped integrity status, never a candidate", () => {
+    const unresolved = createCandidate({ id: "missing-1", content: "Unavailable" });
+    render(
+      <StagingZone
+        type="node"
+        projection={{
+          candidates: [],
+          integrityCandidates: [
+            {
+              candidate: unresolved,
+              status: "source-unresolved",
+              reason: "subscription-miss",
+            },
+          ],
+          operations: [],
+        }}
+      />,
+    );
+
+    expect(screen.getByText("Checking a staged Node source…")).toHaveAttribute(
+      "data-triage-role",
+      "staging-integrity-status",
+    );
+    expect(screen.queryByText("Unavailable")).not.toBeInTheDocument();
+    expect(useDraggableMock).not.toHaveBeenCalled();
+  });
+
+  it("attaches exact same-type, opposite-type, and invalid reasons only to the active target", () => {
+    const stagedNode = {
+      kind: "triage-staged-node",
+      id: "candidate-1",
+      label: "Node",
+      integrity: "current",
+    } satisfies NonNullable<TriageDragItem>;
+    const view = render(
+      <StagingZone
+        activeDragItem={stagedNode}
+        overTargetId="triage-node-zone-drop"
+        type="node"
+      />,
+    );
+    expect(screen.getByText("Already in Nodes.")).toBeInTheDocument();
+
+    view.rerender(
+      <StagingZone
+        activeDragItem={stagedNode}
+        overTargetId="triage-bit-zone-drop"
+        type="bit"
+      />,
+    );
+    expect(
+      screen.getByText("Return to Breakdown before changing type."),
+    ).toBeInTheDocument();
+
+    view.rerender(
+      <StagingZone
+        activeDragItem={{ ...stagedNode, integrity: "invalidated" }}
+        overTargetId="triage-node-zone-drop"
+        type="node"
+      />,
+    );
+    expect(screen.getByText("This item is no longer available.")).toBeInTheDocument();
   });
 });

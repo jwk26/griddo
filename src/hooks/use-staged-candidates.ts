@@ -90,6 +90,7 @@ type OperationInput = Readonly<{
 }>;
 
 type UseStagedCandidatesResult = Readonly<{
+  isReady: boolean;
   candidates: StagedCandidateProjection[];
   unresolvedCandidates: StagedCandidate[];
   integrityCandidates: CandidateIntegrityProjection[];
@@ -156,6 +157,7 @@ export function useStagedCandidates(
 
   const currentSnapshot =
     snapshot?.scratchBitId === scratchBitId ? snapshot : null;
+  const isReady = scratchBitId !== null && currentSnapshot !== null;
   const authoritativeCandidates =
     currentSnapshot?.candidates ?? EMPTY_CANDIDATES;
   const sources = currentSnapshot?.sources ?? EMPTY_SOURCES;
@@ -431,6 +433,7 @@ export function useStagedCandidates(
   );
 
   return {
+    isReady,
     candidates,
     unresolvedCandidates,
     integrityCandidates,

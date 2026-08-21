@@ -8,6 +8,7 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -24,13 +25,21 @@ import { BreakdownPanel } from "@/components/triage/breakdown-panel";
 import { HierarchyExplorer } from "@/components/triage/hierarchy-explorer";
 import { ScratchPool } from "@/components/triage/scratch-pool";
 import { TriageDragToken } from "@/components/triage/triage-drag-token";
-import { StagingZone } from "@/components/triage/staging-zone";
+import {
+  StagingAlertBand,
+  StagingZone,
+  type StagingOperationView,
+  type StagingZoneProjection,
+} from "@/components/triage/staging-zone";
 import {
   useTriageDnd,
   type PendingPlacement,
   type TriageDragItem,
 } from "@/hooks/use-dnd";
-import { useStagedCandidates } from "@/hooks/use-staged-candidates";
+import {
+  useStagedCandidates,
+  type CandidateCommandOutcome,
+} from "@/hooks/use-staged-candidates";
 import { useInbox } from "@/hooks/use-inbox";
 import {
   registerActiveTriageDeparture,
@@ -50,7 +59,14 @@ import {
   type TriageDropData,
 } from "@/lib/grid-dnd";
 import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
-import { getDataStore } from "@/lib/db/datastore";
+import {
+  getDataStore,
+  type StageCandidateCommand,
+  type StageCandidateResult,
+  type UnstageCandidateCommand,
+  type UnstageCandidateResult,
+} from "@/lib/db/datastore";
+import type { RepositoryOperationStatus } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
 import { useTriageStore } from "@/stores/triage-store";
@@ -59,6 +75,74 @@ import type { Node } from "@/types";
 
 function formatStagingHeading(label: string, count: number) {
   return count >= 2 ? `${count} ${label}` : label;
+}
+
+type StagingAlertKind =
+  | "stage-not-applied"
+  | "stage-rejected"
+  | "stage-conflict"
+  | "unstage-not-applied"
+  | "unstage-rejected"
+  | "unstage-conflict"
+  | "invalidated-drag"
+  | "invalidated-placement";
+
+type StagingAlertState = Readonly<{
+  kind: StagingAlertKind;
+  copy: string;
+  candidateId: string | null;
+  sourceBreakdownId: string | null;
+  clearOnCandidateDisappearance: boolean;
+}>;
+
+type StagingOperationMeta = Readonly<{
+  title: string;
+  resultType: "node" | "bit";
+  candidateId: string;
+  sourceBreakdownId: string;
+}>;
+
+function stagingTemplate(template: string, title: string): string {
+  return template.replace("{title}", title);
+}
+
+function stagingTerminalAlert(
+  kind: "stage" | "unstage",
+  status: RepositoryOperationStatus,
+  meta: StagingOperationMeta,
+): StagingAlertState | null {
+  if (status === "applied" || status === "already_applied") return null;
+  const suffix =
+    status === "not_applied"
+      ? "NotApplied"
+      : status === "rejected"
+        ? "Rejected"
+        : status === "conflict"
+          ? "Conflict"
+          : null;
+  if (suffix === null) return null;
+  const key = `${kind}${suffix}` as keyof typeof INBOX_TRIAGE_COPY.stagingStatus.alert;
+  return {
+    kind: `${kind}-${status.replace("_", "-")}` as StagingAlertKind,
+    copy: stagingTemplate(INBOX_TRIAGE_COPY.stagingStatus.alert[key], meta.title),
+    candidateId: meta.candidateId,
+    sourceBreakdownId: meta.sourceBreakdownId,
+    clearOnCandidateDisappearance: kind === "unstage",
+  };
+}
+
+function stagingOperationSentence(operation: StagingOperationView): string {
+  const suffix =
+    operation.phase === "pending"
+      ? "Pending"
+      : operation.phase === "unknown"
+        ? "Unknown"
+        : "Reconciling";
+  const key = `${operation.kind}${suffix}` as keyof typeof INBOX_TRIAGE_COPY.stagingStatus.operation;
+  return stagingTemplate(
+    INBOX_TRIAGE_COPY.stagingStatus.operation[key],
+    operation.title,
+  );
 }
 
 type ExternalRemovalDraft = Readonly<{
@@ -656,7 +740,32 @@ function TriageWorkspaceContent({
     ExternalRemovalDraft[]
   >([]);
   const stagedCandidates = useStagedCandidates(selectedScratchId);
-  const { counts: stagedCandidateCounts } = stagedCandidates;
+  const {
+    candidates: authoritativeStagedCandidates = [],
+    counts: stagedCandidateCounts,
+    reconcileStageCandidate: runReconcileStageCandidate,
+    reconcileUnstageCandidate: runReconcileUnstageCandidate,
+    stageCandidate: runStageCandidate,
+    unstageCandidate: runUnstageCandidate,
+  } = stagedCandidates;
+  const [stagingAlert, setStagingAlert] = useState<StagingAlertState | null>(null);
+  const [newCandidateIds, setNewCandidateIds] = useState<{
+    node: Set<string>;
+    bit: Set<string>;
+  }>({ node: new Set(), bit: new Set() });
+  const stagingHeadingRef = useRef<HTMLHeadingElement>(null);
+  const [operationMeta, setOperationMeta] = useState(
+    new Map<string, StagingOperationMeta>(),
+  );
+  const operationMetaRef = useRef(operationMeta);
+  const localStageCandidateIdsRef = useRef(new Set<string>());
+  const activeDragItemRef = useRef<TriageDragItem>(null);
+  const arrivalBaselineRef = useRef<{
+    scratchId: string | null;
+    ready: boolean;
+    ids: Set<string>;
+  }>({ scratchId: null, ready: false, ids: new Set() });
+  const invalidatedDragRef = useRef<StagingAlertState | null>(null);
   const removeStagedCandidate = useTriageStore(
     (state) => state.removeStagedCandidate,
   );
@@ -683,6 +792,99 @@ function TriageWorkspaceContent({
     };
     requestAnimationFrame(() => focusWhenReady(2));
   }, []);
+  const rememberOperation = useCallback(
+    (
+      command: StageCandidateCommand | UnstageCandidateCommand,
+      kind: "stage" | "unstage",
+    ): StagingOperationMeta => {
+      const dragItem = activeDragItemRef.current;
+      const candidate = authoritativeStagedCandidates.find(
+        ({ id }) => id === command.candidateId,
+      );
+      const previous = operationMetaRef.current.get(command.operationId);
+      const resultType =
+        "resultType" in command
+          ? command.resultType
+          : candidate?.resultType ??
+            previous?.resultType ??
+            (dragItem?.kind === "triage-staged-node" ? "node" : "bit");
+      const meta = {
+        title: candidate?.content ?? dragItem?.label ?? previous?.title ?? "Item",
+        resultType,
+        candidateId: command.candidateId,
+        sourceBreakdownId: command.sourceBreakdownId,
+      } satisfies StagingOperationMeta;
+      operationMetaRef.current.set(command.operationId, meta);
+      setOperationMeta(new Map(operationMetaRef.current));
+      if (kind === "stage") localStageCandidateIdsRef.current.add(command.candidateId);
+      setStagingAlert((current) =>
+        current?.candidateId === command.candidateId ? null : current,
+      );
+      return meta;
+    },
+    [authoritativeStagedCandidates],
+  );
+  const projectTerminalOutcome = useCallback(
+    (
+      kind: "stage" | "unstage",
+      meta: StagingOperationMeta,
+      outcome:
+        | CandidateCommandOutcome<StageCandidateResult>
+        | CandidateCommandOutcome<UnstageCandidateResult>,
+    ) => {
+      if ("outcome" in outcome) return;
+      const alert = stagingTerminalAlert(kind, outcome.status, meta);
+      if (alert !== null) localStageCandidateIdsRef.current.delete(meta.candidateId);
+      setStagingAlert((current) =>
+        alert ?? (current?.candidateId === meta.candidateId ? null : current),
+      );
+    },
+    [],
+  );
+  const stageCandidate = useCallback(
+    async (command: StageCandidateCommand) => {
+      const meta = rememberOperation(command, "stage");
+      const outcome = await runStageCandidate(command);
+      projectTerminalOutcome("stage", meta, outcome);
+      return outcome;
+    },
+    [projectTerminalOutcome, rememberOperation, runStageCandidate],
+  );
+  const reconcileStageCandidate = useCallback(
+    async (command: StageCandidateCommand) => {
+      const meta = rememberOperation(command, "stage");
+      const outcome = await runReconcileStageCandidate(command);
+      projectTerminalOutcome("stage", meta, outcome);
+      return outcome;
+    },
+    [
+      projectTerminalOutcome,
+      rememberOperation,
+      runReconcileStageCandidate,
+    ],
+  );
+  const unstageCandidate = useCallback(
+    async (command: UnstageCandidateCommand) => {
+      const meta = rememberOperation(command, "unstage");
+      const outcome = await runUnstageCandidate(command);
+      projectTerminalOutcome("unstage", meta, outcome);
+      return outcome;
+    },
+    [projectTerminalOutcome, rememberOperation, runUnstageCandidate],
+  );
+  const reconcileUnstageCandidate = useCallback(
+    async (command: UnstageCandidateCommand) => {
+      const meta = rememberOperation(command, "unstage");
+      const outcome = await runReconcileUnstageCandidate(command);
+      projectTerminalOutcome("unstage", meta, outcome);
+      return outcome;
+    },
+    [
+      projectTerminalOutcome,
+      rememberOperation,
+      runReconcileUnstageCandidate,
+    ],
+  );
   const {
     activeDragItem,
     collisionDetection,
@@ -697,12 +899,241 @@ function TriageWorkspaceContent({
   } = useTriageDnd(selectedScratchId, {
     focusUnstagedSource,
     operationLock,
-    reconcileStageCandidate: stagedCandidates.reconcileStageCandidate,
-    reconcileUnstageCandidate: stagedCandidates.reconcileUnstageCandidate,
+    reconcileStageCandidate,
+    reconcileUnstageCandidate,
     removeStagedCandidate,
-    stageCandidate: stagedCandidates.stageCandidate,
-    unstageCandidate: stagedCandidates.unstageCandidate,
+    stageCandidate,
+    unstageCandidate,
   });
+  useEffect(() => {
+    activeDragItemRef.current = activeDragItem;
+  }, [activeDragItem]);
+
+  const stagingOperations = useMemo<StagingOperationView[]>(() => {
+    const projected = [
+      ...(stagedCandidates.pendingOperations ?? []),
+      ...(stagedCandidates.unknownOperations ?? []),
+      ...(stagedCandidates.reconcilingOperations ?? []),
+    ];
+    return projected.flatMap((operation) => {
+      if (operation.kind === "orphan_cleanup") return [];
+      const kind = operation.kind;
+      const candidate = authoritativeStagedCandidates.find(
+        ({ id }) => id === operation.candidateId,
+      );
+      const meta = operationMeta.get(operation.operationId);
+      const title = candidate?.content ?? meta?.title;
+      const resultType = operation.resultType ?? candidate?.resultType ?? meta?.resultType;
+      if (title === undefined || resultType === undefined) return [];
+      return [{ ...operation, kind, title, resultType }];
+    });
+  }, [
+    authoritativeStagedCandidates,
+    operationMeta,
+    stagedCandidates.pendingOperations,
+    stagedCandidates.reconcilingOperations,
+    stagedCandidates.unknownOperations,
+  ]);
+  const stagingProjection = useMemo<StagingZoneProjection>(
+    () => ({
+      candidates: authoritativeStagedCandidates ?? [],
+      integrityCandidates: stagedCandidates.integrityCandidates ?? [],
+      operations: stagingOperations,
+    }),
+    [
+      authoritativeStagedCandidates,
+      stagedCandidates.integrityCandidates,
+      stagingOperations,
+    ],
+  );
+  const stagingProjectionByType = useMemo(
+    () => ({
+      node: {
+        candidates: stagingProjection.candidates.filter(
+          ({ resultType }) => resultType === "node",
+        ),
+        integrityCandidates: stagingProjection.integrityCandidates.filter(
+          ({ candidate }) => candidate.resultType === "node",
+        ),
+        operations: stagingProjection.operations.filter(
+          ({ resultType }) => resultType === "node",
+        ),
+      },
+      bit: {
+        candidates: stagingProjection.candidates.filter(
+          ({ resultType }) => resultType === "bit",
+        ),
+        integrityCandidates: stagingProjection.integrityCandidates.filter(
+          ({ candidate }) => candidate.resultType === "bit",
+        ),
+        operations: stagingProjection.operations.filter(
+          ({ resultType }) => resultType === "bit",
+        ),
+      },
+    }),
+    [stagingProjection],
+  );
+  const stagingLiveSentence =
+    stagingAlert?.copy ??
+    (stagingOperations.length > 0
+      ? stagingOperationSentence(stagingOperations[stagingOperations.length - 1])
+      : "");
+  const authoritativeArrivalCandidates = useMemo(
+    () => [
+      ...authoritativeStagedCandidates.map(({ id, resultType }) => ({
+        id,
+        resultType,
+      })),
+      ...(stagedCandidates.integrityCandidates ?? []).map(({ candidate }) => ({
+        id: candidate.id,
+        resultType: candidate.resultType,
+      })),
+    ],
+    [authoritativeStagedCandidates, stagedCandidates.integrityCandidates],
+  );
+
+  useEffect(() => {
+    const baseline = arrivalBaselineRef.current;
+    if (baseline.scratchId !== selectedScratchId) {
+      arrivalBaselineRef.current = {
+        scratchId: selectedScratchId,
+        ready: false,
+        ids: new Set(),
+      };
+      operationMetaRef.current.clear();
+      localStageCandidateIdsRef.current.clear();
+      // This state mirrors an external live-query ownership boundary.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setNewCandidateIds({ node: new Set(), bit: new Set() });
+      setStagingAlert(null);
+    }
+    if (selectedScratchId === null || !stagedCandidates.isReady) return;
+    const current = arrivalBaselineRef.current;
+    const currentIds = new Set(authoritativeArrivalCandidates.map(({ id }) => id));
+    if (!current.ready) {
+      arrivalBaselineRef.current = {
+        scratchId: selectedScratchId,
+        ready: true,
+        ids: currentIds,
+      };
+      return;
+    }
+    setNewCandidateIds((previous) => {
+      const next = {
+        node: new Set([...previous.node].filter((id) => currentIds.has(id))),
+        bit: new Set([...previous.bit].filter((id) => currentIds.has(id))),
+      };
+      for (const candidate of authoritativeArrivalCandidates) {
+        if (current.ids.has(candidate.id)) continue;
+        if (localStageCandidateIdsRef.current.delete(candidate.id)) continue;
+        next[candidate.resultType].add(candidate.id);
+      }
+      return next;
+    });
+    arrivalBaselineRef.current = {
+      scratchId: selectedScratchId,
+      ready: true,
+      ids: currentIds,
+    };
+  }, [
+    authoritativeArrivalCandidates,
+    selectedScratchId,
+    stagedCandidates.isReady,
+  ]);
+
+  useEffect(() => {
+    if (
+      stagingAlert?.clearOnCandidateDisappearance &&
+      !authoritativeArrivalCandidates.some(
+        ({ id }) => id === stagingAlert.candidateId,
+      )
+    ) {
+      // Authoritative disappearance is the receipt-defined alert clear signal.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setStagingAlert(null);
+    }
+  }, [authoritativeArrivalCandidates, stagingAlert]);
+
+  useEffect(() => {
+    if (activeDragItem?.integrity === "invalidated") {
+      invalidatedDragRef.current = {
+        kind: "invalidated-drag",
+        copy: stagingTemplate(
+          INBOX_TRIAGE_COPY.stagingStatus.alert.invalidatedDrag,
+          activeDragItem.label,
+        ),
+        candidateId: activeDragItem.id,
+        sourceBreakdownId:
+          "sourceBreakdownId" in activeDragItem
+            ? activeDragItem.sourceBreakdownId
+            : null,
+        clearOnCandidateDisappearance: false,
+      };
+      return;
+    }
+    if (activeDragItem === null && invalidatedDragRef.current !== null) {
+      setStagingAlert(invalidatedDragRef.current);
+      invalidatedDragRef.current = null;
+    }
+  }, [activeDragItem]);
+
+  const handlePendingPlacementInvalidated = useCallback(
+    (dropId: string) => {
+      if (pendingPlacement?.dropId === dropId) {
+        setStagingAlert({
+          kind: "invalidated-placement",
+          copy: stagingTemplate(
+            INBOX_TRIAGE_COPY.stagingStatus.alert.invalidatedPlacement,
+            pendingPlacement.candidateLabel,
+          ),
+          candidateId: pendingPlacement.candidateId,
+          sourceBreakdownId: pendingPlacement.sourceBreakdownId,
+          clearOnCandidateDisappearance: false,
+        });
+      }
+      handlePlacementCancel();
+    },
+    [handlePlacementCancel, pendingPlacement],
+  );
+
+  const showNewCandidates = useCallback((type: "node" | "bit") => {
+    const ids = [...newCandidateIds[type]];
+    const well = workspaceRef.current?.querySelector<HTMLElement>(
+      `[data-triage-role="staging-${type}-well"]`,
+    );
+    if (well) well.scrollTop = 0;
+    const target = Array.from(
+      workspaceRef.current?.querySelectorAll<HTMLElement>("[data-candidate-id]") ?? [],
+    ).find((element) => ids.includes(element.dataset.candidateId ?? ""));
+    (target ?? stagingHeadingRef.current)?.focus();
+    setNewCandidateIds((previous) => ({ ...previous, [type]: new Set() }));
+  }, [newCandidateIds]);
+
+  const dismissStagingAlert = useCallback(() => {
+    const dismissed = stagingAlert;
+    setStagingAlert(null);
+    requestAnimationFrame(() => {
+      const candidate = Array.from(
+        workspaceRef.current?.querySelectorAll<HTMLElement>("[data-candidate-id]") ?? [],
+      ).find(
+        (element) => element.dataset.candidateId === dismissed?.candidateId,
+      );
+      const source =
+        dismissed?.sourceBreakdownId === null ||
+        dismissed?.sourceBreakdownId === undefined
+          ? null
+          : Array.from(
+              workspaceRef.current?.querySelectorAll<HTMLElement>(
+                "[data-breakdown-id]",
+              ) ?? [],
+            )
+              .find(
+                (row) => row.dataset.breakdownId === dismissed.sourceBreakdownId,
+              )
+              ?.querySelector<HTMLElement>('button[aria-label="Drag breakdown"]');
+      (candidate ?? source ?? stagingHeadingRef.current)?.focus();
+    });
+  }, [stagingAlert]);
 
   useLayoutEffect(() => {
     const root = workspaceRef.current;
@@ -914,6 +1345,7 @@ function TriageWorkspaceContent({
               data-triage-state="default"
             >
               <h2
+                ref={stagingHeadingRef}
                 className="triage-shell__section-heading"
                 data-triage-role="section-header"
                 id="triage-breakdown-heading"
@@ -948,17 +1380,50 @@ function TriageWorkspaceContent({
               >
                 {INBOX_TRIAGE_COPY.sectionNames.staging}
               </h2>
+              {stagingAlert !== null ? (
+                <StagingAlertBand
+                  copy={stagingAlert.copy}
+                  onDismiss={dismissStagingAlert}
+                />
+              ) : null}
+              <div
+                aria-atomic="true"
+                aria-live="polite"
+                className="sr-only"
+                data-testid="staging-live-region"
+                data-triage-role="staging-live-region"
+                role="status"
+              >
+                {stagingLiveSentence}
+              </div>
               <div
                 className="triage-shell__staging min-h-0 flex-1"
                 data-layout-ratio="35/65"
                 data-testid="triage-staging-columns"
               >
                 <div className="flex min-w-0 basis-[35%] flex-col">
-                  <h3 className="triage-shell__subsection-heading">
-                    {formatStagingHeading(
-                      INBOX_TRIAGE_COPY.sectionNames.stagingNodes,
-                      stagedCandidateCounts.nodes,
-                    )}
+                  <h3 className="triage-shell__subsection-heading flex items-center justify-between gap-2">
+                    <span>
+                      {formatStagingHeading(
+                        INBOX_TRIAGE_COPY.sectionNames.stagingNodes,
+                        stagedCandidateCounts.nodes,
+                      )}
+                    </span>
+                    {newCandidateIds.node.size > 0 ? (
+                      <button
+                        aria-label={INBOX_TRIAGE_COPY.stagingStatus.actions.showNodes}
+                        className="staging-arrival-count"
+                        type="button"
+                        onClick={() => showNewCandidates("node")}
+                      >
+                        {newCandidateIds.node.size === 1
+                          ? INBOX_TRIAGE_COPY.stagingStatus.arrival.one
+                          : INBOX_TRIAGE_COPY.stagingStatus.arrival.many.replace(
+                              "{count}",
+                              String(newCandidateIds.node.size),
+                            )}
+                      </button>
+                    ) : null}
                   </h3>
                   <div
                     className="flex min-h-0 flex-1 overflow-y-auto p-3"
@@ -966,18 +1431,43 @@ function TriageWorkspaceContent({
                   >
                     <StagingZone
                       activeDragItem={activeDragItem}
+                      newCandidateIds={newCandidateIds.node}
                       overTargetId={overTargetId}
+                      projection={stagingProjectionByType.node}
                       type="node"
+                      onObservedTop={() =>
+                        setNewCandidateIds((previous) => ({
+                          ...previous,
+                          node: new Set(),
+                        }))
+                      }
                     />
                   </div>
                 </div>
 
                 <div className="flex min-w-0 basis-[65%] flex-col border-l border-dashed border-border/80">
-                  <h3 className="triage-shell__subsection-heading">
-                    {formatStagingHeading(
-                      INBOX_TRIAGE_COPY.sectionNames.stagingBits,
-                      stagedCandidateCounts.bits,
-                    )}
+                  <h3 className="triage-shell__subsection-heading flex items-center justify-between gap-2">
+                    <span>
+                      {formatStagingHeading(
+                        INBOX_TRIAGE_COPY.sectionNames.stagingBits,
+                        stagedCandidateCounts.bits,
+                      )}
+                    </span>
+                    {newCandidateIds.bit.size > 0 ? (
+                      <button
+                        aria-label={INBOX_TRIAGE_COPY.stagingStatus.actions.showBits}
+                        className="staging-arrival-count"
+                        type="button"
+                        onClick={() => showNewCandidates("bit")}
+                      >
+                        {newCandidateIds.bit.size === 1
+                          ? INBOX_TRIAGE_COPY.stagingStatus.arrival.one
+                          : INBOX_TRIAGE_COPY.stagingStatus.arrival.many.replace(
+                              "{count}",
+                              String(newCandidateIds.bit.size),
+                            )}
+                      </button>
+                    ) : null}
                   </h3>
                   <div
                     className="flex min-h-0 flex-1 overflow-y-auto p-3"
@@ -985,8 +1475,16 @@ function TriageWorkspaceContent({
                   >
                     <StagingZone
                       activeDragItem={activeDragItem}
+                      newCandidateIds={newCandidateIds.bit}
                       overTargetId={overTargetId}
+                      projection={stagingProjectionByType.bit}
                       type="bit"
+                      onObservedTop={() =>
+                        setNewCandidateIds((previous) => ({
+                          ...previous,
+                          bit: new Set(),
+                        }))
+                      }
                     />
                   </div>
                 </div>
@@ -1023,7 +1521,7 @@ function TriageWorkspaceContent({
             >
               <HierarchyExplorer
                 activeDragItem={activeDragItem}
-                onPendingPlacementInvalidated={handlePlacementCancel}
+                onPendingPlacementInvalidated={handlePendingPlacementInvalidated}
                 overTargetId={overTargetId}
                 pendingPlacementDropId={pendingPlacement?.dropId ?? null}
               />

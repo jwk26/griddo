@@ -698,6 +698,7 @@ function BreakdownRow({
           ref={setActivatorNodeRef}
           aria-label="Drag breakdown"
           data-source-version={row.version}
+          data-triage-staging-focus-source="true"
           data-triage-drag-source="breakdown-grip"
           disabled={isStaged || isOperationLocked || isDeleteInFlight}
           className={cn(
@@ -839,6 +840,7 @@ function InvalidatedBreakdownRecoveryRow({
         <button
           aria-label="Drag breakdown"
           className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground/20"
+          data-triage-staging-focus-source="true"
           disabled
           type="button"
         >

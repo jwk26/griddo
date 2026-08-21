@@ -154,6 +154,41 @@ export interface InboxTriageCopy {
       readonly dismiss: string;
     };
   };
+  readonly stagingStatus: {
+    readonly operation: {
+      readonly stagePending: string;
+      readonly unstagePending: string;
+      readonly stageUnknown: string;
+      readonly stageReconciling: string;
+      readonly unstageUnknown: string;
+      readonly unstageReconciling: string;
+    };
+    readonly alert: {
+      readonly stageNotApplied: string;
+      readonly stageRejected: string;
+      readonly stageConflict: string;
+      readonly unstageNotApplied: string;
+      readonly unstageRejected: string;
+      readonly unstageConflict: string;
+      readonly orphanNode: string;
+      readonly orphanBit: string;
+      readonly invalidatedDrag: string;
+      readonly invalidatedPlacement: string;
+    };
+    readonly integrity: { readonly node: string; readonly bit: string };
+    readonly target: {
+      readonly nodeSameType: string;
+      readonly bitSameType: string;
+      readonly oppositeType: string;
+      readonly unavailable: string;
+    };
+    readonly arrival: { readonly one: string; readonly many: string };
+    readonly actions: {
+      readonly showNodes: string;
+      readonly showBits: string;
+      readonly dismissAlert: string;
+    };
+  };
   readonly lifecycleReasons: {
     readonly externalScratchRemoval: InboxTriageCopyValue;
     readonly poolLifecycleUpdate: InboxTriageCopyValue;
@@ -334,10 +369,52 @@ export const INBOX_TRIAGE_COPY = {
       dismiss: "Dismiss",
     },
   },
+  stagingStatus: {
+    operation: {
+      stagePending: "Staging “{title}”…",
+      unstagePending: "Returning “{title}” to Breakdown…",
+      stageUnknown: "We couldn’t confirm whether “{title}” was staged.",
+      stageReconciling: "Checking whether “{title}” was staged…",
+      unstageUnknown: "We couldn’t confirm whether “{title}” was returned.",
+      unstageReconciling: "Checking whether “{title}” was returned…",
+    },
+    alert: {
+      stageNotApplied: "“{title}” was not staged. Drag it again to retry.",
+      stageRejected: "“{title}” can’t be staged from its current source.",
+      stageConflict: "“{title}” changed elsewhere and was not staged.",
+      unstageNotApplied:
+        "“{title}” is still staged. Drag it back to Breakdown to retry.",
+      unstageRejected: "“{title}” can’t be returned from its current state.",
+      unstageConflict: "“{title}” changed elsewhere and remains staged.",
+      orphanNode:
+        "A staged Node was removed because its source no longer exists.",
+      orphanBit:
+        "A staged Bit was removed because its source no longer exists.",
+      invalidatedDrag: "“{title}” changed elsewhere. Drop canceled.",
+      invalidatedPlacement:
+        "Placement closed because “{title}” changed elsewhere.",
+    },
+    integrity: {
+      node: "Checking a staged Node source…",
+      bit: "Checking a staged Bit source…",
+    },
+    target: {
+      nodeSameType: "Already in Nodes.",
+      bitSameType: "Already in Bits.",
+      oppositeType: "Return to Breakdown before changing type.",
+      unavailable: "This item is no longer available.",
+    },
+    arrival: { one: "1 new", many: "{count} new" },
+    actions: {
+      showNodes: "Show new Nodes",
+      showBits: "Show new Bits",
+      dismissAlert: "Dismiss Staging alert",
+    },
+  },
   lifecycleReasons: {
     externalScratchRemoval: UNAVAILABLE,
     poolLifecycleUpdate: "Pool updated elsewhere.",
-    stagingSourceUnavailable: UNAVAILABLE,
+    stagingSourceUnavailable: "This item is no longer available.",
     explorerPathFallback: UNAVAILABLE,
     placementStale: UNAVAILABLE,
     undoUnavailable: UNAVAILABLE,
@@ -350,7 +427,7 @@ export const INBOX_TRIAGE_COPY = {
     externalRemoval: UNAVAILABLE,
     reliability: UNAVAILABLE,
     poolActivity: "Pool updated elsewhere.",
-    stagingActivity: UNAVAILABLE,
+    stagingActivity: "Staging updated.",
     success: UNAVAILABLE,
     explorerActivity: UNAVAILABLE,
     explorerSearch: UNAVAILABLE,
@@ -371,7 +448,6 @@ export const INBOX_TRIAGE_COPY = {
     clearPoolSearch: "Clear search",
   },
   receiptDependent: {
-    147: UNAVAILABLE,
     148: UNAVAILABLE,
     150: UNAVAILABLE,
     151: UNAVAILABLE,
