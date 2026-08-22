@@ -135,6 +135,10 @@ export interface InboxTriageCopy {
       readonly retryAdd: string;
     };
   };
+  readonly breakdownSuccess: {
+    readonly add: string;
+    readonly unstage: string;
+  };
   readonly poolStatus: {
     readonly filteredCount: string;
     readonly hiddenSelection: string;
@@ -349,6 +353,10 @@ export const INBOX_TRIAGE_COPY = {
       checkAgain: "Check again",
       retryAdd: "Retry Add",
     },
+  },
+  breakdownSuccess: {
+    add: "Added.",
+    unstage: "Returned to Breakdown.",
   },
   poolStatus: {
     filteredCount: "{visible} of {total} Scratches",

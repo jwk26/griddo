@@ -394,12 +394,257 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   cleanup();
   vi.clearAllMocks();
   vi.restoreAllMocks();
 });
 
 describe("BreakdownPanel", () => {
+  it("shows an authoritative Unstage signal once, preserves focus, and clears it at 1600ms", async () => {
+    vi.useFakeTimers();
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Returned row" }),
+    ];
+    const signal = {
+      kind: "unstage" as const,
+      operationId: "unstage-1",
+      rowId: "row-1",
+    };
+    const view = render(<BreakdownPanel successSignal={signal} />);
+    const grip = screen.getByRole("button", { name: "Drag breakdown" });
+    grip.focus();
+
+    const status = screen.getByRole("status");
+    expect(status).toHaveTextContent("✓ Returned to Breakdown.");
+    expect(status).toHaveAttribute("aria-live", "polite");
+    expect(status).toHaveAttribute("aria-atomic", "true");
+    expect(status.querySelector("[aria-hidden=true]")).toHaveTextContent("✓");
+    expect(screen.getByTestId("breakdown-row")).toHaveAttribute(
+      "data-triage-state",
+      "success",
+    );
+    expect(grip).toHaveFocus();
+
+    act(() => vi.advanceTimersByTime(1599));
+    expect(screen.getByRole("status")).toBeInTheDocument();
+    view.rerender(<BreakdownPanel successSignal={signal} />);
+    act(() => vi.advanceTimersByTime(1));
+    expect(screen.queryByRole("status")).toBeNull();
+
+    view.rerender(<BreakdownPanel successSignal={{ ...signal }} />);
+    act(() => vi.advanceTimersByTime(1600));
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it("interrupts a prior success with a different identity and restarts the exact lifetime", () => {
+    vi.useFakeTimers();
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "First" }),
+      createScratchBreakdown({ id: "row-2", content: "Second" }),
+    ];
+    const view = render(
+      <BreakdownPanel
+        successSignal={{ kind: "unstage", operationId: "unstage-1", rowId: "row-1" }}
+      />,
+    );
+
+    act(() => vi.advanceTimersByTime(1000));
+    view.rerender(
+      <BreakdownPanel
+        successSignal={{ kind: "unstage", operationId: "unstage-2", rowId: "row-2" }}
+      />,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Returned to Breakdown.",
+    );
+    expect(
+      screen
+        .getAllByTestId("breakdown-row")
+        .find((row) => row.getAttribute("data-breakdown-id") === "row-2"),
+    ).toHaveAttribute("data-triage-state", "success");
+
+    act(() => vi.advanceTimersByTime(600));
+    expect(screen.getByRole("status")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(1000));
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it("starts Unstage lifetime only after the source row is restored as active", () => {
+    vi.useFakeTimers();
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Delayed restore" }),
+    ];
+    triageStoreState.stagedCandidates["scratch-1"] = [
+      {
+        id: "candidate-1",
+        type: "node",
+        sourceBreakdownId: "row-1",
+        label: "Delayed restore",
+      },
+    ];
+    const signal = {
+      kind: "unstage" as const,
+      operationId: "unstage-delayed",
+      rowId: "row-1",
+    };
+    const view = render(<BreakdownPanel successSignal={signal} />);
+
+    expect(screen.queryByRole("status")).toBeNull();
+    act(() => vi.advanceTimersByTime(1000));
+    triageStoreState.stagedCandidates["scratch-1"] = [];
+    view.rerender(<BreakdownPanel successSignal={signal} />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Returned to Breakdown.",
+    );
+    act(() => vi.advanceTimersByTime(1599));
+    expect(screen.getByRole("status")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(1));
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it("keeps the row-local status mounted if inline edit begins during its lifetime", () => {
+    vi.useFakeTimers();
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", content: "Edit during success" }),
+    ];
+    const signal = {
+      kind: "unstage" as const,
+      operationId: "unstage-edit",
+      rowId: "row-1",
+    };
+    const view = render(<BreakdownPanel successSignal={signal} />);
+    act(() => vi.advanceTimersByTime(600));
+    editorState.snapshot = {
+      target: { kind: "breakdown", id: "row-1" },
+      phase: "dirty",
+      base: { value: "Edit during success", version: 1, order: 0 },
+      draft: "Editing",
+      latest: null,
+      copyableDraft: null,
+      pendingIntent: false,
+      focusIntent: "field",
+      command: null,
+    };
+    view.rerender(<BreakdownPanel successSignal={signal} />);
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Returned to Breakdown.",
+    );
+    act(() => vi.advanceTimersByTime(999));
+    expect(screen.getByRole("status")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(1));
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it("turns a confirmed local Add into the shared row signal without moving input focus", async () => {
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: vi.fn(),
+    });
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.createBreakdown.mockImplementation(async (command) => {
+      hookState.breakdownsByScratch["scratch-1"] = [
+        createScratchBreakdown({
+          id: command.breakdownId,
+          content: command.content,
+        }),
+      ];
+      return {
+        operationId: command.operationId,
+        status: "applied" as const,
+        breakdown: hookState.breakdownsByScratch["scratch-1"][0],
+        scratch: null,
+      };
+    });
+    render(<BreakdownPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.change(input, { target: { value: "New row" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(await screen.findByRole("status")).toHaveTextContent("✓ Added.");
+    expect(input).toHaveFocus();
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: originalScrollIntoView,
+    });
+  });
+
+  it("starts Add lifetime only when its committed row projection mounts", async () => {
+    vi.useFakeTimers();
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: vi.fn(),
+    });
+    triageStoreState.selectedScratchId = "scratch-1";
+    let committedRow: ScratchBreakdown | null = null;
+    hookState.createBreakdown.mockImplementation(async (command) => {
+      committedRow = createScratchBreakdown({
+        id: command.breakdownId,
+        content: command.content,
+      });
+      return {
+        operationId: command.operationId,
+        status: "applied" as const,
+        breakdown: committedRow,
+        scratch: null,
+      };
+    });
+    const view = render(<BreakdownPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.change(input, { target: { value: "Delayed Add" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    await act(async () => Promise.resolve());
+
+    expect(screen.queryByRole("status")).toBeNull();
+    act(() => vi.advanceTimersByTime(1000));
+    hookState.breakdownsByScratch["scratch-1"] = [committedRow!];
+    view.rerender(<BreakdownPanel />);
+    expect(screen.getByRole("status")).toHaveTextContent("Added.");
+    act(() => vi.advanceTimersByTime(1599));
+    expect(screen.getByRole("status")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(1));
+    expect(screen.queryByRole("status")).toBeNull();
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: originalScrollIntoView,
+    });
+  });
+
+  it("reserves the success slot and binds exact motion and reduced-motion CSS", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1" }),
+    ];
+    render(<BreakdownPanel />);
+
+    expect(screen.getByTestId("breakdown-success-slot")).toBeEmptyDOMElement();
+    expect(globalsCss).toContain("animation: breakdown-success-wash 600ms ease-out forwards");
+    expect(globalsCss).toContain('[data-triage-state~="success"]');
+    expect(globalsCss).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(globalsCss).toContain(".breakdown-success-status");
+    for (const theme of [
+      "tiny-desk",
+      "neumorphism",
+      "claymorphism",
+      "origami",
+      "terminal",
+      "retro-mac",
+      "graphite",
+    ]) {
+      expect(globalsCss).toContain(
+        `[data-color-theme="${theme}"] [data-triage-role="breakdown-active-row"][data-triage-state~="success"]`,
+      );
+    }
+  });
   it("exposes a transient Breakdown drop-back target only for a staged drag", () => {
     triageStoreState.selectedScratchId = "scratch-1";
     render(

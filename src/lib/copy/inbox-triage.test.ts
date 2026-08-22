@@ -180,6 +180,13 @@ describe("Inbox/Triage core-English copy", () => {
     });
   });
 
+  it("owns the exact approved DP-VQ02 Add/Unstage success wording", () => {
+    expect(INBOX_TRIAGE_COPY.breakdownSuccess).toEqual({
+      add: "Added.",
+      unstage: "Returned to Breakdown.",
+    });
+  });
+
   it("owns the complete approved DP-VQ06-POOL wording", () => {
     expect(INBOX_TRIAGE_COPY.poolStatus).toEqual({
       filteredCount: "{visible} of {total} Scratches",

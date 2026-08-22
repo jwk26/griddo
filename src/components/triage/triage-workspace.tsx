@@ -21,7 +21,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { BreakdownPanel } from "@/components/triage/breakdown-panel";
+import {
+  BreakdownPanel,
+  type BreakdownSuccessSignal,
+} from "@/components/triage/breakdown-panel";
 import { HierarchyExplorer } from "@/components/triage/hierarchy-explorer";
 import { ScratchPool } from "@/components/triage/scratch-pool";
 import { TriageDragToken } from "@/components/triage/triage-drag-token";
@@ -99,6 +102,12 @@ type StagingOperationMeta = Readonly<{
   title: string;
   resultType: "node" | "bit";
   candidateId: string;
+  sourceBreakdownId: string;
+}>;
+
+type UnstageSuccessProjection = Readonly<{
+  kind: "unstage";
+  operationId: string;
   sourceBreakdownId: string;
 }>;
 
@@ -749,6 +758,15 @@ function TriageWorkspaceContent({
     unstageCandidate: runUnstageCandidate,
   } = stagedCandidates;
   const [stagingAlert, setStagingAlert] = useState<StagingAlertState | null>(null);
+  const breakdownSuccessScopeToken = useMemo(
+    () => ({ scratchId: selectedScratchId }),
+    [selectedScratchId],
+  );
+  const [breakdownSuccessScope, setBreakdownSuccessScope] = useState<{
+    scratchId: string;
+    token: { scratchId: string | null };
+    signal: UnstageSuccessProjection;
+  } | null>(null);
   const [newCandidateIds, setNewCandidateIds] = useState<{
     node: Set<string>;
     bit: Set<string>;
@@ -841,6 +859,21 @@ function TriageWorkspaceContent({
         | CandidateCommandOutcome<UnstageCandidateResult>,
     ) => {
       if ("outcome" in outcome) return;
+      if (
+        kind === "unstage" &&
+        selectedScratchId !== null &&
+        (outcome.status === "applied" || outcome.status === "already_applied")
+      ) {
+        setBreakdownSuccessScope({
+          scratchId: selectedScratchId,
+          token: breakdownSuccessScopeToken,
+          signal: {
+            kind: "unstage",
+            operationId: outcome.operationId,
+            sourceBreakdownId: meta.sourceBreakdownId,
+          },
+        });
+      }
       const alert = stagingTerminalAlert(kind, outcome.status, meta);
       if (alert !== null) {
         localStageCandidateIdsRef.current.delete(meta.candidateId);
@@ -854,7 +887,7 @@ function TriageWorkspaceContent({
         alert ?? (current?.candidateId === meta.candidateId ? null : current),
       );
     },
-    [],
+    [breakdownSuccessScopeToken, selectedScratchId],
   );
   const stageCandidate = useCallback(
     async (command: StageCandidateCommand) => {
@@ -1398,6 +1431,17 @@ function TriageWorkspaceContent({
                   key={selectedScratchId ?? "none"}
                   activeDragItem={activeDragItem}
                   overTargetId={overTargetId}
+                  successSignal={
+                    breakdownSuccessScope?.scratchId === selectedScratchId &&
+                    breakdownSuccessScope.token === breakdownSuccessScopeToken
+                      ? {
+                          kind: breakdownSuccessScope.signal.kind,
+                          operationId: breakdownSuccessScope.signal.operationId,
+                          rowId:
+                            breakdownSuccessScope.signal.sourceBreakdownId,
+                        } satisfies BreakdownSuccessSignal
+                      : null
+                  }
                 />
               </div>
             </section>

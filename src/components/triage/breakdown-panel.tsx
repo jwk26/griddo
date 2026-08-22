@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useId,
   useLayoutEffect,
@@ -68,6 +69,13 @@ type OpenEditorSnapshot = NonNullable<ConditionalEditorSnapshot>;
 const SCRATCH_TITLE_INLINE_LIMIT = 60;
 const BREAKDOWN_CONTENT_INLINE_LIMIT = 120;
 const BREAKDOWN_UNSTAGE_DROP_ID = "triage-remove-drop:breakdown";
+const BREAKDOWN_SUCCESS_DURATION_MS = 1600;
+
+export type BreakdownSuccessSignal = Readonly<{
+  kind: "add" | "unstage";
+  operationId: string;
+  rowId: string;
+}>;
 
 function subscribeToBrowserConnectivity(onStoreChange: () => void) {
   window.addEventListener("online", onStoreChange);
@@ -92,6 +100,7 @@ function InlineEditor({
   onSave,
   onUseMine,
   snapshot,
+  successSignal,
   actionRole,
   actionTestId,
 }: {
@@ -104,6 +113,7 @@ function InlineEditor({
   onSave: () => Promise<boolean>;
   onUseMine: () => Promise<boolean>;
   snapshot: OpenEditorSnapshot;
+  successSignal?: BreakdownSuccessSignal | null;
   actionRole: string;
   actionTestId: string;
 }) {
@@ -318,6 +328,9 @@ function InlineEditor({
           {contentAfter}
         </div>
       </div>
+      {!isScratchTitle ? (
+        <BreakdownSuccessSlot signal={successSignal} />
+      ) : null}
       <div
         className="triage-fixed-action-slot"
         data-testid={actionTestId}
@@ -586,6 +599,7 @@ function BreakdownRow({
   deleteOperation,
   onDeleteReliabilityActionRef,
   onReconcileDelete,
+  successSignal,
 }: {
   row: ScratchBreakdown;
   isStaged: boolean;
@@ -603,6 +617,7 @@ function BreakdownRow({
     element: HTMLButtonElement | null,
   ) => void;
   onReconcileDelete: (operationId: string) => void;
+  successSignal: BreakdownSuccessSignal | null;
 }) {
   const {
     attributes,
@@ -663,6 +678,7 @@ function BreakdownRow({
       : INBOX_TRIAGE_COPY.reliability.actions.checkAgain;
   const isDeleteInFlight =
     deleteOperation !== null && deleteOperation.phase !== "terminal";
+  const isSuccess = successSignal !== null;
 
   return (
     <div
@@ -674,7 +690,10 @@ function BreakdownRow({
       data-breakdown-id={row.id}
       data-triage-layout="fixed-inline-editor"
       data-triage-role={isStaged ? "breakdown-staged-row" : "breakdown-active-row"}
-      data-triage-state={isStaged ? "staged" : "active"}
+      data-triage-state={
+        isStaged ? "staged" : isSuccess ? "success" : "active"
+      }
+      data-triage-success-kind={successSignal?.kind}
       data-triage-reliability-state={deleteReliabilityState ?? undefined}
       data-triage-reliability-surface={
         deleteReliabilityState === null ? undefined : "delete"
@@ -726,6 +745,7 @@ function BreakdownRow({
           onSave={onSave}
           onUseMine={onUseMine}
           snapshot={editorSnapshot}
+          successSignal={successSignal}
         />
       ) : (
         <>
@@ -745,6 +765,7 @@ function BreakdownRow({
               {row.content}
             </div>
           </div>
+          <BreakdownSuccessSlot signal={successSignal} />
           <div
             className="triage-fixed-action-slot"
             data-testid="breakdown-action-slot"
@@ -811,6 +832,35 @@ function BreakdownRow({
   );
 }
 
+function BreakdownSuccessSlot({
+  signal = null,
+}: {
+  signal?: BreakdownSuccessSignal | null;
+}) {
+  const copy = signal === null ? null : INBOX_TRIAGE_COPY.breakdownSuccess[signal.kind];
+  return (
+    <div
+      className="breakdown-success-slot"
+      data-testid="breakdown-success-slot"
+      data-triage-role="breakdown-success-status"
+    >
+      {copy === null ? null : (
+        <span
+          aria-atomic="true"
+          aria-live="polite"
+          className="breakdown-success-status"
+          role="status"
+        >
+          <span aria-hidden="true" data-triage-role="breakdown-success-check">
+            ✓
+          </span>{" "}
+          {copy}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function InvalidatedBreakdownRecoveryRow({
   editor,
   onSave,
@@ -872,9 +922,11 @@ function formatScratchTimestamp(createdAt: number): string {
 export function BreakdownPanel({
   activeDragItem = null,
   overTargetId = null,
+  successSignal = null,
 }: {
   activeDragItem?: TriageDragItem;
   overTargetId?: string | null;
+  successSignal?: BreakdownSuccessSignal | null;
 } = {}) {
   const operationLock = useTriageOperationLockContext();
   const isStagedDrag =
@@ -934,6 +986,11 @@ export function BreakdownPanel({
     useStagedCandidates(selectedScratchId);
   const [isAdding, setIsAdding] = useState(false);
   const [newContent, setNewContent] = useState("");
+  const [activeSuccessSignal, setActiveSuccessSignal] =
+    useState<BreakdownSuccessSignal | null>(null);
+  const successTimerRef = useRef<number | null>(null);
+  const pendingSuccessSignalRef = useRef<BreakdownSuccessSignal | null>(null);
+  const signaledSuccessIdentitiesRef = useRef(new Set<string>());
   const inputRef = useRef<HTMLInputElement>(null);
   const addEntryRef = useRef<HTMLInputElement | HTMLDivElement | null>(null);
   const addCommandRef = useRef<AddBreakdownCommand | null>(null);
@@ -1015,6 +1072,71 @@ export function BreakdownPanel({
           !hiddenReliabilityOperationIds.has(operation.operationId),
       )
       .map((operation) => [operation.breakdownId, operation] as const),
+  );
+
+  const startSuccess = useCallback((signal: BreakdownSuccessSignal) => {
+    pendingSuccessSignalRef.current = null;
+    if (successTimerRef.current !== null) {
+      window.clearTimeout(successTimerRef.current);
+    }
+    setActiveSuccessSignal(signal);
+    successTimerRef.current = window.setTimeout(() => {
+      successTimerRef.current = null;
+      setActiveSuccessSignal((current) =>
+        current !== null &&
+        current.kind === signal.kind &&
+        current.operationId === signal.operationId &&
+        current.rowId === signal.rowId
+          ? null
+          : current,
+      );
+    }, BREAKDOWN_SUCCESS_DURATION_MS);
+  }, []);
+
+  const isSuccessTargetActive = useCallback(
+    (signal: BreakdownSuccessSignal) =>
+      breakdowns.some((row) => row.id === signal.rowId) &&
+      !stagedEligibility.stagedSourceIds.has(signal.rowId),
+    [breakdowns, stagedEligibility.stagedSourceIds],
+  );
+
+  const observeSuccess = useCallback(
+    (signal: BreakdownSuccessSignal) => {
+      const identity = `${signal.kind}\u0000${signal.operationId}\u0000${signal.rowId}`;
+      if (signaledSuccessIdentitiesRef.current.has(identity)) return;
+      signaledSuccessIdentitiesRef.current.add(identity);
+      if (successTimerRef.current !== null) {
+        window.clearTimeout(successTimerRef.current);
+        successTimerRef.current = null;
+      }
+      setActiveSuccessSignal(null);
+      pendingSuccessSignalRef.current = signal;
+      if (isSuccessTargetActive(signal)) startSuccess(signal);
+    },
+    [isSuccessTargetActive, startSuccess],
+  );
+
+  useEffect(() => {
+    if (successSignal !== null) observeSuccess(successSignal);
+  }, [observeSuccess, successSignal]);
+
+  useEffect(() => {
+    const pendingSignal = pendingSuccessSignalRef.current;
+    if (
+      pendingSignal !== null &&
+      isSuccessTargetActive(pendingSignal)
+    ) {
+      startSuccess(pendingSignal);
+    }
+  }, [breakdowns, isSuccessTargetActive, stagedEligibility.stagedSourceIds, startSuccess]);
+
+  useEffect(
+    () => () => {
+      if (successTimerRef.current !== null) {
+        window.clearTimeout(successTimerRef.current);
+      }
+    },
+    [],
   );
 
   useEffect(
@@ -1333,6 +1455,11 @@ export function BreakdownPanel({
 
     operationLock.release(command.operationId, outcome.status);
     if (isConfirmedSuccess(outcome.status)) {
+      observeSuccess({
+        kind: "add",
+        operationId: command.operationId,
+        rowId: command.breakdownId,
+      });
       addCommandRef.current = null;
       pendingAddedRowIdRef.current = command.breakdownId;
       updateAddDraft("");
@@ -1760,6 +1887,11 @@ export function BreakdownPanel({
                   }}
                   onReconcileDelete={(operationId) =>
                     void handleReconcileDelete(operationId)
+                  }
+                  successSignal={
+                    activeSuccessSignal?.rowId === item.row.id
+                      ? activeSuccessSignal
+                      : null
                   }
                   onEditRef={(id, element) => {
                     if (element === null) rowEditRefs.current.delete(id);

@@ -105,9 +105,15 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
     BreakdownPanel: ({
       activeDragItem,
       overTargetId,
+      successSignal,
     }: {
       activeDragItem?: TriageDragItem;
       overTargetId?: string | null;
+      successSignal?: {
+        kind: "add" | "unstage";
+        operationId: string;
+        rowId: string;
+      } | null;
     }) => {
       titleBlockerHandleState.handle = useScratchTitleBlockerContext();
       departureControllerState.controller = useTriageDepartureContext();
@@ -116,6 +122,9 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
         <div
           data-active-drag-kind={activeDragItem?.kind}
           data-over-target-id={overTargetId ?? undefined}
+          data-success-kind={successSignal?.kind}
+          data-success-operation-id={successSignal?.operationId}
+          data-success-row-id={successSignal?.rowId}
           data-testid="breakdown-panel"
         >
           <div data-breakdown-id="breakdown-1">
@@ -407,6 +416,112 @@ describe("TriageWorkspace", () => {
           ],
         }),
       }),
+    );
+  });
+
+  it("projects only an authoritative local Unstage success identity into Breakdown", async () => {
+    unstageCandidateMock.mockResolvedValue({
+      operationId: "unstage-1",
+      status: "applied",
+    });
+    render(<TriageWorkspace node={createNode()} />);
+    const options = useTriageDndMock.mock.calls[0]?.[1] as {
+      unstageCandidate: (command: Record<string, unknown>) => Promise<unknown>;
+    };
+
+    await act(async () => {
+      await options.unstageCandidate({
+        operationId: "unstage-1",
+        candidateId: "candidate-1",
+        candidateExpectedVersion: 1,
+        sourceBreakdownId: "breakdown-1",
+        sourceExpectedVersion: 1,
+      });
+    });
+
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-success-kind",
+      "unstage",
+    );
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-success-operation-id",
+      "unstage-1",
+    );
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-success-row-id",
+      "breakdown-1",
+    );
+    expect(
+      screen.queryByRole("button", { name: "Dismiss Staging alert" }),
+    ).toBeNull();
+  });
+
+  it("waits for authoritative reconciliation and projects its stable Unstage identity once", async () => {
+    unstageCandidateMock.mockResolvedValue({
+      operationId: "unstage-1",
+      outcome: "unknown",
+    });
+    reconcileUnstageCandidateMock.mockResolvedValue({
+      operationId: "unstage-1",
+      status: "already_applied",
+    });
+    render(<TriageWorkspace node={createNode()} />);
+    const options = useTriageDndMock.mock.calls[0]?.[1] as {
+      unstageCandidate: (command: Record<string, unknown>) => Promise<unknown>;
+      reconcileUnstageCandidate: (
+        command: Record<string, unknown>,
+      ) => Promise<unknown>;
+    };
+    const command = {
+      operationId: "unstage-1",
+      candidateId: "candidate-1",
+      candidateExpectedVersion: 1,
+      sourceBreakdownId: "breakdown-1",
+      sourceExpectedVersion: 1,
+    };
+
+    await act(async () => {
+      await options.unstageCandidate(command);
+    });
+    expect(screen.getByTestId("breakdown-panel")).not.toHaveAttribute(
+      "data-success-operation-id",
+    );
+
+    await act(async () => {
+      await options.reconcileUnstageCandidate(command);
+    });
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-success-operation-id",
+      "unstage-1",
+    );
+  });
+
+  it("clears mounted Unstage success authority across a Scratch switch without replay", async () => {
+    unstageCandidateMock.mockResolvedValue({
+      operationId: "unstage-1",
+      status: "applied",
+    });
+    render(<TriageWorkspace node={createNode()} />);
+    const options = useTriageDndMock.mock.calls[0]?.[1] as {
+      unstageCandidate: (command: Record<string, unknown>) => Promise<unknown>;
+    };
+    await act(async () => {
+      await options.unstageCandidate({
+        operationId: "unstage-1",
+        candidateId: "candidate-1",
+        candidateExpectedVersion: 1,
+        sourceBreakdownId: "breakdown-1",
+        sourceExpectedVersion: 1,
+      });
+    });
+
+    act(() => useTriageStore.getState().selectScratch("scratch-2"));
+    expect(screen.getByTestId("breakdown-panel")).not.toHaveAttribute(
+      "data-success-operation-id",
+    );
+    act(() => useTriageStore.getState().selectScratch("scratch-1"));
+    expect(screen.getByTestId("breakdown-panel")).not.toHaveAttribute(
+      "data-success-operation-id",
     );
   });
 
