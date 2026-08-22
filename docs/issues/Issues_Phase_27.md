@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: Tasks 136–147 accepted; Task 148 in progress
+> State: Tasks 136–147 accepted; Task 148 implemented and awaiting acceptance
 
 ## Status Legend
 
@@ -342,12 +342,14 @@ Task 138 targeted canonical repair:
 | Field | Durable value |
 | --- | --- |
 | Task | `148` — render `DP-VQ02` Add/Unstage success signal |
-| State | `In Progress`; Task 148 remains `[ ]` and user acceptance is not implied |
+| State | `Implemented; awaiting user acceptance`; Task 148 remains `[ ]` and user acceptance is not implied |
 | Approved scope | The committed canonical Task 148 contract, accepted `DP-VQ02` receipt, the user's 2026-08-22 Task 148-only candidate-pinned work order, and approved `P27-10`: modify only Breakdown, Staging, centralized copy, CSS, their tests, Task 148 verification/browser evidence, this ledger, and `src/components/triage/triage-workspace.tsx` plus `.test.tsx` solely as the mounted authoritative local Unstage success projection owner |
 | Kickoff authority | The user supplied an approved Task 148 ad-hoc work order. The run-phase Gate C receipt remains separate and was intentionally not passed to the run-task resolver; pinned candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned receipt-less `approval_required` with `contract_ready=true` as compatibility evidence only |
 | Start base / entrypoint / recovery anchor | `841d6cc129db40b37fd1388498fabc7b7adf8358`; exact accepted entrypoint `src` tree `a94b637c16cb407879cc7fa5736e900edb909580` |
 | Dependencies | Tasks 107, 128, 136, and 145 are accepted and marked `[x]`; accepted Task 147 is the immediate predecessor checkpoint |
 | Scope reconciliation | `P27-10` adds only the mounted Workspace projection owner. The projection is sourced directly from the current local Unstage callback's authoritative terminal result and never from disappearance, rerender, reload, remote events, or Staging projection removal. `use-dnd`, hooks, datastore, repository semantics, Task 146/147 behavior/evidence, `P27-06`, and `P27-08` remain excluded. |
 | Canonical impact | `Reflected` — Task 148 exact files/actions name the minimum mounted projection owner without changing approved product/design meaning |
-| Issues / deviations | `P27-10` approved and reflected before production writes; no other blocker known |
-| Next legal action | Commit this durable Task 148 start signal, then begin test-first implementation within the exact repaired owner set. |
+| Implementation / final `src` tree | `47f44d78af2ca0c9eb46ea647351d1224a92827a`; `94f2d3cd08ba62d01ea00f77e5cb8362dc47e174` |
+| Verification | Focused Task 148: 4 files / 188 tests; full: 94 files / 974 tests; lint: 0 errors with the same 11 pre-existing warnings outside Task 148; typecheck/build/diff-check passed; production Chromium covered real Add, pointer Stage→Unstage, active-row/focus/announcement/lifetime/reload non-replay, all eight themes, and reduced motion. Durable evidence: `docs/verification/inbox-triage/task-148.md`. |
+| Issues / deviations | `P27-10` approved and reflected before production writes. Review-found delayed-projection and inline-edit lifetime defects were repaired inside the approved Breakdown owner and covered by focused regressions; follow-up review found no remaining issue. Blocker: none. |
+| Next legal action | Stop at this clean Task 148 `[ ]` awaiting-acceptance checkpoint. Only explicit user acceptance may mark Task 148 `[x]`/Accepted; do not start later work or close Phase 27. |
