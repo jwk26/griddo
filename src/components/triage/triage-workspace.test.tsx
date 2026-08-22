@@ -17,6 +17,10 @@ const globalsCss = readFileSync(
   join(process.cwd(), "src/app/globals.css"),
   "utf8",
 );
+const workspaceSource = readFileSync(
+  join(process.cwd(), "src/components/triage/triage-workspace.tsx"),
+  "utf8",
+);
 
 const useTriageDndMock = vi.hoisted(() => vi.fn());
 const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
@@ -337,6 +341,14 @@ afterEach(() => {
 });
 
 describe("TriageWorkspace", () => {
+  it("keeps reactive DataStore reads behind the dedicated hook boundary", () => {
+    expect(workspaceSource).not.toContain('from "dexie"');
+    expect(workspaceSource).not.toContain("getDataStore");
+    expect(workspaceSource).toContain(
+      'from "@/hooks/use-external-scratch-removal-data"',
+    );
+  });
+
   it("wires the durable candidate commands and shared operation lock into the one DnD owner", () => {
     render(<TriageWorkspace node={createNode()} />);
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { DndContext, DragOverlay, useDroppable, type Modifier } from "@dnd-kit/core";
-import { liveQuery } from "dexie";
 import { AlertTriangle, Folder, ListTodo, X } from "lucide-react";
 import {
   useCallback,
@@ -39,6 +38,7 @@ import {
   type PendingPlacement,
   type TriageDragItem,
 } from "@/hooks/use-dnd";
+import { useExternalScratchRemovalData } from "@/hooks/use-external-scratch-removal-data";
 import {
   useStagedCandidates,
   type CandidateCommandOutcome,
@@ -63,7 +63,6 @@ import {
 } from "@/lib/grid-dnd";
 import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import {
-  getDataStore,
   type StageCandidateCommand,
   type StageCandidateResult,
   type UnstageCandidateCommand,
@@ -628,76 +627,40 @@ export function TriageWorkspace({ node }: { node: Node }) {
   const setExternalScratchRemovalLifecycle = useTriageStore(
     (state) => state.setExternalScratchRemovalLifecycle,
   );
-  const observedLifecycleRef = useRef<{
-    scratchId: string;
-    lifecycle: "archive" | "delete";
-  } | null>(null);
+  const { observation, readTerminalSnapshot } =
+    useExternalScratchRemovalData({
+      activeRemovalScratchId: externalScratchRemoval?.scratchId ?? null,
+      selectedScratchId,
+      unresolvedRemovalContext:
+        externalScratchRemoval?.lifecycle === null
+          ? externalScratchRemoval
+          : null,
+      unresolvedScratchId:
+        externalScratchRemoval?.lifecycle === null
+          ? externalScratchRemoval.scratchId
+          : null,
+    });
 
   useEffect(() => {
     return registerActiveTriageDeparture(departure);
   }, [departure]);
 
   useEffect(() => {
-    if (selectedScratchId === null) return;
-    const scratchId = selectedScratchId;
-    const subscription = liveQuery(async () => {
-      const dataStore = await getDataStore();
-      return dataStore.getBit(scratchId);
-    }).subscribe({
-      next: (scratch) => {
-        const lifecycle =
-          scratch?.archivedAt !== null && scratch?.archivedAt !== undefined
-            ? "archive"
-            : scratch === undefined || scratch.deletedAt !== null
-              ? "delete"
-              : null;
-        if (lifecycle === null) return;
-        observedLifecycleRef.current = { scratchId, lifecycle };
-        if (
-          useTriageStore.getState().externalScratchRemoval?.scratchId ===
-          scratchId
-        ) {
-          setExternalScratchRemovalLifecycle(scratchId, lifecycle);
-        }
-      },
-      error: (error) =>
-        console.error("selected Scratch lifecycle error:", error),
-    });
-    return () => subscription.unsubscribe();
-  }, [selectedScratchId, setExternalScratchRemovalLifecycle]);
-
-  useEffect(() => {
-    if (externalScratchRemoval === null) {
-      observedLifecycleRef.current = null;
+    if (
+      observation === null ||
+      externalScratchRemoval?.scratchId !== observation.scratchId
+    ) {
       return;
     }
-    if (externalScratchRemoval.lifecycle !== null) {
-      return;
-    }
-    const scratchId = externalScratchRemoval.scratchId;
-    const observed = observedLifecycleRef.current;
-    if (observed?.scratchId === scratchId) {
-      setExternalScratchRemovalLifecycle(scratchId, observed.lifecycle);
-      return;
-    }
-    let cancelled = false;
-    void (async () => {
-      const dataStore = await getDataStore();
-      const scratch = await dataStore.getBit(scratchId);
-      if (cancelled) return;
-      const lifecycle =
-        scratch?.archivedAt !== null && scratch?.archivedAt !== undefined
-          ? "archive"
-          : "delete";
-      observedLifecycleRef.current = { scratchId, lifecycle };
-      setExternalScratchRemovalLifecycle(scratchId, lifecycle);
-    })().catch((error) =>
-      console.error("external Scratch lifecycle error:", error),
+    setExternalScratchRemovalLifecycle(
+      observation.scratchId,
+      observation.lifecycle,
     );
-    return () => {
-      cancelled = true;
-    };
-  }, [externalScratchRemoval, setExternalScratchRemovalLifecycle]);
+  }, [
+    externalScratchRemoval?.scratchId,
+    observation,
+    setExternalScratchRemovalLifecycle,
+  ]);
 
   return (
     <TriageOperationLockContext.Provider value={operationLock}>
@@ -708,6 +671,7 @@ export function TriageWorkspace({ node }: { node: Node }) {
             isDepartureDecision={departure.pendingDestination !== null}
             node={node}
             operationLock={operationLock}
+            readTerminalSnapshot={readTerminalSnapshot}
           />
         </ScratchTitleBlockerContext.Provider>
       </TriageDepartureContext.Provider>
@@ -720,11 +684,15 @@ function TriageWorkspaceContent({
   isDepartureDecision,
   node,
   operationLock,
+  readTerminalSnapshot,
 }: {
   departure: ReturnType<typeof useTriageDeparture>;
   isDepartureDecision: boolean;
   node: Node;
   operationLock: ReturnType<typeof useTriageOperationLock>;
+  readTerminalSnapshot: ReturnType<
+    typeof useExternalScratchRemovalData
+  >["readTerminalSnapshot"];
 }) {
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
   const externalScratchRemoval = useTriageStore(
@@ -1273,9 +1241,10 @@ function TriageWorkspaceContent({
   const finishExternalRemoval = useCallback(async () => {
     const removal = useTriageStore.getState().externalScratchRemoval;
     if (removal === null) return;
-    const dataStore = await getDataStore();
-    const projectedActiveScratchBits = await dataStore.getBits(node.id);
-    const source = await dataStore.getBit(removal.scratchId);
+    const { projectedActiveScratchBits, source } = await readTerminalSnapshot(
+      node.id,
+      removal.scratchId,
+    );
     if (
       useTriageStore.getState().externalScratchRemoval?.scratchId !==
       removal.scratchId
@@ -1331,6 +1300,7 @@ function TriageWorkspaceContent({
     finishExternalScratchRemoval,
     node.id,
     poolCreatedAtSort,
+    readTerminalSnapshot,
     scratchPoolQuery,
   ]);
 
