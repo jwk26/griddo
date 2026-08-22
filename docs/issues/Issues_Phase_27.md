@@ -224,15 +224,16 @@ Task 138 targeted canonical repair:
 
 | Field | Durable value |
 | --- | --- |
-| State | `In Progress`; Task 141 remains accepted and marked `[x]`, while repair acceptance is tracked only by this separate run-state |
+| State | `Implemented`; awaiting explicit repair acceptance. Task 141 remains accepted and marked `[x]`, while repair acceptance is tracked only by this separate run-state; `P27-11` remains `In Progress` and is not Closed |
 | Approved scope | Create `src/hooks/use-external-scratch-removal-data.ts` and `.test.tsx`; modify `src/components/triage/triage-workspace.tsx` and `.test.tsx`; reflect only this repair in `docs/EXECUTION_PLAN.md`, this ledger, and `docs/verification/inbox-triage/task-141-conformance-repair.md` |
 | Kickoff authority | The user's 2026-08-23 candidate-pinned `P27-11` work order; Gate C remains a run-phase receipt and was intentionally not passed to the run-task resolver; candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49` returned receipt-less `approval_required` with `contract_ready=true` as compatibility evidence only |
 | Start base / entrypoint / recovery anchor | `f5940fc6c50daf873986c7fb414a2ce34c052518`; exact accepted entrypoint `src` tree `94f2d3cd08ba62d01ea00f77e5cb8362dc47e174`; adapter blob `ab4f7c765c1b27e48c7a46b9084ce6cc0a4af60e`; Gate C receipt blob `08c7a5e524f7a89bd10adc5cea71963f54870d38` |
 | Behavior | Move only the existing selected-Scratch lifecycle observation, unclassified-lifecycle fallback, and terminal Inbox-first/source-last authoritative reads into one pure read-only data-query hook; Workspace receives typed observation and a terminal snapshot callback |
 | Excluded | Product behavior/copy/DOM/style/timing/focus/lifecycle changes; `use-inbox.ts`; stores; DataStore interface/implementation; repository/schema; Tasks 142–148 behavior/evidence; `P27-06`; `P27-08`; smoke/end-phase/close/Phase 28; push/PR/merge/publication/sync/cleanup |
 | Issue / canonical impact | `P27-11`; `Reflected` in Task 141's exact files/actions without changing accepted product/design meaning |
-| Verification | Pending focused hook/Workspace evidence, representative archive/delete browser regression, adapter full gates, and diff review; accepted 16-theme geometry is not rerun because CSS/DOM/copy are excluded |
-| Next legal action | Commit this durable start signal, implement and verify only the approved repair, then stop at a clean awaiting-repair-acceptance checkpoint without closing `P27-11` |
+| Implementation / checkpoint chain | `c3237a1eceef399ff33254b02b701f96f4bed7fa` durable start → `c1430f0e45eeb26085b485f3a8d88fe46db0fe82` implementation; evidence/checkpoint commit follows separately |
+| Verification | `docs/verification/inbox-triage/task-141-conformance-repair.md`; focused hook + Workspace 2 files / 47 tests, full 95 files / 981 tests, changed-file lint, full lint with 0 errors and the same 11 existing warnings, typecheck, production build, and diff-check passed. Representative local Chrome archive restore and delete terminal handoff passed; accepted 16-theme geometry was not rerun because CSS/DOM/copy are unchanged. Initial review's one Important same-Scratch fallback race was reproduced, repaired, and cleared by follow-up review with no remaining Critical/Important/Minor finding. |
+| Next legal action | Stop at the clean awaiting-repair-acceptance checkpoint. Ask the user to accept or reject with targeted feedback; do not close `P27-11`, rerun Phase 27 smoke/end-phase, or start Phase 28 |
 
 ## Task 142 Run State
 
