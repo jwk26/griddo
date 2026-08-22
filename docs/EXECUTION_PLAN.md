@@ -1599,7 +1599,7 @@ and no-queue/no-replay contracts do not change.
 
 **Commit contract:** DP-VQ06-STAGING copy/realization, tests, styles, and Task 147 evidence only; `feat(triage): render staging statuses`.
 
-### Task 148: [ ] Render `DP-VQ02` Add/Unstage success signal
+### Task 148: [x] Render `DP-VQ02` Add/Unstage success signal
 
 **Files and actions:** after `DP-VQ02`, modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx` only as the mounted projection owner for the authoritative local Unstage terminal outcome, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Trigger the approved shared one-shot signal only from a newly observed authoritative Add/Unstage success identity, with exact duration/easing/copy/placement/interruption/retrigger, polite announcement, and static reduced-motion distinction. Workspace may project only `{kind, operationId, sourceBreakdownId}` from the local Unstage callback's first authoritative `applied` or `already_applied` result; unknown reconciliation may supply that authority once for the same stable operation. Do not infer success from candidate disappearance, Staging projection removal, rerender, reload, or remote events. Preserve Add's existing BreakdownPanel authoritative path. Re-render/reload/reconcile replay never repeats the signal; Unstage still has no toast.
 
