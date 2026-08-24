@@ -314,7 +314,7 @@ Add one row per task or repair. Do not backfill estimates as measured facts.
 
 | Task/repair | Risk tier | Focused gate | Full gate | Evidence reused | Browser modality | Docs changed | Stops/repairs | Outcome |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Pending Phase 28 kickoff | — | — | — | — | — | — | — | — |
+| Task 149 + four bounded repairs | High | TDD RED reproduced the approved behavior and each repair; latest focused gate passed 3 files / 107 tests | Latest-input full gate run, not reused: test 95 files / 995 tests, lint 0 errors with 11 unchanged warnings, typecheck and build passed | Green kickoff baseline was reused only before product changes; the earlier 95 / 990 test result was invalidated and not reused | Chromium mouse: actual pointer DnD, stationary multi-frame edge scroll, exit/Escape/end cancellation, and no-move release after geometry change; stationary touch covered by owner test | `docs/issues/Issues_Phase_28.md`; `docs/verification/inbox-triage/task-149.md`; `docs/verification/inbox-triage/phase-28-workflow-pilot-audit.md` (plus the committed baseline copy itself) | Four implementation-local repair cycles stayed inside the approved six code/test owners; final review found remaining P28-02 plus new P28-03, so work stopped without a fifth cycle or scope expansion | P28-01 repaired; P28-02 same-ID payload classification remains incomplete; P28-03 can restore feedback/scroll after cancellation; durable blocker checkpoint requires Control Tower review |
 
 ## End-of-Phase-28 decision questions
 

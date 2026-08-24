@@ -912,6 +912,7 @@ function TriageWorkspaceContent({
     handleDragStart,
     overTargetId,
     pendingPlacement,
+    refreshRenderedTarget,
     sensors,
     targetFeedback,
   } = useTriageDnd(selectedScratchId, {
@@ -1576,6 +1577,7 @@ function TriageWorkspaceContent({
               <HierarchyExplorer
                 activeDragItem={activeDragItem}
                 onPendingPlacementInvalidated={handlePendingPlacementInvalidated}
+                onPointerGeometryChange={refreshRenderedTarget}
                 overTargetId={overTargetId}
                 pendingPlacementDropId={pendingPlacement?.dropId ?? null}
                 targetFeedback={targetFeedback}

@@ -77,12 +77,14 @@ function setGrid(parentId: string | null, nodes: Node[], bits: Bit[] = []) {
 const defaultProps: {
   activeDragItem: TriageDragItem;
   onPendingPlacementInvalidated: (dropId: string) => void;
+  onPointerGeometryChange: (point: { x: number; y: number }) => void;
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
   targetFeedback: TriageTargetFeedback;
 } = {
   activeDragItem: null,
   onPendingPlacementInvalidated: vi.fn(),
+  onPointerGeometryChange: vi.fn(),
   overTargetId: null,
   pendingPlacementDropId: null,
   targetFeedback: null,
@@ -250,6 +252,86 @@ describe("HierarchyExplorer Task 134 base", () => {
     );
     act(() => frame?.(16));
     expect(body.scrollTop).toBe(afterValidFrame);
+  });
+
+  it("reclassifies pointer-under geometry on every stationary edge-scroll frame", () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+    const first = createNode({ id: "first", title: "First" });
+    const second = createNode({ id: "second", title: "Second" });
+    setGrid(null, [first, second]);
+    const activeDragItem: TriageDragItem = {
+      kind: "triage-staged-node",
+      id: "candidate-1",
+      label: "Project",
+    };
+    const onPointerGeometryChange = vi.fn();
+    const props = {
+      ...defaultProps,
+      activeDragItem,
+      onPointerGeometryChange,
+      targetFeedback: {
+        dropId: getTriageHierarchyDropId(first.id),
+        state: "valid" as const,
+      },
+    };
+    const view = render(
+      <HierarchyExplorer {...(props as typeof defaultProps)} />,
+    );
+    const body = screen.getByTestId("hierarchy-section-body-home");
+    const firstTarget = screen.getByRole("button", {
+      name: `Select Node: ${first.title}`,
+    });
+    const secondTarget = screen.getByRole("button", {
+      name: `Select Node: ${second.title}`,
+    });
+    Object.defineProperties(body, {
+      clientHeight: { configurable: true, value: 200 },
+      scrollHeight: { configurable: true, value: 600 },
+    });
+    vi.spyOn(body, "getBoundingClientRect").mockReturnValue({
+      top: 100,
+      bottom: 300,
+      left: 0,
+      right: 200,
+      width: 200,
+      height: 200,
+      x: 0,
+      y: 100,
+      toJSON() {},
+    });
+    let pointerTarget: Element = firstTarget;
+    Object.defineProperty(document, "elementsFromPoint", {
+      configurable: true,
+      value: vi.fn(() => [pointerTarget, body]),
+    });
+
+    fireEvent.mouseMove(document, { clientX: 100, clientY: 294 });
+    act(() => frames.shift()?.(0));
+    expect(onPointerGeometryChange).toHaveBeenLastCalledWith({
+      x: 100,
+      y: 294,
+    });
+    const firstFrameScroll = body.scrollTop;
+
+    pointerTarget = secondTarget;
+    view.rerender(
+      <HierarchyExplorer
+        {...(props as typeof defaultProps)}
+        targetFeedback={{
+          dropId: getTriageHierarchyDropId(second.id),
+          state: "valid",
+        }}
+      />,
+    );
+    act(() => frames.shift()?.(16));
+
+    expect(onPointerGeometryChange).toHaveBeenCalledTimes(2);
+    expect(body.scrollTop).toBeGreaterThan(firstFrameScroll);
   });
 
   it("captures one complete Explorer path change before either path mutation", () => {

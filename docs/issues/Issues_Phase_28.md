@@ -98,7 +98,7 @@ their Phase 27 owner and are outside Phase 28 scope.
 | Field | Durable value |
 | --- | --- |
 | Task | `149 — Implement release-time targets and valid-column edge auto-scroll` |
-| State | `In Progress`; Task 149 remains `[ ]` pending explicit user acceptance |
+| State | `Blocked — Control Tower review required`; Task 149 remains `[ ]` |
 | Exact scope | Existing DnD target/auto-scroll mechanics in `src/hooks/use-dnd.ts`, `src/components/triage/hierarchy-explorer.tsx`, and `src/components/triage/triage-workspace.tsx`; their three approved test files; Task 149 verification evidence; Phase 28 workflow-pilot measurement row |
 | Approval | Exact Task 149 fresh-session user instruction on 2026-08-24, bounded by `docs/issues/Issues_Phase_28.gate-c.json` |
 | Approved base | `8cb2d904a55c136ca319e7bdf619d8e5d962fce8` |
@@ -107,17 +107,18 @@ their Phase 27 owner and are outside Phase 28 scope.
 | Dependencies | Tasks 134 and 142 accepted; no unresolved Task 149 prerequisite |
 | Issues / deviations | None at start |
 | Canonical impact | `None` — Task 149 implements the existing approved contract without changing canonical product, design, policy, or plan authority |
-| Next legal action | Add focused failing Task 149 tests, then implement only Task 149 within the approved write set |
+| Next legal action | Control Tower review of the durable fourth-cycle blockers; a fifth repair cycle is not authorized |
 
 ### Task 149 Review Blockers
 
 | ID | State | Evidence | Exact minimum repair | Canonical impact |
 | --- | --- | --- | --- | --- |
-| `P28-01` | `In Progress` | Read-only High-risk review found that `handleDragStart` clears `pointerRef`; when the MouseSensor threshold-crossing event precedes `onDragStart`, or a TouchSensor activates after a stationary long press, release can have no post-activation move and fall back to stale `event.over`. | Fourth bounded repair cycle approved on 2026-08-24: retain the latest mouse/touch coordinates across activation and require rendered release geometry whenever coordinates exist; add mouse and stationary-touch regression tests. | `None` — implementation-local correction to the existing Task 149 contract. |
-| `P28-02` | `In Progress` | Read-only High-risk review found that Explorer scrolling requires the pointer-under row ID to equal the prior feedback ID. Scrolling can move a new row under a stationary pointer without a move event, leaving stale feedback and stopping progressive scroll. | Same approved fourth cycle: refresh pointer-under target classification from each scroll frame without another global writer, keep occupancy requests stale-guarded, and add multi-frame stationary-pointer/row-change evidence. | `None` — implementation-local correction to the existing Task 149 contract. |
+| `P28-01` | `Repaired — awaiting Task 149 checkpoint` | Fourth-cycle RED reproduced no-post-activation mouse release and stationary-touch activation; focused owner tests now prove retained coordinates and release-time rendered target selection. | Implemented inside the existing DnD owner; latest focused and complete gates are green. | `None` — implementation-local correction to the existing Task 149 contract. |
+| `P28-02` | `Repair incomplete — awaiting Control Tower review` | Fourth-cycle RED and browser evidence prove per-frame reclassification across changing row IDs, but final High-risk review found that the classifier cache keys only `dropId`. A section target can retain that ID while its rendered parent/level/title/path/occupancy payload changes, leaving stale feedback until release. | Evidence-confirmed minimum repair: key classification by the complete relevant rendered identity and add same-ID payload replacement coverage through the actual Explorer-to-hook frame loop. No fifth cycle is authorized. | `None` — implementation-local correction to the existing Task 149 contract. |
+| `P28-03` | `Open — awaiting Control Tower review` | Final High-risk review found that Explorer retains its local pointer after document exit/window blur/remote invalidation and can call frame refresh while the hook classifier remains active, restoring feedback and edge scrolling after cancellation. Mutation remains suppressed. | Evidence-confirmed minimum repair: make refresh inert after cancellation/invalidation and make the Explorer frame owner forget its local pointer or stop its loop; add mounted Explorer-to-hook cancellation coverage. No fifth cycle is authorized. | `None` — implementation-local correction to the existing Task 149 contract. |
 
-Task 149 remains `In Progress` and `[ ]`. The user approved exactly one fourth
-bounded repair cycle for `P28-01` and `P28-02` on 2026-08-24, resuming from
-recovery anchor `435668f74f96bb7b7275d30765a6650f3de5dbb7`. A fifth cycle is
-not authorized. No Task 150 work, canonical direction change, or scope
-expansion occurred.
+Task 149 remains `[ ]` at a durable blocker checkpoint. The fourth bounded
+repair cycle resumed from recovery anchor
+`435668f74f96bb7b7275d30765a6650f3de5dbb7`; final review found the remaining
+`P28-02` defect and new Important `P28-03`, so a fifth cycle was not started.
+No Task 150 work, canonical direction change, or scope expansion occurred.

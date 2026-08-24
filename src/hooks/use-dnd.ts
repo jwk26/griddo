@@ -408,6 +408,7 @@ export function useTriageDnd(
   ) => Promise<void>;
   handlePlacementCancel: () => void;
   overTargetId: string | null;
+  refreshRenderedTarget: (point: { x: number; y: number }) => void;
   targetFeedback: TriageTargetFeedback;
 } {
   const [activeDragItem, setActiveDragItem] =
@@ -438,7 +439,6 @@ export function useTriageDnd(
       !operationLock.isLocked() && snapshot?.scratchId === selectedScratchId;
     activationSnapshotRef.current = isCurrentScratch ? snapshot : null;
     dragCancelledRef.current = false;
-    pointerRef.current = null;
     feedbackRequestRef.current += 1;
     feedbackTargetRef.current = null;
     setOverTargetId(null);
@@ -556,31 +556,44 @@ export function useTriageDnd(
     triageDragInvalidationListeners.add(cancelOnInvalidation);
 
     const trackMouse = (event: MouseEvent) => {
-      if (activationSnapshotRef.current === null) return;
-      updateRenderedTarget({ x: event.clientX, y: event.clientY });
+      const point = { x: event.clientX, y: event.clientY };
+      pointerRef.current = point;
+      if (activationSnapshotRef.current !== null) {
+        updateRenderedTarget(point);
+      }
     };
     const trackTouch = (event: TouchEvent) => {
-      if (activationSnapshotRef.current === null) return;
-      const touch = event.touches[0];
+      const touch = event.touches[0] ?? event.changedTouches[0];
       if (touch === undefined) return;
-      updateRenderedTarget({ x: touch.clientX, y: touch.clientY });
+      const point = { x: touch.clientX, y: touch.clientY };
+      pointerRef.current = point;
+      if (activationSnapshotRef.current !== null) {
+        updateRenderedTarget(point);
+      }
     };
     const clearPointerTarget = () => {
-      if (activationSnapshotRef.current === null) return;
       pointerRef.current = null;
-      clearDragTarget();
+      if (activationSnapshotRef.current !== null) clearDragTarget();
     };
+    document.addEventListener("mousedown", trackMouse);
     document.addEventListener("mousemove", trackMouse);
+    document.addEventListener("mouseup", trackMouse);
     document.addEventListener("mouseleave", clearPointerTarget);
+    document.addEventListener("touchstart", trackTouch, { passive: true });
     document.addEventListener("touchmove", trackTouch, { passive: true });
+    document.addEventListener("touchend", trackTouch);
     document.addEventListener("touchcancel", clearPointerTarget);
     window.addEventListener("blur", clearPointerTarget);
 
     return () => {
       document.removeEventListener("keydown", cancelOnEscape);
+      document.removeEventListener("mousedown", trackMouse);
       document.removeEventListener("mousemove", trackMouse);
+      document.removeEventListener("mouseup", trackMouse);
       document.removeEventListener("mouseleave", clearPointerTarget);
+      document.removeEventListener("touchstart", trackTouch);
       document.removeEventListener("touchmove", trackTouch);
+      document.removeEventListener("touchend", trackTouch);
       document.removeEventListener("touchcancel", clearPointerTarget);
       window.removeEventListener("blur", clearPointerTarget);
       triageDragInvalidationListeners.delete(cancelOnInvalidation);
@@ -862,6 +875,7 @@ export function useTriageDnd(
     handlePlacementConfirm,
     handlePlacementCancel,
     overTargetId,
+    refreshRenderedTarget: updateRenderedTarget,
     targetFeedback,
   };
 }

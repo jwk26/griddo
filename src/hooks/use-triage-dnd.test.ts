@@ -605,6 +605,84 @@ describe("useTriageDnd — pointer activation lifecycle", () => {
 });
 
 describe("useTriageDnd — drop matrix", () => {
+  it("uses pre-activation mouse coordinates when release has no later move", async () => {
+    const releaseTarget = {
+      kind: "triage-hierarchy-drop",
+      dropId: "triage-hierarchy:release-target",
+      parentNodeId: "release-target",
+      targetNodeLevel: 1,
+      targetTitle: "Release Target",
+      targetParentPath: ["Home", "Current"],
+    };
+    installRenderedHierarchyTarget(releaseTarget);
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", durableCandidateOptions()),
+    );
+    const dragData = makeStagedDragData();
+
+    act(() => {
+      fireEvent.mouseMove(document, { clientX: 240, clientY: 180 });
+      result.current.handleDragStart(makeDragEndEvent(dragData, null));
+    });
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(dragData, {
+          ...releaseTarget,
+          dropId: "triage-hierarchy:stale-target",
+          parentNodeId: "stale-target",
+          targetTitle: "Stale Target",
+        }),
+      );
+    });
+
+    expect(result.current.pendingPlacement).toEqual(
+      expect.objectContaining({
+        dropId: releaseTarget.dropId,
+        parentNodeId: releaseTarget.parentNodeId,
+      }),
+    );
+  });
+
+  it("uses stationary touch-start coordinates after delayed activation", async () => {
+    const releaseTarget = {
+      kind: "triage-hierarchy-drop",
+      dropId: "triage-hierarchy:touch-release-target",
+      parentNodeId: "touch-release-target",
+      targetNodeLevel: 0,
+      targetTitle: "Touch Release Target",
+      targetParentPath: ["Home"],
+    };
+    installRenderedHierarchyTarget(releaseTarget);
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", durableCandidateOptions()),
+    );
+    const dragData = makeStagedDragData();
+
+    act(() => {
+      fireEvent.touchStart(document, {
+        touches: [{ clientX: 80, clientY: 120 }],
+      });
+      result.current.handleDragStart(makeDragEndEvent(dragData, null));
+    });
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(dragData, {
+          ...releaseTarget,
+          dropId: "triage-hierarchy:stale-touch-target",
+          parentNodeId: "stale-touch-target",
+          targetTitle: "Stale Touch Target",
+        }),
+      );
+    });
+
+    expect(result.current.pendingPlacement).toEqual(
+      expect.objectContaining({
+        dropId: releaseTarget.dropId,
+        parentNodeId: releaseTarget.parentNodeId,
+      }),
+    );
+  });
+
   it("uses the final rendered pointer-under hierarchy target instead of stale drag-over data", async () => {
     const releaseTarget = {
       kind: "triage-hierarchy-drop",
@@ -770,6 +848,64 @@ describe("useTriageDnd — drop matrix", () => {
     act(() => fireEvent.mouseMove(document, { clientX: 900, clientY: 700 }));
     expect(result.current.targetFeedback).toBeNull();
     expect(result.current.overTargetId).toBeNull();
+  });
+
+  it("refreshes pointer-under feedback at the same coordinates after rendered geometry moves", async () => {
+    const first = installRenderedHierarchyTarget({
+      kind: "triage-hierarchy-drop",
+      dropId: "triage-hierarchy:first",
+      parentNodeId: "first",
+      targetNodeLevel: 0,
+      targetTitle: "First",
+      targetParentPath: ["Home"],
+    });
+    const second = document.createElement("div");
+    second.dataset.triageHierarchyDrop = JSON.stringify({
+      kind: "triage-hierarchy-drop",
+      dropId: "triage-hierarchy:second",
+      parentNodeId: "second",
+      targetNodeLevel: 1,
+      targetTitle: "Second",
+      targetParentPath: ["Home", "First"],
+    });
+    document.body.append(second);
+    let pointerTarget = first;
+    vi.mocked(document.elementsFromPoint).mockImplementation(() => [
+      pointerTarget,
+    ]);
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", durableCandidateOptions()),
+    );
+    const point = { x: 50, y: 60 };
+
+    act(() => {
+      result.current.handleDragStart(
+        makeDragEndEvent(makeStagedDragData(), null),
+      );
+      fireEvent.mouseMove(document, {
+        clientX: point.x,
+        clientY: point.y,
+      });
+    });
+    await waitFor(() =>
+      expect(result.current.targetFeedback?.dropId).toBe(
+        "triage-hierarchy:first",
+      ),
+    );
+
+    pointerTarget = second;
+    const refreshRenderedTarget = (
+      result.current as typeof result.current & {
+        refreshRenderedTarget?: (point: { x: number; y: number }) => void;
+      }
+    ).refreshRenderedTarget;
+    act(() => refreshRenderedTarget?.(point));
+
+    await waitFor(() =>
+      expect(result.current.targetFeedback?.dropId).toBe(
+        "triage-hierarchy:second",
+      ),
+    );
   });
 
   it("cancels target feedback when the pointer leaves the browser document", async () => {

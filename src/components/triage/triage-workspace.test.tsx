@@ -243,6 +243,7 @@ type DndState = {
   handleDragOver: ReturnType<typeof vi.fn>;
   handlePlacementConfirm: ReturnType<typeof vi.fn>;
   handlePlacementCancel: ReturnType<typeof vi.fn>;
+  refreshRenderedTarget: ReturnType<typeof vi.fn>;
   targetFeedback: TriageTargetFeedback;
 };
 
@@ -258,6 +259,7 @@ function createDndState(overrides: Partial<DndState> = {}): DndState {
     handleDragOver: vi.fn(),
     handlePlacementConfirm: handlePlacementConfirmMock,
     handlePlacementCancel: handlePlacementCancelMock,
+    refreshRenderedTarget: vi.fn(),
     targetFeedback: null,
     ...overrides,
   };

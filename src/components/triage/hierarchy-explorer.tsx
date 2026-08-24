@@ -30,6 +30,7 @@ import type { Bit, Node } from "@/types";
 interface HierarchyExplorerProps {
   activeDragItem: TriageDragItem;
   onPendingPlacementInvalidated: (dropId: string) => void;
+  onPointerGeometryChange: (point: { x: number; y: number }) => void;
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
   targetFeedback: TriageTargetFeedback;
@@ -144,6 +145,7 @@ function focusFallback(validPathIds: string[]) {
 export function HierarchyExplorer({
   activeDragItem,
   onPendingPlacementInvalidated,
+  onPointerGeometryChange,
   overTargetId,
   pendingPlacementDropId,
   targetFeedback,
@@ -168,6 +170,7 @@ export function HierarchyExplorer({
       }
     };
     const scrollAtEdge = () => {
+      if (pointer !== null) onPointerGeometryChange(pointer);
       const feedback = targetFeedbackRef.current;
       if (
         pointer !== null &&
@@ -221,7 +224,7 @@ export function HierarchyExplorer({
       document.removeEventListener("touchmove", trackTouch);
       window.cancelAnimationFrame(frame);
     };
-  }, [activeDragItem]);
+  }, [activeDragItem, onPointerGeometryChange]);
 
   const departure = useTriageDepartureContext();
   const explorerPathIds = useTriageStore((state) => state.explorerPathIds);
