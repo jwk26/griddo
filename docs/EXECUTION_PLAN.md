@@ -7,12 +7,12 @@
 > This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
 > its supersession rules. It accepts no phase, task, implementation, branch,
 > publication, or completion state.
-> **Task markers:** Tasks 101–135 were explicitly accepted. Phases 23–26 are
-> completed and archived. Tasks 136–165 remain open (`[ ]`) and may be
+> **Task markers:** Tasks 101–148 were explicitly accepted. Phases 23–27 are
+> completed and archived. Tasks 149–165 remain open (`[ ]`) and may be
 > checked only after their own observable acceptance and verification evidence
 > is explicitly accepted by the user.
-> **Execution lifecycle:** Phases 23–26 are complete. The five open phases are
-> Phases 27–31 with 30 open Tasks 136–165; Phase 27 requires its own approved
+> **Execution lifecycle:** Phases 23–27 are complete. The four open phases are
+> Phases 28–31 with 17 open Tasks 149–165; Phase 28 requires its own approved
 > kickoff. This planning receipt alone does not authorize later implementation,
 > Git lifecycle work, or publication.
 
@@ -91,10 +91,10 @@ The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were exclu
 | Area | Current status | Smallest blocker / next condition |
 |---|---|---|
 | Document approval | `APPROVED` | The approval receipt above remains the planning authority. |
-| Execution lifecycle | Phases 23–26 complete and archived | Five open phases (27–31) remain; each requires its own approved lifecycle gate and exact branch/worktree authority. |
+| Execution lifecycle | Phases 23–27 complete and archived | Four open phases (28–31) remain; each requires its own approved lifecycle gate and exact branch/worktree authority. |
 | Data foundations | `COMPLETED` | Tasks 101–105A and authoritative command Tasks 120–126 are accepted and recorded in their phase archives. |
 | Decision prerequisites | `COMPLETED` | Tasks 106–119 and all fourteen DP receipts are accepted, reflected, and recorded in the Phase 24 archive. |
-| Headless/base UI | Phase 26 base owners completed | Tasks 127–135 are accepted and archived; Tasks 136–137, 139, 142, 145–146, 149, 152, 155–156, 159, and 161 follow only their named dependencies and lifecycle gates. |
+| Headless/base UI | Phase 27 interaction owners completed | Tasks 127–148 are accepted and archived; Tasks 149, 152, 155–156, 159, and 161 follow only their named dependencies and lifecycle gates. |
 | VQ realization | `BLOCKED_PENDING_USER_DECISIONS` | Each realization task resumes only from its exact DP receipt. |
 | Full close | Not ready | Tasks 136–164 complete, then Task 165 passes on top of the archived Phase 23–26 foundations. |
 
@@ -134,7 +134,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | Phase 24 | Completed | [Fourteen user-owned DP receipts covering twelve VQs](execution-plan/archive/phase-24.md) | 106–119 | Accepted and archived; each later realization consumes only its exact released DP edge. |
 | Phase 25 | Completed | [Eleven authoritative commands plus Archive recovery](execution-plan/archive/phase-25.md) | 120–126 | Accepted and archived; downstream tasks consume the completed command foundation by their exact dependencies. |
 | Phase 26 | Completed | [Lifetime, copy, and source-backed base-surface owners](execution-plan/archive/phase-26.md) | 127–135 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
-| Phase 27 | Proposed | Breakdown, Pool, and Staging headless adapters and exact realizations | 136–148 | Headless tasks remain independent from their VQ presentation slices. |
+| Phase 27 | Completed | [Breakdown, Pool, and Staging headless adapters and exact realizations](execution-plan/archive/phase-27.md) | 136–148 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
 | Phase 28 | Proposed | Explorer status/search and pointer placement | 149–154 | Search, status, reliability, and title slices have distinct receipt edges. |
 | Phase 29 | Proposed | Mounted-page Newly Placed, ordinary Undo, and search-result Undo integration | 155–158 | Ordinary-card Undo does not depend on `VQ-07`. |
 | Phase 30 | Proposed | Completion and Archive coordinator/recovery | 159–162 | Completion foundation does not depend on `VQ-03`/`VQ-04` realization. |
@@ -432,8 +432,9 @@ code commit; `fix(db): reject Scratch bit promotion`.
 - Integrate Tasks 101–105A as one phase unit; Task 102 closes Task 101's
   temporary legacy-row migration risk, so intermediate cherry-picks are not a
   supported release state.
-- `P23-02` is deferred to exact Task 136 hook/test ownership; `P23-03` was
-  resolved by accepted Task 130's defensive Bit-detail visibility guard.
+- `P23-02` was resolved by accepted Task 136's retired mock/assertion removal;
+  `P23-03` was resolved by accepted Task 130's defensive Bit-detail visibility
+  guard.
 - The real-project lifecycle trace is retained for the post-merge workflow-v2
   pass. Phase 24 must not start until that rollout and GridDO adapter migration
   are verified.
@@ -1372,8 +1373,9 @@ publish, or close the phase.
   typecheck, and production build with seven static routes and one dynamic
   route. Accepted Task 129/130/132/133/134 route and capture records remain the
   applicable user-visible checkpoint evidence.
-- `P23-03` is resolved by accepted Task 130's popup visibility guard and is
-  synchronized to the deferred index. `P23-02` remains deferred to Task 136.
+- `P23-03` is resolved by accepted Task 130's popup visibility guard, and
+  `P23-02` is resolved by accepted Task 136's retired mock/assertion removal;
+  both are synchronized to the deferred index.
 
 | Task | Implementation / evidence | Acceptance |
 | --- | --- | --- |
@@ -1614,6 +1616,44 @@ and no-queue/no-replay contracts do not change.
 **Verification:** focused fake-timer/motion/copy tests; run Add and Unstage success, replay, interruption, focus, announcement, reduced motion, and themes, recording `docs/verification/inbox-triage/task-148.md`; `pnpm typecheck`.
 
 **Commit contract:** DP-VQ02 copy/signal, tests, styles, and Task 148 evidence only; `feat(triage): render authoritative success signal`.
+
+---
+
+#### Phase 27 Close Notes
+
+- Tasks 136–148 were explicitly accepted on the isolated Phase 27 branch and
+  establish the authoritative Breakdown, Pool, and Staging interaction and
+  realization layer.
+- P27-11 moved selected-Scratch removal reads behind a dedicated reactive hook;
+  P27-12/P27-13 repaired only the Add viewport handoff and staged-grip pointer
+  feedback. Their accepted final `src` tree is
+  `7b831a941d40631c2212d07a010f3c6b4a00e01a`.
+- The fresh end-phase gate at pre-close `983595c` passed 95 test files / 982
+  tests, lint with 0 errors and the same 11 pre-existing warnings, typecheck,
+  production build with seven generated pages, and diff-check.
+- Accepted task evidence covers the edge, cross-tab, eight-theme, and
+  reduced-motion matrices and remains reusable without repetition.
+- P27-06 and P27-08 remain explicitly Deferred. All other P27 issues are
+  Closed, and P23-02 is resolved by accepted Task 136.
+
+| Task | Implementation / evidence | Acceptance |
+| --- | --- | --- |
+| 136 | `cf0b08d` → `318739f` | `02675c3` |
+| 137 | `bba0da0` → `d0bc011` | `47269fb` |
+| 138 | `68534d0` → `a7ab647` | `17babba` |
+| 139 | `d987ed2` → `0dcaf26` | `23da87d` |
+| 140 | `0e2abd6` → `fba3e81` | `8015a98` |
+| 141 | `9a804f6` → `383ae7d` | `310b575` |
+| 142 | `a851f35` → `52d8fd4` | `e323a4a` |
+| 143 | `5936569` → `5ce2ddf` | `8022301` |
+| 144 | `d25ec44` → `86efb2b` | `cdc0243` |
+| 145 | `21d87bd` → `27298c1` | `3fb1155` |
+| 146 | `8809a74` → `7dc8ca6` | `d8ba3e2` |
+| 147 | `a9e02b2` + `79a3aad` → `55e7e2e` | `841d6cc` |
+| 148 | `47f44d7` → `29c383b` | `f5940fc` |
+
+**Full issue log:**
+[`docs/issues/Issues_Phase_27.md`](issues/Issues_Phase_27.md)
 
 ---
 
@@ -1970,9 +2010,9 @@ This register is complete for every exact path declared by two or more tasks. Ev
 
 - **Next planned phase:** Phase 34. Phases 32 and 33 are reserved and receive no tasks.
 - **Next planned task:** Task 166.
-- Active graph count: 5 open implementation phases (27–31), 30 open tasks
-  (136–165), 4 completed archives (Phases 23–26 with accepted Tasks 101–135),
+- Active graph count: 4 open implementation phases (28–31), 17 open tasks
+  (149–165), 5 completed archives (Phases 23–27 with accepted Tasks 101–148),
   and 2 reserved phase numbers (32–33).
 - The document is **user-approved for planning authority** under the receipt at
-  the top of this file; Tasks 101–135 are accepted, Phases 23–26 are archived,
-  and Tasks 136–165 remain open.
+  the top of this file; Tasks 101–148 are accepted, Phases 23–27 are archived,
+  and Tasks 149–165 remain open.

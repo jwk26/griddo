@@ -3,7 +3,7 @@
 > Branch: `phase-27/breakdown-pool-staging-interactions`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions`
 > Kickoff date: 2026-08-12
-> State: P27-12/P27-13 accepted; resume the existing Phase 27 end-phase session from the acceptance commit
+> State: Tasks 136–148 accepted; end-phase audit complete and Final Close pending
 
 ## Status Legend
 
@@ -391,3 +391,74 @@ Task 138 targeted canonical repair:
 | Issues / deviations | `P27-10` is closed after acceptance of the completed targeted scope repair. Review-found delayed-projection and inline-edit lifetime defects were repaired inside the approved Breakdown owner and covered by focused regressions; follow-up review found no remaining issue. Blocker: none. |
 | Acceptance | On 2026-08-22 the user explicitly accepted checkpoint `29c383bf50193c837363f54f31cb5c5da59de7c0` and unchanged `src` tree `94f2d3cd08ba62d01ea00f77e5cb8362dc47e174` as the exact Task 148 checkpoint and approved this acceptance-only two-document commit; existing focused/full/browser evidence was reused without rerunning gates. |
 | Next legal action | Stop at the clean Task 148 acceptance checkpoint and wait for the separately approved Phase 27 smoke test. Do not start smoke testing, phase close, or Phase 28 in this lifecycle. |
+
+## Phase 27 Close Audit
+
+### Identity, ownership, and acceptance
+
+- **Pinned pre-close SHA:**
+  `983595cd40f491a40bb4c1a474058596b061d01e` on
+  `phase-27/breakdown-pool-staging-interactions`, based on freshly fetched
+  `origin/main` `3829a789e5666778267070cf830c022cbe447e57`.
+- Tasks 136–148 each have a user-owned `[x]`, durable implementation/evidence,
+  and explicit acceptance. Task 149 remains `[ ]` and unstarted.
+- The base-to-head diff is owned by the thirteen accepted tasks, their tests,
+  canonical reflections, route/capture evidence, Gate C receipt, issue ledger,
+  and accepted bounded repairs. No Task 149+, unrelated, or prototype work is
+  mixed.
+- The exact accepted source tree is
+  `7b831a941d40631c2212d07a010f3c6b4a00e01a` at pre-close and is preserved by
+  candidate A, which changes close documents only.
+
+### Terminal evidence and topology
+
+The adapter-declared full gate ran freshly and serially at pre-close:
+
+| Command | Exit | Result |
+| --- | ---: | --- |
+| `pnpm test` | 0 | 95 test files / 982 tests passed |
+| `pnpm lint` | 0 | 0 errors; the same 11 pre-existing warnings |
+| `pnpm typecheck` | 0 | TypeScript check passed |
+| `pnpm build` | 0 | Next.js 16.2.1 production build passed; seven pages generated |
+| `git diff --check` | 0 | No whitespace errors |
+
+The fresh fetch resolved `origin/main` and the clean primary integration
+worktree to `3829a789e5666778267070cf830c022cbe447e57` with zero divergence.
+That commit is the merge base and an ancestor of pre-close. The exact
+conflict-free merge-tree is `7406700dc37119118c339e2f091ac0424bd0bfa6`.
+
+### Architecture conformance
+
+| Governing rule | Affected evidence | Tier | Disposition |
+| --- | --- | --- | --- |
+| DataStore facade, reactive reads, and hook boundary | P27-11 moved external-removal reads behind `use-external-scratch-removal-data`; components import no production Dexie/DataStore access. | Blocking | Pass |
+| State ownership and durable Staging authority | Session stores retain only declared UI lifetime state; authoritative Breakdown rows and candidates remain repository/hook owned. | Blocking | Pass |
+| Authoritative operations and atomic postconditions | Add/Delete/Edit/Stage/Unstage use approved command/reconciliation results, stable operation identity, shared locking, and source-truth retention. | Blocking | Pass |
+| Workflow-hook ownership | Pointer sensors, snapshots, release intent, and invalidation remain in `useTriageDnd`; components coordinate but do not sequence persistence. | Blocking | Pass |
+| Shared tree, semantic states, and theme mapping | All realizations extend the canonical production tree with semantic roles/tokens and no component theme-ID branching. | Blocking | Pass |
+| Decision prerequisites and deferred reachability | Accepted DP receipts own rendered effects; P27-06 and P27-08 stay explicitly Deferred without fallback or invented proof. | Blocking | Pass |
+| Source/render evidence | Accepted task records name route, state, viewport, theme/mode, focus, and actual interaction/capture evidence; phase smoke stays packet-level. | Blocking | Pass |
+| File organization | Hooks, components, tests, copy, CSS, recipes, and evidence remain with their declared owners. | Advisory | Pass |
+| Local-first presentation | Authoritative content remains usable through pending/unknown/reconciliation; no generic routine-loading chrome was introduced. | Advisory | Pass |
+
+Blocking violations: **0**. Advisory violations: **0**.
+
+### Issue, canonical-impact, archive, and handoff reconciliation
+
+- No `Open`, `In Progress`, or `Awaiting User Decision` Phase 27 issue remains.
+- P27-01–P27-05, P27-07, and P27-09–P27-13 are Closed. Their canonical
+  impacts are Reflected or implementation-local None.
+- P27-06 and P27-08 retain their exact user-approved Deferred dispositions and
+  are synchronized to `docs/issues/Issues_Deferred.md`.
+- Historical P23-02 is resolved by accepted Task 136 and synchronized in its
+  source ledger and the central deferred index.
+- `docs/execution-plan/archive/phase-27.md` records completion-time truth; the
+  Phase Index and active counts agree. Phase Notes are not used by policy.
+- One cross-phase learning records the dedicated reactive-hook boundary and
+  same-identity stale-result cancellation requirement exposed by P27-11.
+
+**Next legal action:** present one exact Final Close packet pinning detached
+candidate A, the exact future whole-file JSON receipt payload and hash,
+publication metadata, merge method, checks policy, integration sync, and
+guarded cleanup. This audit grants no Final Close, receipt write, push, PR,
+merge, sync, cleanup, Task 149, or Phase 28 authority.
