@@ -92,3 +92,19 @@ No production implementation or Task 149 execution occurred.
 
 None at kickoff. Phase 27 items `P27-06` and `P27-08` remain Deferred under
 their Phase 27 owner and are outside Phase 28 scope.
+
+## Task 149 Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Task | `149 — Implement release-time targets and valid-column edge auto-scroll` |
+| State | `In Progress`; Task 149 remains `[ ]` pending explicit user acceptance |
+| Exact scope | Existing DnD target/auto-scroll mechanics in `src/hooks/use-dnd.ts`, `src/components/triage/hierarchy-explorer.tsx`, and `src/components/triage/triage-workspace.tsx`; their three approved test files; Task 149 verification evidence; Phase 28 workflow-pilot measurement row |
+| Approval | Exact Task 149 fresh-session user instruction on 2026-08-24, bounded by `docs/issues/Issues_Phase_28.gate-c.json` |
+| Approved base | `8cb2d904a55c136ca319e7bdf619d8e5d962fce8` |
+| Kickoff recovery anchor | `fcafd49def7334299972e99d675db025d0598a79` |
+| Baseline audit anchor | `4c526f0` (`docs: preserve Phase 28 workflow pilot baseline`) |
+| Dependencies | Tasks 134 and 142 accepted; no unresolved Task 149 prerequisite |
+| Issues / deviations | None at start |
+| Canonical impact | `None` — Task 149 implements the existing approved contract without changing canonical product, design, policy, or plan authority |
+| Next legal action | Add focused failing Task 149 tests, then implement only Task 149 within the approved write set |
