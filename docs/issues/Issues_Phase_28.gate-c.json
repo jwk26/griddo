@@ -1,0 +1,181 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "gate-c",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-28/explorer-search-pointer-placement",
+  "approved_base": "8cb2d904a55c136ca319e7bdf619d8e5d962fce8",
+  "approved_scope": {
+    "lifecycle": "run-phase",
+    "phase": 28,
+    "worktree_role": "feature",
+    "phase_tasks": [149, 150, 151, 152, 153, 154],
+    "task_batch": [149],
+    "task_order": [149],
+    "execution_mode": "sequential",
+    "next_task": 149
+  },
+  "next_legal_action": "$run-task",
+  "source_mode": "merged canonical Phase 28 plan plus accepted Phase 23–27 foundations and accepted DP-VQ06-EXPLORER, DP-VQ07, DP-VQ08, and DP-VQ09 receipts",
+  "issue_ledger": "docs/issues/Issues_Phase_28.md",
+  "integration": {
+    "branch": "main",
+    "remote": "origin",
+    "post_fetch_sha": "8cb2d904a55c136ca319e7bdf619d8e5d962fce8",
+    "local_matches_remote": true,
+    "divergence": "0/0"
+  },
+  "worktree_preparation": {
+    "new_linked_worktree": true,
+    "reuse": false,
+    "base_exception": null,
+    "clean_start": true,
+    "approved_base_to_head_commits_before_kickoff_docs": 0,
+    "ledger_commit": "a8194ef89d98ef3affac65fda5424e9e374cfc95"
+  },
+  "dependency_evidence": {
+    "task_149": {
+      "dependencies": [134, 142],
+      "accepted_commits": [
+        "2a4dabc359cff0e5554a5a2c54593e031895dcd0",
+        "e323a4ab2c3d5932bc65ec99d4c9755073c5f0ae"
+      ],
+      "state_at_gate": "ready"
+    },
+    "decision_receipts": {
+      "DP-VQ06-EXPLORER": "accepted for Task 150 only",
+      "DP-VQ07": "accepted for Task 151 only",
+      "DP-VQ08": "accepted for Task 153 only after Task 152",
+      "DP-VQ09": "accepted for Task 154 only after Task 152"
+    },
+    "later_phase_tasks": {
+      "tasks": [150, 151, 152, 153, 154],
+      "state_at_gate": "held_for_separate_run-task_scope_and_dependency_revalidation"
+    }
+  },
+  "task_scope": {
+    "task_149": {
+      "modify": [
+        "src/hooks/use-dnd.ts",
+        "src/hooks/use-triage-dnd.test.ts",
+        "src/components/triage/hierarchy-explorer.tsx",
+        "src/components/triage/hierarchy-explorer.test.tsx",
+        "src/components/triage/triage-workspace.tsx",
+        "src/components/triage/triage-workspace.test.tsx"
+      ],
+      "create": [
+        "docs/verification/inbox-triage/task-149.md"
+      ],
+      "behavior": [
+        "release-time pointer-under DOM target selection",
+        "valid, invalid, and full target feedback",
+        "progressive valid-column-only edge auto-scroll with exit and end cancellation",
+        "preserve existing disabled DndContext library auto-scroll"
+      ],
+      "excluded": [
+        "Task 150 or later implementation",
+        "Phase 27 P27-06 or P27-08",
+        "Phase 29 Task 155 or later",
+        "workflow candidate skill or Adapter changes",
+        "run-task invocation from run-phase"
+      ]
+    }
+  },
+  "workflow_cost_pilot": {
+    "external_baseline": {
+      "path": "/Users/jwk/Documents/GridDO_Codex_Workflow_Phase_28_Audit.md",
+      "sha256": "13c47986ebbb9c3b098943132cb61b1fd9355476c86a7969fab70d61a5a33fda",
+      "status": "non-canonical external working audit"
+    },
+    "tracked_target": "docs/verification/inbox-triage/phase-28-workflow-pilot-audit.md",
+    "baseline_copy_owner": "fresh Task 149 run-task session after green kickoff receipt validation and before production or test modifications",
+    "run_phase_copies_baseline": false,
+    "row_writer": "each active Task 149–154 run-task writer or explicitly approved bounded repair writer at its task or cluster checkpoint",
+    "measurement_rule": "record measured values only; never record estimates as measured facts",
+    "owner_separation": "EXECUTION_PLAN owns task contracts; Issues_Phase_28 owns execution state and issues; task verification records own commands and detailed results; the pilot audit owns experiment measurements and conclusions",
+    "end_phase_boundary": "finalize measured findings and handoff manifest only; no candidate skill or Adapter change",
+    "post_phase_handoff": "after Phase 28 publication and cleanup, use a fresh separately approved workflow-improvement lifecycle pinned to the exact merged audit blob and Final Close receipt"
+  },
+  "pilot_operating_authority": {
+    "tdd": "risk-tiered",
+    "focused_gate": "required for every task",
+    "full_gate": "required at risk, shared owner or API, widened blast radius, cluster checkpoint, and final exact-input boundaries",
+    "evidence_reuse": "allowed only when all relevant input fingerprints match",
+    "acceptance_only_docs": "do not rerun product gates when product inputs are unchanged",
+    "browser": "use only for the required modality and reuse unchanged matrices",
+    "review": "proportional to risk and blast radius",
+    "end_phase": "completion, conformance, and transaction audit",
+    "publication_guards": "retain expected-head, integration, and cleanup guards without expanding them into repeated product gates"
+  },
+  "writer_mutex": {
+    "mode": "single-task",
+    "task_149": ["dnd", "hierarchy-explorer", "triage-workspace"],
+    "single_production_writer": "Codex"
+  },
+  "readiness": {
+    "plan_code_drift": "none blocking; existing autoScroll=false is a preserved pre-satisfied condition",
+    "open_decision_receipts_for_batch": [],
+    "active_blocking_issues": [],
+    "flow_ownership": "PASS",
+    "task_149_started": false,
+    "production_implementation_started": false,
+    "baseline_src_tree": "7b831a941d40631c2212d07a010f3c6b4a00e01a"
+  },
+  "verification": {
+    "setup": {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "result": "lockfile unchanged; 537 packages linked"
+    },
+    "baseline_full_gate": [
+      {
+        "command": "pnpm test",
+        "exit": 0,
+        "result": "95 test files and 982 tests passed"
+      },
+      {
+        "command": "pnpm lint",
+        "exit": 0,
+        "result": "0 errors and 11 pre-existing warnings"
+      },
+      {
+        "command": "pnpm typecheck",
+        "exit": 0,
+        "result": "tsc --noEmit passed"
+      },
+      {
+        "command": "pnpm build",
+        "exit": 0,
+        "result": "Next.js 16.2.1 production build passed and seven routes generated"
+      }
+    ],
+    "task_149_focused": [
+      "focused DnD, Explorer, and Workspace tests with mocked rectangles and scrolling",
+      "mouse and touch release-time and edge-scroll evidence",
+      "pnpm typecheck",
+      "git diff --check"
+    ]
+  },
+  "workflow_candidate": {
+    "repository": "/Users/jwk/Documents/codex-workflow-clean-design-mode-implementation",
+    "branch": "post-v1/workflow-candidate-low-cost",
+    "commit": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
+    "run_phase_skill": "skills/run-phase/SKILL.md",
+    "future_run_task_sha256": "614631c56866549feb298d995ea0cf1311caa1cacaaefc2ba2ca753e43910531",
+    "global_lifecycle_skills_allowed": false
+  },
+  "gate_c_approval": {
+    "date": "2026-08-24",
+    "approval_kind": "new-phase-kickoff",
+    "exact_scope_confirmed": true,
+    "user_statement": "위 Phase 28 Gate C packet 전체를 정확히 승인합니다."
+  },
+  "kickoff_state": {
+    "clean_start": true,
+    "task_149_durable_start_recorded": false,
+    "production_implementation_started": false,
+    "run_task_invoked": false,
+    "push_or_publication_started": false
+  }
+}
