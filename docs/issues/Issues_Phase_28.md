@@ -3,8 +3,8 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Task 149 `[x]`, Accepted; Task 150 pre-start blocker awaiting user
-> disposition; Tasks 150–154 remain unstarted
+> State: Task 149 `[x]`, Accepted; Task 150 scope amendment reflected and
+> awaiting docs-only checkpoint review; Tasks 150–154 remain unstarted
 
 ## Status Legend
 
@@ -91,25 +91,28 @@ No production implementation or Task 149 execution occurred.
 
 ## Active Issues
 
-| ID | State | Evidence | Exact minimum unblock | Canonical impact |
+| ID | State | Evidence | User disposition | Canonical impact |
 | --- | --- | --- | --- | --- |
-| `P28-04` | `Awaiting User Decision` | Task 150 owner discovery found that `useGridData()` exposes only active per-parent snapshots, so Explorer cannot distinguish deleted/archived/moved/unreachable fallback causes. Local placement creates its result inside `use-dnd.ts`/Workspace but passes Explorer only a target `dropId`, so the approved Task 150 files cannot authoritatively exclude that new result from remote-arrival counts. The selected-Bit/reveal producer is likewise not connected before Task 151. Detailed evidence is in `docs/verification/inbox-triage/task-150.md`. | Approve the smallest producer/read projection and exact added owner/test paths, or revise the Task 150 observable contract. No product/test write or durable start may occur under the current exact file boundary. | `Tagged` — the Task 150 plan/receipt meaning is unchanged; an implementation-owner gap requires user disposition before any canonical reflection. |
+| `P28-04` | `Promoted to Execution Plan` | Task 150 owner discovery found that the existing per-parent active snapshots could not distinguish deleted/archived/moved/unreachable causes or initial/local/moved provenance; the local placement result identity stopped inside `use-dnd.ts`/Workspace; and the selected-Bit/reveal production owner does not exist until Task 151. Detailed evidence is in `docs/verification/inbox-triage/task-150.md`. | On 2026-08-24 the user approved: one new dedicated reactive Explorer provenance hook and direct test; the minimum existing DnD/Workspace producer handoff and direct tests for the created stable result identity; no placement semantic change; and movement of only selected-Bit disappearance realization to Task 151's existing reveal owner. Search realization and all other Task 151 behavior remain unstarted. | `Reflected` in the exact Task 150/151 files, actions, dependencies, acceptance, verification, and commit contracts in `docs/EXECUTION_PLAN.md`; the historical `DP-VQ06-EXPLORER` receipt is unchanged and its Task-150-only release edge is explicitly corrected only for selected-Bit disappearance. |
 
 Phase 27 items `P27-06` and `P27-08` remain Deferred under their Phase 27 owner
 and are outside Phase 28 scope.
 
-## Task 150 Pre-Start Blocker
+## Task 150 Canonical Amendment Checkpoint
 
 | Field | Durable value |
 | --- | --- |
 | Task | `150 — Render DP-VQ06-EXPLORER remote/path statuses` |
-| State | `Awaiting User Decision`; Task 150 remains `[ ]` and no durable `In Progress` start signal was written |
+| State | `Canonical amendment reflected — awaiting docs-only checkpoint review`; Tasks 150 and 151 remain `[ ]`, unstarted, and no durable `In Progress` start signal was written |
 | Approval | Exact fresh candidate-pinned Task 150 work order on 2026-08-24, bounded by `docs/issues/Issues_Phase_28.gate-c.json` and the accepted `DP-VQ06-EXPLORER` receipt |
 | Start base / recovery anchor | `9b26412fe4df90119e67d95efafa43c7332f0b05`; accepted `src` tree `e83086e1044bb2deebc6837f997bebc06b316146` |
-| Blocker | `P28-04` — the approved product surfaces lack authoritative cause and local-placement producer signals required by the exact receipt |
+| User disposition | On 2026-08-24 the user approved the exact targeted `P28-04` owner expansion and selected-Bit release-edge correction stated in this checkpoint |
+| Exact added Task 150 scope | Create `src/hooks/use-explorer-remote-status.ts` and `.test.tsx`; modify `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`, plus `src/components/triage/triage-workspace.tsx` and `.test.tsx`, only for the authoritative provenance and stable local-result identity flow now recorded in Task 150 |
+| Task 151 correction | Move only selected-Bit disappearance realization to Task 151's existing search-reveal owner; add Task 150 as its dependency; do not start Search or any Task 151 product behavior |
+| Durable amendment mechanism | `docs/WORKFLOW.md` assigns execution corrections to the phase issue ledger and promotes executable ownership into `docs/EXECUTION_PLAN.md`; Adapter v2 declares no separate amendment receipt kind/path, so no new JSON was invented and no historical receipt was modified |
 | Product/test writes | None |
-| Canonical impact | `Tagged` — user disposition is required before reflecting any owner expansion or contract change |
-| Next legal action | User disposition of `P28-04`; do not start Task 150 implementation, Task 151, or acceptance-only work |
+| Canonical impact | `Reflected` — exact owner paths and the selected-Bit release-edge correction are now canonical; product/design semantics are unchanged |
+| Next legal action | User review of this clean docs-only amendment checkpoint; do not start Task 150 implementation or Task 151 product work in this continuation |
 
 ## Task 149 Durable Start
 
