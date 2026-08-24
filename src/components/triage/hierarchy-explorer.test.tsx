@@ -22,6 +22,22 @@ vi.mock("@/hooks/use-grid-data", () => ({
   useGridData: vi.fn(),
 }));
 
+const departureState = vi.hoisted(() => ({
+  destination: null as null | {
+    id: string;
+    focus?: () => void;
+    kind: "path";
+    perform: () => void;
+  },
+  requestDeparture: vi.fn(),
+}));
+
+vi.mock("@/hooks/use-triage-departure", () => ({
+  useTriageDepartureContext: () => ({
+    requestDeparture: departureState.requestDeparture,
+  }),
+}));
+
 type GridSnapshot = { nodes: Node[]; bits: Bit[]; isLoading: boolean };
 
 const EMPTY_GRID: GridSnapshot = { nodes: [], bits: [], isLoading: false };
@@ -108,6 +124,14 @@ beforeEach(async () => {
   );
   const { useDroppable } = await import("@dnd-kit/core");
   vi.mocked(useDroppable).mockClear();
+  departureState.destination = null;
+  departureState.requestDeparture.mockReset();
+  departureState.requestDeparture.mockImplementation((destination) => {
+    departureState.destination = destination;
+    destination.perform();
+    destination.focus?.();
+    return "performed";
+  });
 });
 
 afterEach(() => {
@@ -116,6 +140,58 @@ afterEach(() => {
 });
 
 describe("HierarchyExplorer Task 134 base", () => {
+  it("captures one complete Explorer path change before either path mutation", () => {
+    const { home } = seedDeepGrid();
+    departureState.requestDeparture.mockImplementation((destination) => {
+      departureState.destination = destination;
+      return "decision-required";
+    });
+    render(<HierarchyExplorer {...defaultProps} />);
+
+    const destinationButton = screen.getByRole("button", {
+      name: `Select Node: ${home.title}`,
+    });
+    const beforePath = useTriageStore.getState().explorerPathIds;
+    const beforeOpenColumns = useTriageStore.getState().explorerOpenColumnIds;
+    destinationButton.focus();
+    fireEvent.click(destinationButton);
+
+    expect(useTriageStore.getState()).toMatchObject({
+      explorerPathIds: beforePath,
+      explorerOpenColumnIds: beforeOpenColumns,
+    });
+    expect(departureState.destination).toMatchObject({
+      id: home.id,
+      kind: "path",
+    });
+
+    departureState.destination?.perform();
+    expect(useTriageStore.getState()).toMatchObject({
+      explorerPathIds: [home.id],
+      explorerOpenColumnIds: ["home", home.id],
+    });
+
+    screen.getByRole("button", { name: "Home" }).focus();
+    departureState.destination?.focus?.();
+    expect(destinationButton).toHaveFocus();
+  });
+
+  it("does not request departure for the current Explorer path", () => {
+    const { home } = seedDeepGrid();
+    useTriageStore.setState({
+      explorerOpenColumnIds: ["home", home.id],
+      explorerPathIds: [home.id],
+    });
+    render(<HierarchyExplorer {...defaultProps} />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: `Select Node: ${home.title}` }),
+    );
+
+    expect(departureState.requestDeparture).not.toHaveBeenCalled();
+    expect(useTriageStore.getState().explorerPathIds).toEqual([home.id]);
+  });
+
   it("renders full column and path labels with no abbreviated or dedicated search body", async () => {
     const { home, level1 } = seedDeepGrid();
     render(<HierarchyExplorer {...defaultProps} />);

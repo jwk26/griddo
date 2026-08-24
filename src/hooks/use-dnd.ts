@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   KeyboardSensor,
   MouseSensor,
   TouchSensor,
+  pointerWithin,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
@@ -14,14 +16,28 @@ import {
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { toast } from "sonner";
 import { isCalendarDropData } from "@/lib/calendar-dnd";
-import { getDataStore } from "@/lib/db/datastore";
-import { isGridDropData, isTriageDropData } from "@/lib/grid-dnd";
+import {
+  getDataStore,
+  type StageCandidateCommand,
+  type StageCandidateResult,
+  type UnstageCandidateCommand,
+  type UnstageCandidateResult,
+} from "@/lib/db/datastore";
+import {
+  getTriageBitZoneDropId,
+  getTriageNodeZoneDropId,
+  getTriageRemoveDropId,
+  isGridDropData,
+  isTriageDropData,
+  type TriageDropData,
+} from "@/lib/grid-dnd";
 import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import {
   getStaticBlockedCells,
   isCellBlocked,
 } from "@/lib/utils/breadcrumb-zone";
-import type { StagedCandidate } from "@/stores/triage-store";
+import type { CandidateCommandOutcome } from "@/hooks/use-staged-candidates";
+import type { TriageOperationLock } from "@/hooks/use-triage-operation-lock";
 
 export type DragActiveItem = {
   id: string;
@@ -35,12 +51,61 @@ export type TriageDragKind =
   | "triage-staged-node"
   | "triage-staged-bit";
 
+type TriageDragSourceBase = {
+  id: string;
+  integrity: "current" | "invalidated";
+  label: string;
+  scratchId: string;
+  sourceBreakdownId: string;
+  sourceVersion: number;
+  sourceLifecycle: "active";
+};
+
+export type TriageDragSnapshot =
+  | (TriageDragSourceBase & {
+      kind: "triage-breakdown";
+    })
+  | (TriageDragSourceBase & {
+      kind: "triage-staged-node" | "triage-staged-bit";
+      candidateVersion: number;
+      candidateLifecycle: "staged";
+      resultType: "node" | "bit";
+    });
+
+export type TriageActiveDragItem = TriageDragSnapshot | null;
+
 export type TriageDragItem = {
   kind: TriageDragKind;
   id: string;
+  integrity?: "current" | "invalidated";
   label: string;
+  scratchId?: string;
   sourceBreakdownId?: string;
+  sourceVersion?: number;
+  sourceLifecycle?: "active";
+  candidateVersion?: number;
+  candidateLifecycle?: "staged";
+  resultType?: "node" | "bit";
 } | null;
+
+export type TriageDropIntent =
+  | {
+      kind: "stage";
+      resultType: "node" | "bit";
+      source: Extract<TriageDragSnapshot, { kind: "triage-breakdown" }>;
+    }
+  | {
+      kind: "unstage";
+      source: Extract<
+        TriageDragSnapshot,
+        { kind: "triage-staged-node" | "triage-staged-bit" }
+      >;
+    }
+  | {
+      kind: "placement";
+      source: TriageDragSnapshot;
+      target: Extract<TriageDropData, { kind: "triage-hierarchy-drop" }>;
+    };
 
 export type PendingPlacement = {
   candidateId: string;
@@ -55,6 +120,19 @@ export type PendingPlacement = {
   isFull: boolean;
   isDirectBreakdown: boolean;
 } | null;
+
+const TRIAGE_BREAKDOWN_UNSTAGE_DROP_ID = "triage-remove-drop:breakdown";
+
+const triageInteractionCollisionDetection: CollisionDetection = (args) =>
+  pointerWithin(args).filter(
+    (candidate) =>
+      candidate.id === getTriageNodeZoneDropId() ||
+      candidate.id === getTriageBitZoneDropId() ||
+      candidate.id === getTriageRemoveDropId() ||
+      candidate.id === TRIAGE_BREAKDOWN_UNSTAGE_DROP_ID ||
+      (typeof candidate.id === "string" &&
+        candidate.id.startsWith("triage-hierarchy:")),
+  );
 
 type PendingNodeMove = {
   itemId: string;
@@ -98,44 +176,171 @@ function isTriageDragKind(value: unknown): value is TriageDragKind {
   );
 }
 
-function readTriageDragItem(value: unknown): TriageDragItem {
+function readTriageDragItem(value: unknown): TriageDragSnapshot | null {
   if (
     typeof value !== "object" ||
     value === null ||
     !("kind" in value) ||
     !("id" in value) ||
     !("label" in value) ||
+    !("scratchId" in value) ||
+    !("sourceBreakdownId" in value) ||
+    !("sourceVersion" in value) ||
+    !("sourceLifecycle" in value) ||
     !isTriageDragKind(value.kind) ||
     typeof value.id !== "string" ||
-    typeof value.label !== "string"
+    typeof value.label !== "string" ||
+    typeof value.scratchId !== "string" ||
+    typeof value.sourceBreakdownId !== "string" ||
+    typeof value.sourceVersion !== "number" ||
+    !Number.isInteger(value.sourceVersion) ||
+    value.sourceVersion < 1 ||
+    value.sourceLifecycle !== "active"
+  ) {
+    return null;
+  }
+
+  const base: TriageDragSourceBase = {
+    id: value.id,
+    integrity: "current",
+    label: value.label,
+    scratchId: value.scratchId,
+    sourceBreakdownId: value.sourceBreakdownId,
+    sourceVersion: value.sourceVersion,
+    sourceLifecycle: "active",
+  };
+
+  if (value.kind === "triage-breakdown") {
+    return { kind: value.kind, ...base };
+  }
+
+  if (
+    !("candidateVersion" in value) ||
+    !("candidateLifecycle" in value) ||
+    !("resultType" in value) ||
+    typeof value.candidateVersion !== "number" ||
+    !Number.isInteger(value.candidateVersion) ||
+    value.candidateVersion < 1 ||
+    value.candidateLifecycle !== "staged" ||
+    (value.resultType !== "node" && value.resultType !== "bit") ||
+    (value.kind === "triage-staged-node" && value.resultType !== "node") ||
+    (value.kind === "triage-staged-bit" && value.resultType !== "bit")
   ) {
     return null;
   }
 
   return {
     kind: value.kind,
-    id: value.id,
-    label: value.label,
-    sourceBreakdownId:
-      "sourceBreakdownId" in value &&
-      typeof value.sourceBreakdownId === "string"
-        ? value.sourceBreakdownId
-        : undefined,
+    ...base,
+    candidateVersion: value.candidateVersion,
+    candidateLifecycle: value.candidateLifecycle,
+    resultType: value.resultType,
   };
+}
+
+function isSameTriageDragSnapshot(
+  activation: TriageDragSnapshot,
+  current: TriageDragSnapshot,
+): boolean {
+  if (
+    activation.kind !== current.kind ||
+    activation.id !== current.id ||
+    activation.label !== current.label ||
+    activation.scratchId !== current.scratchId ||
+    activation.sourceBreakdownId !== current.sourceBreakdownId ||
+    activation.sourceVersion !== current.sourceVersion ||
+    activation.sourceLifecycle !== current.sourceLifecycle
+  ) {
+    return false;
+  }
+
+  if (
+    activation.kind === "triage-breakdown" ||
+    current.kind === "triage-breakdown"
+  ) {
+    return true;
+  }
+
+  return (
+    activation.candidateVersion === current.candidateVersion &&
+    activation.candidateLifecycle === current.candidateLifecycle &&
+    activation.resultType === current.resultType
+  );
+}
+
+const triageDragInvalidationListeners = new Set<
+  (snapshot: TriageDragSnapshot) => void
+>();
+
+export function invalidateTriageDragSource(value: unknown): void {
+  const snapshot = readTriageDragItem(value);
+  if (snapshot === null) return;
+
+  triageDragInvalidationListeners.forEach((listener) => listener(snapshot));
+}
+
+export function classifyTriageDropIntent(
+  source: TriageDragSnapshot,
+  target: TriageDropData,
+): TriageDropIntent | null {
+  if (
+    source.kind === "triage-breakdown" &&
+    (target.kind === "triage-node-zone-drop" ||
+      target.kind === "triage-bit-zone-drop")
+  ) {
+    return {
+      kind: "stage",
+      resultType: target.kind === "triage-node-zone-drop" ? "node" : "bit",
+      source,
+    };
+  }
+
+  if (
+    (source.kind === "triage-staged-node" ||
+      source.kind === "triage-staged-bit") &&
+    target.kind === "triage-remove-drop"
+  ) {
+    return { kind: "unstage", source };
+  }
+
+  if (target.kind === "triage-hierarchy-drop") {
+    return { kind: "placement", source, target };
+  }
+
+  return null;
 }
 
 export function useTriageDnd(
   selectedScratchId: string | null,
   {
-    addStagedCandidate,
+    focusUnstagedSource,
+    operationLock,
+    reconcileStageCandidate,
+    reconcileUnstageCandidate,
     removeStagedCandidate,
+    stageCandidate,
+    unstageCandidate,
   }: {
-    addStagedCandidate: (scratchId: string, candidate: StagedCandidate) => void;
+    focusUnstagedSource: (sourceBreakdownId: string) => void;
+    operationLock: TriageOperationLock;
+    reconcileStageCandidate: (
+      command: StageCandidateCommand,
+    ) => Promise<CandidateCommandOutcome<StageCandidateResult>>;
+    reconcileUnstageCandidate: (
+      command: UnstageCandidateCommand,
+    ) => Promise<CandidateCommandOutcome<UnstageCandidateResult>>;
     removeStagedCandidate: (scratchId: string, candidateId: string) => void;
+    stageCandidate: (
+      command: StageCandidateCommand,
+    ) => Promise<CandidateCommandOutcome<StageCandidateResult>>;
+    unstageCandidate: (
+      command: UnstageCandidateCommand,
+    ) => Promise<CandidateCommandOutcome<UnstageCandidateResult>>;
   },
 ): {
   sensors: ReturnType<typeof useSensors>;
-  activeDragItem: TriageDragItem;
+  collisionDetection: CollisionDetection;
+  activeDragItem: TriageActiveDragItem;
   handleDragStart: (event: DragStartEvent) => void;
   handleDragEnd: (event: DragEndEvent) => void;
   handleDragOver: (event: DragOverEvent) => void;
@@ -148,10 +353,12 @@ export function useTriageDnd(
   overTargetId: string | null;
 } {
   const [activeDragItem, setActiveDragItem] =
-    useState<TriageDragItem>(null);
+    useState<TriageActiveDragItem>(null);
   const [overTargetId, setOverTargetId] = useState<string | null>(null);
   const [pendingPlacement, setPendingPlacement] =
     useState<PendingPlacement>(null);
+  const activationSnapshotRef = useRef<TriageDragSnapshot | null>(null);
+  const dragCancelledRef = useRef(false);
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -163,51 +370,129 @@ export function useTriageDnd(
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveDragItem(readTriageDragItem(event.active.data.current));
+    const snapshot = readTriageDragItem(event.active.data.current);
+    const isCurrentScratch =
+      !operationLock.isLocked() && snapshot?.scratchId === selectedScratchId;
+    activationSnapshotRef.current = isCurrentScratch ? snapshot : null;
+    dragCancelledRef.current = false;
+    setActiveDragItem(isCurrentScratch ? snapshot : null);
   };
+
+  const finishStage = async (command: StageCandidateCommand): Promise<void> => {
+    let outcome = await stageCandidate(command);
+    if ("outcome" in outcome) {
+      outcome = await reconcileStageCandidate(command);
+    }
+    if ("outcome" in outcome) return;
+    operationLock.release(command.operationId, outcome.status);
+  };
+
+  const finishUnstage = async (
+    command: UnstageCandidateCommand,
+  ): Promise<void> => {
+    let outcome = await unstageCandidate(command);
+    if ("outcome" in outcome) {
+      outcome = await reconcileUnstageCandidate(command);
+    }
+    if ("outcome" in outcome) return;
+    operationLock.release(command.operationId, outcome.status);
+    if (outcome.status === "applied" || outcome.status === "already_applied") {
+      focusUnstagedSource(command.sourceBreakdownId);
+    }
+  };
+
+  useEffect(() => {
+    const cancelOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || activationSnapshotRef.current === null) {
+        return;
+      }
+
+      dragCancelledRef.current = true;
+      activationSnapshotRef.current = null;
+      setActiveDragItem(null);
+      setOverTargetId(null);
+    };
+
+    document.addEventListener("keydown", cancelOnEscape);
+    const cancelOnInvalidation = (snapshot: TriageDragSnapshot) => {
+      const activationSnapshot = activationSnapshotRef.current;
+      if (
+        activationSnapshot === null ||
+        !isSameTriageDragSnapshot(activationSnapshot, snapshot)
+      ) {
+        return;
+      }
+
+      dragCancelledRef.current = true;
+      setActiveDragItem({
+        ...activationSnapshot,
+        integrity: "invalidated",
+      });
+    };
+    triageDragInvalidationListeners.add(cancelOnInvalidation);
+
+    return () => {
+      document.removeEventListener("keydown", cancelOnEscape);
+      triageDragInvalidationListeners.delete(cancelOnInvalidation);
+    };
+  }, []);
 
   const handleDragOver = (event: DragOverEvent) => {
     setOverTargetId(event.over?.id ? String(event.over.id) : null);
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
-    const dragItem =
-      readTriageDragItem(event.active.data.current) ?? activeDragItem;
+    const currentDragItem = readTriageDragItem(event.active.data.current);
+    const activationSnapshot = activationSnapshotRef.current;
     const dropData = event.over?.data.current;
 
+    activationSnapshotRef.current = null;
     setActiveDragItem(null);
     setOverTargetId(null);
 
     if (
-      dragItem === null ||
+      dragCancelledRef.current ||
+      activationSnapshot === null ||
+      currentDragItem === null ||
+      !isSameTriageDragSnapshot(activationSnapshot, currentDragItem) ||
+      activationSnapshot.scratchId !== selectedScratchId ||
       !isTriageDropData(dropData)
     ) {
+      dragCancelledRef.current = false;
+      return;
+    }
+
+    dragCancelledRef.current = false;
+    const intent = classifyTriageDropIntent(activationSnapshot, dropData);
+    if (intent === null) return;
+    const dragItem = intent.source;
+
+    if (
+      selectedScratchId !== null &&
+      intent.kind === "stage"
+    ) {
+      const command: StageCandidateCommand = {
+        operationId: crypto.randomUUID(),
+        candidateId: crypto.randomUUID(),
+        scratchBitId: selectedScratchId,
+        sourceBreakdownId: dragItem.sourceBreakdownId,
+        sourceExpectedVersion: dragItem.sourceVersion,
+        resultType: intent.resultType,
+      };
+      if (!operationLock.acquire("stage", command.operationId)) return;
+      await finishStage(command);
       return;
     }
 
     if (
       selectedScratchId !== null &&
-      dragItem.kind === "triage-breakdown" &&
-      (dropData.kind === "triage-node-zone-drop" ||
-        dropData.kind === "triage-bit-zone-drop")
+      intent.kind === "placement" &&
+      dragItem.kind === "triage-breakdown"
     ) {
-      addStagedCandidate(selectedScratchId, {
-        id: crypto.randomUUID(),
-        type: dropData.kind === "triage-node-zone-drop" ? "node" : "bit",
-        sourceBreakdownId: dragItem.id,
-        label: dragItem.label,
-      });
-      return;
-    }
-
-    if (
-      selectedScratchId !== null &&
-      dragItem.kind === "triage-breakdown" &&
-      dropData.kind === "triage-hierarchy-drop"
-    ) {
+      const target = intent.target;
       const dataStore = await getDataStore();
       const occupancy = await dataStore.getGridOccupancy(
-        dropData.parentNodeId,
+        target.parentNodeId,
       );
       const position = findNearestEmptyCell(
         occupancy,
@@ -221,11 +506,11 @@ export function useTriageDnd(
         candidateType: null,
         candidateLabel: dragItem.label,
         sourceBreakdownId: dragItem.id,
-        dropId: dropData.dropId,
-        parentNodeId: dropData.parentNodeId,
-        targetNodeLevel: dropData.targetNodeLevel,
-        targetTitle: dropData.targetTitle,
-        targetParentPath: dropData.targetParentPath,
+        dropId: target.dropId,
+        parentNodeId: target.parentNodeId,
+        targetNodeLevel: target.targetNodeLevel,
+        targetTitle: target.targetTitle,
+        targetParentPath: target.targetParentPath,
         isFull: position === null,
         isDirectBreakdown: true,
       });
@@ -234,40 +519,48 @@ export function useTriageDnd(
 
     if (
       selectedScratchId !== null &&
-      (dragItem.kind === "triage-staged-node" ||
-        dragItem.kind === "triage-staged-bit") &&
-      dropData.kind === "triage-remove-drop"
+      intent.kind === "unstage"
     ) {
-      removeStagedCandidate(selectedScratchId, dragItem.id);
+      const stagedSource = intent.source;
+      const command: UnstageCandidateCommand = {
+        operationId: crypto.randomUUID(),
+        candidateId: stagedSource.id,
+        candidateExpectedVersion: stagedSource.candidateVersion,
+        sourceBreakdownId: stagedSource.sourceBreakdownId,
+        sourceExpectedVersion: stagedSource.sourceVersion,
+      };
+      if (!operationLock.acquire("unstage", command.operationId)) return;
+      await finishUnstage(command);
       return;
     }
 
     if (
-      dropData.kind !== "triage-hierarchy-drop" ||
+      intent.kind !== "placement" ||
       (dragItem.kind !== "triage-staged-node" &&
-        dragItem.kind !== "triage-staged-bit") ||
-      dragItem.sourceBreakdownId === undefined
+        dragItem.kind !== "triage-staged-bit")
     ) {
       return;
     }
+
+    const target = intent.target;
 
     if (
       dragItem.kind === "triage-staged-node" &&
-      dropData.targetNodeLevel !== null &&
-      dropData.targetNodeLevel >= 2
+      target.targetNodeLevel !== null &&
+      target.targetNodeLevel >= 2
     ) {
       return;
     }
 
     if (
       dragItem.kind === "triage-staged-bit" &&
-      dropData.parentNodeId === null
+      target.parentNodeId === null
     ) {
       return;
     }
 
     const dataStore = await getDataStore();
-    const occupancy = await dataStore.getGridOccupancy(dropData.parentNodeId);
+    const occupancy = await dataStore.getGridOccupancy(target.parentNodeId);
     const position = findNearestEmptyCell(
       occupancy,
       0,
@@ -280,11 +573,11 @@ export function useTriageDnd(
       candidateType: dragItem.kind === "triage-staged-node" ? "node" : "bit",
       candidateLabel: dragItem.label,
       sourceBreakdownId: dragItem.sourceBreakdownId,
-      dropId: dropData.dropId,
-      parentNodeId: dropData.parentNodeId,
-      targetNodeLevel: dropData.targetNodeLevel,
-      targetTitle: dropData.targetTitle,
-      targetParentPath: dropData.targetParentPath,
+      dropId: target.dropId,
+      parentNodeId: target.parentNodeId,
+      targetNodeLevel: target.targetNodeLevel,
+      targetTitle: target.targetTitle,
+      targetParentPath: target.targetParentPath,
       isFull: position === null,
       isDirectBreakdown: false,
     });
@@ -385,6 +678,7 @@ export function useTriageDnd(
 
   return {
     sensors,
+    collisionDetection: triageInteractionCollisionDetection,
     activeDragItem,
     handleDragStart,
     handleDragEnd,

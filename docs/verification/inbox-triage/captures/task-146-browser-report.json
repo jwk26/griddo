@@ -1,0 +1,82 @@
+{
+  "task": 146,
+  "browser": "Google Chrome 151.0.7922.170",
+  "viewport": {
+    "width": 1920,
+    "height": 912
+  },
+  "route": "http://localhost:3107/grid/f647474d-63ea-4f91-b249-87bb4c143751",
+  "method": {
+    "tabs": 2,
+    "dataPath": "production Quick Capture, Breakdown, Stage, and Unstage UI only",
+    "pointerInput": "real Playwright mouse down, move, and up sequences",
+    "injectorOrTestHook": false
+  },
+  "remoteFocusPreservation": {
+    "initial": {
+      "staged": [
+        "Surviving candidate"
+      ],
+      "focusedAriaLabel": "Drag Surviving candidate staged node"
+    },
+    "afterAuthoritativeArrival": {
+      "staged": [
+        "Remote removal candidate",
+        "Surviving candidate"
+      ],
+      "focusedAriaLabel": "Drag Surviving candidate staged node"
+    },
+    "afterAuthoritativeRemoval": {
+      "staged": [
+        "Surviving candidate"
+      ],
+      "focusedAriaLabel": "Drag Surviving candidate staged node"
+    },
+    "selectedScratchStayedPressed": true,
+    "focusTheft": false
+  },
+  "activeDragInvalidation": {
+    "label": "Remote arrival candidate",
+    "before": {
+      "staged": [
+        "Remote arrival candidate",
+        "Surviving candidate"
+      ],
+      "homeEmpty": true
+    },
+    "atActivation": {
+      "tokenCount": 1,
+      "tokenKind": "triage-staged-node",
+      "candidateVersion": "1",
+      "sourceVersion": "2"
+    },
+    "afterAuthoritativeUnstageBeforeRelease": {
+      "tokenCount": 1,
+      "tokenKind": "triage-staged-node",
+      "candidateVersion": "1",
+      "sourceVersion": "2",
+      "sourceMounted": false,
+      "staged": [
+        "Surviving candidate"
+      ],
+      "homeEmpty": true
+    },
+    "afterReleaseOverHomePlacementTarget": {
+      "tokenCount": 0,
+      "sourceMounted": false,
+      "staged": [
+        "Surviving candidate"
+      ],
+      "breakdown": [
+        "Remote arrival candidate",
+        "Remote removal candidate",
+        "Surviving candidate"
+      ],
+      "homeEmpty": true,
+      "additionalStageMutation": false,
+      "additionalUnstageMutation": false,
+      "placementMutation": false
+    }
+  },
+  "consoleOrPageErrors": []
+}

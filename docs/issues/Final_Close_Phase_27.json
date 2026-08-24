@@ -1,0 +1,67 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "final-close",
+  "approved_repository": "jwk26/griddo",
+  "approved_base": "983595cd40f491a40bb4c1a474058596b061d01e",
+  "approved_branch": "phase-27/breakdown-pool-staging-interactions",
+  "approved_scope": {
+    "lifecycle": "end-phase",
+    "phase": 27,
+    "worktree_role": "feature"
+  },
+  "user_disposition": "approved",
+  "next_legal_action": "execute-final-close",
+  "transaction": {
+    "workflow_candidate": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
+    "pre_close_head": "983595cd40f491a40bb4c1a474058596b061d01e",
+    "candidate_a": {
+      "commit": "6d854c0dc2f2a61e32a0796877cac8a7ce32b4ba",
+      "parent": "983595cd40f491a40bb4c1a474058596b061d01e",
+      "tree": "a1ae8548c491cb3a505c88a378e89526e619a1fe",
+      "diff_hash_domain": "git-diff-binary-parent-to-candidate",
+      "diff_sha256": "f0ed322e2610d1bff4e984d3650fcbe4c5dea07d2e1cdb59909efea08f544146"
+    },
+    "receipt_path": "docs/issues/Final_Close_Phase_27.json",
+    "receipt_commit_message": "docs: record Phase 27 final close receipt",
+    "publication_head_construction": "fast-forward the clean feature branch from pre_close_head to candidate_a.commit, add only this exact receipt file, and create receipt commit B with B^ equal to candidate_a.commit",
+    "publication": {
+      "provider": "github",
+      "command": "scripts/codex-gh",
+      "remote": "origin",
+      "remote_url": "https://github.com/jwk26/griddo.git",
+      "integration_base_oid": "3829a789e5666778267070cf830c022cbe447e57",
+      "base_branch": "main",
+      "head_branch": "phase-27/breakdown-pool-staging-interactions",
+      "pr_action": "create",
+      "pr_number": null,
+      "pr_url": null,
+      "title": "feat(triage): land Phase 27 interactions",
+      "body": "## Summary\n\n- land accepted Phase 27 Breakdown, Pool, and Staging interaction adapters and realizations\n- preserve authoritative Add/Delete/Edit and Stage/Unstage lifetimes, recovery, focus, and one-shot signals\n- archive Phase 27, resolve P23-02, and retain P27-06/P27-08 as explicit deferrals\n\n## Validation\n\n- pnpm test - 95 files / 982 tests\n- pnpm lint - 0 errors / 11 pre-existing warnings\n- pnpm typecheck\n- pnpm build - seven pages generated\n- git diff --check and exact-main merge-tree passed in the detached close preview\n- user-run bounded canonical-route Phase 27 smoke, including P27-12/P27-13 repair rechecks - green with no additional finding; accepted task edge, cross-tab, eight-theme, and reduced-motion evidence reused",
+      "draft": false,
+      "merge_method": "merge",
+      "expected_head": "receipt commit B",
+      "expected_head_mechanism": "scripts/codex-gh pr merge --merge --match-head-commit B",
+      "status_source": "GitHub PR headRefOid, mergeStateStatus, statusCheckRollup, branch protection, and repository rulesets",
+      "required_checks": "all reported required checks reach terminal success",
+      "queue": "forbidden",
+      "auto_merge": "forbidden",
+      "admin_bypass": "forbidden",
+      "implicit_branch_deletion": "forbidden",
+      "bounded_wait_retry": "at most 20 status reads at 15-second intervals"
+    },
+    "integration_sync": {
+      "primary_worktree": "/Users/jwk/Documents/griddo2-codex-integration",
+      "branch": "main",
+      "method": "fetch then fast-forward-only sync followed by method-neutral candidate inclusion proof"
+    },
+    "cleanup": {
+      "preview_worktree": "/Users/jwk/Documents/griddo2-codex-phase-27-final-close-preview",
+      "preview_cleanup_timing": "after candidate_a is moved to the feature branch and receipt commit B is verified, remove clean preview non-force",
+      "remote_ref": "refs/heads/phase-27/breakdown-pool-staging-interactions",
+      "feature_worktree": "/Users/jwk/Documents/griddo2-codex-phase-27-breakdown-pool-staging-interactions",
+      "local_branch": "phase-27/breakdown-pool-staging-interactions",
+      "policy": "guarded non-force only after exact merge proof and primary integration sync"
+    }
+  }
+}

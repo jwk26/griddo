@@ -7,12 +7,12 @@
 > This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
 > its supersession rules. It accepts no phase, task, implementation, branch,
 > publication, or completion state.
-> **Task markers:** Tasks 101–135 were explicitly accepted. Phases 23–26 are
-> completed and archived. Tasks 136–165 remain open (`[ ]`) and may be
+> **Task markers:** Tasks 101–148 were explicitly accepted. Phases 23–27 are
+> completed and archived. Tasks 149–165 remain open (`[ ]`) and may be
 > checked only after their own observable acceptance and verification evidence
 > is explicitly accepted by the user.
-> **Execution lifecycle:** Phases 23–26 are complete. The five open phases are
-> Phases 27–31 with 30 open Tasks 136–165; Phase 27 requires its own approved
+> **Execution lifecycle:** Phases 23–27 are complete. The four open phases are
+> Phases 28–31 with 17 open Tasks 149–165; Phase 28 requires its own approved
 > kickoff. This planning receipt alone does not authorize later implementation,
 > Git lifecycle work, or publication.
 
@@ -91,10 +91,10 @@ The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were exclu
 | Area | Current status | Smallest blocker / next condition |
 |---|---|---|
 | Document approval | `APPROVED` | The approval receipt above remains the planning authority. |
-| Execution lifecycle | Phases 23–26 complete and archived | Five open phases (27–31) remain; each requires its own approved lifecycle gate and exact branch/worktree authority. |
+| Execution lifecycle | Phases 23–27 complete and archived | Four open phases (28–31) remain; each requires its own approved lifecycle gate and exact branch/worktree authority. |
 | Data foundations | `COMPLETED` | Tasks 101–105A and authoritative command Tasks 120–126 are accepted and recorded in their phase archives. |
 | Decision prerequisites | `COMPLETED` | Tasks 106–119 and all fourteen DP receipts are accepted, reflected, and recorded in the Phase 24 archive. |
-| Headless/base UI | Phase 26 base owners completed | Tasks 127–135 are accepted and archived; Tasks 136–137, 139, 142, 145–146, 149, 152, 155–156, 159, and 161 follow only their named dependencies and lifecycle gates. |
+| Headless/base UI | Phase 27 interaction owners completed | Tasks 127–148 are accepted and archived; Tasks 149, 152, 155–156, 159, and 161 follow only their named dependencies and lifecycle gates. |
 | VQ realization | `BLOCKED_PENDING_USER_DECISIONS` | Each realization task resumes only from its exact DP receipt. |
 | Full close | Not ready | Tasks 136–164 complete, then Task 165 passes on top of the archived Phase 23–26 foundations. |
 
@@ -134,7 +134,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | Phase 24 | Completed | [Fourteen user-owned DP receipts covering twelve VQs](execution-plan/archive/phase-24.md) | 106–119 | Accepted and archived; each later realization consumes only its exact released DP edge. |
 | Phase 25 | Completed | [Eleven authoritative commands plus Archive recovery](execution-plan/archive/phase-25.md) | 120–126 | Accepted and archived; downstream tasks consume the completed command foundation by their exact dependencies. |
 | Phase 26 | Completed | [Lifetime, copy, and source-backed base-surface owners](execution-plan/archive/phase-26.md) | 127–135 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
-| Phase 27 | Proposed | Breakdown, Pool, and Staging headless adapters and exact realizations | 136–148 | Headless tasks remain independent from their VQ presentation slices. |
+| Phase 27 | Completed | [Breakdown, Pool, and Staging headless adapters and exact realizations](execution-plan/archive/phase-27.md) | 136–148 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
 | Phase 28 | Proposed | Explorer status/search and pointer placement | 149–154 | Search, status, reliability, and title slices have distinct receipt edges. |
 | Phase 29 | Proposed | Mounted-page Newly Placed, ordinary Undo, and search-result Undo integration | 155–158 | Ordinary-card Undo does not depend on `VQ-07`. |
 | Phase 30 | Proposed | Completion and Archive coordinator/recovery | 159–162 | Completion foundation does not depend on `VQ-03`/`VQ-04` realization. |
@@ -432,8 +432,9 @@ code commit; `fix(db): reject Scratch bit promotion`.
 - Integrate Tasks 101–105A as one phase unit; Task 102 closes Task 101's
   temporary legacy-row migration risk, so intermediate cherry-picks are not a
   supported release state.
-- `P23-02` is deferred to exact Task 136 hook/test ownership; `P23-03` was
-  resolved by accepted Task 130's defensive Bit-detail visibility guard.
+- `P23-02` was resolved by accepted Task 136's retired mock/assertion removal;
+  `P23-03` was resolved by accepted Task 130's defensive Bit-detail visibility
+  guard.
 - The real-project lifecycle trace is retained for the post-merge workflow-v2
   pass. Phase 24 must not start until that rollout and GridDO adapter migration
   are verified.
@@ -1372,8 +1373,9 @@ publish, or close the phase.
   typecheck, and production build with seven static routes and one dynamic
   route. Accepted Task 129/130/132/133/134 route and capture records remain the
   applicable user-visible checkpoint evidence.
-- `P23-03` is resolved by accepted Task 130's popup visibility guard and is
-  synchronized to the deferred index. `P23-02` remains deferred to Task 136.
+- `P23-03` is resolved by accepted Task 130's popup visibility guard, and
+  `P23-02` is resolved by accepted Task 136's retired mock/assertion removal;
+  both are synchronized to the deferred index.
 
 | Task | Implementation / evidence | Acceptance |
 | --- | --- | --- |
@@ -1394,9 +1396,9 @@ publish, or close the phase.
 
 ## Phase 27 — Breakdown, Pool, And Staging Interactions
 
-### Task 136: [ ] Connect headless Add and Delete interaction behavior
+### Task 136: [x] Connect headless Add and Delete interaction behavior
 
-**Files and actions:** create mounted-page `src/hooks/use-triage-operation-lock.ts` and `.test.tsx`; modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/scratch-pool.tsx` and `.test.tsx`, and `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx`. Remove the retired test-only `deleteScratchBreakdownsByScratch` mock and its now-vacuous no-call assertion from `src/hooks/use-scratch-breakdowns.test.tsx` (`P23-02`) while replacing that hook's legacy mutation surface. The Workspace-mounted owner exposes synchronous `acquire(kind, operationId)`, `activeOperation`, and terminal `release` for `add|delete|edit|stage|unstage|placement|undo|archive`; acquisition occurs before any asynchronous gap, rejects a duplicate or competing owner, queues nothing, survives pending/unknown/reconciling, and releases only on terminal `applied|not_applied|rejected|conflict`. Its single signal locks Scratch switch, internal route/browser exit, Edit, Placement, Undo, Archive, Cancel/Escape, and duplicate action. Wire Add/Delete acquisition plus base Breakdown Cancel/Escape/duplicate gating and Pool Scratch-switch gating here; Tasks 137, 139, 145, 152, 156, and 161 wire the remaining exact consumers. Dispatch Task 120 Add/Delete commands, retain authoritative rows/drafts through pending or unknown outcomes, submit Add only by Enter or explicit Add, scroll a confirmed row into view, and restore focus after confirmed Delete in the order next row → previous row → Add input → Context. Expose typed operation state slots without choosing `VQ-05` appearance.
+**Files and actions:** create mounted-page `src/hooks/use-triage-operation-lock.ts` and `.test.tsx`; modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/scratch-pool.tsx` and `.test.tsx`, and `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx`. Remove the retired test-only `deleteScratchBreakdownsByScratch` mock and its now-vacuous no-call assertion from `src/hooks/use-scratch-breakdowns.test.tsx` (`P23-02`) while replacing that hook's legacy mutation surface. The Workspace-mounted owner exposes synchronous `acquire(kind, operationId)`, `activeOperation`, and terminal `release` for `add|delete|edit|stage|unstage|placement|undo|archive`; acquisition occurs before any asynchronous gap, rejects a duplicate or competing owner, queues nothing, survives pending/unknown/reconciling, and releases only on terminal `applied|not_applied|rejected|conflict`. Its single signal locks Scratch switch, internal route/browser exit, Edit, Placement, Undo, Archive, Cancel/Escape, and duplicate action. Wire Add/Delete acquisition plus base Breakdown Cancel/Escape/duplicate gating and Pool Scratch-switch gating here; Tasks 137, 139, 145, 152, 156, and 161 wire the remaining exact consumers. Dispatch Task 120 Add/Delete commands, retain authoritative rows/drafts through pending or unknown outcomes, submit Add only by Enter or explicit Add, scroll a confirmed row into view with the minimum handoff that keeps the row visible without unnecessarily moving the complete Context, and restore focus after confirmed Delete in the order next row → previous row → Add input → Context. Expose typed operation state slots without choosing `VQ-05` appearance.
 
 **Dependencies:** Tasks 120, 128, 130, and 132.
 
@@ -1404,13 +1406,13 @@ publish, or close the phase.
 
 **Recipe:** [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md).
 
-**Observable acceptance:** blur never submits; duplicate Enter/click or a competing operation produces one command total; unknown Add keeps draft, operation identity, and the complete shared lock; Delete keeps row until terminal success; terminal results release once; Scratch switch and Cancel/Escape are denied while locked without mutation or queued replay; focus/scroll handoff follows the exact order.
+**Observable acceptance:** blur never submits; duplicate Enter/click or a competing operation produces one command total; unknown Add keeps draft, operation identity, and the complete shared lock; Delete keeps row until terminal success; terminal results release once; Scratch switch and Cancel/Escape are denied while locked without mutation or queued replay; focus/scroll handoff follows the exact order. At the canonical `1440×900` GridDO light viewport with default `DESC` sort, confirmed Add leaves the complete Selected Scratch Context and the new top Breakdown row simultaneously visible while Add input focus and the one-shot `Added.` identity/lifetime remain unchanged; `ASC` still reveals its new row.
 
-**Verification:** focused operation-lock/Breakdown/Workspace/Pool/hook tests; assert every operation kind against the complete mutual-exclusion matrix and terminal release contract, then run Enter/Add, blur, duplicate/competing intent, Scratch switch, Cancel/Escape, unknown reconcile, failed Delete, and confirmed focus paths in the canonical route and record interactions/focus in `docs/verification/inbox-triage/task-136.md`; `pnpm typecheck`.
+**Verification:** focused operation-lock/Breakdown/Workspace/Pool/hook tests; assert every operation kind against the complete mutual-exclusion matrix and terminal release contract, including authoritative Add/Delete reconciliation and terminal release at hook level. In the canonical route, run Enter/Add, blur, duplicate/competing intent, Scratch switch, Cancel/Escape, unknown row/lock retention and blocked actions, failed Delete, and confirmed focus/scroll paths, recording interactions/focus in `docs/verification/inbox-triage/task-136.md`. Task 143 owns route-level `Check again` → reconciliation → terminal release/focus because it adds that production trigger; `pnpm typecheck`.
 
-**Commit contract:** mounted-page operation lock, headless Add/Delete adapter, the exact `P23-02` stale-test cleanup, owner tests, and Task 136 evidence only; `feat(triage): connect locked breakdown commands`.
+**Commit contract:** mounted-page operation lock, headless Add/Delete adapter, the exact `P23-02` stale-test cleanup, owner tests, and Task 136 evidence only; `feat(triage): connect locked breakdown commands`. The user-approved `P27-01` canonical repair is a documentation-only exception limited to this Task 136 verification clause, Task 143's verification clause, the Phase 27 issue ledger, and Task 136 evidence; it changes no product code, tests, or task marker.
 
-### Task 137: [ ] Build headless conditional editor and blocker state
+### Task 137: [x] Build headless conditional editor and blocker state
 
 **Files and actions:** modify `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, and `src/components/triage/triage-workspace.tsx` and `.test.tsx`; extend `src/hooks/use-triage-operation-lock.test.tsx`. Model mounted-page Scratch-title/row base snapshot, draft, pristine/dirty/validation/saving/offline/not-applied/reconciling/conflict/invalidation, acknowledged latest version, copyable invalidated draft, and save-before-action intent over Task 120. Consume Task 136's shared signal: another active operation blocks opening/saving Edit, while an Edit save synchronously acquires `edit` before dispatch and retains the full matrix through unknown/reconciling until terminal release. Expose a synchronous typed Scratch-title blocker snapshot (`open|dirty|saving|conflicted|reconciling`) to external-removal/completion/Archive coordinators. Implement conditional command/focus semantics in tests but render no missing VQ-04 surface and no generic dialog.
 
@@ -1426,9 +1428,9 @@ publish, or close the phase.
 
 **Commit contract:** headless editor/blocker model and tests only; `feat(triage): model conditional inline edits`.
 
-### Task 138: [ ] Render `DP-VQ04` inline editors
+### Task 138: [x] Render `DP-VQ04` inline editors
 
-**Files and actions:** after `DP-VQ04`, modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate only approved editor wording and render the Task 137 Scratch/row state machines exactly across validation, saving, offline/not-applied, reconcile, conflict/use-mine/use-latest, invalidation, draft review/copy, actions, focus, reduced motion, and all themes. Never use generic Dialog/AlertDialog.
+**Files and actions:** after `DP-VQ04`, modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx` plus `src/app/globals.css` to replace only the Scratch-title and Breakdown-content inline-editor visual realization with the user-approved fixed geometry. Preserve view/edit outer geometry and drag/content/action anchors; reserve a fixed `9.5rem` action region; keep text-style Save/Cancel with dirty Save in destructive/red emphasis; cap the single-line Scratch title at 60 characters and Breakdown content at 120; allow browser-managed caret-following horizontal movement with `Home` returning to the start and `End` exposing the terminal caret; render no textarea, resize, vertical scrolling, or visible scrollbar. Ordinary states have no visible status row, saving/reconciling retain the read-only field with a fixed progress action, and offline/not-applied/conflict/invalidated use the source-bound fixed overlay over blurred underlying content. Conflict exposes Use mine, Use latest, and Copy draft without expanding comparison regions. Preserve all Task 137 state/lock/blocker/focus semantics and never use generic Dialog/AlertDialog.
 
 **Dependencies:** Tasks 109, 128, and 137.
 
@@ -1436,15 +1438,15 @@ publish, or close the phase.
 
 **Recipe:** [`Selected Scratch Context`](recipes/inbox-triage-selected-scratch-context-visual-recipe.md) and [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md).
 
-**Observable acceptance:** both editors match every accepted state/copy/focus mapping; Cancel restores current truth; invalidation preserves review/copy; no inline literal or adjacent fallback appears.
+**Observable acceptance:** both editors retain their source geometry and fixed action/content boundary in every state; limits, single-line behavior, and `Home`/`End` caret-following movement match the approved contract; ordinary status rows stay absent; progress and source-bound overlay states do not move anchors or expand comparison regions; Cancel restores current truth; invalidation preserves review/copy; no inline literal or adjacent fallback appears.
 
-**Verification:** focused editor/copy tests; run both editors through every receipt state, keyboard/IME boundary, focus, light/dark, and eight color themes, recording captures/interactions in `docs/verification/inbox-triage/task-138.md`; `pnpm lint`; `pnpm typecheck`.
+**Verification:** focused editor tests for both surfaces' fixed geometry, limits, action boundary, ordinary/progress/overlay states, and `Home`/`End` caret-following behavior; retain the previously accepted Task 138 state/keyboard/IME/focus contract and record canonical repair evidence/captures in `docs/verification/inbox-triage/task-138.md`; run the adapter-declared full gate.
 
 **Commit contract:** DP-VQ04 copy, realization, tests, styles, and Task 138 evidence only; `feat(triage): render conditional inline editors`.
 
-### Task 139: [ ] Build headless Add-draft departure coordination
+### Task 139: [x] Build headless Add-draft departure coordination
 
-**Files and actions:** create `src/hooks/use-triage-departure.ts` and `.test.tsx`; modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` plus `src/components/triage/breakdown-panel.tsx` and `.test.tsx`; extend `src/hooks/use-triage-operation-lock.test.tsx`. Detect non-empty Add draft synchronously; capture one app-internal Scratch/path/route destination; expose Continue writing and Discard and move transitions; replace a stale destination deterministically; clear only the Add draft on discard. Consume Task 136's shared signal before draft handling: any active operation rejects internal Scratch/path/route exit, and the browser/native exit owner installs the standard `beforeunload` prevention while locked; neither path clears, cancels, queues, or replays an intent. Keep browser/native unload presentation separate and render no VQ-03 surface.
+**Files and actions:** create `src/hooks/use-triage-departure.ts` and `.test.tsx`; modify `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/components/layout/sidebar.tsx` and `.test.tsx`, and `src/components/layout/search-overlay.tsx` and `.test.tsx`; extend `src/hooks/use-triage-operation-lock.test.tsx`. The hook is the minimum mounted-page common coordination owner: Workspace registers the active controller, while the actual Pool, Explorer, Sidebar, and global Search owners request departure before calling their selection/path/router mutations. Detect non-empty Add draft synchronously; capture one app-internal Scratch/path/route destination; expose Continue writing and Discard and move transitions; replace a stale destination deterministically; clear only the Add draft on discard; and hand focus to the performed destination's captured canonical focus owner. Scratch and Explorer owners must guard before mutation and must not use post-mutation rollback. Sidebar and global Search cover the actual SPA exits available from Inbox; Inbox does not render Breadcrumbs or GridView, so those inactive owners remain unchanged. Consume Task 136's shared signal before draft handling: any active operation rejects internal Scratch/path/route exit, and the browser/native exit owner installs the standard `beforeunload` prevention while locked; neither path clears, cancels, queues, or replays an intent. Keep browser/native unload presentation separate and render no VQ-03 surface.
 
 **Dependencies:** Tasks 136 and 137.
 
@@ -1452,15 +1454,28 @@ publish, or close the phase.
 
 **Recipe:** [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md).
 
-**Observable acceptance:** Continue returns focus to intact draft; Discard clears only that draft and performs the latest captured destination once; every shared-lock kind blocks internal and browser exit without clearing state or queuing navigation; competing/stale destinations never leak; external-removal/completion logic can query the headless controller without Task 140.
+**Observable acceptance:** Scratch selection, Explorer path, and Inbox SPA route are synchronously blocked or captured before their actual state/router mutation; Continue performs no destination, preserves the Add draft, and restores its focus; Discard clears only that draft, performs the latest captured destination exactly once, and hands off destination focus; every shared-lock kind blocks internal and browser exit without state/router mutation, clear, queue, or replay; competing/stale destinations never leak; external-removal/completion logic can query the headless controller without Task 140; no post-mutation rollback or `DP-VQ03` DOM/copy/style exists.
+
+**Accepted dependency repair — `P27-04` (2026-08-18):** Task 140's
+canonical-route verification proved that synchronous Discard destination focus
+can run while the decision sheet and surrounding `inert` state are still
+committed, so the focus attempt is rejected and focus falls to `BODY` when the
+Discard action unmounts. The user approved reopening only
+`src/hooks/use-triage-departure.ts` and its test inside Task 140's fourth
+bounded repair cycle. Preserve the latest destination's focus intent and run
+that focus exactly once in the layout phase after `pendingDestination=null`
+has committed; keep the destination mutation synchronous and exactly once.
+This is a timing-only dependency repair: Task 139 remains accepted and its
+meaning, direct no-draft behavior, Continue behavior, blocking, replacement,
+and no-queue/no-replay contracts do not change.
 
 **Verification:** focused operation-lock/controller/Workspace/Breakdown tests for every lock kind against internal route and `beforeunload` exit, mouse/keyboard destinations, replacement, cancellation, focus intent, no queued replay, and no VQ DOM; `pnpm typecheck`.
 
 **Commit contract:** headless departure controller and tests only; `feat(triage): coordinate add draft departure`.
 
-### Task 140: [ ] Render `DP-VQ03` departure confirmation
+### Task 140: [x] Render `DP-VQ03` departure confirmation
 
-**Files and actions:** after `DP-VQ03`, modify `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate approved wording and render Task 139's Continue writing / Discard and move surface, hierarchy, focus containment/return, theme mapping, and scope-out behavior exactly.
+**Files and actions:** after `DP-VQ03`, modify `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate approved wording and render Task 139's Continue writing / Discard and move surface, hierarchy, focus containment/return, theme mapping, and scope-out behavior exactly. The user-approved fourth bounded repair cycle additionally reopens only `src/hooks/use-triage-departure.ts` and `.test.tsx` for the accepted `P27-04` post-commit destination-focus dependency repair; it changes no Task 139 meaning, consumer, destination mutation, navigation, queue, or replay behavior.
 
 **Dependencies:** Tasks 108, 128, and 139.
 
@@ -1474,9 +1489,9 @@ publish, or close the phase.
 
 **Commit contract:** DP-VQ03 copy/realization, tests, styles, and Task 140 evidence only; `feat(triage): render add draft departure`.
 
-### Task 141: [ ] Render `DP-VQ01` external Scratch-removal transition
+### Task 141: [x] Render `DP-VQ01` external Scratch-removal transition
 
-**Files and actions:** after `DP-VQ01`, modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Use headless Tasks 137/139—not VQ-03/04 visuals—to realize external archive/delete countdown, pause/resume, destination revalidation/replacement, full draft copy/status, authoritative restore, terminal removal, selection, and focus exactly. Do not borrow Archive/dialog/Pool chrome.
+**Files and actions:** after `DP-VQ01`, modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Use headless Tasks 137/139—not VQ-03/04 visuals—to realize external archive/delete countdown, pause/resume, destination revalidation/replacement, full draft copy/status, authoritative restore, terminal removal, selection, and focus exactly. Do not borrow Archive/dialog/Pool chrome. The user-approved `P27-11` conformance repair additionally creates `src/hooks/use-external-scratch-removal-data.ts` and `.test.tsx` and modifies only `src/components/triage/triage-workspace.tsx` and `.test.tsx` to move the existing selected-Scratch lifecycle observation, unclassified-lifecycle fallback, and terminal Inbox/source reads behind a typed read-only hook boundary. The hook preserves terminal Inbox-first/source-last ordering, normalization and race guards, exposes only observation plus a terminal snapshot callback, and imports neither Zustand nor durable/session ownership; behavior, copy, DOM, style, timing, focus, DataStore, repository, and schema remain unchanged.
 
 **Dependencies:** Tasks 106, 128, 130, 136, 137, and 139; deliberately not Tasks 138 or 140.
 
@@ -1490,7 +1505,7 @@ publish, or close the phase.
 
 **Commit contract:** DP-VQ01 copy/transition, tests, styles, and Task 141 evidence only; `feat(triage): handle external scratch removal`.
 
-### Task 142: [ ] Define triage pointer sources and lifecycle snapshots in existing DnD owner
+### Task 142: [x] Define triage pointer sources and lifecycle snapshots in existing DnD owner
 
 **Files and actions:** modify existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/staging-zone.tsx` and `.test.tsx`, and `src/components/triage/triage-drag-token.tsx` and `.test.tsx`. Keep general Grid/Calendar DnD behavior separate. `useTriageDnd` uses Mouse 8px and Touch 250ms/5px, captures stable source/candidate/version/type at activation, starts Breakdown only from grip and staged items from whole root, distinguishes Stage/Unstage/Placement intent, keeps a compact pointer-centered token, and cancels mutation on remote invalidation. Add no second triage DnD hook owner.
 
@@ -1506,7 +1521,7 @@ publish, or close the phase.
 
 **Commit contract:** existing DnD triage intent slice, source adapters/tests, and Task 142 evidence only; `feat(triage): define triage pointer sources`.
 
-### Task 143: [ ] Render `DP-VQ05` Add/Delete reliability states
+### Task 143: [x] Render `DP-VQ05` Add/Delete reliability states
 
 **Files and actions:** after `DP-VQ05`, modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate approved wording and render Add pending/failure/reconcile states plus Delete deleting/failure/check-again states over Task 136 authoritative operation identities, with exact timing/actions/focus/theme mappings. Add may expose Retry only from authoritative `not_applied` when the receipt specifies it. Delete failure or unknown keeps the row in place and exposes only Check again/reconciliation; Delete has no dedicated Retry action. Do not include Pool `VQ-06`.
 
@@ -1518,13 +1533,13 @@ publish, or close the phase.
 
 **Observable acceptance:** Add/Delete states are section-local and distinct; any Add Retry exists only for authoritative `not_applied`; every Delete failure/unknown leaves the row in place and offers Check again/reconciliation without a dedicated Retry or resend; focus/copy/theme exactly match receipt.
 
-**Verification:** focused Breakdown/copy state-table tests, including row retention and the absence of a Delete Retry action for every Delete failure/unknown result; run every authoritative result, focus, reduced motion, and theme mapping, recording `docs/verification/inbox-triage/task-143.md`; `pnpm typecheck`.
+**Verification:** focused Breakdown/copy state-table tests, including row retention and the absence of a Delete Retry action for every Delete failure/unknown result; run every authoritative result, focus, reduced motion, and theme mapping in the canonical route, including `Check again` from a Delete failure/unknown result → reconciliation with the preserved operation identity → terminal release and deterministic focus, recording `docs/verification/inbox-triage/task-143.md`; `pnpm typecheck`.
 
 **Commit contract:** DP-VQ05 copy/realization, tests, styles, and Task 143 evidence only; `feat(triage): render breakdown reliability states`.
 
-### Task 144: [ ] Render `DP-VQ06-POOL` Pool statuses
+### Task 144: [x] Render `DP-VQ06-POOL` Pool statuses
 
-**Files and actions:** after `DP-VQ06-POOL`, modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate Pool-only approved wording and render hidden-selection, remote/lifecycle, count/indicator, action, focus, dismissal, and all-theme states without changing selection or borrowing Staging/Explorer presentation.
+**Files and actions:** after `DP-VQ06-POOL`, modify `src/hooks/use-inbox.ts` and `.test.tsx` so the existing authoritative repository-snapshot owner exposes typed Pool lifecycle/provenance projection that excludes the initial snapshot and current-session local `createScratchBit` results while distinguishing remote arrival, external archive, external delete, and restore. Modify `src/components/triage/scratch-pool.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate Pool-only approved wording and render hidden-selection, remote/lifecycle, count/indicator, action, focus, dismissal, and all-theme states without changing selection or borrowing Staging/Explorer presentation. Keep mounted Inbox-page activity aggregation and UI state in `ScratchPool`; do not change DataStore APIs, IndexedDB, schema, persistence, or timestamps, query repository lifecycle from the component, or add another production owner.
 
 **Dependencies:** Tasks 111, 128, and 130.
 
@@ -1538,9 +1553,9 @@ publish, or close the phase.
 
 **Commit contract:** DP-VQ06-POOL copy/realization, tests, styles, and Task 144 evidence only; `feat(triage): render pool statuses`.
 
-### Task 145: [ ] Connect Stage and Unstage interaction adapters
+### Task 145: [x] Connect Stage and Unstage interaction adapters
 
-**Files and actions:** modify `src/components/triage/breakdown-panel.tsx`, `src/components/triage/staging-zone.tsx`, `src/components/triage/triage-workspace.tsx`, and their tests; modify `src/hooks/use-staged-candidates.ts` and `.test.tsx` plus existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`; extend `src/hooks/use-triage-operation-lock.test.tsx`. Dispatch Task 121 commands only from current compatible drops after synchronously acquiring Task 136's shared `stage`/`unstage` lock. Retain that lock and source-backed truth through pending/unknown/reconciling; reject duplicate/competing action, Scratch switch, internal/browser exit, Edit, Placement, Undo, Archive, and Cancel/Escape with no queue or replay; release only on terminal result. Expose transient Staging/Breakdown Unstage targets during matching drags; restore original created-at sort position/source focus after confirmed Unstage; reconcile unknown before Retry; add no permanent Unstage button or success toast.
+**Files and actions:** modify `src/components/triage/breakdown-panel.tsx`, `src/components/triage/staging-zone.tsx`, `src/components/triage/triage-workspace.tsx`, and their tests; modify `src/hooks/use-staged-candidates.ts` and `.test.tsx` plus existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`; extend `src/hooks/use-triage-operation-lock.test.tsx`. Dispatch Task 121 commands only from current compatible drops after synchronously acquiring Task 136's shared `stage`/`unstage` lock. Retain that lock and source-backed truth through pending/unknown/reconciling; reject duplicate/competing action, Scratch switch, internal/browser exit, Edit, Placement, Undo, Archive, and Cancel/Escape with no queue or replay; release only on terminal result. Expose transient Staging/Breakdown Unstage targets during matching drags; keep the staged source grip natively disabled with non-draggable pointer feedback and no grab/grabbing cursor while active grips retain their existing feedback; restore original created-at sort position/source focus after confirmed Unstage; reconcile unknown before Retry; add no permanent Unstage button or success toast.
 
 **Dependencies:** Tasks 121, 131–133, 136, 139, and 142.
 
@@ -1548,13 +1563,13 @@ publish, or close the phase.
 
 **Recipe:** [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md) and [`Staging`](recipes/inbox-triage-staging-visual-recipe.md).
 
-**Observable acceptance:** Stage/Unstage start only from valid current snapshots/targets and a successful synchronous lock acquisition; durable representations and the complete lock matrix remain through unknown/reconciliation; blocked intents produce no command/navigation/replay; terminal release is exact; confirmed Unstage restores order/focus and has no permanent control/toast.
+**Observable acceptance:** Stage/Unstage start only from valid current snapshots/targets and a successful synchronous lock acquisition; durable representations and the complete lock matrix remain through unknown/reconciliation; blocked intents produce no command/navigation/replay; terminal release is exact; a staged source grip is actually disabled and shows a non-draggable cursor on pointer hover without grab/grabbing feedback; active grips retain grab/grabbing feedback; confirmed Unstage restores order/focus and has no permanent control/toast.
 
 **Verification:** focused operation-lock/Breakdown/Staging/Workspace/candidate/DnD/departure tests; for Stage and Unstage run the complete matrix, duplicate/competing acquisition, pending/unknown/reconciling/terminal release, success/reject/conflict, navigation, order, and focus flows and record `docs/verification/inbox-triage/task-145.md`; `pnpm typecheck`.
 
 **Commit contract:** headless Stage/Unstage adapters, tests, and Task 145 evidence only; `feat(triage): connect stage and unstage flows`.
 
-### Task 146: [ ] Reconcile remote candidates and confirmed-orphan cleanup
+### Task 146: [x] Reconcile remote candidates and confirmed-orphan cleanup
 
 **Files and actions:** modify `src/hooks/use-staged-candidates.ts` and `.test.tsx`, `src/components/triage/staging-zone.tsx` and `.test.tsx`, and existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`. Separate unresolved subscription miss from authoritative orphan proof; invoke Task 122 only with exact proof/identity; update counts/Archive facts reactively; cancel affected drags after visual snapshot release; preserve selection/focus on remote arrival/removal. Expose typed slots for Task 147 but choose no `VQ-06` appearance.
 
@@ -1570,9 +1585,9 @@ publish, or close the phase.
 
 **Commit contract:** remote/integrity adapters, tests, and Task 146 evidence only; `feat(triage): reconcile candidate integrity`.
 
-### Task 147: [ ] Render `DP-VQ06-STAGING` Staging statuses
+### Task 147: [x] Render `DP-VQ06-STAGING` Staging statuses
 
-**Files and actions:** after `DP-VQ06-STAGING`, modify `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate Staging-only wording and render Stage/Unstage pending/invalid/stale/failure, remote arrival, orphan, alert/count/indicator, dismissal/action/focus, reduced-motion, and all-theme states over Tasks 145–146.
+**Files and actions:** after `DP-VQ06-STAGING`, modify `src/hooks/use-staged-candidates.ts` and `.test.tsx` only to expose whether the selected Scratch has received its matching authoritative live-query snapshot; authoritative empty is ready, while pre-snapshot, changed-Scratch, and null states are not. Modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` only as the mounted projection owner for that readiness, its existing command-bearing `useStagedCandidates` instance, and existing explicit `activeDragItem.integrity === "invalidated"` plus `onPendingPlacementInvalidated(dropId)` signals; modify `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate Staging-only wording and render Stage/Unstage pending/invalid/stale/failure, remote arrival, orphan, alert/count/indicator, dismissal/action/focus, reduced-motion, and all-theme states over Tasks 145–146. Use the first matching snapshot or Scratch-switch snapshot only as the remote-arrival baseline; a later authoritative arrival after a ready empty snapshot remains observable. Keep confirmed-orphan copy/render in the headless state matrix, but defer its production reachability and browser acceptance to a future remote-authority lifecycle because no authoritative proof producer or production caller exists. Do not use timing/render-count/first-nonempty inference, change candidate truth/count/eligibility, infer invalidation from generic close/disappearance, create orphan authority, or change Task 146 integrity/command/DnD/repository semantics.
 
 **Dependencies:** Tasks 112, 128, 145, and 146.
 
@@ -1582,13 +1597,13 @@ publish, or close the phase.
 
 **Observable acceptance:** every receipt state is section-local/distinct, remote arrival never steals focus, alert lifetime is exact, and only terminal success removes/restores durable representations.
 
-**Verification:** focused Staging/Breakdown/copy state-table tests; run each state/dismissal/focus/reduced-motion/theme mapping and record `docs/verification/inbox-triage/task-147.md`; `pnpm typecheck`.
+**Verification:** focused Workspace/Staging/Breakdown/copy state-table tests; run each production-reachable state/dismissal/focus/reduced-motion/theme mapping and record `docs/verification/inbox-triage/task-147.md`; verify confirmed-orphan copy/render headlessly and record its production/browser deferral; `pnpm typecheck`.
 
 **Commit contract:** DP-VQ06-STAGING copy/realization, tests, styles, and Task 147 evidence only; `feat(triage): render staging statuses`.
 
-### Task 148: [ ] Render `DP-VQ02` Add/Unstage success signal
+### Task 148: [x] Render `DP-VQ02` Add/Unstage success signal
 
-**Files and actions:** after `DP-VQ02`, modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Trigger the approved shared one-shot signal only from a newly observed authoritative Add/Unstage success identity, with exact duration/easing/copy/placement/interruption/retrigger, polite announcement, and static reduced-motion distinction. Re-render/reload/reconcile replay never repeats it; Unstage still has no toast.
+**Files and actions:** after `DP-VQ02`, modify `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/staging-zone.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx` only as the mounted projection owner for the authoritative local Unstage terminal outcome, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Trigger the approved shared one-shot signal only from a newly observed authoritative Add/Unstage success identity, with exact duration/easing/copy/placement/interruption/retrigger, polite announcement, and static reduced-motion distinction. Workspace may project only `{kind, operationId, sourceBreakdownId}` from the local Unstage callback's first authoritative `applied` or `already_applied` result; unknown reconciliation may supply that authority once for the same stable operation. Do not infer success from candidate disappearance, Staging projection removal, rerender, reload, or remote events. Preserve Add's existing BreakdownPanel authoritative path. Re-render/reload/reconcile replay never repeats the signal; Unstage still has no toast.
 
 **Dependencies:** Tasks 107, 128, 136, and 145.
 
@@ -1601,6 +1616,44 @@ publish, or close the phase.
 **Verification:** focused fake-timer/motion/copy tests; run Add and Unstage success, replay, interruption, focus, announcement, reduced motion, and themes, recording `docs/verification/inbox-triage/task-148.md`; `pnpm typecheck`.
 
 **Commit contract:** DP-VQ02 copy/signal, tests, styles, and Task 148 evidence only; `feat(triage): render authoritative success signal`.
+
+---
+
+#### Phase 27 Close Notes
+
+- Tasks 136–148 were explicitly accepted on the isolated Phase 27 branch and
+  establish the authoritative Breakdown, Pool, and Staging interaction and
+  realization layer.
+- P27-11 moved selected-Scratch removal reads behind a dedicated reactive hook;
+  P27-12/P27-13 repaired only the Add viewport handoff and staged-grip pointer
+  feedback. Their accepted final `src` tree is
+  `7b831a941d40631c2212d07a010f3c6b4a00e01a`.
+- The fresh end-phase gate at pre-close `983595c` passed 95 test files / 982
+  tests, lint with 0 errors and the same 11 pre-existing warnings, typecheck,
+  production build with seven generated pages, and diff-check.
+- Accepted task evidence covers the edge, cross-tab, eight-theme, and
+  reduced-motion matrices and remains reusable without repetition.
+- P27-06 and P27-08 remain explicitly Deferred. All other P27 issues are
+  Closed, and P23-02 is resolved by accepted Task 136.
+
+| Task | Implementation / evidence | Acceptance |
+| --- | --- | --- |
+| 136 | `cf0b08d` → `318739f` | `02675c3` |
+| 137 | `bba0da0` → `d0bc011` | `47269fb` |
+| 138 | `68534d0` → `a7ab647` | `17babba` |
+| 139 | `d987ed2` → `0dcaf26` | `23da87d` |
+| 140 | `0e2abd6` → `fba3e81` | `8015a98` |
+| 141 | `9a804f6` → `383ae7d` | `310b575` |
+| 142 | `a851f35` → `52d8fd4` | `e323a4a` |
+| 143 | `5936569` → `5ce2ddf` | `8022301` |
+| 144 | `d25ec44` → `86efb2b` | `cdc0243` |
+| 145 | `21d87bd` → `27298c1` | `3fb1155` |
+| 146 | `8809a74` → `7dc8ca6` | `d8ba3e2` |
+| 147 | `a9e02b2` + `79a3aad` → `55e7e2e` | `841d6cc` |
+| 148 | `47f44d7` → `29c383b` | `f5940fc` |
+
+**Full issue log:**
+[`docs/issues/Issues_Phase_27.md`](issues/Issues_Phase_27.md)
 
 ---
 
@@ -1792,7 +1845,7 @@ publish, or close the phase.
 
 ### Task 160: [ ] Render `DP-VQ11` completion blockers and withdrawal
 
-**Files and actions:** after `DP-VQ11`, modify `src/hooks/use-can-archive-scratch.ts` and `.test.ts`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Populate approved wording and render non-empty Add-draft and each Scratch-title blocker plus remote eligibility-withdrawal realization, exact actions/focus/effects/reduced-motion/themes, without altering text or falling back to toast/empty state.
+**Files and actions:** after `DP-VQ11`, modify `src/hooks/use-can-archive-scratch.ts` and `.test.ts`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Populate approved wording and render non-empty Add-draft and each Scratch-title blocker plus remote eligibility-withdrawal realization, exact actions/focus/effects/reduced-motion/themes, without altering text or falling back to toast/empty state. **Planned later compatibility:** before any Task 160 product write, select and reflect a source-bound Scratch-title blocker expression compatible with Task 138's fixed Context geometry, fixed `9.5rem` action region, absent ordinary status line, fixed progress action, and issue overlay; the superseded persistent editor-status placement is not implementation authority, and this Task 138 repair does not choose its replacement.
 
 **Dependencies:** Tasks 118, 128, 137, and 159.
 
@@ -1800,7 +1853,7 @@ publish, or close the phase.
 
 **Recipe:** [`Selected Scratch Context`](recipes/inbox-triage-selected-scratch-context-visual-recipe.md), [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md), and [`Archive completion`](recipes/inbox-triage-archive-completion-visual-recipe.md).
 
-**Observable acceptance:** blocker actions preserve draft/editor and logical focus; loss of eligibility withdraws overlay/complete/reopen with exact reason; recovery follows truth; no blocker auto-saves/submits/persists.
+**Observable acceptance:** blocker actions preserve draft/editor, logical focus, and fixed Task 138 geometry without introducing an ordinary status row or displacing progress/issue actions; loss of eligibility withdraws overlay/complete/reopen with exact reason; recovery follows truth; no blocker auto-saves/submits/persists.
 
 **Verification:** focused hook/Breakdown/Workspace/copy state tests; run both blocker families, every editor state, remote candidate/row change, withdrawal/recovery, focus, reduced motion, and themes, recording `docs/verification/inbox-triage/task-160.md`; `pnpm typecheck`.
 
@@ -1957,9 +2010,9 @@ This register is complete for every exact path declared by two or more tasks. Ev
 
 - **Next planned phase:** Phase 34. Phases 32 and 33 are reserved and receive no tasks.
 - **Next planned task:** Task 166.
-- Active graph count: 5 open implementation phases (27–31), 30 open tasks
-  (136–165), 4 completed archives (Phases 23–26 with accepted Tasks 101–135),
+- Active graph count: 4 open implementation phases (28–31), 17 open tasks
+  (149–165), 5 completed archives (Phases 23–27 with accepted Tasks 101–148),
   and 2 reserved phase numbers (32–33).
 - The document is **user-approved for planning authority** under the receipt at
-  the top of this file; Tasks 101–135 are accepted, Phases 23–26 are archived,
-  and Tasks 136–165 remain open.
+  the top of this file; Tasks 101–148 are accepted, Phases 23–27 are archived,
+  and Tasks 149–165 remain open.

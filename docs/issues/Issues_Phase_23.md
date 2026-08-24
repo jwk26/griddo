@@ -95,7 +95,7 @@ None at kickoff.
 | ID | Finding | State | Disposition |
 | --- | --- | --- | --- |
 | `P23-01` | SCHEMA Hook 9 predates the dedicated Scratch Breakdown store and does not state whether Inbox-parented Scratch Bits may use Bit-to-Node promotion. | `Promoted to Execution Plan` | The issue was surfaced as `Awaiting User Decision`; on 2026-07-28 the user approved the identity rule that any Bit parented to the Inbox system Node is a Scratch and cannot be promoted. Task 105 remains unchanged. Task 105A owns the separate SCHEMA gate and later repository regression. |
-| `P23-02` | `src/hooks/use-scratch-breakdowns.test.tsx` retains a test-only mock and no-call assertion for the retired `deleteScratchBreakdownsByScratch` API. | `Deferred` | Production interface and implementation are already removed; the stale mock has no runtime effect and is outside Task 105's exact file contract. Task 136 is the first future task that owns this hook/test and now explicitly owns its removal. |
+| `P23-02` | `src/hooks/use-scratch-breakdowns.test.tsx` retained a test-only mock and no-call assertion for the retired `deleteScratchBreakdownsByScratch` API. | `Closed` | Accepted Phase 27 Task 136 removed the retired mock/assertion while replacing the hook's legacy mutation surface with authoritative Add/Delete commands. |
 | `P23-03` | A defensive Scratch could acquire Chunk rows through the repository, causing the global Bit detail popup's `hasChunks` gate to offer Promote even though Task 105A rejected the operation safely. | `Closed` | Accepted Phase 26 Task 130 added the exact `bit-detail-popup.tsx`/test guard: Inbox-parented Scratch never shows Promote, while ordinary eligible Bits retain it. |
 
 ### Task 105 / Task 105A Boundary Decision Receipt
@@ -977,9 +977,9 @@ Blocking violations: **0**. Advisory violations: **0**.
 
 - `P23-01` is reflected in approved SCHEMA Hook 9 and implemented by accepted
   Task 105A.
-- `P23-02` is deferred to Task 136, the first task that modifies
-  `use-scratch-breakdowns.ts` and its test; both the active plan and central
-  follow-up index carry the same owner.
+- `P23-02` is resolved by accepted Task 136's removal of the retired test mock
+  and no-call assertion and is recorded under resolved historical deferrals in
+  the central index.
 - `P23-03` is resolved by accepted Task 130's exact Bit-detail visibility guard
   and is recorded under resolved historical deferrals in the central index.
 - The adapter's machine-local absolute paths and named-skill discovery findings

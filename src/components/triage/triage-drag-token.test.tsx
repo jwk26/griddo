@@ -31,8 +31,12 @@ function makeItem(
     kind: "triage-breakdown",
     id: "item-1",
     label: "Test label",
+    scratchId: "scratch-1",
+    sourceBreakdownId: "row-1",
+    sourceVersion: 1,
+    sourceLifecycle: "active",
     ...overrides,
-  };
+  } as NonNullable<TriageDragItem>;
 }
 
 describe("TriageDragToken", () => {
@@ -50,6 +54,8 @@ describe("TriageDragToken", () => {
 
     const token = screen.getByText("Call Sam").parentElement;
     expect(token).toHaveClass("pointer-events-none", "h-8", "max-w-40");
+    expect(token).toHaveAttribute("data-triage-drag-token", "triage-staged-bit");
+    expect(token).toHaveAttribute("data-source-version", "1");
   });
 
   describe("triage-breakdown kind", () => {

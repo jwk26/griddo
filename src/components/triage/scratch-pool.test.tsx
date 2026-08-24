@@ -1,4 +1,6 @@
 import "@testing-library/jest-dom/vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   cleanup,
   fireEvent,
@@ -12,10 +14,40 @@ import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
 import { useTriageStore } from "@/stores/triage-store";
 import { ScratchPool } from "./scratch-pool";
 
+const globalsCss = readFileSync(
+  join(process.cwd(), "src/app/globals.css"),
+  "utf8",
+);
+
 const useInboxMock = vi.hoisted(() => vi.fn());
+const departureState = vi.hoisted(() => ({
+  destination: null as null | {
+    id: string;
+    focus?: () => void;
+    kind: "scratch";
+    perform: () => void;
+  },
+  requestDeparture: vi.fn(),
+}));
+const operationLockState = vi.hoisted(() => ({
+  activeOperation: null as null | { kind: "add"; operationId: string },
+}));
 
 vi.mock("@/hooks/use-inbox", () => ({
   useInbox: useInboxMock,
+}));
+
+vi.mock("@/hooks/use-triage-operation-lock", () => ({
+  useTriageOperationLockContext: () => ({
+    ...operationLockState,
+    isLocked: () => operationLockState.activeOperation !== null,
+  }),
+}));
+
+vi.mock("@/hooks/use-triage-departure", () => ({
+  useTriageDepartureContext: () => ({
+    requestDeparture: departureState.requestDeparture,
+  }),
 }));
 
 function createBit(overrides: Partial<Bit> = {}): Bit {
@@ -53,11 +85,24 @@ beforeEach(() => {
     scratchPoolExpanded: true,
     scratchPoolManualExpandedForId: null,
     scratchPoolQuery: "",
+    scratchPoolActiveIds: [],
     scratchPoolResultIds: [],
     scratchPoolScroll: { anchorId: null, offset: 0 },
   });
   useTriagePreferencesStore.setState({ poolCreatedAtSort: "DESC" });
-  useInboxMock.mockReturnValue({ activeScratchBits: [] });
+  useInboxMock.mockReturnValue({
+    activeScratchBits: [],
+    poolLifecycleProjection: { revision: 0, changes: [] },
+  });
+  operationLockState.activeOperation = null;
+  departureState.destination = null;
+  departureState.requestDeparture.mockReset();
+  departureState.requestDeparture.mockImplementation((destination) => {
+    departureState.destination = destination;
+    destination.perform();
+    destination.focus?.();
+    return "performed";
+  });
 });
 
 afterEach(() => {
@@ -69,6 +114,7 @@ afterEach(() => {
     scratchPoolExpanded: true,
     scratchPoolManualExpandedForId: null,
     scratchPoolQuery: "",
+    scratchPoolActiveIds: [],
     scratchPoolResultIds: [],
     scratchPoolScroll: { anchorId: null, offset: 0 },
   });
@@ -76,6 +122,34 @@ afterEach(() => {
 });
 
 describe("ScratchPool", () => {
+  it("places the static DP-VQ06-POOL reduced-motion override in the global base layer", () => {
+    const baseLayer = globalsCss.slice(
+      globalsCss.indexOf("@layer base {"),
+      globalsCss.indexOf("@layer components {"),
+    );
+
+    expect(baseLayer).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.pool-status-band,[\s\S]*\.pool-status-line,[\s\S]*\.pool-status-action,[\s\S]*\.pool-activity-marker[\s\S]*animation: none !important;[\s\S]*transition: none !important;/,
+    );
+  });
+
+  it("uses the established Neumorphism and Claymorphism inset and raised shadow families", () => {
+    expect(globalsCss).not.toContain("--theme-shadow-inset");
+    expect(globalsCss).toMatch(
+      /:root\[data-color-theme="neumorphism"\] \.pool-status-band \{[\s\S]*box-shadow: inset 3px 3px 6px hsl\(var\(--foreground\) \/ 0\.12\),[\s\S]*inset -3px -3px 6px hsl\(var\(--background\) \/ 0\.86\);/,
+    );
+    expect(globalsCss).toMatch(
+      /:root\[data-color-theme="claymorphism"\] \.pool-status-band \{[\s\S]*box-shadow: inset 2px 2px 5px hsl\(var\(--foreground\) \/ 0\.12\),[\s\S]*inset -2px -2px 5px hsl\(var\(--background\) \/ 0\.8\);/,
+    );
+    for (const theme of ["neumorphism", "claymorphism"]) {
+      expect(globalsCss).toMatch(
+        new RegExp(
+          `:root\\[data-color-theme="${theme}"\\] \\.pool-activity-marker \\{[\\s\\S]*box-shadow: var\\(--theme-shadow\\);`,
+        ),
+      );
+    }
+  });
+
   it("renders active Scratch rows newest-first with relative-time labels", () => {
     useInboxMock.mockReturnValue({
       activeScratchBits: [
@@ -109,7 +183,14 @@ describe("ScratchPool", () => {
   it("renders the expanded empty state", () => {
     render(<ScratchPool />);
 
-    expect(screen.getByText("No active scratches")).toBeInTheDocument();
+    expect(screen.getByText("No active scratches")).toHaveAttribute(
+      "data-external-removal-focus",
+      "inbox-empty",
+    );
+    expect(screen.getByText("No active scratches")).toHaveAttribute(
+      "tabindex",
+      "-1",
+    );
     expect(screen.getByText("Captured items will appear here.")).toBeInTheDocument();
   });
 
@@ -218,7 +299,11 @@ describe("ScratchPool", () => {
       target: { value: "zzz" },
     });
 
-    expect(screen.getByText("No matches")).toBeInTheDocument();
+    expect(screen.getByText("No matches")).toHaveAttribute(
+      "data-external-removal-focus",
+      "search-empty",
+    );
+    expect(screen.getByText("No matches")).toHaveAttribute("tabindex", "-1");
     expect(screen.queryByRole("button", { name: "Alpha task" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Beta task" })).not.toBeInTheDocument();
   });
@@ -292,12 +377,173 @@ describe("ScratchPool", () => {
 
     expect(screen.getByLabelText("Search scratches")).toHaveValue("project");
     expect(screen.getByLabelText("3 scratches")).toBeInTheDocument();
-    expect(screen.getByTestId("pool-filtered-count")).toHaveTextContent("2 / 3");
+    expect(screen.getByTestId("pool-filtered-count")).toHaveTextContent(
+      "2 of 3 Scratches",
+    );
     expect(
       screen
         .getAllByRole("button", { name: /Project (older|newer)/ })
         .map((row) => row.getAttribute("aria-label")),
     ).toEqual(["Project older", "Project newer"]);
+  });
+
+  it("keeps a filtered hidden selection explicit and Clear search preserves selection and search focus", () => {
+    useTriageStore.setState({
+      selectedScratchId: "hidden",
+      scratchPoolQuery: "visible",
+    });
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "hidden", title: "Hidden Scratch" }),
+        createBit({ id: "visible", title: "Visible Scratch" }),
+      ],
+      poolLifecycleProjection: { revision: 0, changes: [] },
+    });
+
+    render(<ScratchPool />);
+
+    expect(screen.getByText("1 of 2 Scratches")).toBeInTheDocument();
+    expect(
+      screen.getByText("Selected Scratch is hidden by this search."),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
+
+    expect(useTriageStore.getState().selectedScratchId).toBe("hidden");
+    expect(useTriageStore.getState().scratchPoolQuery).toBe("");
+    expect(screen.getByLabelText("Search scratches")).toHaveFocus();
+  });
+
+  it("aggregates Pool activity and clears arrival and lifecycle categories independently with exact focus", () => {
+    const initial = createBit({ id: "initial", title: "Initial" });
+    const remote = createBit({ id: "remote", title: "Remote" });
+    let inboxValue = {
+      activeScratchBits: [initial],
+      poolLifecycleProjection: { revision: 0, changes: [] as Array<{
+        kind: "remote-arrival" | "archive" | "delete" | "restore";
+        scratchId: string;
+      }> },
+    };
+    useInboxMock.mockImplementation(() => inboxValue);
+    const { rerender } = render(<ScratchPool />);
+
+    inboxValue = {
+      activeScratchBits: [initial, remote],
+      poolLifecycleProjection: {
+        revision: 1,
+        changes: [
+          { kind: "remote-arrival", scratchId: "remote" },
+          { kind: "archive", scratchId: "archived" },
+          { kind: "delete", scratchId: "deleted" },
+          { kind: "restore", scratchId: "restored" },
+        ],
+      },
+    };
+    rerender(<ScratchPool />);
+
+    expect(
+      screen.getByText(
+        "Pool updated elsewhere: 1 new, 1 archived, 1 deleted, 1 restored.",
+      ).closest('[aria-live="polite"]'),
+    ).toHaveAttribute("aria-atomic", "true");
+    expect(useTriageStore.getState().selectedScratchId).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Review new" }));
+
+    expect(screen.getByRole("button", { name: "Remote" })).toHaveFocus();
+    expect(useTriageStore.getState().selectedScratchId).toBeNull();
+    expect(screen.getByText("Pool updated elsewhere: 1 archived, 1 deleted, 1 restored.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
+
+    expect(screen.queryByText(/Pool updated elsewhere:/)).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Search scratches")).toHaveFocus();
+  });
+
+  it("preserves non-control arrival and lifecycle markers through collapse and expand", () => {
+    const scratch = createBit({ id: "scratch", title: "Scratch" });
+    let inboxValue = {
+      activeScratchBits: [scratch],
+      poolLifecycleProjection: { revision: 0, changes: [] as Array<{
+        kind: "remote-arrival" | "archive";
+        scratchId: string;
+      }> },
+    };
+    useInboxMock.mockImplementation(() => inboxValue);
+    const { rerender } = render(<ScratchPool />);
+    inboxValue = {
+      activeScratchBits: [scratch],
+      poolLifecycleProjection: {
+        revision: 1,
+        changes: [
+          { kind: "remote-arrival", scratchId: "new" },
+          { kind: "archive", scratchId: "old" },
+        ],
+      },
+    };
+    rerender(<ScratchPool />);
+
+    fireEvent.click(screen.getByLabelText("Collapse Scratch Pool"));
+
+    expect(screen.getByText("+1")).not.toHaveAttribute("role", "button");
+    expect(screen.getByLabelText("Pool updated elsewhere.")).not.toHaveAttribute(
+      "role",
+      "button",
+    );
+
+    fireEvent.click(screen.getByLabelText("Expand Scratch Pool"));
+    expect(screen.getByRole("button", { name: "Review new" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Dismiss" })).toBeInTheDocument();
+  });
+
+  it("excludes selected external removal from ordinary Pool activity", () => {
+    const selected = createBit({ id: "selected", title: "Selected" });
+    useTriageStore.setState({ selectedScratchId: "selected" });
+    let inboxValue = {
+      activeScratchBits: [selected],
+      poolLifecycleProjection: { revision: 0, changes: [] as Array<{
+        kind: "archive";
+        scratchId: string;
+      }> },
+    };
+    useInboxMock.mockImplementation(() => inboxValue);
+    const { rerender } = render(<ScratchPool />);
+    inboxValue = {
+      activeScratchBits: [],
+      poolLifecycleProjection: {
+        revision: 1,
+        changes: [{ kind: "archive", scratchId: "selected" }],
+      },
+    };
+    rerender(<ScratchPool />);
+
+    expect(screen.queryByText("A Scratch was archived elsewhere.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Dismiss" })).not.toBeInTheDocument();
+  });
+
+  it("Review new clears vanished arrivals and falls back to Pool search focus", () => {
+    let inboxValue = {
+      activeScratchBits: [] as Bit[],
+      poolLifecycleProjection: { revision: 0, changes: [] as Array<{
+        kind: "remote-arrival";
+        scratchId: string;
+      }> },
+    };
+    useInboxMock.mockImplementation(() => inboxValue);
+    const { rerender } = render(<ScratchPool />);
+    inboxValue = {
+      activeScratchBits: [],
+      poolLifecycleProjection: {
+        revision: 1,
+        changes: [{ kind: "remote-arrival", scratchId: "vanished" }],
+      },
+    };
+    rerender(<ScratchPool />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Review new" }));
+
+    expect(screen.queryByRole("button", { name: "Review new" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Search scratches")).toHaveFocus();
   });
 
   it("ignores a preserved hidden query for collapsed switchers and total count", () => {
@@ -407,6 +653,77 @@ describe("ScratchPool", () => {
     expect(pool).toHaveClass("w-72");
   });
 
+  it("denies expanded and collapsed Scratch switches while an operation owns the lock", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "scratch-1", title: "Scratch one" }),
+        createBit({ id: "scratch-2", title: "Scratch two" }),
+      ],
+    });
+    useTriageStore.setState({ selectedScratchId: "scratch-1" });
+    operationLockState.activeOperation = {
+      kind: "add",
+      operationId: "add-1",
+    };
+
+    render(<ScratchPool />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Scratch two" }));
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-1");
+
+    fireEvent.click(screen.getByLabelText("Collapse Scratch Pool"));
+    fireEvent.click(screen.getByRole("button", { name: "Scratch two" }));
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-1");
+  });
+
+  it("captures a Scratch destination before selection mutation and preserves its focus owner", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "scratch-1", title: "Scratch one" }),
+        createBit({ id: "scratch-2", title: "Scratch two" }),
+      ],
+    });
+    useTriageStore.setState({ selectedScratchId: "scratch-1" });
+    departureState.requestDeparture.mockImplementation((destination) => {
+      departureState.destination = destination;
+      return "decision-required";
+    });
+
+    render(<ScratchPool />);
+    const destinationButton = screen.getByRole("button", {
+      name: "Scratch two",
+    });
+    fireEvent.click(destinationButton);
+
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-1");
+    expect(departureState.destination).toMatchObject({
+      id: "scratch-2",
+      kind: "scratch",
+    });
+
+    departureState.destination?.perform();
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-2");
+
+    screen.getByLabelText("Collapse Scratch Pool").focus();
+    departureState.destination?.focus?.();
+    expect(destinationButton).toHaveFocus();
+  });
+
+  it("does not request departure when selecting the current Scratch", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "scratch-1", title: "Current Scratch" }),
+      ],
+    });
+    useTriageStore.setState({ selectedScratchId: "scratch-1" });
+
+    render(<ScratchPool />);
+    fireEvent.click(screen.getByRole("button", { name: "Current Scratch" }));
+
+    expect(departureState.requestDeparture).not.toHaveBeenCalled();
+    expect(useTriageStore.getState().selectedScratchId).toBe("scratch-1");
+  });
+
   it("collapsed pills have accessible labels with scratch titles", () => {
     useInboxMock.mockReturnValue({
       activeScratchBits: [createBit({ id: "scratch-1", title: "My scratch" })],
@@ -429,6 +746,10 @@ describe("ScratchPool", () => {
     const row = screen.getByRole("button", { name: "Scratch one" });
     expect(row).toHaveClass("focus-visible:ring-2");
     expect(row).toHaveClass("focus-visible:ring-ring");
+    expect(row).toHaveAttribute(
+      "data-external-removal-destination",
+      "scratch-1",
+    );
   });
 
   it("collapsed pill button has focus-visible ring classes", () => {

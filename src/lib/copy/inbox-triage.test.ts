@@ -31,15 +31,15 @@ describe("Inbox/Triage core-English copy", () => {
 
   it("types validation, lifecycle, and live-region keys without inventing reserved copy", () => {
     expect(Object.values(INBOX_TRIAGE_COPY.validation)).toEqual([
-      RECEIPT_COPY_UNAVAILABLE,
-      RECEIPT_COPY_UNAVAILABLE,
+      "Enter a Scratch title.",
+      "Enter breakdown content.",
       RECEIPT_COPY_UNAVAILABLE,
       RECEIPT_COPY_UNAVAILABLE,
     ]);
     expect(Object.values(INBOX_TRIAGE_COPY.lifecycleReasons)).toEqual([
       RECEIPT_COPY_UNAVAILABLE,
-      RECEIPT_COPY_UNAVAILABLE,
-      RECEIPT_COPY_UNAVAILABLE,
+      "Pool updated elsewhere.",
+      "This item is no longer available.",
       RECEIPT_COPY_UNAVAILABLE,
       RECEIPT_COPY_UNAVAILABLE,
       RECEIPT_COPY_UNAVAILABLE,
@@ -47,9 +47,18 @@ describe("Inbox/Triage core-English copy", () => {
       RECEIPT_COPY_UNAVAILABLE,
     ]);
     expect(Object.values(INBOX_TRIAGE_COPY.liveRegions)).toHaveLength(14);
+    expect(INBOX_TRIAGE_COPY.liveRegions.poolActivity).toBe(
+      "Pool updated elsewhere.",
+    );
+    expect(INBOX_TRIAGE_COPY.liveRegions.stagingActivity).toBe(
+      "Staging updated.",
+    );
     expect(
-      Object.values(INBOX_TRIAGE_COPY.liveRegions).every(
-        (value) => value === RECEIPT_COPY_UNAVAILABLE,
+      Object.entries(INBOX_TRIAGE_COPY.liveRegions).every(
+        ([key, value]) =>
+          key === "poolActivity" ||
+          key === "stagingActivity" ||
+          value === RECEIPT_COPY_UNAVAILABLE,
       ),
     ).toBe(true);
     expect(INBOX_TRIAGE_COPY.accessibleNames).toEqual({
@@ -64,9 +73,202 @@ describe("Inbox/Triage core-English copy", () => {
     });
   });
 
+  it("owns the complete approved DP-VQ04 inline-editor wording", () => {
+    expect(INBOX_TRIAGE_COPY.inlineEditor).toEqual({
+      status: {
+        pristine: "No changes.",
+        dirty: "Unsaved changes.",
+        saving: "Saving…",
+        savingBeforeContinuing: "Saving before continuing…",
+        offline: "Offline. Your draft is still here.",
+        notApplied: "Not saved. Your draft is still here.",
+        reconciling: "Checking whether your changes were saved…",
+        saved: "Saved.",
+      },
+      conflict: {
+        heading: "This changed elsewhere.",
+        latest: "Latest version",
+        draft: "Your draft",
+        useMine: "Use mine",
+        useLatest: "Use latest",
+        copyDraft: "Copy draft",
+        latestUpdated: "Latest version updated.",
+      },
+      recovery: {
+        heading: "Draft not saved",
+        scratchInvalid: "This Scratch is no longer editable.",
+        breakdownInvalid: "This breakdown is no longer editable.",
+        review: "Review or copy your draft before closing.",
+        copied: "Copied.",
+        close: "Close",
+      },
+      actions: {
+        retrySave: "Retry save",
+        stayHere: "Stay here",
+      },
+    });
+    expect(INBOX_TRIAGE_COPY.liveRegions.inlineEditor).toBe(
+      RECEIPT_COPY_UNAVAILABLE,
+    );
+  });
+
+  it("owns the complete approved DP-VQ03 departure wording", () => {
+    expect(INBOX_TRIAGE_COPY.departure).toEqual({
+      eyebrow: "Unsaved Add draft",
+      heading: "Keep writing?",
+      description:
+        "Continue writing here, or discard this draft and move.",
+      continueAction: "Continue writing",
+      discardAction: "Discard and move",
+    });
+  });
+
+  it("owns the complete approved DP-VQ01 external-removal wording", () => {
+    expect(INBOX_TRIAGE_COPY.externalRemoval).toEqual({
+      title: {
+        archive: "This Scratch was archived elsewhere",
+        delete: "This Scratch was deleted elsewhere",
+      },
+      destination: {
+        running: "Moving to “{title}” in {seconds} seconds.",
+        runningSearchEmpty:
+          "No matching Scratch is visible. Clearing the selection in {seconds} seconds.",
+        runningInboxEmpty:
+          "No active Scratches remain. Opening the empty Inbox in {seconds} seconds.",
+        paused: "Movement paused. Destination: “{title}”.",
+        pausedSearchEmpty:
+          "Movement paused. No matching Scratch is visible; the selection will clear.",
+        pausedInboxEmpty:
+          "Movement paused. No active Scratches remain; the empty Inbox will open.",
+      },
+      drafts: {
+        heading: "Copy drafts before moving",
+        explanation:
+          "These drafts exist only on this page and will not move with the Scratch.",
+        add: "New Breakdown draft",
+        scratchTitle: "Scratch title draft",
+        breakdown: "Breakdown draft",
+        copy: "Copy full draft",
+        copied: "Copied",
+      },
+      actions: { moveNow: "Move now", pause: "Pause", resume: "Resume" },
+    });
+  });
+
+  it("owns the complete approved DP-VQ05 Add/Delete reliability wording", () => {
+    expect(INBOX_TRIAGE_COPY.reliability).toEqual({
+      add: {
+        pending: "Adding…",
+        unknown: "We couldn’t confirm whether it was added.",
+        reconciling: "Checking whether it was added…",
+        notApplied: "Not added. Your draft is still here.",
+        rejected: "Add unavailable. Your draft is still here.",
+        conflict: "This Scratch changed. Your draft is still here.",
+      },
+      delete: {
+        pending: "Deleting…",
+        unknown: "We couldn’t confirm whether it was deleted.",
+        reconciling: "Checking whether it was deleted…",
+        notApplied: "Not deleted. This breakdown is still here.",
+        rejected: "Delete unavailable. This breakdown is still here.",
+        conflict: "This breakdown changed. Delete was not completed.",
+      },
+      actions: {
+        checkAgain: "Check again",
+        retryAdd: "Retry Add",
+      },
+    });
+  });
+
+  it("owns the exact approved DP-VQ02 Add/Unstage success wording", () => {
+    expect(INBOX_TRIAGE_COPY.breakdownSuccess).toEqual({
+      add: "Added.",
+      unstage: "Returned to Breakdown.",
+    });
+  });
+
+  it("owns the complete approved DP-VQ06-POOL wording", () => {
+    expect(INBOX_TRIAGE_COPY.poolStatus).toEqual({
+      filteredCount: "{visible} of {total} Scratches",
+      hiddenSelection: "Selected Scratch is hidden by this search.",
+      arrivalOne: "1 new Scratch arrived.",
+      arrivalMany: "{count} new Scratches arrived.",
+      archiveOne: "A Scratch was archived elsewhere.",
+      archiveMany: "{count} Scratches were archived elsewhere.",
+      deleteOne: "A Scratch was deleted elsewhere.",
+      deleteMany: "{count} Scratches were deleted elsewhere.",
+      restoreOne: "A Scratch was restored.",
+      restoreMany: "{count} Scratches were restored.",
+      mixed: "Pool updated elsewhere: {clauses}.",
+      compactLifecycle: "Pool updated elsewhere.",
+      actions: {
+        clearSearch: "Clear search",
+        reviewNew: "Review new",
+        dismiss: "Dismiss",
+      },
+    });
+    expect(INBOX_TRIAGE_COPY.lifecycleReasons.poolLifecycleUpdate).toBe(
+      "Pool updated elsewhere.",
+    );
+    expect(INBOX_TRIAGE_COPY.liveRegions.poolActivity).toBe(
+      "Pool updated elsewhere.",
+    );
+  });
+
+  it("owns the complete approved DP-VQ06-STAGING wording", () => {
+    expect(INBOX_TRIAGE_COPY.stagingStatus).toEqual({
+      operation: {
+        stagePending: "Staging “{title}”…",
+        unstagePending: "Returning “{title}” to Breakdown…",
+        stageUnknown: "We couldn’t confirm whether “{title}” was staged.",
+        stageReconciling: "Checking whether “{title}” was staged…",
+        unstageUnknown: "We couldn’t confirm whether “{title}” was returned.",
+        unstageReconciling: "Checking whether “{title}” was returned…",
+      },
+      alert: {
+        stageNotApplied: "“{title}” was not staged. Drag it again to retry.",
+        stageRejected: "“{title}” can’t be staged from its current source.",
+        stageConflict: "“{title}” changed elsewhere and was not staged.",
+        unstageNotApplied:
+          "“{title}” is still staged. Drag it back to Breakdown to retry.",
+        unstageRejected: "“{title}” can’t be returned from its current state.",
+        unstageConflict: "“{title}” changed elsewhere and remains staged.",
+        orphanNode:
+          "A staged Node was removed because its source no longer exists.",
+        orphanBit:
+          "A staged Bit was removed because its source no longer exists.",
+        invalidatedDrag: "“{title}” changed elsewhere. Drop canceled.",
+        invalidatedPlacement:
+          "Placement closed because “{title}” changed elsewhere.",
+      },
+      integrity: {
+        node: "Checking a staged Node source…",
+        bit: "Checking a staged Bit source…",
+      },
+      target: {
+        nodeSameType: "Already in Nodes.",
+        bitSameType: "Already in Bits.",
+        oppositeType: "Return to Breakdown before changing type.",
+        unavailable: "This item is no longer available.",
+      },
+      arrival: { one: "1 new", many: "{count} new" },
+      actions: {
+        showNodes: "Show new Nodes",
+        showBits: "Show new Bits",
+        dismissAlert: "Dismiss Staging alert",
+      },
+    });
+    expect(INBOX_TRIAGE_COPY.liveRegions.stagingActivity).toBe(
+      "Staging updated.",
+    );
+    expect(INBOX_TRIAGE_COPY.lifecycleReasons.stagingSourceUnavailable).toBe(
+      "This item is no longer available.",
+    );
+  });
+
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      138, 140, 141, 143, 144, 147, 148, 150, 151, 153, 154, 157, 160, 162,
+      148, 150, 151, 153, 154, 157, 160, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {

@@ -1,30 +1,56 @@
 "use client";
 
 import { liveQuery } from "dexie";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getDataStore } from "@/lib/db/datastore";
 import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
 import { useTriageStore } from "@/stores/triage-store";
 import type { Bit, Node } from "@/types";
 
 const INBOX_LOOKUP_RETRY_MS = 100;
+const localCreatedScratchIds = new Set<string>();
 const SYSTEM_NODE_ORDER: Record<NonNullable<Node["systemRole"]>, number> = {
   inbox: 0,
   archive_view: 1,
 };
+
+export type PoolLifecycleChange = Readonly<{
+  kind: "remote-arrival" | "archive" | "delete" | "restore";
+  scratchId: string;
+}>;
+
+export type PoolLifecycleProjection = Readonly<{
+  revision: number;
+  changes: readonly PoolLifecycleChange[];
+}>;
+
+type PoolScratchLifecycle = "active" | "archived" | "deleted";
+
+const EMPTY_POOL_LIFECYCLE_PROJECTION: PoolLifecycleProjection = Object.freeze({
+  revision: 0,
+  changes: Object.freeze([]),
+});
 
 export function useInbox(): {
   inboxNodeId: string | undefined;
   createScratchBit: (title: string) => Promise<void>;
   scratchCount: number;
   activeScratchBits: Bit[];
+  poolLifecycleProjection: PoolLifecycleProjection;
   systemNodes: Node[];
 } {
   const [inboxNodeId, setInboxNodeId] = useState<string | undefined>();
   const [scratchCount, setScratchCount] = useState(0);
   const [activeScratchBits, setActiveScratchBits] = useState<Bit[]>([]);
   const [activeScratchBitsReady, setActiveScratchBitsReady] = useState(false);
+  const [poolLifecycleProjection, setPoolLifecycleProjection] = useState(
+    EMPTY_POOL_LIFECYCLE_PROJECTION,
+  );
   const [systemNodes, setSystemNodes] = useState<Node[]>([]);
+  const poolLifecycleRevisionRef = useRef(0);
+  const previousPoolLifecycleRef = useRef<Map<string, PoolScratchLifecycle> | null>(
+    null,
+  );
   const scratchPoolQuery = useTriageStore((state) => state.scratchPoolQuery);
   const reconcileScratchPoolContext = useTriageStore(
     (state) => state.reconcileScratchPoolContext,
@@ -138,10 +164,17 @@ export function useInbox(): {
       return;
     }
 
+    previousPoolLifecycleRef.current = null;
+    poolLifecycleRevisionRef.current = 0;
+
     const subscription = liveQuery(async () => {
       const dataStore = await getDataStore();
-      const bits = await dataStore.getAllActiveBits();
-      return bits
+      const [allActiveBits, archivedItems, trashedItems] = await Promise.all([
+        dataStore.getAllActiveBits(),
+        dataStore.getArchivedItems(),
+        dataStore.getTrashedItems(),
+      ]);
+      const active = allActiveBits
         .filter(
           (bit) =>
             bit.parentId === inboxNodeId &&
@@ -149,9 +182,58 @@ export function useInbox(): {
             bit.archivedAt === null,
         )
         .toSorted((left, right) => right.createdAt - left.createdAt);
+      return {
+        active,
+        archived: archivedItems.bits.filter((bit) => bit.parentId === inboxNodeId),
+        deleted: trashedItems.bits.filter((bit) => bit.parentId === inboxNodeId),
+      };
     }).subscribe({
-      next: (value) => {
-        setActiveScratchBits(value);
+      next: ({ active, archived, deleted }) => {
+        const currentLifecycle = new Map<string, PoolScratchLifecycle>();
+        for (const bit of archived) currentLifecycle.set(bit.id, "archived");
+        for (const bit of deleted) currentLifecycle.set(bit.id, "deleted");
+        for (const bit of active) currentLifecycle.set(bit.id, "active");
+
+        const previousLifecycle = previousPoolLifecycleRef.current;
+        if (previousLifecycle !== null) {
+          const changes: PoolLifecycleChange[] = [];
+
+          for (const bit of active) {
+            const previous = previousLifecycle.get(bit.id);
+            if (previous === "archived" || previous === "deleted") {
+              changes.push({ kind: "restore", scratchId: bit.id });
+            } else if (
+              previous === undefined &&
+              !localCreatedScratchIds.has(bit.id)
+            ) {
+              changes.push({ kind: "remote-arrival", scratchId: bit.id });
+            }
+          }
+
+          for (const [scratchId, previous] of previousLifecycle) {
+            const current = currentLifecycle.get(scratchId);
+            if (current === previous || current === "active") continue;
+            if (current === "archived") {
+              changes.push({ kind: "archive", scratchId });
+            } else if (
+              current === "deleted" ||
+              (current === undefined && previous !== "deleted")
+            ) {
+              changes.push({ kind: "delete", scratchId });
+            }
+          }
+
+          if (changes.length > 0) {
+            poolLifecycleRevisionRef.current += 1;
+            setPoolLifecycleProjection({
+              revision: poolLifecycleRevisionRef.current,
+              changes,
+            });
+          }
+        }
+
+        previousPoolLifecycleRef.current = currentLifecycle;
+        setActiveScratchBits(active);
         setActiveScratchBitsReady(true);
       },
       error: (err) => console.error("activeScratchBits liveQuery error:", err),
@@ -181,7 +263,7 @@ export function useInbox(): {
       }
 
       const dataStore = await getDataStore();
-      await dataStore.createBit({
+      const created = await dataStore.createBit({
         parentId: inboxNodeId,
         title,
         description: "",
@@ -192,6 +274,7 @@ export function useInbox(): {
         deadlineAllDay: false,
         priority: null,
       });
+      localCreatedScratchIds.add(created.id);
     },
     [inboxNodeId],
   );
@@ -201,6 +284,7 @@ export function useInbox(): {
     createScratchBit,
     scratchCount: inboxNodeId === undefined ? 0 : scratchCount,
     activeScratchBits: inboxNodeId === undefined ? [] : activeScratchBits,
+    poolLifecycleProjection,
     systemNodes,
   };
 }

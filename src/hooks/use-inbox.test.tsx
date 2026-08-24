@@ -8,9 +8,17 @@ import { useInbox } from "./use-inbox";
 
 const getDataStoreMock = vi.hoisted(() => vi.fn());
 const liveQueryMock = vi.hoisted(() => vi.fn());
+const liveQueryRuns: Array<() => Promise<void>> = [];
 
 vi.mock("@/lib/db/datastore", () => ({
-  getDataStore: getDataStoreMock,
+  getDataStore: async () => {
+    const dataStore = await getDataStoreMock();
+    return {
+      getArchivedItems: async () => ({ nodes: [], bits: [] }),
+      getTrashedItems: async () => ({ nodes: [], bits: [] }),
+      ...dataStore,
+    };
+  },
 }));
 
 vi.mock("dexie", () => ({
@@ -65,13 +73,16 @@ function createBit(overrides: Partial<Bit> = {}): Bit {
 describe("useInbox", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    liveQueryRuns.length = 0;
     useTriageStore.setState({
       selectedScratchId: null,
       scratchPoolExpanded: true,
       scratchPoolManualExpandedForId: null,
       scratchPoolQuery: "",
+      scratchPoolActiveIds: [],
       scratchPoolResultIds: [],
       scratchPoolScroll: { anchorId: null, offset: 0 },
+      externalScratchRemoval: null,
     });
     useTriagePreferencesStore.setState({ poolCreatedAtSort: "DESC" });
     liveQueryMock.mockImplementation((query: () => Promise<unknown>) => ({
@@ -79,7 +90,15 @@ describe("useInbox", () => {
         next: (value: unknown) => void;
         error: (error: unknown) => void;
       }) => {
-        void query().then(observer.next).catch(observer.error);
+        const run = async () => {
+          try {
+            observer.next(await query());
+          } catch (error) {
+            observer.error(error);
+          }
+        };
+        liveQueryRuns.push(run);
+        void run();
         return { unsubscribe: vi.fn() };
       },
     }));
@@ -92,13 +111,14 @@ describe("useInbox", () => {
 
   it("finds the Inbox node and creates Scratch Bits with the 0,0 sentinel", async () => {
     const inbox = createNode({ id: crypto.randomUUID(), systemRole: "inbox" });
-    const createBit = vi.fn().mockResolvedValue(undefined);
+    const created = createBit({ parentId: inbox.id });
+    const createBitMock = vi.fn().mockResolvedValue(created);
     const dataStore = {
       getAllActiveNodes: vi.fn().mockResolvedValue([
         createNode({ id: crypto.randomUUID() }),
         inbox,
       ]),
-      createBit,
+      createBit: createBitMock,
     } as unknown as DataStore;
     getDataStoreMock.mockResolvedValue(dataStore);
 
@@ -110,7 +130,7 @@ describe("useInbox", () => {
 
     await result.current.createScratchBit(" Fast idea ");
 
-    expect(createBit).toHaveBeenCalledWith({
+    expect(createBitMock).toHaveBeenCalledWith({
       parentId: inbox.id,
       title: " Fast idea ",
       description: "",
@@ -293,6 +313,108 @@ describe("useInbox", () => {
     });
   });
 
+  it("excludes the initial repository snapshot and projects remote arrival, archive, delete, and restore transitions", async () => {
+    const inbox = createNode({ id: "inbox", systemRole: "inbox" });
+    const initial = createBit({ id: "initial", parentId: inbox.id });
+    const restoredLater = createBit({
+      id: "restored",
+      parentId: inbox.id,
+      archivedAt: 10,
+    });
+    let activeBits = [initial];
+    let archivedBits = [restoredLater];
+    let trashedBits: Bit[] = [];
+    const dataStore = {
+      getAllActiveNodes: vi.fn().mockResolvedValue([inbox]),
+      getAllActiveBits: vi.fn().mockImplementation(() => Promise.resolve(activeBits)),
+      getArchivedItems: vi.fn().mockImplementation(() =>
+        Promise.resolve({ nodes: [], bits: archivedBits }),
+      ),
+      getTrashedItems: vi.fn().mockImplementation(() =>
+        Promise.resolve({ nodes: [], bits: trashedBits }),
+      ),
+      createBit: vi.fn(),
+    } as unknown as DataStore;
+    getDataStoreMock.mockResolvedValue(dataStore);
+
+    const { result } = renderHook(() => useInbox());
+
+    await waitFor(() => {
+      expect(result.current.activeScratchBits).toEqual([initial]);
+    });
+    expect(result.current.poolLifecycleProjection).toEqual({
+      revision: 0,
+      changes: [],
+    });
+
+    const remote = createBit({ id: "remote", parentId: inbox.id });
+    activeBits = [initial, remote, { ...restoredLater, archivedAt: null }];
+    archivedBits = [];
+    await rerunLiveQueries();
+    await waitFor(() => {
+      expect(result.current.poolLifecycleProjection).toEqual({
+        revision: 1,
+        changes: [
+          { kind: "remote-arrival", scratchId: "remote" },
+          { kind: "restore", scratchId: "restored" },
+        ],
+      });
+    });
+
+    activeBits = [{ ...restoredLater, archivedAt: null }];
+    archivedBits = [{ ...initial, archivedAt: 20 }];
+    trashedBits = [{ ...remote, deletedAt: 20 }];
+    await rerunLiveQueries();
+    await waitFor(() => {
+      expect(result.current.poolLifecycleProjection).toEqual({
+        revision: 2,
+        changes: [
+          { kind: "archive", scratchId: "initial" },
+          { kind: "delete", scratchId: "remote" },
+        ],
+      });
+    });
+
+    trashedBits = [];
+    await rerunLiveQueries();
+    expect(result.current.poolLifecycleProjection).toEqual({
+      revision: 2,
+      changes: [
+        { kind: "archive", scratchId: "initial" },
+        { kind: "delete", scratchId: "remote" },
+      ],
+    });
+  });
+
+  it("excludes a current-session local create result from remote arrivals", async () => {
+    const inbox = createNode({ id: "inbox", systemRole: "inbox" });
+    const local = createBit({ id: "local", parentId: inbox.id });
+    let activeBits: Bit[] = [];
+    const createBitMock = vi.fn().mockImplementation(async () => {
+      activeBits = [local];
+      return local;
+    });
+    getDataStoreMock.mockResolvedValue({
+      getAllActiveNodes: vi.fn().mockResolvedValue([inbox]),
+      getAllActiveBits: vi.fn().mockImplementation(() => Promise.resolve(activeBits)),
+      getArchivedItems: vi.fn().mockResolvedValue({ nodes: [], bits: [] }),
+      getTrashedItems: vi.fn().mockResolvedValue({ nodes: [], bits: [] }),
+      createBit: createBitMock,
+    } as unknown as DataStore);
+
+    const { result } = renderHook(() => useInbox());
+    await waitFor(() => expect(result.current.inboxNodeId).toBe(inbox.id));
+
+    await result.current.createScratchBit("Local");
+    await rerunLiveQueries();
+
+    expect(result.current.activeScratchBits).toEqual([local]);
+    expect(result.current.poolLifecycleProjection).toEqual({
+      revision: 0,
+      changes: [],
+    });
+  });
+
   it("selects the first visible active Scratch under persisted sort without moving focus", async () => {
     const inbox = createNode({ id: "inbox", systemRole: "inbox" });
     const hiddenNewer = createBit({
@@ -424,5 +546,11 @@ describe("useInbox", () => {
 async function actFlush(run?: () => void): Promise<void> {
   await act(async () => {
     run?.();
+  });
+}
+
+async function rerunLiveQueries(): Promise<void> {
+  await act(async () => {
+    await Promise.all(liveQueryRuns.map((run) => run()));
   });
 }

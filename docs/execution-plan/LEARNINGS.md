@@ -104,3 +104,5 @@
 **Serialize gates that share generated output.** Logically independent checks are not operationally independent when they read or write the same generated tree. In this project, `next build` and `tsc` can contend through `.next/types`; run them serially unless isolated outputs are configured. *(Phase 23 pilot)*
 
 **Canonical file boundaries must include the real composition owner.** When an accepted behavior requires a parent component to project child counts or close parent-owned transient state, include that parent and its focused test in the canonical task contract. A child-only file list cannot truthfully own cross-boundary callback or heading behavior. *(Phase 26, Tasks 133–134)*
+
+**Mounted components consume repository truth through dedicated reactive hooks.** Even read-only `liveQuery` and DataStore calls violate the component boundary when placed directly in a coordinator component. Move those reads behind a focused hook API and test both observation replacement and stale-result cancellation, including same-identity context replacement. *(Phase 27, P27-11)*

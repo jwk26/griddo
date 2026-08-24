@@ -26,6 +26,11 @@ export function TriageDragToken({ item }: TriageDragTokenProps) {
         "cursor-grabbing",
         item.kind === "triage-staged-node" ? "w-8 border-primary px-0" : "border-border",
       )}
+      data-candidate-version={
+        item.kind === "triage-breakdown" ? undefined : item.candidateVersion
+      }
+      data-source-version={item.sourceVersion}
+      data-triage-drag-token={item.kind}
     >
       <Icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
       {shouldRenderLabel ? (

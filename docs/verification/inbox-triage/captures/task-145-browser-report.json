@@ -1,0 +1,32 @@
+{
+  "task": 145,
+  "browser": "Google Chrome 151.0.7922.140",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "route": "http://127.0.0.1:3107/grid/f46c1078-c118-40ed-a5b8-2d738da37834",
+  "stage": {
+    "candidateCount": 1,
+    "sourceDisabled": true,
+    "breakdownOrder": [
+      "Newer source",
+      "Older source"
+    ]
+  },
+  "unstageDrag": {
+    "breakdownTargetVisible": true,
+    "stagingTargetVisible": true
+  },
+  "confirmedUnstage": {
+    "breakdownOrder": [
+      "Newer source",
+      "Older source"
+    ],
+    "focusedAriaLabel": "Drag breakdown",
+    "focusedBreakdownId": "00000000-0000-4000-8000-000000001452"
+  },
+  "permanentUnstageButtons": 0,
+  "successToasts": 0,
+  "consoleOrPageErrors": []
+}

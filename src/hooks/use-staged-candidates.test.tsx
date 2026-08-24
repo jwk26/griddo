@@ -217,11 +217,50 @@ describe("useStagedCandidates", () => {
   it("does not subscribe without a selected Scratch", () => {
     const { result } = renderHook(() => useStagedCandidates(null));
 
+    expect(result.current.isReady).toBe(false);
     expect(result.current.candidates).toEqual([]);
     expect(result.current.unresolvedCandidates).toEqual([]);
     expect(result.current.counts.authoritative).toBe(0);
     expect(result.current.eligibility.archiveCandidateClear).toBe(true);
     expect(liveQueryMock).not.toHaveBeenCalled();
+  });
+
+  it("projects readiness only after the selected Scratch receives its matching authoritative snapshot", async () => {
+    liveQueryMock.mockImplementation((query: () => Promise<unknown>) => {
+      const subscription: LiveQuerySubscription = {
+        query,
+        unsubscribe: vi.fn(),
+      };
+      subscriptions.push(subscription);
+      return {
+        subscribe: (observer: LiveQueryObserver) => {
+          subscription.observer = observer;
+          return { unsubscribe: subscription.unsubscribe };
+        },
+      };
+    });
+
+    const { result, rerender } = renderHook(
+      ({ scratchId }) => useStagedCandidates(scratchId),
+      { initialProps: { scratchId: IDS.scratch as string | null } },
+    );
+
+    expect(result.current.isReady).toBe(false);
+    await refreshSubscription(0);
+    expect(result.current.isReady).toBe(true);
+    expect(result.current.candidates).toEqual([]);
+
+    rerender({ scratchId: IDS.otherScratch });
+    expect(result.current.isReady).toBe(false);
+
+    await refreshSubscription(0);
+    expect(result.current.isReady).toBe(false);
+
+    await refreshSubscription(1);
+    expect(result.current.isReady).toBe(true);
+
+    rerender({ scratchId: null });
+    expect(result.current.isReady).toBe(false);
   });
 
   it("reconstructs durable candidates on mount and refreshes labels from remote source edits", async () => {
@@ -272,6 +311,35 @@ describe("useStagedCandidates", () => {
     expect(dataStore.cleanupConfirmedCandidateOrphan).not.toHaveBeenCalled();
   });
 
+  it("projects unresolved subscription states without manufacturing orphan proof", async () => {
+    candidateRows.push(
+      candidate(IDS.candidateMissing, IDS.sourceMissing, "node"),
+      candidate(IDS.candidateBit, IDS.sourceBit, "bit"),
+    );
+    sourceRows.push(
+      breakdown(IDS.sourceBit, "Consumed elsewhere", { consumedAt: 20 }),
+    );
+
+    const { result } = renderHook(() => useStagedCandidates(IDS.scratch));
+    await waitFor(() => {
+      expect(result.current.integrityCandidates).toHaveLength(2);
+    });
+
+    expect(result.current.integrityCandidates).toEqual([
+      {
+        candidate: expect.objectContaining({ id: IDS.candidateMissing }),
+        status: "source-unresolved",
+        reason: "subscription-miss",
+      },
+      {
+        candidate: expect.objectContaining({ id: IDS.candidateBit }),
+        status: "source-unresolved",
+        reason: "source-consumed",
+      },
+    ]);
+    expect(dataStore.cleanupConfirmedCandidateOrphan).not.toHaveBeenCalled();
+  });
+
   it("exposes authoritative, renderable, type, and staged-source eligibility inputs", async () => {
     candidateRows.push(
       candidate(IDS.candidateNode, IDS.sourceNode, "node", { createdAt: 4 }),
@@ -299,6 +367,38 @@ describe("useStagedCandidates", () => {
       new Set([IDS.sourceNode, IDS.sourceBit, IDS.sourceMissing]),
     );
     expect(result.current.eligibility.isSourceStaged(IDS.sourceMissing)).toBe(true);
+  });
+
+  it("reactively updates type counts and Archive facts for remote arrival and removal", async () => {
+    candidateRows.push(candidate(IDS.candidateNode, IDS.sourceNode, "node"));
+    sourceRows.push(breakdown(IDS.sourceNode, "Node source"));
+
+    const { result } = renderHook(() => useStagedCandidates(IDS.scratch));
+    await waitFor(() => expect(result.current.counts.nodes).toBe(1));
+    expect(result.current.eligibility.archiveCandidateClear).toBe(false);
+
+    candidateRows.push(candidate(IDS.candidateBit, IDS.sourceBit, "bit"));
+    sourceRows.push(breakdown(IDS.sourceBit, "Remote Bit source"));
+    await refreshSubscription();
+
+    expect(result.current.counts).toMatchObject({
+      authoritative: 2,
+      renderable: 2,
+      nodes: 1,
+      bits: 1,
+    });
+    expect(result.current.eligibility.archiveCandidateClear).toBe(false);
+
+    candidateRows.length = 0;
+    await refreshSubscription();
+
+    expect(result.current.counts).toMatchObject({
+      authoritative: 0,
+      renderable: 0,
+      nodes: 0,
+      bits: 0,
+    });
+    expect(result.current.eligibility.archiveCandidateClear).toBe(true);
   });
 
   it.each<RepositoryOperationStatus>([
@@ -333,14 +433,15 @@ describe("useStagedCandidates", () => {
   it("projects pending Stage separately, then preserves an unknown identity until reconciliation is terminal", async () => {
     const command = stageCommand();
     const pending = deferred<never>();
+    const reconciling = deferred<{
+      operationId: string;
+      status: "not_applied";
+      candidate: null;
+      source: ScratchBreakdown | undefined;
+      scratch: null;
+    }>();
     dataStore.stageCandidate.mockReturnValue(pending.promise);
-    dataStore.reconcileStageCandidate.mockResolvedValue({
-      operationId: command.operationId,
-      status: "not_applied",
-      candidate: null,
-      source: sourceRows[0],
-      scratch: null,
-    });
+    dataStore.reconcileStageCandidate.mockReturnValue(reconciling.promise);
     liveQueryMock.mockImplementationOnce((query: () => Promise<unknown>) => {
       const subscription: LiveQuerySubscription = {
         query,
@@ -376,18 +477,42 @@ describe("useStagedCandidates", () => {
     expect(result.current.pendingOperations).toEqual([]);
     expect(result.current.unknownOperations).toHaveLength(1);
 
+    let reconciliation!: Promise<unknown>;
+    act(() => {
+      reconciliation = result.current.reconcileStageCandidate(command);
+    });
+    await waitFor(() =>
+      expect(result.current.reconcilingOperations).toEqual([
+        expect.objectContaining({
+          kind: "stage",
+          operationId: command.operationId,
+          phase: "reconciling",
+        }),
+      ]),
+    );
+    reconciling.resolve({
+      operationId: command.operationId,
+      status: "not_applied",
+      candidate: null,
+      source: sourceRows[0],
+      scratch: null,
+    });
     await act(async () => {
-      await expect(result.current.reconcileStageCandidate(command)).resolves.toMatchObject({
+      await expect(reconciliation).resolves.toMatchObject({
         status: "not_applied",
       });
     });
     expect(dataStore.reconcileStageCandidate).toHaveBeenCalledWith(command);
     expect(result.current.unknownOperations).toEqual([]);
+    expect(result.current.reconcilingOperations).toEqual([]);
   });
 
   it("dispatches Unstage and exact confirmed-orphan commands through the repository", async () => {
     const unstage = unstageCommand();
     const cleanup = orphanCommand();
+    candidateRows.push(
+      candidate(IDS.candidateMissing, IDS.sourceMissing, "node"),
+    );
     dataStore.unstageCandidate.mockResolvedValue({
       operationId: unstage.operationId,
       status: "applied",
@@ -403,6 +528,9 @@ describe("useStagedCandidates", () => {
     });
 
     const { result } = renderHook(() => useStagedCandidates(IDS.scratch));
+    await waitFor(() => {
+      expect(result.current.integrityCandidates).toHaveLength(1);
+    });
     await act(async () => {
       await expect(result.current.unstageCandidate(unstage)).resolves.toMatchObject({
         status: "applied",
@@ -414,6 +542,219 @@ describe("useStagedCandidates", () => {
 
     expect(dataStore.unstageCandidate).toHaveBeenCalledWith(unstage);
     expect(dataStore.cleanupConfirmedCandidateOrphan).toHaveBeenCalledWith(cleanup);
+  });
+
+  it("does not invoke cleanup for a subscription miss without confirmed exact proof", async () => {
+    const cleanup = orphanCommand();
+    candidateRows.push(
+      candidate(IDS.candidateMissing, IDS.sourceMissing, "node"),
+    );
+
+    const { result } = renderHook(() => useStagedCandidates(IDS.scratch));
+    await waitFor(() => {
+      expect(result.current.integrityCandidates).toHaveLength(1);
+    });
+
+    await act(async () => {
+      await expect(
+        result.current.cleanupConfirmedCandidateOrphan({
+          ...cleanup,
+          proof: { status: "unresolved", reason: "delayed_subscription" },
+        }),
+      ).resolves.toEqual({
+        outcome: "not_dispatched",
+        reason: "proof_not_confirmed",
+      });
+      await expect(
+        result.current.cleanupConfirmedCandidateOrphan({
+          ...cleanup,
+          candidateExpectedVersion: 2,
+        }),
+      ).resolves.toEqual({
+        outcome: "not_dispatched",
+        reason: "identity_mismatch",
+      });
+    });
+
+    expect(dataStore.cleanupConfirmedCandidateOrphan).not.toHaveBeenCalled();
+  });
+
+  it("reconciles only the same exact confirmed-orphan command after an unknown outcome", async () => {
+    const cleanup = orphanCommand();
+    candidateRows.push(
+      candidate(IDS.candidateMissing, IDS.sourceMissing, "node"),
+    );
+    dataStore.cleanupConfirmedCandidateOrphan.mockRejectedValueOnce(
+      new Error("transport outcome unknown"),
+    );
+    dataStore.reconcileConfirmedCandidateOrphanCleanup.mockResolvedValueOnce({
+      operationId: cleanup.operationId,
+      status: "already_applied",
+      candidate: null,
+      source: null,
+      auditEvent: { id: cleanup.auditEventId },
+    });
+
+    const { result } = renderHook(() => useStagedCandidates(IDS.scratch));
+    await waitFor(() => {
+      expect(result.current.integrityCandidates).toHaveLength(1);
+    });
+
+    await act(async () => {
+      await expect(
+        result.current.cleanupConfirmedCandidateOrphan(cleanup),
+      ).resolves.toEqual({
+        operationId: cleanup.operationId,
+        outcome: "unknown",
+      });
+    });
+    expect(result.current.unknownOperations).toEqual([
+      expect.objectContaining({
+        kind: "orphan_cleanup",
+        operationId: cleanup.operationId,
+      }),
+    ]);
+
+    await act(async () => {
+      await expect(
+        result.current.cleanupConfirmedCandidateOrphan(cleanup),
+      ).resolves.toEqual({
+        outcome: "not_dispatched",
+        reason: "reconciliation_required",
+      });
+      await expect(
+        result.current.reconcileConfirmedCandidateOrphanCleanup({
+          ...cleanup,
+          auditEventId: crypto.randomUUID(),
+        }),
+      ).resolves.toEqual({
+        outcome: "not_dispatched",
+        reason: "identity_mismatch",
+      });
+      await expect(
+        result.current.reconcileConfirmedCandidateOrphanCleanup(cleanup),
+      ).resolves.toMatchObject({ status: "already_applied" });
+    });
+
+    expect(
+      dataStore.reconcileConfirmedCandidateOrphanCleanup,
+    ).toHaveBeenCalledOnce();
+    expect(
+      dataStore.reconcileConfirmedCandidateOrphanCleanup,
+    ).toHaveBeenCalledWith(cleanup);
+    expect(dataStore.cleanupConfirmedCandidateOrphan).toHaveBeenCalledOnce();
+    expect(result.current.unknownOperations).toEqual([]);
+  });
+
+  it("reconciles an exact confirmed command after the hook remounts", async () => {
+    const cleanup = orphanCommand();
+    candidateRows.push(
+      candidate(IDS.candidateMissing, IDS.sourceMissing, "node"),
+    );
+    dataStore.cleanupConfirmedCandidateOrphan.mockRejectedValueOnce(
+      new Error("transport outcome unknown"),
+    );
+    dataStore.reconcileConfirmedCandidateOrphanCleanup.mockResolvedValueOnce({
+      operationId: cleanup.operationId,
+      status: "already_applied",
+      candidate: null,
+      source: null,
+      auditEvent: { id: cleanup.auditEventId },
+    });
+
+    const first = renderHook(() => useStagedCandidates(IDS.scratch));
+    await waitFor(() => {
+      expect(first.result.current.integrityCandidates).toHaveLength(1);
+    });
+    await act(async () => {
+      await first.result.current.cleanupConfirmedCandidateOrphan(cleanup);
+    });
+    first.unmount();
+
+    const resumed = renderHook(() => useStagedCandidates(IDS.scratch));
+    await waitFor(() => {
+      expect(resumed.result.current.integrityCandidates).toHaveLength(1);
+    });
+    await act(async () => {
+      await expect(
+        resumed.result.current.reconcileConfirmedCandidateOrphanCleanup(
+          cleanup,
+        ),
+      ).resolves.toMatchObject({ status: "already_applied" });
+    });
+
+    expect(
+      dataStore.reconcileConfirmedCandidateOrphanCleanup,
+    ).toHaveBeenCalledWith(cleanup);
+  });
+
+  it("blocks another cleanup after a terminal conflict", async () => {
+    const cleanup = orphanCommand();
+    candidateRows.push(
+      candidate(IDS.candidateMissing, IDS.sourceMissing, "node"),
+    );
+    dataStore.cleanupConfirmedCandidateOrphan
+      .mockResolvedValueOnce({
+        operationId: cleanup.operationId,
+        status: "conflict",
+        candidate: candidate(IDS.candidateMissing, IDS.sourceMissing, "node"),
+        source: null,
+        auditEvent: null,
+      })
+      .mockResolvedValue({
+        operationId: cleanup.operationId,
+        status: "not_applied",
+        candidate: candidate(IDS.candidateMissing, IDS.sourceMissing, "node"),
+        source: null,
+        auditEvent: null,
+      });
+
+    const { result } = renderHook(() => useStagedCandidates(IDS.scratch));
+    await waitFor(() => {
+      expect(result.current.integrityCandidates).toHaveLength(1);
+    });
+
+    await act(async () => {
+      await expect(
+        result.current.cleanupConfirmedCandidateOrphan(cleanup),
+      ).resolves.toMatchObject({ status: "conflict" });
+      await expect(
+        result.current.cleanupConfirmedCandidateOrphan(cleanup),
+      ).resolves.toEqual({
+        outcome: "not_dispatched",
+        reason: "terminal_no_retry",
+      });
+    });
+    expect(dataStore.cleanupConfirmedCandidateOrphan).toHaveBeenCalledOnce();
+  });
+
+  it("permits the same exact cleanup retry after authoritative not_applied", async () => {
+    const cleanup = orphanCommand();
+    candidateRows.push(
+      candidate(IDS.candidateMissing, IDS.sourceMissing, "node"),
+    );
+    dataStore.cleanupConfirmedCandidateOrphan.mockResolvedValue({
+      operationId: cleanup.operationId,
+      status: "not_applied",
+      candidate: candidate(IDS.candidateMissing, IDS.sourceMissing, "node"),
+      source: null,
+      auditEvent: null,
+    });
+
+    const { result } = renderHook(() => useStagedCandidates(IDS.scratch));
+    await waitFor(() => {
+      expect(result.current.integrityCandidates).toHaveLength(1);
+    });
+
+    await act(async () => {
+      await expect(
+        result.current.cleanupConfirmedCandidateOrphan(cleanup),
+      ).resolves.toMatchObject({ status: "not_applied" });
+      await expect(
+        result.current.cleanupConfirmedCandidateOrphan(cleanup),
+      ).resolves.toMatchObject({ status: "not_applied" });
+    });
+    expect(dataStore.cleanupConfirmedCandidateOrphan).toHaveBeenCalledTimes(2);
   });
 
   it("unsubscribes on Scratch change and unmount", async () => {

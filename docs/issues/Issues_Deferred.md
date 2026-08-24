@@ -37,7 +37,8 @@ It is **not** the source of truth for issue details. The source remains each `do
 | `Issues_Phase_20.md` | ISSUE-20-04 | Deferred/Behavior | Inbox and Archive system Nodes should not receive normal NodeCard aging visual treatment. | Exclude `systemRole !== null` Nodes from aging filter in a focused behavior fix. |
 | `Issues_Phase_21.md` | ISSUE-21-01 | Process/Low | Sequential Codex A→B execution: B's scope verification relied on `git status` alone after A left uncommitted changes — cannot distinguish B's writes from A's. | Save `git diff --name-only` baseline before B launches, or commit A before B. |
 | `Issues_Phase_21.md` | ISSUE-21-03 | UX/Low | Weekly header now shows `"June 2026"` instead of date range; cross-month weeks lose date-range information. Recipe canonical, intentional tradeoff. | Post-Phase 21 UX review — assess whether date-range label is needed alongside month name. |
-| `Issues_Phase_23.md` | P23-02 | Test maintenance | `use-scratch-breakdowns.test.tsx` retains a mock/no-call assertion for the retired `deleteScratchBreakdownsByScratch` API. | Remove it in Task 136, the first task that owns the hook and test replacement. |
+| `Issues_Phase_27.md` | P27-06 | Inbox/Triage hydration | Persisted-dark reload can expose the pre-existing `ThemeToggle` Moon/Sun server/client mismatch. | Address only in a separately approved future lifecycle; comparative baseline evidence is retained with Task 144. |
+| `Issues_Phase_27.md` | P27-08 | Staging remote authority | Confirmed-orphan production/browser reachability has no authoritative proof producer or production caller. | Define remote-authority proof and reachability in a future lifecycle without inferring it from candidate disappearance. |
 
 ## Resolved Historical Deferrals
 
@@ -49,3 +50,4 @@ These are listed so future sessions do not re-open already handled carryovers.
 | `Issues_Phase_15.md` | ISSUE-15-01 | Runtime Dexie v3 migration verification was carried to Phase 16 and resolved with `fake-indexeddb` real migration tests. |
 | `Issues_Phase_15.md` | Phase-local Q6 | Phase 19 kickoff: EXECUTION_PLAN T87 corrected to `unarchiveNode`/`unarchiveBit`; Issues_Phase_15.md Q6 marked Resolved. |
 | `Issues_Phase_23.md` | P23-03 | Phase 26 Task 130 added the accepted popup visibility guard for Inbox-parented Scratch while preserving ordinary eligible Bit promotion. |
+| `Issues_Phase_23.md` | P23-02 | Phase 27 Task 136 removed the retired `deleteScratchBreakdownsByScratch` test mock and no-call assertion while replacing the hook mutation surface. |
