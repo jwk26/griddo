@@ -38,6 +38,62 @@
 | `pnpm build` | 0 | Fifth-cycle final input: Next.js 16.2.1 compiled, typechecked, and generated all 7 routes. |
 | `git diff --check` | 0 | Fifth-cycle final input passed before documentation-only checkpoint updates. |
 
+## `WF28-02` Deterministic Product Evidence Fingerprint
+
+The final successful focused/full evidence is anchored at implementation
+commit `1830cc37ff913bd1d4ad4b62ddd9f7b2319b4dca`. The anchor is provenance,
+not part of the composite identity, so a later docs-only commit can reuse the
+evidence when every product-input subdomain still matches.
+
+Each tracked-input subdomain uses SHA-256 over its ASCII domain header plus LF,
+then the listed manifest lines plus LF. Git manifests use sorted
+`<mode> <type> <object-id>\t<path>` lines from `git ls-tree`; source/test lines
+come from `git ls-tree -r <candidate> -- src`, partitioned by whether the path
+matches `\.test\.(ts|tsx)$`.
+
+| Fingerprint subdomain | Deterministic input | SHA-256 |
+| --- | --- | --- |
+| `griddo-task149-source-v1` | 131 non-test tracked files under `src` | `628d914a4cef68dd7e5ab51ae7a5a450c58a1bc3f08572c105b15bd0eaf4a87e` |
+| `griddo-task149-test-v1` | 95 tracked `src/**/*.test.{ts,tsx}` files | `54d8517e2e137078c9be88ffce0280653c6dbe129cacdcf27c9b66a5db972cad` |
+| `griddo-task149-build-config-v1` | `eslint.config.mjs`, `next.config.ts`, `package.json`, `pnpm-lock.yaml`, `postcss.config.mjs`, `tsconfig.json`, `vitest.config.ts` | `850b7701604afa49a69726b1bebbe96f3f20765f789f28841e4c5a43195ceda4` |
+| `griddo-task149-command-v1` | Git manifests for `docs/CODEX_WORKFLOW_ADAPTER.json` and `docs/CODEX_WORKFLOW_COMMANDS.json`, followed in order by the labeled commands below | `fb7646b438393a9f80383d0e0fbcb5d265d30f15795f65f876b8327b5ca66dbc` |
+| `griddo-task149-environment-v1` | Sorted requirements: `arch=arm64`, `node=v26.0.0`, `os=Darwin`, `pnpm=10.22.0` | `10f5e026d35f53f98e3117272998a0c0092d03d45d7cc13fb79eefd67b1bdbc3` |
+
+At the evidence anchor, the command-domain Git objects are Adapter blob
+`ab4f7c765c1b27e48c7a46b9084ce6cc0a4af60e` and command-catalog blob
+`2063146db0b8920dc8ee5805001e1541da49c2a0`. In the following code block,
+each visible `\t` escape denotes one ASCII TAB byte in the hashed payload.
+The command-domain labeled lines, in fingerprint order, are:
+
+```text
+focused-selected\tpnpm exec vitest run src/hooks/use-triage-dnd.test.ts src/components/triage/hierarchy-explorer.test.tsx src/components/triage/triage-workspace.test.tsx
+diff-check\tgit diff --check
+test\tpnpm test
+lint\tpnpm lint
+typecheck\tpnpm typecheck
+build\tpnpm build
+```
+
+The complete `src` Git tree OID is
+`e83086e1044bb2deebc6837f997bebc06b316146`. The composite payload is exactly:
+
+```text
+griddo-task149-product-evidence-v1
+src_tree_git_oid=e83086e1044bb2deebc6837f997bebc06b316146
+source_sha256=628d914a4cef68dd7e5ab51ae7a5a450c58a1bc3f08572c105b15bd0eaf4a87e
+test_sha256=54d8517e2e137078c9be88ffce0280653c6dbe129cacdcf27c9b66a5db972cad
+build_config_sha256=850b7701604afa49a69726b1bebbe96f3f20765f789f28841e4c5a43195ceda4
+command_sha256=fb7646b438393a9f80383d0e0fbcb5d265d30f15795f65f876b8327b5ca66dbc
+environment_sha256=10f5e026d35f53f98e3117272998a0c0092d03d45d7cc13fb79eefd67b1bdbc3
+```
+
+including the final LF. Its SHA-256 is
+`a2da7ab6f49ba50d9fba9d3ea5e3fb568990e05f264891844e2534e2e00dfdd8`.
+Product evidence is reusable only when a candidate recomputation matches the
+complete `src` tree, every subdomain, and this composite. The three allowed
+Task 149 checkpoint documents are outside the domain, so a docs-only commit
+does not invalidate the product result.
+
 ## Browser Modality
 
 Chromium mouse evidence used route

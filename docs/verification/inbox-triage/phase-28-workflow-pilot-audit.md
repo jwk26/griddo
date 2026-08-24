@@ -1,9 +1,10 @@
 # GridDO Codex Workflow Phase 28 Pilot Audit
 
-> Status: Working audit; Phase 27 closed, Phase 28 pilot not started
+> Status: Phase 28 pilot active; Task 149 implementation checkpoint recorded
 > Created: 2026-08-24
 > Scope: Workflow cost, speed, verification, and documentation efficiency
-> Authority: Non-canonical observation log until promoted into the Phase 28 tracked worktree
+> Evidence role: Tracked Phase 28 experiment evidence
+> Authority: Not canonical product, design, policy, plan, or workflow authority
 
 ## Purpose
 
@@ -314,7 +315,7 @@ Add one row per task or repair. Do not backfill estimates as measured facts.
 
 | Task/repair | Risk tier | Focused gate | Full gate | Evidence reused | Browser modality | Docs changed | Stops/repairs | Outcome |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Task 149 + five bounded repairs | High | TDD RED reproduced the approved behavior and each repair; latest focused gate passed 3 files / 113 tests | Latest-input full gate run, not reused: test 95 files / 1001 tests, lint 0 errors with 11 unchanged warnings, typecheck and build passed | Green kickoff baseline was reused only before product changes; the earlier 95 / 990, 95 / 995, and fifth-cycle pre-harness-repair 95 / 1001 test inputs were invalidated and not reused as final evidence | Chromium mouse: actual pointer DnD, stationary multi-frame edge scroll, no-move release geometry, and blur/exit/Escape/end lifecycle; stationary touch and remote invalidation covered by mounted owner tests | `docs/issues/Issues_Phase_28.md`; `docs/verification/inbox-triage/task-149.md`; `docs/verification/inbox-triage/phase-28-workflow-pilot-audit.md` (plus the committed baseline copy itself) | Five implementation-local repair cycles stayed inside the approved six code/test owners; the fifth repaired P28-02/P28-03 and no sixth cycle or scope expansion was needed | P28-01/P28-02/P28-03 repaired awaiting checkpoint; final High-risk review found no Critical or Important issue and independently passed 3 files / 113 tests |
+| Task 149 + five bounded repairs | High | TDD RED reproduced the approved behavior and each repair; latest focused gate passed 3 files / 113 tests | Latest-input full gate run, not reused: test 95 files / 1001 tests, lint 0 errors with 11 unchanged warnings, typecheck and build passed | `WF28-02` deterministic record: `task-149.md` § “Deterministic Product Evidence Fingerprint”, composite `a2da7ab6f49ba50d9fba9d3ea5e3fb568990e05f264891844e2534e2e00dfdd8`; earlier 95 / 990, 95 / 995, and pre-harness-repair 95 / 1001 inputs were invalidated | Chromium mouse: actual pointer DnD, stationary multi-frame edge scroll, no-move release geometry, and blur/exit/Escape/end lifecycle; stationary touch and remote invalidation covered by mounted owner tests | `docs/issues/Issues_Phase_28.md`; `docs/verification/inbox-triage/task-149.md`; `docs/verification/inbox-triage/phase-28-workflow-pilot-audit.md` (plus the committed baseline copy itself) | Five implementation-local repair cycles stayed inside the approved six code/test owners; the fifth repaired P28-02/P28-03 and no sixth cycle or scope expansion was needed | P28-01/P28-02/P28-03 repaired awaiting checkpoint; final High-risk review found no Critical or Important issue and independently passed 3 files / 113 tests |
 
 ## End-of-Phase-28 decision questions
 

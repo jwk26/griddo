@@ -3,7 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Gate C preparation complete; Tasks 149–154 remain unstarted
+> State: Implemented — awaiting user review; Task 149 `[ ]`; Tasks 150–154 unstarted
 
 ## Status Legend
 
