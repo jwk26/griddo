@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   KeyboardSensor,
   MouseSensor,
@@ -73,6 +73,11 @@ export type TriageDragSnapshot =
     });
 
 export type TriageActiveDragItem = TriageDragSnapshot | null;
+
+export type TriageTargetFeedback = {
+  dropId: string;
+  state: "valid" | "invalid" | "full";
+} | null;
 
 export type TriageDragItem = {
   kind: TriageDragKind;
@@ -268,6 +273,57 @@ function isSameTriageDragSnapshot(
   );
 }
 
+function acceptsHierarchyTarget(
+  source: TriageDragSnapshot,
+  target: Extract<TriageDropData, { kind: "triage-hierarchy-drop" }>,
+): boolean {
+  if (source.kind === "triage-staged-node") {
+    return target.targetNodeLevel === null || target.targetNodeLevel < 2;
+  }
+  if (source.kind === "triage-staged-bit") {
+    return target.parentNodeId !== null;
+  }
+  return true;
+}
+
+function readRenderedHierarchyTarget(
+  point: { x: number; y: number },
+): Extract<TriageDropData, { kind: "triage-hierarchy-drop" }> | null {
+  if (typeof document.elementsFromPoint !== "function") return null;
+
+  for (const element of document.elementsFromPoint(point.x, point.y)) {
+    const target = element.closest<HTMLElement>(
+      "[data-triage-hierarchy-drop]",
+    );
+    const serialized = target?.dataset.triageHierarchyDrop;
+    if (serialized === undefined) continue;
+    try {
+      const data: unknown = JSON.parse(serialized);
+      if (
+        isTriageDropData(data) &&
+        data.kind === "triage-hierarchy-drop" &&
+        "dropId" in data &&
+        typeof data.dropId === "string" &&
+        "parentNodeId" in data &&
+        (typeof data.parentNodeId === "string" || data.parentNodeId === null) &&
+        "targetNodeLevel" in data &&
+        (typeof data.targetNodeLevel === "number" ||
+          data.targetNodeLevel === null) &&
+        "targetTitle" in data &&
+        typeof data.targetTitle === "string" &&
+        "targetParentPath" in data &&
+        Array.isArray(data.targetParentPath) &&
+        data.targetParentPath.every((segment) => typeof segment === "string")
+      ) {
+        return data;
+      }
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
 const triageDragInvalidationListeners = new Set<
   (snapshot: TriageDragSnapshot) => void
 >();
@@ -343,6 +399,7 @@ export function useTriageDnd(
   activeDragItem: TriageActiveDragItem;
   handleDragStart: (event: DragStartEvent) => void;
   handleDragEnd: (event: DragEndEvent) => void;
+  handleDragCancel: () => void;
   handleDragOver: (event: DragOverEvent) => void;
   pendingPlacement: PendingPlacement;
   handlePlacementConfirm: (
@@ -351,14 +408,20 @@ export function useTriageDnd(
   ) => Promise<void>;
   handlePlacementCancel: () => void;
   overTargetId: string | null;
+  targetFeedback: TriageTargetFeedback;
 } {
   const [activeDragItem, setActiveDragItem] =
     useState<TriageActiveDragItem>(null);
   const [overTargetId, setOverTargetId] = useState<string | null>(null);
   const [pendingPlacement, setPendingPlacement] =
     useState<PendingPlacement>(null);
+  const [targetFeedback, setTargetFeedback] =
+    useState<TriageTargetFeedback>(null);
   const activationSnapshotRef = useRef<TriageDragSnapshot | null>(null);
   const dragCancelledRef = useRef(false);
+  const pointerRef = useRef<{ x: number; y: number } | null>(null);
+  const feedbackRequestRef = useRef(0);
+  const feedbackTargetRef = useRef<string | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -375,8 +438,66 @@ export function useTriageDnd(
       !operationLock.isLocked() && snapshot?.scratchId === selectedScratchId;
     activationSnapshotRef.current = isCurrentScratch ? snapshot : null;
     dragCancelledRef.current = false;
+    pointerRef.current = null;
+    feedbackRequestRef.current += 1;
+    feedbackTargetRef.current = null;
+    setOverTargetId(null);
+    setTargetFeedback(null);
     setActiveDragItem(isCurrentScratch ? snapshot : null);
   };
+
+  const clearDragTarget = useCallback(() => {
+    feedbackRequestRef.current += 1;
+    feedbackTargetRef.current = null;
+    setOverTargetId(null);
+    setTargetFeedback(null);
+  }, []);
+
+  const updateRenderedTarget = useCallback((point: { x: number; y: number }) => {
+    pointerRef.current = point;
+    const source = activationSnapshotRef.current;
+    const target = readRenderedHierarchyTarget(point);
+    if (source === null || target === null) {
+      clearDragTarget();
+      return;
+    }
+
+    setOverTargetId(target.dropId);
+    if (feedbackTargetRef.current === target.dropId) return;
+    feedbackTargetRef.current = target.dropId;
+    if (!acceptsHierarchyTarget(source, target)) {
+      feedbackRequestRef.current += 1;
+      setTargetFeedback({ dropId: target.dropId, state: "invalid" });
+      return;
+    }
+
+    const request = feedbackRequestRef.current + 1;
+    feedbackRequestRef.current = request;
+    setTargetFeedback(null);
+    void getDataStore()
+      .then((dataStore) => dataStore.getGridOccupancy(target.parentNodeId))
+      .then((occupancy) => {
+        if (
+          feedbackRequestRef.current !== request ||
+          activationSnapshotRef.current !== source
+        ) {
+          return;
+        }
+        const position = findNearestEmptyCell(
+          occupancy,
+          0,
+          0,
+          getStaticBlockedCells(),
+        );
+        setTargetFeedback({
+          dropId: target.dropId,
+          state: position === null ? "full" : "valid",
+        });
+      })
+      .catch(() => {
+        if (feedbackRequestRef.current === request) clearDragTarget();
+      });
+  }, [clearDragTarget]);
 
   const finishStage = async (command: StageCandidateCommand): Promise<void> => {
     let outcome = await stageCandidate(command);
@@ -410,7 +531,8 @@ export function useTriageDnd(
       dragCancelledRef.current = true;
       activationSnapshotRef.current = null;
       setActiveDragItem(null);
-      setOverTargetId(null);
+      pointerRef.current = null;
+      clearDragTarget();
     };
 
     document.addEventListener("keydown", cancelOnEscape);
@@ -424,6 +546,8 @@ export function useTriageDnd(
       }
 
       dragCancelledRef.current = true;
+      pointerRef.current = null;
+      clearDragTarget();
       setActiveDragItem({
         ...activationSnapshot,
         integrity: "invalidated",
@@ -431,24 +555,74 @@ export function useTriageDnd(
     };
     triageDragInvalidationListeners.add(cancelOnInvalidation);
 
+    const trackMouse = (event: MouseEvent) => {
+      if (activationSnapshotRef.current === null) return;
+      updateRenderedTarget({ x: event.clientX, y: event.clientY });
+    };
+    const trackTouch = (event: TouchEvent) => {
+      if (activationSnapshotRef.current === null) return;
+      const touch = event.touches[0];
+      if (touch === undefined) return;
+      updateRenderedTarget({ x: touch.clientX, y: touch.clientY });
+    };
+    const clearPointerTarget = () => {
+      if (activationSnapshotRef.current === null) return;
+      pointerRef.current = null;
+      clearDragTarget();
+    };
+    document.addEventListener("mousemove", trackMouse);
+    document.addEventListener("mouseleave", clearPointerTarget);
+    document.addEventListener("touchmove", trackTouch, { passive: true });
+    document.addEventListener("touchcancel", clearPointerTarget);
+    window.addEventListener("blur", clearPointerTarget);
+
     return () => {
       document.removeEventListener("keydown", cancelOnEscape);
+      document.removeEventListener("mousemove", trackMouse);
+      document.removeEventListener("mouseleave", clearPointerTarget);
+      document.removeEventListener("touchmove", trackTouch);
+      document.removeEventListener("touchcancel", clearPointerTarget);
+      window.removeEventListener("blur", clearPointerTarget);
       triageDragInvalidationListeners.delete(cancelOnInvalidation);
     };
-  }, []);
+  }, [clearDragTarget, updateRenderedTarget]);
 
   const handleDragOver = (event: DragOverEvent) => {
+    if (pointerRef.current !== null) {
+      updateRenderedTarget(pointerRef.current);
+      return;
+    }
     setOverTargetId(event.over?.id ? String(event.over.id) : null);
+  };
+
+  const handleDragCancel = () => {
+    dragCancelledRef.current = true;
+    activationSnapshotRef.current = null;
+    pointerRef.current = null;
+    setActiveDragItem(null);
+    clearDragTarget();
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const currentDragItem = readTriageDragItem(event.active.data.current);
     const activationSnapshot = activationSnapshotRef.current;
-    const dropData = event.over?.data.current;
+    const eventDropData = event.over?.data.current;
+    const renderedTarget =
+      pointerRef.current === null
+        ? null
+        : readRenderedHierarchyTarget(pointerRef.current);
+    const dropData =
+      renderedTarget ??
+      (pointerRef.current !== null &&
+      isTriageDropData(eventDropData) &&
+      eventDropData.kind === "triage-hierarchy-drop"
+        ? null
+        : eventDropData);
 
     activationSnapshotRef.current = null;
+    pointerRef.current = null;
     setActiveDragItem(null);
-    setOverTargetId(null);
+    clearDragTarget();
 
     if (
       dragCancelledRef.current ||
@@ -682,11 +856,13 @@ export function useTriageDnd(
     activeDragItem,
     handleDragStart,
     handleDragEnd,
+    handleDragCancel,
     handleDragOver,
     pendingPlacement,
     handlePlacementConfirm,
     handlePlacementCancel,
     overTargetId,
+    targetFeedback,
   };
 }
 

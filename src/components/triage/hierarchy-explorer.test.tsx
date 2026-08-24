@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -8,7 +9,10 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { TriageDragItem } from "@/hooks/use-dnd";
+import type {
+  TriageDragItem,
+  TriageTargetFeedback,
+} from "@/hooks/use-dnd";
 import { getTriageHierarchyDropId } from "@/lib/grid-dnd";
 import { useTriageStore } from "@/stores/triage-store";
 import type { Bit, Node } from "@/types";
@@ -75,11 +79,13 @@ const defaultProps: {
   onPendingPlacementInvalidated: (dropId: string) => void;
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
+  targetFeedback: TriageTargetFeedback;
 } = {
   activeDragItem: null,
   onPendingPlacementInvalidated: vi.fn(),
   overTargetId: null,
   pendingPlacementDropId: null,
+  targetFeedback: null,
 };
 
 function seedDeepGrid() {
@@ -140,6 +146,112 @@ afterEach(() => {
 });
 
 describe("HierarchyExplorer Task 134 base", () => {
+  it("renders distinct valid, invalid, and full target feedback", () => {
+    const { home } = seedDeepGrid();
+    const activeDragItem: TriageDragItem = {
+      kind: "triage-staged-node",
+      id: "candidate-1",
+      label: "Project",
+    };
+    const dropId = getTriageHierarchyDropId(home.id);
+    const view = render(
+      <HierarchyExplorer
+        {...defaultProps}
+        activeDragItem={activeDragItem}
+        targetFeedback={{ dropId, state: "valid" }}
+      />,
+    );
+    const target = screen.getByRole("button", {
+      name: `Select Node: ${home.title}`,
+    });
+    expect(target).toHaveAttribute("data-triage-target-state", "valid");
+
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        activeDragItem={activeDragItem}
+        targetFeedback={{ dropId, state: "full" }}
+      />,
+    );
+    expect(target).toHaveAttribute("data-triage-target-state", "full");
+
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        activeDragItem={{ ...activeDragItem, kind: "triage-staged-bit" }}
+        targetFeedback={{
+          dropId: getTriageHierarchyDropId("body-home"),
+          state: "invalid",
+        }}
+      />,
+    );
+    expect(screen.getByTestId("hierarchy-section-body-home")).toHaveAttribute(
+      "data-triage-target-state",
+      "invalid",
+    );
+  });
+
+  it("progressively scrolls only the valid pointer-under Explorer column and stops for full feedback", () => {
+    let frame: FrameRequestCallback | null = null;
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      frame = callback;
+      return 1;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+    const { home } = seedDeepGrid();
+    const dropId = getTriageHierarchyDropId(home.id);
+    const activeDragItem: TriageDragItem = {
+      kind: "triage-staged-node",
+      id: "candidate-1",
+      label: "Project",
+    };
+    const view = render(
+      <HierarchyExplorer
+        {...defaultProps}
+        activeDragItem={activeDragItem}
+        targetFeedback={{ dropId, state: "valid" }}
+      />,
+    );
+    const body = screen.getByTestId("hierarchy-section-body-home");
+    const target = screen.getByRole("button", {
+      name: `Select Node: ${home.title}`,
+    });
+    Object.defineProperties(body, {
+      clientHeight: { configurable: true, value: 200 },
+      scrollHeight: { configurable: true, value: 600 },
+    });
+    vi.spyOn(body, "getBoundingClientRect").mockReturnValue({
+      top: 100,
+      bottom: 300,
+      left: 0,
+      right: 200,
+      width: 200,
+      height: 200,
+      x: 0,
+      y: 100,
+      toJSON() {},
+    });
+    Object.defineProperty(document, "elementsFromPoint", {
+      configurable: true,
+      value: vi.fn(() => [target, body]),
+    });
+
+    fireEvent.mouseMove(document, { clientX: 100, clientY: 294 });
+    act(() => frame?.(0));
+    expect(body.scrollTop).toBeGreaterThan(0);
+    const afterValidFrame = body.scrollTop;
+
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        activeDragItem={activeDragItem}
+        targetFeedback={{ dropId, state: "full" }}
+      />,
+    );
+    act(() => frame?.(16));
+    expect(body.scrollTop).toBe(afterValidFrame);
+  });
+
   it("captures one complete Explorer path change before either path mutation", () => {
     const { home } = seedDeepGrid();
     departureState.requestDeparture.mockImplementation((destination) => {

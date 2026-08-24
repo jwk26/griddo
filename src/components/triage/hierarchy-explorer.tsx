@@ -12,7 +12,10 @@ import {
 } from "react";
 import { useGridData } from "@/hooks/use-grid-data";
 import { useTriageDepartureContext } from "@/hooks/use-triage-departure";
-import type { TriageDragItem } from "@/hooks/use-dnd";
+import type {
+  TriageDragItem,
+  TriageTargetFeedback,
+} from "@/hooks/use-dnd";
 import {
   getTriageHierarchyDropId,
   type TriageDropData,
@@ -29,12 +32,14 @@ interface HierarchyExplorerProps {
   onPendingPlacementInvalidated: (dropId: string) => void;
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
+  targetFeedback: TriageTargetFeedback;
 }
 
 type HierarchyCellState =
   | "default"
   | "idle-valid"
   | "valid"
+  | "full"
   | "pending-confirmation"
   | "invalid";
 
@@ -54,6 +59,7 @@ const CELL_STATE_CLASSES: Record<HierarchyCellState, string> = {
   default: "",
   "idle-valid": "ring-1 ring-primary border-border/80 text-foreground",
   valid: "ring-1 ring-primary border-primary bg-accent text-foreground",
+  full: "ring-1 ring-muted-foreground border-muted-foreground bg-muted text-muted-foreground",
   "pending-confirmation":
     "border-ring bg-popover text-foreground motion-safe:animate-pulse",
   invalid:
@@ -94,16 +100,19 @@ function getCellState({
   isAccepted,
   overTargetId,
   pendingPlacementDropId,
+  targetFeedback,
 }: {
   activeDragItem: TriageDragItem;
   dropId: string;
   isAccepted: boolean;
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
+  targetFeedback: TriageTargetFeedback;
 }): HierarchyCellState {
   if (pendingPlacementDropId === dropId) return "pending-confirmation";
   if (activeDragItem === null) return "default";
   if (!isAccepted) return "invalid";
+  if (targetFeedback?.dropId === dropId) return targetFeedback.state;
   if (overTargetId === dropId) return "valid";
   return "idle-valid";
 }
@@ -137,7 +146,83 @@ export function HierarchyExplorer({
   onPendingPlacementInvalidated,
   overTargetId,
   pendingPlacementDropId,
+  targetFeedback,
 }: HierarchyExplorerProps) {
+  const targetFeedbackRef = useRef(targetFeedback);
+  useEffect(() => {
+    targetFeedbackRef.current = targetFeedback;
+  }, [targetFeedback]);
+
+  useEffect(() => {
+    if (activeDragItem === null) return;
+    let pointer: { x: number; y: number } | null = null;
+    let frame = 0;
+    let cancelled = false;
+    const trackMouse = (event: MouseEvent) => {
+      pointer = { x: event.clientX, y: event.clientY };
+    };
+    const trackTouch = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (touch !== undefined) {
+        pointer = { x: touch.clientX, y: touch.clientY };
+      }
+    };
+    const scrollAtEdge = () => {
+      const feedback = targetFeedbackRef.current;
+      if (
+        pointer !== null &&
+        feedback?.state === "valid" &&
+        typeof document.elementsFromPoint === "function"
+      ) {
+        const pointerTarget = document
+          .elementsFromPoint(pointer.x, pointer.y)
+          .map((element) =>
+            element.closest<HTMLElement>("[data-triage-drop-id]"),
+          )
+          .find((element) => element !== null);
+        const body = pointerTarget?.closest<HTMLElement>(
+          "[data-triage-explorer-column]",
+        );
+        if (
+          pointerTarget?.dataset.triageDropId === feedback.dropId &&
+          body !== null &&
+          body !== undefined &&
+          body.scrollHeight > body.clientHeight
+        ) {
+          const bounds = body.getBoundingClientRect();
+          const edge = Math.min(48, bounds.height / 4);
+          const topDistance = pointer.y - bounds.top;
+          const bottomDistance = bounds.bottom - pointer.y;
+          if (topDistance >= 0 && topDistance < edge) {
+            body.scrollTop -= Math.ceil(2 + 10 * (1 - topDistance / edge));
+          } else if (bottomDistance >= 0 && bottomDistance < edge) {
+            body.scrollTop += Math.ceil(
+              2 + 10 * (1 - bottomDistance / edge),
+            );
+          }
+        }
+      }
+    };
+    const scheduleFrame = () => {
+      let callbackWasSynchronous = true;
+      frame = window.requestAnimationFrame(() => {
+        scrollAtEdge();
+        if (!callbackWasSynchronous && !cancelled) scheduleFrame();
+      });
+      callbackWasSynchronous = false;
+    };
+
+    document.addEventListener("mousemove", trackMouse);
+    document.addEventListener("touchmove", trackTouch, { passive: true });
+    scheduleFrame();
+    return () => {
+      cancelled = true;
+      document.removeEventListener("mousemove", trackMouse);
+      document.removeEventListener("touchmove", trackTouch);
+      window.cancelAnimationFrame(frame);
+    };
+  }, [activeDragItem]);
+
   const departure = useTriageDepartureContext();
   const explorerPathIds = useTriageStore((state) => state.explorerPathIds);
   const explorerColumnScroll = useTriageStore(
@@ -430,6 +515,7 @@ export function HierarchyExplorer({
                 overTargetId,
                 parentNode: column.parentNode,
                 pendingPlacementDropId: effectivePendingPlacementDropId,
+                targetFeedback,
               })}
               columnId={column.columnId}
               hasRightBorder={index < COLUMN_LABELS.length - 1}
@@ -462,6 +548,7 @@ export function HierarchyExplorer({
                   parentPath={parentPath}
                   pendingPlacementDropId={effectivePendingPlacementDropId}
                   selectedNodeId={column.selectedNodeId}
+                  targetFeedback={targetFeedback}
                 />
               )}
             </ExplorerColumn>
@@ -478,12 +565,14 @@ function getSectionBodyState({
   overTargetId,
   parentNode,
   pendingPlacementDropId,
+  targetFeedback,
 }: {
   activeDragItem: TriageDragItem;
   index: number;
   overTargetId: string | null;
   parentNode: Node | null;
   pendingPlacementDropId: string | null;
+  targetFeedback: TriageTargetFeedback;
 }): HierarchyCellState {
   if (index > 0 && parentNode === null) return "default";
   const dropId = getTriageHierarchyDropId(
@@ -499,6 +588,7 @@ function getSectionBodyState({
     }),
     overTargetId,
     pendingPlacementDropId,
+    targetFeedback,
   });
 }
 
@@ -547,6 +637,14 @@ function ExplorerColumn({
       targetParentPath,
     } satisfies TriageDropData,
   });
+  const sectionDropData = {
+    kind: "triage-hierarchy-drop",
+    dropId: sectionDropId,
+    parentNodeId: parentNode?.id ?? null,
+    targetNodeLevel: parentNode?.level ?? null,
+    targetTitle: parentNode?.title ?? "Home",
+    targetParentPath,
+  } satisfies TriageDropData;
   const itemIdsKey = itemIds.join("\u0000");
 
   useLayoutEffect(() => {
@@ -623,6 +721,10 @@ function ExplorerColumn({
           CELL_STATE_CLASSES[bodyState],
         )}
         data-testid={`hierarchy-section-body-${sectionIndex === 0 ? "home" : `l${sectionIndex}`}`}
+        data-triage-drop-id={sectionDropId}
+        data-triage-explorer-column="true"
+        data-triage-hierarchy-drop={JSON.stringify(sectionDropData)}
+        data-triage-target-state={bodyState}
         onScroll={handleScroll}
       >
         {children}
@@ -641,6 +743,7 @@ function HierarchyItemList({
   parentPath,
   pendingPlacementDropId,
   selectedNodeId,
+  targetFeedback,
 }: {
   activeDragItem: TriageDragItem;
   bits: Bit[];
@@ -651,6 +754,7 @@ function HierarchyItemList({
   parentPath: string[];
   pendingPlacementDropId: string | null;
   selectedNodeId?: string | null;
+  targetFeedback: TriageTargetFeedback;
 }) {
   if (!isLoading && nodes.length === 0 && bits.length === 0) {
     return (
@@ -674,6 +778,7 @@ function HierarchyItemList({
           overTargetId={overTargetId}
           parentPath={parentPath}
           pendingPlacementDropId={pendingPlacementDropId}
+          targetFeedback={targetFeedback}
         />
       ))}
       {bits.length > 0 ? (
@@ -700,6 +805,7 @@ function NodeDropCell({
   overTargetId,
   parentPath,
   pendingPlacementDropId,
+  targetFeedback,
 }: {
   activeDragItem: TriageDragItem;
   isSelected: boolean;
@@ -708,18 +814,20 @@ function NodeDropCell({
   overTargetId: string | null;
   parentPath: string[];
   pendingPlacementDropId: string | null;
+  targetFeedback: TriageTargetFeedback;
 }) {
   const dropId = getTriageHierarchyDropId(node.id);
+  const dropData = {
+    kind: "triage-hierarchy-drop",
+    dropId,
+    parentNodeId: node.id,
+    targetNodeLevel: node.level,
+    targetTitle: node.title,
+    targetParentPath: parentPath,
+  } satisfies TriageDropData;
   const { setNodeRef } = useDroppable({
     id: dropId,
-    data: {
-      kind: "triage-hierarchy-drop",
-      dropId,
-      parentNodeId: node.id,
-      targetNodeLevel: node.level,
-      targetTitle: node.title,
-      targetParentPath: parentPath,
-    } satisfies TriageDropData,
+    data: dropData,
   });
   const state = getCellState({
     activeDragItem,
@@ -731,6 +839,7 @@ function NodeDropCell({
     }),
     overTargetId,
     pendingPlacementDropId,
+    targetFeedback,
   });
   const content = (
     <>
@@ -758,6 +867,9 @@ function NodeDropCell({
           CELL_STATE_CLASSES[state],
         )}
         data-explorer-item-id={node.id}
+        data-triage-drop-id={dropId}
+        data-triage-hierarchy-drop={JSON.stringify(dropData)}
+        data-triage-target-state={state}
         type="button"
         onClick={() => onSelectNode(node.id)}
       >
@@ -772,6 +884,9 @@ function NodeDropCell({
       aria-disabled={state === "invalid"}
       className={cn(CELL_DROP_ONLY_CLASS, CELL_STATE_CLASSES[state])}
       data-explorer-item-id={node.id}
+      data-triage-drop-id={dropId}
+      data-triage-hierarchy-drop={JSON.stringify(dropData)}
+      data-triage-target-state={state}
     >
       {content}
     </div>

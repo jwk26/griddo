@@ -108,3 +108,16 @@ their Phase 27 owner and are outside Phase 28 scope.
 | Issues / deviations | None at start |
 | Canonical impact | `None` — Task 149 implements the existing approved contract without changing canonical product, design, policy, or plan authority |
 | Next legal action | Add focused failing Task 149 tests, then implement only Task 149 within the approved write set |
+
+### Task 149 Review Blockers
+
+| ID | State | Evidence | Exact minimum repair | Canonical impact |
+| --- | --- | --- | --- | --- |
+| `P28-01` | `Awaiting User Decision` | Read-only High-risk review found that `handleDragStart` clears `pointerRef`; when the MouseSensor threshold-crossing event precedes `onDragStart`, or a TouchSensor activates after a stationary long press, release can have no post-activation move and fall back to stale `event.over`. | Approve one additional bounded repair cycle to retain the latest mouse/touch coordinates across activation and require rendered release geometry whenever coordinates exist; add mouse and stationary-touch regression tests. | `None` — implementation-local correction to the existing Task 149 contract. |
+| `P28-02` | `Awaiting User Decision` | Read-only High-risk review found that Explorer scrolling requires the pointer-under row ID to equal the prior feedback ID. Scrolling can move a new row under a stationary pointer without a move event, leaving stale feedback and stopping progressive scroll. | In the same additional bounded repair cycle, refresh pointer-under target classification from each scroll frame (without extra global writers), keep occupancy requests stale-guarded, and add multi-frame stationary-pointer/row-change evidence. | `None` — implementation-local correction to the existing Task 149 contract. |
+
+Task 149 remains `In Progress` and `[ ]`. Three bounded repair cycles were
+used; the pinned `run-task` procedure requires explicit approval before a
+fourth. Current production/test changes are preserved only as a known-blocker
+recovery checkpoint. No Task 150 work, canonical direction change, or scope
+expansion occurred.

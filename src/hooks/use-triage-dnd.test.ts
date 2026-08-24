@@ -1,4 +1,4 @@
-import { act, fireEvent, renderHook } from "@testing-library/react";
+import { act, fireEvent, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { invalidateTriageDragSource, useTriageDnd } from "./use-dnd";
 import type { TriageOperationKind } from "./use-triage-operation-lock";
@@ -146,8 +146,26 @@ function makeStagedDragData(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function installRenderedHierarchyTarget(dropData: Record<string, unknown>) {
+  const target = document.createElement("div");
+  target.dataset.triageHierarchyDrop = JSON.stringify(dropData);
+  document.body.append(target);
+  Object.defineProperty(document, "elementsFromPoint", {
+    configurable: true,
+    value: vi.fn(() => [target]),
+  });
+  return target;
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
+  document
+    .querySelectorAll("[data-triage-hierarchy-drop]")
+    .forEach((element) => element.remove());
+  Object.defineProperty(document, "elementsFromPoint", {
+    configurable: true,
+    value: vi.fn(() => []),
+  });
   operationLockState.activeOperation = null;
   operationLockState.isLocked.mockImplementation(
     () => operationLockState.activeOperation !== null,
@@ -500,11 +518,23 @@ describe("useTriageDnd — pointer activation lifecycle", () => {
       useTriageDnd("scratch-1", durableCandidateOptions()),
     );
     const dragData = makeStagedDragData();
+    installRenderedHierarchyTarget({
+      kind: "triage-hierarchy-drop",
+      dropId: "triage-hierarchy:parent-1",
+      parentNodeId: "parent-1",
+      targetNodeLevel: 0,
+      targetTitle: "Parent",
+      targetParentPath: ["Home"],
+    });
 
     act(() => {
       result.current.handleDragStart(makeDragEndEvent(dragData, null));
-      invalidateTriageDragSource(dragData);
+      fireEvent.mouseMove(document, { clientX: 30, clientY: 40 });
     });
+    await waitFor(() =>
+      expect(result.current.targetFeedback?.state).toBe("valid"),
+    );
+    act(() => invalidateTriageDragSource(dragData));
 
     expect(result.current.activeDragItem).toEqual(
       expect.objectContaining({
@@ -513,6 +543,7 @@ describe("useTriageDnd — pointer activation lifecycle", () => {
         integrity: "invalidated",
       }),
     );
+    expect(result.current.targetFeedback).toBeNull();
 
     await act(async () => {
       await result.current.handleDragEnd(
@@ -522,7 +553,8 @@ describe("useTriageDnd — pointer activation lifecycle", () => {
 
     expect(result.current.activeDragItem).toBeNull();
     expect(removeStagedCandidateMock).not.toHaveBeenCalled();
-    expect(getDataStoreMock).not.toHaveBeenCalled();
+    expect(createNodeMock).not.toHaveBeenCalled();
+    expect(createBitMock).not.toHaveBeenCalled();
   });
 
   it("does not retarget a drop from invalid activation data to valid release data", async () => {
@@ -573,6 +605,232 @@ describe("useTriageDnd — pointer activation lifecycle", () => {
 });
 
 describe("useTriageDnd — drop matrix", () => {
+  it("uses the final rendered pointer-under hierarchy target instead of stale drag-over data", async () => {
+    const releaseTarget = {
+      kind: "triage-hierarchy-drop",
+      dropId: "triage-hierarchy:release-target",
+      parentNodeId: "release-target",
+      targetNodeLevel: 1,
+      targetTitle: "Release Target",
+      targetParentPath: ["Home", "Current"],
+    };
+    installRenderedHierarchyTarget(releaseTarget);
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", durableCandidateOptions()),
+    );
+    const dragData = makeStagedDragData();
+
+    act(() => {
+      result.current.handleDragStart(makeDragEndEvent(dragData, null));
+      fireEvent.mouseMove(document, { clientX: 240, clientY: 180 });
+    });
+    await act(async () => {
+      await result.current.handleDragEnd(
+        makeDragEndEvent(dragData, {
+          ...releaseTarget,
+          dropId: "triage-hierarchy:stale-target",
+          parentNodeId: "stale-target",
+          targetTitle: "Stale Target",
+        }),
+      );
+    });
+
+    expect(result.current.pendingPlacement).toEqual(
+      expect.objectContaining({
+        dropId: "triage-hierarchy:release-target",
+        parentNodeId: "release-target",
+        targetTitle: "Release Target",
+      }),
+    );
+  });
+
+  it("continuously reports full rendered targets while preserving them for release", async () => {
+    const target = {
+      kind: "triage-hierarchy-drop",
+      dropId: "triage-hierarchy:full-target",
+      parentNodeId: "full-target",
+      targetNodeLevel: 0,
+      targetTitle: "Full Target",
+      targetParentPath: ["Home"],
+    };
+    installRenderedHierarchyTarget(target);
+    findNearestEmptyCellMock.mockReturnValue(null);
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", durableCandidateOptions()),
+    );
+    const dragData = makeStagedDragData();
+
+    act(() => {
+      result.current.handleDragStart(makeDragEndEvent(dragData, null));
+      fireEvent.touchMove(document, {
+        touches: [{ clientX: 80, clientY: 120 }],
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.targetFeedback).toEqual({
+        dropId: target.dropId,
+        state: "full",
+      });
+    });
+
+    await act(async () => {
+      await result.current.handleDragEnd(makeDragEndEvent(dragData, target));
+    });
+    expect(result.current.pendingPlacement).toEqual(
+      expect.objectContaining({ dropId: target.dropId, isFull: true }),
+    );
+  });
+
+  it("reports an invalid pointer-under target without querying occupancy and clears it on Escape", async () => {
+    const target = {
+      kind: "triage-hierarchy-drop",
+      dropId: "triage-hierarchy:home",
+      parentNodeId: null,
+      targetNodeLevel: null,
+      targetTitle: "Home",
+      targetParentPath: [],
+    };
+    installRenderedHierarchyTarget(target);
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", durableCandidateOptions()),
+    );
+
+    act(() => {
+      result.current.handleDragStart(
+        makeDragEndEvent(
+          makeStagedDragData({
+            kind: "triage-staged-bit",
+            resultType: "bit",
+          }),
+          null,
+        ),
+      );
+      fireEvent.mouseMove(document, { clientX: 20, clientY: 30 });
+    });
+
+    expect(result.current.targetFeedback).toEqual({
+      dropId: target.dropId,
+      state: "invalid",
+    });
+    expect(getGridOccupancyMock).not.toHaveBeenCalled();
+
+    act(() => fireEvent.keyDown(document, { key: "Escape" }));
+    expect(result.current.targetFeedback).toBeNull();
+  });
+
+  it("switches feedback to the latest rendered column and cancels it on pointer exit", async () => {
+    const first = installRenderedHierarchyTarget({
+      kind: "triage-hierarchy-drop",
+      dropId: "triage-hierarchy:first",
+      parentNodeId: "first",
+      targetNodeLevel: 0,
+      targetTitle: "First",
+      targetParentPath: ["Home"],
+    });
+    const second = document.createElement("div");
+    second.dataset.triageHierarchyDrop = JSON.stringify({
+      kind: "triage-hierarchy-drop",
+      dropId: "triage-hierarchy:second",
+      parentNodeId: "second",
+      targetNodeLevel: 1,
+      targetTitle: "Second",
+      targetParentPath: ["Home", "First"],
+    });
+    document.body.append(second);
+    let pointerTarget: Element | null = first;
+    vi.mocked(document.elementsFromPoint).mockImplementation(() =>
+      pointerTarget === null ? [] : [pointerTarget],
+    );
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", durableCandidateOptions()),
+    );
+
+    act(() => {
+      result.current.handleDragStart(
+        makeDragEndEvent(makeStagedDragData(), null),
+      );
+      fireEvent.mouseMove(document, { clientX: 20, clientY: 30 });
+    });
+    await waitFor(() =>
+      expect(result.current.targetFeedback?.dropId).toBe(
+        "triage-hierarchy:first",
+      ),
+    );
+
+    pointerTarget = second;
+    act(() => fireEvent.mouseMove(document, { clientX: 220, clientY: 30 }));
+    await waitFor(() =>
+      expect(result.current.targetFeedback?.dropId).toBe(
+        "triage-hierarchy:second",
+      ),
+    );
+
+    pointerTarget = null;
+    act(() => fireEvent.mouseMove(document, { clientX: 900, clientY: 700 }));
+    expect(result.current.targetFeedback).toBeNull();
+    expect(result.current.overTargetId).toBeNull();
+  });
+
+  it("cancels target feedback when the pointer leaves the browser document", async () => {
+    installRenderedHierarchyTarget({
+      kind: "triage-hierarchy-drop",
+      dropId: "triage-hierarchy:parent-1",
+      parentNodeId: "parent-1",
+      targetNodeLevel: 0,
+      targetTitle: "Parent",
+      targetParentPath: ["Home"],
+    });
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", durableCandidateOptions()),
+    );
+
+    act(() => {
+      result.current.handleDragStart(
+        makeDragEndEvent(makeStagedDragData(), null),
+      );
+      fireEvent.mouseMove(document, { clientX: 20, clientY: 30 });
+    });
+    await waitFor(() =>
+      expect(result.current.targetFeedback?.state).toBe("valid"),
+    );
+
+    act(() => fireEvent.mouseLeave(document));
+    expect(result.current.targetFeedback).toBeNull();
+    expect(result.current.overTargetId).toBeNull();
+  });
+
+  it("cancels explicit DnD cancellation and suppresses a later drag end", async () => {
+    const target = {
+      kind: "triage-hierarchy-drop",
+      dropId: "triage-hierarchy:parent-1",
+      parentNodeId: "parent-1",
+      targetNodeLevel: 0,
+      targetTitle: "Parent",
+      targetParentPath: ["Home"],
+    };
+    installRenderedHierarchyTarget(target);
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", durableCandidateOptions()),
+    );
+    const dragData = makeStagedDragData();
+
+    act(() => {
+      result.current.handleDragStart(makeDragEndEvent(dragData, null));
+      fireEvent.mouseMove(document, { clientX: 30, clientY: 40 });
+      result.current.handleDragCancel();
+    });
+    await act(async () => {
+      await result.current.handleDragEnd(makeDragEndEvent(dragData, target));
+    });
+
+    expect(result.current.activeDragItem).toBeNull();
+    expect(result.current.targetFeedback).toBeNull();
+    expect(result.current.pendingPlacement).toBeNull();
+    expect(createNodeMock).not.toHaveBeenCalled();
+    expect(createBitMock).not.toHaveBeenCalled();
+  });
+
   it("dispatches durable Node Stage when a breakdown row drops on the Node Zone", async () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", durableCandidateOptions()));
 

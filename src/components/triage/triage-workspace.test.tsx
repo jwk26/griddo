@@ -4,7 +4,11 @@ import { join } from "node:path";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTriageStore } from "@/stores/triage-store";
-import type { PendingPlacement, TriageDragItem } from "@/hooks/use-dnd";
+import type {
+  PendingPlacement,
+  TriageDragItem,
+  TriageTargetFeedback,
+} from "@/hooks/use-dnd";
 import type { ScratchTitleBlockerHandle } from "@/hooks/use-scratch-breakdowns";
 import {
   requestActiveTriageDeparture,
@@ -235,9 +239,11 @@ type DndState = {
   pendingPlacement: PendingPlacement;
   handleDragStart: ReturnType<typeof vi.fn>;
   handleDragEnd: ReturnType<typeof vi.fn>;
+  handleDragCancel: ReturnType<typeof vi.fn>;
   handleDragOver: ReturnType<typeof vi.fn>;
   handlePlacementConfirm: ReturnType<typeof vi.fn>;
   handlePlacementCancel: ReturnType<typeof vi.fn>;
+  targetFeedback: TriageTargetFeedback;
 };
 
 function createDndState(overrides: Partial<DndState> = {}): DndState {
@@ -248,9 +254,11 @@ function createDndState(overrides: Partial<DndState> = {}): DndState {
     pendingPlacement: null,
     handleDragStart: vi.fn(),
     handleDragEnd: vi.fn(),
+    handleDragCancel: vi.fn(),
     handleDragOver: vi.fn(),
     handlePlacementConfirm: handlePlacementConfirmMock,
     handlePlacementCancel: handlePlacementCancelMock,
+    targetFeedback: null,
     ...overrides,
   };
 }
@@ -341,6 +349,11 @@ afterEach(() => {
 });
 
 describe("TriageWorkspace", () => {
+  it("keeps library auto-scroll disabled and wires explicit drag cancellation", () => {
+    expect(workspaceSource).toContain("autoScroll={false}");
+    expect(workspaceSource).toContain("onDragCancel={handleDragCancel}");
+  });
+
   it("keeps reactive DataStore reads behind the dedicated hook boundary", () => {
     expect(workspaceSource).not.toContain('from "dexie"');
     expect(workspaceSource).not.toContain("getDataStore");

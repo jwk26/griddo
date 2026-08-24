@@ -904,6 +904,7 @@ function TriageWorkspaceContent({
   const {
     activeDragItem,
     collisionDetection,
+    handleDragCancel,
     handleDragEnd,
     handleDragOver,
     handlePlacementCancel,
@@ -912,6 +913,7 @@ function TriageWorkspaceContent({
     overTargetId,
     pendingPlacement,
     sensors,
+    targetFeedback,
   } = useTriageDnd(selectedScratchId, {
     focusUnstagedSource,
     operationLock,
@@ -1369,6 +1371,7 @@ function TriageWorkspaceContent({
           autoScroll={false}
           collisionDetection={collisionDetection}
           sensors={sensors}
+          onDragCancel={handleDragCancel}
           onDragEnd={handleDragEnd}
           onDragOver={handleDragOver}
           onDragStart={handleDragStart}
@@ -1575,6 +1578,7 @@ function TriageWorkspaceContent({
                 onPendingPlacementInvalidated={handlePendingPlacementInvalidated}
                 overTargetId={overTargetId}
                 pendingPlacementDropId={pendingPlacement?.dropId ?? null}
+                targetFeedback={targetFeedback}
               />
             </div>
           </section>
