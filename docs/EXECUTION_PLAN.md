@@ -7,14 +7,14 @@
 > This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
 > its supersession rules. It accepts no phase, task, implementation, branch,
 > publication, or completion state.
-> **Task markers:** Tasks 101–148 were explicitly accepted. Phases 23–27 are
-> completed and archived. Tasks 149–165 remain open (`[ ]`) and may be
+> **Task markers:** Tasks 101–149 were explicitly accepted. Phases 23–27 are
+> completed and archived. Tasks 150–165 remain open (`[ ]`) and may be
 > checked only after their own observable acceptance and verification evidence
 > is explicitly accepted by the user.
-> **Execution lifecycle:** Phases 23–27 are complete. The four open phases are
-> Phases 28–31 with 17 open Tasks 149–165; Phase 28 requires its own approved
-> kickoff. This planning receipt alone does not authorize later implementation,
-> Git lifecycle work, or publication.
+> **Execution lifecycle:** Phases 23–27 are complete. Phase 28 is active with
+> Task 149 accepted and 16 open Tasks 150–165 remaining across Phases 28–31.
+> This planning receipt alone does not authorize later implementation, Git
+> lifecycle work, or publication.
 
 ## Goal
 
@@ -135,7 +135,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | Phase 25 | Completed | [Eleven authoritative commands plus Archive recovery](execution-plan/archive/phase-25.md) | 120–126 | Accepted and archived; downstream tasks consume the completed command foundation by their exact dependencies. |
 | Phase 26 | Completed | [Lifetime, copy, and source-backed base-surface owners](execution-plan/archive/phase-26.md) | 127–135 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
 | Phase 27 | Completed | [Breakdown, Pool, and Staging headless adapters and exact realizations](execution-plan/archive/phase-27.md) | 136–148 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
-| Phase 28 | Proposed | Explorer status/search and pointer placement | 149–154 | Search, status, reliability, and title slices have distinct receipt edges. |
+| Phase 28 | In Progress | Explorer status/search and pointer placement | 149–154 | Task 149 accepted; Tasks 150–154 retain their distinct receipt edges. |
 | Phase 29 | Proposed | Mounted-page Newly Placed, ordinary Undo, and search-result Undo integration | 155–158 | Ordinary-card Undo does not depend on `VQ-07`. |
 | Phase 30 | Proposed | Completion and Archive coordinator/recovery | 159–162 | Completion foundation does not depend on `VQ-03`/`VQ-04` realization. |
 | Phase 31 | Proposed | Route integration, nine-recipe conformance, full gate | 163–165 | Requires all named predecessors and task-local evidence. |
@@ -1659,7 +1659,12 @@ and no-queue/no-replay contracts do not change.
 
 ## Phase 28 — Explorer Search And Pointer Placement
 
-### Task 149: [ ] Implement release-time targets and valid-column edge auto-scroll
+### Task 149: [x] Implement release-time targets and valid-column edge auto-scroll
+
+**Acceptance:** Accepted on 2026-08-24. Implementation checkpoint
+`1830cc37ff913bd1d4ad4b62ddd9f7b2319b4dca`; evidence-alignment checkpoint
+`80bd7041e9db2849d9eab1d9f8d5d08c38e84549`; WF28-02 product-evidence
+fingerprint `a2da7ab6f49ba50d9fba9d3ea5e3fb568990e05f264891844e2534e2e00dfdd8`.
 
 **Files and actions:** modify existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, and `src/components/triage/triage-workspace.tsx` and `.test.tsx`. Disable DndContext/library auto-scroll for triage; compute valid/invalid/full target feedback; progressively scroll only the currently valid Explorer column near its top/bottom edge without jumps/path changes; continuously hit-test pointer-under geometry and use the final rendered release target; stop on exit/end; never scroll invalid columns, shell, or page. A full target remains a selected release target for Task 152 rather than being discarded.
 

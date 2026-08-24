@@ -3,7 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Implemented — awaiting user review; Task 149 `[ ]`; Tasks 150–154 unstarted
+> State: Task 149 `[x]`, Accepted; Tasks 150–154 unstarted
 
 ## Status Legend
 
@@ -98,27 +98,28 @@ their Phase 27 owner and are outside Phase 28 scope.
 | Field | Durable value |
 | --- | --- |
 | Task | `149 — Implement release-time targets and valid-column edge auto-scroll` |
-| State | `Implemented — awaiting user review`; Task 149 remains `[ ]` pending explicit user acceptance |
+| State | `Accepted`; Task 149 `[x]` |
 | Exact scope | Existing DnD target/auto-scroll mechanics in `src/hooks/use-dnd.ts`, `src/components/triage/hierarchy-explorer.tsx`, and `src/components/triage/triage-workspace.tsx`; their three approved test files; Task 149 verification evidence; Phase 28 workflow-pilot measurement row |
 | Approval | Exact Task 149 fresh-session user instruction on 2026-08-24, bounded by `docs/issues/Issues_Phase_28.gate-c.json` |
 | Approved base | `8cb2d904a55c136ca319e7bdf619d8e5d962fce8` |
 | Kickoff recovery anchor | `fcafd49def7334299972e99d675db025d0598a79` |
 | Baseline audit anchor | `4c526f0` (`docs: preserve Phase 28 workflow pilot baseline`) |
+| Accepted checkpoints | Implementation `1830cc37ff913bd1d4ad4b62ddd9f7b2319b4dca`; evidence alignment/current recovery anchor `80bd7041e9db2849d9eab1d9f8d5d08c38e84549`; WF28-02 composite `a2da7ab6f49ba50d9fba9d3ea5e3fb568990e05f264891844e2534e2e00dfdd8` |
 | Dependencies | Tasks 134 and 142 accepted; no unresolved Task 149 prerequisite |
 | Issues / deviations | None at start |
 | Canonical impact | `None` — Task 149 implements the existing approved contract without changing canonical product, design, policy, or plan authority |
-| Next legal action | User review of the clean Task 149 implementation checkpoint; no acceptance-only work is authorized |
+| Next legal action | Fresh candidate-pinned `$run-task` lifecycle for Task 150; Task 150 remains `[ ]` and unstarted |
 
 ### Task 149 Review Blockers
 
 | ID | State | Evidence | Exact minimum repair | Canonical impact |
 | --- | --- | --- | --- | --- |
-| `P28-01` | `Repaired — awaiting Task 149 checkpoint` | Fourth-cycle RED reproduced no-post-activation mouse release and stationary-touch activation; focused owner tests now prove retained coordinates and release-time rendered target selection. | Implemented inside the existing DnD owner; latest focused and complete gates are green. | `None` — implementation-local correction to the existing Task 149 contract. |
-| `P28-02` | `Repaired — awaiting Task 149 checkpoint` | Fifth-cycle mounted Explorer-to-hook RED reproduced same-ID payload staleness; complete rendered identity now includes drop ID, parent, level, title, and path, and changed identity reissues the stale-guarded occupancy classification. | Latest focused/full gates and final High-risk review are green; same-ID `parent-a → parent-b` evidence proves `valid → full` reclassification. | `None` — implementation-local correction to the existing Task 149 contract. |
-| `P28-03` | `Repaired — awaiting Task 149 checkpoint` | Fifth-cycle mounted Explorer-to-hook RED reproduced late frame work after exit, blur, remote invalidation, Escape, and end. Hook refresh is now inert after pointer/cancellation loss; Explorer clears its local pointer and canceled callbacks return before work. | Latest focused/full/browser gates and final High-risk review are green; no feedback, occupancy query, refresh callback, or scroll resurrection remains in owner evidence. | `None` — implementation-local correction to the existing Task 149 contract. |
+| `P28-01` | `Closed` | Fourth-cycle RED reproduced no-post-activation mouse release and stationary-touch activation; focused owner tests now prove retained coordinates and release-time rendered target selection. | Accepted with Task 149 at the recorded implementation and evidence-alignment checkpoints. | `None` — implementation-local correction to the existing Task 149 contract. |
+| `P28-02` | `Closed` | Fifth-cycle mounted Explorer-to-hook RED reproduced same-ID payload staleness; complete rendered identity now includes drop ID, parent, level, title, and path, and changed identity reissues the stale-guarded occupancy classification. | Accepted with Task 149; WF28-02 preserves the accepted product-input identity. | `None` — implementation-local correction to the existing Task 149 contract. |
+| `P28-03` | `Closed` | Fifth-cycle mounted Explorer-to-hook RED reproduced late frame work after exit, blur, remote invalidation, Escape, and end. Hook refresh is now inert after pointer/cancellation loss; Explorer clears its local pointer and canceled callbacks return before work. | Accepted with Task 149 at the recorded implementation and evidence-alignment checkpoints. | `None` — implementation-local correction to the existing Task 149 contract. |
 
-Task 149 remains `[ ]` and awaits user review of its implementation checkpoint.
+Task 149 is `[x]` and Accepted by the user's explicit checkpoint disposition.
 The fifth bounded repair cycle resumed from recovery anchor
 `77b762e15a3fea8c80ced07ba8fdaf16679593c3`; final review found no Critical or
-Important issue, so no sixth cycle was started. No Task 150 work, canonical
-direction change, or scope expansion occurred.
+Important issue, so no sixth cycle was started. Task 150 remains `[ ]` and
+unstarted; no canonical direction change or scope expansion occurred.
