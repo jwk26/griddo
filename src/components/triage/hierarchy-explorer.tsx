@@ -156,7 +156,12 @@ export function HierarchyExplorer({
   }, [targetFeedback]);
 
   useEffect(() => {
-    if (activeDragItem === null) return;
+    if (
+      activeDragItem === null ||
+      activeDragItem.integrity === "invalidated"
+    ) {
+      return;
+    }
     let pointer: { x: number; y: number } | null = null;
     let frame = 0;
     let cancelled = false;
@@ -168,6 +173,12 @@ export function HierarchyExplorer({
       if (touch !== undefined) {
         pointer = { x: touch.clientX, y: touch.clientY };
       }
+    };
+    const clearPointer = () => {
+      pointer = null;
+    };
+    const clearPointerOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") clearPointer();
     };
     const scrollAtEdge = () => {
       if (pointer !== null) onPointerGeometryChange(pointer);
@@ -209,6 +220,7 @@ export function HierarchyExplorer({
     const scheduleFrame = () => {
       let callbackWasSynchronous = true;
       frame = window.requestAnimationFrame(() => {
+        if (cancelled) return;
         scrollAtEdge();
         if (!callbackWasSynchronous && !cancelled) scheduleFrame();
       });
@@ -216,12 +228,21 @@ export function HierarchyExplorer({
     };
 
     document.addEventListener("mousemove", trackMouse);
+    document.addEventListener("mouseleave", clearPointer);
+    document.addEventListener("keydown", clearPointerOnEscape);
     document.addEventListener("touchmove", trackTouch, { passive: true });
+    document.addEventListener("touchcancel", clearPointer);
+    window.addEventListener("blur", clearPointer);
     scheduleFrame();
     return () => {
       cancelled = true;
+      pointer = null;
       document.removeEventListener("mousemove", trackMouse);
+      document.removeEventListener("mouseleave", clearPointer);
+      document.removeEventListener("keydown", clearPointerOnEscape);
       document.removeEventListener("touchmove", trackTouch);
+      document.removeEventListener("touchcancel", clearPointer);
+      window.removeEventListener("blur", clearPointer);
       window.cancelAnimationFrame(frame);
     };
   }, [activeDragItem, onPointerGeometryChange]);

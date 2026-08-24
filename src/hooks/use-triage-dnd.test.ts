@@ -1,5 +1,14 @@
-import { act, fireEvent, renderHook, waitFor } from "@testing-library/react";
+import { createElement } from "react";
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { HierarchyExplorer } from "@/components/triage/hierarchy-explorer";
 import { invalidateTriageDragSource, useTriageDnd } from "./use-dnd";
 import type { TriageOperationKind } from "./use-triage-operation-lock";
 
@@ -28,15 +37,30 @@ const findNearestEmptyCellMock = vi.hoisted(() => vi.fn());
 const useSensorMock = vi.hoisted(() =>
   vi.fn((sensor: unknown, options: unknown) => ({ sensor, options })),
 );
+const emptyGridData = vi.hoisted(() => ({
+  bits: [],
+  isLoading: false,
+  nodes: [],
+}));
 
 vi.mock("@dnd-kit/core", () => ({
   useSensors: (...sensors: unknown[]) => sensors,
   useSensor: useSensorMock,
+  useDroppable: vi.fn(() => ({ setNodeRef: vi.fn() })),
   MouseSensor: class {},
   TouchSensor: class {},
 }));
 
-vi.mock("@/lib/grid-dnd", () => ({
+vi.mock("@/hooks/use-grid-data", () => ({
+  useGridData: () => emptyGridData,
+}));
+
+vi.mock("@/hooks/use-triage-departure", () => ({
+  useTriageDepartureContext: () => ({ requestDeparture: vi.fn() }),
+}));
+
+vi.mock("@/lib/grid-dnd", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/grid-dnd")>()),
   isTriageDropData: (value: unknown) => {
     if (typeof value !== "object" || value === null || !("kind" in value))
       return false;
@@ -158,6 +182,7 @@ function installRenderedHierarchyTarget(dropData: Record<string, unknown>) {
 }
 
 beforeEach(() => {
+  vi.restoreAllMocks();
   vi.clearAllMocks();
   document
     .querySelectorAll("[data-triage-hierarchy-drop]")
@@ -227,6 +252,42 @@ function durableCandidateOptions() {
     reconcileUnstageCandidate: reconcileUnstageCandidateMock,
     removeStagedCandidate: removeStagedCandidateMock,
     focusUnstagedSource: focusUnstagedSourceMock,
+  };
+}
+
+function renderDndExplorerHarness(): {
+  getController: () => TriageDndController;
+  getFrameRefreshCount: () => number;
+  rerenderExplorer: () => void;
+} {
+  let frameRefreshCount = 0;
+  const hook = renderHook(() =>
+    useTriageDnd(
+      "scratch-1",
+      durableCandidateOptions(),
+    ),
+  );
+  const onPointerGeometryChange = (point: { x: number; y: number }) => {
+    frameRefreshCount += 1;
+    hook.result.current.refreshRenderedTarget(point);
+  };
+  const explorer = () => {
+    const controller = hook.result.current;
+    return createElement(HierarchyExplorer, {
+      activeDragItem: controller.activeDragItem,
+      onPendingPlacementInvalidated: vi.fn(),
+      onPointerGeometryChange,
+      overTargetId: controller.overTargetId,
+      pendingPlacementDropId: controller.pendingPlacement?.dropId ?? null,
+      targetFeedback: controller.targetFeedback,
+    });
+  };
+
+  const view = render(explorer());
+  return {
+    getController: () => hook.result.current,
+    getFrameRefreshCount: () => frameRefreshCount,
+    rerenderExplorer: () => view.rerender(explorer()),
   };
 }
 
@@ -906,6 +967,205 @@ describe("useTriageDnd — drop matrix", () => {
         "triage-hierarchy:second",
       ),
     );
+  });
+
+  it("reclassifies a same-ID rendered payload through the mounted Explorer frame loop", async () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+    const { getController, rerenderExplorer } = renderDndExplorerHarness();
+    const body = screen.getByTestId("hierarchy-section-body-home");
+    const target = document.createElement("div");
+    const dropId = "triage-hierarchy:body-home";
+    const firstPayload = {
+      kind: "triage-hierarchy-drop",
+      dropId,
+      parentNodeId: "parent-a",
+      targetNodeLevel: 0,
+      targetTitle: "Parent A",
+      targetParentPath: ["Home"],
+    };
+    target.dataset.triageDropId = dropId;
+    target.dataset.triageHierarchyDrop = JSON.stringify(firstPayload);
+    body.append(target);
+    Object.defineProperties(body, {
+      clientHeight: { configurable: true, value: 200 },
+      scrollHeight: { configurable: true, value: 600 },
+    });
+    vi.spyOn(body, "getBoundingClientRect").mockReturnValue({
+      top: 100,
+      bottom: 300,
+      left: 0,
+      right: 200,
+      width: 200,
+      height: 200,
+      x: 0,
+      y: 100,
+      toJSON() {},
+    });
+    vi.mocked(document.elementsFromPoint).mockReturnValue([target, body]);
+    const point = { x: 100, y: 294 };
+    const dragData = makeStagedDragData();
+
+    act(() => {
+      getController().handleDragStart(makeDragEndEvent(dragData, null));
+    });
+    rerenderExplorer();
+    act(() => {
+      fireEvent.mouseMove(document, {
+        clientX: point.x,
+        clientY: point.y,
+      });
+    });
+    await waitFor(() =>
+      expect(getController().targetFeedback).toEqual({
+        dropId,
+        state: "valid",
+      }),
+    );
+    rerenderExplorer();
+    expect(getGridOccupancyMock).toHaveBeenLastCalledWith("parent-a");
+
+    target.dataset.triageHierarchyDrop = JSON.stringify({
+      ...firstPayload,
+      parentNodeId: "parent-b",
+      targetNodeLevel: 1,
+      targetTitle: "Parent B",
+      targetParentPath: ["Home", "Branch"],
+    });
+    findNearestEmptyCellMock.mockReturnValue(null);
+    act(() => frames.shift()?.(16));
+
+    await waitFor(() =>
+      expect(getController().targetFeedback).toEqual({
+        dropId,
+        state: "full",
+      }),
+    );
+    expect(getGridOccupancyMock).toHaveBeenLastCalledWith("parent-b");
+  });
+
+  it.each([
+    {
+      cancel: async () => {
+        fireEvent.mouseLeave(document);
+      },
+      name: "document exit",
+    },
+    {
+      cancel: async () => {
+        fireEvent.blur(window);
+      },
+      name: "window blur",
+    },
+    {
+      cancel: async ({ dragData }: { dragData: unknown }) => {
+        invalidateTriageDragSource(dragData);
+      },
+      name: "remote invalidation",
+    },
+    {
+      cancel: async () => {
+        fireEvent.keyDown(document, { key: "Escape" });
+      },
+      name: "Escape",
+    },
+    {
+      cancel: async ({
+        controller,
+        dragData,
+      }: {
+        controller: TriageDndController;
+        dragData: unknown;
+      }) => {
+        await controller.handleDragEnd(makeDragEndEvent(dragData, null));
+      },
+      name: "drag end",
+    },
+  ])("keeps the mounted Explorer frame inert after $name", async ({ cancel }) => {
+    const frames: FrameRequestCallback[] = [];
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+    const { getController, getFrameRefreshCount, rerenderExplorer } =
+      renderDndExplorerHarness();
+    const body = screen.getByTestId("hierarchy-section-body-home");
+    const target = document.createElement("div");
+    const payload = {
+      kind: "triage-hierarchy-drop",
+      dropId: "triage-hierarchy:body-home",
+      parentNodeId: "parent-a",
+      targetNodeLevel: 0,
+      targetTitle: "Parent A",
+      targetParentPath: ["Home"],
+    };
+    target.dataset.triageDropId = payload.dropId;
+    target.dataset.triageHierarchyDrop = JSON.stringify(payload);
+    body.append(target);
+    Object.defineProperties(body, {
+      clientHeight: { configurable: true, value: 200 },
+      scrollHeight: { configurable: true, value: 600 },
+    });
+    vi.spyOn(body, "getBoundingClientRect").mockReturnValue({
+      top: 100,
+      bottom: 300,
+      left: 0,
+      right: 200,
+      width: 200,
+      height: 200,
+      x: 0,
+      y: 100,
+      toJSON() {},
+    });
+    vi.mocked(document.elementsFromPoint).mockReturnValue([target, body]);
+    const dragData = makeStagedDragData();
+
+    act(() => {
+      getController().handleDragStart(makeDragEndEvent(dragData, null));
+    });
+    rerenderExplorer();
+    act(() => {
+      fireEvent.mouseMove(document, { clientX: 100, clientY: 294 });
+    });
+    await waitFor(() =>
+      expect(getController().targetFeedback?.state).toBe("valid"),
+    );
+    rerenderExplorer();
+    expect(frames.length).toBeGreaterThan(0);
+    const activeFrames = frames.splice(0);
+    act(() => activeFrames.forEach((frame) => frame(0)));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(getFrameRefreshCount()).toBeGreaterThan(0);
+    const refreshCountAfterActiveFrame = getFrameRefreshCount();
+    const scrollTop = body.scrollTop;
+
+    await act(async () => {
+      await cancel({ controller: getController(), dragData });
+    });
+    rerenderExplorer();
+    expect(getController().targetFeedback).toBeNull();
+    const occupancyCallsAfterCancel = getGridOccupancyMock.mock.calls.length;
+
+    expect(frames.length).toBeGreaterThan(0);
+    const cancelledFrames = frames.splice(0);
+    act(() => cancelledFrames.forEach((frame) => frame(16)));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(getController().targetFeedback).toBeNull();
+    expect(getFrameRefreshCount()).toBe(refreshCountAfterActiveFrame);
+    expect(getGridOccupancyMock).toHaveBeenCalledTimes(
+      occupancyCallsAfterCancel,
+    );
+    expect(body.scrollTop).toBe(scrollTop);
   });
 
   it("cancels target feedback when the pointer leaves the browser document", async () => {

@@ -422,7 +422,7 @@ export function useTriageDnd(
   const dragCancelledRef = useRef(false);
   const pointerRef = useRef<{ x: number; y: number } | null>(null);
   const feedbackRequestRef = useRef(0);
-  const feedbackTargetRef = useRef<string | null>(null);
+  const feedbackIdentityRef = useRef<string | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -440,7 +440,7 @@ export function useTriageDnd(
     activationSnapshotRef.current = isCurrentScratch ? snapshot : null;
     dragCancelledRef.current = false;
     feedbackRequestRef.current += 1;
-    feedbackTargetRef.current = null;
+    feedbackIdentityRef.current = null;
     setOverTargetId(null);
     setTargetFeedback(null);
     setActiveDragItem(isCurrentScratch ? snapshot : null);
@@ -448,23 +448,36 @@ export function useTriageDnd(
 
   const clearDragTarget = useCallback(() => {
     feedbackRequestRef.current += 1;
-    feedbackTargetRef.current = null;
+    feedbackIdentityRef.current = null;
     setOverTargetId(null);
     setTargetFeedback(null);
   }, []);
 
   const updateRenderedTarget = useCallback((point: { x: number; y: number }) => {
-    pointerRef.current = point;
     const source = activationSnapshotRef.current;
+    if (
+      source === null ||
+      dragCancelledRef.current ||
+      pointerRef.current === null
+    ) {
+      return;
+    }
     const target = readRenderedHierarchyTarget(point);
-    if (source === null || target === null) {
+    if (target === null) {
       clearDragTarget();
       return;
     }
 
     setOverTargetId(target.dropId);
-    if (feedbackTargetRef.current === target.dropId) return;
-    feedbackTargetRef.current = target.dropId;
+    const targetIdentity = JSON.stringify([
+      target.dropId,
+      target.parentNodeId,
+      target.targetNodeLevel,
+      target.targetTitle,
+      target.targetParentPath,
+    ]);
+    if (feedbackIdentityRef.current === targetIdentity) return;
+    feedbackIdentityRef.current = targetIdentity;
     if (!acceptsHierarchyTarget(source, target)) {
       feedbackRequestRef.current += 1;
       setTargetFeedback({ dropId: target.dropId, state: "invalid" });

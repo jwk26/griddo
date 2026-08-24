@@ -1,7 +1,7 @@
 # Task 149 Verification — Implementation Checkpoint
 
-> State: `Blocked — Control Tower review required`. Task 149 remains `[ ]`;
-> this is a durable implementation blocker checkpoint, not acceptance evidence.
+> State: `Implemented — awaiting user review`. Task 149 remains `[ ]`; this is
+> implementation checkpoint evidence, not acceptance evidence.
 
 ## Scope Exercised
 
@@ -26,6 +26,17 @@
 | `pnpm typecheck` | 0 | Latest input: `tsc --noEmit` passed. |
 | `git diff --check` | 0 | Latest input passed. |
 | `pnpm build` | 0 | Latest-input Next.js 16.2.1 production build compiled, typechecked, and generated all 7 routes. |
+| `pnpm exec vitest run src/hooks/use-triage-dnd.test.ts` | 1 | Fifth-cycle harness setup run: 6 component-render errors exposed a missing partial mock export; corrected before claiming behavioral RED. |
+| `pnpm exec vitest run src/hooks/use-triage-dnd.test.ts` | 1 | Fifth-cycle behavioral RED after harness setup was corrected: 6 failures among 58 tests reproduced same-ID `valid` feedback retention and post-cancellation Explorer frame work for document exit, window blur, remote invalidation, Escape, and drag end. |
+| `pnpm exec vitest run src/hooks/use-triage-dnd.test.ts` | 0 | Fifth-cycle owner GREEN: 1 file, 58 tests passed. |
+| `pnpm exec vitest run src/hooks/use-triage-dnd.test.ts src/components/triage/hierarchy-explorer.test.tsx src/components/triage/triage-workspace.test.tsx` | 0 | Fifth-cycle latest focused GREEN: 3 files, 113 tests passed. |
+| `pnpm test` | 0 | Fifth-cycle intermediate full test: 95 files, 1001 tests passed; a later test-harness purity repair invalidated this exact test input. |
+| `pnpm lint` | 1 | Fifth-cycle intermediate lint rejected one render-time external assignment in the new integration harness; product behavior was unchanged. |
+| `pnpm test` | 0 | Fifth-cycle final latest-input complete test gate: 95 files, 1001 tests passed. |
+| `pnpm lint` | 0 | Fifth-cycle final input: zero errors and 11 unchanged pre-existing warnings. |
+| `pnpm typecheck` | 0 | Fifth-cycle final input: `tsc --noEmit` passed. |
+| `pnpm build` | 0 | Fifth-cycle final input: Next.js 16.2.1 compiled, typechecked, and generated all 7 routes. |
+| `git diff --check` | 0 | Fifth-cycle final input passed before documentation-only checkpoint updates. |
 
 ## Browser Modality
 
@@ -48,6 +59,15 @@ unrelated theme, route, reduced-motion, or cross-tab matrix was repeated.
 Stationary touch activation is owner-test evidence, not claimed as a
 touch-browser run.
 
+Fifth-cycle Chromium mouse lifecycle evidence held a valid drag at the Home
+column bottom edge. Four 90 ms samples progressed through scroll positions
+`110, 176, 308, 451`. After `window blur`, four 100 ms samples remained at
+`451`, the pointer-under row returned to `idle-valid`, and Escape/release
+opened no placement dialog. Browser console contained zero errors. The
+same-ID payload replacement and remote-invalidation boundaries are covered by
+the mounted Explorer-to-hook owner tests rather than a repeated browser data
+matrix.
+
 ## Repair Cycles And Review
 
 1. Replaced stale hierarchy release targeting, added feedback and explicit
@@ -55,6 +75,12 @@ touch-browser run.
 2. Repaired React ref and listener dependency findings from lint.
 3. Reproduced and repaired document-exit target retention with a failing
    `mouseleave` test.
+4. Preserved pre-activation mouse/touch coordinates and refreshed rendered
+   classification on stationary frames; final review exposed same-ID and
+   cancellation integration gaps.
+5. Keyed feedback by the complete relevant rendered identity, made late frame
+   refresh inert across every cancellation boundary, and replaced isolated
+   coverage with mounted Explorer-to-hook regressions.
 
 The first read-only High-risk review reported two Important findings:
 
@@ -70,8 +96,8 @@ refreshes the same pointer coordinate on every Explorer animation frame while
 preserving the existing occupancy request generation and source stale guards.
 The focused and complete gates above are from that repaired input.
 
-Final read-only High-risk re-review found two Important issues and no Critical
-issues:
+The fourth-cycle final read-only High-risk re-review found two Important issues
+and no Critical issues:
 
 - `P28-02` remains incomplete because feedback identity is cached only by
   `dropId`. A section target can keep the same ID while its rendered parent,
@@ -83,6 +109,14 @@ issues:
   the next frame can restore feedback and edge scrolling even though mutation
   remains cancelled.
 
-The new tests cover changing row IDs and hook cancellation in isolation, not
-same-ID payload replacement or the mounted Explorer-to-hook frame interaction.
-Per the approved boundary, no fifth repair cycle was started.
+The user approved one fifth bounded repair cycle. Mounted owner tests now
+prove same-ID `parent-a → parent-b` payload replacement reissues occupancy and
+changes `valid → full`. The same harness proves queued frames after document
+exit, window blur, remote invalidation, Escape, and drag end cannot restore
+feedback, requery occupancy, invoke refresh, or move scroll. P28-01's immediate
+mouse/touch release tests remain green.
+
+Final read-only High-risk re-review found no Critical or Important issues and
+independently reran the focused 3 files / 113 tests green. `P28-01`, `P28-02`,
+and `P28-03` remain repaired awaiting the Task 149 checkpoint; none is marked
+Closed or Accepted.
