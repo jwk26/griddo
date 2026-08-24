@@ -3,7 +3,8 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Task 149 `[x]`, Accepted; Tasks 150–154 unstarted
+> State: Task 149 `[x]`, Accepted; Task 150 pre-start blocker awaiting user
+> disposition; Tasks 150–154 remain unstarted
 
 ## Status Legend
 
@@ -90,8 +91,25 @@ No production implementation or Task 149 execution occurred.
 
 ## Active Issues
 
-None at kickoff. Phase 27 items `P27-06` and `P27-08` remain Deferred under
-their Phase 27 owner and are outside Phase 28 scope.
+| ID | State | Evidence | Exact minimum unblock | Canonical impact |
+| --- | --- | --- | --- | --- |
+| `P28-04` | `Awaiting User Decision` | Task 150 owner discovery found that `useGridData()` exposes only active per-parent snapshots, so Explorer cannot distinguish deleted/archived/moved/unreachable fallback causes. Local placement creates its result inside `use-dnd.ts`/Workspace but passes Explorer only a target `dropId`, so the approved Task 150 files cannot authoritatively exclude that new result from remote-arrival counts. The selected-Bit/reveal producer is likewise not connected before Task 151. Detailed evidence is in `docs/verification/inbox-triage/task-150.md`. | Approve the smallest producer/read projection and exact added owner/test paths, or revise the Task 150 observable contract. No product/test write or durable start may occur under the current exact file boundary. | `Tagged` — the Task 150 plan/receipt meaning is unchanged; an implementation-owner gap requires user disposition before any canonical reflection. |
+
+Phase 27 items `P27-06` and `P27-08` remain Deferred under their Phase 27 owner
+and are outside Phase 28 scope.
+
+## Task 150 Pre-Start Blocker
+
+| Field | Durable value |
+| --- | --- |
+| Task | `150 — Render DP-VQ06-EXPLORER remote/path statuses` |
+| State | `Awaiting User Decision`; Task 150 remains `[ ]` and no durable `In Progress` start signal was written |
+| Approval | Exact fresh candidate-pinned Task 150 work order on 2026-08-24, bounded by `docs/issues/Issues_Phase_28.gate-c.json` and the accepted `DP-VQ06-EXPLORER` receipt |
+| Start base / recovery anchor | `9b26412fe4df90119e67d95efafa43c7332f0b05`; accepted `src` tree `e83086e1044bb2deebc6837f997bebc06b316146` |
+| Blocker | `P28-04` — the approved product surfaces lack authoritative cause and local-placement producer signals required by the exact receipt |
+| Product/test writes | None |
+| Canonical impact | `Tagged` — user disposition is required before reflecting any owner expansion or contract change |
+| Next legal action | User disposition of `P28-04`; do not start Task 150 implementation, Task 151, or acceptance-only work |
 
 ## Task 149 Durable Start
 
