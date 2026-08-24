@@ -2166,40 +2166,49 @@ describe("BreakdownPanel", () => {
     expect(screen.queryByText("Not added. Your draft is still here.")).toBeNull();
   });
 
-  it("scrolls the confirmed Add row into view under the active sort", async () => {
-    triageStoreState.selectedScratchId = "scratch-1";
-    const scrollIntoView = vi.fn();
-    const originalScrollIntoView = Element.prototype.scrollIntoView;
-    Object.defineProperty(Element.prototype, "scrollIntoView", {
-      configurable: true,
-      value: scrollIntoView,
-    });
+  it.each([
+    ["DESC", "nearest"],
+    ["ASC", "end"],
+  ] as const)(
+    "scrolls the confirmed Add row into view with the minimum %s handoff",
+    async (sort, expectedBlock) => {
+      triageStoreState.selectedScratchId = "scratch-1";
+      useTriagePreferencesStore.setState({ breakdownCreatedAtSort: sort });
+      const scrollIntoView = vi.fn();
+      const originalScrollIntoView = Element.prototype.scrollIntoView;
+      Object.defineProperty(Element.prototype, "scrollIntoView", {
+        configurable: true,
+        value: scrollIntoView,
+      });
 
-    const view = render(<BreakdownPanel />);
-    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
-    const input = screen.getByPlaceholderText("Add a note...");
-    fireEvent.change(input, { target: { value: "New confirmed row" } });
-    fireEvent.keyDown(input, { key: "Enter" });
-    await waitFor(() => expect(hookState.createBreakdown).toHaveBeenCalledOnce());
-    await waitFor(() => expect(operationLockState.release).toHaveBeenCalled());
+      const view = render(<BreakdownPanel />);
+      fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+      const input = screen.getByPlaceholderText("Add a note...");
+      fireEvent.change(input, { target: { value: "New confirmed row" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+      await waitFor(() =>
+        expect(hookState.createBreakdown).toHaveBeenCalledOnce(),
+      );
+      await waitFor(() => expect(operationLockState.release).toHaveBeenCalled());
 
-    const command = hookState.createBreakdown.mock.calls[0][0];
-    hookState.breakdownsByScratch["scratch-1"] = [
-      createScratchBreakdown({
-        id: command.breakdownId,
-        content: "New confirmed row",
-      }),
-    ];
-    view.rerender(<BreakdownPanel />);
+      const command = hookState.createBreakdown.mock.calls[0][0];
+      hookState.breakdownsByScratch["scratch-1"] = [
+        createScratchBreakdown({
+          id: command.breakdownId,
+          content: "New confirmed row",
+        }),
+      ];
+      view.rerender(<BreakdownPanel />);
 
-    await waitFor(() => {
-      expect(scrollIntoView).toHaveBeenCalledWith({ block: "start" });
-    });
-    Object.defineProperty(Element.prototype, "scrollIntoView", {
-      configurable: true,
-      value: originalScrollIntoView,
-    });
-  });
+      await waitFor(() => {
+        expect(scrollIntoView).toHaveBeenCalledWith({ block: expectedBlock });
+      });
+      Object.defineProperty(Element.prototype, "scrollIntoView", {
+        configurable: true,
+        value: originalScrollIntoView,
+      });
+    },
+  );
 
   it("shows consumed completion without exposing the later Archive action", () => {
     triageStoreState.selectedScratchId = "scratch-1";
@@ -2961,6 +2970,8 @@ describe("BreakdownPanel", () => {
     expect(gripButton).toHaveClass("w-7");
     expect(gripButton).toHaveClass("rounded-md");
     expect(gripButton).toHaveClass("focus-visible:ring-2");
+    expect(gripButton).toHaveClass("cursor-grab", "active:cursor-grabbing");
+    expect(gripButton).not.toHaveClass("cursor-not-allowed");
     expect(gripButton).toHaveAttribute("data-triage-drag-source", "breakdown-grip");
     expect(gripButton).toHaveAttribute(
       "data-triage-staging-focus-source",
@@ -3076,7 +3087,12 @@ describe("BreakdownPanel", () => {
     const row = screen.getByTestId("breakdown-row");
     expect(row).toHaveAttribute("data-triage-state", "staged");
     expect(within(row).getByText("Staged note")).not.toHaveClass("line-through");
-    expect(within(row).getByRole("button", { name: "Drag breakdown" })).toBeDisabled();
+    const gripButton = within(row).getByRole("button", {
+      name: "Drag breakdown",
+    });
+    expect(gripButton).toBeDisabled();
+    expect(gripButton).toHaveClass("cursor-not-allowed");
+    expect(gripButton).not.toHaveClass("cursor-grab", "active:cursor-grabbing");
     expect(within(row).getByRole("button", { name: "Edit" })).toBeDisabled();
     expect(within(row).getByRole("button", { name: "Delete" })).toBeDisabled();
   });

@@ -678,6 +678,7 @@ function BreakdownRow({
       : INBOX_TRIAGE_COPY.reliability.actions.checkAgain;
   const isDeleteInFlight =
     deleteOperation !== null && deleteOperation.phase !== "terminal";
+  const isDragDisabled = isStaged || isOperationLocked || isDeleteInFlight;
   const isSuccess = successSignal !== null;
 
   return (
@@ -719,9 +720,12 @@ function BreakdownRow({
           data-source-version={row.version}
           data-triage-staging-focus-source="true"
           data-triage-drag-source="breakdown-grip"
-          disabled={isStaged || isOperationLocked || isDeleteInFlight}
+          disabled={isDragDisabled}
           className={cn(
-            "flex h-7 w-7 flex-shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-muted-foreground/60 hover:border-border hover:bg-muted hover:text-foreground active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+            "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border border-transparent text-muted-foreground/60 hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+            isDragDisabled
+              ? "cursor-not-allowed"
+              : "cursor-grab active:cursor-grabbing",
           )}
           type="button"
           {...attributes}
@@ -1391,7 +1395,7 @@ export function BreakdownPanel({
 
     pendingAddedRowIdRef.current = null;
     row.scrollIntoView({
-      block: breakdownCreatedAtSort === "DESC" ? "start" : "end",
+      block: breakdownCreatedAtSort === "DESC" ? "nearest" : "end",
     });
   }, [breakdownCreatedAtSort, breakdowns, newContent]);
 
