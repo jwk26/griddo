@@ -8,6 +8,9 @@
   `2d9ec7deb4e367e36e564a05cda062a71121a7ec`.
 - Durable start commit:
   `36c738ec2c06c3ac6e56274081fb819a9beecced`.
+- Implementation commit / final `src` tree:
+  `c56439a86a65ceeb836796710745f53d05fa3fd0` /
+  `7b831a941d40631c2212d07a010f3c6b4a00e01a`.
 - Exact production/test write set:
   `src/components/triage/breakdown-panel.tsx` and
   `src/components/triage/breakdown-panel.test.tsx`.
