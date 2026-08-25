@@ -9,6 +9,7 @@ import {
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HierarchyExplorer } from "@/components/triage/hierarchy-explorer";
+import { useTriageStore } from "@/stores/triage-store";
 import { invalidateTriageDragSource, useTriageDnd } from "./use-dnd";
 import type { TriageOperationKind } from "./use-triage-operation-lock";
 
@@ -42,6 +43,8 @@ const emptyGridData = vi.hoisted(() => ({
   isLoading: false,
   nodes: [],
 }));
+const registerExplorerLocalPlacementAction =
+  useTriageStore.getState().registerExplorerLocalPlacement;
 
 vi.mock("@dnd-kit/core", () => ({
   useSensors: (...sensors: unknown[]) => sensors,
@@ -196,6 +199,11 @@ beforeEach(() => {
     value: vi.fn(() => []),
   });
   operationLockState.activeOperation = null;
+  useTriageStore.setState({
+    explorerLocalPlacementIdentities: [],
+    explorerRemoteArrivalIds: {},
+    registerExplorerLocalPlacement: registerExplorerLocalPlacementAction,
+  });
   operationLockState.isLocked.mockImplementation(
     () => operationLockState.activeOperation !== null,
   );
@@ -1504,6 +1512,10 @@ describe("useTriageDnd — drop matrix", () => {
   });
 
   it("confirms a direct breakdown placement with the selected Node type without removing a staged candidate", async () => {
+    const registerLocalPlacement = vi.fn(registerExplorerLocalPlacementAction);
+    useTriageStore.setState({
+      registerExplorerLocalPlacement: registerLocalPlacement,
+    });
     const { result } = renderHook(() => useTriageDnd("scratch-1", durableCandidateOptions()));
 
     await act(async () => {
@@ -1550,6 +1562,16 @@ describe("useTriageDnd — drop matrix", () => {
       id: "created-node",
       type: "node",
     });
+    expect(registerLocalPlacement).toHaveBeenCalledWith({
+      id: "created-node",
+      type: "node",
+    });
+    expect(createNodeMock.mock.invocationCallOrder[0]).toBeLessThan(
+      registerLocalPlacement.mock.invocationCallOrder[0]!,
+    );
+    expect(registerLocalPlacement.mock.invocationCallOrder[0]).toBeLessThan(
+      markScratchBreakdownConsumedMock.mock.invocationCallOrder[0]!,
+    );
   });
 
   it("keeps a direct breakdown placement open when confirmation has no selected type", async () => {

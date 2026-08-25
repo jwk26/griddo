@@ -3,8 +3,8 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Task 149 `[x]`, Accepted; Task 150 scope amendment reflected and
-> awaiting docs-only checkpoint review; Tasks 150–154 remain unstarted
+> State: Task 149 `[x]`, Accepted; Task 150 `[ ]`, Implemented awaiting
+> targeted-repair checkpoint review; Tasks 151–154 remain unstarted
 
 ## Status Legend
 
@@ -112,9 +112,9 @@ and are outside Phase 28 scope.
 | Durable amendment mechanism | `docs/WORKFLOW.md` assigns execution corrections to the phase issue ledger and promotes executable ownership into `docs/EXECUTION_PLAN.md`; Adapter v2 declares no separate amendment receipt kind/path, so no new JSON was invented and no historical receipt was modified |
 | Canonical alignment repairs | The first 2026-08-25 checkpoint finding corrected the VQ-06 Gate Register, `DP-VQ06-EXPLORER` Executable DP Receipt Edge, and completed Task 113 section to distinguish the unchanged 2026-08-10 Task-150-only history from the `P28-04` current split edge. The second evidence-confirmed finding qualified Task 113's remaining Verification sentence with that same historical/current distinction |
 | Product/test writes | Exact Task 150 provenance hook/test, DnD stable-result producer/test, Workspace handoff/test, Explorer/store/copy/CSS realization/tests, plus only `src/components/layout/grid-runtime.test.tsx` for the evidence-confirmed manual `useTriageDnd` mock compatibility repair |
-| Repair evidence | The first full gate found 1/1016 failure because the GridRuntime test's manual DnD mock omitted the new return-contract field and supplied `undefined` to the real Explorer path. The user explicitly approved one fourth cycle; adding only `localPlacementResult: null` cleared the owner test and latest-input full gate. No fifth cycle was used. |
+| Repair evidence | The first full gate found 1/1016 failure because the GridRuntime test's manual DnD mock omitted the new return-contract field and supplied `undefined` to the real Explorer path; the fourth cycle added only `localPlacementResult: null`. The user then explicitly approved a fifth cycle for checkpoint findings. It preserved typed `{type,id}` identity through DnD/store/hook/DOM focus, registered successful local results before authoritative emission, handed stale-placement focus to the valid ancestor, completed seven non-default count theme roles, and repaired a browser-only `focus()` scroll reversal with `preventScroll`. No sixth cycle was used. |
 | Canonical impact | `Reflected` for `P28-04`; `None` for the compatibility-test repair itself. Product/design/placement semantics and the historical receipt remain unchanged. |
-| Verification | Focused 7 files / 175 tests, full 96 files / 1016 tests, lint 0 errors with 11 unchanged warnings, typecheck, build, and `git diff --check` passed on the final implementation input. |
+| Verification | Latest fifth-cycle input: focused 7 files / 177 tests, full 96 files / 1018 tests, lint 0 errors with 11 unchanged warnings, typecheck, build, and `git diff --check` passed. Chromium verified exact remote-row focus with column `scrollTop 0`, seven computed theme roles, keyboard focus-visible treatment, reduced-motion static parity, and zero console errors. |
 | Next legal action | Stop at the clean committed Task 150 implementation checkpoint with Task 150 still `[ ]`; only a later acceptance-only continuation may mark it `[x]`. Do not start Task 151 product work. |
 
 ## Task 149 Durable Start

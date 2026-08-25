@@ -38,6 +38,10 @@ import {
 } from "@/lib/utils/breadcrumb-zone";
 import type { CandidateCommandOutcome } from "@/hooks/use-staged-candidates";
 import type { TriageOperationLock } from "@/hooks/use-triage-operation-lock";
+import {
+  type ExplorerItemIdentity,
+  useTriageStore,
+} from "@/stores/triage-store";
 
 export type DragActiveItem = {
   id: string;
@@ -126,10 +130,7 @@ export type PendingPlacement = {
   isDirectBreakdown: boolean;
 } | null;
 
-export type LocalPlacementResultIdentity = {
-  id: string;
-  type: "node" | "bit";
-} | null;
+export type LocalPlacementResultIdentity = ExplorerItemIdentity | null;
 
 const TRIAGE_BREAKDOWN_UNSTAGE_DROP_ID = "triage-remove-drop:breakdown";
 
@@ -849,7 +850,9 @@ export function useTriageDnd(
           deadline: null,
           deadlineAllDay: false,
         });
-        setLocalPlacementResult({ id: createdNode.id, type: "node" });
+        const identity = { id: createdNode.id, type: "node" } as const;
+        useTriageStore.getState().registerExplorerLocalPlacement(identity);
+        setLocalPlacementResult(identity);
       }
 
       if (effectiveType === "bit") {
@@ -868,7 +871,9 @@ export function useTriageDnd(
           deadlineAllDay: false,
           priority: null,
         });
-        setLocalPlacementResult({ id: createdBit.id, type: "bit" });
+        const identity = { id: createdBit.id, type: "bit" } as const;
+        useTriageStore.getState().registerExplorerLocalPlacement(identity);
+        setLocalPlacementResult(identity);
       }
 
       await dataStore.markScratchBreakdownConsumed(

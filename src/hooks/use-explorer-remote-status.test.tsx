@@ -99,6 +99,7 @@ beforeEach(() => {
   bitRows = [];
   subscriptions.length = 0;
   useTriageStore.setState({
+    explorerLocalPlacementIdentities: [],
     explorerRemoteArrivalIds: {},
     explorerPathStatus: null,
   });
@@ -167,7 +168,39 @@ describe("useExplorerRemoteStatus", () => {
     rows = [...rows, remote];
     await refresh();
     expect(useTriageStore.getState().explorerRemoteArrivalIds).toEqual({
-      [home.id]: [remote.id],
+      [home.id]: [{ id: remote.id, type: "node" }],
+    });
+  });
+
+  it("preserves typed identity and excludes a local Bit before its authoritative emission", async () => {
+    const home = node({ id: "home", title: "Home project" });
+    rows = [home];
+    const { result } = renderHook(() =>
+      useExplorerRemoteStatus({
+        localPlacementResult: null,
+        openColumns: [
+          { columnId: "home", parentId: null },
+          { columnId: home.id, parentId: home.id },
+        ],
+        pathIds: [home.id],
+      }),
+    );
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+
+    const sharedId = "shared-result";
+    useTriageStore.getState().registerExplorerLocalPlacement({
+      id: sharedId,
+      type: "bit",
+    });
+    rows = [
+      ...rows,
+      node({ id: sharedId, parentId: home.id, level: 1 }),
+    ];
+    bitRows = [bit({ id: sharedId, parentId: home.id })];
+    await refresh();
+
+    expect(useTriageStore.getState().explorerRemoteArrivalIds).toEqual({
+      [home.id]: [{ id: sharedId, type: "node" }],
     });
   });
 

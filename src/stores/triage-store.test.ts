@@ -27,6 +27,7 @@ beforeEach(() => {
     explorerPathIds: [],
     explorerOpenColumnIds: [],
     explorerColumnScroll: {},
+    explorerLocalPlacementIdentities: [],
     explorerRemoteArrivalIds: {},
     explorerPathStatus: null,
     stagedCandidates: {},
@@ -46,6 +47,7 @@ afterEach(() => {
     explorerPathIds: [],
     explorerOpenColumnIds: [],
     explorerColumnScroll: {},
+    explorerLocalPlacementIdentities: [],
     explorerRemoteArrivalIds: {},
     explorerPathStatus: null,
     stagedCandidates: {},
@@ -63,6 +65,7 @@ describe("useTriageStore app-session ownership", () => {
       "clearScratchCandidates",
       "clearSelection",
       "explorerColumnScroll",
+      "explorerLocalPlacementIdentities",
       "explorerOpenColumnIds",
       "explorerPathIds",
       "explorerPathStatus",
@@ -72,6 +75,7 @@ describe("useTriageStore app-session ownership", () => {
       "reconcileExplorerContext",
       "reconcileScratchPoolContext",
       "recordExplorerRemoteArrivals",
+      "registerExplorerLocalPlacement",
       "removeExplorerRemoteArrival",
       "removeStagedCandidate",
       "scratchPoolActiveIds",
@@ -96,11 +100,16 @@ describe("useTriageStore app-session ownership", () => {
     ]);
   });
 
-  it("owns deduplicated per-column arrival IDs and one replaceable path status", () => {
+  it("owns exact typed per-column arrivals and one replaceable path status", () => {
     const store = useTriageStore.getState();
-    store.recordExplorerRemoteArrivals("node-1", ["remote-1", "remote-1"]);
-    store.recordExplorerRemoteArrivals("node-1", ["remote-2"]);
-    store.recordExplorerRemoteArrivals("node-2", ["remote-3"]);
+    store.recordExplorerRemoteArrivals("node-1", [
+      { id: "shared", type: "node" },
+      { id: "shared", type: "node" },
+      { id: "shared", type: "bit" },
+    ]);
+    store.recordExplorerRemoteArrivals("node-2", [
+      { id: "remote-3", type: "node" },
+    ]);
     store.setExplorerPathStatus({
       kind: "archived",
       title: "Research",
@@ -111,17 +120,22 @@ describe("useTriageStore app-session ownership", () => {
 
     expect(useTriageStore.getState()).toMatchObject({
       explorerRemoteArrivalIds: {
-        "node-1": ["remote-1", "remote-2"],
-        "node-2": ["remote-3"],
+        "node-1": [
+          { id: "shared", type: "node" },
+          { id: "shared", type: "bit" },
+        ],
+        "node-2": [{ id: "remote-3", type: "node" }],
       },
       explorerPathStatus: { kind: "archived", title: "Research" },
     });
 
-    store.removeExplorerRemoteArrival({ id: "remote-2", type: "node" });
+    store.removeExplorerRemoteArrival({ id: "shared", type: "node" });
     store.clearExplorerRemoteArrivals("node-2");
     store.clearExplorerPathStatus();
     expect(useTriageStore.getState()).toMatchObject({
-      explorerRemoteArrivalIds: { "node-1": ["remote-1"] },
+      explorerRemoteArrivalIds: {
+        "node-1": [{ id: "shared", type: "bit" }],
+      },
       explorerPathStatus: null,
     });
   });
@@ -131,9 +145,9 @@ describe("useTriageStore app-session ownership", () => {
       explorerPathIds: ["node-1", "node-2"],
       explorerOpenColumnIds: ["home", "node-1", "node-2"],
       explorerRemoteArrivalIds: {
-        home: ["root-new"],
-        "node-1": ["child-new"],
-        "node-2": ["grandchild-new"],
+        home: [{ id: "root-new", type: "node" }],
+        "node-1": [{ id: "child-new", type: "node" }],
+        "node-2": [{ id: "grandchild-new", type: "bit" }],
       },
       explorerPathStatus: {
         kind: "moved",
@@ -150,8 +164,8 @@ describe("useTriageStore app-session ownership", () => {
     });
     expect(useTriageStore.getState()).toMatchObject({
       explorerRemoteArrivalIds: {
-        home: ["root-new"],
-        "node-1": ["child-new"],
+        home: [{ id: "root-new", type: "node" }],
+        "node-1": [{ id: "child-new", type: "node" }],
       },
       explorerPathStatus: { kind: "moved" },
     });

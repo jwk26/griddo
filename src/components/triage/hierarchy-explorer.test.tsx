@@ -664,7 +664,9 @@ describe("HierarchyExplorer Task 150 remote/path statuses", () => {
     const remote = createNode({ id: "remote", title: "Remote" });
     setGrid(null, [first, remote]);
     useTriageStore.setState({
-      explorerRemoteArrivalIds: { home: [remote.id] },
+      explorerRemoteArrivalIds: {
+        home: [{ id: remote.id, type: "node" }],
+      },
     });
     render(<HierarchyExplorer {...defaultProps} />);
 
@@ -691,7 +693,9 @@ describe("HierarchyExplorer Task 150 remote/path statuses", () => {
     const remote = createNode({ id: "remote", title: "Remote" });
     setGrid(null, [remote]);
     useTriageStore.setState({
-      explorerRemoteArrivalIds: { home: [remote.id] },
+      explorerRemoteArrivalIds: {
+        home: [{ id: remote.id, type: "node" }],
+      },
     });
     render(<HierarchyExplorer {...defaultProps} />);
     const row = screen.getByRole("button", {
@@ -722,7 +726,9 @@ describe("HierarchyExplorer Task 150 remote/path statuses", () => {
     useTriageStore.setState({
       explorerPathIds: [home.id],
       explorerOpenColumnIds: ["home", home.id],
-      explorerRemoteArrivalIds: { [home.id]: [remoteBit.id] },
+      explorerRemoteArrivalIds: {
+        [home.id]: [{ id: remoteBit.id, type: "bit" }],
+      },
     });
     render(<HierarchyExplorer {...defaultProps} />);
 
@@ -739,6 +745,46 @@ describe("HierarchyExplorer Task 150 remote/path statuses", () => {
     expect(
       document.querySelector(`[data-explorer-item-id="${remoteBit.id}"]`),
     ).toHaveFocus();
+  });
+
+  it("focuses only the exact typed arrival when a Node and Bit share a raw ID", () => {
+    const home = createNode({ id: "home-a", title: "Projects" });
+    const sharedNode = createNode({
+      id: "shared",
+      parentId: home.id,
+      level: 1,
+      title: "Shared Node",
+    });
+    const sharedBit = createBit({
+      id: "shared",
+      parentId: home.id,
+      title: "Shared Bit",
+    });
+    setGrid(null, [home]);
+    setGrid(home.id, [sharedNode], [sharedBit]);
+    useTriageStore.setState({
+      explorerPathIds: [home.id],
+      explorerOpenColumnIds: ["home", home.id],
+      explorerRemoteArrivalIds: {
+        [home.id]: [{ id: sharedBit.id, type: "bit" }],
+      },
+    });
+    render(<HierarchyExplorer {...defaultProps} />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Show new in Level 1" }),
+    );
+
+    expect(
+      document.querySelector(
+        '[data-explorer-item-id="shared"][data-explorer-item-type="bit"]',
+      ),
+    ).toHaveFocus();
+    expect(
+      document.querySelector(
+        '[data-explorer-item-id="shared"][data-explorer-item-type="node"]',
+      ),
+    ).not.toHaveFocus();
   });
 
   it("renders one exact destination-column fallback and returns focus on Dismiss", async () => {
@@ -774,16 +820,34 @@ describe("HierarchyExplorer Task 150 remote/path statuses", () => {
 
   it("replaces a path fallback with the exact stale-placement strip when the pending target disappears", async () => {
     const home = createNode({ id: "home", title: "Projects" });
+    const target = createNode({
+      id: "target",
+      parentId: home.id,
+      level: 1,
+      title: "Target",
+    });
     setGrid(null, [home]);
-    setGrid(home.id, []);
+    setGrid(home.id, [target]);
     useTriageStore.setState({
       explorerPathIds: [home.id],
       explorerOpenColumnIds: ["home", home.id],
     });
-    render(
+    const view = render(
       <HierarchyExplorer
         {...defaultProps}
-        pendingPlacementDropId={getTriageHierarchyDropId("missing")}
+        pendingPlacementDropId={getTriageHierarchyDropId(target.id)}
+      />,
+    );
+
+    const homeButton = screen.getByRole("button", {
+      name: `Select Node: ${home.title}`,
+    });
+    screen.getByRole("button", { name: "Home" }).focus();
+    setGrid(home.id, []);
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        pendingPlacementDropId={getTriageHierarchyDropId(target.id)}
       />,
     );
 
@@ -792,6 +856,7 @@ describe("HierarchyExplorer Task 150 remote/path statuses", () => {
         "Placement closed because this Explorer path changed.",
       ),
     );
+    expect(homeButton).toHaveFocus();
   });
 
   it("defines static reduced-motion parity and all eight Explorer theme role families", () => {
@@ -809,6 +874,9 @@ describe("HierarchyExplorer Task 150 remote/path statuses", () => {
     ]) {
       expect(globalsCss).toContain(
         `:root[data-color-theme="${theme}"] .explorer-path-status`,
+      );
+      expect(globalsCss).toContain(
+        `:root[data-color-theme="${theme}"] .explorer-remote-count`,
       );
     }
     expect(globalsCss).toMatch(

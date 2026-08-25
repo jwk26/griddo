@@ -13,7 +13,6 @@ import {
 import { useGridData } from "@/hooks/use-grid-data";
 import {
   useExplorerRemoteStatus,
-  type ExplorerItemIdentity,
 } from "@/hooks/use-explorer-remote-status";
 import { useTriageDepartureContext } from "@/hooks/use-triage-departure";
 import type {
@@ -28,6 +27,7 @@ import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import { cn } from "@/lib/utils";
 import {
   type ExplorerPathStatusState,
+  type ExplorerItemIdentity,
   type TriageSessionScrollPosition,
   useTriageStore,
 } from "@/stores/triage-store";
@@ -134,7 +134,11 @@ function focusFallback(validPathIds: string[]) {
   if (ancestorId !== undefined) {
     const ancestor = Array.from(
       document.querySelectorAll<HTMLElement>("[data-explorer-item-id]"),
-    ).find((element) => element.dataset.explorerItemId === ancestorId);
+    ).find(
+      (element) =>
+        element.dataset.explorerItemId === ancestorId &&
+        element.dataset.explorerItemType === "node",
+    );
     if (ancestor !== undefined) {
       ancestor.focus();
       return;
@@ -557,6 +561,7 @@ export function HierarchyExplorer({
         fallbackPathIds: validation,
       });
       onPendingPlacementInvalidated(pendingPlacementDropId);
+      focusFallback(validation);
     }
   }, [
     onPendingPlacementInvalidated,
@@ -661,7 +666,7 @@ export function HierarchyExplorer({
                   ? explorerPathStatus
                   : null
               }
-              remoteArrivalIds={
+              remoteArrivals={
                 explorerRemoteArrivalIds[column.columnId] ?? []
               }
               scrollPosition={
@@ -748,7 +753,7 @@ function ExplorerColumn({
   itemIds,
   label,
   pathStatus,
-  remoteArrivalIds,
+  remoteArrivals,
   onClearRemoteArrivals,
   onDismissPathStatus,
   onScrollPositionChange,
@@ -764,7 +769,7 @@ function ExplorerColumn({
   itemIds: string[];
   label: (typeof COLUMN_LABELS)[number];
   pathStatus: ExplorerPathStatusState | null;
-  remoteArrivalIds: string[];
+  remoteArrivals: ExplorerItemIdentity[];
   onClearRemoteArrivals: (columnId: string) => void;
   onDismissPathStatus: (status: ExplorerPathStatusState) => void;
   onScrollPositionChange: (
@@ -823,7 +828,7 @@ function ExplorerColumn({
 
   function handleScroll(event: UIEvent<HTMLDivElement>) {
     const body = event.currentTarget;
-    if (body.scrollTop <= 0 && remoteArrivalIds.length > 0) {
+    if (body.scrollTop <= 0 && remoteArrivals.length > 0) {
       onClearRemoteArrivals(columnId);
     }
     const bodyTop = body.getBoundingClientRect().top;
@@ -870,7 +875,7 @@ function ExplorerColumn({
           >
             {label}
           </h3>
-          {remoteArrivalIds.length > 0 ? (
+          {remoteArrivals.length > 0 ? (
             <button
               aria-label={explorerTemplate(
                 INBOX_TRIAGE_COPY.explorerStatus.actions.showNewIn,
@@ -880,24 +885,27 @@ function ExplorerColumn({
               type="button"
               onClick={() => {
                 const body = bodyRef.current;
-                const newIds = new Set(remoteArrivalIds);
                 const target = Array.from(
                   body?.querySelectorAll<HTMLElement>(
                     "[data-explorer-item-id]",
                   ) ?? [],
                 ).find((element) =>
-                  newIds.has(element.dataset.explorerItemId ?? ""),
+                  remoteArrivals.some(
+                    (identity) =>
+                      element.dataset.explorerItemId === identity.id &&
+                      element.dataset.explorerItemType === identity.type,
+                  ),
                 );
-                if (body !== null) body.scrollTop = 0;
                 onClearRemoteArrivals(columnId);
-                (target ?? headingRef.current)?.focus();
+                (target ?? headingRef.current)?.focus({ preventScroll: true });
+                if (body !== null) body.scrollTop = 0;
               }}
             >
-              {remoteArrivalIds.length === 1
+              {remoteArrivals.length === 1
                 ? INBOX_TRIAGE_COPY.explorerStatus.arrival.one
                 : explorerTemplate(
                     INBOX_TRIAGE_COPY.explorerStatus.arrival.many,
-                    { count: remoteArrivalIds.length },
+                    { count: remoteArrivals.length },
                   )}
             </button>
           ) : null}
@@ -1077,6 +1085,7 @@ function NodeDropCell({
           CELL_STATE_CLASSES[state],
         )}
         data-explorer-item-id={node.id}
+        data-explorer-item-type="node"
         data-triage-drop-id={dropId}
         data-triage-hierarchy-drop={JSON.stringify(dropData)}
         data-triage-target-state={state}
@@ -1094,6 +1103,7 @@ function NodeDropCell({
       aria-disabled={state === "invalid"}
       className={cn(CELL_DROP_ONLY_CLASS, CELL_STATE_CLASSES[state])}
       data-explorer-item-id={node.id}
+      data-explorer-item-type="node"
       data-triage-drop-id={dropId}
       data-triage-hierarchy-drop={JSON.stringify(dropData)}
       data-triage-target-state={state}
@@ -1109,6 +1119,7 @@ function BitContextRow({ bit }: { bit: Bit }) {
     <div
       className="flex items-center gap-2 rounded-md px-3 py-1.5"
       data-explorer-item-id={bit.id}
+      data-explorer-item-type="bit"
       tabIndex={-1}
     >
       <ListTodo

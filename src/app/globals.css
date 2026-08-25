@@ -890,6 +890,18 @@
   transition: none;
 }
 
+.explorer-remote-count:focus-visible,
+.explorer-status-action:focus-visible,
+[data-explorer-item-id]:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+:root[data-color-theme="tiny-desk"] .explorer-remote-count {
+  border-radius: 1px;
+  box-shadow: var(--theme-shadow);
+}
+
 .explorer-remote-count {
   border: 1px solid hsl(var(--border));
   border-radius: calc(var(--theme-radius) * 0.6);
@@ -933,11 +945,23 @@
     inset -3px -3px 6px hsl(var(--background) / 0.86);
 }
 
+:root[data-color-theme="neumorphism"] .explorer-remote-count {
+  border: 0;
+  box-shadow: var(--theme-shadow);
+}
+
 :root[data-color-theme="claymorphism"] .explorer-path-status {
   border: 0;
   border-radius: calc(var(--theme-radius) * 0.45);
   box-shadow: inset 2px 2px 5px hsl(var(--foreground) / 0.12),
     inset -2px -2px 5px hsl(var(--background) / 0.8);
+}
+
+:root[data-color-theme="claymorphism"] .explorer-remote-count {
+  border: 0;
+  border-radius: var(--theme-radius);
+  box-shadow: 2px 2px 4px hsl(var(--foreground) / 0.18),
+    -1px -1px 3px hsl(var(--background) / 0.8);
 }
 
 :root[data-color-theme="origami"] .explorer-path-status {
@@ -946,10 +970,21 @@
   clip-path: polygon(0 0, 98% 0, 100% 28%, 100% 100%, 2% 100%, 0 72%);
 }
 
+:root[data-color-theme="origami"] .explorer-remote-count {
+  border-radius: 0;
+  clip-path: polygon(0 0, 88% 0, 100% 35%, 100% 100%, 0 100%);
+}
+
 :root[data-color-theme="terminal"] .explorer-path-status {
   background: hsl(var(--background));
   border-radius: 0;
   box-shadow: none;
+}
+
+:root[data-color-theme="terminal"] .explorer-remote-count {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
 
 :root[data-color-theme="terminal"] .explorer-status-action::before {
@@ -967,10 +1002,22 @@
   box-shadow: 1px 1px 0 hsl(var(--foreground));
 }
 
+:root[data-color-theme="retro-mac"] .explorer-remote-count {
+  border-color: hsl(var(--foreground));
+  border-radius: 0;
+  box-shadow: 1px 1px 0 hsl(var(--foreground));
+}
+
 :root[data-color-theme="graphite"] .explorer-path-status {
   background: transparent;
   border-block-end: 1px solid hsl(var(--border));
   border-inline-start: 3px solid hsl(var(--foreground));
+}
+
+:root[data-color-theme="graphite"] .explorer-remote-count {
+  background: transparent;
+  border-radius: 0;
+  letter-spacing: 0.025em;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -978,6 +1025,7 @@
   .explorer-path-status,
   .explorer-status-action {
     animation: none !important;
+    scroll-behavior: auto !important;
     transition: none !important;
   }
 }

@@ -47,8 +47,8 @@ without starting Search or any Task 151 product behavior.
 | Candidate synchronized adapter resolver at `4574df8…` with Phase 28 Gate C receipt as `run-phase` | 0 | `ready`; exact Gate C receipt and current feature worktree validated |
 | `git rev-parse HEAD HEAD^ HEAD^{tree}:src` | 0 | `4574df8…`, `b1ff7fe…`, `e83086e…` matched the supplied repair recovery identity |
 | Owner and symbol inspection with `rg`/`sed` | 0 | Confirmed the three missing producer projections above |
-| Focused Task 150 owners | 0 | 7 files / 175 tests passed: provenance hook, DnD, Workspace, Explorer, store, copy, and GridRuntime compatibility |
-| `pnpm test` | 0 | Latest input: 96 files / 1016 tests passed |
+| Focused Task 150 owners | 0 | Latest fifth-cycle input: 7 files / 177 tests passed, including typed identity collision, local-result ordering, stale-placement focus, themes, provenance, DnD, Workspace, Explorer, store, copy, and GridRuntime compatibility |
+| `pnpm test` | 0 | Latest input: 96 files / 1018 tests passed |
 | `pnpm lint` | 0 | 0 errors; 11 unchanged warnings outside Task 150 writes |
 | `pnpm typecheck` | 0 | Passed |
 | `pnpm build` | 0 | Next.js production build compiled, typechecked, and generated every page |
@@ -74,7 +74,39 @@ latest-input gates above supersede every earlier Task 150 test input.
    without its new `localPlacementResult` return field. After the user approved
    exactly one fourth cycle, adding only `localPlacementResult: null` made the
    owner test pass 16/16 and the latest full gate pass 96/96 files and
-   1016/1016 tests. Canonical impact is `None`; no fifth cycle was used.
+   1016/1016 tests. Canonical impact is `None`.
+5. The user approved the checkpoint evidence and one fifth cycle. RED proved
+   raw-ID dedupe/removal/focus could conflate a Node and Bit, and proved the
+   authoritative emission could precede the hook prop effect. The repair keeps
+   exact `{type,id}` identities in DnD, app-session provenance, arrival counts,
+   and DOM matching; DnD registers the created identity after the create result
+   and before source consumption, while the hook excludes it before processing
+   the authoritative snapshot. Direct tests also prove stale placement hands
+   focus to the nearest valid ancestor and all seven non-default themes own a
+   count role. Chromium then exposed and repaired one action-local issue where
+   ordinary `focus()` reversed `scrollTop=0`; `preventScroll` now preserves the
+   receipt's simultaneous top-and-focus postcondition. No sixth cycle was used.
+
+## Fifth-Cycle Browser Evidence
+
+Chromium used the existing Inbox route
+`/grid/294c56ab-df43-4020-9aa7-24dbc61a1a32`. A Node created from a second app
+tab appeared in the mounted Explorer as exact `1 new` without moving the
+focused `Cycle 4 Root 06` row. Computed count roles were distinct and matched
+the accepted mapping: Tiny Desk `1px` radius/shadow; Neumorphism borderless
+raised shadow; Claymorphism `32px` sculpted radius/shadow; Origami clipped
+polygon; Terminal borderless transparent text control; Retro Mac hard border
+and `1px` shadow; Graphite square transparent control with `0.25px` letter
+spacing.
+
+Keyboard traversal made `Show new in Home` match `:focus-visible` with a solid
+`2px` canonical ring. With `prefers-reduced-motion: reduce`, computed state was
+`animation-name: none`, `transition-property: none`, and
+`scroll-behavior: auto`. Activating the action focused the exact remote DOM row
+with `data-explorer-item-type="node"`, cleared the count, and retained Home at
+`scrollTop 0`. Browser console errors: zero. The browser-created fixture rows
+exist only in that browser's local IndexedDB evidence environment and are not
+repository writes.
 
 ## User Disposition And Exact Owner Mapping
 

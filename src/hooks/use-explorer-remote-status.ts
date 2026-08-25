@@ -3,13 +3,11 @@
 import { liveQuery } from "dexie";
 import { useEffect, useRef, useState } from "react";
 import { getDataStore } from "@/lib/db/datastore";
-import { useTriageStore } from "@/stores/triage-store";
+import {
+  type ExplorerItemIdentity,
+  useTriageStore,
+} from "@/stores/triage-store";
 import type { Bit, Node } from "@/types";
-
-export type ExplorerItemIdentity = {
-  id: string;
-  type: "node" | "bit";
-};
 
 export type ExplorerOpenColumnIdentity = {
   columnId: string;
@@ -94,7 +92,6 @@ export function useExplorerRemoteStatus({
     validPathIds: null,
   });
   const previousItemsRef = useRef<Map<string, ItemMetadata> | null>(null);
-  const localPlacementKeysRef = useRef(new Set<string>());
   const openColumnsRef = useRef(openColumns);
   const lastPathChangeRef = useRef<string | null>(null);
 
@@ -104,10 +101,9 @@ export function useExplorerRemoteStatus({
 
   useEffect(() => {
     if (localPlacementResult === null) return;
-    localPlacementKeysRef.current.add(identityKey(localPlacementResult));
-    useTriageStore
-      .getState()
-      .removeExplorerRemoteArrival(localPlacementResult);
+    useTriageStore.getState().registerExplorerLocalPlacement(
+      localPlacementResult,
+    );
   }, [localPlacementResult]);
 
   const pathKey = pathIds.join("\u0000");
@@ -132,11 +128,16 @@ export function useExplorerRemoteStatus({
               columnId,
             ]),
           );
-          const arrivals = new Map<string, string[]>();
+          const localPlacementKeys = new Set(
+            useTriageStore
+              .getState()
+              .explorerLocalPlacementIdentities.map(identityKey),
+          );
+          const arrivals = new Map<string, ExplorerItemIdentity[]>();
           for (const [key, item] of currentItems) {
             if (
               previousItems.has(key) ||
-              localPlacementKeysRef.current.has(key) ||
+              localPlacementKeys.has(key) ||
               !isVisibleExplorerItem(item, nodes)
             ) {
               continue;
@@ -145,7 +146,7 @@ export function useExplorerRemoteStatus({
             if (columnId === undefined) continue;
             arrivals.set(columnId, [
               ...(arrivals.get(columnId) ?? []),
-              item.id,
+              { id: item.id, type: item.type },
             ]);
           }
           for (const [columnId, ids] of arrivals) {

@@ -14,6 +14,15 @@ export interface TriageSessionScrollPosition {
   offset: number;
 }
 
+export interface ExplorerItemIdentity {
+  id: string;
+  type: "node" | "bit";
+}
+
+function explorerIdentityKey(identity: ExplorerItemIdentity): string {
+  return `${identity.type}:${identity.id}`;
+}
+
 export type ExplorerPathStatusKind = "unavailable" | "archived" | "moved" | "stale-placement";
 
 export interface ExplorerPathStatusState {
@@ -85,7 +94,8 @@ interface TriageState {
   explorerPathIds: string[];
   explorerOpenColumnIds: string[];
   explorerColumnScroll: Record<string, TriageSessionScrollPosition>;
-  explorerRemoteArrivalIds: Record<string, string[]>;
+  explorerRemoteArrivalIds: Record<string, ExplorerItemIdentity[]>;
+  explorerLocalPlacementIdentities: ExplorerItemIdentity[];
   explorerPathStatus: ExplorerPathStatusState | null;
   /** @deprecated Non-authoritative compatibility state. Task 163 removes it. */
   stagedCandidates: Record<string, StagedCandidate[]>;
@@ -111,8 +121,12 @@ interface TriageState {
     columnId: string,
     position: TriageSessionScrollPosition,
   ) => void;
-  recordExplorerRemoteArrivals: (columnId: string, ids: string[]) => void;
-  removeExplorerRemoteArrival: (identity: { id: string; type: "node" | "bit" }) => void;
+  recordExplorerRemoteArrivals: (
+    columnId: string,
+    identities: ExplorerItemIdentity[],
+  ) => void;
+  registerExplorerLocalPlacement: (identity: ExplorerItemIdentity) => void;
+  removeExplorerRemoteArrival: (identity: ExplorerItemIdentity) => void;
   clearExplorerRemoteArrivals: (columnId: string) => void;
   setExplorerPathStatus: (status: ExplorerPathStatusState) => void;
   clearExplorerPathStatus: () => void;
@@ -144,6 +158,7 @@ export const useTriageStore = create<TriageState>((set) => ({
   explorerOpenColumnIds: [],
   explorerColumnScroll: {},
   explorerRemoteArrivalIds: {},
+  explorerLocalPlacementIdentities: [],
   explorerPathStatus: null,
   stagedCandidates: {},
   externalScratchRemoval: null,
@@ -316,11 +331,18 @@ export const useTriageStore = create<TriageState>((set) => ({
         [columnId]: position,
       },
     })),
-  recordExplorerRemoteArrivals: (columnId, ids) =>
+  recordExplorerRemoteArrivals: (columnId, identities) =>
     set((state) => {
-      if (ids.length === 0) return state;
+      if (identities.length === 0) return state;
       const previous = state.explorerRemoteArrivalIds[columnId] ?? [];
-      const next = [...new Set([...previous, ...ids])];
+      const seen = new Set(previous.map(explorerIdentityKey));
+      const next = [...previous];
+      for (const identity of identities) {
+        const key = explorerIdentityKey(identity);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        next.push(identity);
+      }
       if (next.length === previous.length) return state;
       return {
         explorerRemoteArrivalIds: {
@@ -329,15 +351,48 @@ export const useTriageStore = create<TriageState>((set) => ({
         },
       };
     }),
-  removeExplorerRemoteArrival: ({ id }) =>
+  registerExplorerLocalPlacement: (identity) =>
     set((state) => {
-      let changed = false;
-      const next: Record<string, string[]> = {};
-      for (const [columnId, ids] of Object.entries(
+      const key = explorerIdentityKey(identity);
+      const alreadyRegistered = state.explorerLocalPlacementIdentities.some(
+        (registered) => explorerIdentityKey(registered) === key,
+      );
+      let arrivalsChanged = false;
+      const explorerRemoteArrivalIds: Record<
+        string,
+        ExplorerItemIdentity[]
+      > = {};
+      for (const [columnId, identities] of Object.entries(
         state.explorerRemoteArrivalIds,
       )) {
-        const filtered = ids.filter((arrivalId) => arrivalId !== id);
-        if (filtered.length !== ids.length) changed = true;
+        const filtered = identities.filter(
+          (arrival) => explorerIdentityKey(arrival) !== key,
+        );
+        if (filtered.length !== identities.length) arrivalsChanged = true;
+        if (filtered.length > 0) explorerRemoteArrivalIds[columnId] = filtered;
+      }
+      if (alreadyRegistered && !arrivalsChanged) return state;
+      return {
+        explorerLocalPlacementIdentities: alreadyRegistered
+          ? state.explorerLocalPlacementIdentities
+          : [...state.explorerLocalPlacementIdentities, identity],
+        explorerRemoteArrivalIds: arrivalsChanged
+          ? explorerRemoteArrivalIds
+          : state.explorerRemoteArrivalIds,
+      };
+    }),
+  removeExplorerRemoteArrival: (identity) =>
+    set((state) => {
+      const key = explorerIdentityKey(identity);
+      let changed = false;
+      const next: Record<string, ExplorerItemIdentity[]> = {};
+      for (const [columnId, identities] of Object.entries(
+        state.explorerRemoteArrivalIds,
+      )) {
+        const filtered = identities.filter(
+          (arrival) => explorerIdentityKey(arrival) !== key,
+        );
+        if (filtered.length !== identities.length) changed = true;
         if (filtered.length > 0) next[columnId] = filtered;
       }
       return changed ? { explorerRemoteArrivalIds: next } : state;
@@ -352,7 +407,11 @@ export const useTriageStore = create<TriageState>((set) => ({
   setExplorerPathStatus: (status) => set({ explorerPathStatus: status }),
   clearExplorerPathStatus: () => set({ explorerPathStatus: null }),
   clearExplorerRemotePresentation: () =>
-    set({ explorerRemoteArrivalIds: {}, explorerPathStatus: null }),
+    set({
+      explorerLocalPlacementIdentities: [],
+      explorerRemoteArrivalIds: {},
+      explorerPathStatus: null,
+    }),
   reconcileExplorerContext: ({ validPathIds, visibleItemIdsByColumn }) =>
     set((state) => {
       let validPrefixLength = 0;
