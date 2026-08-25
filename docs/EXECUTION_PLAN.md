@@ -230,7 +230,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `VQ-03` | 108 / `DP-VQ03` | 140 departure confirmation realization; Task 139 remains headless |
 | `VQ-04` | 109 / `DP-VQ04` | 138 inline-editor realization; Task 137 remains headless |
 | `VQ-05` | 110 / `DP-VQ05` | 143 Add/Delete reliability realization |
-| `VQ-06` | 111–113 / three receipts below | 144 Pool, 147 Staging, and 150 Explorer realizations independently |
+| `VQ-06` | 111–113 / three receipts below | 144 Pool and 147 Staging independently; 150 Explorer except selected-Bit disappearance; 151 selected-Bit disappearance slice only in its existing reveal owner |
 | `VQ-07` | 114 / `DP-VQ07` | 151 search result body and 158 search-result Undo integration; ordinary Undo 156 remains independent |
 | `VQ-08` | 115 / `DP-VQ08` | 153 placement reliability realization |
 | `VQ-09` | 116 / `DP-VQ09` | 154 Result Title/direct-limit realization |
@@ -249,7 +249,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ05` | `VQ-05` | 110 | 143 only | Choice A Add-region/source-row attached reliability system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json`; Task 143 only is released. |
 | `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Choice A fixed Pool-local status band accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json`; Task 144 only is released. |
 | `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Choice A candidate-attached/subsection-indicator/Staging-alert status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_112.dp-vq06-staging.json`; Task 147 only is released. |
-| `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Choice A affected-column remote/path status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`; Task 150 only is released. |
+| `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 except selected-Bit disappearance; 151 selected-Bit disappearance slice only | Choice A affected-column remote/path status family was accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`, historically releasing Task 150 only. The user-approved `P28-04` later-execution correction on 2026-08-24 supersedes only the current selected-Bit disappearance edge to Task 151's existing reveal owner; all other Explorer realization remains Task 150. |
 | `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Choice A dedicated fixed-input/state-line/flat-result replacement body accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json`; Task 151 and search-only Task 158 are released subject to their own prerequisites. |
 | `DP-VQ08` | `VQ-08` | 115 | 153 only | Choice A fixed reliability rail accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`; Task 153 only is released. |
 | `DP-VQ09` | `VQ-09` | 116 | 154 only | Choice A compact Result Title/direct-limit steps accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`; Task 154 only is released. |
@@ -777,7 +777,7 @@ Explorer choice, Task 150 work, product code, publication, or phase close.
 
 **Dependencies:** user decision only; no code prerequisite and no other DP task.
 
-**Decision owner:** User. **Receipt:** `DP-VQ06-EXPLORER`. **Exact edge:** Task 150 only. **Resume:** accepted Explorer-specific receipt.
+**Decision owner:** User. **Receipt:** `DP-VQ06-EXPLORER`. **Historical exact edge accepted on 2026-08-10:** Task 150 only. **Current execution edge after the user-approved `P28-04` correction on 2026-08-24:** Task 150 except selected-Bit disappearance; Task 151 owns only selected-Bit disappearance in its existing reveal owner. **Resume:** accepted Explorer-specific receipt plus the reflected `P28-04` correction.
 
 **Authority / flows:** Explorer slice of `VQ-06`, `UF-17`, `NEG-21`.
 
@@ -799,17 +799,25 @@ disappearance clears only that selection/reveal and retains the parent path.
 The strip's only action is `Dismiss`; it and each per-column count use the
 receipt's exact non-timed lifetime. All transitions and reduced motion are
 identically immediate with no status animation. The receipt owns the eight
-Explorer theme mappings and releases Task 150 only after this Task's user
-checkpoint; Pool/Staging, path/anchoring mechanics, placement, product code,
-and the separate `VQ-07` search body remain unchanged.
+Explorer theme mappings and, as accepted on 2026-08-10, originally released
+Task 150 only after this Task's user checkpoint; Pool/Staging, path/anchoring
+mechanics, placement, product code, and the separate `VQ-07` search body
+remained unchanged.
 
 **Checkpoint acceptance (2026-08-10):** the user accepted the complete Choice
 A affected-column remote-arrival count and path-status family, exact
 copy/action/fallback/focus/lifetime matrix, stable-ID/viewport-offset
 preservation, static reduced-motion parity, eight-theme mapping, and
-Explorer-only/Task 150-only boundary. This acceptance releases Task 150 only.
-It does not start Task 114, prepare another Gate C packet, implement product
-code, publish, or close the phase.
+Explorer-only/Task 150-only boundary. At that 2026-08-10 acceptance, it
+released Task 150 only. It did not start Task 114, prepare another Gate C
+packet, implement product code, publish, or close the phase.
+
+**Later execution-edge correction — `P28-04` (2026-08-24):** the historical
+acceptance and JSON receipt above remain unchanged. The user's targeted
+correction supersedes only the current selected-Bit disappearance realization
+edge to Task 151's existing reveal production owner. Task 150 retains every
+other `DP-VQ06-EXPLORER` realization; Task 151 receives no other VQ-06 state,
+and this correction starts neither Task 150 nor Task 151.
 
 **Observable acceptance:** remote-path statuses can be implemented independently without Search/Pool/Staging fallback or focus theft.
 

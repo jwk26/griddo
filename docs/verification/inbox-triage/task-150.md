@@ -43,9 +43,9 @@ without starting Search or any Task 151 product behavior.
 
 | Command/check | Exit | Relevant result |
 | --- | ---: | --- |
-| Candidate synchronized adapter resolver at `b1ff7fe…`, receipt-less `run-task` | 3 | `approval_required`, `contract_ready=true`; policy/runtime paths resolved read-only |
-| Candidate synchronized adapter resolver at `b1ff7fe…` with Phase 28 Gate C receipt as `run-phase` | 0 | `ready`; exact Gate C receipt and current feature worktree validated |
-| `git rev-parse HEAD HEAD^ HEAD^{tree}:src` | 0 | `b1ff7fe…`, `9b26412…`, `e83086e…` matched the supplied continuation recovery identity |
+| Candidate synchronized adapter resolver at `4574df8…`, receipt-less `run-task` | 3 | `approval_required`, `contract_ready=true`; policy/runtime paths resolved read-only |
+| Candidate synchronized adapter resolver at `4574df8…` with Phase 28 Gate C receipt as `run-phase` | 0 | `ready`; exact Gate C receipt and current feature worktree validated |
+| `git rev-parse HEAD HEAD^ HEAD^{tree}:src` | 0 | `4574df8…`, `b1ff7fe…`, `e83086e…` matched the supplied repair recovery identity |
 | Owner and symbol inspection with `rg`/`sed` | 0 | Confirmed the three missing producer projections above |
 
 No focused or full product gate was run because the lifecycle stopped before a
@@ -62,13 +62,24 @@ evidence was not reused as proof of Task 150 behavior.
 | Task 150 presentation | Existing approved Explorer/store/copy/CSS paths and tests | Realize all `DP-VQ06-EXPLORER` states except selected-Bit disappearance, using the authoritative projections above while preserving stable-ID/offset anchoring. |
 | Existing Task 151 reveal owner | Task 151's already planned `src/hooks/use-grid-explorer-search.ts` and `.test.tsx`, `src/components/triage/grid-explorer-search-results.tsx` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, copy, and CSS paths | Realize only selected-Bit disappearance after a real Task 151 Bit reveal: clear that Bit selection/reveal, preserve/focus the valid parent, and reuse the exact parent-column copy/action/lifetime. No new selection/reveal owner and no Task 151 work in this continuation. |
 
+## Historical Receipt And Current Execution Edge
+
 The historical `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`
-receipt remains byte-for-byte unchanged. `docs/WORKFLOW.md` assigns an
+receipt remains byte-for-byte unchanged. Its Task 113 acceptance on 2026-08-10
+historically released Task 150 only. The user-approved `P28-04` correction on
+2026-08-24 supersedes only the current selected-Bit disappearance realization
+edge to Task 151's existing reveal owner; Task 150 retains every other Explorer
+realization.
+
+The same distinction is now explicit in all current canonical edge owners in
+`docs/EXECUTION_PLAN.md`: the VQ-06 Gate Register, the `DP-VQ06-EXPLORER`
+Executable DP Receipt Edge, the completed Task 113 later-execution-correction
+note, and the Task 150/151 contracts. `docs/WORKFLOW.md` assigns an
 execution-time structural correction to the phase issue ledger and promotion
 into the active execution plan; Adapter v2 declares no separate amendment
-receipt kind or path. The current user disposition, `P28-04` ledger entry, and
-Task 150/151 plan text are therefore the project-owned durable amendment
-record rather than a silently reinterpreted or invented JSON receipt.
+receipt kind or path. The current user dispositions, `P28-04` ledger entry, and
+these plan records are therefore the project-owned durable amendment rather
+than a silently reinterpreted or invented JSON receipt.
 
 Task 150 and Task 151 remain `[ ]`. No implementation checkpoint or durable
 Task 150 `In Progress` start exists.
