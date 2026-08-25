@@ -821,7 +821,10 @@ and this correction starts neither Task 150 nor Task 151.
 
 **Observable acceptance:** remote-path statuses can be implemented independently without Search/Pool/Staging fallback or focus theft.
 
-**Verification:** `git diff --check`; verify Explorer-only scope and only Task 150 release.
+**Verification:** `git diff --check`; at the 2026-08-10 checkpoint, verify
+Explorer-only scope and the historical Task-150-only release. Current execution
+verification follows the `P28-04` split edge recorded above: Task 150 except
+selected-Bit disappearance, with only that slice realized by Task 151.
 
 **Commit contract:** the three named documents and `DP-VQ06-EXPLORER` receipt only; `docs(triage): record DP-VQ06 Explorer`.
 

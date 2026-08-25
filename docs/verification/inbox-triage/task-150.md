@@ -81,5 +81,14 @@ receipt kind or path. The current user dispositions, `P28-04` ledger entry, and
 these plan records are therefore the project-owned durable amendment rather
 than a silently reinterpreted or invented JSON receipt.
 
+A subsequent evidence check found one remaining unqualified sentence: Task
+113's Verification text still said to verify “only Task 150 release.” The
+second targeted checkpoint-review repair now limits that statement to the
+historical 2026-08-10 checkpoint verification and explicitly directs current
+execution verification to the already-recorded `P28-04` split: Task 150 owns
+all Explorer realization except selected-Bit disappearance, and Task 151 owns
+only that slice in its existing reveal owner. No receipt or product semantic
+changed.
+
 Task 150 and Task 151 remain `[ ]`. No implementation checkpoint or durable
 Task 150 `In Progress` start exists.
