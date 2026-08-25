@@ -103,17 +103,17 @@ and are outside Phase 28 scope.
 | Field | Durable value |
 | --- | --- |
 | Task | `150 — Render DP-VQ06-EXPLORER remote/path statuses` |
-| State | `Canonical amendment reflected — awaiting docs-only checkpoint review`; Tasks 150 and 151 remain `[ ]`, unstarted, and no durable `In Progress` start signal was written |
-| Approval | Exact fresh candidate-pinned Task 150 work order on 2026-08-24, bounded by `docs/issues/Issues_Phase_28.gate-c.json` and the accepted `DP-VQ06-EXPLORER` receipt |
-| Start base / recovery anchor | `9b26412fe4df90119e67d95efafa43c7332f0b05`; accepted `src` tree `e83086e1044bb2deebc6837f997bebc06b316146` |
-| User disposition | On 2026-08-24 the user approved the exact targeted `P28-04` owner expansion and selected-Bit release-edge correction stated in this checkpoint |
+| State | `In Progress` — Task 150 implementation authorized; Tasks 150 and 151 remain `[ ]`, and Task 151 product work remains unstarted |
+| Approval | Exact fresh candidate-pinned Task 150 work order on 2026-08-24, accepted `P28-04` docs-only checkpoint `15e117ecfa477d8a458499b1515ebb4cd8447e70`, and the 2026-08-25 continuation authorizing Task 150 implementation only; bounded by `docs/issues/Issues_Phase_28.gate-c.json` and the accepted `DP-VQ06-EXPLORER` receipt |
+| Start base / recovery anchor | `15e117ecfa477d8a458499b1515ebb4cd8447e70`; accepted `src` tree `e83086e1044bb2deebc6837f997bebc06b316146` |
+| User disposition | The user accepted the complete `P28-04` docs-only checkpoint and authorized only the current canonical Task 150 implementation, retaining selected-Bit disappearance exclusively for unstarted Task 151 |
 | Exact added Task 150 scope | Create `src/hooks/use-explorer-remote-status.ts` and `.test.tsx`; modify `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`, plus `src/components/triage/triage-workspace.tsx` and `.test.tsx`, only for the authoritative provenance and stable local-result identity flow now recorded in Task 150 |
 | Task 151 correction | Move only selected-Bit disappearance realization to Task 151's existing search-reveal owner; add Task 150 as its dependency; do not start Search or any Task 151 product behavior |
 | Durable amendment mechanism | `docs/WORKFLOW.md` assigns execution corrections to the phase issue ledger and promotes executable ownership into `docs/EXECUTION_PLAN.md`; Adapter v2 declares no separate amendment receipt kind/path, so no new JSON was invented and no historical receipt was modified |
 | Canonical alignment repairs | The first 2026-08-25 checkpoint finding corrected the VQ-06 Gate Register, `DP-VQ06-EXPLORER` Executable DP Receipt Edge, and completed Task 113 section to distinguish the unchanged 2026-08-10 Task-150-only history from the `P28-04` current split edge. The second evidence-confirmed finding qualified Task 113's remaining Verification sentence with that same historical/current distinction |
-| Product/test writes | None |
+| Product/test writes | None at this durable start; implementation follows only the exact Task 150 owner/test paths recorded above and in `docs/EXECUTION_PLAN.md` |
 | Canonical impact | `Reflected` — exact owner paths and the selected-Bit release-edge correction are now canonical; product/design semantics are unchanged |
-| Next legal action | User review of this clean docs-only amendment checkpoint; do not start Task 150 implementation or Task 151 product work in this continuation |
+| Next legal action | Implement and verify Task 150 only under the reflected `P28-04` contract, then stop at a clean committed implementation checkpoint with Task 150 still `[ ]`; do not start Task 151 product work |
 
 ## Task 149 Durable Start
 
