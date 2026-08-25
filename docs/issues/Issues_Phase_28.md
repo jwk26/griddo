@@ -103,7 +103,7 @@ and are outside Phase 28 scope.
 | Field | Durable value |
 | --- | --- |
 | Task | `150 — Render DP-VQ06-EXPLORER remote/path statuses` |
-| State | `In Progress` — Task 150 implementation authorized; Tasks 150 and 151 remain `[ ]`, and Task 151 product work remains unstarted |
+| State | `Implemented — awaiting checkpoint`; Tasks 150 and 151 remain `[ ]`, and Task 151 product work remains unstarted |
 | Approval | Exact fresh candidate-pinned Task 150 work order on 2026-08-24, accepted `P28-04` docs-only checkpoint `15e117ecfa477d8a458499b1515ebb4cd8447e70`, and the 2026-08-25 continuation authorizing Task 150 implementation only; bounded by `docs/issues/Issues_Phase_28.gate-c.json` and the accepted `DP-VQ06-EXPLORER` receipt |
 | Start base / recovery anchor | `15e117ecfa477d8a458499b1515ebb4cd8447e70`; accepted `src` tree `e83086e1044bb2deebc6837f997bebc06b316146` |
 | User disposition | The user accepted the complete `P28-04` docs-only checkpoint and authorized only the current canonical Task 150 implementation, retaining selected-Bit disappearance exclusively for unstarted Task 151 |
@@ -111,9 +111,11 @@ and are outside Phase 28 scope.
 | Task 151 correction | Move only selected-Bit disappearance realization to Task 151's existing search-reveal owner; add Task 150 as its dependency; do not start Search or any Task 151 product behavior |
 | Durable amendment mechanism | `docs/WORKFLOW.md` assigns execution corrections to the phase issue ledger and promotes executable ownership into `docs/EXECUTION_PLAN.md`; Adapter v2 declares no separate amendment receipt kind/path, so no new JSON was invented and no historical receipt was modified |
 | Canonical alignment repairs | The first 2026-08-25 checkpoint finding corrected the VQ-06 Gate Register, `DP-VQ06-EXPLORER` Executable DP Receipt Edge, and completed Task 113 section to distinguish the unchanged 2026-08-10 Task-150-only history from the `P28-04` current split edge. The second evidence-confirmed finding qualified Task 113's remaining Verification sentence with that same historical/current distinction |
-| Product/test writes | None at this durable start; implementation follows only the exact Task 150 owner/test paths recorded above and in `docs/EXECUTION_PLAN.md` |
-| Canonical impact | `Reflected` — exact owner paths and the selected-Bit release-edge correction are now canonical; product/design semantics are unchanged |
-| Next legal action | Implement and verify Task 150 only under the reflected `P28-04` contract, then stop at a clean committed implementation checkpoint with Task 150 still `[ ]`; do not start Task 151 product work |
+| Product/test writes | Exact Task 150 provenance hook/test, DnD stable-result producer/test, Workspace handoff/test, Explorer/store/copy/CSS realization/tests, plus only `src/components/layout/grid-runtime.test.tsx` for the evidence-confirmed manual `useTriageDnd` mock compatibility repair |
+| Repair evidence | The first full gate found 1/1016 failure because the GridRuntime test's manual DnD mock omitted the new return-contract field and supplied `undefined` to the real Explorer path. The user explicitly approved one fourth cycle; adding only `localPlacementResult: null` cleared the owner test and latest-input full gate. No fifth cycle was used. |
+| Canonical impact | `Reflected` for `P28-04`; `None` for the compatibility-test repair itself. Product/design/placement semantics and the historical receipt remain unchanged. |
+| Verification | Focused 7 files / 175 tests, full 96 files / 1016 tests, lint 0 errors with 11 unchanged warnings, typecheck, build, and `git diff --check` passed on the final implementation input. |
+| Next legal action | Stop at the clean committed Task 150 implementation checkpoint with Task 150 still `[ ]`; only a later acceptance-only continuation may mark it `[x]`. Do not start Task 151 product work. |
 
 ## Task 149 Durable Start
 

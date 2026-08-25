@@ -912,6 +912,7 @@ function TriageWorkspaceContent({
     handleDragStart,
     overTargetId,
     pendingPlacement,
+    localPlacementResult,
     refreshRenderedTarget,
     sensors,
     targetFeedback,
@@ -1580,6 +1581,7 @@ function TriageWorkspaceContent({
                 onPointerGeometryChange={refreshRenderedTarget}
                 overTargetId={overTargetId}
                 pendingPlacementDropId={pendingPlacement?.dropId ?? null}
+                localPlacementResult={localPlacementResult}
                 targetFeedback={targetFeedback}
               />
             </div>

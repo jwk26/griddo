@@ -14,6 +14,16 @@ export interface TriageSessionScrollPosition {
   offset: number;
 }
 
+export type ExplorerPathStatusKind = "unavailable" | "archived" | "moved" | "stale-placement";
+
+export interface ExplorerPathStatusState {
+  kind: ExplorerPathStatusKind;
+  title: string | null;
+  destination: string;
+  columnId: string;
+  fallbackPathIds: string[];
+}
+
 export type ExternalScratchRemovalLifecycle = "archive" | "delete";
 export type ExternalScratchRemovalDestinationKind =
   | "scratch"
@@ -75,6 +85,8 @@ interface TriageState {
   explorerPathIds: string[];
   explorerOpenColumnIds: string[];
   explorerColumnScroll: Record<string, TriageSessionScrollPosition>;
+  explorerRemoteArrivalIds: Record<string, string[]>;
+  explorerPathStatus: ExplorerPathStatusState | null;
   /** @deprecated Non-authoritative compatibility state. Task 163 removes it. */
   stagedCandidates: Record<string, StagedCandidate[]>;
   externalScratchRemoval: ExternalScratchRemovalState | null;
@@ -99,6 +111,12 @@ interface TriageState {
     columnId: string,
     position: TriageSessionScrollPosition,
   ) => void;
+  recordExplorerRemoteArrivals: (columnId: string, ids: string[]) => void;
+  removeExplorerRemoteArrival: (identity: { id: string; type: "node" | "bit" }) => void;
+  clearExplorerRemoteArrivals: (columnId: string) => void;
+  setExplorerPathStatus: (status: ExplorerPathStatusState) => void;
+  clearExplorerPathStatus: () => void;
+  clearExplorerRemotePresentation: () => void;
   reconcileExplorerContext: (context: {
     validPathIds: string[];
     visibleItemIdsByColumn: Record<string, string[]>;
@@ -125,6 +143,8 @@ export const useTriageStore = create<TriageState>((set) => ({
   explorerPathIds: [],
   explorerOpenColumnIds: [],
   explorerColumnScroll: {},
+  explorerRemoteArrivalIds: {},
+  explorerPathStatus: null,
   stagedCandidates: {},
   externalScratchRemoval: null,
   selectScratch: (id) =>
@@ -275,7 +295,19 @@ export const useTriageStore = create<TriageState>((set) => ({
     });
     return terminalDestination;
   },
-  setExplorerPathIds: (ids) => set({ explorerPathIds: ids }),
+  setExplorerPathIds: (ids) =>
+    set((state) => {
+      const unchanged =
+        ids.length === state.explorerPathIds.length &&
+        ids.every((id, index) => id === state.explorerPathIds[index]);
+      return unchanged
+        ? state
+        : {
+            explorerPathIds: ids,
+            explorerRemoteArrivalIds: {},
+            explorerPathStatus: null,
+          };
+    }),
   setExplorerOpenColumnIds: (ids) => set({ explorerOpenColumnIds: ids }),
   setExplorerColumnScroll: (columnId, position) =>
     set((state) => ({
@@ -284,6 +316,43 @@ export const useTriageStore = create<TriageState>((set) => ({
         [columnId]: position,
       },
     })),
+  recordExplorerRemoteArrivals: (columnId, ids) =>
+    set((state) => {
+      if (ids.length === 0) return state;
+      const previous = state.explorerRemoteArrivalIds[columnId] ?? [];
+      const next = [...new Set([...previous, ...ids])];
+      if (next.length === previous.length) return state;
+      return {
+        explorerRemoteArrivalIds: {
+          ...state.explorerRemoteArrivalIds,
+          [columnId]: next,
+        },
+      };
+    }),
+  removeExplorerRemoteArrival: ({ id }) =>
+    set((state) => {
+      let changed = false;
+      const next: Record<string, string[]> = {};
+      for (const [columnId, ids] of Object.entries(
+        state.explorerRemoteArrivalIds,
+      )) {
+        const filtered = ids.filter((arrivalId) => arrivalId !== id);
+        if (filtered.length !== ids.length) changed = true;
+        if (filtered.length > 0) next[columnId] = filtered;
+      }
+      return changed ? { explorerRemoteArrivalIds: next } : state;
+    }),
+  clearExplorerRemoteArrivals: (columnId) =>
+    set((state) => {
+      if (state.explorerRemoteArrivalIds[columnId] === undefined) return state;
+      const next = { ...state.explorerRemoteArrivalIds };
+      delete next[columnId];
+      return { explorerRemoteArrivalIds: next };
+    }),
+  setExplorerPathStatus: (status) => set({ explorerPathStatus: status }),
+  clearExplorerPathStatus: () => set({ explorerPathStatus: null }),
+  clearExplorerRemotePresentation: () =>
+    set({ explorerRemoteArrivalIds: {}, explorerPathStatus: null }),
   reconcileExplorerContext: ({ validPathIds, visibleItemIdsByColumn }) =>
     set((state) => {
       let validPrefixLength = 0;
@@ -317,6 +386,17 @@ export const useTriageStore = create<TriageState>((set) => ({
               : { anchorId: null, offset: 0 };
       }
 
+      const explorerRemoteArrivalIds = Object.fromEntries(
+        Object.entries(state.explorerRemoteArrivalIds).filter(([columnId]) =>
+          explorerOpenColumnIds.includes(columnId),
+        ),
+      );
+      const explorerPathStatus =
+        state.explorerPathStatus === null ||
+        explorerOpenColumnIds.includes(state.explorerPathStatus.columnId)
+          ? state.explorerPathStatus
+          : null;
+
       const pathUnchanged =
         explorerPathIds.length === state.explorerPathIds.length;
       const columnsUnchanged =
@@ -334,12 +414,34 @@ export const useTriageStore = create<TriageState>((set) => ({
             state.explorerColumnScroll[columnId],
         );
 
-      if (pathUnchanged && columnsUnchanged && scrollUnchanged) return state;
+      const previousArrivalColumns = Object.keys(
+        state.explorerRemoteArrivalIds,
+      );
+      const nextArrivalColumns = Object.keys(explorerRemoteArrivalIds);
+      const arrivalsUnchanged =
+        previousArrivalColumns.length === nextArrivalColumns.length &&
+        nextArrivalColumns.every(
+          (columnId) =>
+            explorerRemoteArrivalIds[columnId] ===
+            state.explorerRemoteArrivalIds[columnId],
+        );
+
+      if (
+        pathUnchanged &&
+        columnsUnchanged &&
+        scrollUnchanged &&
+        arrivalsUnchanged &&
+        explorerPathStatus === state.explorerPathStatus
+      ) {
+        return state;
+      }
 
       return {
         explorerPathIds,
         explorerOpenColumnIds,
         explorerColumnScroll,
+        explorerRemoteArrivalIds,
+        explorerPathStatus,
       };
     }),
   addStagedCandidate: (scratchId, candidate) =>

@@ -40,8 +40,8 @@ describe("Inbox/Triage core-English copy", () => {
       RECEIPT_COPY_UNAVAILABLE,
       "Pool updated elsewhere.",
       "This item is no longer available.",
-      RECEIPT_COPY_UNAVAILABLE,
-      RECEIPT_COPY_UNAVAILABLE,
+      "This path is no longer available. Returned to {destination}.",
+      "Placement closed because this Explorer path changed.",
       RECEIPT_COPY_UNAVAILABLE,
       RECEIPT_COPY_UNAVAILABLE,
       RECEIPT_COPY_UNAVAILABLE,
@@ -121,6 +121,31 @@ describe("Inbox/Triage core-English copy", () => {
       continueAction: "Continue writing",
       discardAction: "Discard and move",
     });
+  });
+
+  it("owns the exact non-selected-Bit DP-VQ06 Explorer status wording", () => {
+    expect(INBOX_TRIAGE_COPY.explorerStatus).toEqual({
+      arrival: { one: "1 new", many: "{count} new" },
+      path: {
+        unavailable:
+          "“{title}” is no longer available. Returned to {destination}.",
+        archived: "“{title}” was archived. Returned to {destination}.",
+        moved: "“{title}” moved elsewhere. Returned to {destination}.",
+        invalid:
+          "This path is no longer available. Returned to {destination}.",
+        stalePlacement: "Placement closed because this Explorer path changed.",
+      },
+      actions: {
+        showNewIn: "Show new in {level}",
+        dismiss: "Dismiss",
+      },
+    });
+    expect(INBOX_TRIAGE_COPY.lifecycleReasons.explorerPathFallback).toBe(
+      "This path is no longer available. Returned to {destination}.",
+    );
+    expect(INBOX_TRIAGE_COPY.lifecycleReasons.placementStale).toBe(
+      "Placement closed because this Explorer path changed.",
+    );
   });
 
   it("owns the complete approved DP-VQ01 external-removal wording", () => {
@@ -268,7 +293,7 @@ describe("Inbox/Triage core-English copy", () => {
 
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      148, 150, 151, 153, 154, 157, 160, 162,
+      148, 151, 153, 154, 157, 160, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {

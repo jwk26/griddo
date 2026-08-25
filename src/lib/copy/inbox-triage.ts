@@ -193,6 +193,20 @@ export interface InboxTriageCopy {
       readonly dismissAlert: string;
     };
   };
+  readonly explorerStatus: {
+    readonly arrival: { readonly one: string; readonly many: string };
+    readonly path: {
+      readonly unavailable: string;
+      readonly archived: string;
+      readonly moved: string;
+      readonly invalid: string;
+      readonly stalePlacement: string;
+    };
+    readonly actions: {
+      readonly showNewIn: string;
+      readonly dismiss: string;
+    };
+  };
   readonly lifecycleReasons: {
     readonly externalScratchRemoval: InboxTriageCopyValue;
     readonly poolLifecycleUpdate: InboxTriageCopyValue;
@@ -419,12 +433,29 @@ export const INBOX_TRIAGE_COPY = {
       dismissAlert: "Dismiss Staging alert",
     },
   },
+  explorerStatus: {
+    arrival: { one: "1 new", many: "{count} new" },
+    path: {
+      unavailable:
+        "“{title}” is no longer available. Returned to {destination}.",
+      archived: "“{title}” was archived. Returned to {destination}.",
+      moved: "“{title}” moved elsewhere. Returned to {destination}.",
+      invalid:
+        "This path is no longer available. Returned to {destination}.",
+      stalePlacement: "Placement closed because this Explorer path changed.",
+    },
+    actions: {
+      showNewIn: "Show new in {level}",
+      dismiss: "Dismiss",
+    },
+  },
   lifecycleReasons: {
     externalScratchRemoval: UNAVAILABLE,
     poolLifecycleUpdate: "Pool updated elsewhere.",
     stagingSourceUnavailable: "This item is no longer available.",
-    explorerPathFallback: UNAVAILABLE,
-    placementStale: UNAVAILABLE,
+    explorerPathFallback:
+      "This path is no longer available. Returned to {destination}.",
+    placementStale: "Placement closed because this Explorer path changed.",
     undoUnavailable: UNAVAILABLE,
     completionWithdrawal: UNAVAILABLE,
     archiveRecovery: UNAVAILABLE,
@@ -457,7 +488,6 @@ export const INBOX_TRIAGE_COPY = {
   },
   receiptDependent: {
     148: UNAVAILABLE,
-    150: UNAVAILABLE,
     151: UNAVAILABLE,
     153: UNAVAILABLE,
     154: UNAVAILABLE,

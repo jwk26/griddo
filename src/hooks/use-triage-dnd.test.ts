@@ -55,6 +55,10 @@ vi.mock("@/hooks/use-grid-data", () => ({
   useGridData: () => emptyGridData,
 }));
 
+vi.mock("@/hooks/use-explorer-remote-status", () => ({
+  useExplorerRemoteStatus: () => ({ isReady: true, validPathIds: [] }),
+}));
+
 vi.mock("@/hooks/use-triage-departure", () => ({
   useTriageDepartureContext: () => ({ requestDeparture: vi.fn() }),
 }));
@@ -234,6 +238,8 @@ beforeEach(() => {
     source: null,
   }));
   getGridOccupancyMock.mockResolvedValue(new Set<string>());
+  createNodeMock.mockResolvedValue({ id: "created-node" });
+  createBitMock.mockResolvedValue({ id: "created-bit" });
   getDataStoreMock.mockResolvedValue({
     getGridOccupancy: getGridOccupancyMock,
     createNode: createNodeMock,
@@ -279,6 +285,7 @@ function renderDndExplorerHarness(): {
       onPointerGeometryChange,
       overTargetId: controller.overTargetId,
       pendingPlacementDropId: controller.pendingPlacement?.dropId ?? null,
+      localPlacementResult: controller.localPlacementResult,
       targetFeedback: controller.targetFeedback,
     });
   };
@@ -1490,6 +1497,10 @@ describe("useTriageDnd — drop matrix", () => {
       "candidate-1",
     );
     expect(result.current.pendingPlacement).toBeNull();
+    expect(result.current.localPlacementResult).toEqual({
+      id: "created-node",
+      type: "node",
+    });
   });
 
   it("confirms a direct breakdown placement with the selected Node type without removing a staged candidate", async () => {
@@ -1535,6 +1546,10 @@ describe("useTriageDnd — drop matrix", () => {
     );
     expect(removeStagedCandidateMock).not.toHaveBeenCalled();
     expect(result.current.pendingPlacement).toBeNull();
+    expect(result.current.localPlacementResult).toEqual({
+      id: "created-node",
+      type: "node",
+    });
   });
 
   it("keeps a direct breakdown placement open when confirmation has no selected type", async () => {
@@ -1719,6 +1734,10 @@ describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
     expect(markScratchBreakdownConsumedMock).toHaveBeenCalledWith("row-1");
     expect(removeStagedCandidateMock).not.toHaveBeenCalled();
     expect(result.current.pendingPlacement).toBeNull();
+    expect(result.current.localPlacementResult).toEqual({
+      id: "created-bit",
+      type: "bit",
+    });
   });
 
   it("cancels a direct breakdown placement without datastore writes or candidate removal", async () => {

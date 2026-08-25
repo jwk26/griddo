@@ -36,6 +36,7 @@ const handlePlacementConfirmMock = vi.hoisted(() => vi.fn());
 const handlePlacementCancelMock = vi.hoisted(() => vi.fn());
 const stagingZoneRenderMock = vi.hoisted(() => vi.fn());
 const useGridDataMock = vi.hoisted(() => vi.fn());
+const useExplorerRemoteStatusMock = vi.hoisted(() => vi.fn());
 const useInboxMock = vi.hoisted(() => vi.fn());
 const getBitMock = vi.hoisted(() => vi.fn());
 const getBitsMock = vi.hoisted(() => vi.fn());
@@ -61,6 +62,10 @@ vi.mock("@/hooks/use-staged-candidates", () => ({
 
 vi.mock("@/hooks/use-grid-data", () => ({
   useGridData: useGridDataMock,
+}));
+
+vi.mock("@/hooks/use-explorer-remote-status", () => ({
+  useExplorerRemoteStatus: useExplorerRemoteStatusMock,
 }));
 
 vi.mock("@/hooks/use-inbox", () => ({
@@ -237,6 +242,7 @@ type DndState = {
   activeDragItem: TriageDragItem;
   overTargetId: string | null;
   pendingPlacement: PendingPlacement;
+  localPlacementResult: null | { id: string; type: "node" | "bit" };
   handleDragStart: ReturnType<typeof vi.fn>;
   handleDragEnd: ReturnType<typeof vi.fn>;
   handleDragCancel: ReturnType<typeof vi.fn>;
@@ -253,6 +259,7 @@ function createDndState(overrides: Partial<DndState> = {}): DndState {
     activeDragItem: null,
     overTargetId: null,
     pendingPlacement: null,
+    localPlacementResult: null,
     handleDragStart: vi.fn(),
     handleDragEnd: vi.fn(),
     handleDragCancel: vi.fn(),
@@ -297,6 +304,11 @@ beforeEach(() => {
   reconcileUnstageCandidateMock.mockReset();
   useGridDataMock.mockReset();
   useGridDataMock.mockReturnValue({ nodes: [], bits: [], isLoading: false });
+  useExplorerRemoteStatusMock.mockReset();
+  useExplorerRemoteStatusMock.mockImplementation(({ pathIds }) => ({
+    isReady: true,
+    validPathIds: [...pathIds],
+  }));
   inboxState.activeScratchBits = [
     { id: "scratch-2", title: "Second Scratch" },
     { id: "scratch-3", title: "Third Scratch" },
@@ -1440,6 +1452,22 @@ describe("TriageWorkspace", () => {
     expect(screen.getByTestId("hierarchy-section-body-l1")).toBeInTheDocument();
     expect(screen.getByTestId("hierarchy-section-body-l2")).toBeInTheDocument();
     expect(screen.getByTestId("hierarchy-section-body-l3")).toBeInTheDocument();
+  });
+
+  it("projects only the successful local placement stable identity into Explorer", () => {
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        localPlacementResult: { id: "created-node", type: "node" },
+      }),
+    );
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(useExplorerRemoteStatusMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        localPlacementResult: { id: "created-node", type: "node" },
+      }),
+    );
   });
 
   it("closes the actual placement owner when Explorer validation invalidates its target", async () => {

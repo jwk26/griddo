@@ -126,6 +126,11 @@ export type PendingPlacement = {
   isDirectBreakdown: boolean;
 } | null;
 
+export type LocalPlacementResultIdentity = {
+  id: string;
+  type: "node" | "bit";
+} | null;
+
 const TRIAGE_BREAKDOWN_UNSTAGE_DROP_ID = "triage-remove-drop:breakdown";
 
 const triageInteractionCollisionDetection: CollisionDetection = (args) =>
@@ -402,6 +407,7 @@ export function useTriageDnd(
   handleDragCancel: () => void;
   handleDragOver: (event: DragOverEvent) => void;
   pendingPlacement: PendingPlacement;
+  localPlacementResult: LocalPlacementResultIdentity;
   handlePlacementConfirm: (
     scratchId: string,
     confirmedType?: "node" | "bit",
@@ -416,6 +422,8 @@ export function useTriageDnd(
   const [overTargetId, setOverTargetId] = useState<string | null>(null);
   const [pendingPlacement, setPendingPlacement] =
     useState<PendingPlacement>(null);
+  const [localPlacementResult, setLocalPlacementResult] =
+    useState<LocalPlacementResultIdentity>(null);
   const [targetFeedback, setTargetFeedback] =
     useState<TriageTargetFeedback>(null);
   const activationSnapshotRef = useRef<TriageDragSnapshot | null>(null);
@@ -827,7 +835,7 @@ export function useTriageDnd(
       }
 
       if (effectiveType === "node") {
-        await dataStore.createNode({
+        const createdNode = await dataStore.createNode({
           title: placement.candidateLabel,
           parentId: placement.parentNodeId,
           level:
@@ -841,6 +849,7 @@ export function useTriageDnd(
           deadline: null,
           deadlineAllDay: false,
         });
+        setLocalPlacementResult({ id: createdNode.id, type: "node" });
       }
 
       if (effectiveType === "bit") {
@@ -848,7 +857,7 @@ export function useTriageDnd(
           return;
         }
 
-        await dataStore.createBit({
+        const createdBit = await dataStore.createBit({
           title: placement.candidateLabel,
           parentId: placement.parentNodeId,
           x: position.x,
@@ -859,6 +868,7 @@ export function useTriageDnd(
           deadlineAllDay: false,
           priority: null,
         });
+        setLocalPlacementResult({ id: createdBit.id, type: "bit" });
       }
 
       await dataStore.markScratchBreakdownConsumed(
@@ -885,6 +895,7 @@ export function useTriageDnd(
     handleDragCancel,
     handleDragOver,
     pendingPlacement,
+    localPlacementResult,
     handlePlacementConfirm,
     handlePlacementCancel,
     overTargetId,

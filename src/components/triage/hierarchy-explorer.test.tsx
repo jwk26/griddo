@@ -8,6 +8,8 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   TriageDragItem,
@@ -18,12 +20,23 @@ import { useTriageStore } from "@/stores/triage-store";
 import type { Bit, Node } from "@/types";
 import { HierarchyExplorer } from "./hierarchy-explorer";
 
+const globalsCss = readFileSync(
+  join(process.cwd(), "src/app/globals.css"),
+  "utf8",
+);
+
+const useExplorerRemoteStatusMock = vi.hoisted(() => vi.fn());
+
 vi.mock("@dnd-kit/core", () => ({
   useDroppable: vi.fn().mockReturnValue({ setNodeRef: vi.fn() }),
 }));
 
 vi.mock("@/hooks/use-grid-data", () => ({
   useGridData: vi.fn(),
+}));
+
+vi.mock("@/hooks/use-explorer-remote-status", () => ({
+  useExplorerRemoteStatus: useExplorerRemoteStatusMock,
 }));
 
 const departureState = vi.hoisted(() => ({
@@ -70,6 +83,28 @@ function createNode(overrides: Partial<Node> = {}): Node {
   };
 }
 
+function createBit(overrides: Partial<Bit> = {}): Bit {
+  return {
+    id: overrides.id ?? crypto.randomUUID(),
+    title: overrides.title ?? "Bit",
+    description: overrides.description ?? "",
+    icon: overrides.icon ?? "Box",
+    deadline: overrides.deadline ?? null,
+    deadlineAllDay: overrides.deadlineAllDay ?? false,
+    priority: overrides.priority ?? null,
+    status: overrides.status ?? "active",
+    mtime: overrides.mtime ?? 1,
+    createdAt: overrides.createdAt ?? 1,
+    parentId: overrides.parentId ?? "node-1",
+    x: overrides.x ?? 0,
+    y: overrides.y ?? 0,
+    deletedAt: overrides.deletedAt ?? null,
+    archivedAt: overrides.archivedAt ?? null,
+    version: overrides.version ?? 1,
+    pastDeadlineDismissed: overrides.pastDeadlineDismissed ?? false,
+  };
+}
+
 function setGrid(parentId: string | null, nodes: Node[], bits: Bit[] = []) {
   gridByParent.set(parentId, { nodes, bits, isLoading: false });
 }
@@ -80,6 +115,7 @@ const defaultProps: {
   onPointerGeometryChange: (point: { x: number; y: number }) => void;
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
+  localPlacementResult: null;
   targetFeedback: TriageTargetFeedback;
 } = {
   activeDragItem: null,
@@ -87,6 +123,7 @@ const defaultProps: {
   onPointerGeometryChange: vi.fn(),
   overTargetId: null,
   pendingPlacementDropId: null,
+  localPlacementResult: null,
   targetFeedback: null,
 };
 
@@ -130,6 +167,20 @@ beforeEach(async () => {
   vi.mocked(useGridData).mockImplementation(
     (parentId) => gridByParent.get(parentId) ?? EMPTY_GRID,
   );
+  useExplorerRemoteStatusMock.mockReset();
+  useExplorerRemoteStatusMock.mockImplementation(({ pathIds }) => {
+    const validPathIds: string[] = [];
+    let parentId: string | null = null;
+    for (const id of pathIds as string[]) {
+      const match = (gridByParent.get(parentId)?.nodes ?? []).find(
+        (node) => node.id === id,
+      );
+      if (match === undefined) break;
+      validPathIds.push(id);
+      parentId = id;
+    }
+    return { isReady: true, validPathIds };
+  });
   const { useDroppable } = await import("@dnd-kit/core");
   vi.mocked(useDroppable).mockClear();
   departureState.destination = null;
@@ -604,5 +655,164 @@ describe("HierarchyExplorer Task 134 base", () => {
       pendingPlacementDropId,
     );
     expect(useTriageStore.getState().explorerPathIds).toEqual([home.id]);
+  });
+});
+
+describe("HierarchyExplorer Task 150 remote/path statuses", () => {
+  it("renders an affected-column count, preserves focus, and shows the first surviving new row on activation", () => {
+    const first = createNode({ id: "first", title: "First" });
+    const remote = createNode({ id: "remote", title: "Remote" });
+    setGrid(null, [first, remote]);
+    useTriageStore.setState({
+      explorerRemoteArrivalIds: { home: [remote.id] },
+    });
+    render(<HierarchyExplorer {...defaultProps} />);
+
+    const firstButton = screen.getByRole("button", {
+      name: `Select Node: ${first.title}`,
+    });
+    firstButton.focus();
+    const count = screen.getByRole("button", { name: "Show new in Home" });
+    expect(count).toHaveTextContent("1 new");
+    expect(firstButton).toHaveFocus();
+
+    const body = screen.getByTestId("hierarchy-section-body-home");
+    body.scrollTop = 80;
+    fireEvent.click(count);
+
+    expect(body.scrollTop).toBe(0);
+    expect(
+      screen.getByRole("button", { name: `Select Node: ${remote.title}` }),
+    ).toHaveFocus();
+    expect(useTriageStore.getState().explorerRemoteArrivalIds).toEqual({});
+  });
+
+  it("clears an observed-top count without moving focus", () => {
+    const remote = createNode({ id: "remote", title: "Remote" });
+    setGrid(null, [remote]);
+    useTriageStore.setState({
+      explorerRemoteArrivalIds: { home: [remote.id] },
+    });
+    render(<HierarchyExplorer {...defaultProps} />);
+    const row = screen.getByRole("button", {
+      name: `Select Node: ${remote.title}`,
+    });
+    row.focus();
+    const body = screen.getByTestId("hierarchy-section-body-home");
+    body.scrollTop = 0;
+    expect(
+      screen.getByRole("button", { name: "Show new in Home" }),
+    ).toBeInTheDocument();
+
+    fireEvent.scroll(body);
+
+    expect(screen.queryByRole("button", { name: "Show new in Home" })).not.toBeInTheDocument();
+    expect(row).toHaveFocus();
+  });
+
+  it("focuses a newly arrived Bit only when its affected-column action is activated", () => {
+    const home = createNode({ id: "home-a", title: "Projects" });
+    const remoteBit = createBit({
+      id: "remote-bit",
+      parentId: home.id,
+      title: "Remote note",
+    });
+    setGrid(null, [home]);
+    setGrid(home.id, [], [remoteBit]);
+    useTriageStore.setState({
+      explorerPathIds: [home.id],
+      explorerOpenColumnIds: ["home", home.id],
+      explorerRemoteArrivalIds: { [home.id]: [remoteBit.id] },
+    });
+    render(<HierarchyExplorer {...defaultProps} />);
+
+    const homeButton = screen.getByRole("button", {
+      name: `Select Node: ${home.title}`,
+    });
+    homeButton.focus();
+    expect(homeButton).toHaveFocus();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Show new in Level 1" }),
+    );
+
+    expect(
+      document.querySelector(`[data-explorer-item-id="${remoteBit.id}"]`),
+    ).toHaveFocus();
+  });
+
+  it("renders one exact destination-column fallback and returns focus on Dismiss", async () => {
+    const home = createNode({ id: "home", title: "Projects" });
+    setGrid(null, [home]);
+    setGrid(home.id, []);
+    useTriageStore.setState({
+      explorerPathIds: [home.id],
+      explorerOpenColumnIds: ["home", home.id],
+      explorerPathStatus: {
+        kind: "archived",
+        title: "Research",
+        destination: home.title,
+        columnId: home.id,
+        fallbackPathIds: [home.id],
+      },
+    });
+    render(<HierarchyExplorer {...defaultProps} />);
+
+    const status = screen.getByRole("status");
+    expect(status).toHaveTextContent(
+      "“Research” was archived. Returned to Projects.",
+    );
+    expect(within(status).getByRole("button", { name: "Dismiss" })).toBeInTheDocument();
+    expect(screen.getAllByRole("status")).toHaveLength(1);
+
+    fireEvent.click(within(status).getByRole("button", { name: "Dismiss" }));
+    await waitFor(() => expect(screen.queryByRole("status")).not.toBeInTheDocument());
+    expect(
+      screen.getByRole("button", { name: `Select Node: ${home.title}` }),
+    ).toHaveFocus();
+  });
+
+  it("replaces a path fallback with the exact stale-placement strip when the pending target disappears", async () => {
+    const home = createNode({ id: "home", title: "Projects" });
+    setGrid(null, [home]);
+    setGrid(home.id, []);
+    useTriageStore.setState({
+      explorerPathIds: [home.id],
+      explorerOpenColumnIds: ["home", home.id],
+    });
+    render(
+      <HierarchyExplorer
+        {...defaultProps}
+        pendingPlacementDropId={getTriageHierarchyDropId("missing")}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Placement closed because this Explorer path changed.",
+      ),
+    );
+  });
+
+  it("defines static reduced-motion parity and all eight Explorer theme role families", () => {
+    expect(globalsCss).toContain(".explorer-remote-count");
+    expect(globalsCss).toContain(".explorer-path-status");
+    expect(globalsCss).toContain(".explorer-status-action");
+    for (const theme of [
+      "tiny-desk",
+      "neumorphism",
+      "claymorphism",
+      "origami",
+      "terminal",
+      "retro-mac",
+      "graphite",
+    ]) {
+      expect(globalsCss).toContain(
+        `:root[data-color-theme="${theme}"] .explorer-path-status`,
+      );
+    }
+    expect(globalsCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.explorer-remote-count[\s\S]*transition: none/,
+    );
   });
 });

@@ -11,6 +11,10 @@ import {
   type UIEvent,
 } from "react";
 import { useGridData } from "@/hooks/use-grid-data";
+import {
+  useExplorerRemoteStatus,
+  type ExplorerItemIdentity,
+} from "@/hooks/use-explorer-remote-status";
 import { useTriageDepartureContext } from "@/hooks/use-triage-departure";
 import type {
   TriageDragItem,
@@ -20,8 +24,10 @@ import {
   getTriageHierarchyDropId,
   type TriageDropData,
 } from "@/lib/grid-dnd";
+import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import { cn } from "@/lib/utils";
 import {
+  type ExplorerPathStatusState,
   type TriageSessionScrollPosition,
   useTriageStore,
 } from "@/stores/triage-store";
@@ -33,6 +39,7 @@ interface HierarchyExplorerProps {
   onPointerGeometryChange: (point: { x: number; y: number }) => void;
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
+  localPlacementResult: ExplorerItemIdentity | null;
   targetFeedback: TriageTargetFeedback;
 }
 
@@ -142,12 +149,44 @@ function focusFallback(validPathIds: string[]) {
     ?.focus();
 }
 
+function explorerTemplate(
+  template: string,
+  values: Record<string, string | number>,
+): string {
+  return Object.entries(values).reduce(
+    (copy, [key, value]) => copy.replaceAll(`{${key}}`, String(value)),
+    template,
+  );
+}
+
+function explorerPathStatusCopy(status: ExplorerPathStatusState): string {
+  if (status.kind === "stale-placement") {
+    return INBOX_TRIAGE_COPY.explorerStatus.path.stalePlacement;
+  }
+  if (status.title === null) {
+    return explorerTemplate(INBOX_TRIAGE_COPY.explorerStatus.path.invalid, {
+      destination: status.destination,
+    });
+  }
+  const template =
+    status.kind === "archived"
+      ? INBOX_TRIAGE_COPY.explorerStatus.path.archived
+      : status.kind === "moved"
+        ? INBOX_TRIAGE_COPY.explorerStatus.path.moved
+        : INBOX_TRIAGE_COPY.explorerStatus.path.unavailable;
+  return explorerTemplate(template, {
+    title: status.title,
+    destination: status.destination,
+  });
+}
+
 export function HierarchyExplorer({
   activeDragItem,
   onPendingPlacementInvalidated,
   onPointerGeometryChange,
   overTargetId,
   pendingPlacementDropId,
+  localPlacementResult,
   targetFeedback,
 }: HierarchyExplorerProps) {
   const targetFeedbackRef = useRef(targetFeedback);
@@ -264,10 +303,53 @@ export function HierarchyExplorer({
   const reconcileExplorerContext = useTriageStore(
     (state) => state.reconcileExplorerContext,
   );
+  const explorerRemoteArrivalIds = useTriageStore(
+    (state) => state.explorerRemoteArrivalIds,
+  );
+  const explorerPathStatus = useTriageStore(
+    (state) => state.explorerPathStatus,
+  );
+  const clearExplorerRemoteArrivals = useTriageStore(
+    (state) => state.clearExplorerRemoteArrivals,
+  );
+  const clearExplorerPathStatus = useTriageStore(
+    (state) => state.clearExplorerPathStatus,
+  );
+  const clearExplorerRemotePresentation = useTriageStore(
+    (state) => state.clearExplorerRemotePresentation,
+  );
+  const setExplorerPathStatus = useTriageStore(
+    (state) => state.setExplorerPathStatus,
+  );
+
+  useEffect(
+    () => () => clearExplorerRemotePresentation(),
+    [clearExplorerRemotePresentation],
+  );
 
   const selectedHomeId = explorerPathIds[0] ?? null;
   const selectedL1Id = explorerPathIds[1] ?? null;
   const selectedL2Id = explorerPathIds[2] ?? null;
+  const openColumnIdentities = useMemo(
+    () => [
+      { columnId: "home", parentId: null },
+      ...(selectedHomeId === null
+        ? []
+        : [{ columnId: selectedHomeId, parentId: selectedHomeId }]),
+      ...(selectedL1Id === null
+        ? []
+        : [{ columnId: selectedL1Id, parentId: selectedL1Id }]),
+      ...(selectedL2Id === null
+        ? []
+        : [{ columnId: selectedL2Id, parentId: selectedL2Id }]),
+    ],
+    [selectedHomeId, selectedL1Id, selectedL2Id],
+  );
+  const authoritativeRemoteStatus = useExplorerRemoteStatus({
+    localPlacementResult,
+    openColumns: openColumnIdentities,
+    pathIds: explorerPathIds,
+  });
   const rootGrid = useGridData(null);
   const level1Grid = useGridData(selectedHomeId);
   const level2Grid = useGridData(selectedL1Id);
@@ -309,7 +391,7 @@ export function HierarchyExplorer({
   const selectedL2Node =
     level2Nodes.find(({ id }) => id === selectedL2Id) ?? null;
 
-  const validation = useMemo(() => {
+  const gridValidation = useMemo(() => {
     if (rootGrid.isLoading) return null;
 
     const validPathIds: string[] = [];
@@ -340,6 +422,19 @@ export function HierarchyExplorer({
     selectedL2Id,
     selectedL2Node,
   ]);
+  const validation = useMemo(() => {
+    const authoritativePath = authoritativeRemoteStatus.validPathIds;
+    if (
+      !authoritativeRemoteStatus.isReady ||
+      authoritativePath === null ||
+      gridValidation === null ||
+      authoritativePath.length > gridValidation.length ||
+      !authoritativePath.every((id, index) => gridValidation[index] === id)
+    ) {
+      return null;
+    }
+    return authoritativePath;
+  }, [authoritativeRemoteStatus, gridValidation]);
 
   const visibleItemIdsByColumn = useMemo(() => {
     const columns: Record<string, string[]> = {
@@ -451,11 +546,25 @@ export function HierarchyExplorer({
       invalidatedPendingDropIdRef.current !== pendingPlacementDropId
     ) {
       invalidatedPendingDropIdRef.current = pendingPlacementDropId;
+      const fallbackId = validation.at(-1);
+      const fallbackNode = [selectedHomeNode, selectedL1Node, selectedL2Node]
+        .find((node) => node?.id === fallbackId);
+      setExplorerPathStatus({
+        kind: "stale-placement",
+        title: null,
+        destination: fallbackNode?.title ?? "Home",
+        columnId: fallbackId ?? "home",
+        fallbackPathIds: validation,
+      });
       onPendingPlacementInvalidated(pendingPlacementDropId);
     }
   }, [
     onPendingPlacementInvalidated,
     pendingPlacementDropId,
+    selectedHomeNode,
+    selectedL1Node,
+    selectedL2Node,
+    setExplorerPathStatus,
     validation,
     visibleDropIds,
   ]);
@@ -546,10 +655,24 @@ export function HierarchyExplorer({
               isDimmed={index > 0 && column.parentNode === null}
               itemIds={idsForColumn(column.nodes, column.bits)}
               label={COLUMN_LABELS[index]}
+              pathStatus={
+                explorerPathStatus?.columnId === column.columnId &&
+                explorerPathStatus.fallbackPathIds.length === index
+                  ? explorerPathStatus
+                  : null
+              }
+              remoteArrivalIds={
+                explorerRemoteArrivalIds[column.columnId] ?? []
+              }
               scrollPosition={
                 explorerColumnScroll[column.columnId] ?? EMPTY_SCROLL_POSITION
               }
               onScrollPositionChange={setExplorerColumnScroll}
+              onClearRemoteArrivals={clearExplorerRemoteArrivals}
+              onDismissPathStatus={(status) => {
+                clearExplorerPathStatus();
+                focusFallback(status.fallbackPathIds);
+              }}
               parentNode={column.parentNode}
               targetParentPath={targetParentPath}
             >
@@ -624,6 +747,10 @@ function ExplorerColumn({
   isDimmed,
   itemIds,
   label,
+  pathStatus,
+  remoteArrivalIds,
+  onClearRemoteArrivals,
+  onDismissPathStatus,
   onScrollPositionChange,
   parentNode,
   scrollPosition,
@@ -636,6 +763,10 @@ function ExplorerColumn({
   isDimmed: boolean;
   itemIds: string[];
   label: (typeof COLUMN_LABELS)[number];
+  pathStatus: ExplorerPathStatusState | null;
+  remoteArrivalIds: string[];
+  onClearRemoteArrivals: (columnId: string) => void;
+  onDismissPathStatus: (status: ExplorerPathStatusState) => void;
   onScrollPositionChange: (
     columnId: string,
     position: TriageSessionScrollPosition,
@@ -645,6 +776,7 @@ function ExplorerColumn({
   targetParentPath: string[];
 }) {
   const bodyRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const sectionIndex = COLUMN_LABELS.indexOf(label);
   const sectionDropId = getTriageHierarchyDropId(
     sectionIndex === 0 ? "body-home" : `body-l${sectionIndex}`,
@@ -691,6 +823,9 @@ function ExplorerColumn({
 
   function handleScroll(event: UIEvent<HTMLDivElement>) {
     const body = event.currentTarget;
+    if (body.scrollTop <= 0 && remoteArrivalIds.length > 0) {
+      onClearRemoteArrivals(columnId);
+    }
     const bodyTop = body.getBoundingClientRect().top;
     const firstVisible = Array.from(
       body.querySelectorAll<HTMLElement>("[data-explorer-item-id]"),
@@ -725,15 +860,66 @@ function ExplorerColumn({
       )}
     >
       <div className="border-b border-border/50 bg-muted/30 px-3 py-2">
-        <h3
-          className="font-mono text-[10px] font-medium uppercase text-muted-foreground"
-          data-testid={headingTestId}
-          id={`${headingTestId}-label`}
-          tabIndex={-1}
-        >
-          {label}
-        </h3>
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <h3
+            ref={headingRef}
+            className="font-mono text-[10px] font-medium uppercase text-muted-foreground"
+            data-testid={headingTestId}
+            id={`${headingTestId}-label`}
+            tabIndex={-1}
+          >
+            {label}
+          </h3>
+          {remoteArrivalIds.length > 0 ? (
+            <button
+              aria-label={explorerTemplate(
+                INBOX_TRIAGE_COPY.explorerStatus.actions.showNewIn,
+                { level: label },
+              )}
+              className="explorer-remote-count"
+              type="button"
+              onClick={() => {
+                const body = bodyRef.current;
+                const newIds = new Set(remoteArrivalIds);
+                const target = Array.from(
+                  body?.querySelectorAll<HTMLElement>(
+                    "[data-explorer-item-id]",
+                  ) ?? [],
+                ).find((element) =>
+                  newIds.has(element.dataset.explorerItemId ?? ""),
+                );
+                if (body !== null) body.scrollTop = 0;
+                onClearRemoteArrivals(columnId);
+                (target ?? headingRef.current)?.focus();
+              }}
+            >
+              {remoteArrivalIds.length === 1
+                ? INBOX_TRIAGE_COPY.explorerStatus.arrival.one
+                : explorerTemplate(
+                    INBOX_TRIAGE_COPY.explorerStatus.arrival.many,
+                    { count: remoteArrivalIds.length },
+                  )}
+            </button>
+          ) : null}
+        </div>
       </div>
+      {pathStatus !== null ? (
+        <div
+          aria-atomic="true"
+          aria-live="polite"
+          className="explorer-path-status"
+          role="status"
+        >
+          <span>{explorerPathStatusCopy(pathStatus)}</span>
+          <button
+            className="explorer-status-action"
+            type="button"
+            onClick={() => onDismissPathStatus(pathStatus)}
+          >
+            {INBOX_TRIAGE_COPY.explorerStatus.actions.dismiss}
+          </button>
+        </div>
+      ) : null}
       <div
         ref={(node) => {
           bodyRef.current = node;
@@ -911,6 +1097,7 @@ function NodeDropCell({
       data-triage-drop-id={dropId}
       data-triage-hierarchy-drop={JSON.stringify(dropData)}
       data-triage-target-state={state}
+      tabIndex={-1}
     >
       {content}
     </div>
@@ -922,6 +1109,7 @@ function BitContextRow({ bit }: { bit: Bit }) {
     <div
       className="flex items-center gap-2 rounded-md px-3 py-1.5"
       data-explorer-item-id={bit.id}
+      tabIndex={-1}
     >
       <ListTodo
         aria-hidden="true"
