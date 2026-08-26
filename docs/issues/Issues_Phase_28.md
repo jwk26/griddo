@@ -3,7 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Tasks 149–151 `[x]`, Accepted; Task 152 In Progress; Tasks 153–154 remain unstarted
+> State: Tasks 149–151 `[x]`, Accepted; Task 152 Awaiting User Decision; Tasks 153–154 remain unstarted
 
 ## Status Legend
 
@@ -102,15 +102,21 @@ and are outside Phase 28 scope.
 | Field | Durable value |
 | --- | --- |
 | Task | `152 — Connect direct/staged placement selection and confirmation` |
-| State | `In Progress`; Task 152 remains `[ ]`; Tasks 153–154 remain unstarted |
+| State | `Awaiting User Decision`; Task 152 remains `[ ]`; Tasks 153–154 remain unstarted |
 | Approval | Exact fresh candidate-pinned Task 152 run-task work order on 2026-08-26, bounded by `docs/issues/Issues_Phase_28.gate-c.json` and the exact current Task 152 contract |
 | Approved base / entrypoint | Integration base `8cb2d904a55c136ca319e7bdf619d8e5d962fce8`; feature entrypoint and recovery anchor `0ab994e867754db96d64c34691942d27cf9c8efc`; accepted Task 151 `src` tree `8d80becbfb821d54453939b81e20c249a4fb2a1a` |
 | Exact scope | Create the placement coordinator hook/test and Task 152 verification record; modify only the approved DnD, Explorer, Workspace, and owner tests; extend the shared operation-lock test; update only this ledger state and the actual measured Task 152 workflow-pilot row |
 | Behavior | Staged release target; direct Node/Bit type plus destination/path selection; distinct target-column confirmation; exact source/target/version snapshot; explicit Confirm/Cancel and focus return; shared `placement` lock; one Task 123 dispatch; pending/unknown/reconciling lock retention; duplicate/competing-intent rejection without queue/replay; terminal-only release; full-target reason with disabled Confirm and working Cancel; Task 135 search close/lock coordination; valid/invalid/stale/moved/no-write and unknown reconciliation; Drop-only no-write |
 | Dependencies | Tasks 123, 128, 134, 135, 136, 139, 145, and 149 are `[x]`, Accepted; no unresolved Task 152 prerequisite |
-| Issues / deviations | None at start; the stale plan header/Phase Index aggregate is explicitly excluded from silent Task 152 repair by the work order and is not an affected readiness blocker |
+| Issues / deviations | `P28-05` was discovered by the post-full-gate High-risk review after three bounded repair cycles; no scope or canonical deviation. The stale plan header/Phase Index aggregate is explicitly excluded from silent Task 152 repair by the work order and is not an affected readiness blocker |
 | Canonical impact | `None` — Task 152 implements the existing approved contract without changing canonical product, design, policy, data, persistence, or lifecycle authority |
-| Next legal action | Test-first Task 152 implementation, focused/full verification, High-risk review, durable evidence, and a clean committed implementation checkpoint; keep Task 152 `[ ]` and do not start Task 153 |
+| Next legal action | User disposition of `P28-05`. A fourth repair cycle requires explicit approval of the evidence and minimum hypothesis below; keep Task 152 `[ ]` and do not start Task 153 |
+
+### Task 152 Review Blockers
+
+| ID | State | Evidence | Exact minimum repair hypothesis | Canonical impact |
+| --- | --- | --- | --- | --- |
+| `P28-05` | `Awaiting User Decision` | After the latest-input full gate passed, High-risk review found that successful placement records `localPlacementResult` in `triage-workspace.tsx`, while `hierarchy-explorer.tsx` attempts to focus the exact repository card for only five animation-frame callbacks and then permanently stops. If the authoritative live-query/React card render arrives after that bounded window, the placement write succeeds but focus remains off the actual Node/Bit card, violating Task 152's exact success focus handoff. The concrete path is `TriageWorkspace` placement `onApplied` → `localPlacementResult` → `HierarchyExplorer` lines 448–470. | One fourth bounded repair within the existing Workspace/Explorer/test owners: add a failing mounted regression whose authoritative result becomes renderable only after the current frame window; replace frame-count polling with a render-driven, identity-matched one-shot focus intent that persists until the exact card is present or the approved lifecycle invalidates it; rerun all five focused owners and the full gate because Explorer focus input changes. No new copy, visual, data, persistence, or future-task behavior. | `None` — implementation-local focus/lifecycle correction to the existing Task 152 contract. |
 
 ## Task 151 Accepted Checkpoint
 
