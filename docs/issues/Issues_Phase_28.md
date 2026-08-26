@@ -3,7 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Tasks 149–152 `[x]`, Accepted; Tasks 153–154 remain unstarted
+> State: Tasks 149–152 `[x]`, Accepted; Task 153 is `In Progress`; Task 154 remains unstarted
 
 ## Status Legend
 
@@ -96,6 +96,21 @@ No production implementation or Task 149 execution occurred.
 
 Phase 27 items `P27-06` and `P27-08` remain Deferred under their Phase 27 owner
 and are outside Phase 28 scope.
+
+## Task 153 Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Task | `153 — Render DP-VQ08 placement reliability states` |
+| State | `In Progress`; Task 153 remains `[ ]`; Task 154 remains `[ ]`, unstarted |
+| Approval | Exact fresh candidate-pinned Task 153 work order on 2026-08-26, bounded by `docs/issues/Issues_Phase_28.gate-c.json`, accepted `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`, and the exact current Task 153 contract |
+| Approved base / entrypoint | Integration base `8cb2d904a55c136ca319e7bdf619d8e5d962fce8`; Task 153 entrypoint and recovery anchor `12fd2a9dedd282a784e0f9113950cb1a7646477c`; accepted Task 152 `src` tree `8247077665a212e575faad44f20046de623b7306` |
+| Exact scope | Modify only the approved placement hook/test, Explorer/test, global CSS, and inbox-triage copy/test owners; create `docs/verification/inbox-triage/task-153.md`; update only this ledger state and the actual measured Task 153 workflow-pilot row |
+| Behavior | Realize the accepted fixed reliability rail inside Task 152's captured affordance for pending, unknown, reconciling, authoritative not-applied, stale source, stale target, and authoritative success; exact receipt-owned copy/actions/focus; same-operation read-only Check again; same logical operation/result ID Retry; retained truth and operation-owned lifetime; polite atomic static status; reduced-motion parity and eight-theme mapping |
+| Dependencies | Tasks 115, 128, and 152 are `[x]`, Accepted; `DP-VQ08=A` is accepted for Task 153 only; no unresolved Task 153 prerequisite |
+| Issues / deviations | None at start; the stale plan aggregate/Phase Index wording is non-blocking and excluded from Task 153 scope |
+| Canonical impact | `None` — Task 153 implements the existing approved contract without changing canonical product, design, policy, data, persistence, command, or lifecycle authority |
+| Next legal action | TDD implementation and bounded High-risk verification/review for Task 153 only; Task 154 remains `[ ]`, unstarted |
 
 ## Task 152 Accepted Checkpoint
 
