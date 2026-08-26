@@ -102,16 +102,16 @@ and are outside Phase 28 scope.
 | Field | Durable value |
 | --- | --- |
 | Task | `151 — Render DP-VQ07 dedicated Explorer search body and close semantics` |
-| State | `Implemented`, awaiting user checkpoint; Task 151 remains `[ ]` pending explicit user acceptance; Tasks 152–154 remain unstarted |
+| State | `In Progress` — third and final default-budget bounded repair; Task 151 remains `[ ]` pending explicit user acceptance; Tasks 152–154 remain unstarted |
 | Approval | Exact fresh candidate-pinned Task 151 run-task work order on 2026-08-26, bounded by `docs/issues/Issues_Phase_28.gate-c.json`, accepted `DP-VQ07`, and only the `P28-04`-moved `DP-VQ06-EXPLORER` selected-Bit disappearance slice |
-| Start base / recovery anchor | `b13bcf0964d7113d7fcf701f3476f055fa818789`; parent `14ade3c4eaa6e55a878addcc1367843f032098c2`; accepted Task 150 `src` tree `73a1d973263f92d97580927063f27651482d18d3` |
+| Start base / recovery anchor | Initial base `b13bcf0964d7113d7fcf701f3476f055fa818789`; third-repair recovery anchor `7ff75b1bd167de124c303cc487ecbe7c9f1237d3`; recovery `src` tree `0d78415800c18bfb80f8b13c6f5c5d1af9d984a6`; accepted Task 150 `src` tree `73a1d973263f92d97580927063f27651482d18d3` |
 | Exact scope | Create the dedicated Explorer search-results component/test and Task 151 verification record; modify only the planned Explorer, search-hook, CSS, and copy owners/tests; additionally update only this minimum ledger state and the actual measured Task 151 workflow-pilot row |
 | Dependencies | Tasks 114, 128, 134, 135, and 150 are `[x]`, Accepted; no Task 151 blocker is open |
-| Issues / deviations | Two implementation-local bounded repairs: lint exposed effect-derived duplicate reveal state, which was consolidated into the existing Task 135 hook snapshot owner; review found parent-path invalidation could be misreported as Bit-only disappearance, so only a still-valid original parent chain may emit `selection-cleared`. No scope or canonical deviation. |
+| Issues / deviations | Two completed implementation-local bounded repairs: lint exposed effect-derived duplicate reveal state, which was consolidated into the existing Task 135 hook snapshot owner; review found parent-path invalidation could be misreported as Bit-only disappearance, so only a still-valid original parent chain may emit `selection-cleared`. The explicitly approved third and final default-budget repair is now bounded to the seven checkpoint findings: selection-operation invalidation, complete Escape clearing, receipt-owned feedback lifetime, result icon/color identity, canonical input focus-visible and non-selecting Arrow focus, complete eight-theme entry/status/reveal roles, and results-viewport-only focus scrolling. No scope or canonical deviation. |
 | Canonical impact | `Reflected` for the already-approved `P28-04` selected-Bit release-edge correction; `None` for implementing the existing `DP-VQ07` and corrected Task 151 contract; no new canonical direction |
-| Verification | Focused 5 files / 65 tests; full 97 files / 1043 tests; lint 0 errors with 11 unchanged warnings; typecheck, build, and `git diff --check` passed. No browser run and no Task 150 browser/product evidence reuse. Detailed evidence: `docs/verification/inbox-triage/task-151.md`. |
-| Review | Self-review under the sole-session constraint found one Important parent-path/Bit-disappearance collision; two RED cases reproduced it and the repaired focused/full gates passed. Remaining Critical/Important findings: None. |
-| Next legal action | Stop at the clean committed Task 151 implementation checkpoint and await accept/reject feedback; do not write `[x]` or start Task 152 |
+| Verification | Third-repair focused/full/Chromium evidence pending. Prior inputs are historical and will not be reused; Task 150 browser/product evidence remains excluded. Detailed evidence owner: `docs/verification/inbox-triage/task-151.md`. |
+| Review | Third-repair review pending. If a checkpoint finding or required gate failure remains after this cycle, stop at the user gate with current evidence and the next hypothesis; do not start a fourth cycle. |
+| Next legal action | Reproduce and repair only the approved third-cycle findings, run focused/full and narrow actual Chromium evidence, then stop at a clean committed Task 151 checkpoint; do not write `[x]` or start Task 152 |
 
 ## Task 150 Accepted Checkpoint
 
