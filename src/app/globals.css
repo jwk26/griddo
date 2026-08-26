@@ -886,6 +886,7 @@
 .explorer-search-entry,
 .explorer-search-body,
 .explorer-search-field,
+[data-triage-role="explorer-search-field"],
 .explorer-search-close,
 .explorer-search-status,
 .explorer-search-results,
@@ -906,9 +907,15 @@
 
 .explorer-search-entry:focus-visible,
 .explorer-search-close:focus-visible,
-.explorer-search-result:focus-visible {
+.explorer-search-result:focus-visible,
+[data-triage-role="explorer-search-field"]:focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
+}
+
+.explorer-search-field:focus-within {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.22);
 }
 
 .explorer-search-body {
@@ -990,11 +997,6 @@
   text-align: start;
 }
 
-.explorer-search-result[aria-selected="true"] {
-  background: hsl(var(--accent));
-  border-color: hsl(var(--primary));
-}
-
 .explorer-search-result-icon {
   flex: none;
   height: 1rem;
@@ -1047,6 +1049,18 @@
   box-shadow: var(--theme-shadow);
 }
 
+:root[data-color-theme="tiny-desk"] .explorer-search-entry {
+  border-block-end: 1px double hsl(var(--border));
+  font-family: var(--theme-font);
+}
+
+:root[data-color-theme="tiny-desk"] .explorer-search-status,
+:root[data-color-theme="tiny-desk"] .explorer-reveal-status {
+  background: hsl(var(--card));
+  border-block-end-style: double;
+  font-family: var(--theme-font);
+}
+
 :root[data-color-theme="neumorphism"] .explorer-search-body {
   background: hsl(var(--background));
 }
@@ -1062,6 +1076,18 @@
   box-shadow: var(--theme-shadow);
 }
 
+:root[data-color-theme="neumorphism"] .explorer-search-entry {
+  font-family: var(--theme-font);
+  text-shadow: 1px 1px 0 hsl(var(--background));
+}
+
+:root[data-color-theme="neumorphism"] .explorer-search-status,
+:root[data-color-theme="neumorphism"] .explorer-reveal-status {
+  border: 0;
+  box-shadow: inset 2px 2px 4px hsl(var(--foreground) / 0.1),
+    inset -2px -2px 4px hsl(var(--background) / 0.82);
+}
+
 :root[data-color-theme="claymorphism"] .explorer-search-body {
   background: hsl(var(--background));
 }
@@ -1074,6 +1100,19 @@
     -1px -1px 4px hsl(var(--background) / 0.82);
 }
 
+:root[data-color-theme="claymorphism"] .explorer-search-entry {
+  border-radius: var(--theme-radius);
+  font-family: var(--theme-font);
+}
+
+:root[data-color-theme="claymorphism"] .explorer-search-status,
+:root[data-color-theme="claymorphism"] .explorer-reveal-status {
+  border: 0;
+  border-radius: calc(var(--theme-radius) * 0.45);
+  box-shadow: inset 2px 2px 5px hsl(var(--foreground) / 0.12),
+    inset -2px -2px 5px hsl(var(--background) / 0.8);
+}
+
 :root[data-color-theme="origami"] .explorer-search-body {
   background: hsl(var(--card));
 }
@@ -1082,6 +1121,18 @@
 :root[data-color-theme="origami"] .explorer-search-result {
   border-radius: 0;
   clip-path: polygon(0 0, 98% 0, 100% 18%, 100% 100%, 2% 100%, 0 82%);
+}
+
+:root[data-color-theme="origami"] .explorer-search-entry {
+  border-block-end: 1px solid hsl(var(--border));
+  border-radius: 0;
+  font-family: var(--theme-font);
+}
+
+:root[data-color-theme="origami"] .explorer-search-status,
+:root[data-color-theme="origami"] .explorer-reveal-status {
+  border-inline-start: 0.25rem solid hsl(var(--border));
+  border-radius: 0;
 }
 
 :root[data-color-theme="terminal"] .explorer-search-body {
@@ -1096,6 +1147,17 @@
   box-shadow: none;
 }
 
+:root[data-color-theme="terminal"] .explorer-search-entry {
+  font-family: var(--font-mono);
+}
+
+:root[data-color-theme="terminal"] .explorer-search-status,
+:root[data-color-theme="terminal"] .explorer-reveal-status {
+  background: hsl(var(--background));
+  border-block-end-style: solid;
+  font-family: var(--font-mono);
+}
+
 :root[data-color-theme="retro-mac"] .explorer-search-body {
   background: hsl(var(--background));
 }
@@ -1105,6 +1167,19 @@
   border-color: hsl(var(--foreground));
   border-radius: 0;
   box-shadow: 1px 1px 0 hsl(var(--foreground));
+}
+
+:root[data-color-theme="retro-mac"] .explorer-search-entry {
+  border: 1px solid hsl(var(--foreground));
+  border-radius: 0;
+  font-family: var(--theme-font);
+}
+
+:root[data-color-theme="retro-mac"] .explorer-search-status,
+:root[data-color-theme="retro-mac"] .explorer-reveal-status {
+  background: hsl(var(--background));
+  border-color: hsl(var(--foreground));
+  border-radius: 0;
 }
 
 :root[data-color-theme="graphite"] .explorer-search-body {
@@ -1118,10 +1193,24 @@
   border-radius: 0;
 }
 
+:root[data-color-theme="graphite"] .explorer-search-entry {
+  border-block-end: 1px solid hsl(var(--foreground));
+  border-radius: 0;
+  font-family: var(--theme-font);
+}
+
+:root[data-color-theme="graphite"] .explorer-search-status,
+:root[data-color-theme="graphite"] .explorer-reveal-status {
+  background: transparent;
+  border-block-end: 2px solid hsl(var(--foreground));
+  letter-spacing: 0.025em;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .explorer-search-entry,
   .explorer-search-body,
   .explorer-search-field,
+  [data-triage-role="explorer-search-field"],
   .explorer-search-close,
   .explorer-search-status,
   .explorer-search-results,

@@ -80,6 +80,7 @@ export type UseGridExplorerSearchResult = Readonly<{
   selectResult: (
     result: GridExplorerSearchResult,
   ) => Promise<GridExplorerSearchSelectionOutcome>;
+  invalidatePendingSelection: () => void;
   clearReveal: () => void;
 }>;
 
@@ -175,9 +176,12 @@ export function useGridExplorerSearch(
     useState<GridExplorerRevealPresentation | null>(null);
   const [retryRevision, setRetryRevision] = useState(0);
   const requestIdRef = useRef(0);
+  const selectionOperationIdRef = useRef(0);
+  const mountedRef = useRef(false);
   const searchEnabled = session.mode !== "closed";
 
   useEffect(() => {
+    mountedRef.current = true;
     let revision = 0;
     const subscription = liveQuery(async () => {
       const dataStore = await getDataStore();
@@ -188,9 +192,12 @@ export function useGridExplorerSearch(
       return { nodes, bits };
     }).subscribe({
       next: ({ nodes, bits }) => {
+        if (!mountedRef.current) return;
+        selectionOperationIdRef.current += 1;
         revision += 1;
         setSnapshot({ nodes, bits, revision });
         setSnapshotError(null);
+        setFeedback(null);
         setRevealPresentation((current) => {
           if (current?.kind !== "revealed") return current;
           const reconciliation = reconcileReveal(current.result, nodes, bits);
@@ -205,10 +212,19 @@ export function useGridExplorerSearch(
             : null;
         });
       },
-      error: (error) => setSnapshotError(errorMessage(error)),
+      error: (error) => {
+        if (!mountedRef.current) return;
+        selectionOperationIdRef.current += 1;
+        setFeedback(null);
+        setSnapshotError(errorMessage(error));
+      },
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mountedRef.current = false;
+      selectionOperationIdRef.current += 1;
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -223,6 +239,7 @@ export function useGridExplorerSearch(
     if (snapshotError !== null) {
       void Promise.resolve().then(() => {
         if (controller.signal.aborted || requestIdRef.current !== requestId) return;
+        setFeedback(null);
         setProjection((current) => ({
           ...current,
           status: "error",
@@ -234,6 +251,7 @@ export function useGridExplorerSearch(
     if (snapshot === null) {
       void Promise.resolve().then(() => {
         if (controller.signal.aborted || requestIdRef.current !== requestId) return;
+        setFeedback(null);
         setProjection((current) => ({
           results:
             current.resultQuery === normalizedQuery ? current.results : [],
@@ -248,6 +266,7 @@ export function useGridExplorerSearch(
 
     void Promise.resolve().then(() => {
       if (controller.signal.aborted || requestIdRef.current !== requestId) return;
+      setFeedback(null);
       setProjection((current) => ({
         results: current.resultQuery === normalizedQuery ? current.results : [],
         resultQuery:
@@ -277,6 +296,7 @@ export function useGridExplorerSearch(
           status: "ready",
           error: null,
         });
+        setFeedback(null);
         setFocusTarget((current) => {
           if (current.kind !== "result") return current;
           return results.some(({ key }) => key === current.resultKey)
@@ -302,12 +322,14 @@ export function useGridExplorerSearch(
           status: "error",
           error: errorMessage(error),
         }));
+        setFeedback(null);
       });
 
     return () => controller.abort();
   }, [retryRevision, runner, searchEnabled, session.query, snapshot, snapshotError]);
 
   const openSearch = useCallback(() => {
+    selectionOperationIdRef.current += 1;
     setSession((current) => ({
       mode: "active",
       query: current.query,
@@ -317,6 +339,7 @@ export function useGridExplorerSearch(
   }, []);
 
   const setQuery = useCallback((query: string) => {
+    selectionOperationIdRef.current += 1;
     setSession({ mode: "active", query });
     setProjection(EMPTY_PROJECTION);
     setResultScrollTopState(0);
@@ -325,6 +348,7 @@ export function useGridExplorerSearch(
   }, []);
 
   const interruptForDnd = useCallback(() => {
+    selectionOperationIdRef.current += 1;
     setSession((current) =>
       current.mode === "active"
         ? { mode: "interrupted", query: current.query }
@@ -334,6 +358,7 @@ export function useGridExplorerSearch(
   }, []);
 
   const closeSearch = useCallback(() => {
+    selectionOperationIdRef.current += 1;
     requestIdRef.current += 1;
     setSession(CLOSED_SESSION);
     setProjection(EMPTY_PROJECTION);
@@ -344,7 +369,13 @@ export function useGridExplorerSearch(
   }, []);
 
   const retry = useCallback(() => {
+    selectionOperationIdRef.current += 1;
+    setFeedback(null);
     setRetryRevision((current) => current + 1);
+  }, []);
+
+  const invalidatePendingSelection = useCallback(() => {
+    selectionOperationIdRef.current += 1;
   }, []);
 
   const setResultScrollTop = useCallback((scrollTop: number) => {
@@ -367,21 +398,26 @@ export function useGridExplorerSearch(
     async (
       selected: GridExplorerSearchResult,
     ): Promise<GridExplorerSearchSelectionOutcome> => {
+      const operationId = selectionOperationIdRef.current + 1;
+      selectionOperationIdRef.current = operationId;
+      setFeedback(null);
       const normalizedQuery = session.query.trim().replace(/\s+/g, " ");
+      const isCurrentOperation = () =>
+        mountedRef.current && selectionOperationIdRef.current === operationId;
       try {
         const dataStore = await getDataStore();
+        if (!isCurrentOperation()) return { kind: "stale" };
         const [nodes, bits] = await Promise.all([
           dataStore.getAllActiveNodes(),
           dataStore.getAllActiveBits(),
         ]);
+        if (!isCurrentOperation()) return { kind: "stale" };
         const refreshedResults = searchGridExplorer({
           nodes,
           bits,
           query: normalizedQuery,
         });
         const refreshed = refreshedResults.find(({ key }) => key === selected.key);
-        const revision = (snapshot?.revision ?? 0) + 1;
-        setSnapshot({ nodes, bits, revision });
 
         if (refreshed === undefined || !sameResult(selected, refreshed)) {
           setProjection({
@@ -404,6 +440,7 @@ export function useGridExplorerSearch(
         setRevealPresentation({ kind: "revealed", result: refreshed });
         return { kind: "selected", result: refreshed };
       } catch (error) {
+        if (!isCurrentOperation()) return { kind: "stale" };
         setProjection((current) => ({
           ...current,
           status: "error",
@@ -412,7 +449,7 @@ export function useGridExplorerSearch(
         return { kind: "stale" };
       }
     },
-    [session.query, snapshot?.revision],
+    [session.query],
   );
   const clearReveal = useCallback(() => setRevealPresentation(null), []);
 
@@ -440,6 +477,7 @@ export function useGridExplorerSearch(
       focusInput,
       focusResult,
       selectResult,
+      invalidatePendingSelection,
       clearReveal,
     }),
     [
@@ -459,6 +497,7 @@ export function useGridExplorerSearch(
       session.mode,
       session.query,
       selectResult,
+      invalidatePendingSelection,
       clearReveal,
       setQuery,
       setResultScrollTop,

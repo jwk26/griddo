@@ -54,6 +54,7 @@ const explorerSearchState = vi.hoisted(() => ({
   focusInput: vi.fn(),
   focusResult: vi.fn(),
   selectResult: vi.fn(),
+  invalidatePendingSelection: vi.fn(),
   clearReveal: vi.fn(),
 }));
 
@@ -166,6 +167,14 @@ function searchResult(
   };
 }
 
+function explorerSearchResultRow(): HTMLButtonElement {
+  const row = document.querySelector<HTMLButtonElement>(
+    '[data-triage-role="explorer-search-result"]',
+  );
+  if (row === null) throw new Error("Explorer search result row not rendered");
+  return row;
+}
+
 const defaultProps: {
   activeDragItem: TriageDragItem;
   onPendingPlacementInvalidated: (
@@ -275,6 +284,7 @@ beforeEach(async () => {
     explorerSearchState.focusInput,
     explorerSearchState.focusResult,
     explorerSearchState.selectResult,
+    explorerSearchState.invalidatePendingSelection,
     explorerSearchState.clearReveal,
   ]) {
     callback.mockReset();
@@ -290,6 +300,8 @@ beforeEach(async () => {
     explorerSearchState.activeQuery = null;
     explorerSearchState.interruptedQuery = null;
     explorerSearchState.results = [];
+    explorerSearchState.resultScrollTop = 0;
+    explorerSearchState.feedback = null;
     explorerSearchState.revealPresentation = null;
   });
   explorerSearchState.interruptForDnd.mockImplementation(() => {
@@ -1014,7 +1026,18 @@ describe("HierarchyExplorer Task 151 dedicated search and reveal", () => {
     expect(screen.getByRole("navigation", { name: "Explorer path" })).toBeVisible();
     expect(screen.getByTestId("explorer-search-body")).toBeVisible();
     expect(screen.queryByTestId("hierarchy-section-body-home")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Search Explorer" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Search Explorer" })).toHaveAttribute(
+      "data-triage-role",
+      "explorer-search-entry",
+    );
+    expect(screen.getByRole("status")).toHaveAttribute(
+      "data-triage-role",
+      "explorer-search-status",
+    );
+    expect(screen.getByRole("list")).toHaveAttribute(
+      "data-triage-role",
+      "explorer-search-results",
+    );
   });
 
   it("revalidates a valid result, reconstructs its path, reveals it, and focuses its real row", async () => {
@@ -1034,7 +1057,7 @@ describe("HierarchyExplorer Task 151 dedicated search and reveal", () => {
     });
     render(<HierarchyExplorer {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole("option"));
+    fireEvent.click(explorerSearchResultRow());
 
     await waitFor(() => expect(useTriageStore.getState().explorerPathIds).toEqual([projects.id]));
     const row = screen.getByRole("button", { name: "Select Node: Projects" });
@@ -1042,6 +1065,10 @@ describe("HierarchyExplorer Task 151 dedicated search and reveal", () => {
     expect(row).toHaveFocus();
     expect(screen.getByRole("status")).toHaveTextContent(
       "Revealed “Projects” in Home.",
+    );
+    expect(screen.getByRole("status")).toHaveAttribute(
+      "data-triage-role",
+      "explorer-reveal-status",
     );
   });
 
@@ -1054,7 +1081,7 @@ describe("HierarchyExplorer Task 151 dedicated search and reveal", () => {
     explorerSearchState.selectResult.mockResolvedValue({ kind: "stale" });
     render(<HierarchyExplorer {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole("option"));
+    fireEvent.click(explorerSearchResultRow());
 
     await waitFor(() => expect(explorerSearchState.selectResult).toHaveBeenCalledWith(selected));
     expect(screen.getByTestId("explorer-search-body")).toBeVisible();
@@ -1108,6 +1135,106 @@ describe("HierarchyExplorer Task 151 dedicated search and reveal", () => {
     expect(screen.queryByTestId("explorer-search-body")).not.toBeInTheDocument();
   });
 
+  it.each(["input", "result", "close", "retry", "entry"])(
+    "clears active search with Escape from the %s control",
+    async (target) => {
+      explorerSearchState.mode = "active";
+      explorerSearchState.activeQuery = "projects";
+      explorerSearchState.interruptedQuery = "older";
+      explorerSearchState.results = [searchResult("node:projects")];
+      explorerSearchState.status = target === "retry" ? "error" : "ready";
+      explorerSearchState.resultScrollTop = 44;
+      explorerSearchState.feedback = "stale-selection";
+      const view = render(<HierarchyExplorer {...defaultProps} />);
+      const control =
+        target === "input"
+          ? screen.getByRole("searchbox")
+          : target === "result"
+            ? explorerSearchResultRow()
+            : target === "close"
+              ? screen.getByRole("button", { name: "Clear and close Explorer search" })
+              : target === "retry"
+                ? screen.getByRole("button", { name: "Try again" })
+                : screen.getByRole("button", { name: "Search Explorer" });
+      fireEvent.keyDown(control, { key: "Escape" });
+      view.rerender(<HierarchyExplorer {...defaultProps} />);
+
+      expect(explorerSearchState.closeSearch).toHaveBeenCalledOnce();
+      expect(explorerSearchState).toMatchObject({
+        mode: "closed",
+        activeQuery: null,
+        interruptedQuery: null,
+        results: [],
+        resultScrollTop: 0,
+        feedback: null,
+        revealPresentation: null,
+      });
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "Search Explorer" })).toHaveFocus(),
+      );
+    },
+  );
+
+  it("clears interrupted search with Escape from an ordinary column without changing DnD focus ownership", () => {
+    setGrid(null, [createNode({ id: "projects", title: "Projects" })]);
+    explorerSearchState.mode = "interrupted";
+    explorerSearchState.interruptedQuery = "projects";
+    explorerSearchState.results = [searchResult("node:projects")];
+    explorerSearchState.resultScrollTop = 31;
+    const view = render(<HierarchyExplorer {...defaultProps} />);
+    const row = screen.getByRole("button", { name: "Select Node: Projects" });
+    row.focus();
+    fireEvent.keyDown(row, { key: "Escape" });
+    view.rerender(<HierarchyExplorer {...defaultProps} />);
+
+    expect(explorerSearchState.closeSearch).toHaveBeenCalledOnce();
+    expect(explorerSearchState.interruptedQuery).toBeNull();
+    expect(screen.getByRole("button", { name: "Search Explorer" })).toHaveFocus();
+  });
+
+  it("lets DnD retain focus ownership when Escape clears interrupted search", () => {
+    setGrid(null, [createNode({ id: "projects", title: "Projects" })]);
+    explorerSearchState.mode = "interrupted";
+    explorerSearchState.interruptedQuery = "projects";
+    const drag: TriageDragItem = {
+      kind: "triage-staged-node",
+      id: "candidate",
+      label: "Candidate",
+    };
+    const view = render(
+      <HierarchyExplorer {...defaultProps} activeDragItem={drag} />,
+    );
+    const row = screen.getByRole("button", { name: "Select Node: Projects" });
+    row.focus();
+    fireEvent.keyDown(row, { key: "Escape" });
+    view.rerender(<HierarchyExplorer {...defaultProps} activeDragItem={drag} />);
+
+    expect(explorerSearchState.closeSearch).toHaveBeenCalledOnce();
+    expect(row).toHaveFocus();
+    expect(screen.getByRole("button", { name: "Search Explorer" })).not.toHaveFocus();
+  });
+
+  it("does not write Explorer path after pending selection completes post-unmount", async () => {
+    explorerSearchState.mode = "active";
+    explorerSearchState.activeQuery = "projects";
+    const selected = searchResult("node:projects");
+    explorerSearchState.results = [selected];
+    explorerSearchState.status = "ready";
+    let resolveSelection!: (value: { kind: "selected"; result: GridExplorerSearchResult }) => void;
+    explorerSearchState.selectResult.mockReturnValue(
+      new Promise((resolve) => {
+        resolveSelection = resolve;
+      }),
+    );
+    const view = render(<HierarchyExplorer {...defaultProps} />);
+    fireEvent.click(explorerSearchResultRow());
+    view.unmount();
+
+    await act(async () => resolveSelection({ kind: "selected", result: selected }));
+
+    expect(useTriageStore.getState().explorerPathIds).toEqual([]);
+  });
+
   it("ends reveal on path change, DnD start, and search restart without a timer", async () => {
     const projects = createNode({ id: "projects", title: "Projects" });
     setGrid(null, [projects]);
@@ -1124,7 +1251,7 @@ describe("HierarchyExplorer Task 151 dedicated search and reveal", () => {
       return { kind: "selected", result: selected };
     });
     const view = render(<HierarchyExplorer {...defaultProps} />);
-    fireEvent.click(screen.getByRole("option"));
+    fireEvent.click(explorerSearchResultRow());
     await waitFor(() => expect(screen.getByText(/Revealed/)).toBeVisible());
 
     fireEvent.click(screen.getByRole("button", { name: "Search Explorer" }));
@@ -1151,7 +1278,10 @@ describe("HierarchyExplorer Task 151 dedicated search and reveal", () => {
     const home = screen.getByRole("button", { name: "Home" });
     home.focus();
 
-    useTriageStore.getState().selectScratch("scratch-2");
+    act(() => {
+      useTriageStore.getState().selectScratch("scratch-2");
+      expect(explorerSearchState.invalidatePendingSelection).toHaveBeenCalledOnce();
+    });
 
     expect(explorerSearchState.mode).toBe("active");
     expect(explorerSearchState.activeQuery).toBe("projects");
@@ -1205,7 +1335,7 @@ describe("HierarchyExplorer Task 151 dedicated search and reveal", () => {
       return { kind: "selected", result: selected };
     });
     const view = render(<HierarchyExplorer {...defaultProps} />);
-    fireEvent.click(screen.getByRole("option"));
+    fireEvent.click(explorerSearchResultRow());
     await waitFor(() =>
       expect(document.querySelector('[data-explorer-item-id="note"]')).toHaveFocus(),
     );
@@ -1252,9 +1382,17 @@ describe("HierarchyExplorer Task 151 dedicated search and reveal", () => {
       "retro-mac",
       "graphite",
     ]) {
-      expect(globalsCss).toContain(
-        `:root[data-color-theme="${theme}"] .explorer-search-body`,
-      );
+      for (const role of [
+        "explorer-search-entry",
+        "explorer-search-field",
+        "explorer-search-status",
+        "explorer-search-result",
+        "explorer-reveal-status",
+      ]) {
+        expect(globalsCss).toContain(
+          `:root[data-color-theme="${theme}"] .${role}`,
+        );
+      }
     }
     expect(globalsCss).toMatch(
       /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.explorer-search-body[\s\S]*transition: none/,

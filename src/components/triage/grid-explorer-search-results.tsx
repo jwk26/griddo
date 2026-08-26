@@ -1,6 +1,6 @@
 "use client";
 
-import { Folder, ListTodo, X } from "lucide-react";
+import { X } from "lucide-react";
 import {
   useLayoutEffect,
   useRef,
@@ -14,6 +14,7 @@ import type {
   GridExplorerSearchStatus,
 } from "@/hooks/use-grid-explorer-search";
 import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
+import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import type { GridExplorerSearchResult } from "@/lib/utils/grid-explorer-search";
 
 export interface GridExplorerSearchResultsProps {
@@ -52,11 +53,11 @@ function stateCopy({
   "feedback" | "query" | "results" | "status"
 >): string {
   const copy = INBOX_TRIAGE_COPY.explorerSearch.status;
-  if (feedback === "stale-selection") return copy.staleSelection;
   if (query.trim().length === 0) return copy.preSearch;
   if (status === "loading") return copy.loading;
   if (status === "refreshing") return copy.refreshing;
   if (status === "error") return copy.error;
+  if (feedback === "stale-selection") return copy.staleSelection;
   if (status === "ready" && results.length === 0) {
     return fill(copy.noResults, { query });
   }
@@ -90,9 +91,22 @@ export function GridExplorerSearchResults({
       return;
     }
     const row = resultRefs.current.get(focusTarget.resultKey);
-    row?.focus({ preventScroll: true });
-    row?.scrollIntoView?.({ block: "nearest" });
-  }, [focusTarget]);
+    const viewport = resultsRef.current;
+    if (row === undefined || viewport === null) return;
+    row.focus({ preventScroll: true });
+    const viewportBounds = viewport.getBoundingClientRect();
+    const rowBounds = row.getBoundingClientRect();
+    const nextScrollTop =
+      rowBounds.top < viewportBounds.top
+        ? viewport.scrollTop - (viewportBounds.top - rowBounds.top)
+        : rowBounds.bottom > viewportBounds.bottom
+          ? viewport.scrollTop + (rowBounds.bottom - viewportBounds.bottom)
+          : viewport.scrollTop;
+    if (nextScrollTop !== viewport.scrollTop) {
+      viewport.scrollTop = nextScrollTop;
+      onScrollTopChange(nextScrollTop);
+    }
+  }, [focusTarget, onScrollTopChange]);
 
   useLayoutEffect(() => {
     const viewport = resultsRef.current;
@@ -111,10 +125,7 @@ export function GridExplorerSearchResults({
   }
 
   function handleInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onClose();
-    } else if (event.key === "ArrowDown" && results[0] !== undefined) {
+    if (event.key === "ArrowDown" && results[0] !== undefined) {
       event.preventDefault();
       onFocusResult(results[0].key);
     } else if (event.key === "ArrowUp" && results.at(-1) !== undefined) {
@@ -124,11 +135,16 @@ export function GridExplorerSearchResults({
   }
 
   return (
-    <div className="explorer-search-body" data-testid="explorer-search-body">
+    <div
+      className="explorer-search-body"
+      data-testid="explorer-search-body"
+      data-triage-role="explorer-search-body"
+    >
       <div className="explorer-search-field">
         <input
           ref={inputRef}
           aria-label={INBOX_TRIAGE_COPY.explorerSearch.placeholder}
+          data-triage-role="explorer-search-field"
           placeholder={INBOX_TRIAGE_COPY.explorerSearch.placeholder}
           type="search"
           value={query}
@@ -141,6 +157,7 @@ export function GridExplorerSearchResults({
         <button
           aria-label={INBOX_TRIAGE_COPY.explorerSearch.closeAccessibleName}
           className="explorer-search-close"
+          data-triage-role="explorer-search-close"
           type="button"
           onClick={onClose}
         >
@@ -151,11 +168,17 @@ export function GridExplorerSearchResults({
         aria-atomic="true"
         aria-live="polite"
         className="explorer-search-status"
+        data-triage-role="explorer-search-status"
         role="status"
       >
         {message}
         {status === "error" ? (
-          <button type="button" onClick={onRetry}>
+          <button
+            className="explorer-search-retry"
+            data-triage-role="explorer-search-retry"
+            type="button"
+            onClick={onRetry}
+          >
             {INBOX_TRIAGE_COPY.explorerSearch.actions.retry}
           </button>
         ) : null}
@@ -165,13 +188,14 @@ export function GridExplorerSearchResults({
         aria-busy={busy}
         aria-label={`${results.length} results`}
         className="explorer-search-results"
-        role="listbox"
+        data-triage-role="explorer-search-results"
+        role="list"
         onScroll={(event: UIEvent<HTMLDivElement>) =>
           onScrollTopChange(event.currentTarget.scrollTop)
         }
       >
         {results.map((result, index) => {
-          const Icon = result.type === "node" ? Folder : ListTodo;
+          const Icon = NODE_ICON_MAP[result.icon] ?? NODE_ICON_MAP.Box;
           return (
             <button
               ref={(node) => {
@@ -179,12 +203,8 @@ export function GridExplorerSearchResults({
                 else resultRefs.current.set(result.key, node);
               }}
               key={result.key}
-              aria-selected={
-                focusTarget.kind === "result" &&
-                focusTarget.resultKey === result.key
-              }
               className="explorer-search-result"
-              role="option"
+              data-triage-role="explorer-search-result"
               type="button"
               onClick={() => onSelectResult(result)}
               onFocus={() => onFocusResult(result.key)}
@@ -198,9 +218,6 @@ export function GridExplorerSearchResults({
                 } else if (event.key === "Enter") {
                   event.preventDefault();
                   onSelectResult(result);
-                } else if (event.key === "Escape") {
-                  event.preventDefault();
-                  onClose();
                 }
               }}
             >
@@ -211,12 +228,25 @@ export function GridExplorerSearchResults({
               />
               <span className="explorer-search-result-copy">
                 <span className="explorer-search-result-title">
-                  <span className="explorer-search-type">{result.type === "node" ? "Node" : "Bit"}</span>
+                  <span
+                    className="explorer-search-type"
+                    data-triage-role="explorer-search-type"
+                  >
+                    {result.type === "node" ? "Node" : "Bit"}
+                  </span>
                   {result.title}
                 </span>
-                <span className="explorer-search-breadcrumb">{result.breadcrumb}</span>
+                <span
+                  className="explorer-search-breadcrumb"
+                  data-triage-role="explorer-search-breadcrumb"
+                >
+                  {result.breadcrumb}
+                </span>
                 {result.duplicate === null ? null : (
-                  <span className="explorer-search-duplicate">
+                  <span
+                    className="explorer-search-duplicate"
+                    data-triage-role="explorer-search-duplicate"
+                  >
                     {fill(INBOX_TRIAGE_COPY.explorerSearch.duplicate, {
                       index: result.duplicate.index,
                       count: result.duplicate.total,

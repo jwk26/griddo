@@ -252,6 +252,27 @@ describe("useGridExplorerSearch", () => {
     expect(runner).toHaveBeenCalledTimes(2);
   });
 
+  it("ends stale-selection feedback on query edit and retry before the next request status", async () => {
+    const { result } = renderHook(() => useGridExplorerSearch());
+    act(() => {
+      result.current.openSearch();
+      result.current.setQuery("alpha");
+    });
+    await waitFor(() => expect(result.current.results).toHaveLength(1));
+    const selected = result.current.results[0]!;
+    nodes = [];
+    await act(async () => {
+      await result.current.selectResult(selected);
+    });
+    expect(result.current.feedback).toBe("stale-selection");
+
+    act(() => result.current.retry());
+    expect(result.current.feedback).toBeNull();
+
+    act(() => result.current.setQuery("beta"));
+    expect(result.current.feedback).toBeNull();
+  });
+
   it("clears active/interrupted state and cancels work on close or route unmount", async () => {
     const pending = deferred<Awaited<ReturnType<GridExplorerSearchRunner>>>();
     const signals: AbortSignal[] = [];
@@ -324,6 +345,79 @@ describe("useGridExplorerSearch", () => {
     });
     act(() => result.current.interruptForDnd());
     expect(result.current.revealPresentation).toBeNull();
+  });
+
+  it.each([
+    ["query edit", (current: ReturnType<typeof useGridExplorerSearch>) => current.setQuery("beta")],
+    ["close", (current: ReturnType<typeof useGridExplorerSearch>) => current.closeSearch()],
+    ["DnD start", (current: ReturnType<typeof useGridExplorerSearch>) => current.interruptForDnd()],
+    ["Scratch switch", (current: ReturnType<typeof useGridExplorerSearch>) => current.invalidatePendingSelection()],
+  ])("ignores a pending selection completion after %s", async (_name, invalidate) => {
+    const { result } = renderHook(() => useGridExplorerSearch());
+    act(() => {
+      result.current.openSearch();
+      result.current.setQuery("alpha");
+    });
+    await waitFor(() => expect(result.current.results).toHaveLength(1));
+    const selected = result.current.results[0]!;
+    const pendingNodes = deferred<Node[]>();
+    getDataStoreMock.mockResolvedValue({
+      getAllActiveNodes: vi.fn(() => pendingNodes.promise),
+      getAllActiveBits: vi.fn(async () => bits),
+    } as unknown as DataStore);
+
+    let outcomePromise!: ReturnType<typeof result.current.selectResult>;
+    act(() => {
+      outcomePromise = result.current.selectResult(selected);
+    });
+    act(() => invalidate(result.current));
+    if (_name === "query edit") {
+      await waitFor(() => expect(result.current.status).toBe("ready"));
+    }
+    const stateAfterInvalidation = {
+      feedback: result.current.feedback,
+      focusTarget: result.current.focusTarget,
+      mode: result.current.mode,
+      query: result.current.activeQuery ?? result.current.interruptedQuery,
+      results: result.current.results.map(({ key }) => key),
+      reveal: result.current.revealPresentation,
+      scroll: result.current.resultScrollTop,
+      status: result.current.status,
+    };
+
+    await act(async () => pendingNodes.resolve(nodes));
+    await expect(outcomePromise).resolves.toEqual({ kind: "stale" });
+    expect({
+      feedback: result.current.feedback,
+      focusTarget: result.current.focusTarget,
+      mode: result.current.mode,
+      query: result.current.activeQuery ?? result.current.interruptedQuery,
+      results: result.current.results.map(({ key }) => key),
+      reveal: result.current.revealPresentation,
+      scroll: result.current.resultScrollTop,
+      status: result.current.status,
+    }).toEqual(stateAfterInvalidation);
+  });
+
+  it("invalidates selection revalidation when the hook unmounts", async () => {
+    const view = renderHook(() => useGridExplorerSearch());
+    act(() => {
+      view.result.current.openSearch();
+      view.result.current.setQuery("alpha");
+    });
+    await waitFor(() => expect(view.result.current.results).toHaveLength(1));
+    const selected = view.result.current.results[0]!;
+    const pendingNodes = deferred<Node[]>();
+    getDataStoreMock.mockResolvedValue({
+      getAllActiveNodes: vi.fn(() => pendingNodes.promise),
+      getAllActiveBits: vi.fn(async () => bits),
+    } as unknown as DataStore);
+    const outcome = view.result.current.selectResult(selected);
+
+    view.unmount();
+    pendingNodes.resolve(nodes);
+
+    await expect(outcome).resolves.toEqual({ kind: "stale" });
   });
 
   it.each([

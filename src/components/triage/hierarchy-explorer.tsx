@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type KeyboardEvent as ReactKeyboardEvent,
   type UIEvent,
 } from "react";
 import { GridExplorerSearchResults } from "@/components/triage/grid-explorer-search-results";
@@ -221,7 +222,9 @@ export function HierarchyExplorer({
   const previousDragRef = useRef<TriageDragItem>(null);
   const focusedRevealKeyRef = useRef<string | null>(null);
   const focusedSelectionClearIdRef = useRef<string | null>(null);
+  const mountedRef = useRef(false);
   const [entryFocusRevision, setEntryFocusRevision] = useState(0);
+  const invalidatePendingSearchSelection = search.invalidatePendingSelection;
   const reveal =
     search.revealPresentation?.kind === "revealed"
       ? search.revealPresentation.result
@@ -246,6 +249,22 @@ export function HierarchyExplorer({
   useEffect(() => {
     targetFeedbackRef.current = targetFeedback;
   }, [targetFeedback]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let previousScratchId = useTriageStore.getState().selectedScratchId;
+    return useTriageStore.subscribe((state) => {
+      if (state.selectedScratchId === previousScratchId) return;
+      previousScratchId = state.selectedScratchId;
+      invalidatePendingSearchSelection();
+    });
+  }, [invalidatePendingSearchSelection]);
 
   useEffect(() => {
     if (
@@ -746,7 +765,7 @@ export function HierarchyExplorer({
 
   async function selectSearchResult(result: GridExplorerSearchResult) {
     const outcome = await search.selectResult(result);
-    if (outcome.kind === "stale") return;
+    if (!mountedRef.current || outcome.kind === "stale") return;
     setExplorerPathIds([...outcome.result.nodePathIds]);
     setExplorerOpenColumnIds(["home", ...outcome.result.nodePathIds]);
   }
@@ -755,12 +774,21 @@ export function HierarchyExplorer({
     <div
       className="flex min-h-0 w-full flex-col rounded-md border border-border/50 bg-card"
       data-testid="hierarchy-explorer"
+      onKeyDownCapture={(event: ReactKeyboardEvent<HTMLDivElement>) => {
+        if (event.key !== "Escape" || search.mode === "closed") return;
+        event.preventDefault();
+        search.closeSearch();
+        if (activeDragItem === null) {
+          setEntryFocusRevision((current) => current + 1);
+        }
+      }}
     >
       {reveal !== null ? (
         <div
           aria-atomic="true"
           aria-live="polite"
           className="explorer-reveal-status"
+          data-triage-role="explorer-reveal-status"
           role="status"
         >
           {explorerTemplate(INBOX_TRIAGE_COPY.explorerSearch.status.revealed, {
@@ -791,6 +819,7 @@ export function HierarchyExplorer({
         <button
           ref={searchEntryRef}
           className="explorer-search-entry ml-auto"
+          data-triage-role="explorer-search-entry"
           type="button"
           onClick={() => {
             search.openSearch();
