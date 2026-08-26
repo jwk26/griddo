@@ -3,7 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Tasks 149–150 `[x]`, Accepted; Task 151 `[ ]`, Implemented awaiting checkpoint; Tasks 152–154 remain unstarted
+> State: Tasks 149–151 `[x]`, Accepted; Tasks 152–154 remain unstarted
 
 ## Status Legend
 
@@ -97,21 +97,22 @@ No production implementation or Task 149 execution occurred.
 Phase 27 items `P27-06` and `P27-08` remain Deferred under their Phase 27 owner
 and are outside Phase 28 scope.
 
-## Task 151 Durable Start
+## Task 151 Accepted Checkpoint
 
 | Field | Durable value |
 | --- | --- |
 | Task | `151 — Render DP-VQ07 dedicated Explorer search body and close semantics` |
-| State | `Implemented`, awaiting user checkpoint after the explicitly approved fourth bounded repair; Task 151 remains `[ ]` pending explicit user acceptance; Tasks 152–154 remain unstarted |
+| State | `Accepted`; Task 151 `[x]`; Tasks 152–154 remain unstarted |
 | Approval | Exact fresh candidate-pinned Task 151 run-task work order on 2026-08-26, bounded by `docs/issues/Issues_Phase_28.gate-c.json`, accepted `DP-VQ07`, and only the `P28-04`-moved `DP-VQ06-EXPLORER` selected-Bit disappearance slice; targeted rejection of checkpoint `cb92805` followed by explicit approval of a fourth bounded repair limited to path-intent invalidation, Explorer-external Escape clearing, and native list/listitem result semantics |
-| Start base / recovery anchor | Initial base `b13bcf0964d7113d7fcf701f3476f055fa818789`; third-repair recovery anchor `7ff75b1bd167de124c303cc487ecbe7c9f1237d3`; fourth-repair recovery anchor `cb9280534f1f502973e5bd762a7e254331809a04`; recovery `src` tree `dd833bb91e5724306287e1a074abf3a5722c5c82`; accepted Task 150 `src` tree `73a1d973263f92d97580927063f27651482d18d3` |
+| Start base / recovery anchor | Initial base `b13bcf0964d7113d7fcf701f3476f055fa818789`; third-repair recovery anchor `7ff75b1bd167de124c303cc487ecbe7c9f1237d3`; fourth-repair recovery anchor `cb9280534f1f502973e5bd762a7e254331809a04`; accepted implementation checkpoint `11a84c776700d33b5fa3f6323528e3e82e3a5fac`; implementation commit `c2749b6f3b0a60cba6d6fbb3c7ff921936446925`; accepted `src` tree `8d80becbfb821d54453939b81e20c249a4fb2a1a`; accepted Task 150 `src` tree `73a1d973263f92d97580927063f27651482d18d3` |
+| User disposition | On 2026-08-26 the user accepted the exact Task 151 implementation checkpoint `11a84c776700d33b5fa3f6323528e3e82e3a5fac`, implementation commit `c2749b6f3b0a60cba6d6fbb3c7ff921936446925`, and actual `src` tree `8d80becbfb821d54453939b81e20c249a4fb2a1a`; no Critical, Important, or Minor finding remained |
 | Exact scope | Create the dedicated Explorer search-results component/test and Task 151 verification record; modify only the planned Explorer, search-hook, CSS, and copy owners/tests; additionally update only this minimum ledger state and the actual measured Task 151 workflow-pilot row |
 | Dependencies | Tasks 114, 128, 134, 135, and 150 are `[x]`, Accepted; no Task 151 blocker is open |
 | Issues / deviations | Four completed implementation-local bounded repairs. The explicitly approved fourth repair resolved the rejected checkpoint's three Important findings: pending selection now invalidates on Home/breadcrumb path intent; mounted document-capture Escape clears active/interrupted search from Scratch and external Staging/DnD focus while preserving DnD focus ownership/propagation; and the invalid direct-button `role=list` is now a native `ul > li > button` structure. No scope or canonical deviation. |
 | Canonical impact | `Reflected` for the already-approved `P28-04` selected-Bit release-edge correction; `None` for implementing the existing `DP-VQ07` and corrected Task 151 contract; no new canonical direction |
 | Verification | Latest focused gate: 5 files / 86 tests. Latest full gate: 97 files / 1064 tests; lint 0 errors with 11 unchanged out-of-scope warnings; typecheck, production build, and `git diff --check` passed. Fresh fourth-repair Chrome 151 evidence verified a named native result list with two directly owned listitems, Explorer-external Scratch focus Escape clear/reopen state, and current-`ul` internal-only `0→1354` scrolling with every outer scroll fixed at `0`. Third-repair focus/theme evidence remains current for unchanged inputs; no Task 150 evidence was reused. Detailed evidence: `docs/verification/inbox-triage/task-151.md`. |
 | Review | Targeted rejection of `cb92805` named three Important findings. The explicitly approved fourth cycle repaired all three, and final sole-session review found no remaining Critical/Important finding in the bounded diff. |
-| Next legal action | Stop at the clean committed Task 151 implementation checkpoint and await accept/reject feedback; do not write `[x]` or start Task 152 |
+| Next legal action | Return the clean committed Task 151 acceptance-only checkpoint to Control Tower review; Task 152 remains `[ ]` and unstarted |
 
 ## Task 150 Accepted Checkpoint
 
@@ -130,7 +131,7 @@ and are outside Phase 28 scope.
 | Repair evidence | The first full gate found 1/1016 failure because the GridRuntime test's manual DnD mock omitted the new return-contract field and supplied `undefined` to the real Explorer path; the fourth cycle added only `localPlacementResult: null`. The fifth cycle preserved typed `{type,id}` identity, registered successful local results before authoritative emission, completed the seven non-default count-theme roles, and repaired the remote-action scroll/focus interaction. The user explicitly approved one sixth cycle after review confirmed that Explorer focused before the production Radix placement dialog released its trap. Production-owner RED reproduced both final-focus destinations ending on `<body>` after a write-free close. The repair now hands the fallback operation from Explorer to Workspace and consumes it through the existing `DialogContent.onCloseAutoFocus`; both actual-dialog cases retain the valid ancestor row or destination full-label heading, select no sibling/ghost, and perform no confirm/write. No seventh cycle was used. |
 | Canonical impact | `Reflected` for `P28-04`; `None` for the compatibility-test and sixth-cycle close-lifecycle repairs. Product/design/placement semantics and the historical receipt remain unchanged. |
 | Verification | Latest sixth-cycle input: focused 7 files / 179 tests, full 96 files / 1020 tests, lint 0 errors with 11 unchanged warnings, typecheck, build, and `git diff --check` passed. The mounted Workspace/Radix owner tests directly proved the affected close/focus interaction, so the user-conditional sixth-cycle browser run was not required. Fifth-cycle Chromium theme/focus-visible/reduced-motion evidence remains historical for unchanged CSS inputs and was not reused for the changed stale-placement focus input. |
-| Next legal action | Historical Task 150 boundary: stop at its clean acceptance checkpoint; Task 151 then remained `[ ]` and required the separately approved run-task lifecycle now recorded in `Task 151 Durable Start`. |
+| Next legal action | Historical Task 150 boundary: stop at its clean acceptance checkpoint; Task 151 then remained `[ ]` and required the separately approved run-task lifecycle now recorded in `Task 151 Accepted Checkpoint`. |
 
 ## Task 149 Durable Start
 
