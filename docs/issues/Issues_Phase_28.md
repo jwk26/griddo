@@ -3,7 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Tasks 149–153 `[x]`, Accepted; Task 154 remains `[ ]`, unstarted
+> State: Tasks 149–153 `[x]`, Accepted; Task 154 is `In Progress` and remains `[ ]`
 
 ## Status Legend
 
@@ -96,6 +96,21 @@ No production implementation or Task 149 execution occurred.
 
 Phase 27 items `P27-06` and `P27-08` remain Deferred under their Phase 27 owner
 and are outside Phase 28 scope.
+
+## Task 154 Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Task | `154 — Render DP-VQ09 Result Title and direct-limit surfaces` |
+| State | `In Progress`; Task 154 remains `[ ]` |
+| Approval | Exact fresh candidate-pinned Task 154 work order on 2026-08-26, bounded by `docs/issues/Issues_Phase_28.gate-c.json`, accepted `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`, and the exact current Task 154 contract |
+| Approved base / entrypoint | Integration base `8cb2d904a55c136ca319e7bdf619d8e5d962fce8`; Task 154 entrypoint and recovery anchor `29bab4fe0ea2d0abcc837b070161ec0ea1ea5b4a`; accepted Task 153 `src` tree `bcdcc5f2ed9c5ece9780a6f5ea0ccf261d5044a5` |
+| Exact scope | Modify only the approved placement hook/test, Explorer/test, global CSS, and inbox-triage copy/test owners; create `docs/verification/inbox-triage/task-154.md`; update only this ledger state and the actual measured Task 154 workflow-pilot row |
+| Behavior | Realize the accepted staged over-limit Result Title and direct Node/Bit availability steps inside Task 152's captured Placement Affordance; exact limits, copy, validation, Continue/Cancel, focus, snapshot preservation, no-write invalidation, static reduced-motion parity, and all eight theme mappings; no source truncation/mutation, direct editor, automatic fallback, or later-task behavior |
+| Dependencies | Tasks 116, 128, and 152 are `[x]`, Accepted; `DP-VQ09=A` is accepted and released for Task 154 only; no unresolved Task 154 prerequisite |
+| Issues / deviations | None at start; Task 153 reliability semantics and closed `P28-06` remain unchanged and outside Task 154 scope |
+| Canonical impact | `None` — Task 154 implements the existing approved contract without changing canonical product, design, policy, data, persistence, command, or lifecycle authority |
+| Next legal action | Test-first Task 154 implementation, focused/full verification, High-risk review, durable evidence, and a clean committed implementation checkpoint; keep Task 154 `[ ]` and do not start another task |
 
 ## Task 153 Durable Start
 
