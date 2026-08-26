@@ -38,6 +38,7 @@ export type TriagePlacementCommand =
 
 export type TriagePlacementPhase =
   | "direct-selection"
+  | "result-title"
   | "confirmation"
   | "pending"
   | "unknown"
@@ -59,6 +60,7 @@ export type TriagePlacementSnapshot = Readonly<{
   command: TriagePlacementCommand | null;
   terminalStatus: RepositoryOperationStatus | null;
   terminalKind: TriagePlacementTerminalKind | null;
+  resultTitleDraft: string | null;
 }>;
 
 type PlacementInvoker = (
@@ -113,7 +115,7 @@ function makeCommand(
     sourceBreakdownId: release.source.id,
     sourceExpectedVersion: release.source.version,
     resultType,
-    title: release.source.title,
+    title: snapshot.resultTitleDraft ?? release.source.title,
     targetParentId: release.target.parentId,
     expectedAncestorIds: [...release.target.expectedAncestorIds],
     x: release.target.cell.x,
@@ -126,6 +128,10 @@ function makeCommand(
     candidateId: release.candidate.id,
     candidateExpectedVersion: release.candidate.version,
   };
+}
+
+function titleLimit(resultType: "node" | "bit"): number {
+  return resultType === "node" ? 100 : 200;
 }
 
 function returnedSourceMatches(
@@ -191,17 +197,25 @@ export function useTriagePlacement({
       if (release.kind === "staged" && release.candidate === undefined) {
         return false;
       }
+      const resultType =
+        release.kind === "staged" ? release.candidate!.resultType : null;
+      const needsResultTitle =
+        resultType !== null && release.source.title.length > titleLimit(resultType);
       const next: TriagePlacementSnapshot = {
         release,
         phase:
-          release.kind === "direct" ? "direct-selection" : "confirmation",
-        resultType:
-          release.kind === "staged" ? release.candidate!.resultType : null,
+          release.kind === "direct"
+            ? "direct-selection"
+            : needsResultTitle
+              ? "result-title"
+              : "confirmation",
+        resultType,
         operationId: createId(),
         resultId: createId(),
         command: null,
         terminalStatus: null,
         terminalKind: null,
+        resultTitleDraft: needsResultTitle ? "" : null,
       };
       commit(next);
       return true;
@@ -218,12 +232,48 @@ export function useTriagePlacement({
           ? current.release.target.level === null ||
             current.release.target.level < 2
           : current.release.target.parentId !== null;
-      if (!targetAcceptsType) return false;
+      if (
+        !targetAcceptsType ||
+        current.release.source.title.length > titleLimit(resultType)
+      ) {
+        return false;
+      }
       commit({ ...current, phase: "confirmation", resultType });
       return true;
     },
     [commit],
   );
+
+  const changeResultTitle = useCallback(
+    (draft: string): boolean => {
+      const current = snapshotRef.current;
+      if (
+        current?.phase !== "result-title" ||
+        current.resultType === null ||
+        current.resultTitleDraft === null
+      ) {
+        return false;
+      }
+      commit({ ...current, resultTitleDraft: draft });
+      return true;
+    },
+    [commit],
+  );
+
+  const continueResultTitle = useCallback((): boolean => {
+    const current = snapshotRef.current;
+    if (
+      current?.phase !== "result-title" ||
+      current.resultType === null ||
+      current.resultTitleDraft === null ||
+      current.resultTitleDraft.trim().length === 0 ||
+      current.resultTitleDraft.length > titleLimit(current.resultType)
+    ) {
+      return false;
+    }
+    commit({ ...current, phase: "confirmation" });
+    return true;
+  }, [commit]);
 
   const applyTerminal = useCallback(
     (
@@ -348,13 +398,25 @@ export function useTriagePlacement({
     [cancel],
   );
 
+  const invalidateOperation = useCallback(
+    (operationId: string): boolean => {
+      const current = snapshotRef.current;
+      if (current?.operationId !== operationId) return false;
+      return cancel();
+    },
+    [cancel],
+  );
+
   return {
     snapshot,
     begin,
     selectDirectType,
+    changeResultTitle,
+    continueResultTitle,
     confirm,
     reconcile,
     cancel,
     invalidate,
+    invalidateOperation,
   } as const;
 }

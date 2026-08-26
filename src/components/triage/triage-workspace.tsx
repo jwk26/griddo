@@ -51,6 +51,7 @@ import {
 import {
   createScratchTitleBlockerHandle,
   ScratchTitleBlockerContext,
+  useScratchBreakdowns,
 } from "@/hooks/use-scratch-breakdowns";
 import {
   getTriageRemoveDropId,
@@ -72,6 +73,25 @@ import type { Node } from "@/types";
 
 function formatStagingHeading(label: string, count: number) {
   return count >= 2 ? `${count} ${label}` : label;
+}
+
+function sourceMatchesPlacementRelease(
+  source: {
+    id: string;
+    scratchBitId: string;
+    content: string;
+    consumedAt: number | null;
+    version: number;
+  },
+  release: TriagePlacementRelease,
+) {
+  return (
+    source.id === release.source.id &&
+    source.scratchBitId === release.scratchBitId &&
+    source.content === release.source.title &&
+    source.consumedAt === null &&
+    source.version === release.source.version
+  );
 }
 
 type StagingAlertKind =
@@ -713,6 +733,10 @@ function TriageWorkspaceContent({
   >([]);
   const stagedCandidates = useStagedCandidates(selectedScratchId);
   const {
+    breakdowns: authoritativeBreakdowns,
+    isReady: authoritativeBreakdownsReady,
+  } = useScratchBreakdowns(selectedScratchId);
+  const {
     candidates: authoritativeStagedCandidates = [],
     counts: stagedCandidateCounts,
     reconcileStageCandidate: runReconcileStageCandidate,
@@ -734,6 +758,7 @@ function TriageWorkspaceContent({
     node: Set<string>;
     bit: Set<string>;
   }>({ node: new Set(), bit: new Set() });
+  const breakdownHeadingRef = useRef<HTMLHeadingElement>(null);
   const stagingHeadingRef = useRef<HTMLHeadingElement>(null);
   const [operationMeta, setOperationMeta] = useState(
     new Map<string, StagingOperationMeta>(),
@@ -776,7 +801,27 @@ function TriageWorkspaceContent({
   const focusPlacementSource = useCallback(
     (release: TriagePlacementRelease) => {
       if (release.kind === "direct") {
-        focusUnstagedSource(release.source.id);
+        const focusWhenReady = (remainingFrames: number) => {
+          const grip = Array.from(
+            workspaceRef.current?.querySelectorAll<HTMLElement>(
+              "[data-breakdown-id]",
+            ) ?? [],
+          )
+            .find((row) => row.dataset.breakdownId === release.source.id)
+            ?.querySelector<HTMLButtonElement>(
+              'button[aria-label="Drag breakdown"]',
+            );
+          if (grip !== undefined && grip !== null && !grip.disabled) {
+            grip.focus({ preventScroll: true });
+            return;
+          }
+          if (remainingFrames > 0) {
+            requestAnimationFrame(() => focusWhenReady(remainingFrames - 1));
+            return;
+          }
+          breakdownHeadingRef.current?.focus({ preventScroll: true });
+        };
+        requestAnimationFrame(() => focusWhenReady(2));
         return;
       }
       requestAnimationFrame(() => {
@@ -791,7 +836,7 @@ function TriageWorkspaceContent({
         (source ?? stagingHeadingRef.current)?.focus({ preventScroll: true });
       });
     },
-    [focusUnstagedSource],
+    [],
   );
   const rememberOperation = useCallback(
     (
@@ -925,6 +970,68 @@ function TriageWorkspaceContent({
       setLocalPlacementResult(identity);
     },
   });
+  useEffect(() => {
+    const current = placement.snapshot;
+    if (
+      current === null ||
+      (current.phase !== "direct-selection" &&
+        current.phase !== "result-title" &&
+        current.phase !== "confirmation")
+    ) {
+      return;
+    }
+
+    const release = current.release;
+    const ownerIsReady =
+      release.kind === "direct"
+        ? authoritativeBreakdownsReady
+        : stagedCandidates.isReady;
+    if (!ownerIsReady) return;
+    const isAuthoritative =
+      release.kind === "direct"
+        ? authoritativeBreakdowns.some((source) =>
+            sourceMatchesPlacementRelease(source, release),
+          )
+        : authoritativeStagedCandidates.some(
+            (candidate) =>
+              release.candidate !== undefined &&
+              candidate.id === release.candidate.id &&
+              candidate.version === release.candidate.version &&
+              candidate.resultType === release.candidate.resultType &&
+              candidate.lifecycle === "staged" &&
+              candidate.scratchBitId === release.scratchBitId &&
+              candidate.sourceBreakdownId === release.source.id &&
+              candidate.content === release.source.title &&
+              sourceMatchesPlacementRelease(candidate.source, release),
+          );
+    if (
+      isAuthoritative ||
+      !placement.invalidateOperation(current.operationId)
+    ) {
+      return;
+    }
+
+    focusPlacementSource(release);
+    // This alert projects an invalidation from the authoritative live-query owners.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStagingAlert({
+      kind: "invalidated-placement",
+      copy: stagingTemplate(
+        INBOX_TRIAGE_COPY.stagingStatus.alert.invalidatedPlacement,
+        release.source.title,
+      ),
+      candidateId: release.candidate?.id ?? null,
+      sourceBreakdownId: release.source.id,
+      clearOnCandidateDisappearance: false,
+    });
+  }, [
+    authoritativeBreakdowns,
+    authoritativeBreakdownsReady,
+    authoritativeStagedCandidates,
+    focusPlacementSource,
+    placement,
+    stagedCandidates.isReady,
+  ]);
   const cancelPlacement = useCallback(() => {
     const current = placement.snapshot;
     if (current !== null && placement.cancel()) {
@@ -1190,26 +1297,25 @@ function TriageWorkspaceContent({
   }, [activeDragItem]);
 
   const handlePendingPlacementInvalidated = useCallback(
-    (dropId: string, focusAfterClose: () => void) => {
+    (dropId: string) => {
       const current = placement.snapshot;
       if (
         current?.release.target.dropId === dropId &&
         placement.invalidate(dropId)
       ) {
-        requestAnimationFrame(focusAfterClose);
+        focusPlacementSource(current.release);
         setStagingAlert({
           kind: "invalidated-placement",
-          copy: stagingTemplate(
-            INBOX_TRIAGE_COPY.stagingStatus.alert.invalidatedPlacement,
-            current.release.source.title,
-          ),
+          copy: INBOX_TRIAGE_COPY.lifecycleReasons.placementStale,
           candidateId: current.release.candidate?.id ?? null,
           sourceBreakdownId: current.release.source.id,
           clearOnCandidateDisappearance: false,
         });
+        return true;
       }
+      return false;
     },
-    [placement],
+    [focusPlacementSource, placement],
   );
 
   const showNewCandidates = useCallback((type: "node" | "bit") => {
@@ -1464,7 +1570,7 @@ function TriageWorkspaceContent({
               data-triage-state="default"
             >
               <h2
-                ref={stagingHeadingRef}
+                ref={breakdownHeadingRef}
                 className="triage-shell__section-heading"
                 data-triage-role="section-header"
                 id="triage-breakdown-heading"
@@ -1503,6 +1609,7 @@ function TriageWorkspaceContent({
               inert={isDepartureDecision ? true : undefined}
             >
               <h2
+                ref={stagingHeadingRef}
                 className="triage-shell__section-heading"
                 data-triage-role="section-header"
                 id="triage-staging-heading"
@@ -1666,6 +1773,8 @@ function TriageWorkspaceContent({
                 onPlacementReconcile={() => {
                   void placement.reconcile();
                 }}
+                onPlacementResultTitleChange={placement.changeResultTitle}
+                onPlacementResultTitleContinue={placement.continueResultTitle}
                 onPlacementSelectType={placement.selectDirectType}
                 targetFeedback={targetFeedback}
               />

@@ -223,6 +223,7 @@ function placementSnapshot(
     command: null,
     terminalStatus: null,
     terminalKind: null,
+    resultTitleDraft: null,
     ...overrides,
   };
 }
@@ -988,6 +989,50 @@ describe("HierarchyExplorer Task 153 placement reliability rail", () => {
     },
   );
 
+  it("announces the edited result title after authoritative success", async () => {
+    const placed = createBit({
+      id: "result-1",
+      title: "Exact Bit result",
+      parentId: "target-1",
+    });
+    setGrid(null, [createNode({ id: "target-1", title: "Target" })]);
+    setGrid("target-1", [], [placed]);
+    const onPlacementConfirm = vi.fn();
+    render(
+      <HierarchyExplorer
+        {...defaultProps}
+        localPlacementResult={{ id: placed.id, type: "bit" }}
+        placementSnapshot={{
+          ...placementSnapshot({
+            release: {
+              ...placementSnapshot().release,
+              kind: "staged",
+              source: {
+                ...placementSnapshot().release.source,
+                title: "s".repeat(201),
+              },
+              candidate: {
+                id: "candidate-1",
+                version: 3,
+                resultType: "bit",
+              },
+            },
+            resultType: "bit",
+            resultTitleDraft: "Exact Bit result",
+          }),
+          phase: "success",
+          terminalStatus: "applied",
+        }}
+        onPlacementConfirm={onPlacementConfirm}
+      />,
+    );
+
+    expect(
+      screen.getByRole("status", { name: "Placement result status" }),
+    ).toHaveTextContent("Placed “Exact Bit result” in Home → Target.");
+    await waitFor(() => expect(onPlacementConfirm).toHaveBeenCalledOnce());
+  });
+
   it("acknowledges success once without a visible affordance and leaves focus to the actual card", async () => {
     const placed = createNode({ id: "result-1", title: "Project" });
     setGrid(null, [placed]);
@@ -1052,6 +1097,233 @@ describe("HierarchyExplorer Task 153 placement reliability rail", () => {
         expect(value.trim()).toMatch(/^none(?:\s*!important)?$/);
       }
     }
+  });
+});
+
+describe("HierarchyExplorer Task 154 Result Title and direct limits", () => {
+  function stagedTitleSnapshot(
+    draft: string,
+    resultType: "node" | "bit" = "node",
+  ): TriagePlacementSnapshot {
+    return placementSnapshot({
+      release: {
+        ...placementSnapshot().release,
+        kind: "staged",
+        source: {
+          ...placementSnapshot().release.source,
+          title: "s".repeat(resultType === "node" ? 101 : 201),
+        },
+        candidate: {
+          id: "candidate-1",
+          version: 3,
+          resultType,
+        },
+      },
+      phase: "result-title",
+      resultType,
+      resultTitleDraft: draft,
+    });
+  }
+
+  it("renders the staged over-limit step with exact copy, empty draft, validation, and input-first focus", () => {
+    const target = createNode({ id: "target-1", title: "Target" });
+    setGrid(null, [target]);
+    const onPlacementResultTitleChange = vi.fn();
+
+    render(
+      <HierarchyExplorer
+        {...defaultProps}
+        placementSnapshot={stagedTitleSnapshot("")}
+        onPlacementResultTitleChange={onPlacementResultTitleChange}
+      />,
+    );
+
+    const placement = screen.getByRole("region", { name: "Placement" });
+    expect(placement).toHaveAttribute(
+      "data-placement-title-step",
+      "staged-result-title",
+    );
+    expect(screen.getByText("RESULT TITLE")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Name this Node" })).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "The source is 101 characters. A Node title can be up to 100. The source won’t change.",
+      ),
+    ).toBeInTheDocument();
+    const source = screen.getByText("s".repeat(101));
+    expect(source).not.toHaveClass("truncate");
+    const input = screen.getByRole("textbox", { name: "Result title" });
+    expect(input).toHaveValue("");
+    expect(input).not.toHaveAttribute("maxlength");
+    expect(input).toHaveFocus();
+    expect(screen.getByText("0 / 100")).toBeInTheDocument();
+    expect(screen.getByText("Enter a result title.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
+
+    fireEvent.change(input, { target: { value: "x".repeat(101) } });
+    expect(onPlacementResultTitleChange).toHaveBeenCalledWith("x".repeat(101));
+  });
+
+  it("enables exact valid draft Continue and focuses the next placement heading", () => {
+    const target = createNode({ id: "target-1", title: "Target" });
+    setGrid(null, [target]);
+    const onPlacementResultTitleContinue = vi.fn();
+    const view = render(
+      <HierarchyExplorer
+        {...defaultProps}
+        placementSnapshot={stagedTitleSnapshot("Exact title")}
+        onPlacementResultTitleContinue={onPlacementResultTitleContinue}
+      />,
+    );
+
+    const continueButton = screen.getByRole("button", { name: "Continue" });
+    expect(continueButton).toBeEnabled();
+    expect(screen.queryByText("Enter a result title.")).toBeNull();
+    fireEvent.click(continueButton);
+    expect(onPlacementResultTitleContinue).toHaveBeenCalledOnce();
+
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        placementSnapshot={placementSnapshot({
+          release: stagedTitleSnapshot("Exact title").release,
+          phase: "confirmation",
+          resultType: "node",
+          resultTitleDraft: "Exact title",
+        })}
+      />,
+    );
+    expect(screen.getByRole("heading", { name: "Confirm placement" })).toHaveFocus();
+    expect(screen.getByText("Exact title")).toBeInTheDocument();
+    expect(screen.getByText(`Source: ${"s".repeat(101)}`)).toBeInTheDocument();
+  });
+
+  it.each([
+    ["pending", "Placing “Exact Bit result” in Home → Target…"],
+    ["terminal", "“Exact Bit result” wasn’t placed. Your source is unchanged."],
+  ] as const)(
+    "keeps source truth visible and names the edited result during %s reliability",
+    (phase, expectedCopy) => {
+      const target = createNode({ id: "target-1", title: "Target" });
+      setGrid(null, [target]);
+      const snapshot = stagedTitleSnapshot("Exact Bit result");
+      render(
+        <HierarchyExplorer
+          {...defaultProps}
+          placementSnapshot={{
+            ...snapshot,
+            phase,
+            terminalKind: phase === "terminal" ? "not-applied" : null,
+            terminalStatus: phase === "terminal" ? "not_applied" : null,
+          }}
+        />,
+      );
+
+      expect(screen.getByText(expectedCopy)).toBeInTheDocument();
+      expect(screen.getByText(`Source: ${snapshot.release.source.title}`)).toBeInTheDocument();
+    },
+  );
+
+  it.each([
+    [1, false, false, false],
+    [100, false, false, false],
+    [101, true, false, false],
+    [200, true, false, false],
+    [201, true, true, true],
+    [1000, true, true, true],
+  ] as const)(
+    "renders direct length %i with native Node=%s Bit=%s unavailability and no editor",
+    (length, nodeDisabled, bitDisabled, neither) => {
+      const target = createNode({ id: "target-1", title: "Target" });
+      setGrid(null, [target]);
+      render(
+        <HierarchyExplorer
+          {...defaultProps}
+          placementSnapshot={placementSnapshot({
+            release: {
+              ...placementSnapshot().release,
+              source: {
+                ...placementSnapshot().release.source,
+                title: "d".repeat(length),
+              },
+            },
+          })}
+        />,
+      );
+
+      const placement = screen.getByRole("region", { name: "Placement" });
+      expect(placement).toHaveAttribute(
+        "data-placement-title-step",
+        "direct-type-limit",
+      );
+      expect(screen.getByText("DIRECT PLACEMENT")).toBeInTheDocument();
+      expect(screen.queryByRole("textbox", { name: "Result title" })).toBeNull();
+      const node = screen.getByRole("button", { name: "Node" });
+      const bit = screen.getByRole("button", { name: "Bit" });
+      const cancel = screen.getByRole("button", { name: "Cancel" });
+      expect(node).toHaveProperty("disabled", nodeDisabled);
+      expect(bit).toHaveProperty("disabled", bitDisabled);
+      expect(cancel).toBeEnabled();
+      expect(node.compareDocumentPosition(bit)).toBe(
+        globalThis.Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+      expect(bit.compareDocumentPosition(cancel)).toBe(
+        globalThis.Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+      expect(
+        screen.queryByText(
+          "This source is too long for direct placement. Cancel and stage it first.",
+        ) !== null,
+      ).toBe(neither);
+      if (nodeDisabled) {
+        expect(
+          screen.getByText(
+            `Node titles can be up to 100 characters. This source has ${length}.`,
+          ),
+        ).toBeInTheDocument();
+        expect(node).toHaveAttribute("aria-describedby");
+      }
+      if (bitDisabled) {
+        expect(
+          screen.getByText(
+            `Bit titles can be up to 200 characters. This source has ${length}.`,
+          ),
+        ).toBeInTheDocument();
+        expect(bit).toHaveAttribute("aria-describedby");
+      }
+    },
+  );
+
+  it("defines static reduced-motion parity and all eight compact-step theme mappings", () => {
+    for (const role of [
+      "placement-result-title-shell",
+      "placement-result-title-input",
+      "placement-result-title-error",
+      "placement-direct-type-option",
+      "placement-direct-type-reason",
+      "placement-direct-limit-summary",
+    ]) {
+      expect(globalsCss).toContain(`.${role}`);
+    }
+    for (const theme of [
+      "tiny-desk",
+      "neumorphism",
+      "claymorphism",
+      "origami",
+      "terminal",
+      "retro-mac",
+      "graphite",
+    ]) {
+      expect(globalsCss).toContain(
+        `:root[data-color-theme="${theme}"] .placement-result-title-shell`,
+      );
+      expect(globalsCss).toContain(
+        `:root[data-color-theme="${theme}"] .placement-direct-type-option`,
+      );
+    }
+    expect(globalsCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.placement-result-title-shell[\s\S]*transition: none/,
+    );
   });
 });
 
@@ -1215,7 +1487,7 @@ describe("HierarchyExplorer Task 150 remote/path statuses", () => {
     ).toHaveFocus();
   });
 
-  it("replaces a path fallback with the exact stale-placement strip when the pending target disappears", async () => {
+  it("keeps a successfully replaced stale-placement announcement silent across later placement props", async () => {
     const home = createNode({ id: "home", title: "Projects" });
     const target = createNode({
       id: "target",
@@ -1230,7 +1502,10 @@ describe("HierarchyExplorer Task 150 remote/path statuses", () => {
       explorerOpenColumnIds: ["home", home.id],
     });
     const onPendingPlacementInvalidated = vi.fn(
-      (_dropId: string, focusAfterClose: () => void) => focusAfterClose(),
+      (_dropId: string, focusAfterClose: () => void) => {
+        focusAfterClose();
+        return true;
+      },
     );
     const view = render(
       <HierarchyExplorer
@@ -1253,13 +1528,62 @@ describe("HierarchyExplorer Task 150 remote/path statuses", () => {
       />,
     );
 
-    await waitFor(() =>
-      expect(screen.getByRole("status")).toHaveTextContent(
+    const stalePlacement = await waitFor(() => {
+      const status = document.querySelector<HTMLElement>(".explorer-path-status");
+      expect(status).toHaveTextContent(
         "Placement closed because this Explorer path changed.",
-      ),
-    );
+      );
+      return status!;
+    });
+    expect(stalePlacement).not.toHaveAttribute("role");
+    expect(stalePlacement).not.toHaveAttribute("aria-live");
     expect(homeButton).toHaveFocus();
+
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        onPendingPlacementInvalidated={onPendingPlacementInvalidated}
+        pendingPlacementDropId={getTriageHierarchyDropId(target.id)}
+        placementSnapshot={placementSnapshot({ phase: "pending" })}
+      />,
+    );
+    expect(stalePlacement).not.toHaveAttribute("role");
+    expect(stalePlacement).not.toHaveAttribute("aria-live");
   });
+
+  it.each(["pending", "unknown", "reconciling"] as const)(
+    "retains the live stale-placement status when %s target-loss cancellation is refused",
+    async (phase) => {
+      const target = createNode({ id: "target-1", title: "Target" });
+      setGrid(null, [target]);
+      const onPendingPlacementInvalidated = vi.fn(() => false);
+      const view = render(
+        <HierarchyExplorer
+          {...defaultProps}
+          onPendingPlacementInvalidated={onPendingPlacementInvalidated}
+          pendingPlacementDropId={getTriageHierarchyDropId(target.id)}
+          placementSnapshot={placementSnapshot({ phase, resultType: "node" })}
+        />,
+      );
+
+      setGrid(null, []);
+      view.rerender(
+        <HierarchyExplorer
+          {...defaultProps}
+          onPendingPlacementInvalidated={onPendingPlacementInvalidated}
+          pendingPlacementDropId={getTriageHierarchyDropId(target.id)}
+          placementSnapshot={placementSnapshot({ phase, resultType: "node" })}
+        />,
+      );
+
+      const status = await screen.findByRole("status");
+      expect(status).toHaveAttribute("aria-live", "polite");
+      expect(status).toHaveTextContent(
+        "Placement closed because this Explorer path changed.",
+      );
+      expect(onPendingPlacementInvalidated).toHaveReturnedWith(false);
+    },
+  );
 
   it("defines static reduced-motion parity and all eight Explorer theme role families", () => {
     expect(globalsCss).toContain(".explorer-remote-count");

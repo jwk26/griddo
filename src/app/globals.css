@@ -1379,6 +1379,232 @@
   }
 }
 
+/* DP-VQ09 compact title/limit steps stay inside the captured Placement Affordance. */
+.placement-result-title-shell,
+.placement-direct-limit-shell,
+.placement-result-title-input,
+.placement-result-title-validation,
+.placement-result-title-actions,
+.placement-direct-types,
+.placement-direct-type-option,
+.placement-direct-type-reason,
+.placement-direct-limit-summary {
+  animation: none;
+  transition: none;
+}
+
+.placement-result-title-shell,
+.placement-direct-limit-shell {
+  background: hsl(var(--background));
+  border: var(--theme-border-width) solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  display: grid;
+  font-family: var(--theme-font);
+  gap: 0.5rem;
+  padding: 0.625rem;
+}
+
+.placement-result-title-eyebrow,
+.placement-direct-eyebrow {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1rem;
+  margin: 0;
+}
+
+.placement-result-title-heading,
+.placement-direct-heading {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.125rem;
+  margin: 0;
+}
+
+.placement-result-title-source,
+.placement-target-path,
+.placement-result-title-explanation,
+.placement-direct-type-reason,
+.placement-direct-limit-summary {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.placement-result-title-source {
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+}
+
+.placement-target-path,
+.placement-result-title-explanation,
+.placement-direct-type-reason,
+.placement-direct-limit-summary {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.6875rem;
+  line-height: 1rem;
+}
+
+.placement-result-title-label {
+  display: grid;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  gap: 0.25rem;
+}
+
+.placement-result-title-input {
+  background: hsl(var(--background));
+  border: var(--theme-border-width) solid hsl(var(--input));
+  border-radius: calc(var(--theme-radius) * 0.7);
+  color: hsl(var(--foreground));
+  font-family: var(--theme-font);
+  font-size: 0.75rem;
+  inline-size: 100%;
+  line-height: 1.25rem;
+  min-inline-size: 0;
+  outline: none;
+  padding: 0.375rem 0.5rem;
+}
+
+.placement-result-title-input:focus-visible {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.24);
+}
+
+.placement-result-title-input[aria-invalid="true"] {
+  border-color: hsl(var(--destructive));
+}
+
+.placement-result-title-validation {
+  align-items: start;
+  display: grid;
+  font-size: 0.6875rem;
+  gap: 0.5rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  line-height: 1rem;
+  min-block-size: 1rem;
+}
+
+.placement-result-title-error {
+  color: hsl(var(--destructive));
+}
+
+.placement-result-title-count {
+  color: hsl(var(--muted-foreground));
+  font-variant-numeric: tabular-nums;
+}
+
+.placement-result-title-actions {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.placement-result-title-continue:focus-visible,
+.placement-direct-type-option button:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.placement-direct-types {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.placement-direct-type-option {
+  align-items: start;
+  border-block-start: 1px solid hsl(var(--border));
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-block-size: 2.5rem;
+  padding-block-start: 0.375rem;
+}
+
+.placement-direct-type-reason {
+  align-self: center;
+}
+
+.placement-direct-limit-summary {
+  border-inline-start: 3px solid hsl(var(--destructive));
+  color: hsl(var(--foreground));
+  padding-inline-start: 0.5rem;
+}
+
+:root[data-color-theme="tiny-desk"] .placement-result-title-shell,
+:root[data-color-theme="tiny-desk"] .placement-direct-type-option {
+  border-block-start-style: double;
+  box-shadow: inset 0 2px 0 hsl(var(--border) / 0.16);
+}
+
+:root[data-color-theme="neumorphism"] .placement-result-title-shell,
+:root[data-color-theme="neumorphism"] .placement-direct-type-option {
+  border: 0;
+  border-radius: var(--theme-radius);
+  box-shadow: inset 3px 3px 6px hsl(var(--foreground) / 0.12),
+    inset -3px -3px 6px hsl(var(--background) / 0.86);
+}
+
+:root[data-color-theme="claymorphism"] .placement-result-title-shell,
+:root[data-color-theme="claymorphism"] .placement-direct-type-option {
+  border: 0;
+  border-radius: calc(var(--theme-radius) * 0.6);
+  box-shadow: inset 2px 2px 5px hsl(var(--foreground) / 0.12),
+    inset -2px -2px 5px hsl(var(--background) / 0.8);
+}
+
+:root[data-color-theme="origami"] .placement-result-title-shell,
+:root[data-color-theme="origami"] .placement-direct-type-option {
+  border-inline: 0;
+  border-radius: 0;
+  box-shadow: inset 0 -1px 0 hsl(var(--foreground) / 0.12);
+  clip-path: polygon(0 0, 98% 0, 100% 16%, 100% 100%, 2% 100%, 0 84%);
+}
+
+:root[data-color-theme="terminal"] .placement-result-title-shell,
+:root[data-color-theme="terminal"] .placement-direct-type-option {
+  background: hsl(var(--background));
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:root[data-color-theme="terminal"] .placement-direct-type-option button::before {
+  content: "[";
+}
+
+:root[data-color-theme="terminal"] .placement-direct-type-option button::after {
+  content: "]";
+}
+
+:root[data-color-theme="retro-mac"] .placement-result-title-shell,
+:root[data-color-theme="retro-mac"] .placement-direct-type-option {
+  background: hsl(var(--background));
+  border-color: hsl(var(--foreground));
+  border-radius: 0;
+  box-shadow: 1px 1px 0 hsl(var(--foreground));
+}
+
+:root[data-color-theme="graphite"] .placement-result-title-shell,
+:root[data-color-theme="graphite"] .placement-direct-type-option {
+  background: transparent;
+  border-block-width: 0 1px;
+  border-inline-end-width: 0;
+  border-inline-start: 3px solid hsl(var(--foreground));
+  border-radius: 0;
+  box-shadow: none;
+  letter-spacing: 0.025em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .placement-result-title-shell,
+  .placement-result-title-shell *,
+  .placement-direct-limit-shell,
+  .placement-direct-limit-shell * {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
+
 /* DP-VQ08 stays inside the captured Placement Affordance. */
 .placement-affordance,
 .placement-reliability-rail,

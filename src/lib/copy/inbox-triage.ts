@@ -149,6 +149,30 @@ export interface InboxTriageCopy {
       readonly cancel: string;
     };
   };
+  readonly placementTitleLimits: {
+    readonly resultTitle: {
+      readonly eyebrow: string;
+      readonly heading: string;
+      readonly explanation: string;
+      readonly label: string;
+      readonly counter: string;
+      readonly emptyError: string;
+      readonly overLimitError: string;
+      readonly actions: { readonly continue: string; readonly cancel: string };
+    };
+    readonly direct: {
+      readonly eyebrow: string;
+      readonly heading: string;
+      readonly nodeReason: string;
+      readonly bitReason: string;
+      readonly neitherAvailable: string;
+      readonly actions: {
+        readonly node: string;
+        readonly bit: string;
+        readonly cancel: string;
+      };
+    };
+  };
   readonly breakdownSuccess: {
     readonly add: string;
     readonly unstage: string;
@@ -305,8 +329,8 @@ export const INBOX_TRIAGE_COPY = {
   validation: {
     scratchTitleRequired: "Enter a Scratch title.",
     breakdownContentRequired: "Enter breakdown content.",
-    resultTitleRequired: UNAVAILABLE,
-    resultTitleTooLong: UNAVAILABLE,
+    resultTitleRequired: "Enter a result title.",
+    resultTitleTooLong: "Use {limit} characters or fewer.",
   },
   inlineEditor: {
     status: {
@@ -413,6 +437,30 @@ export const INBOX_TRIAGE_COPY = {
       checkAgain: "Check again",
       retry: "Retry",
       cancel: "Cancel",
+    },
+  },
+  placementTitleLimits: {
+    resultTitle: {
+      eyebrow: "RESULT TITLE",
+      heading: "Name this {type}",
+      explanation:
+        "The source is {count} characters. A {type} title can be up to {limit}. The source won’t change.",
+      label: "Result title",
+      counter: "{count} / {limit}",
+      emptyError: "Enter a result title.",
+      overLimitError: "Use {limit} characters or fewer.",
+      actions: { continue: "Continue", cancel: "Cancel" },
+    },
+    direct: {
+      eyebrow: "DIRECT PLACEMENT",
+      heading: "Choose a result type",
+      nodeReason:
+        "Node titles can be up to 100 characters. This source has {count}.",
+      bitReason:
+        "Bit titles can be up to 200 characters. This source has {count}.",
+      neitherAvailable:
+        "This source is too long for direct placement. Cancel and stage it first.",
+      actions: { node: "Node", bit: "Bit", cancel: "Cancel" },
     },
   },
   breakdownSuccess: {
@@ -554,7 +602,6 @@ export const INBOX_TRIAGE_COPY = {
   },
   receiptDependent: {
     148: UNAVAILABLE,
-    154: UNAVAILABLE,
     157: UNAVAILABLE,
     160: UNAVAILABLE,
     162: UNAVAILABLE,

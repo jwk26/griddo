@@ -174,6 +174,7 @@ export function useScratchBreakdowns(
   editorOptions: ConditionalEditorOptions = {},
 ): {
   breakdowns: ScratchBreakdown[];
+  isReady: boolean;
   consumedBreakdownCount: number;
   hasObservedBreakdownHistory: boolean;
   isArchiveEligible: boolean;
@@ -762,6 +763,7 @@ export function useScratchBreakdowns(
 
   return {
     breakdowns,
+    isReady: currentSnapshot !== null,
     consumedBreakdownCount,
     hasObservedBreakdownHistory:
       scratchBitId !== null && observedHistoryByScratch.has(scratchBitId),

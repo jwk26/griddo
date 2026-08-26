@@ -4,6 +4,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { Folder, ListTodo, Search } from "lucide-react";
 import {
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -44,7 +45,7 @@ interface HierarchyExplorerProps {
   onPendingPlacementInvalidated: (
     dropId: string,
     focusAfterClose: () => void,
-  ) => void;
+  ) => boolean | void;
   onPointerGeometryChange: (point: { x: number; y: number }) => void;
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
@@ -53,6 +54,8 @@ interface HierarchyExplorerProps {
   onPlacementCancel?: () => void;
   onPlacementConfirm?: () => void;
   onPlacementReconcile?: () => void;
+  onPlacementResultTitleChange?: (draft: string) => void;
+  onPlacementResultTitleContinue?: () => void;
   onPlacementSelectType?: (type: "node" | "bit") => void;
   targetFeedback: TriageTargetFeedback;
 }
@@ -189,7 +192,10 @@ function explorerTemplate(
 
 function placementTemplate(template: string, snapshot: TriagePlacementSnapshot) {
   return explorerTemplate(template, {
-    title: snapshot.release.source.title,
+    title:
+      snapshot.command?.title ??
+      snapshot.resultTitleDraft ??
+      snapshot.release.source.title,
     destination: snapshot.release.target.path.join(" → "),
   });
 }
@@ -248,6 +254,8 @@ export function HierarchyExplorer({
   onPlacementCancel,
   onPlacementConfirm,
   onPlacementReconcile,
+  onPlacementResultTitleChange,
+  onPlacementResultTitleContinue,
   onPlacementSelectType,
   targetFeedback,
 }: HierarchyExplorerProps) {
@@ -805,13 +813,19 @@ export function HierarchyExplorer({
       ? pendingPlacementDropId
       : null;
   const invalidatedPendingDropIdRef = useRef<string | null>(null);
+  const [announcementSuppressedPathStatus, setAnnouncementSuppressedPathStatus] =
+    useState<ExplorerPathStatusState | null>(null);
 
   useEffect(() => {
-    if (
-      placementSnapshot?.phase === "success" ||
-      pendingPlacementDropId === null ||
-      visibleDropIds.has(pendingPlacementDropId)
-    ) {
+    if (placementSnapshot?.phase === "success") {
+      invalidatedPendingDropIdRef.current = null;
+      return;
+    }
+    if (pendingPlacementDropId === null) {
+      invalidatedPendingDropIdRef.current = null;
+      return;
+    }
+    if (visibleDropIds.has(pendingPlacementDropId)) {
       invalidatedPendingDropIdRef.current = null;
       return;
     }
@@ -823,16 +837,24 @@ export function HierarchyExplorer({
       const fallbackId = validation.at(-1);
       const fallbackNode = [selectedHomeNode, selectedL1Node, selectedL2Node]
         .find((node) => node?.id === fallbackId);
-      setExplorerPathStatus({
+      const announcementWasReplaced =
+        onPendingPlacementInvalidated(pendingPlacementDropId, () => {
+        focusFallback(validation);
+        }) === true;
+      const nextPathStatus: ExplorerPathStatusState = {
         kind: "stale-placement",
         title: null,
         destination: fallbackNode?.title ?? "Home",
         columnId: fallbackId ?? "home",
         fallbackPathIds: validation,
-      });
-      onPendingPlacementInvalidated(pendingPlacementDropId, () => {
-        focusFallback(validation);
-      });
+      };
+      setExplorerPathStatus(nextPathStatus);
+      // This local presentation state binds live-region suppression to the
+      // callback result that replaced this exact stale-placement announcement.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAnnouncementSuppressedPathStatus(
+        announcementWasReplaced ? nextPathStatus : null,
+      );
     }
   }, [
     onPendingPlacementInvalidated,
@@ -1003,6 +1025,9 @@ export function HierarchyExplorer({
               isDimmed={index > 0 && column.parentNode === null}
               itemIds={idsForColumn(column.nodes, column.bits)}
               label={COLUMN_LABELS[index]}
+              pathStatusAnnouncementSuppressed={
+                explorerPathStatus === announcementSuppressedPathStatus
+              }
               pathStatus={
                 explorerPathStatus?.columnId === column.columnId &&
                 explorerPathStatus.fallbackPathIds.length === index
@@ -1038,6 +1063,8 @@ export function HierarchyExplorer({
                     onCancel={onPlacementCancel}
                     onConfirm={onPlacementConfirm}
                     onReconcile={onPlacementReconcile}
+                    onResultTitleChange={onPlacementResultTitleChange}
+                    onResultTitleContinue={onPlacementResultTitleContinue}
                     onSelectType={onPlacementSelectType}
                   />
                 )
@@ -1079,26 +1106,37 @@ function PlacementAffordance({
   onCancel,
   onConfirm,
   onReconcile,
+  onResultTitleChange,
+  onResultTitleContinue,
   onSelectType,
 }: {
   snapshot: TriagePlacementSnapshot;
   onCancel?: () => void;
   onConfirm?: () => void;
   onReconcile?: () => void;
+  onResultTitleChange?: (draft: string) => void;
+  onResultTitleContinue?: () => void;
   onSelectType?: (type: "node" | "bit") => void;
 }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const resultTitleInputRef = useRef<HTMLInputElement>(null);
   const confirmRef = useRef<HTMLButtonElement>(null);
   const reconcileRef = useRef<HTMLButtonElement>(null);
   const retryRef = useRef<HTMLButtonElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
+  const descriptionId = useId();
+  const errorId = useId();
+  const nodeReasonId = useId();
+  const bitReasonId = useId();
   const locked =
     snapshot.phase === "pending" ||
     snapshot.phase === "unknown" ||
     snapshot.phase === "reconciling";
 
   useLayoutEffect(() => {
-    if (
+    if (snapshot.phase === "result-title") {
+      resultTitleInputRef.current?.focus({ preventScroll: true });
+    } else if (
       snapshot.phase === "direct-selection" ||
       snapshot.phase === "confirmation"
     ) {
@@ -1119,6 +1157,26 @@ function PlacementAffordance({
   const reliabilityCopy = placementReliabilityCopy(snapshot);
   const reliabilityState =
     snapshot.phase === "terminal" ? snapshot.terminalKind : snapshot.phase;
+  const titleCopy = INBOX_TRIAGE_COPY.placementTitleLimits;
+  const resultTypeLabel = snapshot.resultType === "node" ? "Node" : "Bit";
+  const resultTitleLimit = snapshot.resultType === "node" ? 100 : 200;
+  const resultTitleDraft = snapshot.resultTitleDraft ?? "";
+  const resultTitleEmpty = resultTitleDraft.trim().length === 0;
+  const resultTitleTooLong = resultTitleDraft.length > resultTitleLimit;
+  const resultTitleValid = !resultTitleEmpty && !resultTitleTooLong;
+  const directSourceLength = snapshot.release.source.title.length;
+  const nodeLimitUnavailable = directSourceLength > 100;
+  const bitLimitUnavailable = directSourceLength > 200;
+  const nodeTargetUnavailable =
+    snapshot.release.target.level !== null &&
+    snapshot.release.target.level >= 2;
+  const bitTargetUnavailable = snapshot.release.target.parentId === null;
+  const titleStep =
+    snapshot.phase === "result-title"
+      ? "staged-result-title"
+      : snapshot.phase === "direct-selection"
+        ? "direct-type-limit"
+        : undefined;
 
   return (
     <section
@@ -1126,6 +1184,7 @@ function PlacementAffordance({
       className="placement-affordance m-2 rounded-md border border-primary/50 bg-accent/30 p-3"
       data-placement-phase={snapshot.phase}
       data-placement-reliability={reliabilityCopy === null ? undefined : reliabilityState}
+      data-placement-title-step={titleStep}
       data-triage-role="placement-affordance"
       onKeyDown={(event) => {
         if (event.key !== "Escape") return;
@@ -1137,49 +1196,167 @@ function PlacementAffordance({
         onCancel?.();
       }}
     >
-      <h3
-        ref={headingRef}
-        className="text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        tabIndex={-1}
-      >
-        {snapshot.phase === "direct-selection"
-          ? "Choose a result type"
-          : "Confirm placement"}
-      </h3>
-      <p className="mt-1 truncate text-xs text-foreground">
-        {snapshot.release.source.title}
-      </p>
-      <p className="truncate text-[11px] text-muted-foreground">
-        {snapshot.release.target.path.join(" → ")}
-      </p>
-
-      {snapshot.phase === "direct-selection" ? (
-        <div className="mt-3 flex gap-2" aria-label="Select placement type">
-          <Button
-            size="sm"
-            type="button"
-            disabled={
-              snapshot.release.target.level !== null &&
-              snapshot.release.target.level >= 2
-            }
-            onClick={() => onSelectType?.("node")}
+      {snapshot.phase === "result-title" ? (
+        <div className="placement-result-title-shell">
+          <p className="placement-result-title-eyebrow">
+            {titleCopy.resultTitle.eyebrow}
+          </p>
+          <h3 className="placement-result-title-heading">
+            {explorerTemplate(titleCopy.resultTitle.heading, {
+              type: resultTypeLabel,
+            })}
+          </h3>
+          <p className="placement-result-title-source break-words">
+            {snapshot.release.source.title}
+          </p>
+          <p className="placement-target-path break-words">
+            {snapshot.release.target.path.join(" → ")}
+          </p>
+          <p id={descriptionId} className="placement-result-title-explanation">
+            {explorerTemplate(titleCopy.resultTitle.explanation, {
+              count: snapshot.release.source.title.length,
+              limit: resultTitleLimit,
+              type: resultTypeLabel,
+            })}
+          </p>
+          <label className="placement-result-title-label">
+            {titleCopy.resultTitle.label}
+            <input
+              ref={resultTitleInputRef}
+              aria-describedby={`${descriptionId} ${errorId}`}
+              aria-invalid={!resultTitleValid}
+              className="placement-result-title-input"
+              type="text"
+              value={resultTitleDraft}
+              onChange={(event) => onResultTitleChange?.(event.target.value)}
+            />
+          </label>
+          <div className="placement-result-title-validation">
+            <span
+              id={errorId}
+              className="placement-result-title-error"
+            >
+              {resultTitleEmpty
+                ? titleCopy.resultTitle.emptyError
+                : resultTitleTooLong
+                  ? explorerTemplate(titleCopy.resultTitle.overLimitError, {
+                      limit: resultTitleLimit,
+                    })
+                  : ""}
+            </span>
+            <span className="placement-result-title-count">
+              {explorerTemplate(titleCopy.resultTitle.counter, {
+                count: resultTitleDraft.length,
+                limit: resultTitleLimit,
+              })}
+            </span>
+          </div>
+          <div className="placement-result-title-actions">
+            <Button
+              className="placement-result-title-continue"
+              disabled={!resultTitleValid}
+              size="sm"
+              type="button"
+              onClick={onResultTitleContinue}
+            >
+              {titleCopy.resultTitle.actions.continue}
+            </Button>
+            <Button size="sm" type="button" variant="outline" onClick={onCancel}>
+              {titleCopy.resultTitle.actions.cancel}
+            </Button>
+          </div>
+        </div>
+      ) : snapshot.phase === "direct-selection" ? (
+        <div className="placement-direct-limit-shell">
+          <p className="placement-direct-eyebrow">{titleCopy.direct.eyebrow}</p>
+          <h3
+            ref={headingRef}
+            className="placement-direct-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            tabIndex={-1}
           >
-            Node
-          </Button>
-          <Button
-            size="sm"
-            type="button"
-            disabled={snapshot.release.target.parentId === null}
-            onClick={() => onSelectType?.("bit")}
-          >
-            Bit
-          </Button>
+            {titleCopy.direct.heading}
+          </h3>
+          <p className="placement-result-title-source break-words">
+            {snapshot.release.source.title}
+          </p>
+          <p className="placement-target-path break-words">
+            {snapshot.release.target.path.join(" → ")}
+          </p>
+          <div className="placement-direct-types" aria-label="Select placement type">
+            <div className="placement-direct-type-option">
+              <Button
+                aria-describedby={nodeLimitUnavailable ? nodeReasonId : undefined}
+                disabled={nodeLimitUnavailable || nodeTargetUnavailable}
+                size="sm"
+                type="button"
+                onClick={() => onSelectType?.("node")}
+              >
+                {titleCopy.direct.actions.node}
+              </Button>
+              {nodeLimitUnavailable ? (
+                <p id={nodeReasonId} className="placement-direct-type-reason">
+                  {explorerTemplate(titleCopy.direct.nodeReason, {
+                    count: directSourceLength,
+                  })}
+                </p>
+              ) : null}
+            </div>
+            <div className="placement-direct-type-option">
+              <Button
+                aria-describedby={bitLimitUnavailable ? bitReasonId : undefined}
+                disabled={bitLimitUnavailable || bitTargetUnavailable}
+                size="sm"
+                type="button"
+                onClick={() => onSelectType?.("bit")}
+              >
+                {titleCopy.direct.actions.bit}
+              </Button>
+              {bitLimitUnavailable ? (
+                <p id={bitReasonId} className="placement-direct-type-reason">
+                  {explorerTemplate(titleCopy.direct.bitReason, {
+                    count: directSourceLength,
+                  })}
+                </p>
+              ) : null}
+            </div>
+          </div>
+          {nodeLimitUnavailable && bitLimitUnavailable ? (
+            <p className="placement-direct-limit-summary">
+              {titleCopy.direct.neitherAvailable}
+            </p>
+          ) : null}
           <Button size="sm" type="button" variant="outline" onClick={onCancel}>
-            Cancel
+            {titleCopy.direct.actions.cancel}
           </Button>
         </div>
       ) : (
         <>
+          <h3
+            ref={headingRef}
+            className="text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            tabIndex={-1}
+          >
+            Confirm placement
+          </h3>
+          <p
+            className="mt-1 break-words text-xs text-foreground"
+            data-placement-result-title={
+              snapshot.resultTitleDraft === null ? undefined : "true"
+            }
+          >
+            {snapshot.resultTitleDraft ?? snapshot.release.source.title}
+          </p>
+          {snapshot.resultTitleDraft !== null ? (
+            <p
+              className="break-words text-[11px] text-muted-foreground"
+              data-placement-source-title="true"
+            >
+              Source: {snapshot.release.source.title}
+            </p>
+          ) : null}
+          <p className="break-words text-[11px] text-muted-foreground">
+            {snapshot.release.target.path.join(" → ")}
+          </p>
           <p className="mt-2 text-xs font-medium text-foreground">
             {snapshot.resultType === "node" ? "Node" : "Bit"}
           </p>
@@ -1311,6 +1488,7 @@ function ExplorerColumn({
   itemIds,
   label,
   pathStatus,
+  pathStatusAnnouncementSuppressed,
   remoteArrivals,
   onClearRemoteArrivals,
   onDismissPathStatus,
@@ -1327,6 +1505,7 @@ function ExplorerColumn({
   itemIds: string[];
   label: (typeof COLUMN_LABELS)[number];
   pathStatus: RenderedExplorerPathStatus | null;
+  pathStatusAnnouncementSuppressed: boolean;
   remoteArrivals: ExplorerItemIdentity[];
   onClearRemoteArrivals: (columnId: string) => void;
   onDismissPathStatus: (status: RenderedExplorerPathStatus) => void;
@@ -1471,10 +1650,25 @@ function ExplorerColumn({
       </div>
       {pathStatus !== null ? (
         <div
-          aria-atomic="true"
-          aria-live="polite"
+          aria-atomic={
+            pathStatus.kind === "stale-placement" &&
+            pathStatusAnnouncementSuppressed
+              ? undefined
+              : "true"
+          }
+          aria-live={
+            pathStatus.kind === "stale-placement" &&
+            pathStatusAnnouncementSuppressed
+              ? undefined
+              : "polite"
+          }
           className="explorer-path-status"
-          role="status"
+          role={
+            pathStatus.kind === "stale-placement" &&
+            pathStatusAnnouncementSuppressed
+              ? undefined
+              : "status"
+          }
         >
           <span>{explorerPathStatusCopy(pathStatus)}</span>
           <button

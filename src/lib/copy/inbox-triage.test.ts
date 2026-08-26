@@ -33,8 +33,8 @@ describe("Inbox/Triage core-English copy", () => {
     expect(Object.values(INBOX_TRIAGE_COPY.validation)).toEqual([
       "Enter a Scratch title.",
       "Enter breakdown content.",
-      RECEIPT_COPY_UNAVAILABLE,
-      RECEIPT_COPY_UNAVAILABLE,
+      "Enter a result title.",
+      "Use {limit} characters or fewer.",
     ]);
     expect(Object.values(INBOX_TRIAGE_COPY.lifecycleReasons)).toEqual([
       RECEIPT_COPY_UNAVAILABLE,
@@ -254,6 +254,34 @@ describe("Inbox/Triage core-English copy", () => {
     });
   });
 
+  it("owns the exact approved DP-VQ09 Result Title and direct-limit wording", () => {
+    expect(INBOX_TRIAGE_COPY.placementTitleLimits).toEqual({
+      resultTitle: {
+        eyebrow: "RESULT TITLE",
+        heading: "Name this {type}",
+        explanation:
+          "The source is {count} characters. A {type} title can be up to {limit}. The source won’t change.",
+        label: "Result title",
+        counter: "{count} / {limit}",
+        emptyError: "Enter a result title.",
+        overLimitError: "Use {limit} characters or fewer.",
+        actions: { continue: "Continue", cancel: "Cancel" },
+      },
+      direct: {
+        eyebrow: "DIRECT PLACEMENT",
+        heading: "Choose a result type",
+        nodeReason:
+          "Node titles can be up to 100 characters. This source has {count}.",
+        bitReason:
+          "Bit titles can be up to 200 characters. This source has {count}.",
+        neitherAvailable:
+          "This source is too long for direct placement. Cancel and stage it first.",
+        actions: { node: "Node", bit: "Bit", cancel: "Cancel" },
+      },
+    });
+    expect(154 in INBOX_TRIAGE_COPY.receiptDependent).toBe(false);
+  });
+
   it("owns the exact approved DP-VQ02 Add/Unstage success wording", () => {
     expect(INBOX_TRIAGE_COPY.breakdownSuccess).toEqual({
       add: "Added.",
@@ -342,7 +370,7 @@ describe("Inbox/Triage core-English copy", () => {
 
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      148, 154, 157, 160, 162,
+      148, 157, 160, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {

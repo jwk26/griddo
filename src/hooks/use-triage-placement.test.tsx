@@ -403,3 +403,153 @@ describe("useTriagePlacement — Task 152 atomic foreground owner", () => {
     expect(onApplied).toHaveBeenCalledOnce();
   });
 });
+
+describe("useTriagePlacement — Task 154 title limits", () => {
+  it.each([
+    ["node", 100, "confirmation", null],
+    ["node", 101, "result-title", ""],
+    ["bit", 200, "confirmation", null],
+    ["bit", 201, "result-title", ""],
+  ] as const)(
+    "starts staged %s length %i in %s without changing the source",
+    (resultType, length, phase, resultTitleDraft) => {
+      const sourceTitle = "x".repeat(length);
+      const { result } = renderHook(() =>
+        useTriagePlacement({ operationLock: makeLock() }),
+      );
+
+      act(() =>
+        expect(
+          result.current.begin({
+            ...stagedRelease,
+            source: { ...stagedRelease.source, title: sourceTitle },
+            candidate: {
+              ...stagedRelease.candidate!,
+              resultType,
+            },
+          }),
+        ).toBe(true),
+      );
+
+      expect(result.current.snapshot).toMatchObject({
+        phase,
+        release: { source: { title: sourceTitle } },
+      });
+      expect(result.current.snapshot).toHaveProperty(
+        "resultTitleDraft",
+        resultTitleDraft,
+      );
+    },
+  );
+
+  it.each([
+    ["node", 100, true],
+    ["node", 101, false],
+    ["bit", 200, true],
+    ["bit", 201, false],
+  ] as const)(
+    "allows direct %s selection at source length %i only when within its limit",
+    (resultType, length, expected) => {
+      const { result } = renderHook(() =>
+        useTriagePlacement({ operationLock: makeLock() }),
+      );
+      act(() =>
+        result.current.begin({
+          ...directRelease,
+          source: { ...directRelease.source, title: "x".repeat(length) },
+        }),
+      );
+
+      act(() =>
+        expect(result.current.selectDirectType(resultType)).toBe(expected),
+      );
+      expect(result.current.snapshot?.phase).toBe(
+        expected ? "confirmation" : "direct-selection",
+      );
+    },
+  );
+
+  it.each([
+    ["", false],
+    ["   ", false],
+    ["x".repeat(101), false],
+    ["  Exact draft  ", true],
+  ] as const)(
+    "validates the exact staged Node draft %j without clipping or normalization",
+    (draft, expected) => {
+      const { result } = renderHook(() =>
+        useTriagePlacement({ operationLock: makeLock() }),
+      );
+      act(() =>
+        result.current.begin({
+          ...stagedRelease,
+          source: { ...stagedRelease.source, title: "s".repeat(101) },
+          candidate: { ...stagedRelease.candidate!, resultType: "node" },
+        }),
+      );
+
+      expect(result.current).toEqual(
+        expect.objectContaining({
+          changeResultTitle: expect.any(Function),
+          continueResultTitle: expect.any(Function),
+        }),
+      );
+      act(() =>
+        expect(result.current.changeResultTitle(draft)).toBe(true),
+      );
+      expect(result.current.snapshot).toMatchObject({
+        phase: "result-title",
+        resultTitleDraft: draft,
+        release: { source: { title: "s".repeat(101) } },
+      });
+      act(() =>
+        expect(result.current.continueResultTitle()).toBe(expected),
+      );
+      expect(result.current.snapshot?.phase).toBe(
+        expected ? "confirmation" : "result-title",
+      );
+    },
+  );
+
+  it("dispatches the valid staged draft while preserving the exact source snapshot", async () => {
+    const dispatchPlacement = vi.fn(async (command: TriagePlacementCommand) =>
+      terminal(command),
+    );
+    const sourceTitle = "s".repeat(201);
+    const { result } = renderHook(() =>
+      useTriagePlacement({
+        operationLock: makeLock(),
+        createId: vi
+          .fn()
+          .mockReturnValueOnce("operation-1")
+          .mockReturnValueOnce("result-1"),
+        dispatchPlacement,
+      }),
+    );
+    act(() =>
+      result.current.begin({
+        ...stagedRelease,
+        source: { ...stagedRelease.source, title: sourceTitle },
+      }),
+    );
+
+    expect(result.current).toEqual(
+      expect.objectContaining({
+        changeResultTitle: expect.any(Function),
+        continueResultTitle: expect.any(Function),
+      }),
+    );
+    act(() => {
+      result.current.changeResultTitle("Exact Bit draft");
+      expect(result.current.continueResultTitle()).toBe(true);
+    });
+    await act(async () => {
+      await expect(result.current.confirm()).resolves.toBe(true);
+    });
+
+    expect(dispatchPlacement).toHaveBeenCalledWith(
+      expect.objectContaining({ title: "Exact Bit draft" }),
+    );
+    expect(result.current.snapshot?.release.source.title).toBe(sourceTitle);
+  });
+});
