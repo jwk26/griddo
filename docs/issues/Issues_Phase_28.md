@@ -3,8 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Task 149 `[x]`, Accepted; Task 150 `[ ]`, Implemented awaiting
-> implementation checkpoint review; Tasks 151–154 remain unstarted
+> State: Tasks 149–150 `[x]`, Accepted; Tasks 151–154 remain unstarted
 
 ## Status Legend
 
@@ -98,15 +97,15 @@ No production implementation or Task 149 execution occurred.
 Phase 27 items `P27-06` and `P27-08` remain Deferred under their Phase 27 owner
 and are outside Phase 28 scope.
 
-## Task 150 Canonical Amendment Checkpoint
+## Task 150 Accepted Checkpoint
 
 | Field | Durable value |
 | --- | --- |
 | Task | `150 — Render DP-VQ06-EXPLORER remote/path statuses` |
-| State | `Implemented — awaiting checkpoint`; Tasks 150 and 151 remain `[ ]`, and Task 151 product work remains unstarted |
+| State | `Accepted`; Task 150 `[x]`; Task 151 remains `[ ]` and its product work remains unstarted |
 | Approval | Exact fresh candidate-pinned Task 150 work order on 2026-08-24, accepted `P28-04` docs-only checkpoint `15e117ecfa477d8a458499b1515ebb4cd8447e70`, and the 2026-08-25 continuation authorizing Task 150 implementation only; bounded by `docs/issues/Issues_Phase_28.gate-c.json` and the accepted `DP-VQ06-EXPLORER` receipt |
-| Start base / recovery anchor | `15e117ecfa477d8a458499b1515ebb4cd8447e70`; accepted `src` tree `e83086e1044bb2deebc6837f997bebc06b316146` |
-| User disposition | The user accepted the complete `P28-04` docs-only checkpoint and authorized only the current canonical Task 150 implementation, retaining selected-Bit disappearance exclusively for unstarted Task 151 |
+| Start base / recovery anchor | `15e117ecfa477d8a458499b1515ebb4cd8447e70`; implementation checkpoint `14ade3c4eaa6e55a878addcc1367843f032098c2`; accepted `src` tree `73a1d973263f92d97580927063f27651482d18d3` |
+| User disposition | On 2026-08-26 the user accepted the exact Task 150 implementation checkpoint `14ade3c4eaa6e55a878addcc1367843f032098c2` and its `src` tree `73a1d973263f92d97580927063f27651482d18d3`; the existing `P28-04` disposition is preserved and selected-Bit disappearance remains exclusively unstarted Task 151 scope |
 | Exact added Task 150 scope | Create `src/hooks/use-explorer-remote-status.ts` and `.test.tsx`; modify `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`, plus `src/components/triage/triage-workspace.tsx` and `.test.tsx`, only for the authoritative provenance and stable local-result identity flow now recorded in Task 150 |
 | Task 151 correction | Move only selected-Bit disappearance realization to Task 151's existing search-reveal owner; add Task 150 as its dependency; do not start Search or any Task 151 product behavior |
 | Durable amendment mechanism | `docs/WORKFLOW.md` assigns execution corrections to the phase issue ledger and promotes executable ownership into `docs/EXECUTION_PLAN.md`; Adapter v2 declares no separate amendment receipt kind/path, so no new JSON was invented and no historical receipt was modified |
@@ -115,7 +114,7 @@ and are outside Phase 28 scope.
 | Repair evidence | The first full gate found 1/1016 failure because the GridRuntime test's manual DnD mock omitted the new return-contract field and supplied `undefined` to the real Explorer path; the fourth cycle added only `localPlacementResult: null`. The fifth cycle preserved typed `{type,id}` identity, registered successful local results before authoritative emission, completed the seven non-default count-theme roles, and repaired the remote-action scroll/focus interaction. The user explicitly approved one sixth cycle after review confirmed that Explorer focused before the production Radix placement dialog released its trap. Production-owner RED reproduced both final-focus destinations ending on `<body>` after a write-free close. The repair now hands the fallback operation from Explorer to Workspace and consumes it through the existing `DialogContent.onCloseAutoFocus`; both actual-dialog cases retain the valid ancestor row or destination full-label heading, select no sibling/ghost, and perform no confirm/write. No seventh cycle was used. |
 | Canonical impact | `Reflected` for `P28-04`; `None` for the compatibility-test and sixth-cycle close-lifecycle repairs. Product/design/placement semantics and the historical receipt remain unchanged. |
 | Verification | Latest sixth-cycle input: focused 7 files / 179 tests, full 96 files / 1020 tests, lint 0 errors with 11 unchanged warnings, typecheck, build, and `git diff --check` passed. The mounted Workspace/Radix owner tests directly proved the affected close/focus interaction, so the user-conditional sixth-cycle browser run was not required. Fifth-cycle Chromium theme/focus-visible/reduced-motion evidence remains historical for unchanged CSS inputs and was not reused for the changed stale-placement focus input. |
-| Next legal action | Stop at the clean committed Task 150 implementation checkpoint with Task 150 still `[ ]`; only a later acceptance-only continuation may mark it `[x]`. Do not start Task 151 product work. |
+| Next legal action | Stop at the clean committed Task 150 acceptance checkpoint. Task 151 remains `[ ]` and requires its own separately approved run-task lifecycle before any product work. |
 
 ## Task 149 Durable Start
 

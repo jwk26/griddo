@@ -1691,7 +1691,11 @@ fingerprint `a2da7ab6f49ba50d9fba9d3ea5e3fb568990e05f264891844e2534e2e00dfdd8`.
 
 **Commit contract:** existing DnD target/auto-scroll mechanics, tests, and Task 149 evidence only; `feat(triage): add explorer drag targeting`.
 
-### Task 150: [ ] Render `DP-VQ06-EXPLORER` remote/path statuses
+### Task 150: [x] Render `DP-VQ06-EXPLORER` remote/path statuses
+
+**Acceptance:** Accepted on 2026-08-26. Implementation checkpoint
+`14ade3c4eaa6e55a878addcc1367843f032098c2`; accepted `src` tree
+`73a1d973263f92d97580927063f27651482d18d3`.
 
 **P28-04 canonical amendment:** on 2026-08-24 the user approved the minimum actual-owner expansion and moved only the selected-Bit disappearance realization to Task 151's existing reveal production owner. The accepted `DP-VQ06-EXPLORER` copy, action, focus, lifetime, fallback, anchoring, and visual semantics do not change; its historical receipt remains unchanged and this active plan plus the Phase 28 ledger durably record the release-edge correction.
 
