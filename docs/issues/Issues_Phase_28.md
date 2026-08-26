@@ -3,7 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Tasks 149–150 `[x]`, Accepted; Tasks 151–154 remain unstarted
+> State: Tasks 149–150 `[x]`, Accepted; Task 151 `[ ]`, In Progress; Tasks 152–154 remain unstarted
 
 ## Status Legend
 
@@ -96,6 +96,20 @@ No production implementation or Task 149 execution occurred.
 
 Phase 27 items `P27-06` and `P27-08` remain Deferred under their Phase 27 owner
 and are outside Phase 28 scope.
+
+## Task 151 Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Task | `151 — Render DP-VQ07 dedicated Explorer search body and close semantics` |
+| State | `In Progress`; Task 151 remains `[ ]` pending explicit user acceptance; Tasks 152–154 remain unstarted |
+| Approval | Exact fresh candidate-pinned Task 151 run-task work order on 2026-08-26, bounded by `docs/issues/Issues_Phase_28.gate-c.json`, accepted `DP-VQ07`, and only the `P28-04`-moved `DP-VQ06-EXPLORER` selected-Bit disappearance slice |
+| Start base / recovery anchor | `b13bcf0964d7113d7fcf701f3476f055fa818789`; parent `14ade3c4eaa6e55a878addcc1367843f032098c2`; accepted Task 150 `src` tree `73a1d973263f92d97580927063f27651482d18d3` |
+| Exact scope | Create the dedicated Explorer search-results component/test and Task 151 verification record; modify only the planned Explorer, search-hook, CSS, and copy owners/tests; additionally update only this minimum ledger state and the actual measured Task 151 workflow-pilot row |
+| Dependencies | Tasks 114, 128, 134, 135, and 150 are `[x]`, Accepted; no Task 151 blocker is open |
+| Issues / deviations | None at start |
+| Canonical impact | `Reflected` for the already-approved `P28-04` selected-Bit release-edge correction; `None` for implementing the existing `DP-VQ07` and corrected Task 151 contract; no new canonical direction |
+| Next legal action | Implement and verify Task 151 only, then stop at a clean committed implementation checkpoint with Task 151 still `[ ]` |
 
 ## Task 150 Accepted Checkpoint
 
