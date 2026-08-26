@@ -1,6 +1,6 @@
 # GridDO Codex Workflow Phase 28 Pilot Audit
 
-> Status: Phase 28 pilot active; Task 153 implementation checkpoint recorded
+> Status: Terminal Phase 28 measurement baseline; comparative audit transferred to Phase 29
 > Created: 2026-08-24
 > Scope: Workflow cost, speed, verification, and documentation efficiency
 > Evidence role: Tracked Phase 28 experiment evidence
@@ -16,10 +16,11 @@ observed three material operating costs:
 2. Token consumption was too high.
 3. Document consistency work consumed disproportionate effort.
 
-Phase 27 will finish under the currently pinned workflow. Phase 28 will pilot
-lower-cost operating rules during real task execution. At Phase 28 close, the
-pilot evidence will be used to decide and implement changes to the candidate
-workflow skill and, where necessary, the Project Adapter.
+Phase 28 piloted lower-cost operating rules during real task execution with the
+unchanged candidate. This terminal document preserves the measured Phase 28
+baseline only. It makes no comparative conclusion or final workflow verdict.
+Phase 29 owns unchanged-candidate replication, Phase 28/29 comparison, and the
+exact workflow improvement/test handoff.
 
 This document records candidates and observations as they arise so the Phase
 28 skill decision does not depend on conversation memory.
@@ -60,6 +61,15 @@ This document records candidates and observations as they arise so the Phase
   Escalate actual product, design, policy, data, or lifecycle decisions.
 - Keep browser evidence proportional to canonical interaction requirements;
   do not repeat unrelated edge, cross-tab, theme, or reduced-motion matrices.
+- Close Phase 28 as a terminal measurement baseline without a comparative
+  workflow-skill audit or final `retain` / `change` / `reject` verdict.
+- Carry `WF28-01`–`WF28-11` and all seven decision questions unchanged into
+  Phase 29's equal-weight audit track at
+  `docs/verification/inbox-triage/phase-29-workflow-pilot-audit.md`.
+- Keep the candidate commit unchanged through Phase 29. Candidate skill or
+  Adapter changes require a separate approval lifecycle after Phase 29
+  publication and cleanup, pinned to the exact merged Phase 29 audit blob and
+  Final Close receipt.
 
 ## Audit candidates
 
@@ -322,7 +332,24 @@ Add one row per task or repair. Do not backfill estimates as measured facts.
 | Task 152 implementation + four bounded repairs | High | Fourth-cycle RED exhausted the former five RAF callbacks and failed because a later authoritative card render retained focus on `body`; latest focused gate passed 5 files / 182 tests in `2.41s` | Latest-input full gate run, not reused: test 98 files / 1075 tests (`23.51s`), lint 0 errors with 11 unchanged warnings (`6.47s`), typecheck (`1.35s`) and build (`10.05s`) passed; directly measured serial command total `41.38s`; runtime token/accounting `not measured` | No Task 151 or pre-`P28-05` result reused. Exact relevant input: implementation `7ba936147722e1e8ebb4a3fb6b9bceed9a65ca88`, `src` tree `8247077665a212e575faad44f20046de623b7306`, nine-path manifest fingerprint `424a4e6436a5de33ef2f033293129c172660b0769fda68d419cd64894f4e2db2`, unchanged Adapter/command blobs; see `task-152.md` | No browser run. Mounted Explorer directly proved the browser-relevant invariant: after the former frame window, authoritative rerender adds the exact typed result card and focus moves to that actual DOM card; mounted owners also prove source/fallback focus, pending Escape suppression, Search close, and full disabled Confirm | 3 paths: `docs/issues/Issues_Phase_28.md`; `docs/verification/inbox-triage/task-152.md`; this audit | Four implementation-local repair cycles; the user explicitly approved the fourth `P28-05` cycle, which changed only existing Explorer/test focus inputs. No fifth cycle, scope stop, or expansion; stale plan aggregate remained excluded and non-blocking | `P28-05` repaired awaiting checkpoint; Drop-only no-write, exact snapshot/dispatch, shared lock/reconciliation, full/stale/search/focus contracts are implemented. Final sole-session High-risk review found no remaining Critical, Important, or Minor issue; Task 152 marker stays `[ ]` and Tasks 153–154 remain unstarted |
 | Task 153 implementation + four bounded repairs | High | Initial RED had 13 expected failures with 61/74 passing; fourth-cycle latest focused gate passed 3 files / 74 tests in `2.19s` | Latest-input full gate run, not reused: test 98 files / 1086 tests (`21.17s`), lint 0 errors with 11 unchanged warnings (`6.46s`), typecheck (`1.75s`) and build (`10.77s`) passed; directly measured serial command total `40.15s`; runtime token/accounting `not measured` | No Task 152 or earlier Task 153 gate reused. Exact relevant input: implementation `b73dc2505c30a132e7d9fbbfcd02bf09a2aef188`, `src` tree `bcdcc5f2ed9c5ece9780a6f5ea0ccf261d5044a5`, seven-path manifest fingerprint `df60d40a5beb3d130d1446a32ca6cd8c4743a50f601cecdbcd4357359ca07ee8`, unchanged Adapter/command/DP-VQ08 blobs; see `task-153.md` | No browser run: mounted owners directly prove actual focus, live-region lifecycle/name/copy, acknowledgement, and affordance removal; source tests prove the static default plus seven named themes and reduced-motion no-animation/no-transition contract; no browser-computed value is claimed | 3 paths: `docs/issues/Issues_Phase_28.md`; `docs/verification/inbox-triage/task-153.md`; this audit | Four implementation-local repair cycles and one durable scope stop. The user explicitly approved the fourth `P28-06` cycle; it changed only success live-region semantics and required no additional owner, scope, or product decision | `P28-06` repaired awaiting checkpoint. Exact reliability states/actions, returned-fact stale classification, same-ID reconciliation/Retry, actual card focus, one-shot success, and static eight-theme realization are implemented. Final sole-session High-risk review found no remaining Critical, Important, or Minor issue; Task 153 marker stays `[ ]` and Task 154 remains unstarted |
 | Task 154 pre-RED owner discovery | High | Not run: lifecycle stopped before Task 154 test or product writes because the approved path set lacks the mounted source/candidate invalidation owner | Not run; no Task 154 product/test input changed | No earlier product evidence reused for Task 154 behavior | Not run: browser evidence cannot establish missing write authority or supply the absent mounted owner | 3 paths: `docs/issues/Issues_Phase_28.md`; `docs/verification/inbox-triage/task-154.md`; this audit | One owner-discovery stop after the durable start commit; zero implementation repair cycles | `P28-07` awaits user disposition of the minimum Workspace owner/test expansion or the affected acceptance contract; Task 154 remains `[ ]` and no later task started |
-| Task 154 implementation + four bounded repairs | High | Final P28-09 causal-lifetime RED regained `role="status"` under the former props-derived suppression; latest focused gate passed 5 files / 179 tests in `2.73s`, including exactly three locked-state regressions | Latest-input full gate, not reused: test 98 files / 1124 tests (`19.36s`), lint 0 errors with 11 unchanged warnings (`6.12s`), typecheck (`1.21s`) and build (`9.15s`) passed; directly measured serial total `35.84s`; runtime token/accounting `not measured` | No Task 153 or earlier Task 154 gate reused. Exact input: implementation `28ba551a73030800ca8933a6b4513c3802782edc`, `src` tree `e0e911a758363df677ed32eeef64910351a58478`, eleven-path fingerprint `a033fb805ad4f836a25ae0023d25e142b9cac4771f49fd96f75901466b7394ae`; see `task-154.md` | No browser run: mounted owners directly prove focus, native disabled/tab availability, no-write invalidation, once-only live-region ownership, locked refusal, and successful strip lifetime; source assertions prove static motion/theme mappings; no browser-computed invariant is claimed | 3 paths: `docs/issues/Issues_Phase_28.md`; `docs/verification/inbox-triage/task-154.md`; this audit row; status header deliberately unchanged outside row-writer authority | One owner-discovery stop (`P28-07`), one readiness owner stop (`P28-08`), one extra-cycle gate (`P28-09`), and four implementation-local repair cycles; all approved expansions were reflected before affected writes | Result Title/direct limits, preservation, invalidation/focus, and locked-state reliability are implemented; final High-risk review found no Critical or Important issue. Task 154 remains `[ ]`, awaiting explicit acceptance; no push/publication/integration/cleanup or later task |
+| Task 154 implementation + four bounded repairs | High | Final P28-09 causal-lifetime RED regained `role="status"` under the former props-derived suppression; latest focused gate passed 5 files / 179 tests in `2.73s`, including exactly three locked-state regressions | Latest-input full gate, not reused: test 98 files / 1124 tests (`19.36s`), lint 0 errors with 11 unchanged warnings (`6.12s`), typecheck (`1.21s`) and build (`9.15s`) passed; directly measured serial total `35.84s`; runtime token/accounting `not measured` | No Task 153 or earlier Task 154 gate reused. Exact input: implementation `28ba551a73030800ca8933a6b4513c3802782edc`, `src` tree `e0e911a758363df677ed32eeef64910351a58478`, eleven-path fingerprint `a033fb805ad4f836a25ae0023d25e142b9cac4771f49fd96f75901466b7394ae`; see `task-154.md` | No browser run: mounted owners directly prove focus, native disabled/tab availability, no-write invalidation, once-only live-region ownership, locked refusal, and successful strip lifetime; source assertions prove static motion/theme mappings; no browser-computed invariant is claimed | 3 paths: `docs/issues/Issues_Phase_28.md`; `docs/verification/inbox-triage/task-154.md`; this audit | One owner-discovery stop (`P28-07`), one readiness owner stop (`P28-08`), one extra-cycle gate (`P28-09`), and four implementation-local repair cycles; all approved expansions were reflected before affected writes | Result Title/direct limits, preservation, invalidation/focus, and locked-state reliability were accepted at checkpoint `643da813a32943be5dc3362f82a4823a46d219b6`; acceptance-only commit `0df3a0fbb7170d66f47a199ffb398056e4e16c1e` marks Task 154 `[x]`, Accepted. No push/publication/integration/cleanup or later task occurred. |
+
+## Terminal Phase 28 measurement baseline
+
+- Tasks 149–154 were all classified High risk.
+- Implementation repair cycles by task were `5, 6, 4, 4, 4, 4`, for an exact
+  total of `27`.
+- Tasks 152–154 focused elapsed time totals `7.33s`.
+- Tasks 152–154 measured serial full-gate elapsed time totals `117.37s`.
+- Tasks 149–151 elapsed time: `not measured`.
+- Runtime token/accounting: `not measured`.
+- The accepted record contains no Critical or Important escaped defect.
+- Missing values are not estimated or backfilled.
+
+Phase 28 ends with this measurement baseline complete and without comparison,
+conclusion, or a final workflow verdict. `WF28-01`–`WF28-11` and the seven
+questions below transfer intact to
+`docs/verification/inbox-triage/phase-29-workflow-pilot-audit.md`.
 
 ## End-of-Phase-28 decision questions
 
@@ -338,9 +365,10 @@ Add one row per task or repair. Do not backfill estimates as measured facts.
 
 ## Promotion boundary
 
-This working audit does not change the pinned Phase 27 workflow candidate,
-Phase 27 product authority, or any lifecycle gate. At Phase 28 kickoff, copy or
-move it into the approved Phase 28 tracked documentation scope and commit it as
-the pilot baseline before task execution. At Phase 28 close, convert accepted
-findings into an explicit skill/Adapter change plan, test those changes, and
-obtain the required rollout approval separately.
+This terminal audit changes no product, plan, skill, Adapter, receipt, or
+lifecycle authority. Phase 29 repeats the pilot at the unchanged candidate
+commit and owns the comparison, verdicts, limitations, and exact unapplied
+skill/reference/test change plan. No workflow change may be promoted during
+Phase 29. Any candidate skill or Adapter change requires a separate approval
+lifecycle after Phase 29 publication and cleanup, pinned to the exact merged
+Phase 29 audit blob and Final Close receipt.

@@ -97,6 +97,12 @@ No production implementation or Task 149 execution occurred.
 Phase 27 items `P27-06` and `P27-08` remain Deferred under their Phase 27 owner
 and are outside Phase 28 scope.
 
+### Terminal workflow-audit disposition
+
+| ID | State | Evidence | User disposition | Canonical impact |
+| --- | --- | --- | --- | --- |
+| `P28-10` | `Promoted to Execution Plan` | The terminal Phase 28 audit preserves actual measured rows but does not provide a comparative sample. Tasks 149–154 are all Accepted; Task 155 and Phase 29 have not started. | On 2026-08-26 the user approved closing Phase 28 as a measurement baseline, transferring the comparative skill audit to Phase 29 under the unchanged candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`, and making Phase 29 an equal-weight product/audit lifecycle. No product, design, data, persistence, schema, command, skill, Adapter, or receipt change is authorized. | `Reflected` in the Phase 29 two-track gate in `docs/EXECUTION_PLAN.md` and its continuity owner `docs/verification/inbox-triage/phase-29-workflow-pilot-audit.md`. This terminal disposition creates no generic active issue. |
+
 ## Task 154 Durable Start
 
 | Field | Durable value |
@@ -231,3 +237,74 @@ The fifth bounded repair cycle resumed from recovery anchor
 `77b762e15a3fea8c80ced07ba8fdaf16679593c3`; final review found no Critical or
 Important issue, so no sixth cycle was started. Task 150 remains `[ ]` and
 unstarted; no canonical direction change or scope expansion occurred.
+
+## Phase 28 Close Audit
+
+### Identity, ownership, and acceptance
+
+- Pinned pre-close SHA:
+  `0df3a0fbb7170d66f47a199ffb398056e4e16c1e` on
+  `phase-28/explorer-search-pointer-placement`, based on freshly fetched
+  `origin/main` `8cb2d904a55c136ca319e7bdf619d8e5d962fce8`.
+- Tasks 149–154 each have user-owned `[x]`, durable implementation/evidence,
+  and explicit acceptance. Task 155 and Phase 29 remain unstarted.
+- The base-to-head diff is owned by the six accepted tasks, their tests,
+  canonical reflections, task evidence, Gate C receipt, ledger, and workflow
+  measurement baseline. No Task 155+, unrelated brainstorming, or prototype
+  work is mixed.
+- The exact accepted source tree is
+  `e0e911a758363df677ed32eeef64910351a58478` and is preserved by the
+  close-preview, which changes close documentation only.
+
+### Terminal evidence and topology
+
+The Adapter-declared full gate ran freshly and serially at pre-close:
+
+| Command | Exit | Result |
+| --- | ---: | --- |
+| `pnpm test` | 0 | 98 test files / 1124 tests passed |
+| `pnpm lint` | 0 | 0 errors; 11 unchanged warnings |
+| `pnpm typecheck` | 0 | TypeScript check passed |
+| `pnpm build` | 0 | Next.js 16.2.1 production build passed; seven routes generated |
+| `git diff --check` | 0 | No whitespace errors |
+
+Fresh fetch left local `main` and `origin/main` equal at
+`8cb2d904a55c136ca319e7bdf619d8e5d962fce8` with divergence `0/0`; that
+commit is the merge base and an ancestor of pre-close.
+
+### Architecture conformance
+
+| Governing rule | Affected evidence | Tier | Disposition |
+| --- | --- | --- | --- |
+| DataStore facade, reactive reads, and hook boundary | New authoritative Explorer reads remain in dedicated `liveQuery` hooks; components import no DataStore or Dexie access. | Blocking | Pass |
+| State ownership by lifetime | Explorer app-session path/status stays in the declared store; mounted search, reveal, and Placement remain hook-owned; no durable candidate truth is duplicated. | Blocking | Pass |
+| Workflow-hook and command ownership | `useTriageDnd` owns sensors/release feedback without sequencing placement persistence; `use-triage-placement` owns the exact Task 123 dispatch and reconciliation. | Blocking | Pass |
+| Dedicated Explorer query boundary | The whole-hierarchy query, stale selection, path reconstruction, and reveal lifecycle remain separate from global Search and general Grid routing. | Blocking | Pass |
+| Authoritative operations and atomic postconditions | Placement preserves exact snapshots, operation identity, locks, no-write invalidation, and authoritative result/retry rules. | Blocking | Pass |
+| Shared tree, semantic states, and theme mapping | Accepted realizations extend the canonical tree, centralized copy, semantic roles, reduced-motion rules, and eight-theme mappings without component theme branching. | Blocking | Pass |
+| Decision prerequisites and source/render evidence | Accepted DP receipts own exact UI meaning; task records distinguish mounted-owner, browser, and source-only claims. | Blocking | Pass |
+| File organization | New hooks, components, tests, copy, CSS, and evidence remain with their plan-declared owners. | Advisory | Pass |
+| Local-first presentation | Genuine pending/unknown/reconciling states retain authoritative content and do not introduce generic routine-loading chrome. | Advisory | Pass |
+
+Blocking violations: **0**. Advisory violations: **0**.
+
+### Issue, canonical-impact, archive, and handoff reconciliation
+
+- No `Open`, `In Progress`, or `Awaiting User Decision` Phase 28 issue remains.
+- `P28-01`–`P28-09` are Closed or Promoted to Execution Plan with actual
+  `Reflected` or implementation-local `None` canonical impact.
+- `P28-10` is the terminal `Promoted to Execution Plan` disposition for the
+  approved Phase 29 two-track handoff; it creates no generic active issue.
+- `docs/execution-plan/archive/phase-28.md` records completion-time truth and
+  the Phase Index, readiness, task counts, and archive link agree.
+- Phase Notes are not used by Adapter policy.
+- The Phase 28 audit is a terminal measurement baseline. Comparative findings,
+  `WF28-01`–`WF28-11` verdicts, seven decision-question answers, and exact
+  unapplied improvement/test plans belong to the Phase 29 audit owner.
+- No speculative workflow learning was added to
+  `docs/execution-plan/LEARNINGS.md`.
+
+**Next legal action:** prepare one exact Final Close packet only if every
+publication and integration guard is green. This audit grants no Final Close,
+receipt write, push, PR, merge, integration sync, cleanup, Task 155, or Phase
+29 authority.
