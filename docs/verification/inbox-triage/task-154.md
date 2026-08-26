@@ -169,3 +169,14 @@ browser evidence remains omitted because mounted owner tests establish the
 exact focus/live-region lifecycle; the remaining defect is a React ownership
 branch that browser evidence cannot authorize or repair. Task 154 remains
 `[ ]`.
+
+## P28-09 approval
+
+The user approved one additional repair cycle limited to the recorded exact
+hypothesis and three locked-state target-loss regression tests. The existing
+Explorer-to-Workspace callback may report whether Workspace actually completed
+the pre-dispatch close and replacement announcement. Explorer live semantics
+may be suppressed only for that successful Task 154 result; `pending`,
+`unknown`, and `reconciling` cancellation refusal must retain the existing live
+stale-placement status. No owner, receipt, design, copy, persistence, command,
+or product scope changes. Canonical impact is `None` and Task 154 remains `[ ]`.
