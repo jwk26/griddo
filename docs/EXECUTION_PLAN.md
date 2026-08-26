@@ -1752,7 +1752,7 @@ fingerprint `a2da7ab6f49ba50d9fba9d3ea5e3fb568990e05f264891844e2534e2e00dfdd8`.
 
 **Commit contract:** base placement coordinator/adapters, tests, and Task 152 evidence only; `feat(triage): connect atomic pointer placement`.
 
-### Task 153: [ ] Render `DP-VQ08` placement reliability states
+### Task 153: [x] Render `DP-VQ08` placement reliability states
 
 **Files and actions:** after `DP-VQ08`, modify `src/hooks/use-triage-placement.ts` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate approved wording and render pending, reconciling, explicit failure, stale source/target, Retry/Cancel, success, timing, focus, reduced-motion, and theme states within Task 152's captured affordance. Source truth/destination remain visible until authoritative resolution; Retry only from not-applied; unknown offers Check again. Share no dependency with Task 154; the writer mutex serializes their common files.
 
