@@ -18,6 +18,7 @@ import type {
 import { getTriageHierarchyDropId } from "@/lib/grid-dnd";
 import { useTriageStore } from "@/stores/triage-store";
 import type { Bit, Node } from "@/types";
+import type { GridExplorerSearchResult } from "@/lib/utils/grid-explorer-search";
 import { HierarchyExplorer } from "./hierarchy-explorer";
 
 const globalsCss = readFileSync(
@@ -26,6 +27,35 @@ const globalsCss = readFileSync(
 );
 
 const useExplorerRemoteStatusMock = vi.hoisted(() => vi.fn());
+const explorerSearchState = vi.hoisted(() => ({
+  mode: "closed" as "closed" | "active" | "interrupted",
+  activeQuery: null as string | null,
+  interruptedQuery: null as string | null,
+  results: [] as GridExplorerSearchResult[],
+  status: "idle" as "idle" | "loading" | "refreshing" | "ready" | "error",
+  isLoading: false,
+  isRefreshing: false,
+  error: null as string | null,
+  resultScrollTop: 0,
+  focusTarget: { kind: "input" } as
+    | { kind: "input" }
+    | { kind: "result"; resultKey: GridExplorerSearchResult["key"] },
+  feedback: null as "stale-selection" | null,
+  revealPresentation: null as
+    | null
+    | { kind: "revealed"; result: GridExplorerSearchResult }
+    | { kind: "selection-cleared"; id: string; title: string; nodePathIds: readonly string[] },
+  openSearch: vi.fn(),
+  setQuery: vi.fn(),
+  interruptForDnd: vi.fn(),
+  closeSearch: vi.fn(),
+  retry: vi.fn(),
+  setResultScrollTop: vi.fn(),
+  focusInput: vi.fn(),
+  focusResult: vi.fn(),
+  selectResult: vi.fn(),
+  clearReveal: vi.fn(),
+}));
 
 vi.mock("@dnd-kit/core", () => ({
   useDroppable: vi.fn().mockReturnValue({ setNodeRef: vi.fn() }),
@@ -37,6 +67,10 @@ vi.mock("@/hooks/use-grid-data", () => ({
 
 vi.mock("@/hooks/use-explorer-remote-status", () => ({
   useExplorerRemoteStatus: useExplorerRemoteStatusMock,
+}));
+
+vi.mock("@/hooks/use-grid-explorer-search", () => ({
+  useGridExplorerSearch: () => explorerSearchState,
 }));
 
 const departureState = vi.hoisted(() => ({
@@ -107,6 +141,29 @@ function createBit(overrides: Partial<Bit> = {}): Bit {
 
 function setGrid(parentId: string | null, nodes: Node[], bits: Bit[] = []) {
   gridByParent.set(parentId, { nodes, bits, isLoading: false });
+}
+
+function searchResult(
+  key: GridExplorerSearchResult["key"],
+  overrides: Partial<GridExplorerSearchResult> = {},
+): GridExplorerSearchResult {
+  const [type, id] = key.split(":") as ["node" | "bit", string];
+  return {
+    key,
+    id,
+    type,
+    title: type === "node" ? "Projects" : "Project note",
+    icon: type === "node" ? "Folder" : "ListTodo",
+    color: type === "node" ? "hsl(221, 83%, 53%)" : null,
+    breadcrumb: "Home",
+    ancestorIds: [],
+    nodePathIds: type === "node" ? [id] : [],
+    hierarchyOrder: 0,
+    relevance: "title-prefix",
+    rank: 1,
+    duplicate: null,
+    ...overrides,
+  };
 }
 
 const defaultProps: {
@@ -193,6 +250,57 @@ beforeEach(async () => {
     destination.perform();
     destination.focus?.();
     return "performed";
+  });
+  Object.assign(explorerSearchState, {
+    mode: "closed",
+    activeQuery: null,
+    interruptedQuery: null,
+    results: [],
+    status: "idle",
+    isLoading: false,
+    isRefreshing: false,
+    error: null,
+    resultScrollTop: 0,
+    focusTarget: { kind: "input" },
+    feedback: null,
+    revealPresentation: null,
+  });
+  for (const callback of [
+    explorerSearchState.openSearch,
+    explorerSearchState.setQuery,
+    explorerSearchState.interruptForDnd,
+    explorerSearchState.closeSearch,
+    explorerSearchState.retry,
+    explorerSearchState.setResultScrollTop,
+    explorerSearchState.focusInput,
+    explorerSearchState.focusResult,
+    explorerSearchState.selectResult,
+    explorerSearchState.clearReveal,
+  ]) {
+    callback.mockReset();
+  }
+  explorerSearchState.openSearch.mockImplementation(() => {
+    explorerSearchState.mode = "active";
+    explorerSearchState.activeQuery = explorerSearchState.interruptedQuery ?? "";
+    explorerSearchState.interruptedQuery = null;
+    explorerSearchState.revealPresentation = null;
+  });
+  explorerSearchState.closeSearch.mockImplementation(() => {
+    explorerSearchState.mode = "closed";
+    explorerSearchState.activeQuery = null;
+    explorerSearchState.interruptedQuery = null;
+    explorerSearchState.results = [];
+    explorerSearchState.revealPresentation = null;
+  });
+  explorerSearchState.interruptForDnd.mockImplementation(() => {
+    if (explorerSearchState.mode !== "active") return;
+    explorerSearchState.mode = "interrupted";
+    explorerSearchState.interruptedQuery = explorerSearchState.activeQuery;
+    explorerSearchState.activeQuery = null;
+    explorerSearchState.revealPresentation = null;
+  });
+  explorerSearchState.clearReveal.mockImplementation(() => {
+    explorerSearchState.revealPresentation = null;
   });
 });
 
@@ -892,6 +1000,264 @@ describe("HierarchyExplorer Task 150 remote/path statuses", () => {
     }
     expect(globalsCss).toMatch(
       /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.explorer-remote-count[\s\S]*transition: none/,
+    );
+  });
+});
+
+describe("HierarchyExplorer Task 151 dedicated search and reveal", () => {
+  it("retains Explorer chrome and replaces the complete four-column body", () => {
+    setGrid(null, [createNode({ id: "projects", title: "Projects" })]);
+    explorerSearchState.mode = "active";
+    explorerSearchState.activeQuery = "";
+    render(<HierarchyExplorer {...defaultProps} />);
+
+    expect(screen.getByRole("navigation", { name: "Explorer path" })).toBeVisible();
+    expect(screen.getByTestId("explorer-search-body")).toBeVisible();
+    expect(screen.queryByTestId("hierarchy-section-body-home")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Search Explorer" })).toBeVisible();
+  });
+
+  it("revalidates a valid result, reconstructs its path, reveals it, and focuses its real row", async () => {
+    const projects = createNode({ id: "projects", title: "Projects" });
+    setGrid(null, [projects]);
+    const selected = searchResult("node:projects");
+    explorerSearchState.mode = "active";
+    explorerSearchState.activeQuery = "projects";
+    explorerSearchState.results = [selected];
+    explorerSearchState.status = "ready";
+    explorerSearchState.selectResult.mockImplementation(async () => {
+      explorerSearchState.mode = "closed";
+      explorerSearchState.activeQuery = null;
+      explorerSearchState.results = [];
+      explorerSearchState.revealPresentation = { kind: "revealed", result: selected };
+      return { kind: "selected", result: selected };
+    });
+    render(<HierarchyExplorer {...defaultProps} />);
+
+    fireEvent.click(screen.getByRole("option"));
+
+    await waitFor(() => expect(useTriageStore.getState().explorerPathIds).toEqual([projects.id]));
+    const row = screen.getByRole("button", { name: "Select Node: Projects" });
+    expect(row).toHaveClass("explorer-revealed-row");
+    expect(row).toHaveFocus();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Revealed “Projects” in Home.",
+    );
+  });
+
+  it("keeps search and navigation untouched when selection-time validation is stale", async () => {
+    const selected = searchResult("node:projects");
+    explorerSearchState.mode = "active";
+    explorerSearchState.activeQuery = "projects";
+    explorerSearchState.results = [selected];
+    explorerSearchState.status = "ready";
+    explorerSearchState.selectResult.mockResolvedValue({ kind: "stale" });
+    render(<HierarchyExplorer {...defaultProps} />);
+
+    fireEvent.click(screen.getByRole("option"));
+
+    await waitFor(() => expect(explorerSearchState.selectResult).toHaveBeenCalledWith(selected));
+    expect(screen.getByTestId("explorer-search-body")).toBeVisible();
+    expect(useTriageStore.getState().explorerPathIds).toEqual([]);
+    expect(screen.queryByText(/Revealed/)).not.toBeInTheDocument();
+  });
+
+  it("uses DnD start as the only preserving close and requires explicit reopen", () => {
+    explorerSearchState.mode = "active";
+    explorerSearchState.activeQuery = "projects";
+    explorerSearchState.resultScrollTop = 48;
+    const view = render(<HierarchyExplorer {...defaultProps} />);
+    expect(screen.getByTestId("explorer-search-body")).toBeVisible();
+
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        activeDragItem={{ kind: "triage-staged-node", id: "candidate", label: "Candidate" }}
+      />,
+    );
+    expect(explorerSearchState.interruptForDnd).toHaveBeenCalledOnce();
+    view.rerender(<HierarchyExplorer {...defaultProps} />);
+    expect(screen.queryByTestId("explorer-search-body")).not.toBeInTheDocument();
+    expect(explorerSearchState.interruptedQuery).toBe("projects");
+    expect(explorerSearchState.resultScrollTop).toBe(48);
+
+    fireEvent.click(screen.getByRole("button", { name: "Search Explorer" }));
+    view.rerender(<HierarchyExplorer {...defaultProps} />);
+    expect(explorerSearchState.openSearch).toHaveBeenCalledOnce();
+    expect(screen.getByTestId("explorer-search-body")).toBeVisible();
+  });
+
+  it("clears active and interrupted search with X and returns focus to the entry", async () => {
+    explorerSearchState.mode = "active";
+    explorerSearchState.activeQuery = "projects";
+    explorerSearchState.interruptedQuery = "older";
+    render(<HierarchyExplorer {...defaultProps} />);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Clear and close Explorer search",
+      }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Search Explorer" })).toHaveFocus(),
+    );
+    expect(explorerSearchState.closeSearch).toHaveBeenCalledOnce();
+    expect(explorerSearchState.activeQuery).toBeNull();
+    expect(explorerSearchState.interruptedQuery).toBeNull();
+    expect(screen.queryByTestId("explorer-search-body")).not.toBeInTheDocument();
+  });
+
+  it("ends reveal on path change, DnD start, and search restart without a timer", async () => {
+    const projects = createNode({ id: "projects", title: "Projects" });
+    setGrid(null, [projects]);
+    const selected = searchResult("node:projects");
+    explorerSearchState.mode = "active";
+    explorerSearchState.activeQuery = "projects";
+    explorerSearchState.results = [selected];
+    explorerSearchState.status = "ready";
+    explorerSearchState.selectResult.mockImplementation(async () => {
+      explorerSearchState.mode = "closed";
+      explorerSearchState.activeQuery = null;
+      explorerSearchState.results = [];
+      explorerSearchState.revealPresentation = { kind: "revealed", result: selected };
+      return { kind: "selected", result: selected };
+    });
+    const view = render(<HierarchyExplorer {...defaultProps} />);
+    fireEvent.click(screen.getByRole("option"));
+    await waitFor(() => expect(screen.getByText(/Revealed/)).toBeVisible());
+
+    fireEvent.click(screen.getByRole("button", { name: "Search Explorer" }));
+    view.rerender(<HierarchyExplorer {...defaultProps} />);
+    expect(screen.queryByText(/Revealed/)).not.toBeInTheDocument();
+
+    explorerSearchState.mode = "closed";
+    view.rerender(<HierarchyExplorer {...defaultProps} />);
+    useTriageStore.getState().setExplorerPathIds([projects.id]);
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        activeDragItem={{ kind: "triage-staged-node", id: "candidate", label: "Candidate" }}
+      />,
+    );
+    expect(screen.queryByText(/Revealed/)).not.toBeInTheDocument();
+  });
+
+  it("preserves search and reveal state across a Scratch switch without forcing focus", () => {
+    explorerSearchState.mode = "active";
+    explorerSearchState.activeQuery = "projects";
+    explorerSearchState.resultScrollTop = 72;
+    render(<HierarchyExplorer {...defaultProps} />);
+    const home = screen.getByRole("button", { name: "Home" });
+    home.focus();
+
+    useTriageStore.getState().selectScratch("scratch-2");
+
+    expect(explorerSearchState.mode).toBe("active");
+    expect(explorerSearchState.activeQuery).toBe("projects");
+    expect(explorerSearchState.resultScrollTop).toBe(72);
+    expect(home).toHaveFocus();
+  });
+
+  it("preserves an existing reveal across a Scratch switch without restoring row focus", () => {
+    const projects = createNode({ id: "projects", title: "Projects" });
+    setGrid(null, [projects]);
+    useTriageStore.setState({
+      explorerPathIds: [projects.id],
+      explorerOpenColumnIds: ["home", projects.id],
+    });
+    const revealed = searchResult("node:projects");
+    explorerSearchState.revealPresentation = {
+      kind: "revealed",
+      result: revealed,
+    };
+    const view = render(<HierarchyExplorer {...defaultProps} />);
+    const entry = screen.getByRole("button", { name: "Search Explorer" });
+    entry.focus();
+
+    useTriageStore.getState().selectScratch("scratch-2");
+    view.rerender(<HierarchyExplorer {...defaultProps} />);
+
+    expect(screen.getByText("Revealed “Projects” in Home.")).toBeVisible();
+    expect(entry).toHaveFocus();
+  });
+
+  it("clears only a vanished revealed Bit, preserves its parent path, and focuses the parent row", async () => {
+    const projects = createNode({ id: "projects", title: "Projects" });
+    const note = createBit({ id: "note", parentId: projects.id, title: "Project note" });
+    setGrid(null, [projects]);
+    setGrid(projects.id, [], [note]);
+    const selected = searchResult("bit:note", {
+      title: note.title,
+      breadcrumb: "Home / Projects",
+      ancestorIds: [projects.id],
+      nodePathIds: [projects.id],
+    });
+    explorerSearchState.mode = "active";
+    explorerSearchState.activeQuery = "note";
+    explorerSearchState.results = [selected];
+    explorerSearchState.status = "ready";
+    explorerSearchState.selectResult.mockImplementation(async () => {
+      explorerSearchState.mode = "closed";
+      explorerSearchState.activeQuery = null;
+      explorerSearchState.results = [];
+      explorerSearchState.revealPresentation = { kind: "revealed", result: selected };
+      return { kind: "selected", result: selected };
+    });
+    const view = render(<HierarchyExplorer {...defaultProps} />);
+    fireEvent.click(screen.getByRole("option"));
+    await waitFor(() =>
+      expect(document.querySelector('[data-explorer-item-id="note"]')).toHaveFocus(),
+    );
+
+    setGrid(projects.id, [], []);
+    explorerSearchState.revealPresentation = {
+      kind: "selection-cleared",
+      id: note.id,
+      title: note.title,
+      nodePathIds: [projects.id],
+    };
+    view.rerender(<HierarchyExplorer {...defaultProps} />);
+
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "“Project note” is no longer available. Selection cleared.",
+      ),
+    );
+    expect(useTriageStore.getState().explorerPathIds).toEqual([projects.id]);
+    expect(screen.getByRole("button", { name: "Select Node: Projects" })).toHaveFocus();
+    expect(screen.queryByText(/Revealed/)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
+    view.rerender(<HierarchyExplorer {...defaultProps} />);
+    expect(screen.queryByText(/Selection cleared/)).not.toBeInTheDocument();
+  });
+
+  it("defines static reduced-motion parity and all eight search theme role families", () => {
+    for (const role of [
+      "explorer-search-body",
+      "explorer-search-field",
+      "explorer-search-status",
+      "explorer-search-results",
+      "explorer-search-result",
+      "explorer-revealed-row",
+    ]) {
+      expect(globalsCss).toContain(`.${role}`);
+    }
+    for (const theme of [
+      "tiny-desk",
+      "neumorphism",
+      "claymorphism",
+      "origami",
+      "terminal",
+      "retro-mac",
+      "graphite",
+    ]) {
+      expect(globalsCss).toContain(
+        `:root[data-color-theme="${theme}"] .explorer-search-body`,
+      );
+    }
+    expect(globalsCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.explorer-search-body[\s\S]*transition: none/,
     );
   });
 });

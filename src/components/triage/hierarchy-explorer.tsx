@@ -1,20 +1,23 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import { Folder, ListTodo } from "lucide-react";
+import { Folder, ListTodo, Search } from "lucide-react";
 import {
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
   type ReactNode,
   type UIEvent,
 } from "react";
+import { GridExplorerSearchResults } from "@/components/triage/grid-explorer-search-results";
 import { useGridData } from "@/hooks/use-grid-data";
 import {
   useExplorerRemoteStatus,
 } from "@/hooks/use-explorer-remote-status";
 import { useTriageDepartureContext } from "@/hooks/use-triage-departure";
+import { useGridExplorerSearch } from "@/hooks/use-grid-explorer-search";
 import type {
   TriageDragItem,
   TriageTargetFeedback,
@@ -32,6 +35,7 @@ import {
   useTriageStore,
 } from "@/stores/triage-store";
 import type { Bit, Node } from "@/types";
+import type { GridExplorerSearchResult } from "@/lib/utils/grid-explorer-search";
 
 interface HierarchyExplorerProps {
   activeDragItem: TriageDragItem;
@@ -53,6 +57,16 @@ type HierarchyCellState =
   | "full"
   | "pending-confirmation"
   | "invalid";
+
+type SelectionClearedStatus = Readonly<{
+  kind: "selection-cleared";
+  title: string;
+  columnId: string;
+  fallbackPathIds: string[];
+}>;
+type RenderedExplorerPathStatus =
+  | ExplorerPathStatusState
+  | SelectionClearedStatus;
 
 const COLUMN_LABELS = ["Home", "Level 1", "Level 2", "Level 3"] as const;
 const EMPTY_SCROLL_POSITION: TriageSessionScrollPosition = {
@@ -166,7 +180,13 @@ function explorerTemplate(
   );
 }
 
-function explorerPathStatusCopy(status: ExplorerPathStatusState): string {
+function explorerPathStatusCopy(status: RenderedExplorerPathStatus): string {
+  if (status.kind === "selection-cleared") {
+    return explorerTemplate(
+      INBOX_TRIAGE_COPY.explorerStatus.path.selectionCleared,
+      { title: status.title },
+    );
+  }
   if (status.kind === "stale-placement") {
     return INBOX_TRIAGE_COPY.explorerStatus.path.stalePlacement;
   }
@@ -196,6 +216,32 @@ export function HierarchyExplorer({
   localPlacementResult,
   targetFeedback,
 }: HierarchyExplorerProps) {
+  const search = useGridExplorerSearch();
+  const searchEntryRef = useRef<HTMLButtonElement>(null);
+  const previousDragRef = useRef<TriageDragItem>(null);
+  const focusedRevealKeyRef = useRef<string | null>(null);
+  const focusedSelectionClearIdRef = useRef<string | null>(null);
+  const [entryFocusRevision, setEntryFocusRevision] = useState(0);
+  const reveal =
+    search.revealPresentation?.kind === "revealed"
+      ? search.revealPresentation.result
+      : null;
+  const selectionClearedStatus = useMemo<SelectionClearedStatus | null>(
+    () =>
+      search.revealPresentation?.kind === "selection-cleared"
+        ? {
+            kind: "selection-cleared",
+            title: search.revealPresentation.title,
+            columnId: search.revealPresentation.nodePathIds.at(-1) ?? "home",
+            fallbackPathIds: [...search.revealPresentation.nodePathIds],
+          }
+        : null,
+    [search.revealPresentation],
+  );
+  const selectionClearedId =
+    search.revealPresentation?.kind === "selection-cleared"
+      ? search.revealPresentation.id
+      : null;
   const targetFeedbackRef = useRef(targetFeedback);
   useEffect(() => {
     targetFeedbackRef.current = targetFeedback;
@@ -329,6 +375,20 @@ export function HierarchyExplorer({
     (state) => state.setExplorerPathStatus,
   );
 
+  useLayoutEffect(() => {
+    const previous = previousDragRef.current;
+    previousDragRef.current = activeDragItem;
+    if (previous === null && activeDragItem !== null) {
+      search.interruptForDnd();
+    }
+  }, [activeDragItem, search]);
+
+  useLayoutEffect(() => {
+    if (search.mode === "closed" && entryFocusRevision > 0) {
+      searchEntryRef.current?.focus({ preventScroll: true });
+    }
+  }, [entryFocusRevision, search.mode]);
+
   useEffect(
     () => () => clearExplorerRemotePresentation(),
     [clearExplorerRemotePresentation],
@@ -397,6 +457,66 @@ export function HierarchyExplorer({
     level1Nodes.find(({ id }) => id === selectedL1Id) ?? null;
   const selectedL2Node =
     level2Nodes.find(({ id }) => id === selectedL2Id) ?? null;
+
+  useLayoutEffect(() => {
+    if (reveal === null) {
+      focusedRevealKeyRef.current = null;
+      return;
+    }
+    if (
+      search.mode !== "closed" ||
+      focusedRevealKeyRef.current === reveal.key
+    ) {
+      return;
+    }
+    const row = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-explorer-item-id]"),
+    ).find(
+      (element) =>
+        element.dataset.explorerItemId === reveal.id &&
+        element.dataset.explorerItemType === reveal.type,
+    );
+    if (row !== undefined) {
+      focusedRevealKeyRef.current = reveal.key;
+      row.focus({ preventScroll: true });
+    }
+  }, [
+    level1Bits,
+    level1Nodes,
+    level2Bits,
+    level2Nodes,
+    level3Bits,
+    level3Nodes,
+    reveal,
+    rootNodes,
+    search.mode,
+  ]);
+
+  useEffect(() => {
+    if (reveal === null) return;
+    const pathMatches =
+      reveal.nodePathIds.length === explorerPathIds.length &&
+      reveal.nodePathIds.every((id, index) => explorerPathIds[index] === id);
+    if (!pathMatches) search.clearReveal();
+  }, [explorerPathIds, reveal, search]);
+
+  useLayoutEffect(() => {
+    if (selectionClearedStatus === null) {
+      focusedSelectionClearIdRef.current = null;
+      return;
+    }
+    if (focusedSelectionClearIdRef.current === selectionClearedId) {
+      return;
+    }
+    focusedSelectionClearIdRef.current = selectionClearedId;
+    focusFallback(selectionClearedStatus.fallbackPathIds);
+  }, [selectionClearedId, selectionClearedStatus]);
+
+  useEffect(() => {
+    if (explorerPathStatus !== null && selectionClearedStatus !== null) {
+      search.clearReveal();
+    }
+  }, [explorerPathStatus, search, selectionClearedStatus]);
 
   const gridValidation = useMemo(() => {
     if (rootGrid.isLoading) return null;
@@ -490,6 +610,7 @@ export function HierarchyExplorer({
       pathIds.length === explorerPathIds.length &&
       pathIds.every((id, index) => id === explorerPathIds[index])
     ) {
+      if (selectionClearedStatus !== null) search.clearReveal();
       return;
     }
     const focusTarget =
@@ -501,6 +622,7 @@ export function HierarchyExplorer({
       focus: () => focusTarget?.focus(),
       kind: "path",
       perform: () => {
+        search.clearReveal();
         setExplorerPathIds(pathIds);
         setExplorerOpenColumnIds(["home", ...pathIds]);
       },
@@ -617,11 +739,36 @@ export function HierarchyExplorer({
     },
   ] as const;
 
+  function closeSearchAndFocusEntry() {
+    search.closeSearch();
+    setEntryFocusRevision((current) => current + 1);
+  }
+
+  async function selectSearchResult(result: GridExplorerSearchResult) {
+    const outcome = await search.selectResult(result);
+    if (outcome.kind === "stale") return;
+    setExplorerPathIds([...outcome.result.nodePathIds]);
+    setExplorerOpenColumnIds(["home", ...outcome.result.nodePathIds]);
+  }
+
   return (
     <div
       className="flex min-h-0 w-full flex-col rounded-md border border-border/50 bg-card"
       data-testid="hierarchy-explorer"
     >
+      {reveal !== null ? (
+        <div
+          aria-atomic="true"
+          aria-live="polite"
+          className="explorer-reveal-status"
+          role="status"
+        >
+          {explorerTemplate(INBOX_TRIAGE_COPY.explorerSearch.status.revealed, {
+            title: reveal.title,
+            breadcrumb: reveal.breadcrumb,
+          })}
+        </div>
+      ) : null}
       <nav
         aria-label="Explorer path"
         className="flex min-w-0 flex-wrap items-center gap-x-1 border-b border-border/50 px-3 py-1.5 text-xs text-muted-foreground"
@@ -641,8 +788,38 @@ export function HierarchyExplorer({
             </button>
           </span>
         ))}
+        <button
+          ref={searchEntryRef}
+          className="explorer-search-entry ml-auto"
+          type="button"
+          onClick={() => {
+            search.openSearch();
+          }}
+        >
+          <Search aria-hidden="true" className="h-3.5 w-3.5" />
+          {INBOX_TRIAGE_COPY.explorerSearch.entry}
+        </button>
       </nav>
 
+      {search.mode === "active" ? (
+        <GridExplorerSearchResults
+          feedback={search.feedback}
+          focusTarget={search.focusTarget}
+          query={search.activeQuery ?? ""}
+          resultScrollTop={search.resultScrollTop}
+          results={search.results}
+          status={search.status}
+          onClose={closeSearchAndFocusEntry}
+          onFocusInput={search.focusInput}
+          onFocusResult={search.focusResult}
+          onQueryChange={(query) => {
+            search.setQuery(query);
+          }}
+          onRetry={search.retry}
+          onScrollTopChange={search.setResultScrollTop}
+          onSelectResult={(result) => void selectSearchResult(result)}
+        />
+      ) : (
       <div className="flex min-h-0 flex-1 flex-row overflow-x-hidden">
         {columns.map((column, index) => {
           const parentPath = ["Home", ...pathNodes.slice(0, index).map(({ title }) => title)];
@@ -668,7 +845,10 @@ export function HierarchyExplorer({
                 explorerPathStatus?.columnId === column.columnId &&
                 explorerPathStatus.fallbackPathIds.length === index
                   ? explorerPathStatus
-                  : null
+                  : selectionClearedStatus?.columnId === column.columnId &&
+                      selectionClearedStatus.fallbackPathIds.length === index
+                    ? selectionClearedStatus
+                    : null
               }
               remoteArrivals={
                 explorerRemoteArrivalIds[column.columnId] ?? []
@@ -679,7 +859,11 @@ export function HierarchyExplorer({
               onScrollPositionChange={setExplorerColumnScroll}
               onClearRemoteArrivals={clearExplorerRemoteArrivals}
               onDismissPathStatus={(status) => {
-                clearExplorerPathStatus();
+                if (status.kind === "selection-cleared") {
+                  search.clearReveal();
+                } else {
+                  clearExplorerPathStatus();
+                }
                 focusFallback(status.fallbackPathIds);
               }}
               parentNode={column.parentNode}
@@ -703,6 +887,7 @@ export function HierarchyExplorer({
                   overTargetId={overTargetId}
                   parentPath={parentPath}
                   pendingPlacementDropId={effectivePendingPlacementDropId}
+                  reveal={reveal}
                   selectedNodeId={column.selectedNodeId}
                   targetFeedback={targetFeedback}
                 />
@@ -711,6 +896,7 @@ export function HierarchyExplorer({
           );
         })}
       </div>
+      )}
     </div>
   );
 }
@@ -772,10 +958,10 @@ function ExplorerColumn({
   isDimmed: boolean;
   itemIds: string[];
   label: (typeof COLUMN_LABELS)[number];
-  pathStatus: ExplorerPathStatusState | null;
+  pathStatus: RenderedExplorerPathStatus | null;
   remoteArrivals: ExplorerItemIdentity[];
   onClearRemoteArrivals: (columnId: string) => void;
-  onDismissPathStatus: (status: ExplorerPathStatusState) => void;
+  onDismissPathStatus: (status: RenderedExplorerPathStatus) => void;
   onScrollPositionChange: (
     columnId: string,
     position: TriageSessionScrollPosition,
@@ -964,6 +1150,7 @@ function HierarchyItemList({
   overTargetId,
   parentPath,
   pendingPlacementDropId,
+  reveal,
   selectedNodeId,
   targetFeedback,
 }: {
@@ -975,6 +1162,7 @@ function HierarchyItemList({
   overTargetId: string | null;
   parentPath: string[];
   pendingPlacementDropId: string | null;
+  reveal: GridExplorerSearchResult | null;
   selectedNodeId?: string | null;
   targetFeedback: TriageTargetFeedback;
 }) {
@@ -995,6 +1183,7 @@ function HierarchyItemList({
           key={node.id}
           activeDragItem={activeDragItem}
           isSelected={selectedNodeId === node.id}
+          isRevealed={reveal?.type === "node" && reveal.id === node.id}
           node={node}
           onSelectNode={onSelectNode}
           overTargetId={overTargetId}
@@ -1010,7 +1199,11 @@ function HierarchyItemList({
           </div>
           <div className="flex flex-col gap-0.5">
             {bits.map((bit) => (
-              <BitContextRow key={bit.id} bit={bit} />
+              <BitContextRow
+                key={bit.id}
+                bit={bit}
+                isRevealed={reveal?.type === "bit" && reveal.id === bit.id}
+              />
             ))}
           </div>
         </div>
@@ -1022,6 +1215,7 @@ function HierarchyItemList({
 function NodeDropCell({
   activeDragItem,
   isSelected,
+  isRevealed,
   node,
   onSelectNode,
   overTargetId,
@@ -1031,6 +1225,7 @@ function NodeDropCell({
 }: {
   activeDragItem: TriageDragItem;
   isSelected: boolean;
+  isRevealed: boolean;
   node: Node;
   onSelectNode?: (nodeId: string) => void;
   overTargetId: string | null;
@@ -1086,6 +1281,7 @@ function NodeDropCell({
           CELL_BASE_CLASS,
           activeDragItem === null && "hover:bg-muted hover:text-foreground",
           isSelected && "bg-accent text-foreground ring-1 ring-primary",
+          isRevealed && "explorer-revealed-row",
           CELL_STATE_CLASSES[state],
         )}
         data-explorer-item-id={node.id}
@@ -1105,7 +1301,11 @@ function NodeDropCell({
     <div
       ref={setNodeRef}
       aria-disabled={state === "invalid"}
-      className={cn(CELL_DROP_ONLY_CLASS, CELL_STATE_CLASSES[state])}
+      className={cn(
+        CELL_DROP_ONLY_CLASS,
+        CELL_STATE_CLASSES[state],
+        isRevealed && "explorer-revealed-row",
+      )}
       data-explorer-item-id={node.id}
       data-explorer-item-type="node"
       data-triage-drop-id={dropId}
@@ -1118,10 +1318,13 @@ function NodeDropCell({
   );
 }
 
-function BitContextRow({ bit }: { bit: Bit }) {
+function BitContextRow({ bit, isRevealed }: { bit: Bit; isRevealed: boolean }) {
   return (
     <div
-      className="flex items-center gap-2 rounded-md px-3 py-1.5"
+      className={cn(
+        "flex items-center gap-2 rounded-md px-3 py-1.5",
+        isRevealed && "explorer-revealed-row",
+      )}
       data-explorer-item-id={bit.id}
       data-explorer-item-type="bit"
       tabIndex={-1}

@@ -58,6 +58,7 @@ describe("Inbox/Triage core-English copy", () => {
         ([key, value]) =>
           key === "poolActivity" ||
           key === "stagingActivity" ||
+          key === "explorerSearch" ||
           value === RECEIPT_COPY_UNAVAILABLE,
       ),
     ).toBe(true);
@@ -134,6 +135,8 @@ describe("Inbox/Triage core-English copy", () => {
         invalid:
           "This path is no longer available. Returned to {destination}.",
         stalePlacement: "Placement closed because this Explorer path changed.",
+        selectionCleared:
+          "“{title}” is no longer available. Selection cleared.",
       },
       actions: {
         showNewIn: "Show new in {level}",
@@ -146,6 +149,33 @@ describe("Inbox/Triage core-English copy", () => {
     expect(INBOX_TRIAGE_COPY.lifecycleReasons.placementStale).toBe(
       "Placement closed because this Explorer path changed.",
     );
+  });
+
+  it("owns the complete approved DP-VQ07 Explorer search wording and selected-Bit correction", () => {
+    expect(INBOX_TRIAGE_COPY.explorerSearch).toEqual({
+      entry: "Search Explorer",
+      placeholder: "Search all Nodes and Bits",
+      closeAccessibleName: "Clear and close Explorer search",
+      status: {
+        preSearch: "Search the entire Grid Explorer.",
+        loading: "Searching Grid Explorer…",
+        refreshing: "Updating results…",
+        noResults: "No results for “{query}”.",
+        error: "Search couldn’t be updated.",
+        staleSelection:
+          "That item is no longer available. Results were updated.",
+        revealed: "Revealed “{title}” in {breadcrumb}.",
+      },
+      duplicate: "Duplicate {index} of {count}",
+      actions: { retry: "Try again" },
+    });
+    expect(INBOX_TRIAGE_COPY.explorerStatus.path.selectionCleared).toBe(
+      "“{title}” is no longer available. Selection cleared.",
+    );
+    expect(INBOX_TRIAGE_COPY.liveRegions.explorerSearch).toBe(
+      "Search the entire Grid Explorer.",
+    );
+    expect(151 in INBOX_TRIAGE_COPY.receiptDependent).toBe(false);
   });
 
   it("owns the complete approved DP-VQ01 external-removal wording", () => {
@@ -293,7 +323,7 @@ describe("Inbox/Triage core-English copy", () => {
 
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      148, 151, 153, 154, 157, 160, 162,
+      148, 153, 154, 157, 160, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {

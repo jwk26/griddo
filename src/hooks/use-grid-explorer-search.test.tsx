@@ -53,6 +53,29 @@ function node(id: string, title: string, overrides: Partial<Node> = {}): Node {
   };
 }
 
+function bit(id: string, title: string, parentId: string, overrides: Partial<Bit> = {}): Bit {
+  return {
+    id,
+    title,
+    description: "",
+    icon: "list",
+    deadline: null,
+    deadlineAllDay: false,
+    priority: null,
+    status: "active",
+    mtime: 1,
+    createdAt: 1,
+    version: 1,
+    parentId,
+    x: 0,
+    y: 0,
+    deletedAt: null,
+    archivedAt: null,
+    pastDeadlineDismissed: false,
+    ...overrides,
+  };
+}
+
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (reason: unknown) => void;
@@ -270,5 +293,162 @@ describe("useGridExplorerSearch", () => {
       results: [],
       resultScrollTop: 0,
     });
+  });
+
+  it("revalidates a reachable result at activation and clears active and interrupted state", async () => {
+    const { result } = renderHook(() => useGridExplorerSearch());
+    act(() => {
+      result.current.openSearch();
+      result.current.setQuery("alpha");
+    });
+    await waitFor(() => expect(result.current.results).toHaveLength(1));
+    const selected = result.current.results[0]!;
+
+    let outcome: Awaited<ReturnType<typeof result.current.selectResult>> | undefined;
+    await act(async () => {
+      outcome = await result.current.selectResult(selected);
+    });
+
+    expect(outcome).toEqual({ kind: "selected", result: selected });
+    expect(result.current.revealPresentation).toEqual({
+      kind: "revealed",
+      result: selected,
+    });
+    expect(result.current).toMatchObject({
+      mode: "closed",
+      activeQuery: null,
+      interruptedQuery: null,
+      results: [],
+      resultScrollTop: 0,
+      feedback: null,
+    });
+    act(() => result.current.interruptForDnd());
+    expect(result.current.revealPresentation).toBeNull();
+  });
+
+  it.each([
+    ["removed", () => { nodes = []; }],
+    ["hidden", () => { nodes = [node("alpha", "Alpha", { hiddenFromGrid: true })]; }],
+    ["unreachable", () => {
+      nodes = [node("alpha", "Alpha", { parentId: "missing", level: 1 })];
+    }],
+    ["moved", () => {
+      nodes = [
+        node("parent", "Parent"),
+        node("alpha", "Alpha", { parentId: "parent", level: 1 }),
+      ];
+    }],
+  ])("keeps search state and refreshes when selection is %s", async (_case, mutate) => {
+    const { result } = renderHook(() => useGridExplorerSearch());
+    act(() => {
+      result.current.openSearch();
+      result.current.setQuery("alpha");
+    });
+    await waitFor(() => expect(result.current.results).toHaveLength(1));
+    const selected = result.current.results[0]!;
+    act(() => {
+      result.current.setResultScrollTop(64);
+      result.current.focusResult(selected.key);
+    });
+    mutate();
+
+    let outcome: Awaited<ReturnType<typeof result.current.selectResult>> | undefined;
+    await act(async () => {
+      outcome = await result.current.selectResult(selected);
+    });
+
+    expect(outcome).toEqual({ kind: "stale" });
+    expect(result.current.mode).toBe("active");
+    expect(result.current.activeQuery).toBe("alpha");
+    expect(result.current.resultScrollTop).toBe(64);
+    expect(result.current.feedback).toBe("stale-selection");
+    expect(result.current.results).not.toContainEqual(selected);
+    if (_case !== "moved") {
+      expect(result.current.focusTarget).toEqual({ kind: "input" });
+    }
+  });
+
+  it("revalidates Bits against their reachable active parent chain", async () => {
+    nodes = [node("parent", "Projects")];
+    bits = [bit("alpha-bit", "Alpha note", "parent")];
+    const { result } = renderHook(() => useGridExplorerSearch());
+    act(() => {
+      result.current.openSearch();
+      result.current.setQuery("alpha");
+    });
+    await waitFor(() => expect(result.current.results[0]?.type).toBe("bit"));
+
+    const selected = result.current.results[0]!;
+    let outcome: Awaited<ReturnType<typeof result.current.selectResult>> | undefined;
+    await act(async () => {
+      outcome = await result.current.selectResult(selected);
+    });
+    expect(outcome).toEqual({ kind: "selected", result: selected });
+    expect(result.current.revealPresentation).toEqual({
+      kind: "revealed",
+      result: selected,
+    });
+
+    bits = [];
+    await emit();
+    await waitFor(() =>
+      expect(result.current.revealPresentation).toEqual({
+        kind: "selection-cleared",
+        id: "alpha-bit",
+        title: "Alpha note",
+        nodePathIds: ["parent"],
+      }),
+    );
+
+    act(() => result.current.clearReveal());
+    expect(result.current.revealPresentation).toBeNull();
+  });
+
+  it("leaves an invalid parent path to the existing path-fallback owner instead of reporting Bit-only disappearance", async () => {
+    nodes = [node("parent", "Projects")];
+    bits = [bit("alpha-bit", "Alpha note", "parent")];
+    const { result } = renderHook(() => useGridExplorerSearch());
+    act(() => {
+      result.current.openSearch();
+      result.current.setQuery("alpha");
+    });
+    await waitFor(() => expect(result.current.results[0]?.type).toBe("bit"));
+    const selected = result.current.results[0]!;
+    await act(async () => {
+      await result.current.selectResult(selected);
+    });
+
+    nodes = [];
+    bits = [];
+    await emit();
+
+    await waitFor(() => expect(result.current.revealPresentation).toBeNull());
+  });
+
+  it("treats a Bit moved away from its still-valid parent as selection disappearance", async () => {
+    nodes = [node("parent", "Projects"), node("other", "Elsewhere", { x: 1 })];
+    bits = [bit("alpha-bit", "Alpha note", "parent")];
+    const { result } = renderHook(() => useGridExplorerSearch());
+    act(() => {
+      result.current.openSearch();
+      result.current.setQuery("alpha");
+    });
+    await waitFor(() => expect(result.current.results[0]?.type).toBe("bit"));
+    const selected = result.current.results[0]!;
+    await act(async () => {
+      await result.current.selectResult(selected);
+    });
+
+    bits = [bit("alpha-bit", "Alpha note", "other")];
+    await emit();
+
+    await waitFor(() =>
+      expect(result.current.revealPresentation).toEqual({
+        kind: "selection-cleared",
+        id: "alpha-bit",
+        title: "Alpha note",
+        nodePathIds: ["parent"],
+      }),
+    );
   });
 });

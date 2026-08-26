@@ -3,7 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Tasks 149–150 `[x]`, Accepted; Task 151 `[ ]`, In Progress; Tasks 152–154 remain unstarted
+> State: Tasks 149–150 `[x]`, Accepted; Task 151 `[ ]`, Implemented awaiting checkpoint; Tasks 152–154 remain unstarted
 
 ## Status Legend
 
@@ -102,14 +102,16 @@ and are outside Phase 28 scope.
 | Field | Durable value |
 | --- | --- |
 | Task | `151 — Render DP-VQ07 dedicated Explorer search body and close semantics` |
-| State | `In Progress`; Task 151 remains `[ ]` pending explicit user acceptance; Tasks 152–154 remain unstarted |
+| State | `Implemented`, awaiting user checkpoint; Task 151 remains `[ ]` pending explicit user acceptance; Tasks 152–154 remain unstarted |
 | Approval | Exact fresh candidate-pinned Task 151 run-task work order on 2026-08-26, bounded by `docs/issues/Issues_Phase_28.gate-c.json`, accepted `DP-VQ07`, and only the `P28-04`-moved `DP-VQ06-EXPLORER` selected-Bit disappearance slice |
 | Start base / recovery anchor | `b13bcf0964d7113d7fcf701f3476f055fa818789`; parent `14ade3c4eaa6e55a878addcc1367843f032098c2`; accepted Task 150 `src` tree `73a1d973263f92d97580927063f27651482d18d3` |
 | Exact scope | Create the dedicated Explorer search-results component/test and Task 151 verification record; modify only the planned Explorer, search-hook, CSS, and copy owners/tests; additionally update only this minimum ledger state and the actual measured Task 151 workflow-pilot row |
 | Dependencies | Tasks 114, 128, 134, 135, and 150 are `[x]`, Accepted; no Task 151 blocker is open |
-| Issues / deviations | None at start |
+| Issues / deviations | Two implementation-local bounded repairs: lint exposed effect-derived duplicate reveal state, which was consolidated into the existing Task 135 hook snapshot owner; review found parent-path invalidation could be misreported as Bit-only disappearance, so only a still-valid original parent chain may emit `selection-cleared`. No scope or canonical deviation. |
 | Canonical impact | `Reflected` for the already-approved `P28-04` selected-Bit release-edge correction; `None` for implementing the existing `DP-VQ07` and corrected Task 151 contract; no new canonical direction |
-| Next legal action | Implement and verify Task 151 only, then stop at a clean committed implementation checkpoint with Task 151 still `[ ]` |
+| Verification | Focused 5 files / 65 tests; full 97 files / 1043 tests; lint 0 errors with 11 unchanged warnings; typecheck, build, and `git diff --check` passed. No browser run and no Task 150 browser/product evidence reuse. Detailed evidence: `docs/verification/inbox-triage/task-151.md`. |
+| Review | Self-review under the sole-session constraint found one Important parent-path/Bit-disappearance collision; two RED cases reproduced it and the repaired focused/full gates passed. Remaining Critical/Important findings: None. |
+| Next legal action | Stop at the clean committed Task 151 implementation checkpoint and await accept/reject feedback; do not write `[x]` or start Task 152 |
 
 ## Task 150 Accepted Checkpoint
 

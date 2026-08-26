@@ -201,11 +201,28 @@ export interface InboxTriageCopy {
       readonly moved: string;
       readonly invalid: string;
       readonly stalePlacement: string;
+      readonly selectionCleared: string;
     };
     readonly actions: {
       readonly showNewIn: string;
       readonly dismiss: string;
     };
+  };
+  readonly explorerSearch: {
+    readonly entry: string;
+    readonly placeholder: string;
+    readonly closeAccessibleName: string;
+    readonly status: {
+      readonly preSearch: string;
+      readonly loading: string;
+      readonly refreshing: string;
+      readonly noResults: string;
+      readonly error: string;
+      readonly staleSelection: string;
+      readonly revealed: string;
+    };
+    readonly duplicate: string;
+    readonly actions: { readonly retry: string };
   };
   readonly lifecycleReasons: {
     readonly externalScratchRemoval: InboxTriageCopyValue;
@@ -443,11 +460,30 @@ export const INBOX_TRIAGE_COPY = {
       invalid:
         "This path is no longer available. Returned to {destination}.",
       stalePlacement: "Placement closed because this Explorer path changed.",
+      selectionCleared:
+        "“{title}” is no longer available. Selection cleared.",
     },
     actions: {
       showNewIn: "Show new in {level}",
       dismiss: "Dismiss",
     },
+  },
+  explorerSearch: {
+    entry: "Search Explorer",
+    placeholder: "Search all Nodes and Bits",
+    closeAccessibleName: "Clear and close Explorer search",
+    status: {
+      preSearch: "Search the entire Grid Explorer.",
+      loading: "Searching Grid Explorer…",
+      refreshing: "Updating results…",
+      noResults: "No results for “{query}”.",
+      error: "Search couldn’t be updated.",
+      staleSelection:
+        "That item is no longer available. Results were updated.",
+      revealed: "Revealed “{title}” in {breadcrumb}.",
+    },
+    duplicate: "Duplicate {index} of {count}",
+    actions: { retry: "Try again" },
   },
   lifecycleReasons: {
     externalScratchRemoval: UNAVAILABLE,
@@ -469,7 +505,7 @@ export const INBOX_TRIAGE_COPY = {
     stagingActivity: "Staging updated.",
     success: UNAVAILABLE,
     explorerActivity: UNAVAILABLE,
-    explorerSearch: UNAVAILABLE,
+    explorerSearch: "Search the entire Grid Explorer.",
     placement: UNAVAILABLE,
     resultTitle: UNAVAILABLE,
     newlyPlacedUndo: UNAVAILABLE,
@@ -488,7 +524,6 @@ export const INBOX_TRIAGE_COPY = {
   },
   receiptDependent: {
     148: UNAVAILABLE,
-    151: UNAVAILABLE,
     153: UNAVAILABLE,
     154: UNAVAILABLE,
     157: UNAVAILABLE,

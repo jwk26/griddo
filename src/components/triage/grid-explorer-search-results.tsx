@@ -1,0 +1,233 @@
+"use client";
+
+import { Folder, ListTodo, X } from "lucide-react";
+import {
+  useLayoutEffect,
+  useRef,
+  type ChangeEvent,
+  type KeyboardEvent,
+  type UIEvent,
+} from "react";
+import type {
+  GridExplorerSearchFeedback,
+  GridExplorerSearchFocusTarget,
+  GridExplorerSearchStatus,
+} from "@/hooks/use-grid-explorer-search";
+import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
+import type { GridExplorerSearchResult } from "@/lib/utils/grid-explorer-search";
+
+export interface GridExplorerSearchResultsProps {
+  feedback: GridExplorerSearchFeedback;
+  focusTarget: GridExplorerSearchFocusTarget;
+  query: string;
+  resultScrollTop: number;
+  results: GridExplorerSearchResult[];
+  status: GridExplorerSearchStatus;
+  onClose: () => void;
+  onFocusInput: () => void;
+  onFocusResult: (key: GridExplorerSearchResult["key"]) => void;
+  onQueryChange: (query: string) => void;
+  onRetry: () => void;
+  onScrollTopChange: (scrollTop: number) => void;
+  onSelectResult: (result: GridExplorerSearchResult) => void;
+}
+
+function fill(
+  template: string,
+  values: Record<string, string | number>,
+): string {
+  return Object.entries(values).reduce(
+    (copy, [key, value]) => copy.replaceAll(`{${key}}`, String(value)),
+    template,
+  );
+}
+
+function stateCopy({
+  feedback,
+  query,
+  results,
+  status,
+}: Pick<
+  GridExplorerSearchResultsProps,
+  "feedback" | "query" | "results" | "status"
+>): string {
+  const copy = INBOX_TRIAGE_COPY.explorerSearch.status;
+  if (feedback === "stale-selection") return copy.staleSelection;
+  if (query.trim().length === 0) return copy.preSearch;
+  if (status === "loading") return copy.loading;
+  if (status === "refreshing") return copy.refreshing;
+  if (status === "error") return copy.error;
+  if (status === "ready" && results.length === 0) {
+    return fill(copy.noResults, { query });
+  }
+  return "";
+}
+
+export function GridExplorerSearchResults({
+  feedback,
+  focusTarget,
+  query,
+  resultScrollTop,
+  results,
+  status,
+  onClose,
+  onFocusInput,
+  onFocusResult,
+  onQueryChange,
+  onRetry,
+  onScrollTopChange,
+  onSelectResult,
+}: GridExplorerSearchResultsProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const resultRefs = useRef(new Map<GridExplorerSearchResult["key"], HTMLButtonElement>());
+  const message = stateCopy({ feedback, query, results, status });
+  const busy = status === "loading" || status === "refreshing";
+
+  useLayoutEffect(() => {
+    if (focusTarget.kind === "input") {
+      inputRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    const row = resultRefs.current.get(focusTarget.resultKey);
+    row?.focus({ preventScroll: true });
+    row?.scrollIntoView?.({ block: "nearest" });
+  }, [focusTarget]);
+
+  useLayoutEffect(() => {
+    const viewport = resultsRef.current;
+    if (viewport !== null && viewport.scrollTop !== resultScrollTop) {
+      viewport.scrollTop = resultScrollTop;
+    }
+  }, [resultScrollTop]);
+
+  function moveFrom(index: number, delta: -1 | 1) {
+    const next = results[index + delta];
+    if (next === undefined) {
+      if (index + delta < 0) onFocusInput();
+      return;
+    }
+    onFocusResult(next.key);
+  }
+
+  function handleInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose();
+    } else if (event.key === "ArrowDown" && results[0] !== undefined) {
+      event.preventDefault();
+      onFocusResult(results[0].key);
+    } else if (event.key === "ArrowUp" && results.at(-1) !== undefined) {
+      event.preventDefault();
+      onFocusResult(results.at(-1)!.key);
+    }
+  }
+
+  return (
+    <div className="explorer-search-body" data-testid="explorer-search-body">
+      <div className="explorer-search-field">
+        <input
+          ref={inputRef}
+          aria-label={INBOX_TRIAGE_COPY.explorerSearch.placeholder}
+          placeholder={INBOX_TRIAGE_COPY.explorerSearch.placeholder}
+          type="search"
+          value={query}
+          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+            onQueryChange(event.currentTarget.value)
+          }
+          onFocus={onFocusInput}
+          onKeyDown={handleInputKeyDown}
+        />
+        <button
+          aria-label={INBOX_TRIAGE_COPY.explorerSearch.closeAccessibleName}
+          className="explorer-search-close"
+          type="button"
+          onClick={onClose}
+        >
+          <X aria-hidden="true" className="h-4 w-4" />
+        </button>
+      </div>
+      <div
+        aria-atomic="true"
+        aria-live="polite"
+        className="explorer-search-status"
+        role="status"
+      >
+        {message}
+        {status === "error" ? (
+          <button type="button" onClick={onRetry}>
+            {INBOX_TRIAGE_COPY.explorerSearch.actions.retry}
+          </button>
+        ) : null}
+      </div>
+      <div
+        ref={resultsRef}
+        aria-busy={busy}
+        aria-label={`${results.length} results`}
+        className="explorer-search-results"
+        role="listbox"
+        onScroll={(event: UIEvent<HTMLDivElement>) =>
+          onScrollTopChange(event.currentTarget.scrollTop)
+        }
+      >
+        {results.map((result, index) => {
+          const Icon = result.type === "node" ? Folder : ListTodo;
+          return (
+            <button
+              ref={(node) => {
+                if (node === null) resultRefs.current.delete(result.key);
+                else resultRefs.current.set(result.key, node);
+              }}
+              key={result.key}
+              aria-selected={
+                focusTarget.kind === "result" &&
+                focusTarget.resultKey === result.key
+              }
+              className="explorer-search-result"
+              role="option"
+              type="button"
+              onClick={() => onSelectResult(result)}
+              onFocus={() => onFocusResult(result.key)}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown") {
+                  event.preventDefault();
+                  moveFrom(index, 1);
+                } else if (event.key === "ArrowUp") {
+                  event.preventDefault();
+                  moveFrom(index, -1);
+                } else if (event.key === "Enter") {
+                  event.preventDefault();
+                  onSelectResult(result);
+                } else if (event.key === "Escape") {
+                  event.preventDefault();
+                  onClose();
+                }
+              }}
+            >
+              <Icon
+                aria-hidden="true"
+                className="explorer-search-result-icon"
+                style={result.color === null ? undefined : { color: result.color }}
+              />
+              <span className="explorer-search-result-copy">
+                <span className="explorer-search-result-title">
+                  <span className="explorer-search-type">{result.type === "node" ? "Node" : "Bit"}</span>
+                  {result.title}
+                </span>
+                <span className="explorer-search-breadcrumb">{result.breadcrumb}</span>
+                {result.duplicate === null ? null : (
+                  <span className="explorer-search-duplicate">
+                    {fill(INBOX_TRIAGE_COPY.explorerSearch.duplicate, {
+                      index: result.duplicate.index,
+                      count: result.duplicate.total,
+                    })}
+                  </span>
+                )}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
