@@ -80,7 +80,7 @@ export function GridExplorerSearchResults({
   onSelectResult,
 }: GridExplorerSearchResultsProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLUListElement>(null);
   const resultRefs = useRef(new Map<GridExplorerSearchResult["key"], HTMLButtonElement>());
   const message = stateCopy({ feedback, query, results, status });
   const busy = status === "loading" || status === "refreshing";
@@ -183,44 +183,43 @@ export function GridExplorerSearchResults({
           </button>
         ) : null}
       </div>
-      <div
+      <ul
         ref={resultsRef}
         aria-busy={busy}
         aria-label={`${results.length} results`}
         className="explorer-search-results"
         data-triage-role="explorer-search-results"
-        role="list"
-        onScroll={(event: UIEvent<HTMLDivElement>) =>
+        onScroll={(event: UIEvent<HTMLUListElement>) =>
           onScrollTopChange(event.currentTarget.scrollTop)
         }
       >
         {results.map((result, index) => {
           const Icon = NODE_ICON_MAP[result.icon] ?? NODE_ICON_MAP.Box;
           return (
-            <button
-              ref={(node) => {
-                if (node === null) resultRefs.current.delete(result.key);
-                else resultRefs.current.set(result.key, node);
-              }}
-              key={result.key}
-              className="explorer-search-result"
-              data-triage-role="explorer-search-result"
-              type="button"
-              onClick={() => onSelectResult(result)}
-              onFocus={() => onFocusResult(result.key)}
-              onKeyDown={(event) => {
-                if (event.key === "ArrowDown") {
-                  event.preventDefault();
-                  moveFrom(index, 1);
-                } else if (event.key === "ArrowUp") {
-                  event.preventDefault();
-                  moveFrom(index, -1);
-                } else if (event.key === "Enter") {
-                  event.preventDefault();
-                  onSelectResult(result);
-                }
-              }}
-            >
+            <li className="explorer-search-result-item" key={result.key}>
+              <button
+                ref={(node) => {
+                  if (node === null) resultRefs.current.delete(result.key);
+                  else resultRefs.current.set(result.key, node);
+                }}
+                className="explorer-search-result"
+                data-triage-role="explorer-search-result"
+                type="button"
+                onClick={() => onSelectResult(result)}
+                onFocus={() => onFocusResult(result.key)}
+                onKeyDown={(event) => {
+                  if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    moveFrom(index, 1);
+                  } else if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    moveFrom(index, -1);
+                  } else if (event.key === "Enter") {
+                    event.preventDefault();
+                    onSelectResult(result);
+                  }
+                }}
+              >
               <Icon
                 aria-hidden="true"
                 className="explorer-search-result-icon"
@@ -254,10 +253,11 @@ export function GridExplorerSearchResults({
                   </span>
                 )}
               </span>
-            </button>
+              </button>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </div>
   );
 }

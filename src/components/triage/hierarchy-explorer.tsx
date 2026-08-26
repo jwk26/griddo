@@ -9,7 +9,6 @@ import {
   useRef,
   useState,
   type ReactNode,
-  type KeyboardEvent as ReactKeyboardEvent,
   type UIEvent,
 } from "react";
 import { GridExplorerSearchResults } from "@/components/triage/grid-explorer-search-results";
@@ -408,6 +407,21 @@ export function HierarchyExplorer({
     }
   }, [entryFocusRevision, search.mode]);
 
+  useEffect(() => {
+    const clearSearchOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || search.mode === "closed") return;
+      event.preventDefault();
+      search.closeSearch();
+      if (activeDragItem === null) {
+        setEntryFocusRevision((current) => current + 1);
+      }
+    };
+    document.addEventListener("keydown", clearSearchOnEscape, true);
+    return () => {
+      document.removeEventListener("keydown", clearSearchOnEscape, true);
+    };
+  }, [activeDragItem, search]);
+
   useEffect(
     () => () => clearExplorerRemotePresentation(),
     [clearExplorerRemotePresentation],
@@ -632,6 +646,7 @@ export function HierarchyExplorer({
       if (selectionClearedStatus !== null) search.clearReveal();
       return;
     }
+    search.invalidatePendingSelection();
     const focusTarget =
       document.activeElement instanceof HTMLElement
         ? document.activeElement
@@ -774,14 +789,6 @@ export function HierarchyExplorer({
     <div
       className="flex min-h-0 w-full flex-col rounded-md border border-border/50 bg-card"
       data-testid="hierarchy-explorer"
-      onKeyDownCapture={(event: ReactKeyboardEvent<HTMLDivElement>) => {
-        if (event.key !== "Escape" || search.mode === "closed") return;
-        event.preventDefault();
-        search.closeSearch();
-        if (activeDragItem === null) {
-          setEntryFocusRevision((current) => current + 1);
-        }
-      }}
     >
       {reveal !== null ? (
         <div

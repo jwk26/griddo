@@ -1089,6 +1089,54 @@ describe("HierarchyExplorer Task 151 dedicated search and reveal", () => {
     expect(screen.queryByText(/Revealed/)).not.toBeInTheDocument();
   });
 
+  it.each([
+    { target: "Home", expectedPath: [] as string[] },
+    { target: "Personal Projects", expectedPath: ["home-a"] },
+  ])(
+    "invalidates pending result selection when the $target path intent wins",
+    async ({ target, expectedPath }) => {
+      const { home, level1, level2 } = seedDeepGrid();
+      useTriageStore.setState({
+        explorerPathIds: [home.id, level1.id],
+        explorerOpenColumnIds: ["home", home.id, level1.id],
+      });
+      const selected = searchResult(`node:${level2.id}`, {
+        title: level2.title,
+        ancestorIds: [home.id, level1.id],
+        nodePathIds: [home.id, level1.id, level2.id],
+      });
+      explorerSearchState.mode = "active";
+      explorerSearchState.activeQuery = "evidence";
+      explorerSearchState.results = [selected];
+      explorerSearchState.status = "ready";
+      let invalidated = false;
+      let completeSelection!: () => void;
+      explorerSearchState.invalidatePendingSelection.mockImplementation(() => {
+        invalidated = true;
+      });
+      explorerSearchState.selectResult.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            completeSelection = () =>
+              resolve(
+                invalidated
+                  ? { kind: "stale" }
+                  : { kind: "selected", result: selected },
+              );
+          }),
+      );
+      render(<HierarchyExplorer {...defaultProps} />);
+
+      fireEvent.click(explorerSearchResultRow());
+      fireEvent.click(screen.getByRole("button", { name: target }));
+
+      expect(explorerSearchState.invalidatePendingSelection).toHaveBeenCalledOnce();
+      expect(useTriageStore.getState().explorerPathIds).toEqual(expectedPath);
+      await act(async () => completeSelection());
+      expect(useTriageStore.getState().explorerPathIds).toEqual(expectedPath);
+    },
+  );
+
   it("uses DnD start as the only preserving close and requires explicit reopen", () => {
     explorerSearchState.mode = "active";
     explorerSearchState.activeQuery = "projects";
@@ -1213,6 +1261,60 @@ describe("HierarchyExplorer Task 151 dedicated search and reveal", () => {
     expect(row).toHaveFocus();
     expect(screen.getByRole("button", { name: "Search Explorer" })).not.toHaveFocus();
   });
+
+  it.each([
+    {
+      label: "Scratch outside Explorer",
+      mode: "active" as const,
+      drag: null,
+      shouldRestoreEntryFocus: true,
+    },
+    {
+      label: "Staging DnD source outside Explorer",
+      mode: "interrupted" as const,
+      drag: {
+        kind: "triage-staged-node" as const,
+        id: "candidate",
+        label: "Candidate",
+      },
+      shouldRestoreEntryFocus: false,
+    },
+  ])(
+    "clears $mode search with Escape from $label",
+    async ({ label, mode, drag, shouldRestoreEntryFocus }) => {
+      explorerSearchState.mode = mode;
+      explorerSearchState.activeQuery = mode === "active" ? "projects" : null;
+      explorerSearchState.interruptedQuery =
+        mode === "interrupted" ? "projects" : null;
+      const view = render(
+        <>
+          <button type="button">{label}</button>
+          <HierarchyExplorer {...defaultProps} activeDragItem={drag} />
+        </>,
+      );
+      const outsideControl = screen.getByRole("button", { name: label });
+      outsideControl.focus();
+
+      fireEvent.keyDown(outsideControl, { key: "Escape" });
+      view.rerender(
+        <>
+          <button type="button">{label}</button>
+          <HierarchyExplorer {...defaultProps} activeDragItem={drag} />
+        </>,
+      );
+
+      expect(explorerSearchState.closeSearch).toHaveBeenCalledOnce();
+      if (shouldRestoreEntryFocus) {
+        await waitFor(() =>
+          expect(
+            screen.getByRole("button", { name: "Search Explorer" }),
+          ).toHaveFocus(),
+        );
+      } else {
+        expect(outsideControl).toHaveFocus();
+      }
+    },
+  );
 
   it("does not write Explorer path after pending selection completes post-unmount", async () => {
     explorerSearchState.mode = "active";

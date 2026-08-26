@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -97,7 +97,11 @@ describe("GridExplorerSearchResults", () => {
     expect(screen.getByText("Duplicate 1 of 2")).toBeVisible();
     expect(renderedResultRows()).toHaveLength(2);
     expect(renderedResultRows()[0]).not.toHaveAttribute("draggable");
-    expect(screen.getByRole("list")).toHaveAccessibleName("2 results");
+    const resultsList = screen.getByRole("list", { name: "2 results" });
+    const resultItems = within(resultsList).getAllByRole("listitem");
+    expect(resultItems).toHaveLength(2);
+    expect(resultItems[0]).toContainElement(renderedResultRows()[0]);
+    expect(resultItems[1]).toContainElement(renderedResultRows()[1]);
   });
 
   it("renders each result's stored icon and color identity", () => {
