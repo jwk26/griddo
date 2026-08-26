@@ -40,6 +40,11 @@ const useExplorerRemoteStatusMock = vi.hoisted(() => vi.fn());
 const useInboxMock = vi.hoisted(() => vi.fn());
 const getBitMock = vi.hoisted(() => vi.fn());
 const getBitsMock = vi.hoisted(() => vi.fn());
+const getDataStoreMock = vi.hoisted(() => vi.fn());
+const placeDirectBreakdownMock = vi.hoisted(() => vi.fn());
+const placeStagedCandidateMock = vi.hoisted(() => vi.fn());
+const reconcileDirectPlacementMock = vi.hoisted(() => vi.fn());
+const reconcileStagedPlacementMock = vi.hoisted(() => vi.fn());
 const inboxState = vi.hoisted(() => ({ activeScratchBits: [] as Array<{ id: string; title: string }> }));
 const breakdownSurfaceState = vi.hoisted(() => ({
   addDraft: "",
@@ -73,10 +78,7 @@ vi.mock("@/hooks/use-inbox", () => ({
 }));
 
 vi.mock("@/lib/db/datastore", () => ({
-  getDataStore: vi.fn().mockResolvedValue({
-    getBit: getBitMock,
-    getBits: getBitsMock,
-  }),
+  getDataStore: getDataStoreMock,
 }));
 
 vi.mock("@/components/triage/scratch-pool", async () => {
@@ -249,6 +251,7 @@ type DndState = {
   handleDragOver: ReturnType<typeof vi.fn>;
   handlePlacementConfirm: ReturnType<typeof vi.fn>;
   handlePlacementCancel: ReturnType<typeof vi.fn>;
+  clearPendingPlacement: ReturnType<typeof vi.fn>;
   refreshRenderedTarget: ReturnType<typeof vi.fn>;
   targetFeedback: TriageTargetFeedback;
 };
@@ -266,6 +269,7 @@ function createDndState(overrides: Partial<DndState> = {}): DndState {
     handleDragOver: vi.fn(),
     handlePlacementConfirm: handlePlacementConfirmMock,
     handlePlacementCancel: handlePlacementCancelMock,
+    clearPendingPlacement: vi.fn(),
     refreshRenderedTarget: vi.fn(),
     targetFeedback: null,
     ...overrides,
@@ -276,15 +280,20 @@ function createDirectPendingPlacement(
   overrides: Partial<NonNullable<PendingPlacement>> = {},
 ): NonNullable<PendingPlacement> {
   return {
+    scratchBitId: "scratch-1",
     candidateId: "breakdown-1",
     candidateType: null,
+    candidateVersion: null,
     candidateLabel: "Project",
     sourceBreakdownId: "breakdown-1",
+    sourceVersion: 1,
     dropId: "triage-hierarchy:parent-1",
     parentNodeId: "parent-1",
     targetNodeLevel: 0,
     targetTitle: "Parent",
     targetParentPath: ["Home"],
+    expectedAncestorIds: ["parent-1"],
+    cell: { x: 0, y: 0 },
     isFull: false,
     isDirectBreakdown: true,
     ...overrides,
@@ -326,6 +335,35 @@ beforeEach(() => {
       createdAt: index + 1,
     })),
   );
+  placeDirectBreakdownMock.mockReset();
+  placeStagedCandidateMock.mockReset();
+  reconcileDirectPlacementMock.mockReset();
+  reconcileStagedPlacementMock.mockReset();
+  placeDirectBreakdownMock.mockImplementation(async (command) => ({
+    operationId: command.operationId,
+    status: "applied",
+    result: { id: command.resultId, title: command.title },
+    source: null,
+    candidate: null,
+  }));
+  placeStagedCandidateMock.mockImplementation(async (command) => ({
+    operationId: command.operationId,
+    status: "applied",
+    result: { id: command.resultId, title: command.title },
+    source: null,
+    candidate: null,
+  }));
+  reconcileDirectPlacementMock.mockImplementation(placeDirectBreakdownMock);
+  reconcileStagedPlacementMock.mockImplementation(placeStagedCandidateMock);
+  getDataStoreMock.mockReset();
+  getDataStoreMock.mockResolvedValue({
+    getBit: getBitMock,
+    getBits: getBitsMock,
+    placeDirectBreakdown: placeDirectBreakdownMock,
+    placeStagedCandidate: placeStagedCandidateMock,
+    reconcileDirectPlacement: reconcileDirectPlacementMock,
+    reconcileStagedPlacement: reconcileStagedPlacementMock,
+  });
   useInboxMock.mockReset();
   useInboxMock.mockImplementation(() => inboxState);
   breakdownSurfaceState.addDraft = "";
@@ -1454,20 +1492,35 @@ describe("TriageWorkspace", () => {
     expect(screen.getByTestId("hierarchy-section-body-l3")).toBeInTheDocument();
   });
 
-  it("projects only the successful local placement stable identity into Explorer", () => {
+  it("projects only the successful coordinator result identity into Explorer", async () => {
+    const target = {
+      ...createNode({ id: "parent-1", title: "Parent" }),
+      systemRole: null,
+    };
+    useGridDataMock.mockImplementation((parentId) => ({
+      nodes: parentId === null ? [target] : [],
+      bits: [],
+      isLoading: false,
+    }));
     useTriageDndMock.mockReturnValue(
       createDndState({
-        localPlacementResult: { id: "created-node", type: "node" },
+        pendingPlacement: createDirectPendingPlacement(),
       }),
     );
 
     render(<TriageWorkspace node={createNode()} />);
 
-    expect(useExplorerRemoteStatusMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        localPlacementResult: { id: "created-node", type: "node" },
-      }),
+    fireEvent.click(await screen.findByRole("button", { name: "Node" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+
+    await waitFor(() =>
+      expect(useExplorerRemoteStatusMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          localPlacementResult: expect.objectContaining({ type: "node" }),
+        }),
+      ),
     );
+    expect(placeDirectBreakdownMock).toHaveBeenCalledOnce();
   });
 
   it("closes the actual placement owner when Explorer validation invalidates its target", async () => {
@@ -1488,13 +1541,13 @@ describe("TriageWorkspace", () => {
     );
 
     const view = render(<TriageWorkspace node={createNode()} />);
-    expect(handlePlacementCancelMock).not.toHaveBeenCalled();
+    expect(await screen.findByRole("region", { name: "Placement" })).toBeInTheDocument();
 
     rootNodes = [];
     view.rerender(<TriageWorkspace node={createNode()} />);
 
     await vi.waitFor(() => {
-      expect(handlePlacementCancelMock).toHaveBeenCalledOnce();
+      expect(screen.queryByRole("region", { name: "Placement" })).not.toBeInTheDocument();
     });
     expect(
       within(screen.getByRole("button", { name: "Dismiss Staging alert" }).parentElement!)
@@ -1556,15 +1609,15 @@ describe("TriageWorkspace", () => {
     });
 
     const view = render(<TriageWorkspace node={createNode()} />);
-    expect(screen.getByRole("dialog", { name: "Place item?" })).toBeInTheDocument();
+    expect(await screen.findByRole("region", { name: "Placement" })).toBeInTheDocument();
 
     childNodes = [sibling];
     view.rerender(<TriageWorkspace node={createNode()} />);
 
     await waitFor(() =>
-      expect(screen.queryByRole("dialog", { name: "Place item?" })).not.toBeInTheDocument(),
+      expect(screen.queryByRole("region", { name: "Placement" })).not.toBeInTheDocument(),
     );
-    expect(handlePlacementCancelMock).toHaveBeenCalledOnce();
+    expect(handlePlacementCancelMock).not.toHaveBeenCalled();
     expect(handlePlacementConfirmMock).not.toHaveBeenCalled();
     expect(useTriageStore.getState().explorerPathIds).toEqual([ancestor.id]);
     expect(
@@ -1611,15 +1664,15 @@ describe("TriageWorkspace", () => {
     });
 
     const view = render(<TriageWorkspace node={createNode()} />);
-    expect(screen.getByRole("dialog", { name: "Place item?" })).toBeInTheDocument();
+    expect(await screen.findByRole("region", { name: "Placement" })).toBeInTheDocument();
 
     rootNodes = [sibling];
     view.rerender(<TriageWorkspace node={createNode()} />);
 
     await waitFor(() =>
-      expect(screen.queryByRole("dialog", { name: "Place item?" })).not.toBeInTheDocument(),
+      expect(screen.queryByRole("region", { name: "Placement" })).not.toBeInTheDocument(),
     );
-    expect(handlePlacementCancelMock).toHaveBeenCalledOnce();
+    expect(handlePlacementCancelMock).not.toHaveBeenCalled();
     expect(handlePlacementConfirmMock).not.toHaveBeenCalled();
     expect(useTriageStore.getState().explorerPathIds).toEqual([]);
     expect(
@@ -1630,7 +1683,16 @@ describe("TriageWorkspace", () => {
     );
   });
 
-  it("requires a type choice for direct breakdown placement and passes the selected type on confirm", () => {
+  it("requires a distinct direct type step before target-column confirmation and dispatches once", async () => {
+    const target = {
+      ...createNode({ id: "parent-1", title: "Parent" }),
+      systemRole: null,
+    };
+    useGridDataMock.mockImplementation((parentId) => ({
+      nodes: parentId === null ? [target] : [],
+      bits: [],
+      isLoading: false,
+    }));
     useTriageDndMock.mockReturnValue(
       createDndState({
         pendingPlacement: createDirectPendingPlacement(),
@@ -1639,36 +1701,56 @@ describe("TriageWorkspace", () => {
 
     render(<TriageWorkspace node={createNode()} />);
 
-    const confirmButton = screen.getByRole("button", { name: "Confirm" });
-    const nodeOption = screen.getByRole("radio", {
-      name: "Select Node type",
-    });
-    const bitOption = screen.getByRole("radio", {
-      name: "Select Bit type",
-    });
-
-    expect(confirmButton).toBeDisabled();
-    expect(nodeOption).toHaveAttribute("aria-checked", "false");
-    expect(bitOption).toHaveAttribute("aria-checked", "false");
+    expect(await screen.findByText("Choose a result type")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Confirm" })).not.toBeInTheDocument();
+    const nodeOption = screen.getByRole("button", { name: "Node" });
 
     fireEvent.click(nodeOption);
 
-    expect(nodeOption).toHaveAttribute("aria-checked", "true");
-    expect(confirmButton).toBeEnabled();
+    expect(screen.getByText("Confirm placement")).toBeInTheDocument();
+    const confirmButton = screen.getByRole("button", { name: "Confirm" });
 
     fireEvent.click(confirmButton);
 
-    expect(handlePlacementConfirmMock).toHaveBeenCalledWith(
-      "scratch-1",
-      "node",
+    await waitFor(() => expect(placeDirectBreakdownMock).toHaveBeenCalledOnce());
+    expect(placeDirectBreakdownMock).toHaveBeenCalledWith(
+      expect.objectContaining({ resultType: "node", targetParentId: "parent-1" }),
     );
+    expect(handlePlacementConfirmMock).not.toHaveBeenCalled();
   });
 
-  it("shows disabled direct type choices for invalid target types", () => {
+  it("returns pre-dispatch Cancel to the exact direct source without any write", async () => {
+    const target = {
+      ...createNode({ id: "parent-1", title: "Parent" }),
+      systemRole: null,
+    };
+    useGridDataMock.mockImplementation((parentId) => ({
+      nodes: parentId === null ? [target] : [],
+      bits: [],
+      isLoading: false,
+    }));
+    useTriageDndMock.mockReturnValue(
+      createDndState({ pendingPlacement: createDirectPendingPlacement() }),
+    );
+
+    render(<TriageWorkspace node={createNode()} />);
+    fireEvent.click(await screen.findByRole("button", { name: "Cancel" }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole("region", { name: "Placement" })).not.toBeInTheDocument(),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Drag breakdown" })).toHaveFocus(),
+    );
+    expect(placeDirectBreakdownMock).not.toHaveBeenCalled();
+    expect(placeStagedCandidateMock).not.toHaveBeenCalled();
+  });
+
+  it("shows disabled direct type choices for invalid target types", async () => {
     useTriageDndMock.mockReturnValue(
       createDndState({
         pendingPlacement: createDirectPendingPlacement({
-          dropId: "triage-hierarchy:root",
+          dropId: "triage-hierarchy:body-home",
           parentNodeId: null,
           targetNodeLevel: null,
           targetTitle: "Home",
@@ -1679,24 +1761,28 @@ describe("TriageWorkspace", () => {
 
     render(<TriageWorkspace node={createNode()} />);
 
-    const confirmButton = screen.getByRole("button", { name: "Confirm" });
-    const nodeOption = screen.getByRole("radio", {
-      name: "Select Node type",
-    });
-    const bitOption = screen.getByRole("radio", {
-      name: "Select Bit type",
-    });
+    const nodeOption = await screen.findByRole("button", { name: "Node" });
+    const bitOption = screen.getByRole("button", { name: "Bit" });
 
     expect(nodeOption).toBeEnabled();
     expect(bitOption).toBeDisabled();
-
-    fireEvent.click(bitOption);
-
-    expect(bitOption).toHaveAttribute("aria-checked", "false");
-    expect(confirmButton).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Confirm" })).not.toBeInTheDocument();
   });
 
-  it("resets the direct type choice when a new placement opens", () => {
+  it("rejects a competing release while the first direct placement remains open", async () => {
+    const firstTarget = {
+      ...createNode({ id: "parent-1", title: "Parent" }),
+      systemRole: null,
+    };
+    const secondTarget = {
+      ...createNode({ id: "parent-2", title: "Next Parent" }),
+      systemRole: null,
+    };
+    useGridDataMock.mockImplementation((parentId) => ({
+      nodes: parentId === null ? [firstTarget, secondTarget] : [],
+      bits: [],
+      isLoading: false,
+    }));
     let pendingPlacement = createDirectPendingPlacement({
       dropId: "triage-hierarchy:parent-1",
     });
@@ -1706,10 +1792,8 @@ describe("TriageWorkspace", () => {
 
     const { rerender } = render(<TriageWorkspace node={createNode()} />);
 
-    fireEvent.click(
-      screen.getByRole("radio", { name: "Select Node type" }),
-    );
-    expect(screen.getByRole("button", { name: "Confirm" })).toBeEnabled();
+    fireEvent.click(await screen.findByRole("button", { name: "Node" }));
+    expect(screen.getByText("Project")).toBeInTheDocument();
 
     pendingPlacement = createDirectPendingPlacement({
       candidateId: "breakdown-2",
@@ -1719,24 +1803,34 @@ describe("TriageWorkspace", () => {
     });
     rerender(<TriageWorkspace node={createNode()} />);
 
-    expect(
-      screen.getByRole("radio", { name: "Select Node type" }),
-    ).toHaveAttribute("aria-checked", "false");
-    expect(screen.getByRole("button", { name: "Confirm" })).toBeDisabled();
+    expect(screen.getByText("Project")).toBeInTheDocument();
+    expect(screen.queryByText("Next Project")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Confirm" })).toBeInTheDocument();
   });
 
-  it("shows isFull warning with muted styling, not destructive, when target is full", () => {
+  it("shows isFull warning with muted styling, not destructive, when target is full", async () => {
     useTriageDndMock.mockReturnValue(
       createDndState({
-        pendingPlacement: createDirectPendingPlacement({ isFull: true }),
+        pendingPlacement: createDirectPendingPlacement({ isFull: true, cell: null }),
       }),
     );
+    const target = {
+      ...createNode({ id: "parent-1", title: "Parent" }),
+      systemRole: null,
+    };
+    useGridDataMock.mockImplementation((parentId) => ({
+      nodes: parentId === null ? [target] : [],
+      bits: [],
+      isLoading: false,
+    }));
 
     render(<TriageWorkspace node={createNode()} />);
 
+    fireEvent.click(await screen.findByRole("button", { name: "Node" }));
     const warning = screen.getByText("No available grid cell in this target");
     expect(warning).toBeInTheDocument();
     expect(warning).not.toHaveClass("text-destructive");
     expect(warning).toHaveClass("text-muted-foreground");
+    expect(screen.getByRole("button", { name: "Confirm" })).toBeDisabled();
   });
 });

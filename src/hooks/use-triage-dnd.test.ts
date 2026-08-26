@@ -31,6 +31,7 @@ const operationLockState = vi.hoisted(() => ({
 }));
 const getDataStoreMock = vi.hoisted(() => vi.fn());
 const getGridOccupancyMock = vi.hoisted(() => vi.fn());
+const getNodeMock = vi.hoisted(() => vi.fn());
 const createNodeMock = vi.hoisted(() => vi.fn());
 const createBitMock = vi.hoisted(() => vi.fn());
 const markScratchBreakdownConsumedMock = vi.hoisted(() => vi.fn());
@@ -246,10 +247,16 @@ beforeEach(() => {
     source: null,
   }));
   getGridOccupancyMock.mockResolvedValue(new Set<string>());
+  getNodeMock.mockImplementation(async (id: string) => ({
+    id,
+    parentId: null,
+    deletedAt: null,
+  }));
   createNodeMock.mockResolvedValue({ id: "created-node" });
   createBitMock.mockResolvedValue({ id: "created-bit" });
   getDataStoreMock.mockResolvedValue({
     getGridOccupancy: getGridOccupancyMock,
+    getNode: getNodeMock,
     createNode: createNodeMock,
     createBit: createBitMock,
     markScratchBreakdownConsumed: markScratchBreakdownConsumedMock,
@@ -264,7 +271,6 @@ function durableCandidateOptions() {
     reconcileStageCandidate: reconcileStageCandidateMock,
     unstageCandidate: unstageCandidateMock,
     reconcileUnstageCandidate: reconcileUnstageCandidateMock,
-    removeStagedCandidate: removeStagedCandidateMock,
     focusUnstagedSource: focusUnstagedSourceMock,
   };
 }
@@ -293,7 +299,7 @@ function renderDndExplorerHarness(): {
       onPointerGeometryChange,
       overTargetId: controller.overTargetId,
       pendingPlacementDropId: controller.pendingPlacement?.dropId ?? null,
-      localPlacementResult: controller.localPlacementResult,
+      localPlacementResult: null,
       targetFeedback: controller.targetFeedback,
     });
   };
@@ -1370,16 +1376,21 @@ describe("useTriageDnd — drop matrix", () => {
       );
     });
 
-    expect(result.current.pendingPlacement).toEqual({
+    expect(result.current.pendingPlacement).toMatchObject({
+      scratchBitId: "scratch-1",
       candidateId: "candidate-1",
       candidateType: "node",
+      candidateVersion: 1,
       candidateLabel: "Project",
       sourceBreakdownId: "breakdown-1",
+      sourceVersion: 1,
       dropId: "triage-hierarchy:parent-1",
       parentNodeId: "parent-1",
       targetNodeLevel: 0,
       targetTitle: "Parent",
       targetParentPath: ["Home"],
+      expectedAncestorIds: ["parent-1"],
+      cell: { x: 0, y: 0 },
       isFull: false,
       isDirectBreakdown: false,
     });
@@ -1443,22 +1454,53 @@ describe("useTriageDnd — drop matrix", () => {
     });
 
     expect(addStagedCandidateMock).not.toHaveBeenCalled();
-    expect(result.current.pendingPlacement).toEqual({
+    expect(result.current.pendingPlacement).toMatchObject({
+      scratchBitId: "scratch-1",
       candidateId: "breakdown-1",
       candidateType: null,
+      candidateVersion: null,
       candidateLabel: "Project",
       sourceBreakdownId: "breakdown-1",
+      sourceVersion: 1,
       dropId: "triage-hierarchy:parent-1",
       parentNodeId: "parent-1",
       targetNodeLevel: 0,
       targetTitle: "Parent",
       targetParentPath: ["Home"],
+      expectedAncestorIds: ["parent-1"],
+      cell: { x: 0, y: 0 },
       isFull: false,
       isDirectBreakdown: true,
     });
   });
 
-  it("confirms a pending Node placement by creating it, consuming the source, and removing the candidate", async () => {
+  it("writes nothing and creates no release when the exact target path is stale before placement opens", async () => {
+    getNodeMock.mockResolvedValueOnce(undefined);
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", durableCandidateOptions()),
+    );
+
+    await act(async () => {
+      await completeDrag(
+        result.current,
+        makeDragEndEvent(makeStagedDragData(), {
+          kind: "triage-hierarchy-drop",
+          dropId: "triage-hierarchy:parent-1",
+          parentNodeId: "parent-1",
+          targetNodeLevel: 0,
+          targetTitle: "Parent",
+          targetParentPath: ["Home"],
+        }),
+      );
+    });
+
+    expect(result.current.pendingPlacement).toBeNull();
+    expect(createNodeMock).not.toHaveBeenCalled();
+    expect(createBitMock).not.toHaveBeenCalled();
+    expect(markScratchBreakdownConsumedMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps staged Drop release-only with no write", async () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", durableCandidateOptions()));
 
     await act(async () => {
@@ -1482,36 +1524,13 @@ describe("useTriageDnd — drop matrix", () => {
       );
     });
 
-    await act(async () => {
-      await result.current.handlePlacementConfirm("scratch-1");
-    });
-
-    expect(createNodeMock).toHaveBeenCalledWith({
-      title: "Project",
-      parentId: "parent-1",
-      level: 1,
-      x: 0,
-      y: 0,
-      color: "hsl(210, 80%, 55%)",
-      icon: "Folder",
-      deadline: null,
-      deadlineAllDay: false,
-    });
-    expect(markScratchBreakdownConsumedMock).toHaveBeenCalledWith(
-      "breakdown-1",
-    );
-    expect(removeStagedCandidateMock).toHaveBeenCalledWith(
-      "scratch-1",
-      "candidate-1",
-    );
-    expect(result.current.pendingPlacement).toBeNull();
-    expect(result.current.localPlacementResult).toEqual({
-      id: "created-node",
-      type: "node",
-    });
+    expect(createNodeMock).not.toHaveBeenCalled();
+    expect(markScratchBreakdownConsumedMock).not.toHaveBeenCalled();
+    expect(removeStagedCandidateMock).not.toHaveBeenCalled();
+    expect(result.current.pendingPlacement).not.toBeNull();
   });
 
-  it("confirms a direct breakdown placement with the selected Node type without removing a staged candidate", async () => {
+  it("keeps direct Node Drop release-only with no write", async () => {
     const registerLocalPlacement = vi.fn(registerExplorerLocalPlacementAction);
     useTriageStore.setState({
       registerExplorerLocalPlacement: registerLocalPlacement,
@@ -1538,40 +1557,11 @@ describe("useTriageDnd — drop matrix", () => {
       );
     });
 
-    await act(async () => {
-      await result.current.handlePlacementConfirm("scratch-1", "node");
-    });
-
-    expect(createNodeMock).toHaveBeenCalledWith({
-      title: "Project",
-      parentId: "parent-1",
-      level: 1,
-      x: 0,
-      y: 0,
-      color: "hsl(210, 80%, 55%)",
-      icon: "Folder",
-      deadline: null,
-      deadlineAllDay: false,
-    });
-    expect(markScratchBreakdownConsumedMock).toHaveBeenCalledWith(
-      "breakdown-1",
-    );
+    expect(createNodeMock).not.toHaveBeenCalled();
+    expect(markScratchBreakdownConsumedMock).not.toHaveBeenCalled();
     expect(removeStagedCandidateMock).not.toHaveBeenCalled();
-    expect(result.current.pendingPlacement).toBeNull();
-    expect(result.current.localPlacementResult).toEqual({
-      id: "created-node",
-      type: "node",
-    });
-    expect(registerLocalPlacement).toHaveBeenCalledWith({
-      id: "created-node",
-      type: "node",
-    });
-    expect(createNodeMock.mock.invocationCallOrder[0]).toBeLessThan(
-      registerLocalPlacement.mock.invocationCallOrder[0]!,
-    );
-    expect(registerLocalPlacement.mock.invocationCallOrder[0]).toBeLessThan(
-      markScratchBreakdownConsumedMock.mock.invocationCallOrder[0]!,
-    );
+    expect(result.current.pendingPlacement).not.toBeNull();
+    expect(registerLocalPlacement).not.toHaveBeenCalled();
   });
 
   it("keeps a direct breakdown placement open when confirmation has no selected type", async () => {
@@ -1598,10 +1588,6 @@ describe("useTriageDnd — drop matrix", () => {
     });
 
     const placement = result.current.pendingPlacement;
-
-    await act(async () => {
-      await result.current.handlePlacementConfirm("scratch-1");
-    });
 
     expect(createNodeMock).not.toHaveBeenCalled();
     expect(createBitMock).not.toHaveBeenCalled();
@@ -1632,7 +1618,7 @@ describe("useTriageDnd — drop matrix", () => {
           },
         ),
       );
-      result.current.handlePlacementCancel();
+      result.current.clearPendingPlacement();
     });
 
     expect(createNodeMock).not.toHaveBeenCalled();
@@ -1724,7 +1710,7 @@ describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
     expect(result.current.pendingPlacement).toBeNull();
   });
 
-  it("confirms a direct breakdown placement as a Bit without removing a staged candidate", async () => {
+  it("keeps direct Bit Drop release-only with no write", async () => {
     const { result } = renderHook(() => useTriageDnd("scratch-1", durableCandidateOptions()));
 
     await act(async () => {
@@ -1743,23 +1729,10 @@ describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
       );
     });
 
-    await act(async () => {
-      await result.current.handlePlacementConfirm("scratch-1", "bit");
-    });
-
-    expect(createBitMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: "My idea",
-        parentId: "parent-1",
-      }),
-    );
-    expect(markScratchBreakdownConsumedMock).toHaveBeenCalledWith("row-1");
+    expect(createBitMock).not.toHaveBeenCalled();
+    expect(markScratchBreakdownConsumedMock).not.toHaveBeenCalled();
     expect(removeStagedCandidateMock).not.toHaveBeenCalled();
-    expect(result.current.pendingPlacement).toBeNull();
-    expect(result.current.localPlacementResult).toEqual({
-      id: "created-bit",
-      type: "bit",
-    });
+    expect(result.current.pendingPlacement).not.toBeNull();
   });
 
   it("cancels a direct breakdown placement without datastore writes or candidate removal", async () => {
@@ -1782,7 +1755,7 @@ describe("useTriageDnd — T84 direct breakdown → hierarchy path", () => {
     });
 
     act(() => {
-      result.current.handlePlacementCancel();
+      result.current.clearPendingPlacement();
     });
 
     expect(createNodeMock).not.toHaveBeenCalled();

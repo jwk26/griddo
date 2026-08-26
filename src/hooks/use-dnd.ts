@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { isCalendarDropData } from "@/lib/calendar-dnd";
 import {
   getDataStore,
+  type DataStore,
   type StageCandidateCommand,
   type StageCandidateResult,
   type UnstageCandidateCommand,
@@ -38,10 +39,6 @@ import {
 } from "@/lib/utils/breadcrumb-zone";
 import type { CandidateCommandOutcome } from "@/hooks/use-staged-candidates";
 import type { TriageOperationLock } from "@/hooks/use-triage-operation-lock";
-import {
-  type ExplorerItemIdentity,
-  useTriageStore,
-} from "@/stores/triage-store";
 
 export type DragActiveItem = {
   id: string;
@@ -117,20 +114,23 @@ export type TriageDropIntent =
     };
 
 export type PendingPlacement = {
+  scratchBitId: string;
   candidateId: string;
   candidateType: "node" | "bit" | null;
+  candidateVersion: number | null;
   candidateLabel: string;
   sourceBreakdownId: string;
+  sourceVersion: number;
   dropId: string;
   parentNodeId: string | null;
   targetNodeLevel: number | null;
   targetTitle: string;
   targetParentPath: string[];
+  expectedAncestorIds: string[];
+  cell: { x: number; y: number } | null;
   isFull: boolean;
   isDirectBreakdown: boolean;
 } | null;
-
-export type LocalPlacementResultIdentity = ExplorerItemIdentity | null;
 
 const TRIAGE_BREAKDOWN_UNSTAGE_DROP_ID = "triage-remove-drop:breakdown";
 
@@ -292,6 +292,26 @@ function acceptsHierarchyTarget(
   return true;
 }
 
+async function readExpectedAncestorIds(
+  dataStore: DataStore,
+  parentNodeId: string | null,
+): Promise<string[] | null> {
+  const reversed: string[] = [];
+  const visited = new Set<string>();
+  let currentId = parentNodeId;
+
+  while (currentId !== null) {
+    if (visited.has(currentId)) return null;
+    visited.add(currentId);
+    const node = await dataStore.getNode(currentId);
+    if (node === undefined || node.deletedAt !== null) return null;
+    reversed.push(node.id);
+    currentId = node.parentId;
+  }
+
+  return reversed.reverse();
+}
+
 function readRenderedHierarchyTarget(
   point: { x: number; y: number },
 ): Extract<TriageDropData, { kind: "triage-hierarchy-drop" }> | null {
@@ -379,7 +399,6 @@ export function useTriageDnd(
     operationLock,
     reconcileStageCandidate,
     reconcileUnstageCandidate,
-    removeStagedCandidate,
     stageCandidate,
     unstageCandidate,
   }: {
@@ -391,7 +410,6 @@ export function useTriageDnd(
     reconcileUnstageCandidate: (
       command: UnstageCandidateCommand,
     ) => Promise<CandidateCommandOutcome<UnstageCandidateResult>>;
-    removeStagedCandidate: (scratchId: string, candidateId: string) => void;
     stageCandidate: (
       command: StageCandidateCommand,
     ) => Promise<CandidateCommandOutcome<StageCandidateResult>>;
@@ -408,12 +426,7 @@ export function useTriageDnd(
   handleDragCancel: () => void;
   handleDragOver: (event: DragOverEvent) => void;
   pendingPlacement: PendingPlacement;
-  localPlacementResult: LocalPlacementResultIdentity;
-  handlePlacementConfirm: (
-    scratchId: string,
-    confirmedType?: "node" | "bit",
-  ) => Promise<void>;
-  handlePlacementCancel: () => void;
+  clearPendingPlacement: () => void;
   overTargetId: string | null;
   refreshRenderedTarget: (point: { x: number; y: number }) => void;
   targetFeedback: TriageTargetFeedback;
@@ -423,8 +436,6 @@ export function useTriageDnd(
   const [overTargetId, setOverTargetId] = useState<string | null>(null);
   const [pendingPlacement, setPendingPlacement] =
     useState<PendingPlacement>(null);
-  const [localPlacementResult, setLocalPlacementResult] =
-    useState<LocalPlacementResultIdentity>(null);
   const [targetFeedback, setTargetFeedback] =
     useState<TriageTargetFeedback>(null);
   const activationSnapshotRef = useRef<TriageDragSnapshot | null>(null);
@@ -445,7 +456,9 @@ export function useTriageDnd(
   const handleDragStart = (event: DragStartEvent) => {
     const snapshot = readTriageDragItem(event.active.data.current);
     const isCurrentScratch =
-      !operationLock.isLocked() && snapshot?.scratchId === selectedScratchId;
+      pendingPlacement === null &&
+      !operationLock.isLocked() &&
+      snapshot?.scratchId === selectedScratchId;
     activationSnapshotRef.current = isCurrentScratch ? snapshot : null;
     dragCancelledRef.current = false;
     feedbackRequestRef.current += 1;
@@ -709,17 +722,27 @@ export function useTriageDnd(
         0,
         getStaticBlockedCells(),
       );
+      const expectedAncestorIds = await readExpectedAncestorIds(
+        dataStore,
+        target.parentNodeId,
+      );
+      if (expectedAncestorIds === null || operationLock.isLocked()) return;
 
       setPendingPlacement({
+        scratchBitId: dragItem.scratchId,
         candidateId: dragItem.id,
         candidateType: null,
+        candidateVersion: null,
         candidateLabel: dragItem.label,
         sourceBreakdownId: dragItem.id,
+        sourceVersion: dragItem.sourceVersion,
         dropId: target.dropId,
         parentNodeId: target.parentNodeId,
         targetNodeLevel: target.targetNodeLevel,
         targetTitle: target.targetTitle,
         targetParentPath: target.targetParentPath,
+        expectedAncestorIds,
+        cell: position,
         isFull: position === null,
         isDirectBreakdown: true,
       });
@@ -776,119 +799,30 @@ export function useTriageDnd(
       0,
       getStaticBlockedCells(),
     );
+    const expectedAncestorIds = await readExpectedAncestorIds(
+      dataStore,
+      target.parentNodeId,
+    );
+    if (expectedAncestorIds === null || operationLock.isLocked()) return;
 
     setPendingPlacement({
+      scratchBitId: dragItem.scratchId,
       candidateId: dragItem.id,
       candidateType: dragItem.kind === "triage-staged-node" ? "node" : "bit",
+      candidateVersion: dragItem.candidateVersion,
       candidateLabel: dragItem.label,
       sourceBreakdownId: dragItem.sourceBreakdownId,
+      sourceVersion: dragItem.sourceVersion,
       dropId: target.dropId,
       parentNodeId: target.parentNodeId,
       targetNodeLevel: target.targetNodeLevel,
       targetTitle: target.targetTitle,
       targetParentPath: target.targetParentPath,
+      expectedAncestorIds,
+      cell: position,
       isFull: position === null,
       isDirectBreakdown: false,
     });
-  };
-
-  const handlePlacementConfirm = async (
-    scratchId: string,
-    confirmedType?: "node" | "bit",
-  ) => {
-    if (pendingPlacement === null) {
-      return;
-    }
-
-    const placement = pendingPlacement;
-    const effectiveType = placement.candidateType ?? confirmedType;
-
-    if (effectiveType === undefined) {
-      return;
-    }
-
-    try {
-      if (placement.isFull) {
-        return;
-      }
-
-      const dataStore = await getDataStore();
-      const occupancy = await dataStore.getGridOccupancy(
-        placement.parentNodeId,
-      );
-      const position = findNearestEmptyCell(
-        occupancy,
-        0,
-        0,
-        getStaticBlockedCells(),
-      );
-
-      if (position === null) {
-        return;
-      }
-
-      if (
-        effectiveType === "node" &&
-        placement.targetNodeLevel !== null &&
-        placement.targetNodeLevel >= 2
-      ) {
-        return;
-      }
-
-      if (effectiveType === "node") {
-        const createdNode = await dataStore.createNode({
-          title: placement.candidateLabel,
-          parentId: placement.parentNodeId,
-          level:
-            placement.targetNodeLevel === null
-              ? 0
-              : placement.targetNodeLevel + 1,
-          x: position.x,
-          y: position.y,
-          color: "hsl(210, 80%, 55%)",
-          icon: "Folder",
-          deadline: null,
-          deadlineAllDay: false,
-        });
-        const identity = { id: createdNode.id, type: "node" } as const;
-        useTriageStore.getState().registerExplorerLocalPlacement(identity);
-        setLocalPlacementResult(identity);
-      }
-
-      if (effectiveType === "bit") {
-        if (placement.parentNodeId === null) {
-          return;
-        }
-
-        const createdBit = await dataStore.createBit({
-          title: placement.candidateLabel,
-          parentId: placement.parentNodeId,
-          x: position.x,
-          y: position.y,
-          description: "",
-          icon: "ListTodo",
-          deadline: null,
-          deadlineAllDay: false,
-          priority: null,
-        });
-        const identity = { id: createdBit.id, type: "bit" } as const;
-        useTriageStore.getState().registerExplorerLocalPlacement(identity);
-        setLocalPlacementResult(identity);
-      }
-
-      await dataStore.markScratchBreakdownConsumed(
-        placement.sourceBreakdownId,
-      );
-      if (!placement.isDirectBreakdown) {
-        removeStagedCandidate(scratchId, placement.candidateId);
-      }
-    } finally {
-      setPendingPlacement(null);
-    }
-  };
-
-  const handlePlacementCancel = () => {
-    setPendingPlacement(null);
   };
 
   return {
@@ -900,9 +834,7 @@ export function useTriageDnd(
     handleDragCancel,
     handleDragOver,
     pendingPlacement,
-    localPlacementResult,
-    handlePlacementConfirm,
-    handlePlacementCancel,
+    clearPendingPlacement: () => setPendingPlacement(null),
     overTargetId,
     refreshRenderedTarget: updateRenderedTarget,
     targetFeedback,

@@ -15,6 +15,7 @@ import type {
   TriageDragItem,
   TriageTargetFeedback,
 } from "@/hooks/use-dnd";
+import type { TriagePlacementSnapshot } from "@/hooks/use-triage-placement";
 import { getTriageHierarchyDropId } from "@/lib/grid-dnd";
 import { useTriageStore } from "@/stores/triage-store";
 import type { Bit, Node } from "@/types";
@@ -195,6 +196,35 @@ const defaultProps: {
   localPlacementResult: null,
   targetFeedback: null,
 };
+
+function placementSnapshot(
+  overrides: Partial<TriagePlacementSnapshot> = {},
+): TriagePlacementSnapshot {
+  return {
+    release: {
+      kind: "direct",
+      scratchBitId: "scratch-1",
+      source: { id: "source-1", title: "Project", version: 2 },
+      target: {
+        dropId: getTriageHierarchyDropId("target-1"),
+        parentId: "target-1",
+        level: 0,
+        title: "Target",
+        path: ["Home", "Target"],
+        expectedAncestorIds: ["target-1"],
+        cell: { x: 0, y: 0 },
+        isFull: false,
+      },
+    },
+    phase: "direct-selection",
+    resultType: null,
+    operationId: "operation-1",
+    resultId: "result-1",
+    command: null,
+    terminalStatus: null,
+    ...overrides,
+  };
+}
 
 function seedDeepGrid() {
   const home = createNode({ id: "home-a", title: "Personal Projects", level: 0 });
@@ -781,6 +811,113 @@ describe("HierarchyExplorer Task 134 base", () => {
       expect.any(Function),
     );
     expect(useTriageStore.getState().explorerPathIds).toEqual([home.id]);
+  });
+});
+
+describe("HierarchyExplorer Task 152 target-column placement", () => {
+  it("focuses the exact placed card when its authoritative render arrives after the initial frames", () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    setGrid(null, []);
+    const result = createNode({ id: "placed-node", title: "Placed node" });
+    const localPlacementResult = { id: result.id, type: "node" as const };
+    const view = render(
+      <HierarchyExplorer
+        {...defaultProps}
+        localPlacementResult={localPlacementResult}
+      />,
+    );
+
+    act(() => {
+      while (frames.length > 0) frames.shift()?.(performance.now());
+    });
+    expect(
+      document.querySelector(`[data-explorer-item-id="${result.id}"]`),
+    ).not.toBeInTheDocument();
+
+    setGrid(null, [result]);
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        localPlacementResult={localPlacementResult}
+      />,
+    );
+
+    expect(
+      document.querySelector(`[data-explorer-item-id="${result.id}"]`),
+    ).toHaveFocus();
+  });
+
+  it("closes headless Search, renders the direct step inside the exact target column, and focuses the step heading", async () => {
+    const target = createNode({ id: "target-1", title: "Target" });
+    setGrid(null, [target]);
+    explorerSearchState.mode = "active";
+    explorerSearchState.activeQuery = "target";
+    const onPlacementSelectType = vi.fn();
+
+    render(
+      <HierarchyExplorer
+        {...defaultProps}
+        placementSnapshot={placementSnapshot()}
+        onPlacementSelectType={onPlacementSelectType}
+      />,
+    );
+
+    expect(explorerSearchState.closeSearch).toHaveBeenCalledOnce();
+    const placement = screen.getByRole("region", { name: "Placement" });
+    expect(
+      screen.getByTestId("hierarchy-column-heading-home").closest("section"),
+    ).toContainElement(placement);
+    expect(screen.getByText("Choose a result type")).toHaveFocus();
+
+    fireEvent.click(screen.getByRole("button", { name: "Node" }));
+    expect(onPlacementSelectType).toHaveBeenCalledWith("node");
+  });
+
+  it("returns pre-dispatch Escape to the placement owner and suppresses it while pending", () => {
+    const target = createNode({ id: "target-1", title: "Target" });
+    setGrid(null, [target]);
+    const onPlacementCancel = vi.fn();
+    const view = render(
+      <HierarchyExplorer
+        {...defaultProps}
+        placementSnapshot={placementSnapshot()}
+        onPlacementCancel={onPlacementCancel}
+      />,
+    );
+
+    fireEvent.keyDown(screen.getByRole("region", { name: "Placement" }), {
+      key: "Escape",
+    });
+    expect(onPlacementCancel).toHaveBeenCalledOnce();
+
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        placementSnapshot={placementSnapshot({
+          phase: "confirmation",
+          resultType: "node",
+        })}
+        onPlacementCancel={onPlacementCancel}
+      />,
+    );
+    screen.getByRole("button", { name: "Confirm" }).focus();
+
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        placementSnapshot={placementSnapshot({ phase: "pending", resultType: "node" })}
+        onPlacementCancel={onPlacementCancel}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Confirm" })).toHaveFocus();
+    fireEvent.keyDown(screen.getByRole("region", { name: "Placement" }), {
+      key: "Escape",
+    });
+    expect(onPlacementCancel).toHaveBeenCalledOnce();
   });
 });
 

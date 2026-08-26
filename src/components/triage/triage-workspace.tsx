@@ -1,7 +1,7 @@
 "use client";
 
 import { DndContext, DragOverlay, useDroppable, type Modifier } from "@dnd-kit/core";
-import { AlertTriangle, Folder, ListTodo, X } from "lucide-react";
+import { X } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -10,16 +10,7 @@ import {
   useMemo,
   useRef,
   useState,
-  type ReactNode,
 } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   BreakdownPanel,
   type BreakdownSuccessSignal,
@@ -53,6 +44,10 @@ import {
   TriageOperationLockContext,
   useTriageOperationLock,
 } from "@/hooks/use-triage-operation-lock";
+import {
+  type TriagePlacementRelease,
+  useTriagePlacement,
+} from "@/hooks/use-triage-placement";
 import {
   createScratchTitleBlockerHandle,
   ScratchTitleBlockerContext,
@@ -755,10 +750,6 @@ function TriageWorkspaceContent({
     ids: Set<string>;
   }>({ scratchId: null, ready: false, ids: new Set() });
   const invalidatedDragRef = useRef<StagingAlertState | null>(null);
-  const pendingPlacementFallbackFocusRef = useRef<(() => void) | null>(null);
-  const removeStagedCandidate = useTriageStore(
-    (state) => state.removeStagedCandidate,
-  );
   const focusUnstagedSource = useCallback((sourceBreakdownId: string) => {
     const focusWhenReady = (remainingFrames: number) => {
       const row = Array.from(
@@ -782,6 +773,26 @@ function TriageWorkspaceContent({
     };
     requestAnimationFrame(() => focusWhenReady(2));
   }, []);
+  const focusPlacementSource = useCallback(
+    (release: TriagePlacementRelease) => {
+      if (release.kind === "direct") {
+        focusUnstagedSource(release.source.id);
+        return;
+      }
+      requestAnimationFrame(() => {
+        const source = Array.from(
+          workspaceRef.current?.querySelectorAll<HTMLElement>(
+            "[data-candidate-id]",
+          ) ?? [],
+        ).find(
+          (element) =>
+            element.dataset.candidateId === release.candidate?.id,
+        );
+        (source ?? stagingHeadingRef.current)?.focus({ preventScroll: true });
+      });
+    },
+    [focusUnstagedSource],
+  );
   const rememberOperation = useCallback(
     (
       command: StageCandidateCommand | UnstageCandidateCommand,
@@ -902,18 +913,35 @@ function TriageWorkspaceContent({
       runReconcileUnstageCandidate,
     ],
   );
+  const [localPlacementResult, setLocalPlacementResult] = useState<{
+    id: string;
+    type: "node" | "bit";
+  } | null>(null);
+  const placement = useTriagePlacement({
+    operationLock,
+    onApplied: (result, command) => {
+      const identity = { id: result.id, type: command.resultType } as const;
+      useTriageStore.getState().registerExplorerLocalPlacement(identity);
+      setLocalPlacementResult(identity);
+    },
+  });
+  const cancelPlacement = useCallback(() => {
+    const current = placement.snapshot;
+    if (current !== null && placement.cancel()) {
+      focusPlacementSource(current.release);
+    }
+  }, [focusPlacementSource, placement]);
+  const consumedPlacementReleaseRef = useRef<PendingPlacement>(null);
   const {
     activeDragItem,
     collisionDetection,
     handleDragCancel,
     handleDragEnd,
     handleDragOver,
-    handlePlacementCancel,
-    handlePlacementConfirm,
+    clearPendingPlacement,
     handleDragStart,
     overTargetId,
     pendingPlacement,
-    localPlacementResult,
     refreshRenderedTarget,
     sensors,
     targetFeedback,
@@ -922,10 +950,51 @@ function TriageWorkspaceContent({
     operationLock,
     reconcileStageCandidate,
     reconcileUnstageCandidate,
-    removeStagedCandidate,
     stageCandidate,
     unstageCandidate,
   });
+  useEffect(() => {
+    if (pendingPlacement === null) {
+      consumedPlacementReleaseRef.current = null;
+      return;
+    }
+    if (consumedPlacementReleaseRef.current === pendingPlacement) return;
+    consumedPlacementReleaseRef.current = pendingPlacement;
+    const release: TriagePlacementRelease = {
+      kind: pendingPlacement.isDirectBreakdown ? "direct" : "staged",
+      scratchBitId: pendingPlacement.scratchBitId,
+      source: {
+        id: pendingPlacement.sourceBreakdownId,
+        title: pendingPlacement.candidateLabel,
+        version: pendingPlacement.sourceVersion,
+      },
+      ...(pendingPlacement.candidateType === null ||
+      pendingPlacement.candidateVersion === null
+        ? {}
+        : {
+            candidate: {
+              id: pendingPlacement.candidateId,
+              version: pendingPlacement.candidateVersion,
+              resultType: pendingPlacement.candidateType,
+            },
+          }),
+      target: {
+        dropId: pendingPlacement.dropId,
+        parentId: pendingPlacement.parentNodeId,
+        level: pendingPlacement.targetNodeLevel,
+        title: pendingPlacement.targetTitle,
+        path: [
+          ...pendingPlacement.targetParentPath,
+          pendingPlacement.targetTitle,
+        ],
+        expectedAncestorIds: pendingPlacement.expectedAncestorIds,
+        cell: pendingPlacement.cell,
+        isFull: pendingPlacement.isFull,
+      },
+    };
+    placement.begin(release);
+    clearPendingPlacement();
+  }, [clearPendingPlacement, pendingPlacement, placement]);
   useEffect(() => {
     activeDragItemRef.current = activeDragItem;
   }, [activeDragItem]);
@@ -1122,31 +1191,26 @@ function TriageWorkspaceContent({
 
   const handlePendingPlacementInvalidated = useCallback(
     (dropId: string, focusAfterClose: () => void) => {
-      if (pendingPlacement?.dropId === dropId) {
-        pendingPlacementFallbackFocusRef.current = focusAfterClose;
+      const current = placement.snapshot;
+      if (
+        current?.release.target.dropId === dropId &&
+        placement.invalidate(dropId)
+      ) {
+        requestAnimationFrame(focusAfterClose);
         setStagingAlert({
           kind: "invalidated-placement",
           copy: stagingTemplate(
             INBOX_TRIAGE_COPY.stagingStatus.alert.invalidatedPlacement,
-            pendingPlacement.candidateLabel,
+            current.release.source.title,
           ),
-          candidateId: pendingPlacement.candidateId,
-          sourceBreakdownId: pendingPlacement.sourceBreakdownId,
+          candidateId: current.release.candidate?.id ?? null,
+          sourceBreakdownId: current.release.source.id,
           clearOnCandidateDisappearance: false,
         });
       }
-      handlePlacementCancel();
     },
-    [handlePlacementCancel, pendingPlacement],
+    [placement],
   );
-
-  const handlePlacementDialogCloseAutoFocus = useCallback((event: Event) => {
-    const focusAfterClose = pendingPlacementFallbackFocusRef.current;
-    if (focusAfterClose === null) return;
-    pendingPlacementFallbackFocusRef.current = null;
-    event.preventDefault();
-    focusAfterClose();
-  }, []);
 
   const showNewCandidates = useCallback((type: "node" | "bit") => {
     const ids = [...newCandidateIds[type]];
@@ -1590,21 +1654,24 @@ function TriageWorkspaceContent({
                 onPendingPlacementInvalidated={handlePendingPlacementInvalidated}
                 onPointerGeometryChange={refreshRenderedTarget}
                 overTargetId={overTargetId}
-                pendingPlacementDropId={pendingPlacement?.dropId ?? null}
+                pendingPlacementDropId={
+                  placement.snapshot?.release.target.dropId ?? null
+                }
                 localPlacementResult={localPlacementResult}
+                placementSnapshot={placement.snapshot}
+                onPlacementCancel={cancelPlacement}
+                onPlacementConfirm={() => {
+                  void placement.confirm();
+                }}
+                onPlacementReconcile={() => {
+                  void placement.reconcile();
+                }}
+                onPlacementSelectType={placement.selectDirectType}
                 targetFeedback={targetFeedback}
               />
             </div>
           </section>
 
-          <PlacementConfirmationDialog
-            key={pendingPlacement?.dropId ?? "none"}
-            onCloseAutoFocus={handlePlacementDialogCloseAutoFocus}
-            pendingPlacement={pendingPlacement}
-            selectedScratchId={selectedScratchId}
-            onCancel={handlePlacementCancel}
-            onConfirm={handlePlacementConfirm}
-          />
         </DndContext>
       </div>
       {isExternalRemoval ? (
@@ -1616,267 +1683,5 @@ function TriageWorkspaceContent({
         />
       ) : null}
     </section>
-  );
-}
-
-function PlacementConfirmationDialog({
-  onCancel,
-  onCloseAutoFocus,
-  onConfirm,
-  pendingPlacement,
-  selectedScratchId,
-}: {
-  onCancel: () => void;
-  onCloseAutoFocus: (event: Event) => void;
-  onConfirm: (
-    scratchId: string,
-    confirmedType?: "node" | "bit",
-  ) => Promise<void>;
-  pendingPlacement: PendingPlacement;
-  selectedScratchId: string | null;
-}) {
-  const [selectedType, setSelectedType] =
-    useState<"node" | "bit" | null>(null);
-  const destinationPath =
-    pendingPlacement === null
-      ? []
-      : [...pendingPlacement.targetParentPath, pendingPlacement.targetTitle];
-  const isDirectPlacement = pendingPlacement?.candidateType === null;
-  const resultType = pendingPlacement?.candidateType ?? selectedType;
-  const isNodeValid =
-    pendingPlacement !== null &&
-    (pendingPlacement.targetNodeLevel === null ||
-      pendingPlacement.targetNodeLevel < 2);
-  const isBitValid =
-    pendingPlacement !== null && pendingPlacement.parentNodeId !== null;
-  const confirmDisabled =
-    (pendingPlacement?.isFull ?? false) ||
-    selectedScratchId === null ||
-    (isDirectPlacement && selectedType === null);
-
-  return (
-    <Dialog
-      open={pendingPlacement !== null}
-      onOpenChange={(open) => {
-        if (!open) onCancel();
-      }}
-    >
-      <DialogContent
-        onCloseAutoFocus={onCloseAutoFocus}
-        showCloseButton={false}
-        className="max-w-md w-full overflow-y-hidden border border-border bg-popover p-6 rounded-lg"
-      >
-        <DialogHeader>
-          <DialogTitle>Place item?</DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          <div className="divide-y divide-border/50">
-            <PlacementField label="Candidate">
-              <div className="truncate text-sm font-medium text-foreground">
-                {pendingPlacement?.candidateLabel}
-              </div>
-            </PlacementField>
-
-            <PlacementField label="Type">
-              {pendingPlacement !== null &&
-              pendingPlacement.candidateType === null ? (
-                <TypeChoiceSelector
-                  isBitValid={isBitValid}
-                  isNodeValid={isNodeValid}
-                  selectedType={selectedType}
-                  onSelect={setSelectedType}
-                />
-              ) : (
-                <span
-                  className={cn(
-                    pendingPlacement?.candidateType === "node"
-                      ? "bg-accent text-foreground border border-primary/50 text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                      : "bg-muted text-muted-foreground/80 border border-border/50 text-[10px] font-semibold px-2 py-0.5 rounded-md",
-                  )}
-                >
-                  {pendingPlacement?.candidateType === "node" ? "Node" : "Bit"}
-                </span>
-              )}
-            </PlacementField>
-
-            <PlacementField label="Destination">
-              <div className="flex min-w-0 items-center gap-1.5 truncate text-sm font-medium text-foreground">
-                {destinationPath.map((segment, index) => (
-                  <span
-                    key={`${segment}-${index}`}
-                    className="min-w-0 truncate"
-                  >
-                    {index > 0 ? "→ " : ""}
-                    {segment}
-                  </span>
-                ))}
-              </div>
-            </PlacementField>
-
-            <PlacementField label="Result">
-              <div className="text-sm font-semibold text-foreground">
-                {pendingPlacement === null
-                  ? null
-                  : resultType === "node"
-                    ? `Create a node in ${pendingPlacement.targetTitle}`
-                    : resultType === "bit"
-                      ? `Create a bit in ${pendingPlacement.targetTitle}`
-                      : "Choose a type"}
-              </div>
-            </PlacementField>
-          </div>
-
-          {pendingPlacement?.isFull && (
-            <div className="flex items-center gap-2 rounded-md border border-muted-foreground/30 bg-muted/40 p-3">
-              <AlertTriangle
-                aria-hidden="true"
-                className="h-4 w-4 flex-shrink-0 text-muted-foreground"
-              />
-              <p className="text-xs font-semibold text-muted-foreground">
-                No available grid cell in this target
-              </p>
-            </div>
-          )}
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button
-            disabled={confirmDisabled}
-            onClick={() => {
-              if (selectedScratchId) {
-                if (isDirectPlacement) {
-                  void onConfirm(selectedScratchId, selectedType ?? undefined);
-                  return;
-                }
-
-                void onConfirm(selectedScratchId);
-              }
-            }}
-          >
-            Confirm
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function TypeChoiceSelector({
-  isBitValid,
-  isNodeValid,
-  onSelect,
-  selectedType,
-}: {
-  isBitValid: boolean;
-  isNodeValid: boolean;
-  onSelect: (type: "node" | "bit") => void;
-  selectedType: "node" | "bit" | null;
-}) {
-  return (
-    <div className="flex min-w-0 items-center gap-2">
-      <div
-        aria-label="Select placement type"
-        className="flex min-w-0 items-center gap-1.5 rounded-md border border-border/50 bg-muted/30 p-0.5"
-        role="radiogroup"
-      >
-        <TypeChoiceOption
-          disabled={!isNodeValid}
-          icon={<Folder aria-hidden="true" className="h-4 w-4" />}
-          label="Node"
-          selected={selectedType === "node"}
-          type="node"
-          onSelect={onSelect}
-        />
-        <TypeChoiceOption
-          disabled={!isBitValid}
-          icon={<ListTodo aria-hidden="true" className="h-4 w-4" />}
-          label="Bit"
-          selected={selectedType === "bit"}
-          type="bit"
-          onSelect={onSelect}
-        />
-      </div>
-    </div>
-  );
-}
-
-function TypeChoiceOption({
-  disabled,
-  icon,
-  label,
-  onSelect,
-  selected,
-  type,
-}: {
-  disabled: boolean;
-  icon: ReactNode;
-  label: string;
-  onSelect: (type: "node" | "bit") => void;
-  selected: boolean;
-  type: "node" | "bit";
-}) {
-  return (
-    <button
-      aria-checked={selected ? "true" : "false"}
-      aria-label={`Select ${label} type`}
-      className={cn(
-        "group flex min-w-0 items-center gap-1.5 rounded-md border border-transparent bg-transparent px-2 py-1 text-[10px] font-semibold text-muted-foreground/80 transition-opacity touch-action-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
-        disabled
-          ? "cursor-not-allowed border-transparent text-muted-foreground/50 opacity-40"
-          : selected
-            ? "cursor-pointer border-primary bg-accent text-foreground ring-1 ring-primary"
-            : "cursor-pointer hover:bg-muted hover:text-foreground",
-      )}
-      disabled={disabled}
-      role="radio"
-      type="button"
-      onClick={() => onSelect(type)}
-    >
-      <span
-        className={cn(
-          "flex h-4 w-4 flex-shrink-0 items-center justify-center text-muted-foreground/50",
-          disabled
-            ? "text-muted-foreground/50"
-            : selected
-              ? "text-foreground"
-              : "group-hover:text-muted-foreground/80",
-        )}
-      >
-        {icon}
-      </span>
-      <span
-        className={cn(
-          "min-w-0 truncate text-muted-foreground/80",
-          disabled
-            ? "text-muted-foreground/50"
-            : selected
-              ? "text-foreground"
-              : "group-hover:text-foreground",
-        )}
-      >
-        {label}
-      </span>
-    </button>
-  );
-}
-
-function PlacementField({
-  children,
-  label,
-}: {
-  children: ReactNode;
-  label: string;
-}) {
-  return (
-    <div className="py-3">
-      <div className="mb-1 font-mono text-[10px] font-medium uppercase text-muted-foreground/50">
-        {label}
-      </div>
-      {children}
-    </div>
   );
 }

@@ -12,6 +12,7 @@ import {
   type UIEvent,
 } from "react";
 import { GridExplorerSearchResults } from "@/components/triage/grid-explorer-search-results";
+import { Button } from "@/components/ui/button";
 import { useGridData } from "@/hooks/use-grid-data";
 import {
   useExplorerRemoteStatus,
@@ -22,6 +23,7 @@ import type {
   TriageDragItem,
   TriageTargetFeedback,
 } from "@/hooks/use-dnd";
+import type { TriagePlacementSnapshot } from "@/hooks/use-triage-placement";
 import {
   getTriageHierarchyDropId,
   type TriageDropData,
@@ -47,6 +49,11 @@ interface HierarchyExplorerProps {
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
   localPlacementResult: ExplorerItemIdentity | null;
+  placementSnapshot?: TriagePlacementSnapshot | null;
+  onPlacementCancel?: () => void;
+  onPlacementConfirm?: () => void;
+  onPlacementReconcile?: () => void;
+  onPlacementSelectType?: (type: "node" | "bit") => void;
   targetFeedback: TriageTargetFeedback;
 }
 
@@ -214,11 +221,18 @@ export function HierarchyExplorer({
   overTargetId,
   pendingPlacementDropId,
   localPlacementResult,
+  placementSnapshot = null,
+  onPlacementCancel,
+  onPlacementConfirm,
+  onPlacementReconcile,
+  onPlacementSelectType,
   targetFeedback,
 }: HierarchyExplorerProps) {
   const search = useGridExplorerSearch();
+  const explorerRef = useRef<HTMLDivElement>(null);
   const searchEntryRef = useRef<HTMLButtonElement>(null);
   const previousDragRef = useRef<TriageDragItem>(null);
+  const focusedLocalPlacementKeyRef = useRef<string | null>(null);
   const focusedRevealKeyRef = useRef<string | null>(null);
   const focusedSelectionClearIdRef = useRef<string | null>(null);
   const mountedRef = useRef(false);
@@ -402,6 +416,12 @@ export function HierarchyExplorer({
   }, [activeDragItem, search]);
 
   useLayoutEffect(() => {
+    if (placementSnapshot !== null && search.mode !== "closed") {
+      search.closeSearch();
+    }
+  }, [placementSnapshot, search]);
+
+  useLayoutEffect(() => {
     if (search.mode === "closed" && entryFocusRevision > 0) {
       searchEntryRef.current?.focus({ preventScroll: true });
     }
@@ -483,6 +503,37 @@ export function HierarchyExplorer({
     () => (selectedL2Id === null ? [] : level3Grid.bits),
     [level3Grid.bits, selectedL2Id],
   );
+
+  useLayoutEffect(() => {
+    if (localPlacementResult === null) {
+      focusedLocalPlacementKeyRef.current = null;
+      return;
+    }
+    const placementKey = `${localPlacementResult.type}:${localPlacementResult.id}`;
+    if (focusedLocalPlacementKeyRef.current === placementKey) return;
+    const result = Array.from(
+      explorerRef.current?.querySelectorAll<HTMLElement>(
+        "[data-explorer-item-id]",
+      ) ?? [],
+    ).find(
+      (element) =>
+        element.dataset.explorerItemId === localPlacementResult.id &&
+        element.dataset.explorerItemType === localPlacementResult.type,
+    );
+    if (result === undefined) return;
+    result.focus({ preventScroll: true });
+    focusedLocalPlacementKeyRef.current = placementKey;
+  }, [
+    level1Bits,
+    level1Nodes,
+    level2Bits,
+    level2Nodes,
+    level3Bits,
+    level3Nodes,
+    localPlacementResult,
+    rootNodes,
+    search.mode,
+  ]);
 
   const selectedHomeNode =
     rootNodes.find(({ id }) => id === selectedHomeId) ?? null;
@@ -787,6 +838,7 @@ export function HierarchyExplorer({
 
   return (
     <div
+      ref={explorerRef}
       className="flex min-h-0 w-full flex-col rounded-md border border-border/50 bg-card"
       data-testid="hierarchy-explorer"
     >
@@ -861,6 +913,17 @@ export function HierarchyExplorer({
           const parentPath = ["Home", ...pathNodes.slice(0, index).map(({ title }) => title)];
           const targetParentPath =
             index === 0 ? [] : parentPath.slice(0, -1);
+          const sectionDropId = getTriageHierarchyDropId(
+            index === 0 ? "body-home" : `body-l${index}`,
+          );
+          const columnOwnsPlacement =
+            placementSnapshot !== null &&
+            (placementSnapshot.release.target.dropId === sectionDropId ||
+              column.nodes.some(
+                ({ id }) =>
+                  getTriageHierarchyDropId(id) ===
+                  placementSnapshot.release.target.dropId,
+              ));
           return (
             <ExplorerColumn
               key={COLUMN_LABELS[index]}
@@ -905,6 +968,15 @@ export function HierarchyExplorer({
               parentNode={column.parentNode}
               targetParentPath={targetParentPath}
             >
+              {columnOwnsPlacement ? (
+                <PlacementAffordance
+                  snapshot={placementSnapshot}
+                  onCancel={onPlacementCancel}
+                  onConfirm={onPlacementConfirm}
+                  onReconcile={onPlacementReconcile}
+                  onSelectType={onPlacementSelectType}
+                />
+              ) : null}
               {index > 0 && column.parentNode === null ? null : (
                 <HierarchyItemList
                   activeDragItem={activeDragItem}
@@ -934,6 +1006,154 @@ export function HierarchyExplorer({
       </div>
       )}
     </div>
+  );
+}
+
+function PlacementAffordance({
+  snapshot,
+  onCancel,
+  onConfirm,
+  onReconcile,
+  onSelectType,
+}: {
+  snapshot: TriagePlacementSnapshot;
+  onCancel?: () => void;
+  onConfirm?: () => void;
+  onReconcile?: () => void;
+  onSelectType?: (type: "node" | "bit") => void;
+}) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const reconcileRef = useRef<HTMLButtonElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const locked =
+    snapshot.phase === "pending" ||
+    snapshot.phase === "unknown" ||
+    snapshot.phase === "reconciling";
+
+  useLayoutEffect(() => {
+    if (
+      snapshot.phase === "direct-selection" ||
+      snapshot.phase === "confirmation"
+    ) {
+      headingRef.current?.focus({ preventScroll: true });
+    } else if (snapshot.phase === "unknown") {
+      reconcileRef.current?.focus({ preventScroll: true });
+    } else if (snapshot.phase === "terminal") {
+      cancelRef.current?.focus({ preventScroll: true });
+    }
+  }, [snapshot.phase]);
+
+  return (
+    <section
+      aria-label="Placement"
+      className="m-2 rounded-md border border-primary/50 bg-accent/30 p-3"
+      data-placement-phase={snapshot.phase}
+      data-triage-role="placement-affordance"
+      onKeyDown={(event) => {
+        if (event.key !== "Escape") return;
+        if (locked) {
+          event.preventDefault();
+          return;
+        }
+        event.preventDefault();
+        onCancel?.();
+      }}
+    >
+      <h3
+        ref={headingRef}
+        className="text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        tabIndex={-1}
+      >
+        {snapshot.phase === "direct-selection"
+          ? "Choose a result type"
+          : "Confirm placement"}
+      </h3>
+      <p className="mt-1 truncate text-xs text-foreground">
+        {snapshot.release.source.title}
+      </p>
+      <p className="truncate text-[11px] text-muted-foreground">
+        {snapshot.release.target.path.join(" → ")}
+      </p>
+
+      {snapshot.phase === "direct-selection" ? (
+        <div className="mt-3 flex gap-2" aria-label="Select placement type">
+          <Button
+            size="sm"
+            type="button"
+            disabled={
+              snapshot.release.target.level !== null &&
+              snapshot.release.target.level >= 2
+            }
+            onClick={() => onSelectType?.("node")}
+          >
+            Node
+          </Button>
+          <Button
+            size="sm"
+            type="button"
+            disabled={snapshot.release.target.parentId === null}
+            onClick={() => onSelectType?.("bit")}
+          >
+            Bit
+          </Button>
+          <Button size="sm" type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        <>
+          <p className="mt-2 text-xs font-medium text-foreground">
+            {snapshot.resultType === "node" ? "Node" : "Bit"}
+          </p>
+          {snapshot.release.target.isFull ? (
+            <p className="mt-2 text-xs font-semibold text-muted-foreground" role="status">
+              No available grid cell in this target
+            </p>
+          ) : null}
+          <div className="mt-3 flex gap-2">
+            {snapshot.phase === "unknown" || snapshot.phase === "reconciling" ? (
+              <Button
+                ref={reconcileRef}
+                aria-disabled={snapshot.phase === "reconciling" || undefined}
+                size="sm"
+                type="button"
+                onClick={() => {
+                  if (snapshot.phase === "unknown") onReconcile?.();
+                }}
+              >
+                Check again
+              </Button>
+            ) : snapshot.phase === "confirmation" || snapshot.phase === "pending" ? (
+              <Button
+                aria-disabled={locked || undefined}
+                disabled={snapshot.release.target.isFull}
+                size="sm"
+                type="button"
+                onClick={() => {
+                  if (!locked && snapshot.phase === "confirmation") {
+                    onConfirm?.();
+                  }
+                }}
+              >
+                Confirm
+              </Button>
+            ) : null}
+            <Button
+              ref={cancelRef}
+              aria-disabled={locked || undefined}
+              size="sm"
+              type="button"
+              variant="outline"
+              onClick={() => {
+                if (!locked) onCancel?.();
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </>
+      )}
+    </section>
   );
 }
 
