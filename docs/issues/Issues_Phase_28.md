@@ -3,7 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Tasks 149–153 `[x]`, Accepted; Task 154 is `In Progress` and remains `[ ]`
+> State: Tasks 149–153 `[x]`, Accepted; Task 154 is `Awaiting User Decision` and remains `[ ]`
 
 ## Status Legend
 
@@ -102,15 +102,21 @@ and are outside Phase 28 scope.
 | Field | Durable value |
 | --- | --- |
 | Task | `154 — Render DP-VQ09 Result Title and direct-limit surfaces` |
-| State | `In Progress`; Task 154 remains `[ ]` |
+| State | `Awaiting User Decision`; Task 154 remains `[ ]`; no Task 154 product or test write has started |
 | Approval | Exact fresh candidate-pinned Task 154 work order on 2026-08-26, bounded by `docs/issues/Issues_Phase_28.gate-c.json`, accepted `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`, and the exact current Task 154 contract |
 | Approved base / entrypoint | Integration base `8cb2d904a55c136ca319e7bdf619d8e5d962fce8`; Task 154 entrypoint and recovery anchor `29bab4fe0ea2d0abcc837b070161ec0ea1ea5b4a`; accepted Task 153 `src` tree `bcdcc5f2ed9c5ece9780a6f5ea0ccf261d5044a5` |
 | Exact scope | Modify only the approved placement hook/test, Explorer/test, global CSS, and inbox-triage copy/test owners; create `docs/verification/inbox-triage/task-154.md`; update only this ledger state and the actual measured Task 154 workflow-pilot row |
 | Behavior | Realize the accepted staged over-limit Result Title and direct Node/Bit availability steps inside Task 152's captured Placement Affordance; exact limits, copy, validation, Continue/Cancel, focus, snapshot preservation, no-write invalidation, static reduced-motion parity, and all eight theme mappings; no source truncation/mutation, direct editor, automatic fallback, or later-task behavior |
 | Dependencies | Tasks 116, 128, and 152 are `[x]`, Accepted; `DP-VQ09=A` is accepted and released for Task 154 only; no unresolved Task 154 prerequisite |
-| Issues / deviations | None at start; Task 153 reliability semantics and closed `P28-06` remain unchanged and outside Task 154 scope |
-| Canonical impact | `None` — Task 154 implements the existing approved contract without changing canonical product, design, policy, data, persistence, command, or lifecycle authority |
-| Next legal action | Test-first Task 154 implementation, focused/full verification, High-risk review, durable evidence, and a clean committed implementation checkpoint; keep Task 154 `[ ]` and do not start another task |
+| Issues / deviations | `P28-07` — Awaiting User Decision. Owner discovery found that the approved seven product/test paths do not own the authoritative source/candidate state or the required staged-candidate/Breakdown-grip safe focus fallback; both are owned by the currently unapproved `src/components/triage/triage-workspace.tsx` and its mounted owner test. Task 153 reliability semantics and closed `P28-06` remain unchanged. |
+| Canonical impact | `Tagged` — if the minimum owner expansion is approved, reflect the two Workspace owner paths in the current Task 154 contract before product writes; otherwise the source/candidate invalidation acceptance contract needs explicit user disposition |
+| Next legal action | User disposition of `P28-07`; keep Task 154 `[ ]`, make no Task 154 product/test write, and do not start another task |
+
+### Task 154 Owner-Discovery Blocker
+
+| ID | State | Evidence | Exact minimum choices | Canonical impact |
+| --- | --- | --- | --- | --- |
+| `P28-07` | `Awaiting User Decision` | `src/hooks/use-triage-placement.ts` owns a frozen release snapshot and only `invalidate(dropId)`; `src/components/triage/hierarchy-explorer.tsx` detects target/path disappearance only. The authoritative staged candidate/source projection, once-only placement alert, direct Breakdown-grip fallback, and staged candidate/Staging-heading fallback are all in `src/components/triage/triage-workspace.tsx`. The exact work order approves only the seven named product/test paths, so no approved mounted owner can detect source/candidate change and invoke the required no-write close/announcement/focus lifecycle. Detailed evidence is in `docs/verification/inbox-triage/task-154.md`. | Approve and canonically reflect only `src/components/triage/triage-workspace.tsx` plus `src/components/triage/triage-workspace.test.tsx` as Task 154 owners for authoritative source/candidate invalidation wiring and mounted proof; or explicitly amend/remove the affected source/candidate invalidation acceptance. No other scope expansion is proposed. | `Tagged` — target is the current Task 154 file/action contract in `docs/EXECUTION_PLAN.md`; implementation remains unstarted until disposition. |
 
 ## Task 153 Durable Start
 
