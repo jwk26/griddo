@@ -119,3 +119,15 @@ and lifecycle claims, while a browser run cannot distinguish the missing
 authoritative readiness state or grant owner authority. The audit status header
 remains unchanged because it is outside the existing Task 154 row-writer
 authority.
+
+## P28-08 approval
+
+On 2026-08-26 the user approved the minimum owner expansion exactly as
+recommended. `src/hooks/use-scratch-breakdowns.ts` and
+`src/hooks/use-scratch-breakdowns.test.tsx` are added only for a read-only
+`isReady` projection derived from the existing current selected-Scratch
+live-query snapshot: false before the first current snapshot and true after it,
+including authoritative empty. Query, editor, command, DataStore, persistence,
+schema, and every other Breakdown behavior remain unchanged. Canonical impact
+is `Reflected`; repair cycle 3 may now address all three recorded review
+findings while Task 154 remains `[ ]`.
