@@ -5,6 +5,7 @@
 > Durable start commit: `b6cce05`
 > Start-base / entrypoint: `b13bcf0964d7113d7fcf701f3476f055fa818789`
 > Accepted Task 150 `src` tree: `73a1d973263f92d97580927063f27651482d18d3`
+> Implementation commit: `ab3637ac20eca545e273a5566730464ec8af9f26`
 
 ## Scope Reconciled
 
