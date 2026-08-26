@@ -1,0 +1,67 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "final-close",
+  "approved_repository": "jwk26/griddo",
+  "approved_base": "0df3a0fbb7170d66f47a199ffb398056e4e16c1e",
+  "approved_branch": "phase-28/explorer-search-pointer-placement",
+  "approved_scope": {
+    "lifecycle": "end-phase",
+    "phase": 28,
+    "worktree_role": "feature"
+  },
+  "user_disposition": "approved",
+  "next_legal_action": "execute-final-close",
+  "transaction": {
+    "workflow_candidate": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
+    "pre_close_head": "0df3a0fbb7170d66f47a199ffb398056e4e16c1e",
+    "candidate_a": {
+      "commit": "7da1a9c02c22f4ac4b695ae2e32f7461fe7d9c83",
+      "parent": "0df3a0fbb7170d66f47a199ffb398056e4e16c1e",
+      "tree": "030369a75b55ef0b9f3b192a090bbc1a90cf0d99",
+      "diff_hash_domain": "git-diff-binary-parent-to-candidate",
+      "diff_sha256": "1ea3dcac82d7787ea5263bbfb806c4ddfb9318b2bbdba40b7ca41fe944b544db"
+    },
+    "receipt_path": "docs/issues/Final_Close_Phase_28.json",
+    "receipt_commit_message": "docs: record Phase 28 final close receipt",
+    "publication_head_construction": "fast-forward the clean feature branch from pre_close_head to candidate_a.commit, add only this exact receipt file, and create receipt commit B with B^ equal to candidate_a.commit",
+    "publication": {
+      "provider": "github",
+      "command": "scripts/codex-gh",
+      "remote": "origin",
+      "remote_url": "https://github.com/jwk26/griddo.git",
+      "integration_base_oid": "8cb2d904a55c136ca319e7bdf619d8e5d962fce8",
+      "base_branch": "main",
+      "head_branch": "phase-28/explorer-search-pointer-placement",
+      "pr_action": "create",
+      "pr_number": null,
+      "pr_url": null,
+      "title": "feat(triage): land Phase 28 explorer placement",
+      "body": "## Summary\n\n- land accepted Phase 28 Explorer remote/search, release-time targeting, atomic placement, reliability, and Result Title/direct-limit work\n- archive Phase 28 as a terminal measurement baseline and transfer comparative workflow audit to the equal-weight Phase 29 two-track gate\n- preserve the unchanged workflow candidate and leave Task 155 and Phase 29 unstarted\n\n## Validation\n\n- pnpm test - 98 files / 1124 tests passed at pre-close and in the detached close preview\n- pnpm lint - 0 errors / 11 unchanged warnings\n- pnpm typecheck\n- pnpm build - seven routes generated\n- git diff --check and exact-main merge-tree passed\n- accepted task browser and mounted-owner evidence reused; relevant product inputs remained unchanged",
+      "draft": false,
+      "merge_method": "merge",
+      "expected_head": "receipt commit B",
+      "expected_head_mechanism": "scripts/codex-gh pr merge --merge --match-head-commit B",
+      "status_source": "GitHub PR headRefOid, mergeStateStatus, statusCheckRollup, branch protection, and repository rulesets",
+      "required_checks": "all reported required checks reach terminal success",
+      "queue": "forbidden",
+      "auto_merge": "forbidden",
+      "admin_bypass": "forbidden",
+      "implicit_branch_deletion": "forbidden",
+      "bounded_wait_retry": "at most 20 status reads at 15-second intervals"
+    },
+    "integration_sync": {
+      "primary_worktree": "/Users/jwk/Documents/griddo2-codex-integration",
+      "branch": "main",
+      "method": "fetch then fast-forward-only sync followed by method-neutral candidate inclusion proof"
+    },
+    "cleanup": {
+      "preview_worktree": "/Users/jwk/Documents/griddo2-codex-phase-28-final-close-preview",
+      "preview_cleanup_timing": "after candidate_a is moved to the feature branch and receipt commit B is verified, remove clean preview non-force",
+      "remote_ref": "refs/heads/phase-28/explorer-search-pointer-placement",
+      "feature_worktree": "/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement",
+      "local_branch": "phase-28/explorer-search-pointer-placement",
+      "policy": "guarded non-force only after exact merge proof and primary integration sync"
+    }
+  }
+}
