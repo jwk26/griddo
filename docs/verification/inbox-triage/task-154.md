@@ -131,3 +131,41 @@ including authoritative empty. Query, editor, command, DataStore, persistence,
 schema, and every other Breakdown behavior remain unchanged. Canonical impact
 is `Reflected`; repair cycle 3 may now address all three recorded review
 findings while Task 154 remains `[ ]`.
+
+## Repair cycle 3 and P28-09 stop
+
+Repair cycle 3 implemented the approved read-only `isReady` projection, gated
+direct placement invalidation until the first current authoritative snapshot,
+kept edited result titles distinct from visible source truth and reliability
+copy, and routed successful pre-dispatch target/path invalidation through one
+Staging live announcement plus the source/candidate focus fallback.
+
+The latest focused suite passed 176/176 across five owner test files. Measured
+full gates then passed: `pnpm test` 98 files/1121 tests in 21.72 seconds,
+`pnpm lint` with 0 errors and 11 pre-existing warnings in 6.32 seconds,
+`pnpm typecheck` in 1.62 seconds, and `pnpm build` in 9.53 seconds with seven
+static pages generated and the dynamic Grid route retained. `git diff --check`
+also passed.
+
+Post-gate read-only review confirmed the readiness and edited-title findings
+resolved, but found one Important locked-state regression. Explorer currently
+makes every `stale-placement` strip non-live. When target/path loss occurs in
+Task 153 `pending`, `unknown`, or `reconciling`, the coordinator correctly
+refuses cancellation and Workspace emits no replacement live message, so the
+existing path-change status becomes silent.
+
+The pilot repair budget is now 3/3. `P28-09` requests one additional cycle with
+one bounded hypothesis: make the existing Explorer-to-Workspace invalidation
+callback report whether Workspace actually closed and emitted the Task 154
+replacement announcement; suppress Explorer live semantics only for that
+successful pre-dispatch case, while retaining existing live stale-placement
+semantics when locked cancellation is refused. Add direct regression coverage
+for `pending`, `unknown`, and `reconciling`, then rerun every invalidated gate
+and High-risk review. This needs no owner or product-scope expansion, so
+canonical impact is `None`.
+
+No implementation checkpoint is claimed, no audit row/header is written, and
+browser evidence remains omitted because mounted owner tests establish the
+exact focus/live-region lifecycle; the remaining defect is a React ownership
+branch that browser evidence cannot authorize or repair. Task 154 remains
+`[ ]`.
