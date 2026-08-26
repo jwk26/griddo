@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   KeyboardSensor,
   MouseSensor,
@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { isCalendarDropData } from "@/lib/calendar-dnd";
 import {
   getDataStore,
+  type DataStore,
   type StageCandidateCommand,
   type StageCandidateResult,
   type UnstageCandidateCommand,
@@ -74,6 +75,11 @@ export type TriageDragSnapshot =
 
 export type TriageActiveDragItem = TriageDragSnapshot | null;
 
+export type TriageTargetFeedback = {
+  dropId: string;
+  state: "valid" | "invalid" | "full";
+} | null;
+
 export type TriageDragItem = {
   kind: TriageDragKind;
   id: string;
@@ -108,15 +114,20 @@ export type TriageDropIntent =
     };
 
 export type PendingPlacement = {
+  scratchBitId: string;
   candidateId: string;
   candidateType: "node" | "bit" | null;
+  candidateVersion: number | null;
   candidateLabel: string;
   sourceBreakdownId: string;
+  sourceVersion: number;
   dropId: string;
   parentNodeId: string | null;
   targetNodeLevel: number | null;
   targetTitle: string;
   targetParentPath: string[];
+  expectedAncestorIds: string[];
+  cell: { x: number; y: number } | null;
   isFull: boolean;
   isDirectBreakdown: boolean;
 } | null;
@@ -268,6 +279,77 @@ function isSameTriageDragSnapshot(
   );
 }
 
+function acceptsHierarchyTarget(
+  source: TriageDragSnapshot,
+  target: Extract<TriageDropData, { kind: "triage-hierarchy-drop" }>,
+): boolean {
+  if (source.kind === "triage-staged-node") {
+    return target.targetNodeLevel === null || target.targetNodeLevel < 2;
+  }
+  if (source.kind === "triage-staged-bit") {
+    return target.parentNodeId !== null;
+  }
+  return true;
+}
+
+async function readExpectedAncestorIds(
+  dataStore: DataStore,
+  parentNodeId: string | null,
+): Promise<string[] | null> {
+  const reversed: string[] = [];
+  const visited = new Set<string>();
+  let currentId = parentNodeId;
+
+  while (currentId !== null) {
+    if (visited.has(currentId)) return null;
+    visited.add(currentId);
+    const node = await dataStore.getNode(currentId);
+    if (node === undefined || node.deletedAt !== null) return null;
+    reversed.push(node.id);
+    currentId = node.parentId;
+  }
+
+  return reversed.reverse();
+}
+
+function readRenderedHierarchyTarget(
+  point: { x: number; y: number },
+): Extract<TriageDropData, { kind: "triage-hierarchy-drop" }> | null {
+  if (typeof document.elementsFromPoint !== "function") return null;
+
+  for (const element of document.elementsFromPoint(point.x, point.y)) {
+    const target = element.closest<HTMLElement>(
+      "[data-triage-hierarchy-drop]",
+    );
+    const serialized = target?.dataset.triageHierarchyDrop;
+    if (serialized === undefined) continue;
+    try {
+      const data: unknown = JSON.parse(serialized);
+      if (
+        isTriageDropData(data) &&
+        data.kind === "triage-hierarchy-drop" &&
+        "dropId" in data &&
+        typeof data.dropId === "string" &&
+        "parentNodeId" in data &&
+        (typeof data.parentNodeId === "string" || data.parentNodeId === null) &&
+        "targetNodeLevel" in data &&
+        (typeof data.targetNodeLevel === "number" ||
+          data.targetNodeLevel === null) &&
+        "targetTitle" in data &&
+        typeof data.targetTitle === "string" &&
+        "targetParentPath" in data &&
+        Array.isArray(data.targetParentPath) &&
+        data.targetParentPath.every((segment) => typeof segment === "string")
+      ) {
+        return data;
+      }
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
 const triageDragInvalidationListeners = new Set<
   (snapshot: TriageDragSnapshot) => void
 >();
@@ -317,7 +399,6 @@ export function useTriageDnd(
     operationLock,
     reconcileStageCandidate,
     reconcileUnstageCandidate,
-    removeStagedCandidate,
     stageCandidate,
     unstageCandidate,
   }: {
@@ -329,7 +410,6 @@ export function useTriageDnd(
     reconcileUnstageCandidate: (
       command: UnstageCandidateCommand,
     ) => Promise<CandidateCommandOutcome<UnstageCandidateResult>>;
-    removeStagedCandidate: (scratchId: string, candidateId: string) => void;
     stageCandidate: (
       command: StageCandidateCommand,
     ) => Promise<CandidateCommandOutcome<StageCandidateResult>>;
@@ -343,22 +423,26 @@ export function useTriageDnd(
   activeDragItem: TriageActiveDragItem;
   handleDragStart: (event: DragStartEvent) => void;
   handleDragEnd: (event: DragEndEvent) => void;
+  handleDragCancel: () => void;
   handleDragOver: (event: DragOverEvent) => void;
   pendingPlacement: PendingPlacement;
-  handlePlacementConfirm: (
-    scratchId: string,
-    confirmedType?: "node" | "bit",
-  ) => Promise<void>;
-  handlePlacementCancel: () => void;
+  clearPendingPlacement: () => void;
   overTargetId: string | null;
+  refreshRenderedTarget: (point: { x: number; y: number }) => void;
+  targetFeedback: TriageTargetFeedback;
 } {
   const [activeDragItem, setActiveDragItem] =
     useState<TriageActiveDragItem>(null);
   const [overTargetId, setOverTargetId] = useState<string | null>(null);
   const [pendingPlacement, setPendingPlacement] =
     useState<PendingPlacement>(null);
+  const [targetFeedback, setTargetFeedback] =
+    useState<TriageTargetFeedback>(null);
   const activationSnapshotRef = useRef<TriageDragSnapshot | null>(null);
   const dragCancelledRef = useRef(false);
+  const pointerRef = useRef<{ x: number; y: number } | null>(null);
+  const feedbackRequestRef = useRef(0);
+  const feedbackIdentityRef = useRef<string | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -372,11 +456,83 @@ export function useTriageDnd(
   const handleDragStart = (event: DragStartEvent) => {
     const snapshot = readTriageDragItem(event.active.data.current);
     const isCurrentScratch =
-      !operationLock.isLocked() && snapshot?.scratchId === selectedScratchId;
+      pendingPlacement === null &&
+      !operationLock.isLocked() &&
+      snapshot?.scratchId === selectedScratchId;
     activationSnapshotRef.current = isCurrentScratch ? snapshot : null;
     dragCancelledRef.current = false;
+    feedbackRequestRef.current += 1;
+    feedbackIdentityRef.current = null;
+    setOverTargetId(null);
+    setTargetFeedback(null);
     setActiveDragItem(isCurrentScratch ? snapshot : null);
   };
+
+  const clearDragTarget = useCallback(() => {
+    feedbackRequestRef.current += 1;
+    feedbackIdentityRef.current = null;
+    setOverTargetId(null);
+    setTargetFeedback(null);
+  }, []);
+
+  const updateRenderedTarget = useCallback((point: { x: number; y: number }) => {
+    const source = activationSnapshotRef.current;
+    if (
+      source === null ||
+      dragCancelledRef.current ||
+      pointerRef.current === null
+    ) {
+      return;
+    }
+    const target = readRenderedHierarchyTarget(point);
+    if (target === null) {
+      clearDragTarget();
+      return;
+    }
+
+    setOverTargetId(target.dropId);
+    const targetIdentity = JSON.stringify([
+      target.dropId,
+      target.parentNodeId,
+      target.targetNodeLevel,
+      target.targetTitle,
+      target.targetParentPath,
+    ]);
+    if (feedbackIdentityRef.current === targetIdentity) return;
+    feedbackIdentityRef.current = targetIdentity;
+    if (!acceptsHierarchyTarget(source, target)) {
+      feedbackRequestRef.current += 1;
+      setTargetFeedback({ dropId: target.dropId, state: "invalid" });
+      return;
+    }
+
+    const request = feedbackRequestRef.current + 1;
+    feedbackRequestRef.current = request;
+    setTargetFeedback(null);
+    void getDataStore()
+      .then((dataStore) => dataStore.getGridOccupancy(target.parentNodeId))
+      .then((occupancy) => {
+        if (
+          feedbackRequestRef.current !== request ||
+          activationSnapshotRef.current !== source
+        ) {
+          return;
+        }
+        const position = findNearestEmptyCell(
+          occupancy,
+          0,
+          0,
+          getStaticBlockedCells(),
+        );
+        setTargetFeedback({
+          dropId: target.dropId,
+          state: position === null ? "full" : "valid",
+        });
+      })
+      .catch(() => {
+        if (feedbackRequestRef.current === request) clearDragTarget();
+      });
+  }, [clearDragTarget]);
 
   const finishStage = async (command: StageCandidateCommand): Promise<void> => {
     let outcome = await stageCandidate(command);
@@ -410,7 +566,8 @@ export function useTriageDnd(
       dragCancelledRef.current = true;
       activationSnapshotRef.current = null;
       setActiveDragItem(null);
-      setOverTargetId(null);
+      pointerRef.current = null;
+      clearDragTarget();
     };
 
     document.addEventListener("keydown", cancelOnEscape);
@@ -424,6 +581,8 @@ export function useTriageDnd(
       }
 
       dragCancelledRef.current = true;
+      pointerRef.current = null;
+      clearDragTarget();
       setActiveDragItem({
         ...activationSnapshot,
         integrity: "invalidated",
@@ -431,24 +590,87 @@ export function useTriageDnd(
     };
     triageDragInvalidationListeners.add(cancelOnInvalidation);
 
+    const trackMouse = (event: MouseEvent) => {
+      const point = { x: event.clientX, y: event.clientY };
+      pointerRef.current = point;
+      if (activationSnapshotRef.current !== null) {
+        updateRenderedTarget(point);
+      }
+    };
+    const trackTouch = (event: TouchEvent) => {
+      const touch = event.touches[0] ?? event.changedTouches[0];
+      if (touch === undefined) return;
+      const point = { x: touch.clientX, y: touch.clientY };
+      pointerRef.current = point;
+      if (activationSnapshotRef.current !== null) {
+        updateRenderedTarget(point);
+      }
+    };
+    const clearPointerTarget = () => {
+      pointerRef.current = null;
+      if (activationSnapshotRef.current !== null) clearDragTarget();
+    };
+    document.addEventListener("mousedown", trackMouse);
+    document.addEventListener("mousemove", trackMouse);
+    document.addEventListener("mouseup", trackMouse);
+    document.addEventListener("mouseleave", clearPointerTarget);
+    document.addEventListener("touchstart", trackTouch, { passive: true });
+    document.addEventListener("touchmove", trackTouch, { passive: true });
+    document.addEventListener("touchend", trackTouch);
+    document.addEventListener("touchcancel", clearPointerTarget);
+    window.addEventListener("blur", clearPointerTarget);
+
     return () => {
       document.removeEventListener("keydown", cancelOnEscape);
+      document.removeEventListener("mousedown", trackMouse);
+      document.removeEventListener("mousemove", trackMouse);
+      document.removeEventListener("mouseup", trackMouse);
+      document.removeEventListener("mouseleave", clearPointerTarget);
+      document.removeEventListener("touchstart", trackTouch);
+      document.removeEventListener("touchmove", trackTouch);
+      document.removeEventListener("touchend", trackTouch);
+      document.removeEventListener("touchcancel", clearPointerTarget);
+      window.removeEventListener("blur", clearPointerTarget);
       triageDragInvalidationListeners.delete(cancelOnInvalidation);
     };
-  }, []);
+  }, [clearDragTarget, updateRenderedTarget]);
 
   const handleDragOver = (event: DragOverEvent) => {
+    if (pointerRef.current !== null) {
+      updateRenderedTarget(pointerRef.current);
+      return;
+    }
     setOverTargetId(event.over?.id ? String(event.over.id) : null);
+  };
+
+  const handleDragCancel = () => {
+    dragCancelledRef.current = true;
+    activationSnapshotRef.current = null;
+    pointerRef.current = null;
+    setActiveDragItem(null);
+    clearDragTarget();
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const currentDragItem = readTriageDragItem(event.active.data.current);
     const activationSnapshot = activationSnapshotRef.current;
-    const dropData = event.over?.data.current;
+    const eventDropData = event.over?.data.current;
+    const renderedTarget =
+      pointerRef.current === null
+        ? null
+        : readRenderedHierarchyTarget(pointerRef.current);
+    const dropData =
+      renderedTarget ??
+      (pointerRef.current !== null &&
+      isTriageDropData(eventDropData) &&
+      eventDropData.kind === "triage-hierarchy-drop"
+        ? null
+        : eventDropData);
 
     activationSnapshotRef.current = null;
+    pointerRef.current = null;
     setActiveDragItem(null);
-    setOverTargetId(null);
+    clearDragTarget();
 
     if (
       dragCancelledRef.current ||
@@ -500,17 +722,27 @@ export function useTriageDnd(
         0,
         getStaticBlockedCells(),
       );
+      const expectedAncestorIds = await readExpectedAncestorIds(
+        dataStore,
+        target.parentNodeId,
+      );
+      if (expectedAncestorIds === null || operationLock.isLocked()) return;
 
       setPendingPlacement({
+        scratchBitId: dragItem.scratchId,
         candidateId: dragItem.id,
         candidateType: null,
+        candidateVersion: null,
         candidateLabel: dragItem.label,
         sourceBreakdownId: dragItem.id,
+        sourceVersion: dragItem.sourceVersion,
         dropId: target.dropId,
         parentNodeId: target.parentNodeId,
         targetNodeLevel: target.targetNodeLevel,
         targetTitle: target.targetTitle,
         targetParentPath: target.targetParentPath,
+        expectedAncestorIds,
+        cell: position,
         isFull: position === null,
         isDirectBreakdown: true,
       });
@@ -567,113 +799,30 @@ export function useTriageDnd(
       0,
       getStaticBlockedCells(),
     );
+    const expectedAncestorIds = await readExpectedAncestorIds(
+      dataStore,
+      target.parentNodeId,
+    );
+    if (expectedAncestorIds === null || operationLock.isLocked()) return;
 
     setPendingPlacement({
+      scratchBitId: dragItem.scratchId,
       candidateId: dragItem.id,
       candidateType: dragItem.kind === "triage-staged-node" ? "node" : "bit",
+      candidateVersion: dragItem.candidateVersion,
       candidateLabel: dragItem.label,
       sourceBreakdownId: dragItem.sourceBreakdownId,
+      sourceVersion: dragItem.sourceVersion,
       dropId: target.dropId,
       parentNodeId: target.parentNodeId,
       targetNodeLevel: target.targetNodeLevel,
       targetTitle: target.targetTitle,
       targetParentPath: target.targetParentPath,
+      expectedAncestorIds,
+      cell: position,
       isFull: position === null,
       isDirectBreakdown: false,
     });
-  };
-
-  const handlePlacementConfirm = async (
-    scratchId: string,
-    confirmedType?: "node" | "bit",
-  ) => {
-    if (pendingPlacement === null) {
-      return;
-    }
-
-    const placement = pendingPlacement;
-    const effectiveType = placement.candidateType ?? confirmedType;
-
-    if (effectiveType === undefined) {
-      return;
-    }
-
-    try {
-      if (placement.isFull) {
-        return;
-      }
-
-      const dataStore = await getDataStore();
-      const occupancy = await dataStore.getGridOccupancy(
-        placement.parentNodeId,
-      );
-      const position = findNearestEmptyCell(
-        occupancy,
-        0,
-        0,
-        getStaticBlockedCells(),
-      );
-
-      if (position === null) {
-        return;
-      }
-
-      if (
-        effectiveType === "node" &&
-        placement.targetNodeLevel !== null &&
-        placement.targetNodeLevel >= 2
-      ) {
-        return;
-      }
-
-      if (effectiveType === "node") {
-        await dataStore.createNode({
-          title: placement.candidateLabel,
-          parentId: placement.parentNodeId,
-          level:
-            placement.targetNodeLevel === null
-              ? 0
-              : placement.targetNodeLevel + 1,
-          x: position.x,
-          y: position.y,
-          color: "hsl(210, 80%, 55%)",
-          icon: "Folder",
-          deadline: null,
-          deadlineAllDay: false,
-        });
-      }
-
-      if (effectiveType === "bit") {
-        if (placement.parentNodeId === null) {
-          return;
-        }
-
-        await dataStore.createBit({
-          title: placement.candidateLabel,
-          parentId: placement.parentNodeId,
-          x: position.x,
-          y: position.y,
-          description: "",
-          icon: "ListTodo",
-          deadline: null,
-          deadlineAllDay: false,
-          priority: null,
-        });
-      }
-
-      await dataStore.markScratchBreakdownConsumed(
-        placement.sourceBreakdownId,
-      );
-      if (!placement.isDirectBreakdown) {
-        removeStagedCandidate(scratchId, placement.candidateId);
-      }
-    } finally {
-      setPendingPlacement(null);
-    }
-  };
-
-  const handlePlacementCancel = () => {
-    setPendingPlacement(null);
   };
 
   return {
@@ -682,11 +831,13 @@ export function useTriageDnd(
     activeDragItem,
     handleDragStart,
     handleDragEnd,
+    handleDragCancel,
     handleDragOver,
     pendingPlacement,
-    handlePlacementConfirm,
-    handlePlacementCancel,
+    clearPendingPlacement: () => setPendingPlacement(null),
     overTargetId,
+    refreshRenderedTarget: updateRenderedTarget,
+    targetFeedback,
   };
 }
 

@@ -205,6 +205,7 @@ describe("useScratchBreakdowns", () => {
     const { result } = renderHook(() => useScratchBreakdowns(null));
 
     expect(result.current.breakdowns).toEqual([]);
+    expect(result.current.isReady).toBe(false);
     expect(result.current.isArchiveEligible).toBe(false);
     expect(result.current.editor).toEqual(
       expect.objectContaining({
@@ -224,6 +225,20 @@ describe("useScratchBreakdowns", () => {
     );
     expect(liveQueryMock).not.toHaveBeenCalled();
     expect(getDataStoreMock).not.toHaveBeenCalled();
+  });
+
+  it("distinguishes the first current snapshot from an authoritative empty snapshot", () => {
+    const { result } = renderHook(() => useScratchBreakdowns("scratch-1"));
+
+    expect(result.current.breakdowns).toEqual([]);
+    expect(result.current.isReady).toBe(false);
+
+    emitBreakdowns([], false, "scratch-other");
+    expect(result.current.isReady).toBe(false);
+
+    emitBreakdowns([], false, "scratch-1");
+    expect(result.current.breakdowns).toEqual([]);
+    expect(result.current.isReady).toBe(true);
   });
 
   it("subscribes to scratch breakdowns for the selected scratch bit", async () => {

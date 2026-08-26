@@ -135,6 +135,44 @@ export interface InboxTriageCopy {
       readonly retryAdd: string;
     };
   };
+  readonly placementReliability: {
+    readonly pending: string;
+    readonly unknown: string;
+    readonly reconciling: string;
+    readonly notApplied: string;
+    readonly staleSource: string;
+    readonly staleTarget: string;
+    readonly success: string;
+    readonly actions: {
+      readonly checkAgain: string;
+      readonly retry: string;
+      readonly cancel: string;
+    };
+  };
+  readonly placementTitleLimits: {
+    readonly resultTitle: {
+      readonly eyebrow: string;
+      readonly heading: string;
+      readonly explanation: string;
+      readonly label: string;
+      readonly counter: string;
+      readonly emptyError: string;
+      readonly overLimitError: string;
+      readonly actions: { readonly continue: string; readonly cancel: string };
+    };
+    readonly direct: {
+      readonly eyebrow: string;
+      readonly heading: string;
+      readonly nodeReason: string;
+      readonly bitReason: string;
+      readonly neitherAvailable: string;
+      readonly actions: {
+        readonly node: string;
+        readonly bit: string;
+        readonly cancel: string;
+      };
+    };
+  };
   readonly breakdownSuccess: {
     readonly add: string;
     readonly unstage: string;
@@ -192,6 +230,37 @@ export interface InboxTriageCopy {
       readonly showBits: string;
       readonly dismissAlert: string;
     };
+  };
+  readonly explorerStatus: {
+    readonly arrival: { readonly one: string; readonly many: string };
+    readonly path: {
+      readonly unavailable: string;
+      readonly archived: string;
+      readonly moved: string;
+      readonly invalid: string;
+      readonly stalePlacement: string;
+      readonly selectionCleared: string;
+    };
+    readonly actions: {
+      readonly showNewIn: string;
+      readonly dismiss: string;
+    };
+  };
+  readonly explorerSearch: {
+    readonly entry: string;
+    readonly placeholder: string;
+    readonly closeAccessibleName: string;
+    readonly status: {
+      readonly preSearch: string;
+      readonly loading: string;
+      readonly refreshing: string;
+      readonly noResults: string;
+      readonly error: string;
+      readonly staleSelection: string;
+      readonly revealed: string;
+    };
+    readonly duplicate: string;
+    readonly actions: { readonly retry: string };
   };
   readonly lifecycleReasons: {
     readonly externalScratchRemoval: InboxTriageCopyValue;
@@ -260,8 +329,8 @@ export const INBOX_TRIAGE_COPY = {
   validation: {
     scratchTitleRequired: "Enter a Scratch title.",
     breakdownContentRequired: "Enter breakdown content.",
-    resultTitleRequired: UNAVAILABLE,
-    resultTitleTooLong: UNAVAILABLE,
+    resultTitleRequired: "Enter a result title.",
+    resultTitleTooLong: "Use {limit} characters or fewer.",
   },
   inlineEditor: {
     status: {
@@ -354,6 +423,46 @@ export const INBOX_TRIAGE_COPY = {
       retryAdd: "Retry Add",
     },
   },
+  placementReliability: {
+    pending: "Placing “{title}” in {destination}…",
+    unknown: "We couldn’t confirm whether “{title}” was placed.",
+    reconciling: "Checking whether “{title}” was placed…",
+    notApplied: "“{title}” wasn’t placed. Your source is unchanged.",
+    staleSource:
+      "The source changed. Nothing was placed. Cancel and drag it again.",
+    staleTarget:
+      "The destination changed. Nothing was placed. Cancel and drag to the current destination.",
+    success: "Placed “{title}” in {destination}.",
+    actions: {
+      checkAgain: "Check again",
+      retry: "Retry",
+      cancel: "Cancel",
+    },
+  },
+  placementTitleLimits: {
+    resultTitle: {
+      eyebrow: "RESULT TITLE",
+      heading: "Name this {type}",
+      explanation:
+        "The source is {count} characters. A {type} title can be up to {limit}. The source won’t change.",
+      label: "Result title",
+      counter: "{count} / {limit}",
+      emptyError: "Enter a result title.",
+      overLimitError: "Use {limit} characters or fewer.",
+      actions: { continue: "Continue", cancel: "Cancel" },
+    },
+    direct: {
+      eyebrow: "DIRECT PLACEMENT",
+      heading: "Choose a result type",
+      nodeReason:
+        "Node titles can be up to 100 characters. This source has {count}.",
+      bitReason:
+        "Bit titles can be up to 200 characters. This source has {count}.",
+      neitherAvailable:
+        "This source is too long for direct placement. Cancel and stage it first.",
+      actions: { node: "Node", bit: "Bit", cancel: "Cancel" },
+    },
+  },
   breakdownSuccess: {
     add: "Added.",
     unstage: "Returned to Breakdown.",
@@ -419,12 +528,48 @@ export const INBOX_TRIAGE_COPY = {
       dismissAlert: "Dismiss Staging alert",
     },
   },
+  explorerStatus: {
+    arrival: { one: "1 new", many: "{count} new" },
+    path: {
+      unavailable:
+        "“{title}” is no longer available. Returned to {destination}.",
+      archived: "“{title}” was archived. Returned to {destination}.",
+      moved: "“{title}” moved elsewhere. Returned to {destination}.",
+      invalid:
+        "This path is no longer available. Returned to {destination}.",
+      stalePlacement: "Placement closed because this Explorer path changed.",
+      selectionCleared:
+        "“{title}” is no longer available. Selection cleared.",
+    },
+    actions: {
+      showNewIn: "Show new in {level}",
+      dismiss: "Dismiss",
+    },
+  },
+  explorerSearch: {
+    entry: "Search Explorer",
+    placeholder: "Search all Nodes and Bits",
+    closeAccessibleName: "Clear and close Explorer search",
+    status: {
+      preSearch: "Search the entire Grid Explorer.",
+      loading: "Searching Grid Explorer…",
+      refreshing: "Updating results…",
+      noResults: "No results for “{query}”.",
+      error: "Search couldn’t be updated.",
+      staleSelection:
+        "That item is no longer available. Results were updated.",
+      revealed: "Revealed “{title}” in {breadcrumb}.",
+    },
+    duplicate: "Duplicate {index} of {count}",
+    actions: { retry: "Try again" },
+  },
   lifecycleReasons: {
     externalScratchRemoval: UNAVAILABLE,
     poolLifecycleUpdate: "Pool updated elsewhere.",
     stagingSourceUnavailable: "This item is no longer available.",
-    explorerPathFallback: UNAVAILABLE,
-    placementStale: UNAVAILABLE,
+    explorerPathFallback:
+      "This path is no longer available. Returned to {destination}.",
+    placementStale: "Placement closed because this Explorer path changed.",
     undoUnavailable: UNAVAILABLE,
     completionWithdrawal: UNAVAILABLE,
     archiveRecovery: UNAVAILABLE,
@@ -438,7 +583,7 @@ export const INBOX_TRIAGE_COPY = {
     stagingActivity: "Staging updated.",
     success: UNAVAILABLE,
     explorerActivity: UNAVAILABLE,
-    explorerSearch: UNAVAILABLE,
+    explorerSearch: "Search the entire Grid Explorer.",
     placement: UNAVAILABLE,
     resultTitle: UNAVAILABLE,
     newlyPlacedUndo: UNAVAILABLE,
@@ -457,10 +602,6 @@ export const INBOX_TRIAGE_COPY = {
   },
   receiptDependent: {
     148: UNAVAILABLE,
-    150: UNAVAILABLE,
-    151: UNAVAILABLE,
-    153: UNAVAILABLE,
-    154: UNAVAILABLE,
     157: UNAVAILABLE,
     160: UNAVAILABLE,
     162: UNAVAILABLE,

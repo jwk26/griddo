@@ -54,6 +54,7 @@ vi.mock("@/hooks/use-dnd", () => ({
     activeDragItem: null,
     overTargetId: null,
     pendingPlacement: null,
+    localPlacementResult: null,
     handleDragStart: vi.fn(),
     handleDragEnd: vi.fn(),
     handleDragOver: vi.fn(),

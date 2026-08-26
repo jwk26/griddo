@@ -7,14 +7,15 @@
 > This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
 > its supersession rules. It accepts no phase, task, implementation, branch,
 > publication, or completion state.
-> **Task markers:** Tasks 101–148 were explicitly accepted. Phases 23–27 are
-> completed and archived. Tasks 149–165 remain open (`[ ]`) and may be
+> **Task markers:** Tasks 101–154 were explicitly accepted. Phases 23–28 are
+> completed and archived. Tasks 155–165 remain open (`[ ]`) and may be
 > checked only after their own observable acceptance and verification evidence
 > is explicitly accepted by the user.
-> **Execution lifecycle:** Phases 23–27 are complete. The four open phases are
-> Phases 28–31 with 17 open Tasks 149–165; Phase 28 requires its own approved
-> kickoff. This planning receipt alone does not authorize later implementation,
-> Git lifecycle work, or publication.
+> **Execution lifecycle:** Phases 23–28 are complete. The three open phases are
+> Phases 29–31 with 11 open Tasks 155–165. Phase 29 requires its own Gate C,
+> fresh branch/worktree, and equal-weight product and workflow-audit tracks.
+> This planning receipt alone does not authorize later implementation, Git
+> lifecycle work, or publication.
 
 ## Goal
 
@@ -91,12 +92,12 @@ The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were exclu
 | Area | Current status | Smallest blocker / next condition |
 |---|---|---|
 | Document approval | `APPROVED` | The approval receipt above remains the planning authority. |
-| Execution lifecycle | Phases 23–27 complete and archived | Four open phases (28–31) remain; each requires its own approved lifecycle gate and exact branch/worktree authority. |
+| Execution lifecycle | Phases 23–28 complete and archived | Three open phases (29–31) remain; each requires its own approved lifecycle gate and exact branch/worktree authority. Phase 29 also requires its equal-weight audit track. |
 | Data foundations | `COMPLETED` | Tasks 101–105A and authoritative command Tasks 120–126 are accepted and recorded in their phase archives. |
 | Decision prerequisites | `COMPLETED` | Tasks 106–119 and all fourteen DP receipts are accepted, reflected, and recorded in the Phase 24 archive. |
-| Headless/base UI | Phase 27 interaction owners completed | Tasks 127–148 are accepted and archived; Tasks 149, 152, 155–156, 159, and 161 follow only their named dependencies and lifecycle gates. |
+| Headless/base UI | Phase 28 Explorer and placement owners completed | Tasks 127–154 are accepted and archived; Tasks 155–156, 159, and 161 follow only their named dependencies and lifecycle gates. |
 | VQ realization | `BLOCKED_PENDING_USER_DECISIONS` | Each realization task resumes only from its exact DP receipt. |
-| Full close | Not ready | Tasks 136–164 complete, then Task 165 passes on top of the archived Phase 23–26 foundations. |
+| Full close | Not ready | Tasks 155–164 complete, then Task 165 passes on top of the archived Phase 23–28 foundations. |
 
 ## Dependency Graph
 
@@ -135,8 +136,8 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | Phase 25 | Completed | [Eleven authoritative commands plus Archive recovery](execution-plan/archive/phase-25.md) | 120–126 | Accepted and archived; downstream tasks consume the completed command foundation by their exact dependencies. |
 | Phase 26 | Completed | [Lifetime, copy, and source-backed base-surface owners](execution-plan/archive/phase-26.md) | 127–135 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
 | Phase 27 | Completed | [Breakdown, Pool, and Staging headless adapters and exact realizations](execution-plan/archive/phase-27.md) | 136–148 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
-| Phase 28 | Proposed | Explorer status/search and pointer placement | 149–154 | Search, status, reliability, and title slices have distinct receipt edges. |
-| Phase 29 | Proposed | Mounted-page Newly Placed, ordinary Undo, and search-result Undo integration | 155–158 | Ordinary-card Undo does not depend on `VQ-07`. |
+| Phase 28 | Completed | [Explorer status/search and pointer placement](execution-plan/archive/phase-28.md) | 149–154 | Accepted and archived; the terminal workflow measurement baseline transfers comparative audit to Phase 29. |
+| Phase 29 | Proposed | Equal-weight product Newly/Undo implementation and unchanged-candidate comparative workflow audit | 155–158 | Requires its own Gate C and fresh branch/worktree; every implementation checkpoint needs product evidence plus its committed audit row. |
 | Phase 30 | Proposed | Completion and Archive coordinator/recovery | 159–162 | Completion foundation does not depend on `VQ-03`/`VQ-04` realization. |
 | Phase 31 | Proposed | Route integration, nine-recipe conformance, full gate | 163–165 | Requires all named predecessors and task-local evidence. |
 | Phase 32 | Reserved | Retired-number reservation | none | No tasks may be assigned. |
@@ -230,7 +231,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `VQ-03` | 108 / `DP-VQ03` | 140 departure confirmation realization; Task 139 remains headless |
 | `VQ-04` | 109 / `DP-VQ04` | 138 inline-editor realization; Task 137 remains headless |
 | `VQ-05` | 110 / `DP-VQ05` | 143 Add/Delete reliability realization |
-| `VQ-06` | 111–113 / three receipts below | 144 Pool, 147 Staging, and 150 Explorer realizations independently |
+| `VQ-06` | 111–113 / three receipts below | 144 Pool and 147 Staging independently; 150 Explorer except selected-Bit disappearance; 151 selected-Bit disappearance slice only in its existing reveal owner |
 | `VQ-07` | 114 / `DP-VQ07` | 151 search result body and 158 search-result Undo integration; ordinary Undo 156 remains independent |
 | `VQ-08` | 115 / `DP-VQ08` | 153 placement reliability realization |
 | `VQ-09` | 116 / `DP-VQ09` | 154 Result Title/direct-limit realization |
@@ -249,7 +250,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `DP-VQ05` | `VQ-05` | 110 | 143 only | Choice A Add-region/source-row attached reliability system accepted on 2026-08-09 at `docs/issues/Issues_Phase_24.Task_110.dp-vq05.json`; Task 143 only is released. |
 | `DP-VQ06-POOL` | `VQ-06` | 111 | 144 only | Choice A fixed Pool-local status band accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_111.dp-vq06-pool.json`; Task 144 only is released. |
 | `DP-VQ06-STAGING` | `VQ-06` | 112 | 147 only | Choice A candidate-attached/subsection-indicator/Staging-alert status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_112.dp-vq06-staging.json`; Task 147 only is released. |
-| `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 only | Choice A affected-column remote/path status family accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`; Task 150 only is released. |
+| `DP-VQ06-EXPLORER` | `VQ-06` | 113 | 150 except selected-Bit disappearance; 151 selected-Bit disappearance slice only | Choice A affected-column remote/path status family was accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_113.dp-vq06-explorer.json`, historically releasing Task 150 only. The user-approved `P28-04` later-execution correction on 2026-08-24 supersedes only the current selected-Bit disappearance edge to Task 151's existing reveal owner; all other Explorer realization remains Task 150. |
 | `DP-VQ07` | `VQ-07` | 114 | 151 and search-only integration 158 | Choice A dedicated fixed-input/state-line/flat-result replacement body accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_114.dp-vq07.json`; Task 151 and search-only Task 158 are released subject to their own prerequisites. |
 | `DP-VQ08` | `VQ-08` | 115 | 153 only | Choice A fixed reliability rail accepted on 2026-08-10 at `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`; Task 153 only is released. |
 | `DP-VQ09` | `VQ-09` | 116 | 154 only | Choice A compact Result Title/direct-limit steps accepted on 2026-08-11 at `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`; Task 154 only is released. |
@@ -777,7 +778,7 @@ Explorer choice, Task 150 work, product code, publication, or phase close.
 
 **Dependencies:** user decision only; no code prerequisite and no other DP task.
 
-**Decision owner:** User. **Receipt:** `DP-VQ06-EXPLORER`. **Exact edge:** Task 150 only. **Resume:** accepted Explorer-specific receipt.
+**Decision owner:** User. **Receipt:** `DP-VQ06-EXPLORER`. **Historical exact edge accepted on 2026-08-10:** Task 150 only. **Current execution edge after the user-approved `P28-04` correction on 2026-08-24:** Task 150 except selected-Bit disappearance; Task 151 owns only selected-Bit disappearance in its existing reveal owner. **Resume:** accepted Explorer-specific receipt plus the reflected `P28-04` correction.
 
 **Authority / flows:** Explorer slice of `VQ-06`, `UF-17`, `NEG-21`.
 
@@ -799,21 +800,32 @@ disappearance clears only that selection/reveal and retains the parent path.
 The strip's only action is `Dismiss`; it and each per-column count use the
 receipt's exact non-timed lifetime. All transitions and reduced motion are
 identically immediate with no status animation. The receipt owns the eight
-Explorer theme mappings and releases Task 150 only after this Task's user
-checkpoint; Pool/Staging, path/anchoring mechanics, placement, product code,
-and the separate `VQ-07` search body remain unchanged.
+Explorer theme mappings and, as accepted on 2026-08-10, originally released
+Task 150 only after this Task's user checkpoint; Pool/Staging, path/anchoring
+mechanics, placement, product code, and the separate `VQ-07` search body
+remained unchanged.
 
 **Checkpoint acceptance (2026-08-10):** the user accepted the complete Choice
 A affected-column remote-arrival count and path-status family, exact
 copy/action/fallback/focus/lifetime matrix, stable-ID/viewport-offset
 preservation, static reduced-motion parity, eight-theme mapping, and
-Explorer-only/Task 150-only boundary. This acceptance releases Task 150 only.
-It does not start Task 114, prepare another Gate C packet, implement product
-code, publish, or close the phase.
+Explorer-only/Task 150-only boundary. At that 2026-08-10 acceptance, it
+released Task 150 only. It did not start Task 114, prepare another Gate C
+packet, implement product code, publish, or close the phase.
+
+**Later execution-edge correction — `P28-04` (2026-08-24):** the historical
+acceptance and JSON receipt above remain unchanged. The user's targeted
+correction supersedes only the current selected-Bit disappearance realization
+edge to Task 151's existing reveal production owner. Task 150 retains every
+other `DP-VQ06-EXPLORER` realization; Task 151 receives no other VQ-06 state,
+and this correction starts neither Task 150 nor Task 151.
 
 **Observable acceptance:** remote-path statuses can be implemented independently without Search/Pool/Staging fallback or focus theft.
 
-**Verification:** `git diff --check`; verify Explorer-only scope and only Task 150 release.
+**Verification:** `git diff --check`; at the 2026-08-10 checkpoint, verify
+Explorer-only scope and the historical Task-150-only release. Current execution
+verification follows the `P28-04` split edge recorded above: Task 150 except
+selected-Bit disappearance, with only that slice realized by Task 151.
 
 **Commit contract:** the three named documents and `DP-VQ06-EXPLORER` receipt only; `docs(triage): record DP-VQ06 Explorer`.
 
@@ -1659,7 +1671,12 @@ and no-queue/no-replay contracts do not change.
 
 ## Phase 28 — Explorer Search And Pointer Placement
 
-### Task 149: [ ] Implement release-time targets and valid-column edge auto-scroll
+### Task 149: [x] Implement release-time targets and valid-column edge auto-scroll
+
+**Acceptance:** Accepted on 2026-08-24. Implementation checkpoint
+`1830cc37ff913bd1d4ad4b62ddd9f7b2319b4dca`; evidence-alignment checkpoint
+`80bd7041e9db2849d9eab1d9f8d5d08c38e84549`; WF28-02 product-evidence
+fingerprint `a2da7ab6f49ba50d9fba9d3ea5e3fb568990e05f264891844e2534e2e00dfdd8`.
 
 **Files and actions:** modify existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, and `src/components/triage/triage-workspace.tsx` and `.test.tsx`. Disable DndContext/library auto-scroll for triage; compute valid/invalid/full target feedback; progressively scroll only the currently valid Explorer column near its top/bottom edge without jumps/path changes; continuously hit-test pointer-under geometry and use the final rendered release target; stop on exit/end; never scroll invalid columns, shell, or page. A full target remains a selected release target for Task 152 rather than being discarded.
 
@@ -1675,9 +1692,15 @@ and no-queue/no-replay contracts do not change.
 
 **Commit contract:** existing DnD target/auto-scroll mechanics, tests, and Task 149 evidence only; `feat(triage): add explorer drag targeting`.
 
-### Task 150: [ ] Render `DP-VQ06-EXPLORER` remote/path statuses
+### Task 150: [x] Render `DP-VQ06-EXPLORER` remote/path statuses
 
-**Files and actions:** after `DP-VQ06-EXPLORER`, modify `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate Explorer-only wording and render remote path change, invalid suffix fallback, selected-item disappearance, count/indicator, alert/dismissal, action/focus, reduced-motion, and theme states while preserving stable-ID/offset anchoring. Do not borrow Search, Pool, or Staging realization.
+**Acceptance:** Accepted on 2026-08-26. Implementation checkpoint
+`14ade3c4eaa6e55a878addcc1367843f032098c2`; accepted `src` tree
+`73a1d973263f92d97580927063f27651482d18d3`.
+
+**P28-04 canonical amendment:** on 2026-08-24 the user approved the minimum actual-owner expansion and moved only the selected-Bit disappearance realization to Task 151's existing reveal production owner. The accepted `DP-VQ06-EXPLORER` copy, action, focus, lifetime, fallback, anchoring, and visual semantics do not change; its historical receipt remains unchanged and this active plan plus the Phase 28 ledger durably record the release-edge correction.
+
+**Files and actions:** after `DP-VQ06-EXPLORER`, create `src/hooks/use-explorer-remote-status.ts` and `.test.tsx` as the single mounted-page authoritative reactive read/provenance owner. It must use the existing `getAllActiveNodes()`/`getAllActiveBits()` APIs behind the hook boundary to retain the authoritative whole-active-tree stable-ID-to-parent baseline needed to classify appearances in currently open Explorer columns, and existing `getNode()`/`getBit()` reads for watched path identities to distinguish deleted, archived, moved, and unreachable records. It excludes the initial authoritative snapshot; classifies an existing stable ID changing parents as a move rather than a new arrival; and excludes only exact stable result identities supplied by successful current-session local placement. Modify existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts` so `handlePlacementConfirm` captures the `Node` or `Bit` returned by the existing `createNode`/`createBit` call and exposes only its stable result identity after creation; modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` only to project that identity from the existing placement producer into Explorer. This provenance handoff changes no placement command, ordering, lock, confirmation, mutation, focus, or failure semantics. Modify `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/stores/triage-store.ts` and `.test.ts`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate Explorer-only wording and render remote path change, invalid suffix fallback, count/indicator, alert/dismissal, action/focus, reduced-motion, and theme states while preserving stable-ID/offset anchoring. The evidence-confirmed fourth repair cycle may modify only the manual `useTriageDnd` compatibility mock in `src/components/layout/grid-runtime.test.tsx` to supply `localPlacementResult: null`; this has no canonical product impact and adds no production owner. Task 150 creates no Bit selection/reveal producer and does not realize selected-Bit disappearance. Do not change DataStore APIs, IndexedDB, schema, persistence, timestamps, Search, Pool, Staging, or placement product behavior, and do not add another provenance owner.
 
 **Dependencies:** Tasks 113, 128, and 134.
 
@@ -1685,29 +1708,36 @@ and no-queue/no-replay contracts do not change.
 
 **Recipe:** [`Grid Explorer`](recipes/inbox-triage-grid-explorer-visual-recipe.md).
 
-**Observable acceptance:** remote change never substitutes a sibling/ghost; nearest valid ancestor/focus/status/dismissal match receipt and never steal focus; full labels remain intact.
+**Observable acceptance:** initial hydration, exact local placement results, and existing-item parent moves never increment remote-arrival counts; remote insertion and deleted/archived/moved/unreachable path changes are authoritatively distinct; remote change never substitutes a sibling/ghost; nearest valid ancestor/focus/status/dismissal match receipt and never steal focus; full labels remain intact. Selected-Bit disappearance is not observable in Task 150 and remains unimplemented until Task 151.
 
-**Verification:** focused Explorer/store/copy tests; run remote insert/delete/move, selected disappearance, fallback, dismiss/re-entry, focus, reduced motion, and all themes, recording `docs/verification/inbox-triage/task-150.md`; `pnpm typecheck`.
+**Verification:** focused provenance-hook, DnD, Workspace, Explorer, store, copy, and GridRuntime compatibility tests; prove initial hydration, remote insert, exact local placement exclusion, existing stable-ID parent move exclusion, deleted/archived/moved/unreachable classification, fallback, dismiss/re-entry, focus, reduced motion, all themes, and the manual DnD mock's null local-result contract, recording `docs/verification/inbox-triage/task-150.md`; `pnpm typecheck`.
 
-**Commit contract:** DP-VQ06-EXPLORER copy/realization, tests, styles, and Task 150 evidence only; `feat(triage): render explorer remote states`.
+**Commit contract:** DP-VQ06-EXPLORER provenance projection, local-result identity handoff, non-selected-Bit copy/realization, tests, styles, the evidence-confirmed GridRuntime compatibility mock, and Task 150 evidence only; `feat(triage): render explorer remote states`.
 
-### Task 151: [ ] Render `DP-VQ07` dedicated Explorer search body and close semantics
+### Task 151: [x] Render `DP-VQ07` dedicated Explorer search body and close semantics
 
-**Files and actions:** after `DP-VQ07`, create `src/components/triage/grid-explorer-search-results.tsx` and `.test.tsx`; modify `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/hooks/use-grid-explorer-search.ts` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Render the approved complete replacement body over Task 135 with pre-search/results/loading/stale/error/duplicates, scrolling, Arrow/Enter selection, stale revalidation, reveal, and focus. Implement the exact close matrix: **DnD start is the only close that preserves query/results/scroll as interrupted state**; Drop/Cancel never auto-return and explicit reopen restores it. A valid reachable result selection closes the search body and clears active/interrupted search state, reconstructs the real item path, selects/reveals that item, and starts an event-ended—never timer-ended—reveal. If selection-time revalidation finds the result stale, removed, hidden, or unreachable, keep the search body/query/results/scroll, refresh the result set, report the stale status, and perform no path reconstruction, selection, reveal, or navigation. A successful reveal ends on another item selection, path change, DnD start, search restart, or route exit. X, Escape, and Inbox route exit clear active/interrupted query/results/scroll and any reveal; Scratch switch preserves current search and reveal without forcing focus. Results are not DnD sources and global Search remains untouched.
+**Acceptance:** Accepted on 2026-08-26. Implementation checkpoint
+`11a84c776700d33b5fa3f6323528e3e82e3a5fac`; implementation commit
+`c2749b6f3b0a60cba6d6fbb3c7ff921936446925`; accepted `src` tree
+`8d80becbfb821d54453939b81e20c249a4fb2a1a`.
 
-**Dependencies:** Tasks 114, 128, 134, and 135.
+**Files and actions:** after `DP-VQ07`, create `src/components/triage/grid-explorer-search-results.tsx` and `.test.tsx`; modify `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/hooks/use-grid-explorer-search.ts` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Render the approved complete replacement body over Task 135 with pre-search/results/loading/stale/error/duplicates, scrolling, Arrow/Enter selection, stale revalidation, reveal, and focus. Implement the exact close matrix: **DnD start is the only close that preserves query/results/scroll as interrupted state**; Drop/Cancel never auto-return and explicit reopen restores it. A valid reachable result selection closes the search body and clears active/interrupted search state, reconstructs the real item path, selects/reveals that item, and starts an event-ended—never timer-ended—reveal. If selection-time revalidation finds the result stale, removed, hidden, or unreachable, keep the search body/query/results/scroll, refresh the result set, report the stale status, and perform no path reconstruction, selection, reveal, or navigation. A successful reveal ends on another item selection, path change, DnD start, search restart, or route exit. Under the user-approved `P28-04` release-edge correction, this same reveal owner also realizes only the existing `DP-VQ06-EXPLORER` selected-Bit disappearance state: clear only the vanished Bit selection/reveal, preserve its valid parent path, place the exact selection-cleared status in that parent column, focus the surviving parent row or its full-label heading, and retain the receipt-defined Dismiss and lifetime behavior. It creates no second selection/reveal owner and changes no `DP-VQ06-EXPLORER` copy, action, focus, lifetime, product, or visual semantics. X, Escape, and Inbox route exit clear active/interrupted query/results/scroll and any reveal; Scratch switch preserves current search and reveal without forcing focus. Results are not DnD sources and global Search remains untouched.
 
-**Authority / flows:** `DP-VQ07`, `UF-18`, `UF-19`; `AF-02`, `AF-09`; `NEG-10`, `NEG-21`.
+**Dependencies:** Tasks 114, 128, 134, 135, and 150.
+
+**Authority / flows:** `DP-VQ07` plus only the `DP-VQ06-EXPLORER` selected-Bit disappearance slice moved by `P28-04`; `UF-17`–`UF-19`; `AF-02`, `AF-05`, `AF-09`; `NEG-03`, `NEG-10`, `NEG-21`.
 
 **Recipe:** [`Grid Explorer`](recipes/inbox-triage-grid-explorer-visual-recipe.md).
 
-**Observable acceptance:** whole-hierarchy results/ranking/duplicates render in the dedicated component; valid selection closes search, reconstructs the path, and starts the real item's event-ended reveal; a stale selection retains search, refreshes/reports status, and performs no reveal/navigation; DnD interruption alone preserves query/results/scroll; X/Escape/route exit clear search and reveal; focused disappearance returns input; every reopen/Scratch-switch path matches the close matrix exactly.
+**Observable acceptance:** whole-hierarchy results/ranking/duplicates render in the dedicated component; valid selection closes search, reconstructs the path, and starts the real item's event-ended reveal; a stale selection retains search, refreshes/reports status, and performs no reveal/navigation; a revealed Bit disappearance clears only that Bit selection/reveal, preserves and focuses its valid parent fallback, and exposes the exact parent-column status/Dismiss lifetime without reopening Search; DnD interruption alone preserves query/results/scroll; X/Escape/route exit clear search and reveal; focused disappearance returns input; every reopen/Scratch-switch path matches the close matrix exactly.
 
-**Verification:** focused utility/hook/results/Explorer/copy tests; assert valid selection closes the body, reconstructs the path, starts reveal, and ends reveal only on each named lifecycle event; assert each stale/removed/hidden/unreachable selection retains body/query/results/scroll, refreshes and reports status, and changes no path/selection/reveal/navigation; run every close path, DnD reopen, Scratch switch, focus, themes, and global Search preservation, recording `docs/verification/inbox-triage/task-151.md`; `pnpm typecheck`.
+**Verification:** focused utility/hook/results/Explorer/copy tests; assert valid selection closes the body, reconstructs the path, starts reveal, and ends reveal only on each named lifecycle event; assert each stale/removed/hidden/unreachable selection retains body/query/results/scroll, refreshes and reports status, and changes no path/selection/reveal/navigation; assert revealed-Bit disappearance clears only the Bit reveal/selection, preserves the parent path, renders the exact parent-column sentence, and follows parent-row/heading focus plus Dismiss lifetime; run every close path, DnD reopen, Scratch switch, focus, themes, and global Search preservation, recording `docs/verification/inbox-triage/task-151.md`; `pnpm typecheck`.
 
-**Commit contract:** DP-VQ07 copy/search body, integration, tests, styles, and Task 151 evidence only; `feat(triage): render explorer hierarchy search`.
+**Commit contract:** DP-VQ07 copy/search body plus only the `P28-04`-moved `DP-VQ06-EXPLORER` selected-Bit disappearance realization, integration, tests, styles, and Task 151 evidence; `feat(triage): render explorer hierarchy search`.
 
-### Task 152: [ ] Connect direct/staged placement selection and confirmation
+### Task 152: [x] Connect direct/staged placement selection and confirmation
+
+**Accepted:** user-approved checkpoint `e25b1ebe0275d8a7ff16c612195b11780da98b21`; implementation commit `7ba936147722e1e8ebb4a3fb6b9bceed9a65ca88`; accepted `src` tree `8247077665a212e575faad44f20046de623b7306`.
 
 **Files and actions:** create `src/hooks/use-triage-placement.ts` and `.test.tsx`; modify existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, and `src/components/triage/triage-workspace.tsx` and `.test.tsx`; extend `src/hooks/use-triage-operation-lock.test.tsx`. Own the complete mounted-page foreground state machine: staged release target; direct **Node/Bit type plus destination/path selection**; target-column confirmation; source/target/version snapshot; focus/locks; explicit Confirm/Cancel; one Task 123 dispatch; reconcile unknown. Before dispatch, synchronously acquire Task 136's shared `placement` lock; retain it through pending/unknown/reconciling, deny the complete matrix including placement Cancel/Escape and duplicate Confirm without queue/replay, and release only on terminal result. Another active owner blocks placement start/Confirm. A full destination must open the same target-column affordance with a **visible full-target reason, disabled Confirm, and working Cancel**. Drop alone writes nothing; no alternate parent/sibling/cell, keyboard placement, picker, or hidden shortcut. Integrate with Task 135 headless search so placement can close/lock it without requiring VQ-07 UI.
 
@@ -1723,7 +1753,7 @@ and no-queue/no-replay contracts do not change.
 
 **Commit contract:** base placement coordinator/adapters, tests, and Task 152 evidence only; `feat(triage): connect atomic pointer placement`.
 
-### Task 153: [ ] Render `DP-VQ08` placement reliability states
+### Task 153: [x] Render `DP-VQ08` placement reliability states
 
 **Files and actions:** after `DP-VQ08`, modify `src/hooks/use-triage-placement.ts` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate approved wording and render pending, reconciling, explicit failure, stale source/target, Retry/Cancel, success, timing, focus, reduced-motion, and theme states within Task 152's captured affordance. Source truth/destination remain visible until authoritative resolution; Retry only from not-applied; unknown offers Check again. Share no dependency with Task 154; the writer mutex serializes their common files.
 
@@ -1739,9 +1769,9 @@ and no-queue/no-replay contracts do not change.
 
 **Commit contract:** DP-VQ08 copy/realization, tests, styles, and Task 153 evidence only; `feat(triage): render placement reliability states`.
 
-### Task 154: [ ] Render `DP-VQ09` Result Title and direct-limit surfaces
+### Task 154: [x] Render `DP-VQ09` Result Title and direct-limit surfaces
 
-**Files and actions:** after `DP-VQ09`, modify `src/hooks/use-triage-placement.ts` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate approved wording and render staged over-limit Result Title without editing source plus direct Node/Bit availability/reason states, validation, Cancel, focus, reduced motion, and themes. Preserve source/target snapshot; direct `1–100` permits Node/Bit, `101–200` Bit only, `201–1000` neither; never truncate, expose hidden direct editor, or reuse create dialogs. Share no dependency with Task 153; the writer mutex serializes common files.
+**Files and actions:** after `DP-VQ09`, modify `src/hooks/use-triage-placement.ts` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate approved wording and render staged over-limit Result Title without editing source plus direct Node/Bit availability/reason states, validation, Cancel, focus, reduced motion, and themes. Preserve source/target snapshot; direct `1–100` permits Node/Bit, `101–200` Bit only, `201–1000` neither; never truncate, expose hidden direct editor, or reuse create dialogs. As the explicitly approved `P28-07` minimum owner expansion, also modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` only for authoritative source/candidate projection, no-write invalidation wiring, once-only announcement, and mounted proof of the existing Breakdown grip, staged candidate, or Staging heading safe focus fallback. As the explicitly approved `P28-08` minimum readiness owner expansion, also modify `src/hooks/use-scratch-breakdowns.ts` and `.test.tsx` only to expose and directly test a read-only `isReady` projection derived from the current selected Scratch's existing live-query snapshot: false before the first current snapshot and true after it, including an authoritative empty snapshot. Do not change its query, editor, command, DataStore, persistence, schema, or other Breakdown behavior. No other Workspace behavior or owner is included. Share no dependency with Task 153; the writer mutex serializes common files.
 
 **Dependencies:** Tasks 116, 128, and 152.
 
@@ -1755,9 +1785,64 @@ and no-queue/no-replay contracts do not change.
 
 **Commit contract:** DP-VQ09 copy/realization, tests, styles, and Task 154 evidence only; `feat(triage): render placement title limits`.
 
+#### Phase 28 Close Notes
+
+- Tasks 149–154 were explicitly accepted on the isolated Phase 28 branch and
+  establish Explorer remote/search, release-time DnD targeting, atomic pointer
+  placement, reliability, and Result Title/direct-limit behavior.
+- The accepted final `src` tree is
+  `e0e911a758363df677ed32eeef64910351a58478`.
+- The fresh end-phase gate at pre-close `0df3a0f` passed 98 test files / 1124
+  tests, lint with 0 errors and 11 unchanged warnings, typecheck, production
+  build with seven generated routes, and diff-check.
+- The Phase 28 workflow audit closes as a terminal measurement baseline. It
+  makes no comparative skill verdict; `WF28-01`–`WF28-11` and all seven
+  decision questions transfer to Phase 29's equal-weight audit track.
+- Phase 29 uses the unchanged candidate commit `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`,
+  starts neither Task 155 nor product work here, and requires a separate Gate C
+  plus fresh branch/worktree.
+
+| Task | Implementation / evidence | Acceptance |
+| --- | --- | --- |
+| 149 | `1830cc3` → `80bd704` | `9b26412` |
+| 150 | `32237f4` → `14ade3c` | `b13bcf0` |
+| 151 | `c2749b6` → `11a84c7` | `0ab994e` |
+| 152 | `7ba9361` → `e25b1eb` | `12fd2a9` |
+| 153 | `b73dc25` → `8110c6e` | `29bab4f` |
+| 154 | `28ba551` → `643da81` | `0df3a0f` |
+
+**Full issue log:**
+[`docs/issues/Issues_Phase_28.md`](issues/Issues_Phase_28.md)
+
 ---
 
 ## Phase 29 — Mounted-Page Newly Placed And Undo
+
+### Canonical two-track gate
+
+Phase 29 runs two equal-weight tracks under its own approved Gate C and a fresh
+branch/worktree:
+
+- **Track A — product:** implement and accept Tasks 155–158 under their exact
+  existing contracts.
+- **Track B — workflow audit:** replicate the unchanged candidate commit
+  `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`, record actual measurements,
+  compare Phases 28 and 29, and produce exact unapplied skill/reference/test
+  improvement handoff. Its continuity owner is
+  `docs/verification/inbox-triage/phase-29-workflow-pilot-audit.md`.
+
+Every Task 155–158 implementation checkpoint is incomplete until both product
+evidence and the matching audit row are committed. An acceptance-only commit
+does not change the audit. The product contract is not duplicated into the
+audit, and audit measurements are not repeated in the task sections.
+
+Phase 29 may close only when Tasks 155–158 are `[x]`, Accepted and the audit
+contains four task measurement rows, finding/limitation disposition, a Phase
+28/29 comparison, a `retain` / `change` / `reject` / `insufficient evidence`
+verdict for every `WF28-01`–`WF28-11` item, answers to all seven decision
+questions, and the exact skill/reference/test change plan that was not applied
+during the phase. Candidate skill and Adapter files remain read-only throughout
+Phase 29. The pilot does not automatically extend to a third phase.
 
 ### Task 155: [ ] Project Newly Placed provenance over actual cards
 
@@ -2010,9 +2095,9 @@ This register is complete for every exact path declared by two or more tasks. Ev
 
 - **Next planned phase:** Phase 34. Phases 32 and 33 are reserved and receive no tasks.
 - **Next planned task:** Task 166.
-- Active graph count: 4 open implementation phases (28–31), 17 open tasks
-  (149–165), 5 completed archives (Phases 23–27 with accepted Tasks 101–148),
+- Active graph count: 3 open implementation phases (29–31), 11 open tasks
+  (155–165), 6 completed archives (Phases 23–28 with accepted Tasks 101–154),
   and 2 reserved phase numbers (32–33).
 - The document is **user-approved for planning authority** under the receipt at
-  the top of this file; Tasks 101–148 are accepted, Phases 23–27 are archived,
-  and Tasks 149–165 remain open.
+  the top of this file; Tasks 101–154 are accepted, Phases 23–28 are archived,
+  and Tasks 155–165 remain open.

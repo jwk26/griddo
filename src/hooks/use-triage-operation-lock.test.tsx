@@ -131,6 +131,30 @@ describe("useTriageOperationLock", () => {
     },
   );
 
+  it("retains the placement owner through pending/unknown/reconciling and rejects the complete competing matrix without replay", () => {
+    const { result } = renderHook(() => useTriageOperationLock());
+
+    act(() => {
+      expect(result.current.acquire("placement", "placement-1")).toBe(true);
+      for (const kind of TRIAGE_OPERATION_KINDS) {
+        expect(result.current.acquire(kind, `${kind}-competing`)).toBe(false);
+      }
+      expect(result.current.release("placement-1", "pending" as never)).toBe(false);
+      expect(result.current.release("placement-1", "unknown" as never)).toBe(false);
+      expect(result.current.release("placement-1", "reconciling" as never)).toBe(false);
+    });
+    expect(result.current.activeOperation).toEqual({
+      kind: "placement",
+      operationId: "placement-1",
+    });
+
+    act(() => {
+      expect(result.current.release("placement-1", "not_applied")).toBe(true);
+    });
+    expect(result.current.activeOperation).toBeNull();
+    expect(result.current.acquire).toBeDefined();
+  });
+
   it.each(TRIAGE_OPERATION_KINDS)(
     "exposes the active %s owner synchronously to shared exit blockers",
     (kind) => {

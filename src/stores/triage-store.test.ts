@@ -27,6 +27,9 @@ beforeEach(() => {
     explorerPathIds: [],
     explorerOpenColumnIds: [],
     explorerColumnScroll: {},
+    explorerLocalPlacementIdentities: [],
+    explorerRemoteArrivalIds: {},
+    explorerPathStatus: null,
     stagedCandidates: {},
     externalScratchRemoval: null,
   });
@@ -44,6 +47,9 @@ afterEach(() => {
     explorerPathIds: [],
     explorerOpenColumnIds: [],
     explorerColumnScroll: {},
+    explorerLocalPlacementIdentities: [],
+    explorerRemoteArrivalIds: {},
+    explorerPathStatus: null,
     stagedCandidates: {},
     externalScratchRemoval: null,
   });
@@ -53,15 +59,24 @@ describe("useTriageStore app-session ownership", () => {
   it("owns exactly the approved session state plus deprecated candidate compatibility", () => {
     expect(Object.keys(useTriageStore.getState()).sort()).toEqual([
       "addStagedCandidate",
+      "clearExplorerPathStatus",
+      "clearExplorerRemoteArrivals",
+      "clearExplorerRemotePresentation",
       "clearScratchCandidates",
       "clearSelection",
       "explorerColumnScroll",
+      "explorerLocalPlacementIdentities",
       "explorerOpenColumnIds",
       "explorerPathIds",
+      "explorerPathStatus",
+      "explorerRemoteArrivalIds",
       "externalScratchRemoval",
       "finishExternalScratchRemoval",
       "reconcileExplorerContext",
       "reconcileScratchPoolContext",
+      "recordExplorerRemoteArrivals",
+      "registerExplorerLocalPlacement",
+      "removeExplorerRemoteArrival",
       "removeStagedCandidate",
       "scratchPoolActiveIds",
       "scratchPoolExpanded",
@@ -74,6 +89,7 @@ describe("useTriageStore app-session ownership", () => {
       "setExplorerColumnScroll",
       "setExplorerOpenColumnIds",
       "setExplorerPathIds",
+      "setExplorerPathStatus",
       "setExternalScratchRemovalLifecycle",
       "setScratchPoolExpanded",
       "setScratchPoolManualExpandedForId",
@@ -82,6 +98,83 @@ describe("useTriageStore app-session ownership", () => {
       "setScratchPoolScroll",
       "stagedCandidates",
     ]);
+  });
+
+  it("owns exact typed per-column arrivals and one replaceable path status", () => {
+    const store = useTriageStore.getState();
+    store.recordExplorerRemoteArrivals("node-1", [
+      { id: "shared", type: "node" },
+      { id: "shared", type: "node" },
+      { id: "shared", type: "bit" },
+    ]);
+    store.recordExplorerRemoteArrivals("node-2", [
+      { id: "remote-3", type: "node" },
+    ]);
+    store.setExplorerPathStatus({
+      kind: "archived",
+      title: "Research",
+      destination: "Projects",
+      columnId: "node-1",
+      fallbackPathIds: ["node-1"],
+    });
+
+    expect(useTriageStore.getState()).toMatchObject({
+      explorerRemoteArrivalIds: {
+        "node-1": [
+          { id: "shared", type: "node" },
+          { id: "shared", type: "bit" },
+        ],
+        "node-2": [{ id: "remote-3", type: "node" }],
+      },
+      explorerPathStatus: { kind: "archived", title: "Research" },
+    });
+
+    store.removeExplorerRemoteArrival({ id: "shared", type: "node" });
+    store.clearExplorerRemoteArrivals("node-2");
+    store.clearExplorerPathStatus();
+    expect(useTriageStore.getState()).toMatchObject({
+      explorerRemoteArrivalIds: {
+        "node-1": [{ id: "shared", type: "bit" }],
+      },
+      explorerPathStatus: null,
+    });
+  });
+
+  it("clears presentation on explicit path change and prunes only closed columns on authoritative fallback", () => {
+    useTriageStore.setState({
+      explorerPathIds: ["node-1", "node-2"],
+      explorerOpenColumnIds: ["home", "node-1", "node-2"],
+      explorerRemoteArrivalIds: {
+        home: [{ id: "root-new", type: "node" }],
+        "node-1": [{ id: "child-new", type: "node" }],
+        "node-2": [{ id: "grandchild-new", type: "bit" }],
+      },
+      explorerPathStatus: {
+        kind: "moved",
+        title: "Moved",
+        destination: "Node 1",
+        columnId: "node-1",
+        fallbackPathIds: ["node-1"],
+      },
+    });
+
+    useTriageStore.getState().reconcileExplorerContext({
+      validPathIds: ["node-1"],
+      visibleItemIdsByColumn: { home: ["node-1"], "node-1": [] },
+    });
+    expect(useTriageStore.getState()).toMatchObject({
+      explorerRemoteArrivalIds: {
+        home: [{ id: "root-new", type: "node" }],
+        "node-1": [{ id: "child-new", type: "node" }],
+      },
+      explorerPathStatus: { kind: "moved" },
+    });
+
+    useTriageStore.getState().setExplorerPathIds([]);
+    expect(useTriageStore.getState()).toMatchObject({
+      explorerRemoteArrivalIds: {},
+      explorerPathStatus: null,
+    });
   });
 
   it("holds an externally removed selection and computes next-visible then previous-visible", () => {

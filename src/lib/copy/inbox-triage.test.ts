@@ -33,15 +33,15 @@ describe("Inbox/Triage core-English copy", () => {
     expect(Object.values(INBOX_TRIAGE_COPY.validation)).toEqual([
       "Enter a Scratch title.",
       "Enter breakdown content.",
-      RECEIPT_COPY_UNAVAILABLE,
-      RECEIPT_COPY_UNAVAILABLE,
+      "Enter a result title.",
+      "Use {limit} characters or fewer.",
     ]);
     expect(Object.values(INBOX_TRIAGE_COPY.lifecycleReasons)).toEqual([
       RECEIPT_COPY_UNAVAILABLE,
       "Pool updated elsewhere.",
       "This item is no longer available.",
-      RECEIPT_COPY_UNAVAILABLE,
-      RECEIPT_COPY_UNAVAILABLE,
+      "This path is no longer available. Returned to {destination}.",
+      "Placement closed because this Explorer path changed.",
       RECEIPT_COPY_UNAVAILABLE,
       RECEIPT_COPY_UNAVAILABLE,
       RECEIPT_COPY_UNAVAILABLE,
@@ -58,6 +58,7 @@ describe("Inbox/Triage core-English copy", () => {
         ([key, value]) =>
           key === "poolActivity" ||
           key === "stagingActivity" ||
+          key === "explorerSearch" ||
           value === RECEIPT_COPY_UNAVAILABLE,
       ),
     ).toBe(true);
@@ -123,6 +124,60 @@ describe("Inbox/Triage core-English copy", () => {
     });
   });
 
+  it("owns the exact non-selected-Bit DP-VQ06 Explorer status wording", () => {
+    expect(INBOX_TRIAGE_COPY.explorerStatus).toEqual({
+      arrival: { one: "1 new", many: "{count} new" },
+      path: {
+        unavailable:
+          "“{title}” is no longer available. Returned to {destination}.",
+        archived: "“{title}” was archived. Returned to {destination}.",
+        moved: "“{title}” moved elsewhere. Returned to {destination}.",
+        invalid:
+          "This path is no longer available. Returned to {destination}.",
+        stalePlacement: "Placement closed because this Explorer path changed.",
+        selectionCleared:
+          "“{title}” is no longer available. Selection cleared.",
+      },
+      actions: {
+        showNewIn: "Show new in {level}",
+        dismiss: "Dismiss",
+      },
+    });
+    expect(INBOX_TRIAGE_COPY.lifecycleReasons.explorerPathFallback).toBe(
+      "This path is no longer available. Returned to {destination}.",
+    );
+    expect(INBOX_TRIAGE_COPY.lifecycleReasons.placementStale).toBe(
+      "Placement closed because this Explorer path changed.",
+    );
+  });
+
+  it("owns the complete approved DP-VQ07 Explorer search wording and selected-Bit correction", () => {
+    expect(INBOX_TRIAGE_COPY.explorerSearch).toEqual({
+      entry: "Search Explorer",
+      placeholder: "Search all Nodes and Bits",
+      closeAccessibleName: "Clear and close Explorer search",
+      status: {
+        preSearch: "Search the entire Grid Explorer.",
+        loading: "Searching Grid Explorer…",
+        refreshing: "Updating results…",
+        noResults: "No results for “{query}”.",
+        error: "Search couldn’t be updated.",
+        staleSelection:
+          "That item is no longer available. Results were updated.",
+        revealed: "Revealed “{title}” in {breadcrumb}.",
+      },
+      duplicate: "Duplicate {index} of {count}",
+      actions: { retry: "Try again" },
+    });
+    expect(INBOX_TRIAGE_COPY.explorerStatus.path.selectionCleared).toBe(
+      "“{title}” is no longer available. Selection cleared.",
+    );
+    expect(INBOX_TRIAGE_COPY.liveRegions.explorerSearch).toBe(
+      "Search the entire Grid Explorer.",
+    );
+    expect(151 in INBOX_TRIAGE_COPY.receiptDependent).toBe(false);
+  });
+
   it("owns the complete approved DP-VQ01 external-removal wording", () => {
     expect(INBOX_TRIAGE_COPY.externalRemoval).toEqual({
       title: {
@@ -178,6 +233,53 @@ describe("Inbox/Triage core-English copy", () => {
         retryAdd: "Retry Add",
       },
     });
+  });
+
+  it("owns the exact approved DP-VQ08 placement reliability wording", () => {
+    expect(INBOX_TRIAGE_COPY.placementReliability).toEqual({
+      pending: "Placing “{title}” in {destination}…",
+      unknown: "We couldn’t confirm whether “{title}” was placed.",
+      reconciling: "Checking whether “{title}” was placed…",
+      notApplied: "“{title}” wasn’t placed. Your source is unchanged.",
+      staleSource:
+        "The source changed. Nothing was placed. Cancel and drag it again.",
+      staleTarget:
+        "The destination changed. Nothing was placed. Cancel and drag to the current destination.",
+      success: "Placed “{title}” in {destination}.",
+      actions: {
+        checkAgain: "Check again",
+        retry: "Retry",
+        cancel: "Cancel",
+      },
+    });
+  });
+
+  it("owns the exact approved DP-VQ09 Result Title and direct-limit wording", () => {
+    expect(INBOX_TRIAGE_COPY.placementTitleLimits).toEqual({
+      resultTitle: {
+        eyebrow: "RESULT TITLE",
+        heading: "Name this {type}",
+        explanation:
+          "The source is {count} characters. A {type} title can be up to {limit}. The source won’t change.",
+        label: "Result title",
+        counter: "{count} / {limit}",
+        emptyError: "Enter a result title.",
+        overLimitError: "Use {limit} characters or fewer.",
+        actions: { continue: "Continue", cancel: "Cancel" },
+      },
+      direct: {
+        eyebrow: "DIRECT PLACEMENT",
+        heading: "Choose a result type",
+        nodeReason:
+          "Node titles can be up to 100 characters. This source has {count}.",
+        bitReason:
+          "Bit titles can be up to 200 characters. This source has {count}.",
+        neitherAvailable:
+          "This source is too long for direct placement. Cancel and stage it first.",
+        actions: { node: "Node", bit: "Bit", cancel: "Cancel" },
+      },
+    });
+    expect(154 in INBOX_TRIAGE_COPY.receiptDependent).toBe(false);
   });
 
   it("owns the exact approved DP-VQ02 Add/Unstage success wording", () => {
@@ -268,7 +370,7 @@ describe("Inbox/Triage core-English copy", () => {
 
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      148, 150, 151, 153, 154, 157, 160, 162,
+      148, 157, 160, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {

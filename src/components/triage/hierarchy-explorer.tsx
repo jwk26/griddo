@@ -1,42 +1,82 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import { Folder, ListTodo } from "lucide-react";
+import { Folder, ListTodo, Search } from "lucide-react";
 import {
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
   type ReactNode,
   type UIEvent,
 } from "react";
+import { GridExplorerSearchResults } from "@/components/triage/grid-explorer-search-results";
+import { Button } from "@/components/ui/button";
 import { useGridData } from "@/hooks/use-grid-data";
+import {
+  useExplorerRemoteStatus,
+} from "@/hooks/use-explorer-remote-status";
 import { useTriageDepartureContext } from "@/hooks/use-triage-departure";
-import type { TriageDragItem } from "@/hooks/use-dnd";
+import { useGridExplorerSearch } from "@/hooks/use-grid-explorer-search";
+import type {
+  TriageDragItem,
+  TriageTargetFeedback,
+} from "@/hooks/use-dnd";
+import type { TriagePlacementSnapshot } from "@/hooks/use-triage-placement";
 import {
   getTriageHierarchyDropId,
   type TriageDropData,
 } from "@/lib/grid-dnd";
+import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import { cn } from "@/lib/utils";
 import {
+  type ExplorerPathStatusState,
+  type ExplorerItemIdentity,
   type TriageSessionScrollPosition,
   useTriageStore,
 } from "@/stores/triage-store";
 import type { Bit, Node } from "@/types";
+import type { GridExplorerSearchResult } from "@/lib/utils/grid-explorer-search";
 
 interface HierarchyExplorerProps {
   activeDragItem: TriageDragItem;
-  onPendingPlacementInvalidated: (dropId: string) => void;
+  onPendingPlacementInvalidated: (
+    dropId: string,
+    focusAfterClose: () => void,
+  ) => boolean | void;
+  onPointerGeometryChange: (point: { x: number; y: number }) => void;
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
+  localPlacementResult: ExplorerItemIdentity | null;
+  placementSnapshot?: TriagePlacementSnapshot | null;
+  onPlacementCancel?: () => void;
+  onPlacementConfirm?: () => void;
+  onPlacementReconcile?: () => void;
+  onPlacementResultTitleChange?: (draft: string) => void;
+  onPlacementResultTitleContinue?: () => void;
+  onPlacementSelectType?: (type: "node" | "bit") => void;
+  targetFeedback: TriageTargetFeedback;
 }
 
 type HierarchyCellState =
   | "default"
   | "idle-valid"
   | "valid"
+  | "full"
   | "pending-confirmation"
   | "invalid";
+
+type SelectionClearedStatus = Readonly<{
+  kind: "selection-cleared";
+  title: string;
+  columnId: string;
+  fallbackPathIds: string[];
+}>;
+type RenderedExplorerPathStatus =
+  | ExplorerPathStatusState
+  | SelectionClearedStatus;
 
 const COLUMN_LABELS = ["Home", "Level 1", "Level 2", "Level 3"] as const;
 const EMPTY_SCROLL_POSITION: TriageSessionScrollPosition = {
@@ -54,6 +94,7 @@ const CELL_STATE_CLASSES: Record<HierarchyCellState, string> = {
   default: "",
   "idle-valid": "ring-1 ring-primary border-border/80 text-foreground",
   valid: "ring-1 ring-primary border-primary bg-accent text-foreground",
+  full: "ring-1 ring-muted-foreground border-muted-foreground bg-muted text-muted-foreground",
   "pending-confirmation":
     "border-ring bg-popover text-foreground motion-safe:animate-pulse",
   invalid:
@@ -94,16 +135,19 @@ function getCellState({
   isAccepted,
   overTargetId,
   pendingPlacementDropId,
+  targetFeedback,
 }: {
   activeDragItem: TriageDragItem;
   dropId: string;
   isAccepted: boolean;
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
+  targetFeedback: TriageTargetFeedback;
 }): HierarchyCellState {
   if (pendingPlacementDropId === dropId) return "pending-confirmation";
   if (activeDragItem === null) return "default";
   if (!isAccepted) return "invalid";
+  if (targetFeedback?.dropId === dropId) return targetFeedback.state;
   if (overTargetId === dropId) return "valid";
   return "idle-valid";
 }
@@ -117,7 +161,11 @@ function focusFallback(validPathIds: string[]) {
   if (ancestorId !== undefined) {
     const ancestor = Array.from(
       document.querySelectorAll<HTMLElement>("[data-explorer-item-id]"),
-    ).find((element) => element.dataset.explorerItemId === ancestorId);
+    ).find(
+      (element) =>
+        element.dataset.explorerItemId === ancestorId &&
+        element.dataset.explorerItemType === "node",
+    );
     if (ancestor !== undefined) {
       ancestor.focus();
       return;
@@ -132,12 +180,230 @@ function focusFallback(validPathIds: string[]) {
     ?.focus();
 }
 
+function explorerTemplate(
+  template: string,
+  values: Record<string, string | number>,
+): string {
+  return Object.entries(values).reduce(
+    (copy, [key, value]) => copy.replaceAll(`{${key}}`, String(value)),
+    template,
+  );
+}
+
+function placementTemplate(template: string, snapshot: TriagePlacementSnapshot) {
+  return explorerTemplate(template, {
+    title:
+      snapshot.command?.title ??
+      snapshot.resultTitleDraft ??
+      snapshot.release.source.title,
+    destination: snapshot.release.target.path.join(" → "),
+  });
+}
+
+function placementReliabilityCopy(snapshot: TriagePlacementSnapshot) {
+  const copy = INBOX_TRIAGE_COPY.placementReliability;
+  if (snapshot.phase === "pending") return placementTemplate(copy.pending, snapshot);
+  if (snapshot.phase === "unknown") return placementTemplate(copy.unknown, snapshot);
+  if (snapshot.phase === "reconciling") {
+    return placementTemplate(copy.reconciling, snapshot);
+  }
+  if (snapshot.phase === "success") return placementTemplate(copy.success, snapshot);
+  if (snapshot.terminalKind === "not-applied") {
+    return placementTemplate(copy.notApplied, snapshot);
+  }
+  if (snapshot.terminalKind === "stale-source") return copy.staleSource;
+  if (snapshot.terminalKind === "stale-target") return copy.staleTarget;
+  return null;
+}
+
+function explorerPathStatusCopy(status: RenderedExplorerPathStatus): string {
+  if (status.kind === "selection-cleared") {
+    return explorerTemplate(
+      INBOX_TRIAGE_COPY.explorerStatus.path.selectionCleared,
+      { title: status.title },
+    );
+  }
+  if (status.kind === "stale-placement") {
+    return INBOX_TRIAGE_COPY.explorerStatus.path.stalePlacement;
+  }
+  if (status.title === null) {
+    return explorerTemplate(INBOX_TRIAGE_COPY.explorerStatus.path.invalid, {
+      destination: status.destination,
+    });
+  }
+  const template =
+    status.kind === "archived"
+      ? INBOX_TRIAGE_COPY.explorerStatus.path.archived
+      : status.kind === "moved"
+        ? INBOX_TRIAGE_COPY.explorerStatus.path.moved
+        : INBOX_TRIAGE_COPY.explorerStatus.path.unavailable;
+  return explorerTemplate(template, {
+    title: status.title,
+    destination: status.destination,
+  });
+}
+
 export function HierarchyExplorer({
   activeDragItem,
   onPendingPlacementInvalidated,
+  onPointerGeometryChange,
   overTargetId,
   pendingPlacementDropId,
+  localPlacementResult,
+  placementSnapshot = null,
+  onPlacementCancel,
+  onPlacementConfirm,
+  onPlacementReconcile,
+  onPlacementResultTitleChange,
+  onPlacementResultTitleContinue,
+  onPlacementSelectType,
+  targetFeedback,
 }: HierarchyExplorerProps) {
+  const search = useGridExplorerSearch();
+  const explorerRef = useRef<HTMLDivElement>(null);
+  const searchEntryRef = useRef<HTMLButtonElement>(null);
+  const previousDragRef = useRef<TriageDragItem>(null);
+  const focusedLocalPlacementKeyRef = useRef<string | null>(null);
+  const acknowledgedPlacementSuccessRef = useRef<string | null>(null);
+  const placementLiveRegionRef = useRef<HTMLParagraphElement>(null);
+  const focusedRevealKeyRef = useRef<string | null>(null);
+  const focusedSelectionClearIdRef = useRef<string | null>(null);
+  const mountedRef = useRef(false);
+  const [entryFocusRevision, setEntryFocusRevision] = useState(0);
+  const invalidatePendingSearchSelection = search.invalidatePendingSelection;
+  const reveal =
+    search.revealPresentation?.kind === "revealed"
+      ? search.revealPresentation.result
+      : null;
+  const selectionClearedStatus = useMemo<SelectionClearedStatus | null>(
+    () =>
+      search.revealPresentation?.kind === "selection-cleared"
+        ? {
+            kind: "selection-cleared",
+            title: search.revealPresentation.title,
+            columnId: search.revealPresentation.nodePathIds.at(-1) ?? "home",
+            fallbackPathIds: [...search.revealPresentation.nodePathIds],
+          }
+        : null,
+    [search.revealPresentation],
+  );
+  const selectionClearedId =
+    search.revealPresentation?.kind === "selection-cleared"
+      ? search.revealPresentation.id
+      : null;
+  const targetFeedbackRef = useRef(targetFeedback);
+  useEffect(() => {
+    targetFeedbackRef.current = targetFeedback;
+  }, [targetFeedback]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let previousScratchId = useTriageStore.getState().selectedScratchId;
+    return useTriageStore.subscribe((state) => {
+      if (state.selectedScratchId === previousScratchId) return;
+      previousScratchId = state.selectedScratchId;
+      invalidatePendingSearchSelection();
+    });
+  }, [invalidatePendingSearchSelection]);
+
+  useEffect(() => {
+    if (
+      activeDragItem === null ||
+      activeDragItem.integrity === "invalidated"
+    ) {
+      return;
+    }
+    let pointer: { x: number; y: number } | null = null;
+    let frame = 0;
+    let cancelled = false;
+    const trackMouse = (event: MouseEvent) => {
+      pointer = { x: event.clientX, y: event.clientY };
+    };
+    const trackTouch = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (touch !== undefined) {
+        pointer = { x: touch.clientX, y: touch.clientY };
+      }
+    };
+    const clearPointer = () => {
+      pointer = null;
+    };
+    const clearPointerOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") clearPointer();
+    };
+    const scrollAtEdge = () => {
+      if (pointer !== null) onPointerGeometryChange(pointer);
+      const feedback = targetFeedbackRef.current;
+      if (
+        pointer !== null &&
+        feedback?.state === "valid" &&
+        typeof document.elementsFromPoint === "function"
+      ) {
+        const pointerTarget = document
+          .elementsFromPoint(pointer.x, pointer.y)
+          .map((element) =>
+            element.closest<HTMLElement>("[data-triage-drop-id]"),
+          )
+          .find((element) => element !== null);
+        const body = pointerTarget?.closest<HTMLElement>(
+          "[data-triage-explorer-column]",
+        );
+        if (
+          pointerTarget?.dataset.triageDropId === feedback.dropId &&
+          body !== null &&
+          body !== undefined &&
+          body.scrollHeight > body.clientHeight
+        ) {
+          const bounds = body.getBoundingClientRect();
+          const edge = Math.min(48, bounds.height / 4);
+          const topDistance = pointer.y - bounds.top;
+          const bottomDistance = bounds.bottom - pointer.y;
+          if (topDistance >= 0 && topDistance < edge) {
+            body.scrollTop -= Math.ceil(2 + 10 * (1 - topDistance / edge));
+          } else if (bottomDistance >= 0 && bottomDistance < edge) {
+            body.scrollTop += Math.ceil(
+              2 + 10 * (1 - bottomDistance / edge),
+            );
+          }
+        }
+      }
+    };
+    const scheduleFrame = () => {
+      let callbackWasSynchronous = true;
+      frame = window.requestAnimationFrame(() => {
+        if (cancelled) return;
+        scrollAtEdge();
+        if (!callbackWasSynchronous && !cancelled) scheduleFrame();
+      });
+      callbackWasSynchronous = false;
+    };
+
+    document.addEventListener("mousemove", trackMouse);
+    document.addEventListener("mouseleave", clearPointer);
+    document.addEventListener("keydown", clearPointerOnEscape);
+    document.addEventListener("touchmove", trackTouch, { passive: true });
+    document.addEventListener("touchcancel", clearPointer);
+    window.addEventListener("blur", clearPointer);
+    scheduleFrame();
+    return () => {
+      cancelled = true;
+      pointer = null;
+      document.removeEventListener("mousemove", trackMouse);
+      document.removeEventListener("mouseleave", clearPointer);
+      document.removeEventListener("keydown", clearPointerOnEscape);
+      document.removeEventListener("touchmove", trackTouch);
+      document.removeEventListener("touchcancel", clearPointer);
+      window.removeEventListener("blur", clearPointer);
+      window.cancelAnimationFrame(frame);
+    };
+  }, [activeDragItem, onPointerGeometryChange]);
+
   const departure = useTriageDepartureContext();
   const explorerPathIds = useTriageStore((state) => state.explorerPathIds);
   const explorerColumnScroll = useTriageStore(
@@ -155,10 +421,120 @@ export function HierarchyExplorer({
   const reconcileExplorerContext = useTriageStore(
     (state) => state.reconcileExplorerContext,
   );
+  const explorerRemoteArrivalIds = useTriageStore(
+    (state) => state.explorerRemoteArrivalIds,
+  );
+  const explorerPathStatus = useTriageStore(
+    (state) => state.explorerPathStatus,
+  );
+  const clearExplorerRemoteArrivals = useTriageStore(
+    (state) => state.clearExplorerRemoteArrivals,
+  );
+  const clearExplorerPathStatus = useTriageStore(
+    (state) => state.clearExplorerPathStatus,
+  );
+  const clearExplorerRemotePresentation = useTriageStore(
+    (state) => state.clearExplorerRemotePresentation,
+  );
+  const setExplorerPathStatus = useTriageStore(
+    (state) => state.setExplorerPathStatus,
+  );
+
+  useLayoutEffect(() => {
+    const previous = previousDragRef.current;
+    previousDragRef.current = activeDragItem;
+    if (previous === null && activeDragItem !== null) {
+      search.interruptForDnd();
+    }
+  }, [activeDragItem, search]);
+
+  useLayoutEffect(() => {
+    if (placementSnapshot !== null && search.mode !== "closed") {
+      search.closeSearch();
+    }
+  }, [placementSnapshot, search]);
+
+  useEffect(() => {
+    if (placementSnapshot?.phase === "success") {
+      if (
+        acknowledgedPlacementSuccessRef.current !==
+        placementSnapshot.operationId
+      ) {
+        acknowledgedPlacementSuccessRef.current = placementSnapshot.operationId;
+        if (placementLiveRegionRef.current !== null) {
+          placementLiveRegionRef.current.setAttribute("role", "status");
+          placementLiveRegionRef.current.setAttribute("aria-live", "polite");
+          placementLiveRegionRef.current.setAttribute("aria-atomic", "true");
+          placementLiveRegionRef.current.setAttribute(
+            "aria-label",
+            "Placement result status",
+          );
+          placementLiveRegionRef.current.textContent =
+            placementReliabilityCopy(placementSnapshot) ?? "";
+        }
+        onPlacementConfirm?.();
+      }
+    } else if (
+      placementSnapshot !== null &&
+      placementLiveRegionRef.current !== null
+    ) {
+      placementLiveRegionRef.current.textContent = "";
+      placementLiveRegionRef.current.removeAttribute("role");
+      placementLiveRegionRef.current.removeAttribute("aria-live");
+      placementLiveRegionRef.current.removeAttribute("aria-atomic");
+      placementLiveRegionRef.current.removeAttribute("aria-label");
+    }
+  }, [onPlacementConfirm, placementSnapshot]);
+
+  useLayoutEffect(() => {
+    if (search.mode === "closed" && entryFocusRevision > 0) {
+      searchEntryRef.current?.focus({ preventScroll: true });
+    }
+  }, [entryFocusRevision, search.mode]);
+
+  useEffect(() => {
+    const clearSearchOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || search.mode === "closed") return;
+      event.preventDefault();
+      search.closeSearch();
+      if (activeDragItem === null) {
+        setEntryFocusRevision((current) => current + 1);
+      }
+    };
+    document.addEventListener("keydown", clearSearchOnEscape, true);
+    return () => {
+      document.removeEventListener("keydown", clearSearchOnEscape, true);
+    };
+  }, [activeDragItem, search]);
+
+  useEffect(
+    () => () => clearExplorerRemotePresentation(),
+    [clearExplorerRemotePresentation],
+  );
 
   const selectedHomeId = explorerPathIds[0] ?? null;
   const selectedL1Id = explorerPathIds[1] ?? null;
   const selectedL2Id = explorerPathIds[2] ?? null;
+  const openColumnIdentities = useMemo(
+    () => [
+      { columnId: "home", parentId: null },
+      ...(selectedHomeId === null
+        ? []
+        : [{ columnId: selectedHomeId, parentId: selectedHomeId }]),
+      ...(selectedL1Id === null
+        ? []
+        : [{ columnId: selectedL1Id, parentId: selectedL1Id }]),
+      ...(selectedL2Id === null
+        ? []
+        : [{ columnId: selectedL2Id, parentId: selectedL2Id }]),
+    ],
+    [selectedHomeId, selectedL1Id, selectedL2Id],
+  );
+  const authoritativeRemoteStatus = useExplorerRemoteStatus({
+    localPlacementResult,
+    openColumns: openColumnIdentities,
+    pathIds: explorerPathIds,
+  });
   const rootGrid = useGridData(null);
   const level1Grid = useGridData(selectedHomeId);
   const level2Grid = useGridData(selectedL1Id);
@@ -193,6 +569,37 @@ export function HierarchyExplorer({
     [level3Grid.bits, selectedL2Id],
   );
 
+  useLayoutEffect(() => {
+    if (localPlacementResult === null) {
+      focusedLocalPlacementKeyRef.current = null;
+      return;
+    }
+    const placementKey = `${localPlacementResult.type}:${localPlacementResult.id}`;
+    if (focusedLocalPlacementKeyRef.current === placementKey) return;
+    const result = Array.from(
+      explorerRef.current?.querySelectorAll<HTMLElement>(
+        "[data-explorer-item-id]",
+      ) ?? [],
+    ).find(
+      (element) =>
+        element.dataset.explorerItemId === localPlacementResult.id &&
+        element.dataset.explorerItemType === localPlacementResult.type,
+    );
+    if (result === undefined) return;
+    result.focus({ preventScroll: true });
+    focusedLocalPlacementKeyRef.current = placementKey;
+  }, [
+    level1Bits,
+    level1Nodes,
+    level2Bits,
+    level2Nodes,
+    level3Bits,
+    level3Nodes,
+    localPlacementResult,
+    rootNodes,
+    search.mode,
+  ]);
+
   const selectedHomeNode =
     rootNodes.find(({ id }) => id === selectedHomeId) ?? null;
   const selectedL1Node =
@@ -200,7 +607,67 @@ export function HierarchyExplorer({
   const selectedL2Node =
     level2Nodes.find(({ id }) => id === selectedL2Id) ?? null;
 
-  const validation = useMemo(() => {
+  useLayoutEffect(() => {
+    if (reveal === null) {
+      focusedRevealKeyRef.current = null;
+      return;
+    }
+    if (
+      search.mode !== "closed" ||
+      focusedRevealKeyRef.current === reveal.key
+    ) {
+      return;
+    }
+    const row = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-explorer-item-id]"),
+    ).find(
+      (element) =>
+        element.dataset.explorerItemId === reveal.id &&
+        element.dataset.explorerItemType === reveal.type,
+    );
+    if (row !== undefined) {
+      focusedRevealKeyRef.current = reveal.key;
+      row.focus({ preventScroll: true });
+    }
+  }, [
+    level1Bits,
+    level1Nodes,
+    level2Bits,
+    level2Nodes,
+    level3Bits,
+    level3Nodes,
+    reveal,
+    rootNodes,
+    search.mode,
+  ]);
+
+  useEffect(() => {
+    if (reveal === null) return;
+    const pathMatches =
+      reveal.nodePathIds.length === explorerPathIds.length &&
+      reveal.nodePathIds.every((id, index) => explorerPathIds[index] === id);
+    if (!pathMatches) search.clearReveal();
+  }, [explorerPathIds, reveal, search]);
+
+  useLayoutEffect(() => {
+    if (selectionClearedStatus === null) {
+      focusedSelectionClearIdRef.current = null;
+      return;
+    }
+    if (focusedSelectionClearIdRef.current === selectionClearedId) {
+      return;
+    }
+    focusedSelectionClearIdRef.current = selectionClearedId;
+    focusFallback(selectionClearedStatus.fallbackPathIds);
+  }, [selectionClearedId, selectionClearedStatus]);
+
+  useEffect(() => {
+    if (explorerPathStatus !== null && selectionClearedStatus !== null) {
+      search.clearReveal();
+    }
+  }, [explorerPathStatus, search, selectionClearedStatus]);
+
+  const gridValidation = useMemo(() => {
     if (rootGrid.isLoading) return null;
 
     const validPathIds: string[] = [];
@@ -231,6 +698,19 @@ export function HierarchyExplorer({
     selectedL2Id,
     selectedL2Node,
   ]);
+  const validation = useMemo(() => {
+    const authoritativePath = authoritativeRemoteStatus.validPathIds;
+    if (
+      !authoritativeRemoteStatus.isReady ||
+      authoritativePath === null ||
+      gridValidation === null ||
+      authoritativePath.length > gridValidation.length ||
+      !authoritativePath.every((id, index) => gridValidation[index] === id)
+    ) {
+      return null;
+    }
+    return authoritativePath;
+  }, [authoritativeRemoteStatus, gridValidation]);
 
   const visibleItemIdsByColumn = useMemo(() => {
     const columns: Record<string, string[]> = {
@@ -279,8 +759,10 @@ export function HierarchyExplorer({
       pathIds.length === explorerPathIds.length &&
       pathIds.every((id, index) => id === explorerPathIds[index])
     ) {
+      if (selectionClearedStatus !== null) search.clearReveal();
       return;
     }
+    search.invalidatePendingSelection();
     const focusTarget =
       document.activeElement instanceof HTMLElement
         ? document.activeElement
@@ -290,6 +772,7 @@ export function HierarchyExplorer({
       focus: () => focusTarget?.focus(),
       kind: "path",
       perform: () => {
+        search.clearReveal();
         setExplorerPathIds(pathIds);
         setExplorerOpenColumnIds(["home", ...pathIds]);
       },
@@ -324,16 +807,25 @@ export function HierarchyExplorer({
     selectedL2Node,
   ]);
   const effectivePendingPlacementDropId =
-    pendingPlacementDropId !== null && visibleDropIds.has(pendingPlacementDropId)
+    placementSnapshot?.phase !== "success" &&
+    pendingPlacementDropId !== null &&
+    visibleDropIds.has(pendingPlacementDropId)
       ? pendingPlacementDropId
       : null;
   const invalidatedPendingDropIdRef = useRef<string | null>(null);
+  const [announcementSuppressedPathStatus, setAnnouncementSuppressedPathStatus] =
+    useState<ExplorerPathStatusState | null>(null);
 
   useEffect(() => {
-    if (
-      pendingPlacementDropId === null ||
-      visibleDropIds.has(pendingPlacementDropId)
-    ) {
+    if (placementSnapshot?.phase === "success") {
+      invalidatedPendingDropIdRef.current = null;
+      return;
+    }
+    if (pendingPlacementDropId === null) {
+      invalidatedPendingDropIdRef.current = null;
+      return;
+    }
+    if (visibleDropIds.has(pendingPlacementDropId)) {
       invalidatedPendingDropIdRef.current = null;
       return;
     }
@@ -342,11 +834,36 @@ export function HierarchyExplorer({
       invalidatedPendingDropIdRef.current !== pendingPlacementDropId
     ) {
       invalidatedPendingDropIdRef.current = pendingPlacementDropId;
-      onPendingPlacementInvalidated(pendingPlacementDropId);
+      const fallbackId = validation.at(-1);
+      const fallbackNode = [selectedHomeNode, selectedL1Node, selectedL2Node]
+        .find((node) => node?.id === fallbackId);
+      const announcementWasReplaced =
+        onPendingPlacementInvalidated(pendingPlacementDropId, () => {
+        focusFallback(validation);
+        }) === true;
+      const nextPathStatus: ExplorerPathStatusState = {
+        kind: "stale-placement",
+        title: null,
+        destination: fallbackNode?.title ?? "Home",
+        columnId: fallbackId ?? "home",
+        fallbackPathIds: validation,
+      };
+      setExplorerPathStatus(nextPathStatus);
+      // This local presentation state binds live-region suppression to the
+      // callback result that replaced this exact stale-placement announcement.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAnnouncementSuppressedPathStatus(
+        announcementWasReplaced ? nextPathStatus : null,
+      );
     }
   }, [
     onPendingPlacementInvalidated,
     pendingPlacementDropId,
+    placementSnapshot?.phase,
+    selectedHomeNode,
+    selectedL1Node,
+    selectedL2Node,
+    setExplorerPathStatus,
     validation,
     visibleDropIds,
   ]);
@@ -390,11 +907,38 @@ export function HierarchyExplorer({
     },
   ] as const;
 
+  function closeSearchAndFocusEntry() {
+    search.closeSearch();
+    setEntryFocusRevision((current) => current + 1);
+  }
+
+  async function selectSearchResult(result: GridExplorerSearchResult) {
+    const outcome = await search.selectResult(result);
+    if (!mountedRef.current || outcome.kind === "stale") return;
+    setExplorerPathIds([...outcome.result.nodePathIds]);
+    setExplorerOpenColumnIds(["home", ...outcome.result.nodePathIds]);
+  }
+
   return (
     <div
+      ref={explorerRef}
       className="flex min-h-0 w-full flex-col rounded-md border border-border/50 bg-card"
       data-testid="hierarchy-explorer"
     >
+      {reveal !== null ? (
+        <div
+          aria-atomic="true"
+          aria-live="polite"
+          className="explorer-reveal-status"
+          data-triage-role="explorer-reveal-status"
+          role="status"
+        >
+          {explorerTemplate(INBOX_TRIAGE_COPY.explorerSearch.status.revealed, {
+            title: reveal.title,
+            breadcrumb: reveal.breadcrumb,
+          })}
+        </div>
+      ) : null}
       <nav
         aria-label="Explorer path"
         className="flex min-w-0 flex-wrap items-center gap-x-1 border-b border-border/50 px-3 py-1.5 text-xs text-muted-foreground"
@@ -414,13 +958,57 @@ export function HierarchyExplorer({
             </button>
           </span>
         ))}
+        <button
+          ref={searchEntryRef}
+          className="explorer-search-entry ml-auto"
+          data-triage-role="explorer-search-entry"
+          type="button"
+          onClick={() => {
+            search.openSearch();
+          }}
+        >
+          <Search aria-hidden="true" className="h-3.5 w-3.5" />
+          {INBOX_TRIAGE_COPY.explorerSearch.entry}
+        </button>
       </nav>
 
+      <p ref={placementLiveRegionRef} className="sr-only" />
+
+      {search.mode === "active" ? (
+        <GridExplorerSearchResults
+          feedback={search.feedback}
+          focusTarget={search.focusTarget}
+          query={search.activeQuery ?? ""}
+          resultScrollTop={search.resultScrollTop}
+          results={search.results}
+          status={search.status}
+          onClose={closeSearchAndFocusEntry}
+          onFocusInput={search.focusInput}
+          onFocusResult={search.focusResult}
+          onQueryChange={(query) => {
+            search.setQuery(query);
+          }}
+          onRetry={search.retry}
+          onScrollTopChange={search.setResultScrollTop}
+          onSelectResult={(result) => void selectSearchResult(result)}
+        />
+      ) : (
       <div className="flex min-h-0 flex-1 flex-row overflow-x-hidden">
         {columns.map((column, index) => {
           const parentPath = ["Home", ...pathNodes.slice(0, index).map(({ title }) => title)];
           const targetParentPath =
             index === 0 ? [] : parentPath.slice(0, -1);
+          const sectionDropId = getTriageHierarchyDropId(
+            index === 0 ? "body-home" : `body-l${index}`,
+          );
+          const columnOwnsPlacement =
+            placementSnapshot !== null &&
+            (placementSnapshot.release.target.dropId === sectionDropId ||
+              column.nodes.some(
+                ({ id }) =>
+                  getTriageHierarchyDropId(id) ===
+                  placementSnapshot.release.target.dropId,
+              ));
           return (
             <ExplorerColumn
               key={COLUMN_LABELS[index]}
@@ -430,19 +1018,57 @@ export function HierarchyExplorer({
                 overTargetId,
                 parentNode: column.parentNode,
                 pendingPlacementDropId: effectivePendingPlacementDropId,
+                targetFeedback,
               })}
               columnId={column.columnId}
               hasRightBorder={index < COLUMN_LABELS.length - 1}
               isDimmed={index > 0 && column.parentNode === null}
               itemIds={idsForColumn(column.nodes, column.bits)}
               label={COLUMN_LABELS[index]}
+              pathStatusAnnouncementSuppressed={
+                explorerPathStatus === announcementSuppressedPathStatus
+              }
+              pathStatus={
+                explorerPathStatus?.columnId === column.columnId &&
+                explorerPathStatus.fallbackPathIds.length === index
+                  ? explorerPathStatus
+                  : selectionClearedStatus?.columnId === column.columnId &&
+                      selectionClearedStatus.fallbackPathIds.length === index
+                    ? selectionClearedStatus
+                    : null
+              }
+              remoteArrivals={
+                explorerRemoteArrivalIds[column.columnId] ?? []
+              }
               scrollPosition={
                 explorerColumnScroll[column.columnId] ?? EMPTY_SCROLL_POSITION
               }
               onScrollPositionChange={setExplorerColumnScroll}
+              onClearRemoteArrivals={clearExplorerRemoteArrivals}
+              onDismissPathStatus={(status) => {
+                if (status.kind === "selection-cleared") {
+                  search.clearReveal();
+                } else {
+                  clearExplorerPathStatus();
+                }
+                focusFallback(status.fallbackPathIds);
+              }}
               parentNode={column.parentNode}
               targetParentPath={targetParentPath}
             >
+              {columnOwnsPlacement ? (
+                placementSnapshot.phase === "success" ? null : (
+                  <PlacementAffordance
+                    snapshot={placementSnapshot}
+                    onCancel={onPlacementCancel}
+                    onConfirm={onPlacementConfirm}
+                    onReconcile={onPlacementReconcile}
+                    onResultTitleChange={onPlacementResultTitleChange}
+                    onResultTitleContinue={onPlacementResultTitleContinue}
+                    onSelectType={onPlacementSelectType}
+                  />
+                )
+              ) : null}
               {index > 0 && column.parentNode === null ? null : (
                 <HierarchyItemList
                   activeDragItem={activeDragItem}
@@ -461,14 +1087,362 @@ export function HierarchyExplorer({
                   overTargetId={overTargetId}
                   parentPath={parentPath}
                   pendingPlacementDropId={effectivePendingPlacementDropId}
+                  reveal={reveal}
                   selectedNodeId={column.selectedNodeId}
+                  targetFeedback={targetFeedback}
                 />
               )}
             </ExplorerColumn>
           );
         })}
       </div>
+      )}
     </div>
+  );
+}
+
+function PlacementAffordance({
+  snapshot,
+  onCancel,
+  onConfirm,
+  onReconcile,
+  onResultTitleChange,
+  onResultTitleContinue,
+  onSelectType,
+}: {
+  snapshot: TriagePlacementSnapshot;
+  onCancel?: () => void;
+  onConfirm?: () => void;
+  onReconcile?: () => void;
+  onResultTitleChange?: (draft: string) => void;
+  onResultTitleContinue?: () => void;
+  onSelectType?: (type: "node" | "bit") => void;
+}) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const resultTitleInputRef = useRef<HTMLInputElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+  const reconcileRef = useRef<HTMLButtonElement>(null);
+  const retryRef = useRef<HTMLButtonElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const descriptionId = useId();
+  const errorId = useId();
+  const nodeReasonId = useId();
+  const bitReasonId = useId();
+  const locked =
+    snapshot.phase === "pending" ||
+    snapshot.phase === "unknown" ||
+    snapshot.phase === "reconciling";
+
+  useLayoutEffect(() => {
+    if (snapshot.phase === "result-title") {
+      resultTitleInputRef.current?.focus({ preventScroll: true });
+    } else if (
+      snapshot.phase === "direct-selection" ||
+      snapshot.phase === "confirmation"
+    ) {
+      headingRef.current?.focus({ preventScroll: true });
+    } else if (snapshot.phase === "unknown") {
+      reconcileRef.current?.focus({ preventScroll: true });
+    } else if (snapshot.phase === "pending") {
+      confirmRef.current?.focus({ preventScroll: true });
+    } else if (snapshot.phase === "reconciling") {
+      reconcileRef.current?.focus({ preventScroll: true });
+    } else if (snapshot.terminalKind === "not-applied") {
+      retryRef.current?.focus({ preventScroll: true });
+    } else if (snapshot.phase === "terminal") {
+      cancelRef.current?.focus({ preventScroll: true });
+    }
+  }, [snapshot.phase, snapshot.terminalKind]);
+
+  const reliabilityCopy = placementReliabilityCopy(snapshot);
+  const reliabilityState =
+    snapshot.phase === "terminal" ? snapshot.terminalKind : snapshot.phase;
+  const titleCopy = INBOX_TRIAGE_COPY.placementTitleLimits;
+  const resultTypeLabel = snapshot.resultType === "node" ? "Node" : "Bit";
+  const resultTitleLimit = snapshot.resultType === "node" ? 100 : 200;
+  const resultTitleDraft = snapshot.resultTitleDraft ?? "";
+  const resultTitleEmpty = resultTitleDraft.trim().length === 0;
+  const resultTitleTooLong = resultTitleDraft.length > resultTitleLimit;
+  const resultTitleValid = !resultTitleEmpty && !resultTitleTooLong;
+  const directSourceLength = snapshot.release.source.title.length;
+  const nodeLimitUnavailable = directSourceLength > 100;
+  const bitLimitUnavailable = directSourceLength > 200;
+  const nodeTargetUnavailable =
+    snapshot.release.target.level !== null &&
+    snapshot.release.target.level >= 2;
+  const bitTargetUnavailable = snapshot.release.target.parentId === null;
+  const titleStep =
+    snapshot.phase === "result-title"
+      ? "staged-result-title"
+      : snapshot.phase === "direct-selection"
+        ? "direct-type-limit"
+        : undefined;
+
+  return (
+    <section
+      aria-label="Placement"
+      className="placement-affordance m-2 rounded-md border border-primary/50 bg-accent/30 p-3"
+      data-placement-phase={snapshot.phase}
+      data-placement-reliability={reliabilityCopy === null ? undefined : reliabilityState}
+      data-placement-title-step={titleStep}
+      data-triage-role="placement-affordance"
+      onKeyDown={(event) => {
+        if (event.key !== "Escape") return;
+        if (locked) {
+          event.preventDefault();
+          return;
+        }
+        event.preventDefault();
+        onCancel?.();
+      }}
+    >
+      {snapshot.phase === "result-title" ? (
+        <div className="placement-result-title-shell">
+          <p className="placement-result-title-eyebrow">
+            {titleCopy.resultTitle.eyebrow}
+          </p>
+          <h3 className="placement-result-title-heading">
+            {explorerTemplate(titleCopy.resultTitle.heading, {
+              type: resultTypeLabel,
+            })}
+          </h3>
+          <p className="placement-result-title-source break-words">
+            {snapshot.release.source.title}
+          </p>
+          <p className="placement-target-path break-words">
+            {snapshot.release.target.path.join(" → ")}
+          </p>
+          <p id={descriptionId} className="placement-result-title-explanation">
+            {explorerTemplate(titleCopy.resultTitle.explanation, {
+              count: snapshot.release.source.title.length,
+              limit: resultTitleLimit,
+              type: resultTypeLabel,
+            })}
+          </p>
+          <label className="placement-result-title-label">
+            {titleCopy.resultTitle.label}
+            <input
+              ref={resultTitleInputRef}
+              aria-describedby={`${descriptionId} ${errorId}`}
+              aria-invalid={!resultTitleValid}
+              className="placement-result-title-input"
+              type="text"
+              value={resultTitleDraft}
+              onChange={(event) => onResultTitleChange?.(event.target.value)}
+            />
+          </label>
+          <div className="placement-result-title-validation">
+            <span
+              id={errorId}
+              className="placement-result-title-error"
+            >
+              {resultTitleEmpty
+                ? titleCopy.resultTitle.emptyError
+                : resultTitleTooLong
+                  ? explorerTemplate(titleCopy.resultTitle.overLimitError, {
+                      limit: resultTitleLimit,
+                    })
+                  : ""}
+            </span>
+            <span className="placement-result-title-count">
+              {explorerTemplate(titleCopy.resultTitle.counter, {
+                count: resultTitleDraft.length,
+                limit: resultTitleLimit,
+              })}
+            </span>
+          </div>
+          <div className="placement-result-title-actions">
+            <Button
+              className="placement-result-title-continue"
+              disabled={!resultTitleValid}
+              size="sm"
+              type="button"
+              onClick={onResultTitleContinue}
+            >
+              {titleCopy.resultTitle.actions.continue}
+            </Button>
+            <Button size="sm" type="button" variant="outline" onClick={onCancel}>
+              {titleCopy.resultTitle.actions.cancel}
+            </Button>
+          </div>
+        </div>
+      ) : snapshot.phase === "direct-selection" ? (
+        <div className="placement-direct-limit-shell">
+          <p className="placement-direct-eyebrow">{titleCopy.direct.eyebrow}</p>
+          <h3
+            ref={headingRef}
+            className="placement-direct-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            tabIndex={-1}
+          >
+            {titleCopy.direct.heading}
+          </h3>
+          <p className="placement-result-title-source break-words">
+            {snapshot.release.source.title}
+          </p>
+          <p className="placement-target-path break-words">
+            {snapshot.release.target.path.join(" → ")}
+          </p>
+          <div className="placement-direct-types" aria-label="Select placement type">
+            <div className="placement-direct-type-option">
+              <Button
+                aria-describedby={nodeLimitUnavailable ? nodeReasonId : undefined}
+                disabled={nodeLimitUnavailable || nodeTargetUnavailable}
+                size="sm"
+                type="button"
+                onClick={() => onSelectType?.("node")}
+              >
+                {titleCopy.direct.actions.node}
+              </Button>
+              {nodeLimitUnavailable ? (
+                <p id={nodeReasonId} className="placement-direct-type-reason">
+                  {explorerTemplate(titleCopy.direct.nodeReason, {
+                    count: directSourceLength,
+                  })}
+                </p>
+              ) : null}
+            </div>
+            <div className="placement-direct-type-option">
+              <Button
+                aria-describedby={bitLimitUnavailable ? bitReasonId : undefined}
+                disabled={bitLimitUnavailable || bitTargetUnavailable}
+                size="sm"
+                type="button"
+                onClick={() => onSelectType?.("bit")}
+              >
+                {titleCopy.direct.actions.bit}
+              </Button>
+              {bitLimitUnavailable ? (
+                <p id={bitReasonId} className="placement-direct-type-reason">
+                  {explorerTemplate(titleCopy.direct.bitReason, {
+                    count: directSourceLength,
+                  })}
+                </p>
+              ) : null}
+            </div>
+          </div>
+          {nodeLimitUnavailable && bitLimitUnavailable ? (
+            <p className="placement-direct-limit-summary">
+              {titleCopy.direct.neitherAvailable}
+            </p>
+          ) : null}
+          <Button size="sm" type="button" variant="outline" onClick={onCancel}>
+            {titleCopy.direct.actions.cancel}
+          </Button>
+        </div>
+      ) : (
+        <>
+          <h3
+            ref={headingRef}
+            className="text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            tabIndex={-1}
+          >
+            Confirm placement
+          </h3>
+          <p
+            className="mt-1 break-words text-xs text-foreground"
+            data-placement-result-title={
+              snapshot.resultTitleDraft === null ? undefined : "true"
+            }
+          >
+            {snapshot.resultTitleDraft ?? snapshot.release.source.title}
+          </p>
+          {snapshot.resultTitleDraft !== null ? (
+            <p
+              className="break-words text-[11px] text-muted-foreground"
+              data-placement-source-title="true"
+            >
+              Source: {snapshot.release.source.title}
+            </p>
+          ) : null}
+          <p className="break-words text-[11px] text-muted-foreground">
+            {snapshot.release.target.path.join(" → ")}
+          </p>
+          <p className="mt-2 text-xs font-medium text-foreground">
+            {snapshot.resultType === "node" ? "Node" : "Bit"}
+          </p>
+          {snapshot.release.target.isFull ? (
+            <p className="mt-2 text-xs font-semibold text-muted-foreground" role="status">
+              No available grid cell in this target
+            </p>
+          ) : null}
+          <div
+            aria-atomic={reliabilityCopy === null ? undefined : "true"}
+            aria-label={reliabilityCopy === null ? undefined : "Placement status"}
+            aria-live={reliabilityCopy === null ? undefined : "polite"}
+            className="placement-reliability-rail"
+            role={reliabilityCopy === null ? undefined : "status"}
+          >
+            <span
+              aria-hidden="true"
+              className="placement-reliability-mark"
+              data-placement-reliability-mark={reliabilityState}
+            />
+            <span>{reliabilityCopy}</span>
+          </div>
+          <div className="placement-reliability-actions mt-3 flex gap-2">
+            {snapshot.phase === "unknown" || snapshot.phase === "reconciling" ? (
+              <Button
+                ref={reconcileRef}
+                aria-disabled={snapshot.phase === "reconciling" || undefined}
+                className="placement-reliability-action"
+                size="sm"
+                type="button"
+                onClick={() => {
+                  if (snapshot.phase === "unknown") onReconcile?.();
+                }}
+              >
+                {INBOX_TRIAGE_COPY.placementReliability.actions.checkAgain}
+              </Button>
+            ) : snapshot.phase === "confirmation" || snapshot.phase === "pending" ? (
+              <Button
+                ref={confirmRef}
+                aria-disabled={locked || undefined}
+                className="placement-reliability-action"
+                disabled={snapshot.release.target.isFull}
+                size="sm"
+                type="button"
+                onClick={() => {
+                  if (!locked && snapshot.phase === "confirmation") {
+                    onConfirm?.();
+                  }
+                }}
+              >
+                Confirm
+              </Button>
+            ) : snapshot.terminalKind === "not-applied" ? (
+              <Button
+                ref={retryRef}
+                className="placement-reliability-action placement-reliability-retry"
+                size="sm"
+                type="button"
+                onClick={onConfirm}
+              >
+                {INBOX_TRIAGE_COPY.placementReliability.actions.retry}
+              </Button>
+            ) : null}
+            {snapshot.phase === "terminal" ||
+            snapshot.phase === "confirmation" ||
+            snapshot.phase === "pending" ||
+            snapshot.phase === "unknown" ||
+            snapshot.phase === "reconciling" ? (
+              <Button
+                ref={cancelRef}
+                aria-disabled={locked || undefined}
+                className="placement-reliability-action"
+                size="sm"
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (!locked) onCancel?.();
+                }}
+              >
+                {INBOX_TRIAGE_COPY.placementReliability.actions.cancel}
+              </Button>
+            ) : null}
+          </div>
+        </>
+      )}
+    </section>
   );
 }
 
@@ -478,12 +1452,14 @@ function getSectionBodyState({
   overTargetId,
   parentNode,
   pendingPlacementDropId,
+  targetFeedback,
 }: {
   activeDragItem: TriageDragItem;
   index: number;
   overTargetId: string | null;
   parentNode: Node | null;
   pendingPlacementDropId: string | null;
+  targetFeedback: TriageTargetFeedback;
 }): HierarchyCellState {
   if (index > 0 && parentNode === null) return "default";
   const dropId = getTriageHierarchyDropId(
@@ -499,6 +1475,7 @@ function getSectionBodyState({
     }),
     overTargetId,
     pendingPlacementDropId,
+    targetFeedback,
   });
 }
 
@@ -510,6 +1487,11 @@ function ExplorerColumn({
   isDimmed,
   itemIds,
   label,
+  pathStatus,
+  pathStatusAnnouncementSuppressed,
+  remoteArrivals,
+  onClearRemoteArrivals,
+  onDismissPathStatus,
   onScrollPositionChange,
   parentNode,
   scrollPosition,
@@ -522,6 +1504,11 @@ function ExplorerColumn({
   isDimmed: boolean;
   itemIds: string[];
   label: (typeof COLUMN_LABELS)[number];
+  pathStatus: RenderedExplorerPathStatus | null;
+  pathStatusAnnouncementSuppressed: boolean;
+  remoteArrivals: ExplorerItemIdentity[];
+  onClearRemoteArrivals: (columnId: string) => void;
+  onDismissPathStatus: (status: RenderedExplorerPathStatus) => void;
   onScrollPositionChange: (
     columnId: string,
     position: TriageSessionScrollPosition,
@@ -531,6 +1518,7 @@ function ExplorerColumn({
   targetParentPath: string[];
 }) {
   const bodyRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const sectionIndex = COLUMN_LABELS.indexOf(label);
   const sectionDropId = getTriageHierarchyDropId(
     sectionIndex === 0 ? "body-home" : `body-l${sectionIndex}`,
@@ -547,6 +1535,14 @@ function ExplorerColumn({
       targetParentPath,
     } satisfies TriageDropData,
   });
+  const sectionDropData = {
+    kind: "triage-hierarchy-drop",
+    dropId: sectionDropId,
+    parentNodeId: parentNode?.id ?? null,
+    targetNodeLevel: parentNode?.level ?? null,
+    targetTitle: parentNode?.title ?? "Home",
+    targetParentPath,
+  } satisfies TriageDropData;
   const itemIdsKey = itemIds.join("\u0000");
 
   useLayoutEffect(() => {
@@ -569,6 +1565,9 @@ function ExplorerColumn({
 
   function handleScroll(event: UIEvent<HTMLDivElement>) {
     const body = event.currentTarget;
+    if (body.scrollTop <= 0 && remoteArrivals.length > 0) {
+      onClearRemoteArrivals(columnId);
+    }
     const bodyTop = body.getBoundingClientRect().top;
     const firstVisible = Array.from(
       body.querySelectorAll<HTMLElement>("[data-explorer-item-id]"),
@@ -603,15 +1602,84 @@ function ExplorerColumn({
       )}
     >
       <div className="border-b border-border/50 bg-muted/30 px-3 py-2">
-        <h3
-          className="font-mono text-[10px] font-medium uppercase text-muted-foreground"
-          data-testid={headingTestId}
-          id={`${headingTestId}-label`}
-          tabIndex={-1}
-        >
-          {label}
-        </h3>
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <h3
+            ref={headingRef}
+            className="font-mono text-[10px] font-medium uppercase text-muted-foreground"
+            data-testid={headingTestId}
+            id={`${headingTestId}-label`}
+            tabIndex={-1}
+          >
+            {label}
+          </h3>
+          {remoteArrivals.length > 0 ? (
+            <button
+              aria-label={explorerTemplate(
+                INBOX_TRIAGE_COPY.explorerStatus.actions.showNewIn,
+                { level: label },
+              )}
+              className="explorer-remote-count"
+              type="button"
+              onClick={() => {
+                const body = bodyRef.current;
+                const target = Array.from(
+                  body?.querySelectorAll<HTMLElement>(
+                    "[data-explorer-item-id]",
+                  ) ?? [],
+                ).find((element) =>
+                  remoteArrivals.some(
+                    (identity) =>
+                      element.dataset.explorerItemId === identity.id &&
+                      element.dataset.explorerItemType === identity.type,
+                  ),
+                );
+                onClearRemoteArrivals(columnId);
+                (target ?? headingRef.current)?.focus({ preventScroll: true });
+                if (body !== null) body.scrollTop = 0;
+              }}
+            >
+              {remoteArrivals.length === 1
+                ? INBOX_TRIAGE_COPY.explorerStatus.arrival.one
+                : explorerTemplate(
+                    INBOX_TRIAGE_COPY.explorerStatus.arrival.many,
+                    { count: remoteArrivals.length },
+                  )}
+            </button>
+          ) : null}
+        </div>
       </div>
+      {pathStatus !== null ? (
+        <div
+          aria-atomic={
+            pathStatus.kind === "stale-placement" &&
+            pathStatusAnnouncementSuppressed
+              ? undefined
+              : "true"
+          }
+          aria-live={
+            pathStatus.kind === "stale-placement" &&
+            pathStatusAnnouncementSuppressed
+              ? undefined
+              : "polite"
+          }
+          className="explorer-path-status"
+          role={
+            pathStatus.kind === "stale-placement" &&
+            pathStatusAnnouncementSuppressed
+              ? undefined
+              : "status"
+          }
+        >
+          <span>{explorerPathStatusCopy(pathStatus)}</span>
+          <button
+            className="explorer-status-action"
+            type="button"
+            onClick={() => onDismissPathStatus(pathStatus)}
+          >
+            {INBOX_TRIAGE_COPY.explorerStatus.actions.dismiss}
+          </button>
+        </div>
+      ) : null}
       <div
         ref={(node) => {
           bodyRef.current = node;
@@ -623,6 +1691,10 @@ function ExplorerColumn({
           CELL_STATE_CLASSES[bodyState],
         )}
         data-testid={`hierarchy-section-body-${sectionIndex === 0 ? "home" : `l${sectionIndex}`}`}
+        data-triage-drop-id={sectionDropId}
+        data-triage-explorer-column="true"
+        data-triage-hierarchy-drop={JSON.stringify(sectionDropData)}
+        data-triage-target-state={bodyState}
         onScroll={handleScroll}
       >
         {children}
@@ -640,7 +1712,9 @@ function HierarchyItemList({
   overTargetId,
   parentPath,
   pendingPlacementDropId,
+  reveal,
   selectedNodeId,
+  targetFeedback,
 }: {
   activeDragItem: TriageDragItem;
   bits: Bit[];
@@ -650,7 +1724,9 @@ function HierarchyItemList({
   overTargetId: string | null;
   parentPath: string[];
   pendingPlacementDropId: string | null;
+  reveal: GridExplorerSearchResult | null;
   selectedNodeId?: string | null;
+  targetFeedback: TriageTargetFeedback;
 }) {
   if (!isLoading && nodes.length === 0 && bits.length === 0) {
     return (
@@ -669,11 +1745,13 @@ function HierarchyItemList({
           key={node.id}
           activeDragItem={activeDragItem}
           isSelected={selectedNodeId === node.id}
+          isRevealed={reveal?.type === "node" && reveal.id === node.id}
           node={node}
           onSelectNode={onSelectNode}
           overTargetId={overTargetId}
           parentPath={parentPath}
           pendingPlacementDropId={pendingPlacementDropId}
+          targetFeedback={targetFeedback}
         />
       ))}
       {bits.length > 0 ? (
@@ -683,7 +1761,11 @@ function HierarchyItemList({
           </div>
           <div className="flex flex-col gap-0.5">
             {bits.map((bit) => (
-              <BitContextRow key={bit.id} bit={bit} />
+              <BitContextRow
+                key={bit.id}
+                bit={bit}
+                isRevealed={reveal?.type === "bit" && reveal.id === bit.id}
+              />
             ))}
           </div>
         </div>
@@ -695,31 +1777,36 @@ function HierarchyItemList({
 function NodeDropCell({
   activeDragItem,
   isSelected,
+  isRevealed,
   node,
   onSelectNode,
   overTargetId,
   parentPath,
   pendingPlacementDropId,
+  targetFeedback,
 }: {
   activeDragItem: TriageDragItem;
   isSelected: boolean;
+  isRevealed: boolean;
   node: Node;
   onSelectNode?: (nodeId: string) => void;
   overTargetId: string | null;
   parentPath: string[];
   pendingPlacementDropId: string | null;
+  targetFeedback: TriageTargetFeedback;
 }) {
   const dropId = getTriageHierarchyDropId(node.id);
+  const dropData = {
+    kind: "triage-hierarchy-drop",
+    dropId,
+    parentNodeId: node.id,
+    targetNodeLevel: node.level,
+    targetTitle: node.title,
+    targetParentPath: parentPath,
+  } satisfies TriageDropData;
   const { setNodeRef } = useDroppable({
     id: dropId,
-    data: {
-      kind: "triage-hierarchy-drop",
-      dropId,
-      parentNodeId: node.id,
-      targetNodeLevel: node.level,
-      targetTitle: node.title,
-      targetParentPath: parentPath,
-    } satisfies TriageDropData,
+    data: dropData,
   });
   const state = getCellState({
     activeDragItem,
@@ -731,6 +1818,7 @@ function NodeDropCell({
     }),
     overTargetId,
     pendingPlacementDropId,
+    targetFeedback,
   });
   const content = (
     <>
@@ -755,9 +1843,14 @@ function NodeDropCell({
           CELL_BASE_CLASS,
           activeDragItem === null && "hover:bg-muted hover:text-foreground",
           isSelected && "bg-accent text-foreground ring-1 ring-primary",
+          isRevealed && "explorer-revealed-row",
           CELL_STATE_CLASSES[state],
         )}
         data-explorer-item-id={node.id}
+        data-explorer-item-type="node"
+        data-triage-drop-id={dropId}
+        data-triage-hierarchy-drop={JSON.stringify(dropData)}
+        data-triage-target-state={state}
         type="button"
         onClick={() => onSelectNode(node.id)}
       >
@@ -770,19 +1863,33 @@ function NodeDropCell({
     <div
       ref={setNodeRef}
       aria-disabled={state === "invalid"}
-      className={cn(CELL_DROP_ONLY_CLASS, CELL_STATE_CLASSES[state])}
+      className={cn(
+        CELL_DROP_ONLY_CLASS,
+        CELL_STATE_CLASSES[state],
+        isRevealed && "explorer-revealed-row",
+      )}
       data-explorer-item-id={node.id}
+      data-explorer-item-type="node"
+      data-triage-drop-id={dropId}
+      data-triage-hierarchy-drop={JSON.stringify(dropData)}
+      data-triage-target-state={state}
+      tabIndex={-1}
     >
       {content}
     </div>
   );
 }
 
-function BitContextRow({ bit }: { bit: Bit }) {
+function BitContextRow({ bit, isRevealed }: { bit: Bit; isRevealed: boolean }) {
   return (
     <div
-      className="flex items-center gap-2 rounded-md px-3 py-1.5"
+      className={cn(
+        "flex items-center gap-2 rounded-md px-3 py-1.5",
+        isRevealed && "explorer-revealed-row",
+      )}
       data-explorer-item-id={bit.id}
+      data-explorer-item-type="bit"
+      tabIndex={-1}
     >
       <ListTodo
         aria-hidden="true"
