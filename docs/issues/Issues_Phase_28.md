@@ -3,7 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Tasks 149–153 `[x]`, Accepted; Task 154 is `Implemented; awaiting user review/acceptance` and remains `[ ]`
+> State: Tasks 149–154 `[x]`, Accepted; Task 155 and Phase 29 have not started
 
 ## Status Legend
 
@@ -102,7 +102,7 @@ and are outside Phase 28 scope.
 | Field | Durable value |
 | --- | --- |
 | Task | `154 — Render DP-VQ09 Result Title and direct-limit surfaces` |
-| State | `Implemented; awaiting user review/acceptance`; Task 154 remains `[ ]`; the bounded `P28-09` repair is complete |
+| State | Accepted by the user on 2026-08-26 at checkpoint `643da813a32943be5dc3362f82a4823a46d219b6`; implementation `28ba551a73030800ca8933a6b4513c3802782edc`; accepted `src` tree `e0e911a758363df677ed32eeef64910351a58478`; fingerprint `a033fb805ad4f836a25ae0023d25e142b9cac4771f49fd96f75901466b7394ae`; Task 154 is `[x]`, Accepted; `P28-09` remains Closed |
 | Approval | Exact fresh candidate-pinned Task 154 work order on 2026-08-26, bounded by `docs/issues/Issues_Phase_28.gate-c.json`, accepted `docs/issues/Issues_Phase_24.Task_116.dp-vq09.json`, and the exact current Task 154 contract; explicit same-session `P28-07` approval adds only the two existing Workspace owner/test paths, and explicit same-session `P28-08` approval adds only the existing Scratch-breakdown hook/test readiness owner paths recorded below |
 | Approved base / entrypoint | Integration base `8cb2d904a55c136ca319e7bdf619d8e5d962fce8`; Task 154 entrypoint and recovery anchor `29bab4fe0ea2d0abcc837b070161ec0ea1ea5b4a`; accepted Task 153 `src` tree `bcdcc5f2ed9c5ece9780a6f5ea0ccf261d5044a5` |
 | Exact scope | Modify only the approved placement hook/test, Explorer/test, global CSS, inbox-triage copy/test, the `P28-07`-approved Workspace/direct mounted test owners, and the `P28-08`-approved Scratch-breakdown hook/test readiness owner; the Workspace delta remains limited to authoritative source/candidate projection, no-write invalidation wiring, once-only announcement, and the existing safe focus fallback proof; the Scratch-breakdown delta is limited to a read-only current-snapshot `isReady` projection and direct test, with no other hook behavior change; create `docs/verification/inbox-triage/task-154.md`; update only this ledger state and the actual measured Task 154 workflow-pilot row |
@@ -110,7 +110,7 @@ and are outside Phase 28 scope.
 | Dependencies | Tasks 116, 128, and 152 are `[x]`, Accepted; `DP-VQ09=A` is accepted and released for Task 154 only; no unresolved Task 154 prerequisite |
 | Issues / deviations | `P28-07`, `P28-08`, and `P28-09` — Closed. The one approved `P28-09` cycle bound suppression to the successful callback result and added exactly the three locked-state regressions; final High-risk review found no remaining Critical or Important issue. No owner or product-meaning expansion occurred. Closed `P28-06` remains unchanged. |
 | Canonical impact | `Reflected` for closed `P28-07` and `P28-08`; `None` for closed `P28-09`, which changes no current contract owner or product meaning. The accepted `DP-VQ09` product meaning and receipt are unchanged. |
-| Next legal action | Stop at the clean committed Task 154 implementation checkpoint and await explicit user review/acceptance. Keep Task 154 `[ ]`; do not push, publish, integrate, clean up, or start another task. |
+| Next legal action | Task 154 acceptance-only transaction is complete. Task 155 and Phase 29 remain unstarted and require their own exact lifecycle authority; do not push, publish, integrate, clean up, or start another task. |
 
 ### Task 154 Owner-Discovery Blocker
 
