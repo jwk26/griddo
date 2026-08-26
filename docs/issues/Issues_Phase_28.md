@@ -3,7 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Tasks 149–152 `[x]`, Accepted; Task 153 is `Awaiting User Decision`; Task 154 remains unstarted
+> State: Tasks 149–152 `[x]`, Accepted; Task 153 is implemented and awaiting checkpoint; Task 154 remains unstarted
 
 ## Status Legend
 
@@ -102,21 +102,21 @@ and are outside Phase 28 scope.
 | Field | Durable value |
 | --- | --- |
 | Task | `153 — Render DP-VQ08 placement reliability states` |
-| State | `Awaiting User Decision`; Task 153 remains `[ ]`; Task 154 remains `[ ]`, unstarted |
+| State | Implemented at `b73dc2505c30a132e7d9fbbfcd02bf09a2aef188`; awaiting checkpoint; Task 153 remains `[ ]`; Task 154 remains `[ ]`, unstarted |
 | Approval | Exact fresh candidate-pinned Task 153 work order on 2026-08-26, bounded by `docs/issues/Issues_Phase_28.gate-c.json`, accepted `docs/issues/Issues_Phase_24.Task_115.dp-vq08.json`, and the exact current Task 153 contract |
 | Approved base / entrypoint | Integration base `8cb2d904a55c136ca319e7bdf619d8e5d962fce8`; Task 153 entrypoint and recovery anchor `12fd2a9dedd282a784e0f9113950cb1a7646477c`; accepted Task 152 `src` tree `8247077665a212e575faad44f20046de623b7306` |
 | Exact scope | Modify only the approved placement hook/test, Explorer/test, global CSS, and inbox-triage copy/test owners; create `docs/verification/inbox-triage/task-153.md`; update only this ledger state and the actual measured Task 153 workflow-pilot row |
 | Behavior | Realize the accepted fixed reliability rail inside Task 152's captured affordance for pending, unknown, reconciling, authoritative not-applied, stale source, stale target, and authoritative success; exact receipt-owned copy/actions/focus; same-operation read-only Check again; same logical operation/result ID Retry; retained truth and operation-owned lifetime; polite atomic static status; reduced-motion parity and eight-theme mapping |
 | Dependencies | Tasks 115, 128, and 152 are `[x]`, Accepted; `DP-VQ08=A` is accepted for Task 153 only; no unresolved Task 153 prerequisite |
-| Issues / deviations | `P28-06` — three bounded repair cycles were used after the initial TDD implementation. Latest focused verification has 69/74 passing; five pre-existing Explorer tests now fail because the always-mounted empty placement success live region also has `role=status`, making their unqualified single-status queries ambiguous. No product assertion failed. The minimum fourth-cycle hypothesis is to keep the empty live region semantic-neutral and atomically add/remove its status semantics and exact success text in the existing success effect. |
+| Issues / deviations | `P28-06` — the user explicitly approved one fourth bounded repair cycle. The exact hypothesis was correct: the empty live-region node is semantic-neutral; authoritative success synchronously establishes status semantics, accessible name, and exact copy before acknowledgement; only a later placement operation clears them. Latest focused and full gates pass. |
 | Canonical impact | `None` — Task 153 implements the existing approved contract without changing canonical product, design, policy, data, persistence, command, or lifecycle authority |
-| Next legal action | User disposition on one fourth bounded repair cycle for `P28-06`; without that approval, stop with the current Task 153 product/test diff uncommitted and Task 154 unstarted |
+| Next legal action | User checkpoint disposition for Task 153 and `P28-06`; do not mark Task 153 `[x]`, start Task 154, push, publish, or merge in this Working session |
 
 ### Task 153 Repair Budget Stop
 
 | ID | State | Evidence | Exact minimum repair hypothesis | Canonical impact |
 | --- | --- | --- | --- | --- |
-| `P28-06` | `Awaiting User Decision` | Initial RED: 13 expected Task 153 failures with 61/74 passing. The first latest-input repair reached 72/74, the next reached 73/74 and exposed the React `set-state-in-effect` lint error, and the third removed both lint designs but left 69/74 focused tests because an empty success region is already exposed as a second `status`. Full gate before the last invalidation passed 98 files / 1086 tests; lint then stopped on the now-replaced render-ref design. Current full gate is invalidated and was not rerun. | Authorize one fourth cycle changing only the existing success live-region semantics: render an empty semantic-neutral node; on authoritative success, the existing operation-ID effect atomically sets `role=status`, the accessible name, and exact sentence before acknowledgement; clear those semantics only when a later placement operation begins. Then rerun focused, lint, and the entire full gate. | `None` — implementation-local accessibility/test-integration repair to the accepted DP-VQ08 success-announcement contract. |
+| `P28-06` | `Awaiting User Decision` | Initial RED: 13 expected failures with 61/74 passing. Repairs one through three reached 72/74, then 73/74 with a lint error, then 69/74 at durable stop `7c7a6857d43c68db42f6382f601007c004d576b1`. After explicit fourth-cycle approval, the exact semantic-neutral live-region repair passed 74/74 focused tests and the latest full gate: 98 files / 1086 tests, lint 0 errors, typecheck, and build. Implementation is `b73dc2505c30a132e7d9fbbfcd02bf09a2aef188`; detailed evidence is in `task-153.md`. | User approved the stated minimum hypothesis on 2026-08-26. No additional owner, scope, or product decision was required. User checkpoint disposition remains required before issue closure or Task acceptance. | `None` — implementation-local accessibility/test-integration repair to the accepted DP-VQ08 success-announcement contract. |
 
 ## Task 152 Accepted Checkpoint
 
