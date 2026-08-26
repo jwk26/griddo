@@ -1734,7 +1734,9 @@ fingerprint `a2da7ab6f49ba50d9fba9d3ea5e3fb568990e05f264891844e2534e2e00dfdd8`.
 
 **Commit contract:** DP-VQ07 copy/search body plus only the `P28-04`-moved `DP-VQ06-EXPLORER` selected-Bit disappearance realization, integration, tests, styles, and Task 151 evidence; `feat(triage): render explorer hierarchy search`.
 
-### Task 152: [ ] Connect direct/staged placement selection and confirmation
+### Task 152: [x] Connect direct/staged placement selection and confirmation
+
+**Accepted:** user-approved checkpoint `e25b1ebe0275d8a7ff16c612195b11780da98b21`; implementation commit `7ba936147722e1e8ebb4a3fb6b9bceed9a65ca88`; accepted `src` tree `8247077665a212e575faad44f20046de623b7306`.
 
 **Files and actions:** create `src/hooks/use-triage-placement.ts` and `.test.tsx`; modify existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, and `src/components/triage/triage-workspace.tsx` and `.test.tsx`; extend `src/hooks/use-triage-operation-lock.test.tsx`. Own the complete mounted-page foreground state machine: staged release target; direct **Node/Bit type plus destination/path selection**; target-column confirmation; source/target/version snapshot; focus/locks; explicit Confirm/Cancel; one Task 123 dispatch; reconcile unknown. Before dispatch, synchronously acquire Task 136's shared `placement` lock; retain it through pending/unknown/reconciling, deny the complete matrix including placement Cancel/Escape and duplicate Confirm without queue/replay, and release only on terminal result. Another active owner blocks placement start/Confirm. A full destination must open the same target-column affordance with a **visible full-target reason, disabled Confirm, and working Cancel**. Drop alone writes nothing; no alternate parent/sibling/cell, keyboard placement, picker, or hidden shortcut. Integrate with Task 135 headless search so placement can close/lock it without requiring VQ-07 UI.
 

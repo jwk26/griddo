@@ -3,7 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Tasks 149–151 `[x]`, Accepted; Task 152 implemented awaiting user review; Tasks 153–154 remain unstarted
+> State: Tasks 149–152 `[x]`, Accepted; Tasks 153–154 remain unstarted
 
 ## Status Legend
 
@@ -97,14 +97,15 @@ No production implementation or Task 149 execution occurred.
 Phase 27 items `P27-06` and `P27-08` remain Deferred under their Phase 27 owner
 and are outside Phase 28 scope.
 
-## Task 152 Durable Start
+## Task 152 Accepted Checkpoint
 
 | Field | Durable value |
 | --- | --- |
 | Task | `152 — Connect direct/staged placement selection and confirmation` |
-| State | `Implemented; awaiting user review`; Task 152 remains `[ ]`; Tasks 153–154 remain unstarted |
+| State | `Accepted`; Task 152 `[x]`; Tasks 153–154 remain `[ ]`, unstarted |
 | Approval | Exact fresh candidate-pinned Task 152 run-task work order on 2026-08-26, bounded by `docs/issues/Issues_Phase_28.gate-c.json` and the exact current Task 152 contract |
 | Approved base / entrypoint | Integration base `8cb2d904a55c136ca319e7bdf619d8e5d962fce8`; feature entrypoint and recovery anchor `0ab994e867754db96d64c34691942d27cf9c8efc`; accepted Task 151 `src` tree `8d80becbfb821d54453939b81e20c249a4fb2a1a` |
+| User disposition | Control Tower authorized acceptance on 2026-08-26 of checkpoint `e25b1ebe0275d8a7ff16c612195b11780da98b21`, implementation commit `7ba936147722e1e8ebb4a3fb6b9bceed9a65ca88`, accepted `src` tree `8247077665a212e575faad44f20046de623b7306`, relevant-input fingerprint `424a4e6436a5de33ef2f033293129c172660b0769fda68d419cd64894f4e2db2`, and `P28-05` as repaired with canonical impact `None` |
 | Exact scope | Create the placement coordinator hook/test and Task 152 verification record; modify only the approved DnD, Explorer, Workspace, and owner tests; extend the shared operation-lock test; update only this ledger state and the actual measured Task 152 workflow-pilot row |
 | Behavior | Staged release target; direct Node/Bit type plus destination/path selection; distinct target-column confirmation; exact source/target/version snapshot; explicit Confirm/Cancel and focus return; shared `placement` lock; one Task 123 dispatch; pending/unknown/reconciling lock retention; duplicate/competing-intent rejection without queue/replay; terminal-only release; full-target reason with disabled Confirm and working Cancel; Task 135 search close/lock coordination; valid/invalid/stale/moved/no-write and unknown reconciliation; Drop-only no-write |
 | Dependencies | Tasks 123, 128, 134, 135, 136, 139, 145, and 149 are `[x]`, Accepted; no unresolved Task 152 prerequisite |
@@ -112,13 +113,13 @@ and are outside Phase 28 scope.
 | Canonical impact | `None` — Task 152 implements the existing approved contract without changing canonical product, design, policy, data, persistence, or lifecycle authority |
 | Implementation / verification | Implementation commit `7ba936147722e1e8ebb4a3fb6b9bceed9a65ca88`; `src` tree `8247077665a212e575faad44f20046de623b7306`; exact latest-input fingerprint `424a4e6436a5de33ef2f033293129c172660b0769fda68d419cd64894f4e2db2`. Focused gate 5 files / 182 tests; full gate 98 files / 1075 tests; lint 0 errors with 11 unchanged warnings; typecheck/build/diff check passed. Detailed evidence: `docs/verification/inbox-triage/task-152.md` |
 | Review | Final sole-session High-risk review found no remaining Critical, Important, or Minor issue in the bounded nine-path product/test diff |
-| Next legal action | Return the clean committed Task 152 implementation checkpoint for user review; keep Task 152 `[ ]` and do not start Task 153 |
+| Next legal action | Return the clean committed Task 152 acceptance-only checkpoint to Control Tower; Tasks 153–154 remain `[ ]`, unstarted |
 
 ### Task 152 Review Blockers
 
 | ID | State | Evidence | Exact minimum repair hypothesis | Canonical impact |
 | --- | --- | --- | --- | --- |
-| `P28-05` | `In Progress` | The user explicitly approved the fourth bounded repair. The mounted regression exhausted the former five-frame window, rendered the authoritative result afterward, and failed with focus on `body`; after the minimum repair it focuses the exact typed card. The implementation now uses grid-render-driven identity matching and records completion only after actual focus, with no timer or retry budget. Latest focused/full gates and final review are green; durable details and the superseding fingerprint are in `docs/verification/inbox-triage/task-152.md`. | Implemented exactly as approved within the existing Explorer/Workspace/tests. Awaiting Task 152 checkpoint disposition; no further repair hypothesis is open. | `None` — implementation-local focus/lifecycle correction to the existing Task 152 contract. |
+| `P28-05` | `Closed` | The user accepted checkpoint `e25b1ebe0275d8a7ff16c612195b11780da98b21` and the fourth-cycle repair. The mounted regression exhausted the former five-frame window, rendered the authoritative result afterward, and failed with focus on `body`; the accepted implementation focuses the exact typed card through grid-render-driven identity matching with no timer or retry budget. Durable details and the accepted fingerprint are in `docs/verification/inbox-triage/task-152.md`. | Accepted as repaired on 2026-08-26; no further repair hypothesis is open. | `None` — implementation-local focus/lifecycle correction to the existing Task 152 contract. |
 
 ## Task 151 Accepted Checkpoint
 
