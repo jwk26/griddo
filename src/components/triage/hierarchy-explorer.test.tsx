@@ -111,7 +111,10 @@ function setGrid(parentId: string | null, nodes: Node[], bits: Bit[] = []) {
 
 const defaultProps: {
   activeDragItem: TriageDragItem;
-  onPendingPlacementInvalidated: (dropId: string) => void;
+  onPendingPlacementInvalidated: (
+    dropId: string,
+    focusAfterClose: () => void,
+  ) => void;
   onPointerGeometryChange: (point: { x: number; y: number }) => void;
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
@@ -627,7 +630,9 @@ describe("HierarchyExplorer Task 134 base", () => {
       explorerOpenColumnIds: ["home", home.id],
     });
     const pendingPlacementDropId = getTriageHierarchyDropId(level1.id);
-    const onPendingPlacementInvalidated = vi.fn();
+    const onPendingPlacementInvalidated = vi.fn(
+      (_dropId: string, focusAfterClose: () => void) => focusAfterClose(),
+    );
 
     const view = render(
       <HierarchyExplorer
@@ -653,6 +658,7 @@ describe("HierarchyExplorer Task 134 base", () => {
     expect(onPendingPlacementInvalidated).toHaveBeenCalledOnce();
     expect(onPendingPlacementInvalidated).toHaveBeenCalledWith(
       pendingPlacementDropId,
+      expect.any(Function),
     );
     expect(useTriageStore.getState().explorerPathIds).toEqual([home.id]);
   });
@@ -832,9 +838,13 @@ describe("HierarchyExplorer Task 150 remote/path statuses", () => {
       explorerPathIds: [home.id],
       explorerOpenColumnIds: ["home", home.id],
     });
+    const onPendingPlacementInvalidated = vi.fn(
+      (_dropId: string, focusAfterClose: () => void) => focusAfterClose(),
+    );
     const view = render(
       <HierarchyExplorer
         {...defaultProps}
+        onPendingPlacementInvalidated={onPendingPlacementInvalidated}
         pendingPlacementDropId={getTriageHierarchyDropId(target.id)}
       />,
     );
@@ -847,6 +857,7 @@ describe("HierarchyExplorer Task 150 remote/path statuses", () => {
     view.rerender(
       <HierarchyExplorer
         {...defaultProps}
+        onPendingPlacementInvalidated={onPendingPlacementInvalidated}
         pendingPlacementDropId={getTriageHierarchyDropId(target.id)}
       />,
     );

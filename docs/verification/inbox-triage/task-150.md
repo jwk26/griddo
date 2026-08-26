@@ -1,6 +1,6 @@
 # Task 150 `P28-04` Canonical Amendment Evidence
 
-> Date: 2026-08-25
+> Date: 2026-08-26
 > Task state: `[ ]`, implemented; awaiting checkpoint acceptance
 > Durable start HEAD: `9b73387e4690e48aba8b0bb293e611c6abc0b792`
 > Start-base source tree: `e83086e1044bb2deebc6837f997bebc06b316146`
@@ -43,12 +43,14 @@ without starting Search or any Task 151 product behavior.
 
 | Command/check | Exit | Relevant result |
 | --- | ---: | --- |
-| Candidate synchronized adapter resolver at `4574df8…`, receipt-less `run-task` | 3 | `approval_required`, `contract_ready=true`; policy/runtime paths resolved read-only |
+| Candidate synchronized adapter resolver at `46aa185…`, receipt-less `run-task` | 3 | `approval_required`, `contract_ready=true`; exact branch, worktree, HEAD, Adapter paths, and command catalog resolved read-only; the user's bounded sixth-cycle order remained the write authority |
 | Candidate synchronized adapter resolver at `4574df8…` with Phase 28 Gate C receipt as `run-phase` | 0 | `ready`; exact Gate C receipt and current feature worktree validated |
 | `git rev-parse HEAD HEAD^ HEAD^{tree}:src` | 0 | `4574df8…`, `b1ff7fe…`, `e83086e…` matched the supplied repair recovery identity |
 | Owner and symbol inspection with `rg`/`sed` | 0 | Confirmed the three missing producer projections above |
-| Focused Task 150 owners | 0 | Latest fifth-cycle input: 7 files / 177 tests passed, including typed identity collision, local-result ordering, stale-placement focus, themes, provenance, DnD, Workspace, Explorer, store, copy, and GridRuntime compatibility |
-| `pnpm test` | 0 | Latest input: 96 files / 1018 tests passed |
+| Sixth-cycle RED: `pnpm test src/components/triage/triage-workspace.test.tsx -t "retains focus"` | 1 | Both production-owner cases closed the real Radix placement dialog but left final focus on `<body>`: 2 failed / 43 skipped, directly confirming the approved close-lifecycle hypothesis |
+| Sixth-cycle GREEN: same targeted command | 0 | 2 passed / 43 skipped; both nearest-ancestor-row and destination-full-label-heading focus survived the actual dialog close, with no placement confirm/write and no sibling selection |
+| Focused Task 150 owners | 0 | Latest sixth-cycle input: 7 files / 179 tests passed, including typed identity collision, local-result ordering, actual stale-placement dialog-close focus, themes, provenance, DnD, Workspace, Explorer, store, copy, and GridRuntime compatibility |
+| `pnpm test` | 0 | Latest input: 96 files / 1020 tests passed |
 | `pnpm lint` | 0 | 0 errors; 11 unchanged warnings outside Task 150 writes |
 | `pnpm typecheck` | 0 | Passed |
 | `pnpm build` | 0 | Next.js production build compiled, typechecked, and generated every page |
@@ -85,7 +87,29 @@ latest-input gates above supersede every earlier Task 150 test input.
    focus to the nearest valid ancestor and all seven non-default themes own a
    count role. Chromium then exposed and repaired one action-local issue where
    ordinary `focus()` reversed `scrollTop=0`; `preventScroll` now preserves the
-   receipt's simultaneous top-and-focus postcondition. No sixth cycle was used.
+   receipt's simultaneous top-and-focus postcondition.
+6. The user approved the production-dialog finding and exactly one sixth
+   cycle. The targeted RED mounted Workspace, Explorer, and the real Radix
+   placement dialog; after authoritative target disappearance, both the valid
+   ancestor-row and no-ancestor heading cases closed without a confirm/write
+   but ended with focus on `<body>`. Explorer now hands the already-computed
+   fallback focus operation to Workspace, and Workspace consumes it only from
+   the existing `DialogContent.onCloseAutoFocus` lifecycle while preventing
+   Radix's default restoration. The two production-owner regressions prove the
+   dialog closes, no sibling/ghost is selected, the path remains valid, and
+   final focus remains on the receipt-defined row or full-label heading. No
+   shared dialog, copy, placement, persistence, or canonical-contract owner
+   changed, and no seventh cycle was used.
+
+## Sixth-Cycle Browser Disposition
+
+No sixth-cycle browser run was performed. The user made browser focus evidence
+conditional on the production-owner regression being unable to prove the real
+dialog-close interaction; the new mounted Workspace/Radix regressions directly
+prove that interaction and both final-focus destinations. The fifth-cycle
+browser evidence below remains historical evidence for its unchanged
+remote-count theme, focus-visible, and reduced-motion CSS inputs, but it was
+not reused as proof of the changed stale-placement close/focus input.
 
 ## Fifth-Cycle Browser Evidence
 
@@ -114,7 +138,7 @@ repository writes.
 | --- | --- | --- |
 | Explorer lifecycle/provenance read owner | Create `src/hooks/use-explorer-remote-status.ts` and `.test.tsx` | One mounted-page reactive projection using existing `getAllActiveNodes()`/`getAllActiveBits()` for the whole-active-tree stable-ID-to-parent baseline and `getNode()`/`getBit()` for watched path records: initial-snapshot exclusion; remote insertion; stable-ID parent move exclusion; exact local-result exclusion; deleted/archived/moved/unreachable path classification. No DataStore API, IndexedDB, schema, persistence, timestamp inference, component repository read, or second provenance owner. |
 | Existing placement producer | Modify `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts` | Capture the stable `Node`/`Bit` identity already returned by successful `createNode`/`createBit` and expose only that identity. Preserve command ordering, confirmation, mutation, cancellation, locking, focus, and failure semantics. |
-| Mounted handoff owner | Modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` | Pass the exact local placement result identity from the existing DnD controller to Explorer; add no presentation or product behavior in Workspace. |
+| Mounted handoff and placement-dialog lifecycle owner | Modify `src/components/triage/triage-workspace.tsx` and `.test.tsx` | Pass the exact local placement result identity from the existing DnD controller to Explorer. For stale placement only, retain Explorer's fallback focus operation and consume it from the existing `DialogContent.onCloseAutoFocus` lifecycle after cancellation, without changing placement writes, normal dialog focus, or shared dialog authority. |
 | Compatibility-test owner | Modify only `src/components/layout/grid-runtime.test.tsx` | Keep its manual `useTriageDnd` mock conformant by returning `localPlacementResult: null`; canonical product impact `None`. |
 | Task 150 presentation | Existing approved Explorer/store/copy/CSS paths and tests | Realize all `DP-VQ06-EXPLORER` states except selected-Bit disappearance, using the authoritative projections above while preserving stable-ID/offset anchoring. |
 | Existing Task 151 reveal owner | Task 151's already planned `src/hooks/use-grid-explorer-search.ts` and `.test.tsx`, `src/components/triage/grid-explorer-search-results.tsx` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, copy, and CSS paths | Realize only selected-Bit disappearance after a real Task 151 Bit reveal: clear that Bit selection/reveal, preserve/focus the valid parent, and reuse the exact parent-column copy/action/lifetime. No new selection/reveal owner and no Task 151 work in this continuation. |

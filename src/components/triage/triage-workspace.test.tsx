@@ -1502,6 +1502,134 @@ describe("TriageWorkspace", () => {
     ).toBeInTheDocument();
   });
 
+  it("retains focus on the nearest valid ancestor after the stale placement dialog closes", async () => {
+    const ancestor = {
+      ...createNode({ id: "ancestor", title: "Ancestor" }),
+      systemRole: null,
+    };
+    const target = {
+      ...createNode({
+        id: "parent-1",
+        parentId: ancestor.id,
+        level: 1,
+        title: "Target",
+      }),
+      systemRole: null,
+    };
+    const sibling = {
+      ...createNode({
+        id: "sibling",
+        parentId: ancestor.id,
+        level: 1,
+        title: "Sibling",
+      }),
+      systemRole: null,
+    };
+    let childNodes = [target, sibling];
+    let pendingPlacement: PendingPlacement = createDirectPendingPlacement({
+      dropId: "triage-hierarchy:parent-1",
+      targetParentPath: [ancestor.title],
+    });
+    const cancelPlacement = vi.fn(() => {
+      pendingPlacement = null;
+      handlePlacementCancelMock();
+    });
+    useGridDataMock.mockImplementation((parentId) => ({
+      nodes:
+        parentId === null
+          ? [ancestor]
+          : parentId === ancestor.id
+            ? childNodes
+            : [],
+      bits: [],
+      isLoading: false,
+    }));
+    useTriageDndMock.mockImplementation(() =>
+      createDndState({
+        handlePlacementCancel: cancelPlacement,
+        pendingPlacement,
+      }),
+    );
+    useTriageStore.setState({
+      explorerPathIds: [ancestor.id],
+      explorerOpenColumnIds: ["home", ancestor.id],
+    });
+
+    const view = render(<TriageWorkspace node={createNode()} />);
+    expect(screen.getByRole("dialog", { name: "Place item?" })).toBeInTheDocument();
+
+    childNodes = [sibling];
+    view.rerender(<TriageWorkspace node={createNode()} />);
+
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: "Place item?" })).not.toBeInTheDocument(),
+    );
+    expect(handlePlacementCancelMock).toHaveBeenCalledOnce();
+    expect(handlePlacementConfirmMock).not.toHaveBeenCalled();
+    expect(useTriageStore.getState().explorerPathIds).toEqual([ancestor.id]);
+    expect(
+      screen.getByRole("button", { name: `Select Node: ${sibling.title}` }),
+    ).not.toHaveAttribute("aria-current");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: `Select Node: ${ancestor.title}` }),
+      ).toHaveFocus(),
+    );
+  });
+
+  it("retains focus on the destination full-label heading when no ancestor row survives", async () => {
+    const target = {
+      ...createNode({ id: "parent-1", title: "Target" }),
+      systemRole: null,
+    };
+    const sibling = {
+      ...createNode({ id: "sibling", title: "Sibling" }),
+      systemRole: null,
+    };
+    let rootNodes = [target, sibling];
+    let pendingPlacement: PendingPlacement = createDirectPendingPlacement({
+      targetParentPath: [],
+    });
+    const cancelPlacement = vi.fn(() => {
+      pendingPlacement = null;
+      handlePlacementCancelMock();
+    });
+    useGridDataMock.mockImplementation((parentId) => ({
+      nodes: parentId === null ? rootNodes : [],
+      bits: [],
+      isLoading: false,
+    }));
+    useTriageDndMock.mockImplementation(() =>
+      createDndState({
+        handlePlacementCancel: cancelPlacement,
+        pendingPlacement,
+      }),
+    );
+    useTriageStore.setState({
+      explorerPathIds: [],
+      explorerOpenColumnIds: ["home"],
+    });
+
+    const view = render(<TriageWorkspace node={createNode()} />);
+    expect(screen.getByRole("dialog", { name: "Place item?" })).toBeInTheDocument();
+
+    rootNodes = [sibling];
+    view.rerender(<TriageWorkspace node={createNode()} />);
+
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: "Place item?" })).not.toBeInTheDocument(),
+    );
+    expect(handlePlacementCancelMock).toHaveBeenCalledOnce();
+    expect(handlePlacementConfirmMock).not.toHaveBeenCalled();
+    expect(useTriageStore.getState().explorerPathIds).toEqual([]);
+    expect(
+      screen.getByRole("button", { name: `Select Node: ${sibling.title}` }),
+    ).not.toHaveAttribute("aria-current");
+    await waitFor(() =>
+      expect(screen.getByTestId("hierarchy-column-heading-home")).toHaveFocus(),
+    );
+  });
+
   it("requires a type choice for direct breakdown placement and passes the selected type on confirm", () => {
     useTriageDndMock.mockReturnValue(
       createDndState({

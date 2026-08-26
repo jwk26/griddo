@@ -35,7 +35,10 @@ import type { Bit, Node } from "@/types";
 
 interface HierarchyExplorerProps {
   activeDragItem: TriageDragItem;
-  onPendingPlacementInvalidated: (dropId: string) => void;
+  onPendingPlacementInvalidated: (
+    dropId: string,
+    focusAfterClose: () => void,
+  ) => void;
   onPointerGeometryChange: (point: { x: number; y: number }) => void;
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
@@ -560,8 +563,9 @@ export function HierarchyExplorer({
         columnId: fallbackId ?? "home",
         fallbackPathIds: validation,
       });
-      onPendingPlacementInvalidated(pendingPlacementDropId);
-      focusFallback(validation);
+      onPendingPlacementInvalidated(pendingPlacementDropId, () => {
+        focusFallback(validation);
+      });
     }
   }, [
     onPendingPlacementInvalidated,

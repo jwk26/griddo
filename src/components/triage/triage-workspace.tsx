@@ -755,6 +755,7 @@ function TriageWorkspaceContent({
     ids: Set<string>;
   }>({ scratchId: null, ready: false, ids: new Set() });
   const invalidatedDragRef = useRef<StagingAlertState | null>(null);
+  const pendingPlacementFallbackFocusRef = useRef<(() => void) | null>(null);
   const removeStagedCandidate = useTriageStore(
     (state) => state.removeStagedCandidate,
   );
@@ -1120,8 +1121,9 @@ function TriageWorkspaceContent({
   }, [activeDragItem]);
 
   const handlePendingPlacementInvalidated = useCallback(
-    (dropId: string) => {
+    (dropId: string, focusAfterClose: () => void) => {
       if (pendingPlacement?.dropId === dropId) {
+        pendingPlacementFallbackFocusRef.current = focusAfterClose;
         setStagingAlert({
           kind: "invalidated-placement",
           copy: stagingTemplate(
@@ -1137,6 +1139,14 @@ function TriageWorkspaceContent({
     },
     [handlePlacementCancel, pendingPlacement],
   );
+
+  const handlePlacementDialogCloseAutoFocus = useCallback((event: Event) => {
+    const focusAfterClose = pendingPlacementFallbackFocusRef.current;
+    if (focusAfterClose === null) return;
+    pendingPlacementFallbackFocusRef.current = null;
+    event.preventDefault();
+    focusAfterClose();
+  }, []);
 
   const showNewCandidates = useCallback((type: "node" | "bit") => {
     const ids = [...newCandidateIds[type]];
@@ -1589,6 +1599,7 @@ function TriageWorkspaceContent({
 
           <PlacementConfirmationDialog
             key={pendingPlacement?.dropId ?? "none"}
+            onCloseAutoFocus={handlePlacementDialogCloseAutoFocus}
             pendingPlacement={pendingPlacement}
             selectedScratchId={selectedScratchId}
             onCancel={handlePlacementCancel}
@@ -1610,11 +1621,13 @@ function TriageWorkspaceContent({
 
 function PlacementConfirmationDialog({
   onCancel,
+  onCloseAutoFocus,
   onConfirm,
   pendingPlacement,
   selectedScratchId,
 }: {
   onCancel: () => void;
+  onCloseAutoFocus: (event: Event) => void;
   onConfirm: (
     scratchId: string,
     confirmedType?: "node" | "bit",
@@ -1649,6 +1662,7 @@ function PlacementConfirmationDialog({
       }}
     >
       <DialogContent
+        onCloseAutoFocus={onCloseAutoFocus}
         showCloseButton={false}
         className="max-w-md w-full overflow-y-hidden border border-border bg-popover p-6 rounded-lg"
       >
