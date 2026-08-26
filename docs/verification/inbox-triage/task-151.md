@@ -8,6 +8,8 @@
 > Implementation commit: `ab3637ac20eca545e273a5566730464ec8af9f26`
 > Third-repair recovery anchor / `src` tree: `7ff75b1bd167de124c303cc487ecbe7c9f1237d3` / `0d78415800c18bfb80f8b13c6f5c5d1af9d984a6`
 > Third-repair durable start / implementation commits: `11d38d2` / `7028d50ffd0b4a2700d57318847a4e91ef2c1139`
+> Fourth-repair recovery anchor / `src` tree: `cb9280534f1f502973e5bd762a7e254331809a04` / `dd833bb91e5724306287e1a074abf3a5722c5c82`
+> Fourth-repair durable start / implementation commits: `b7b87f0` / `c2749b6`
 
 ## Scope Reconciled
 
@@ -38,9 +40,10 @@ eight-theme role family.
   result returns focus to the input.
 - Selection revalidation is bound to a mounted operation generation. Query
   edit, close, DnD start, retry/new authoritative request, synchronous Scratch
-  switch observation, or route unmount invalidates an outstanding read before
-  it can alter search/reveal/focus or return a selected outcome. Explorer also
-  checks mounted ownership before the selected outcome can write Zustand path.
+  switch observation, Home/breadcrumb/ordinary-row path intent, or route
+  unmount invalidates an outstanding read before it can alter
+  search/reveal/focus or return a selected outcome. Explorer also checks
+  mounted ownership before the selected outcome can write Zustand path.
 - A valid result clears active/interrupted search, restores the real ancestor
   path, marks and focuses the actual Node/Bit DOM row, and exposes the exact
   reveal sentence. Reveal has no timer and ends only through the approved
@@ -50,16 +53,18 @@ eight-theme role family.
   activation restores it. X/Escape clear active/interrupted search and reveal
   and return focus to `Search Explorer`. Component unmount owns Inbox route
   exit; Scratch changes retain mounted search/reveal without forcing focus.
-- Explorer-root Escape handling covers input, result, X, Try again, Search
-  Explorer, and interrupted ordinary-column focus. It clears the whole active
-  or interrupted session and reveal, returns focus to the entry when Explorer
-  owns that handoff, and leaves an active DnD interaction's focus ownership and
-  bubbling Escape lifecycle intact.
+- The mounted Explorer owner captures Escape at `document`, covering input,
+  result, X, Try again, Search Explorer, interrupted ordinary-column focus,
+  Scratch controls, and external Staging/DnD sources. It clears the whole
+  active or interrupted session and reveal, returns focus to the entry when
+  Explorer owns that handoff, and leaves an active DnD interaction's focus
+  ownership and bubbling Escape lifecycle intact.
 - Stale-selection feedback is subordinate to and ended by its receipt-owned
   query/request/refresh/error/retry/selection/close events. Results render the
   stored `result.icon` through the existing icon map and the stored color;
   Arrow navigation changes native button focus without manufacturing
-  `aria-selected`.
+  `aria-selected`. The named result count is a native `ul`; every result is a
+  native `li` that owns its action button.
 - When a revealed Bit alone disappears or moves away while its original parent
   chain stays valid, the hook changes the single reveal presentation to the
   exact parent-column `selection-cleared` state. Explorer preserves the parent
@@ -81,13 +86,14 @@ eight-theme role family.
 | Review repair RED | 1 | Two tests proved invalid parent deletion incorrectly emitted Bit-only selection-cleared status and a Bit moved from a still-valid parent incorrectly retained reveal. |
 | Third-repair initial RED | 1 | 17 focused failures/errors: 16 expected behavior assertions reproduced missing selection-operation invalidation, owner-wide Escape, feedback precedence/lifetime, stored icon identity, canonical input focus role, non-selecting Arrow focus, complete theme roles, and post-unmount path protection; one jsdom `scrollIntoView` spy setup error was corrected so the internal-only-scroll regression could join the GREEN gate. |
 | Third-repair synchronous Scratch RED | 1 | The strengthened same-call-stack assertion proved a React layout effect could invalidate after a pending completion; the repair moved Scratch identity observation to synchronous Zustand subscription without changing preserved search/reveal or focus. |
-| Third-repair lint repair evidence | 0 with one new warning | Removing focus-derived `aria-selected` exposed `role=option`'s required-selection warning. The result collection now uses a named native-button `role=list`, retaining result-count semantics without inventing selection; the rerun returned to the unchanged 11 out-of-scope warnings. |
-| Focused Task 151 gate | 0 | `pnpm vitest run` on utility, hook, results, Explorer, and copy tests: 5 files / 82 tests passed. |
-| Full test gate | 0 | `pnpm test`: 97 files / 1060 tests passed. |
+| Third-repair lint repair evidence | 0 with one new warning | Removing focus-derived `aria-selected` exposed `role=option`'s required-selection warning. The third checkpoint changed this to a direct-button `role=list`; targeted review rejected that structure because it lacked required listitem ownership. The fourth repair replaces it with native `ul > li > button` semantics. |
+| Fourth-repair RED | 1 | Five expected assertions failed: Home and breadcrumb path intent each called pending-selection invalidation 0 times; Explorer-external active/interrupted Escape each called close 0 times; and the named results list exposed 0 listitems. |
+| Focused Task 151 gate | 0 | `pnpm vitest run` on utility, hook, results, Explorer, and copy tests: 5 files / 86 tests passed. |
+| Full test gate | 0 | `pnpm test`: 97 files / 1064 tests passed. |
 | Lint | 0 | 0 errors; 11 unchanged warnings in files outside Task 151 ownership. |
 | Typecheck | 0 | `pnpm typecheck` / `tsc --noEmit` passed. |
 | Build | 0 | Next.js 16.2.1 production build compiled, typechecked, and generated all seven routes. |
-| Diff checks | 0 | `git diff --check` passed; the repair production/test diff is exactly the seven approved Task 151 owners and adds no `useSearch()`, `searchAll()`, timer, result DnD, Undo, DataStore API/schema, or Task 152+ owner. |
+| Diff checks | 0 | `git diff --check` passed; the fourth-repair production/test diff is exactly five approved Task 151 owners and adds no `useSearch()`, `searchAll()`, timer, result DnD, Undo, DataStore API/schema, or Task 152+ owner. |
 
 ### Third-Repair Chromium Evidence
 
@@ -114,15 +120,35 @@ same static values with `418px × 32px` geometry. Browser console errors: `0`.
 The temporary profile was moved to Trash after measurement and is recoverable;
 it is not repository or product data.
 
+### Fourth-Repair Chromium Evidence
+
+Fresh Chrome `151.0.7922.174` ran the current production build with a dedicated
+temporary profile. With two browser-only Node fixtures, the browser
+accessibility tree exposed the named `2 results` list with exactly two directly
+owned `listitem` children; DOM structure was native `UL > LI > BUTTON`, with no
+explicit ARIA list/listitem roles required.
+
+With active Search open, focus was placed on the Scratch Pool's external
+`Sort: newest first` control. Escape closed the search body and focused
+`Search Explorer`; explicit reopen showed an empty query and `0 results`,
+directly proving active-state clearing from outside the Explorer subtree; the
+focused regression separately covers interrupted DnD focus ownership. With 22
+results, Arrow Up moved focus to the last result without `aria-selected`; only
+the results `ul` scrolled `0→1354`, while window, document, body, Explorer, and
+shell all remained `0`. The dedicated browser profile and measurement helper
+were moved to Trash and are recoverable; neither is repository or product data.
+
 ## Review And Ownership
 
 Self-review was used because the work order requires this to be the sole fresh
 Working session. Earlier review constrained `selection-cleared` to an exact
 still-valid original parent chain. The third repair review additionally found
 and repaired the synchronous Scratch invalidation race and the focus-only
-`role=option` accessibility collision described above. Final line-by-line
-review found no remaining Critical or Important finding and no fourth cycle is
-started.
+`role=option` collision. Targeted review then rejected checkpoint `cb92805` for
+the three findings repaired by the explicitly approved fourth cycle. Final
+line-by-line review of path intent, document Escape ownership/cleanup,
+active-DnD propagation, and native list ownership found no remaining Critical
+or Important finding.
 
 The production/test diff is limited to the nine planned Task 151 owners. This
 record, the minimum Phase 28 ledger state, and the actual measured workflow
