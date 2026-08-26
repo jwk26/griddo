@@ -187,6 +187,29 @@ function explorerTemplate(
   );
 }
 
+function placementTemplate(template: string, snapshot: TriagePlacementSnapshot) {
+  return explorerTemplate(template, {
+    title: snapshot.release.source.title,
+    destination: snapshot.release.target.path.join(" → "),
+  });
+}
+
+function placementReliabilityCopy(snapshot: TriagePlacementSnapshot) {
+  const copy = INBOX_TRIAGE_COPY.placementReliability;
+  if (snapshot.phase === "pending") return placementTemplate(copy.pending, snapshot);
+  if (snapshot.phase === "unknown") return placementTemplate(copy.unknown, snapshot);
+  if (snapshot.phase === "reconciling") {
+    return placementTemplate(copy.reconciling, snapshot);
+  }
+  if (snapshot.phase === "success") return placementTemplate(copy.success, snapshot);
+  if (snapshot.terminalKind === "not-applied") {
+    return placementTemplate(copy.notApplied, snapshot);
+  }
+  if (snapshot.terminalKind === "stale-source") return copy.staleSource;
+  if (snapshot.terminalKind === "stale-target") return copy.staleTarget;
+  return null;
+}
+
 function explorerPathStatusCopy(status: RenderedExplorerPathStatus): string {
   if (status.kind === "selection-cleared") {
     return explorerTemplate(
@@ -233,6 +256,8 @@ export function HierarchyExplorer({
   const searchEntryRef = useRef<HTMLButtonElement>(null);
   const previousDragRef = useRef<TriageDragItem>(null);
   const focusedLocalPlacementKeyRef = useRef<string | null>(null);
+  const acknowledgedPlacementSuccessRef = useRef<string | null>(null);
+  const placementLiveRegionRef = useRef<HTMLParagraphElement>(null);
   const focusedRevealKeyRef = useRef<string | null>(null);
   const focusedSelectionClearIdRef = useRef<string | null>(null);
   const mountedRef = useRef(false);
@@ -420,6 +445,38 @@ export function HierarchyExplorer({
       search.closeSearch();
     }
   }, [placementSnapshot, search]);
+
+  useEffect(() => {
+    if (placementSnapshot?.phase === "success") {
+      if (
+        acknowledgedPlacementSuccessRef.current !==
+        placementSnapshot.operationId
+      ) {
+        acknowledgedPlacementSuccessRef.current = placementSnapshot.operationId;
+        if (placementLiveRegionRef.current !== null) {
+          placementLiveRegionRef.current.setAttribute("role", "status");
+          placementLiveRegionRef.current.setAttribute("aria-live", "polite");
+          placementLiveRegionRef.current.setAttribute("aria-atomic", "true");
+          placementLiveRegionRef.current.setAttribute(
+            "aria-label",
+            "Placement result status",
+          );
+          placementLiveRegionRef.current.textContent =
+            placementReliabilityCopy(placementSnapshot) ?? "";
+        }
+        onPlacementConfirm?.();
+      }
+    } else if (
+      placementSnapshot !== null &&
+      placementLiveRegionRef.current !== null
+    ) {
+      placementLiveRegionRef.current.textContent = "";
+      placementLiveRegionRef.current.removeAttribute("role");
+      placementLiveRegionRef.current.removeAttribute("aria-live");
+      placementLiveRegionRef.current.removeAttribute("aria-atomic");
+      placementLiveRegionRef.current.removeAttribute("aria-label");
+    }
+  }, [onPlacementConfirm, placementSnapshot]);
 
   useLayoutEffect(() => {
     if (search.mode === "closed" && entryFocusRevision > 0) {
@@ -742,13 +799,16 @@ export function HierarchyExplorer({
     selectedL2Node,
   ]);
   const effectivePendingPlacementDropId =
-    pendingPlacementDropId !== null && visibleDropIds.has(pendingPlacementDropId)
+    placementSnapshot?.phase !== "success" &&
+    pendingPlacementDropId !== null &&
+    visibleDropIds.has(pendingPlacementDropId)
       ? pendingPlacementDropId
       : null;
   const invalidatedPendingDropIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (
+      placementSnapshot?.phase === "success" ||
       pendingPlacementDropId === null ||
       visibleDropIds.has(pendingPlacementDropId)
     ) {
@@ -777,6 +837,7 @@ export function HierarchyExplorer({
   }, [
     onPendingPlacementInvalidated,
     pendingPlacementDropId,
+    placementSnapshot?.phase,
     selectedHomeNode,
     selectedL1Node,
     selectedL2Node,
@@ -889,6 +950,8 @@ export function HierarchyExplorer({
         </button>
       </nav>
 
+      <p ref={placementLiveRegionRef} className="sr-only" />
+
       {search.mode === "active" ? (
         <GridExplorerSearchResults
           feedback={search.feedback}
@@ -969,13 +1032,15 @@ export function HierarchyExplorer({
               targetParentPath={targetParentPath}
             >
               {columnOwnsPlacement ? (
-                <PlacementAffordance
-                  snapshot={placementSnapshot}
-                  onCancel={onPlacementCancel}
-                  onConfirm={onPlacementConfirm}
-                  onReconcile={onPlacementReconcile}
-                  onSelectType={onPlacementSelectType}
-                />
+                placementSnapshot.phase === "success" ? null : (
+                  <PlacementAffordance
+                    snapshot={placementSnapshot}
+                    onCancel={onPlacementCancel}
+                    onConfirm={onPlacementConfirm}
+                    onReconcile={onPlacementReconcile}
+                    onSelectType={onPlacementSelectType}
+                  />
+                )
               ) : null}
               {index > 0 && column.parentNode === null ? null : (
                 <HierarchyItemList
@@ -1023,7 +1088,9 @@ function PlacementAffordance({
   onSelectType?: (type: "node" | "bit") => void;
 }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
   const reconcileRef = useRef<HTMLButtonElement>(null);
+  const retryRef = useRef<HTMLButtonElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const locked =
     snapshot.phase === "pending" ||
@@ -1038,16 +1105,27 @@ function PlacementAffordance({
       headingRef.current?.focus({ preventScroll: true });
     } else if (snapshot.phase === "unknown") {
       reconcileRef.current?.focus({ preventScroll: true });
+    } else if (snapshot.phase === "pending") {
+      confirmRef.current?.focus({ preventScroll: true });
+    } else if (snapshot.phase === "reconciling") {
+      reconcileRef.current?.focus({ preventScroll: true });
+    } else if (snapshot.terminalKind === "not-applied") {
+      retryRef.current?.focus({ preventScroll: true });
     } else if (snapshot.phase === "terminal") {
       cancelRef.current?.focus({ preventScroll: true });
     }
-  }, [snapshot.phase]);
+  }, [snapshot.phase, snapshot.terminalKind]);
+
+  const reliabilityCopy = placementReliabilityCopy(snapshot);
+  const reliabilityState =
+    snapshot.phase === "terminal" ? snapshot.terminalKind : snapshot.phase;
 
   return (
     <section
       aria-label="Placement"
-      className="m-2 rounded-md border border-primary/50 bg-accent/30 p-3"
+      className="placement-affordance m-2 rounded-md border border-primary/50 bg-accent/30 p-3"
       data-placement-phase={snapshot.phase}
+      data-placement-reliability={reliabilityCopy === null ? undefined : reliabilityState}
       data-triage-role="placement-affordance"
       onKeyDown={(event) => {
         if (event.key !== "Escape") return;
@@ -1110,22 +1188,39 @@ function PlacementAffordance({
               No available grid cell in this target
             </p>
           ) : null}
-          <div className="mt-3 flex gap-2">
+          <div
+            aria-atomic={reliabilityCopy === null ? undefined : "true"}
+            aria-label={reliabilityCopy === null ? undefined : "Placement status"}
+            aria-live={reliabilityCopy === null ? undefined : "polite"}
+            className="placement-reliability-rail"
+            role={reliabilityCopy === null ? undefined : "status"}
+          >
+            <span
+              aria-hidden="true"
+              className="placement-reliability-mark"
+              data-placement-reliability-mark={reliabilityState}
+            />
+            <span>{reliabilityCopy}</span>
+          </div>
+          <div className="placement-reliability-actions mt-3 flex gap-2">
             {snapshot.phase === "unknown" || snapshot.phase === "reconciling" ? (
               <Button
                 ref={reconcileRef}
                 aria-disabled={snapshot.phase === "reconciling" || undefined}
+                className="placement-reliability-action"
                 size="sm"
                 type="button"
                 onClick={() => {
                   if (snapshot.phase === "unknown") onReconcile?.();
                 }}
               >
-                Check again
+                {INBOX_TRIAGE_COPY.placementReliability.actions.checkAgain}
               </Button>
             ) : snapshot.phase === "confirmation" || snapshot.phase === "pending" ? (
               <Button
+                ref={confirmRef}
                 aria-disabled={locked || undefined}
+                className="placement-reliability-action"
                 disabled={snapshot.release.target.isFull}
                 size="sm"
                 type="button"
@@ -1137,19 +1232,36 @@ function PlacementAffordance({
               >
                 Confirm
               </Button>
+            ) : snapshot.terminalKind === "not-applied" ? (
+              <Button
+                ref={retryRef}
+                className="placement-reliability-action placement-reliability-retry"
+                size="sm"
+                type="button"
+                onClick={onConfirm}
+              >
+                {INBOX_TRIAGE_COPY.placementReliability.actions.retry}
+              </Button>
             ) : null}
-            <Button
-              ref={cancelRef}
-              aria-disabled={locked || undefined}
-              size="sm"
-              type="button"
-              variant="outline"
-              onClick={() => {
-                if (!locked) onCancel?.();
-              }}
-            >
-              Cancel
-            </Button>
+            {snapshot.phase === "terminal" ||
+            snapshot.phase === "confirmation" ||
+            snapshot.phase === "pending" ||
+            snapshot.phase === "unknown" ||
+            snapshot.phase === "reconciling" ? (
+              <Button
+                ref={cancelRef}
+                aria-disabled={locked || undefined}
+                className="placement-reliability-action"
+                size="sm"
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (!locked) onCancel?.();
+                }}
+              >
+                {INBOX_TRIAGE_COPY.placementReliability.actions.cancel}
+              </Button>
+            ) : null}
           </div>
         </>
       )}

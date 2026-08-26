@@ -222,6 +222,7 @@ function placementSnapshot(
     resultId: "result-1",
     command: null,
     terminalStatus: null,
+    terminalKind: null,
     ...overrides,
   };
 }
@@ -918,6 +919,139 @@ describe("HierarchyExplorer Task 152 target-column placement", () => {
       key: "Escape",
     });
     expect(onPlacementCancel).toHaveBeenCalledOnce();
+  });
+});
+
+describe("HierarchyExplorer Task 153 placement reliability rail", () => {
+  it.each([
+    ["pending", null, "Placing “Project” in Home → Target…", "Confirm"],
+    [
+      "unknown",
+      null,
+      "We couldn’t confirm whether “Project” was placed.",
+      "Check again",
+    ],
+    [
+      "reconciling",
+      null,
+      "Checking whether “Project” was placed…",
+      "Check again",
+    ],
+    [
+      "terminal",
+      "not-applied",
+      "“Project” wasn’t placed. Your source is unchanged.",
+      "Retry",
+    ],
+    [
+      "terminal",
+      "stale-source",
+      "The source changed. Nothing was placed. Cancel and drag it again.",
+      "Cancel",
+    ],
+    [
+      "terminal",
+      "stale-target",
+      "The destination changed. Nothing was placed. Cancel and drag to the current destination.",
+      "Cancel",
+    ],
+  ] as const)(
+    "renders %s / %s with exact atomic copy and current-action focus",
+    (phase, terminalKind, copy, focusedAction) => {
+      const target = createNode({ id: "target-1", title: "Target" });
+      setGrid(null, [target]);
+      const view = render(
+        <HierarchyExplorer
+          {...defaultProps}
+          placementSnapshot={placementSnapshot({
+            phase,
+            resultType: "node",
+            terminalKind,
+            terminalStatus:
+              terminalKind === "not-applied"
+                ? "not_applied"
+                : terminalKind === null
+                  ? null
+                  : "conflict",
+          })}
+        />,
+      );
+      const rail = screen.getByRole("status", { name: "Placement status" });
+      expect(rail).toHaveAttribute("aria-atomic", "true");
+      expect(rail).toHaveAttribute("aria-live", "polite");
+      expect(rail).toHaveTextContent(copy);
+      expect(screen.getByRole("button", { name: focusedAction })).toHaveFocus();
+      if (terminalKind !== "not-applied") {
+        expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+      }
+      view.unmount();
+    },
+  );
+
+  it("acknowledges success once without a visible affordance and leaves focus to the actual card", async () => {
+    const placed = createNode({ id: "result-1", title: "Project" });
+    setGrid(null, [placed]);
+    const onPlacementConfirm = vi.fn();
+    render(
+      <HierarchyExplorer
+        {...defaultProps}
+        localPlacementResult={{ id: placed.id, type: "node" }}
+        placementSnapshot={placementSnapshot({
+          phase: "success",
+          resultType: "node",
+          terminalStatus: "applied",
+        })}
+        onPlacementConfirm={onPlacementConfirm}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "Placement" })).toBeNull();
+    expect(screen.getByRole("status", { name: "Placement result status" })).toHaveTextContent(
+      "Placed “Project” in Home → Target.",
+    );
+    expect(
+      screen.getByRole("button", { name: "Select Node: Project" }),
+    ).toHaveFocus();
+    await waitFor(() => expect(onPlacementConfirm).toHaveBeenCalledOnce());
+  });
+
+  it("defines fixed geometry, static reduced-motion parity, and all eight placement theme families", () => {
+    for (const role of [
+      "placement-reliability-rail",
+      "placement-reliability-mark",
+      "placement-reliability-actions",
+      "placement-reliability-retry",
+    ]) {
+      expect(globalsCss).toContain(`.${role}`);
+    }
+    for (const theme of [
+      "tiny-desk",
+      "neumorphism",
+      "claymorphism",
+      "origami",
+      "terminal",
+      "retro-mac",
+      "graphite",
+    ]) {
+      expect(globalsCss).toContain(
+        `:root[data-color-theme="${theme}"] .placement-reliability-rail`,
+      );
+    }
+    expect(globalsCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.placement-reliability-rail[\s\S]*transition: none/,
+    );
+    const placementBlocks = [
+      ...globalsCss.matchAll(
+        /[^{}]*\.placement-reliability[^{}]*\{([^}]*)\}/g,
+      ),
+    ];
+    for (const [, block] of placementBlocks) {
+      for (const [, value] of block.matchAll(
+        /(?:animation|transition):\s*([^;]+);/g,
+      )) {
+        expect(value.trim()).toMatch(/^none(?:\s*!important)?$/);
+      }
+    }
   });
 });
 

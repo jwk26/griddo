@@ -135,6 +135,20 @@ export interface InboxTriageCopy {
       readonly retryAdd: string;
     };
   };
+  readonly placementReliability: {
+    readonly pending: string;
+    readonly unknown: string;
+    readonly reconciling: string;
+    readonly notApplied: string;
+    readonly staleSource: string;
+    readonly staleTarget: string;
+    readonly success: string;
+    readonly actions: {
+      readonly checkAgain: string;
+      readonly retry: string;
+      readonly cancel: string;
+    };
+  };
   readonly breakdownSuccess: {
     readonly add: string;
     readonly unstage: string;
@@ -385,6 +399,22 @@ export const INBOX_TRIAGE_COPY = {
       retryAdd: "Retry Add",
     },
   },
+  placementReliability: {
+    pending: "Placing “{title}” in {destination}…",
+    unknown: "We couldn’t confirm whether “{title}” was placed.",
+    reconciling: "Checking whether “{title}” was placed…",
+    notApplied: "“{title}” wasn’t placed. Your source is unchanged.",
+    staleSource:
+      "The source changed. Nothing was placed. Cancel and drag it again.",
+    staleTarget:
+      "The destination changed. Nothing was placed. Cancel and drag to the current destination.",
+    success: "Placed “{title}” in {destination}.",
+    actions: {
+      checkAgain: "Check again",
+      retry: "Retry",
+      cancel: "Cancel",
+    },
+  },
   breakdownSuccess: {
     add: "Added.",
     unstage: "Returned to Breakdown.",
@@ -524,7 +554,6 @@ export const INBOX_TRIAGE_COPY = {
   },
   receiptDependent: {
     148: UNAVAILABLE,
-    153: UNAVAILABLE,
     154: UNAVAILABLE,
     157: UNAVAILABLE,
     160: UNAVAILABLE,

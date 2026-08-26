@@ -93,6 +93,19 @@ function terminal(
   };
 }
 
+function authoritativeSource(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "source-1",
+    scratchBitId: "scratch-1",
+    content: "Direct source",
+    order: 0,
+    consumedAt: null,
+    version: 7,
+    createdAt: 1,
+    ...overrides,
+  } as PlacementResult["source"];
+}
+
 describe("useTriagePlacement — Task 152 atomic foreground owner", () => {
   const ids = ["operation-1", "result-1"];
 
@@ -176,6 +189,13 @@ describe("useTriagePlacement — Task 152 atomic foreground owner", () => {
       expect.objectContaining({ id: "result-1" }),
       expect.objectContaining({ operationId: "operation-1" }),
     );
+    expect(result.current.snapshot).toMatchObject({
+      phase: "success",
+      terminalStatus: "applied",
+    });
+    await act(async () => {
+      await expect(result.current.confirm()).resolves.toBe(true);
+    });
     expect(result.current.snapshot).toBeNull();
   });
 
@@ -271,5 +291,115 @@ describe("useTriagePlacement — Task 152 atomic foreground owner", () => {
     act(() => expect(result.current.begin(stagedRelease)).toBe(false));
     expect(result.current.snapshot).toBeNull();
     expect(dispatchPlacement).not.toHaveBeenCalled();
+  });
+
+  it("maps returned authoritative facts to not-applied, stale source, or stale target without a generic terminal", async () => {
+    const cases = [
+      {
+        result: {
+          operationId: "operation-1",
+          status: "not_applied",
+          result: null,
+          source: authoritativeSource(),
+          candidate: null,
+        } satisfies PlacementResult,
+        terminalKind: "not-applied",
+      },
+      {
+        result: {
+          operationId: "operation-1",
+          status: "conflict",
+          result: null,
+          source: authoritativeSource({ version: 8 }),
+          candidate: null,
+        } satisfies PlacementResult,
+        terminalKind: "stale-source",
+      },
+      {
+        result: {
+          operationId: "operation-1",
+          status: "rejected",
+          result: null,
+          source: authoritativeSource(),
+          candidate: null,
+        } satisfies PlacementResult,
+        terminalKind: "stale-target",
+      },
+    ] as const;
+
+    for (const entry of cases) {
+      const dispatchPlacement = vi.fn(async () => entry.result);
+      const { result, unmount } = renderHook(() =>
+        useTriagePlacement({
+          operationLock: makeLock(),
+          createId: vi
+            .fn()
+            .mockReturnValueOnce("operation-1")
+            .mockReturnValueOnce("result-1"),
+          dispatchPlacement,
+        }),
+      );
+      act(() => {
+        result.current.begin(directRelease);
+        result.current.selectDirectType("bit");
+      });
+      await act(async () => {
+        await expect(result.current.confirm()).resolves.toBe(true);
+      });
+      expect(result.current.snapshot).toMatchObject({
+        phase: "terminal",
+        terminalKind: entry.terminalKind,
+      });
+      unmount();
+    }
+  });
+
+  it("retries only authoritative not-applied with the same logical operation and preallocated result ID", async () => {
+    const lock = makeLock();
+    const dispatchPlacement = vi
+      .fn<(command: TriagePlacementCommand) => Promise<PlacementResult>>()
+      .mockImplementationOnce(async (command) => ({
+        ...terminal(command, "not_applied"),
+        source: authoritativeSource(),
+      }))
+      .mockImplementationOnce(async (command) => terminal(command, "applied"));
+    const onApplied = vi.fn();
+    const { result } = renderHook(() =>
+      useTriagePlacement({
+        operationLock: lock,
+        createId: vi
+          .fn()
+          .mockReturnValueOnce("operation-1")
+          .mockReturnValueOnce("result-1"),
+        dispatchPlacement,
+        onApplied,
+      }),
+    );
+    act(() => {
+      result.current.begin(directRelease);
+      result.current.selectDirectType("bit");
+    });
+    await act(async () => {
+      await result.current.confirm();
+    });
+    expect(result.current.snapshot).toMatchObject({
+      phase: "terminal",
+      terminalKind: "not-applied",
+    });
+
+    let retry!: Promise<boolean>;
+    act(() => {
+      retry = result.current.confirm();
+    });
+    expect(result.current.snapshot?.phase).toBe("pending");
+    await act(async () => {
+      await expect(retry).resolves.toBe(true);
+    });
+    expect(dispatchPlacement).toHaveBeenCalledTimes(2);
+    expect(dispatchPlacement.mock.calls[1]![0]).toEqual(
+      dispatchPlacement.mock.calls[0]![0],
+    );
+    expect(lock.acquire).toHaveBeenNthCalledWith(2, "placement", "operation-1");
+    expect(onApplied).toHaveBeenCalledOnce();
   });
 });

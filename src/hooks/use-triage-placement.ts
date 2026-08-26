@@ -42,7 +42,13 @@ export type TriagePlacementPhase =
   | "pending"
   | "unknown"
   | "reconciling"
-  | "terminal";
+  | "terminal"
+  | "success";
+
+export type TriagePlacementTerminalKind =
+  | "not-applied"
+  | "stale-source"
+  | "stale-target";
 
 export type TriagePlacementSnapshot = Readonly<{
   release: TriagePlacementRelease;
@@ -52,6 +58,7 @@ export type TriagePlacementSnapshot = Readonly<{
   resultId: string;
   command: TriagePlacementCommand | null;
   terminalStatus: RepositoryOperationStatus | null;
+  terminalKind: TriagePlacementTerminalKind | null;
 }>;
 
 type PlacementInvoker = (
@@ -121,6 +128,47 @@ function makeCommand(
   };
 }
 
+function returnedSourceMatches(
+  snapshot: TriagePlacementSnapshot,
+  result: PlacementResult,
+): boolean {
+  const { release } = snapshot;
+  const source = result.source;
+  if (
+    source === null ||
+    source.id !== release.source.id ||
+    source.scratchBitId !== release.scratchBitId ||
+    source.content !== release.source.title ||
+    source.version !== release.source.version ||
+    source.consumedAt !== null
+  ) {
+    return false;
+  }
+
+  if (release.kind === "direct") return result.candidate === null;
+  const candidate = result.candidate;
+  return (
+    release.candidate !== undefined &&
+    candidate !== null &&
+    candidate.id === release.candidate.id &&
+    candidate.sourceBreakdownId === release.source.id &&
+    candidate.scratchBitId === release.scratchBitId &&
+    candidate.resultType === release.candidate.resultType &&
+    candidate.version === release.candidate.version &&
+    candidate.lifecycle === "staged"
+  );
+}
+
+function classifyTerminalKind(
+  snapshot: TriagePlacementSnapshot,
+  result: PlacementResult,
+): TriagePlacementTerminalKind {
+  if (result.status === "not_applied") return "not-applied";
+  return returnedSourceMatches(snapshot, result)
+    ? "stale-target"
+    : "stale-source";
+}
+
 export function useTriagePlacement({
   operationLock,
   createId = () => crypto.randomUUID(),
@@ -153,6 +201,7 @@ export function useTriagePlacement({
         resultId: createId(),
         command: null,
         terminalStatus: null,
+        terminalKind: null,
       };
       commit(next);
       return true;
@@ -189,7 +238,13 @@ export function useTriagePlacement({
         result.result !== null
       ) {
         onApplied?.(result.result, command);
-        commit(null);
+        commit({
+          ...current,
+          phase: "success",
+          command,
+          terminalStatus: result.status,
+          terminalKind: null,
+        });
         return true;
       }
       commit({
@@ -197,6 +252,7 @@ export function useTriagePlacement({
         phase: "terminal",
         command,
         terminalStatus: result.status,
+        terminalKind: classifyTerminalKind(current, result),
       });
       return true;
     },
@@ -205,20 +261,36 @@ export function useTriagePlacement({
 
   const confirm = useCallback(async (): Promise<boolean> => {
     const current = snapshotRef.current;
+    if (current?.phase === "success") {
+      commit(null);
+      return true;
+    }
+    if (current === null || inFlightRef.current || operationLock.isLocked()) {
+      return false;
+    }
+
+    const isRetry =
+      current.phase === "terminal" &&
+      current.terminalKind === "not-applied" &&
+      current.command !== null;
     if (
-      current?.phase !== "confirmation" ||
-      current.release.target.isFull ||
-      inFlightRef.current ||
-      operationLock.isLocked()
+      !isRetry &&
+      (current.phase !== "confirmation" || current.release.target.isFull)
     ) {
       return false;
     }
-    const command = makeCommand(current);
+    const command = isRetry ? current.command : makeCommand(current);
     if (command === null) return false;
     if (!operationLock.acquire("placement", command.operationId)) return false;
 
     inFlightRef.current = true;
-    const pending = { ...current, phase: "pending", command } as const;
+    const pending = {
+      ...current,
+      phase: "pending",
+      command,
+      terminalStatus: null,
+      terminalKind: null,
+    } as const;
     commit(pending);
     try {
       const result = await dispatchPlacement(command);
@@ -258,7 +330,8 @@ export function useTriagePlacement({
       current === null ||
       current.phase === "pending" ||
       current.phase === "unknown" ||
-      current.phase === "reconciling"
+      current.phase === "reconciling" ||
+      current.phase === "success"
     ) {
       return false;
     }

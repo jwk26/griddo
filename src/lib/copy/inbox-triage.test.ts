@@ -235,6 +235,25 @@ describe("Inbox/Triage core-English copy", () => {
     });
   });
 
+  it("owns the exact approved DP-VQ08 placement reliability wording", () => {
+    expect(INBOX_TRIAGE_COPY.placementReliability).toEqual({
+      pending: "Placing “{title}” in {destination}…",
+      unknown: "We couldn’t confirm whether “{title}” was placed.",
+      reconciling: "Checking whether “{title}” was placed…",
+      notApplied: "“{title}” wasn’t placed. Your source is unchanged.",
+      staleSource:
+        "The source changed. Nothing was placed. Cancel and drag it again.",
+      staleTarget:
+        "The destination changed. Nothing was placed. Cancel and drag to the current destination.",
+      success: "Placed “{title}” in {destination}.",
+      actions: {
+        checkAgain: "Check again",
+        retry: "Retry",
+        cancel: "Cancel",
+      },
+    });
+  });
+
   it("owns the exact approved DP-VQ02 Add/Unstage success wording", () => {
     expect(INBOX_TRIAGE_COPY.breakdownSuccess).toEqual({
       add: "Added.",
@@ -323,7 +342,7 @@ describe("Inbox/Triage core-English copy", () => {
 
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      148, 153, 154, 157, 160, 162,
+      148, 154, 157, 160, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {
