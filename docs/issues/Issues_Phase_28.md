@@ -3,7 +3,7 @@
 > Branch: `phase-28/explorer-search-pointer-placement`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-28-explorer-search-pointer-placement`
 > Kickoff date: 2026-08-24
-> State: Tasks 149–151 `[x]`, Accepted; Tasks 152–154 remain unstarted
+> State: Tasks 149–151 `[x]`, Accepted; Task 152 In Progress; Tasks 153–154 remain unstarted
 
 ## Status Legend
 
@@ -96,6 +96,21 @@ No production implementation or Task 149 execution occurred.
 
 Phase 27 items `P27-06` and `P27-08` remain Deferred under their Phase 27 owner
 and are outside Phase 28 scope.
+
+## Task 152 Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Task | `152 — Connect direct/staged placement selection and confirmation` |
+| State | `In Progress`; Task 152 remains `[ ]`; Tasks 153–154 remain unstarted |
+| Approval | Exact fresh candidate-pinned Task 152 run-task work order on 2026-08-26, bounded by `docs/issues/Issues_Phase_28.gate-c.json` and the exact current Task 152 contract |
+| Approved base / entrypoint | Integration base `8cb2d904a55c136ca319e7bdf619d8e5d962fce8`; feature entrypoint and recovery anchor `0ab994e867754db96d64c34691942d27cf9c8efc`; accepted Task 151 `src` tree `8d80becbfb821d54453939b81e20c249a4fb2a1a` |
+| Exact scope | Create the placement coordinator hook/test and Task 152 verification record; modify only the approved DnD, Explorer, Workspace, and owner tests; extend the shared operation-lock test; update only this ledger state and the actual measured Task 152 workflow-pilot row |
+| Behavior | Staged release target; direct Node/Bit type plus destination/path selection; distinct target-column confirmation; exact source/target/version snapshot; explicit Confirm/Cancel and focus return; shared `placement` lock; one Task 123 dispatch; pending/unknown/reconciling lock retention; duplicate/competing-intent rejection without queue/replay; terminal-only release; full-target reason with disabled Confirm and working Cancel; Task 135 search close/lock coordination; valid/invalid/stale/moved/no-write and unknown reconciliation; Drop-only no-write |
+| Dependencies | Tasks 123, 128, 134, 135, 136, 139, 145, and 149 are `[x]`, Accepted; no unresolved Task 152 prerequisite |
+| Issues / deviations | None at start; the stale plan header/Phase Index aggregate is explicitly excluded from silent Task 152 repair by the work order and is not an affected readiness blocker |
+| Canonical impact | `None` — Task 152 implements the existing approved contract without changing canonical product, design, policy, data, persistence, or lifecycle authority |
+| Next legal action | Test-first Task 152 implementation, focused/full verification, High-risk review, durable evidence, and a clean committed implementation checkpoint; keep Task 152 `[ ]` and do not start Task 153 |
 
 ## Task 151 Accepted Checkpoint
 
