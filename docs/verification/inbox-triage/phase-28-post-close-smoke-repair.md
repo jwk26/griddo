@@ -83,7 +83,7 @@ Runtime: freshly generated Next.js 16.2.1 production build from the repair workt
 - Staged Node success focused the exact authoritative Node `Stage Node smoke`, ID `0b2456e8-71b2-4889-9f95-21df8d03ac30`; staged Bit success focused the exact authoritative Bit `Stage Bit smoke`, ID `9075f8dc-1e5a-444c-873c-800f4e3655e1`. Both intersected the owning visible column.
 - Ordinary confirmation rendered zero `.placement-reliability-rail` elements and zero local status roles while preserving Confirm/Cancel. A MutationObserver captured the real pending rail as `Placing “Direct Bit smoke” in Home → Smoke Target 12…`, `role="status"`, `aria-live="polite"`.
 - 1024 x 768 smoke: viewport and workspace were 1024 x 768/976 x 768, document `scrollWidth === clientWidth === 1024`, and no horizontal document overflow occurred. The placement, focused heading, Confirm, and Cancel were immediately visible; Cancel was exercised successfully. The owning column alone scrolled, while `document.scrollY` remained 0.
-- Screenshots were captured outside the repository as `phase-28-post-close-repair-1440x900.png` and `phase-28-post-close-repair-1024x768.png`; they are evidence artifacts, not tracked inputs.
+- Visual captures at both viewport sizes were reviewed during the browser run. The browser tool initially emitted two untracked PNGs into the primary repository root; both exact files were removed immediately, and no screenshot is retained in either repository worktree. The measurements above are the durable browser record.
 
 The IndexedDB records used for the matrix were browser-local smoke fixtures only. They did not alter repository persistence code, schema, DataStore, candidate truth, or the tracked write set.
 
