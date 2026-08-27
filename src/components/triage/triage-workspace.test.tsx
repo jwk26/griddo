@@ -432,6 +432,8 @@ beforeEach(() => {
   useTriageStore.setState({
     selectedScratchId: "scratch-1",
     externalScratchRemoval: null,
+    explorerPathIds: [],
+    explorerOpenColumnIds: ["home"],
     scratchPoolQuery: "",
     scratchPoolActiveIds: ["scratch-1", "scratch-2", "scratch-3"],
     scratchPoolResultIds: ["scratch-1", "scratch-2", "scratch-3"],
@@ -1558,7 +1560,14 @@ describe("TriageWorkspace", () => {
     expect(screen.getByTestId("hierarchy-section-body-l3")).toBeInTheDocument();
   });
 
-  it("projects only the successful coordinator result identity into Explorer", async () => {
+  it.each([
+    ["direct", "node"],
+    ["direct", "bit"],
+    ["staged", "node"],
+    ["staged", "bit"],
+  ] as const)(
+    "projects the successful %s %s identity and confirmed destination path into Explorer",
+    async (kind, resultType) => {
     const target = {
       ...createNode({ id: "parent-1", title: "Parent" }),
       systemRole: null,
@@ -1568,26 +1577,68 @@ describe("TriageWorkspace", () => {
       bits: [],
       isLoading: false,
     }));
+    if (kind === "staged") {
+      const source = authoritativeBreakdown();
+      useStagedCandidatesMock.mockReturnValue({
+        isReady: true,
+        candidates: [
+          authoritativeCandidate({
+            content: source.content,
+            resultType,
+            source,
+          }),
+        ],
+        integrityCandidates: [],
+        pendingOperations: [],
+        unknownOperations: [],
+        reconcilingOperations: [],
+        counts: { nodes: resultType === "node" ? 1 : 0, bits: resultType === "bit" ? 1 : 0 },
+        eligibility: { stagedSourceIds: new Set(["breakdown-1"]) },
+        stageCandidate: stageCandidateMock,
+        reconcileStageCandidate: reconcileStageCandidateMock,
+        unstageCandidate: unstageCandidateMock,
+        reconcileUnstageCandidate: reconcileUnstageCandidateMock,
+      });
+    }
     useTriageDndMock.mockReturnValue(
       createDndState({
-        pendingPlacement: createDirectPendingPlacement(),
+        pendingPlacement:
+          kind === "direct"
+            ? createDirectPendingPlacement()
+            : createStagedPendingPlacement({
+                candidateLabel: "Project",
+                candidateType: resultType,
+              }),
       }),
     );
 
     render(<TriageWorkspace node={createNode()} />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Node" }));
+    if (kind === "direct") {
+      fireEvent.click(
+        await screen.findByRole("button", {
+          name: resultType === "node" ? "Node" : "Bit",
+        }),
+      );
+    }
     fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
 
     await waitFor(() =>
       expect(useExplorerRemoteStatusMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          localPlacementResult: expect.objectContaining({ type: "node" }),
+          localPlacementResult: {
+            id: expect.any(String),
+            type: resultType,
+            pathIds: ["parent-1"],
+          },
         }),
       ),
     );
-    expect(placeDirectBreakdownMock).toHaveBeenCalledOnce();
-  });
+    expect(
+      kind === "direct" ? placeDirectBreakdownMock : placeStagedCandidateMock,
+    ).toHaveBeenCalledOnce();
+  },
+  );
 
   it("closes the actual placement owner when Explorer validation invalidates its target", async () => {
     const target = {

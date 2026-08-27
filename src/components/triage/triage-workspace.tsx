@@ -961,11 +961,16 @@ function TriageWorkspaceContent({
   const [localPlacementResult, setLocalPlacementResult] = useState<{
     id: string;
     type: "node" | "bit";
+    pathIds: readonly string[];
   } | null>(null);
   const placement = useTriagePlacement({
     operationLock,
     onApplied: (result, command) => {
-      const identity = { id: result.id, type: command.resultType } as const;
+      const identity = {
+        id: result.id,
+        type: command.resultType,
+        pathIds: [...command.expectedAncestorIds],
+      } as const;
       useTriageStore.getState().registerExplorerLocalPlacement(identity);
       setLocalPlacementResult(identity);
     },
