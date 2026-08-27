@@ -2015,4 +2015,31 @@ describe("useTriageDnd — post-close non-hierarchy hover feedback", () => {
     expect(result.current.overTargetId).toBeNull();
     expect(result.current.targetFeedback).toBeNull();
   });
+
+  it("retains a compatible fallback through a later hierarchy-miss pointer refresh", () => {
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", durableCandidateOptions()),
+    );
+    const dragData = makeBreakdownDragData();
+
+    act(() => {
+      result.current.handleDragStart(makeDragEndEvent(dragData, null));
+      fireEvent.mouseMove(document, { clientX: 20, clientY: 30 });
+      result.current.handleDragOver(
+        makeDragOverEvent(
+          dragData,
+          "triage-node-zone-drop",
+          { kind: "triage-node-zone-drop" },
+        ),
+      );
+    });
+    expect(result.current.overTargetId).toBe("triage-node-zone-drop");
+
+    act(() => result.current.refreshRenderedTarget({ x: 20, y: 30 }));
+
+    expect(result.current.overTargetId).toBe("triage-node-zone-drop");
+    expect(result.current.targetFeedback).toBeNull();
+    expect(stageCandidateMock).not.toHaveBeenCalled();
+    expect(getDataStoreMock).not.toHaveBeenCalled();
+  });
 });

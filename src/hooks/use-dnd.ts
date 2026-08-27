@@ -443,6 +443,7 @@ export function useTriageDnd(
   const pointerRef = useRef<{ x: number; y: number } | null>(null);
   const feedbackRequestRef = useRef(0);
   const feedbackIdentityRef = useRef<string | null>(null);
+  const nonHierarchyFeedbackRef = useRef<string | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -463,6 +464,7 @@ export function useTriageDnd(
     dragCancelledRef.current = false;
     feedbackRequestRef.current += 1;
     feedbackIdentityRef.current = null;
+    nonHierarchyFeedbackRef.current = null;
     setOverTargetId(null);
     setTargetFeedback(null);
     setActiveDragItem(isCurrentScratch ? snapshot : null);
@@ -471,6 +473,7 @@ export function useTriageDnd(
   const clearDragTarget = useCallback(() => {
     feedbackRequestRef.current += 1;
     feedbackIdentityRef.current = null;
+    nonHierarchyFeedbackRef.current = null;
     setOverTargetId(null);
     setTargetFeedback(null);
   }, []);
@@ -486,10 +489,14 @@ export function useTriageDnd(
     }
     const target = readRenderedHierarchyTarget(point);
     if (target === null) {
-      clearDragTarget();
+      feedbackRequestRef.current += 1;
+      feedbackIdentityRef.current = null;
+      setOverTargetId(nonHierarchyFeedbackRef.current);
+      setTargetFeedback(null);
       return false;
     }
 
+    nonHierarchyFeedbackRef.current = null;
     setOverTargetId(target.dropId);
     const targetIdentity = JSON.stringify([
       target.dropId,
@@ -651,7 +658,9 @@ export function useTriageDnd(
         clearDragTarget();
         return;
       }
-      setOverTargetId(event.over?.id ? String(event.over.id) : null);
+      const dropId = event.over?.id ? String(event.over.id) : null;
+      nonHierarchyFeedbackRef.current = dropId;
+      setOverTargetId(dropId);
       setTargetFeedback(null);
       return;
     }
