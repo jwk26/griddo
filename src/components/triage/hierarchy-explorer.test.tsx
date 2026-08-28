@@ -17,6 +17,14 @@ import type {
 } from "@/hooks/use-dnd";
 import type { TriagePlacementSnapshot } from "@/hooks/use-triage-placement";
 import type { TriageNewlyPlacedProvenance } from "@/hooks/use-triage-newly-placed";
+import {
+  TriageOperationLockContext,
+  type TriageOperationLock,
+} from "@/hooks/use-triage-operation-lock";
+import {
+  createScratchTitleBlockerHandle,
+  ScratchTitleBlockerContext,
+} from "@/hooks/use-scratch-breakdowns";
 import { getTriageHierarchyDropId } from "@/lib/grid-dnd";
 import { useTriageStore } from "@/stores/triage-store";
 import type { Bit, Node } from "@/types";
@@ -29,6 +37,38 @@ const globalsCss = readFileSync(
 );
 
 const useExplorerRemoteStatusMock = vi.hoisted(() => vi.fn());
+const undoRepository = vi.hoisted(() => ({
+  reconcileDirectPlacementUndo: vi.fn(),
+  reconcileStagedPlacementUndo: vi.fn(),
+  undoDirectPlacement: vi.fn(),
+  undoStagedPlacement: vi.fn(),
+}));
+
+vi.mock("@/lib/db/datastore", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/db/datastore")>()),
+  getDataStore: vi.fn(async () => undoRepository),
+}));
+
+vi.mock("dexie", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("dexie")>()),
+  liveQuery: (query: () => Promise<unknown>) => ({
+    subscribe: ({ next, error }: {
+      next: (value: unknown) => void;
+      error?: (reason: unknown) => void;
+    }) => {
+      let active = true;
+      void query().then(
+        (value) => {
+          if (active) next(value);
+        },
+        (reason) => {
+          if (active) error?.(reason);
+        },
+      );
+      return { unsubscribe: () => { active = false; } };
+    },
+  }),
+}));
 const explorerSearchState = vi.hoisted(() => ({
   mode: "closed" as "closed" | "active" | "interrupted",
   activeQuery: null as string | null,
@@ -329,6 +369,16 @@ beforeEach(async () => {
     destination.focus?.();
     return "performed";
   });
+  for (const mock of Object.values(undoRepository)) mock.mockReset();
+  const inspectUndo = vi.fn(async (command) => ({
+    operationId: command.operationId,
+    status: "not_applied" as const,
+    result: command.resultSnapshot,
+    source: command.sourceSnapshot,
+    candidate: null,
+  }));
+  undoRepository.reconcileDirectPlacementUndo.mockImplementation(inspectUndo);
+  undoRepository.reconcileStagedPlacementUndo.mockImplementation(inspectUndo);
   Object.assign(explorerSearchState, {
     mode: "closed",
     activeQuery: null,
@@ -1325,6 +1375,193 @@ describe("HierarchyExplorer Task 155 actual-card Newly Placed projection", () =>
     );
     expect(screen.getByText("Newly placed")).toBeInTheDocument();
     delete document.documentElement.dataset.colorTheme;
+  });
+});
+
+describe("HierarchyExplorer Task 156 ordinary-card Undo", () => {
+  function renderWithUndo(
+    entries: readonly TriageNewlyPlacedProvenance[],
+  ) {
+    let activeOperation: { kind: "undo"; operationId: string } | null = null;
+    const operationLock: TriageOperationLock = {
+      activeOperation: null,
+      acquire: (kind, operationId) => {
+        if (activeOperation !== null || kind !== "undo") return false;
+        activeOperation = { kind, operationId };
+        return true;
+      },
+      isLocked: () => activeOperation !== null,
+      release: (operationId, status) => {
+        if (
+          activeOperation?.operationId !== operationId ||
+          !["applied", "already_applied", "not_applied", "rejected", "conflict"].includes(status)
+        ) {
+          return false;
+        }
+        activeOperation = null;
+        return true;
+      },
+    };
+    const titleBlocker = createScratchTitleBlockerHandle();
+    return render(
+      <TriageOperationLockContext.Provider value={operationLock}>
+        <ScratchTitleBlockerContext.Provider value={titleBlocker}>
+          <HierarchyExplorer
+            {...defaultProps}
+            newlyPlacedEntries={entries}
+          />
+        </ScratchTitleBlockerContext.Provider>
+      </TriageOperationLockContext.Provider>,
+    );
+  }
+
+  it.each([
+    ["next card", "next"],
+    ["previous card", "previous"],
+    ["column heading", "heading"],
+  ] as const)("focuses the canonical %s after terminal success", async (_label, expected) => {
+    const target = createNode({ id: "undo-target", title: "Undo target" });
+    const next = createNode({ id: "next-node", title: "Next node" });
+    const previous = createNode({ id: "previous-node", title: "Previous node" });
+    const targetEntry = newlyPlacedEntry(target, "node", 1);
+    const previousEntry = newlyPlacedEntry(previous, "node", 2);
+    const initialNodes =
+      expected === "next"
+        ? [target, next]
+        : expected === "previous"
+          ? [previous, target]
+          : [target];
+    const entries = expected === "previous"
+      ? [targetEntry, previousEntry]
+      : [targetEntry];
+    setGrid(null, initialNodes);
+    if (expected === "next") {
+      useTriageStore.setState({
+        explorerPathIds: [target.id],
+        explorerOpenColumnIds: ["home", target.id],
+      });
+    }
+    undoRepository.undoDirectPlacement.mockImplementation(async (command) => {
+      setGrid(
+        null,
+        initialNodes.filter((node) => node.id !== command.resultSnapshot.id),
+      );
+      return {
+        operationId: command.operationId,
+        status: "applied" as const,
+        result: null,
+        source: {
+          ...command.sourceSnapshot,
+          consumedAt: null,
+          version: command.sourceSnapshot.version + 1,
+        },
+        candidate: null,
+      };
+    });
+
+    renderWithUndo(entries);
+    const undoButton = await screen.findByRole("button", {
+      name: "Undo placement of Undo target",
+    });
+    await waitFor(() => {
+      expect(undoRepository.reconcileDirectPlacementUndo).toHaveBeenCalled();
+    });
+    await waitFor(() => expect(undoButton).toBeEnabled());
+    fireEvent.click(undoButton);
+
+    const expectedTarget =
+      expected === "next"
+        ? screen.getByRole("button", { name: "Select Node: Next node" })
+        : expected === "previous"
+          ? screen.getByRole("button", { name: "Select Node: Previous node" })
+          : screen.getByTestId("hierarchy-column-heading-home");
+    await waitFor(() => expect(expectedTarget).toHaveFocus());
+    expect(useTriageStore.getState().explorerPathIds).toEqual([]);
+    expect(undoRepository.undoDirectPlacement).toHaveBeenCalledTimes(1);
+  });
+
+  it("retains the exact card and selected path while an ambiguous Undo is unknown", async () => {
+    const target = createNode({ id: "undo-target", title: "Undo target" });
+    const next = createNode({ id: "next-node", title: "Next node" });
+    const entry = newlyPlacedEntry(target, "node", 1);
+    setGrid(null, [target, next]);
+    useTriageStore.setState({
+      explorerPathIds: [target.id],
+      explorerOpenColumnIds: ["home", target.id],
+    });
+    undoRepository.undoDirectPlacement.mockImplementation(async () => {
+      setGrid(null, [next]);
+      throw new Error("ambiguous transport");
+    });
+
+    renderWithUndo([entry]);
+    const undoButton = await screen.findByRole("button", {
+      name: "Undo placement of Undo target",
+    });
+    await waitFor(() => expect(undoButton).toBeEnabled());
+    fireEvent.click(undoButton);
+
+    await waitFor(() => expect(undoButton).toBeDisabled());
+    expect(
+      screen.getByRole("button", { name: "Select Node: Undo target" }),
+    ).toBeInTheDocument();
+    expect(useTriageStore.getState().explorerPathIds).toEqual([target.id]);
+    expect(
+      screen.getByRole("button", { name: "Select Node: Next node" }),
+    ).not.toHaveFocus();
+    expect(undoRepository.undoDirectPlacement).toHaveBeenCalledTimes(1);
+  });
+
+  it("routes staged Undo with the exact candidate provenance and never invents it for direct Undo", async () => {
+    const parent = createNode({ id: "parent", title: "Parent" });
+    const bit = createBit({ id: "staged-bit", parentId: parent.id, title: "Staged bit" });
+    const candidate = {
+      id: "candidate-1",
+      scratchBitId: "scratch-1",
+      sourceBreakdownId: "source-1",
+      resultType: "bit" as const,
+      lifecycle: "staged" as const,
+      createdAt: 1,
+      updatedAt: 1,
+      version: 11,
+    };
+    const entry: TriageNewlyPlacedProvenance = {
+      ...newlyPlacedEntry(bit, "bit", 1),
+      candidate: { id: candidate.id, expectedVersion: 11, snapshot: candidate },
+    };
+    setGrid(null, [parent]);
+    setGrid(parent.id, [], [bit]);
+    useTriageStore.setState({
+      explorerPathIds: [parent.id],
+      explorerOpenColumnIds: ["home", parent.id],
+    });
+    undoRepository.undoStagedPlacement.mockImplementation(async (command) => {
+      setGrid(parent.id, [], []);
+      return {
+        operationId: command.operationId,
+        status: "applied" as const,
+        result: null,
+        source: {
+          ...command.sourceSnapshot,
+          consumedAt: null,
+          version: command.sourceSnapshot.version + 1,
+        },
+        candidate: command.candidateSnapshot,
+      };
+    });
+
+    renderWithUndo([entry]);
+    const undoButton = await screen.findByRole("button", {
+      name: "Undo placement of Staged bit",
+    });
+    await waitFor(() => expect(undoButton).toBeEnabled());
+    fireEvent.click(undoButton);
+
+    await waitFor(() => expect(undoRepository.undoStagedPlacement).toHaveBeenCalledOnce());
+    expect(undoRepository.undoStagedPlacement).toHaveBeenCalledWith(
+      expect.objectContaining({ candidateSnapshot: candidate }),
+    );
+    expect(undoRepository.undoDirectPlacement).not.toHaveBeenCalled();
   });
 });
 

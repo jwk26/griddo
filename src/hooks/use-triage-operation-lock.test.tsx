@@ -155,6 +155,29 @@ describe("useTriageOperationLock", () => {
     expect(result.current.acquire).toBeDefined();
   });
 
+  it("retains the Undo owner through pending/unknown/reconciling and releases only on a terminal result", () => {
+    const { result } = renderHook(() => useTriageOperationLock());
+
+    act(() => {
+      expect(result.current.acquire("undo", "undo-1")).toBe(true);
+      for (const kind of TRIAGE_OPERATION_KINDS) {
+        expect(result.current.acquire(kind, `${kind}-competing`)).toBe(false);
+      }
+      expect(result.current.release("undo-1", "pending" as never)).toBe(false);
+      expect(result.current.release("undo-1", "unknown" as never)).toBe(false);
+      expect(result.current.release("undo-1", "reconciling" as never)).toBe(false);
+    });
+    expect(result.current.activeOperation).toEqual({
+      kind: "undo",
+      operationId: "undo-1",
+    });
+
+    act(() => {
+      expect(result.current.release("undo-1", "conflict")).toBe(true);
+    });
+    expect(result.current.activeOperation).toBeNull();
+  });
+
   it.each(TRIAGE_OPERATION_KINDS)(
     "exposes the active %s owner synchronously to shared exit blockers",
     (kind) => {

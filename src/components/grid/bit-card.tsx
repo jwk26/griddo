@@ -26,6 +26,11 @@ type BitCardProps = {
   onDelete?: () => void;
   isDragging?: boolean;
   isNewlyPlaced?: boolean;
+  undo?: Readonly<{
+    disabled: boolean;
+    onActivate: () => void;
+    reason: string;
+  }>;
 } & Omit<ComponentPropsWithoutRef<"div">, "children" | "onClick">;
 
 export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard(
@@ -37,6 +42,7 @@ export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard
     onDelete,
     isDragging = false,
     isNewlyPlaced = false,
+    undo,
     className,
     onKeyDown,
     role,
@@ -159,6 +165,22 @@ export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard
         >
           Newly placed
         </span>
+      ) : null}
+
+      {undo !== undefined ? (
+        <button
+          type="button"
+          aria-label={`Undo placement of ${bit.title}`}
+          className="absolute bottom-0 right-0 z-20 rounded px-1 text-[10px] font-semibold"
+          data-undo-reason={undo.reason}
+          disabled={undo.disabled}
+          onClick={(event) => {
+            event.stopPropagation();
+            undo.onActivate();
+          }}
+        >
+          Undo
+        </button>
       ) : null}
 
       {/* Past-deadline overlay */}

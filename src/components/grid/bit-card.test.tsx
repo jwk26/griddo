@@ -84,6 +84,27 @@ describe("BitCard", () => {
     expect(screen.queryByText("Newly placed")).not.toBeInTheDocument();
   });
 
+  it("keeps marker and Undo eligibility independent and never bubbles Undo into navigation", () => {
+    const bit = createBit({ title: "Undo bit" });
+    const navigate = vi.fn();
+    const activateUndo = vi.fn();
+    render(
+      <BitCard
+        bit={bit}
+        chunkStats={{ completed: 0, total: 0 }}
+        isNewlyPlaced={true}
+        onClick={navigate}
+        parentColor="hsl(221, 83%, 53%)"
+        undo={{ disabled: false, onActivate: activateUndo, reason: "available" }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Undo placement of Undo bit" }));
+    expect(activateUndo).toHaveBeenCalledTimes(1);
+    expect(navigate).not.toHaveBeenCalled();
+    expect(screen.getByText("Newly placed")).toBeInTheDocument();
+  });
+
   it("renders deadline, priority, progress, and aging saturation", () => {
     const handleClick = vi.fn();
     const bit = createBit({

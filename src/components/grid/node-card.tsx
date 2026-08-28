@@ -26,6 +26,11 @@ type NodeCardProps = {
   isEditMode?: boolean;
   isDragging?: boolean;
   isNewlyPlaced?: boolean;
+  undo?: Readonly<{
+    disabled: boolean;
+    onActivate: () => void;
+    reason: string;
+  }>;
   ref?: Ref<HTMLButtonElement>;
 } & Omit<
   HTMLMotionProps<"button">,
@@ -45,6 +50,7 @@ export function NodeCard({
   isEditMode = false,
   isDragging = false,
   isNewlyPlaced = false,
+  undo,
   className,
   ref,
   style,
@@ -101,6 +107,22 @@ export function NodeCard({
           </p>
         </div>
       </motion.button>
+
+      {undo !== undefined ? (
+        <button
+          type="button"
+          aria-label={`Undo placement of ${node.title}`}
+          className="absolute bottom-0 left-0 z-20 rounded px-1 text-[10px] font-semibold"
+          data-undo-reason={undo.reason}
+          disabled={undo.disabled}
+          onClick={(event) => {
+            event.stopPropagation();
+            undo.onActivate();
+          }}
+        >
+          Undo
+        </button>
+      ) : null}
 
       {isEditMode ? (
         <button

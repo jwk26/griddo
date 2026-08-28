@@ -98,6 +98,36 @@ describe("NodeCard", () => {
     expect(screen.queryByText("Newly placed")).not.toBeInTheDocument();
   });
 
+  it("keeps marker and Undo eligibility independent and never bubbles Undo into navigation", () => {
+    const node = createNode({ title: "Undo node" });
+    const navigate = vi.fn();
+    const activateUndo = vi.fn();
+    const { rerender } = render(
+      <NodeCard
+        isNewlyPlaced={false}
+        node={node}
+        onClick={navigate}
+        undo={{ disabled: false, onActivate: activateUndo, reason: "available" }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Undo placement of Undo node" }));
+    expect(activateUndo).toHaveBeenCalledTimes(1);
+    expect(navigate).not.toHaveBeenCalled();
+    expect(screen.queryByText("Newly placed")).not.toBeInTheDocument();
+
+    rerender(
+      <NodeCard
+        isNewlyPlaced={true}
+        node={node}
+        onClick={navigate}
+        undo={{ disabled: true, onActivate: activateUndo, reason: "dependencies" }}
+      />,
+    );
+    expect(screen.getByText("Newly placed")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Undo placement of Undo node" })).toBeDisabled();
+  });
+
   it("uses a fixed square footprint with a non-shrinking icon and truncating title slot", () => {
     const node = createNode({ title: "Very long node title that should truncate" });
     const { container } = render(
