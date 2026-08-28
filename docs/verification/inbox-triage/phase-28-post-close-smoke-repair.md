@@ -1,5 +1,30 @@
 # Phase 28 Post-close Smoke Repair
 
+## Cycle 4 durable start
+
+- Status: `In Progress` under one explicitly approved fourth and final repair cycle. A fifth cycle, another path, or another product/design decision requires a new user gate.
+- Control Tower disposition: the prior checkpoint passed code review, but publication readiness is withdrawn pending the user-owned manual-smoke corrections below. The same coherent repair session remains the only implementation owner; duplicate session and rollover are prohibited.
+- Recovery identity: HEAD `0e04c3e57e2e763c0399ae5b1673a35122bcc930`, parent `0d95a7f2747610f364cc95acbf289e7ae67caa3d`, base `3b2782287bc12fa6595427254cd4c698d60e5105`, `src` tree `26b9df35d754ca5db788255ba8ad7bb3203bca84`, evidence blob `62a1c7fd3ee8033f8ca0899676ed786766fa5b21`.
+- Manual-smoke findings: deep-scroll DESC Add must reset only the Breakdown content viewport to reveal the complete Selected Scratch Context and new first row while retaining Add-input focus; compatible active Remove-from-staging hover must use canonical destructive tokens while every idle/invalid/unavailable/other state remains neutral; Direct and Staged placement opening must reset only the owning Explorer column to `scrollTop === 0` while successful-card focus retains minimum reveal behavior.
+- Explicit direction change: destructive/red styling is newly approved only for the compatible active-hover Remove target. The operation remains Unstage, and no copy, command, persistence, arbitration, invalid-state, or unavailable-state semantics change.
+- Canonical impact at start: `Tagged`; implementation and both approved canonical design owners must agree before this may become `Reflected`.
+- Phase 29 remains inactive. The historical Final Close receipt, Phase 28 task markers/ledger/archive, Execution Plan, Adapter, workflow candidate, Phase 29 audit, and Tasks 155–158 remain read-only.
+- Next legal action: focused RED evidence within the exact additional write set, followed by the minimum implementation.
+
+### Cycle 4 exact additional write set
+
+- `src/components/triage/breakdown-panel.tsx`
+- `src/components/triage/breakdown-panel.test.tsx`
+- `src/components/triage/hierarchy-explorer.tsx`
+- `src/components/triage/hierarchy-explorer.test.tsx`
+- `src/components/triage/triage-workspace.tsx`
+- `src/components/triage/triage-workspace.test.tsx`
+- `docs/DESIGN_TOKENS.md`
+- `docs/recipes/inbox-triage-staging-visual-recipe.md`
+- `docs/verification/inbox-triage/phase-28-post-close-smoke-repair.md`
+
+The already committed `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts` remain outside cycle-4 write authority.
+
 ## Durable start
 
 - Status: `In Progress`
