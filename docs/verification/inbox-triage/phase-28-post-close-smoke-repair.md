@@ -85,7 +85,7 @@ Status: `Awaiting Control Tower disposition`. This is a clean committed implemen
 
 1. Established focused RED for the DnD arbitration defect, implemented valid non-hierarchy event-target fallback while retaining hierarchy ownership, and established focused GREEN.
 2. Established focused RED for placement opening/result handoff, implemented minimum owning-viewport scroll, confirmed-path reveal, exact typed one-shot focus, and conditionally omitted the empty rail. Corrected effect ordering and test isolation within this cycle before GREEN.
-3. Fresh-browser verification exposed the document pointer refresh occurring after the DnD event fallback. A focused regression reproduced the loss; the non-hierarchy feedback identity is now retained across a hierarchy miss and cleared at drag lifecycle boundaries. No fourth cycle was used.
+3. Fresh-browser verification exposed the document pointer refresh occurring after the DnD event fallback. A focused regression reproduced the loss; the non-hierarchy feedback identity is now retained across a hierarchy miss and cleared at drag lifecycle boundaries. At that checkpoint no fourth cycle had been used; the separately approved manual-smoke cycle below is the final cycle.
 
 ### RED/GREEN evidence
 
@@ -157,3 +157,75 @@ No excluded warning cleanup was performed.
 - Working-session continuity: this remains the only fresh manual implementation session through this checkpoint; do not create a duplicate session or roll over implementation work.
 - Prohibited until separate Final Close approval: acceptance-only edits, push, PR, merge, publication, integration sync, and cleanup.
 - Exactly one next legal action: Control Tower reviews this committed checkpoint and supplies its disposition.
+
+## Cycle 4 implementation checkpoint
+
+Status: `Awaiting Control Tower disposition`. Repair-cycle count is `4/4`; no fifth cycle is authorized.
+
+### Cycle 4 commits and write scope
+
+- Durable start: `20f8317eea1ea02e0e945411837a08c9049b62d1` (`docs: start Phase 28 smoke repair cycle 4`), parent/recovery HEAD `0e04c3e57e2e763c0399ae5b1673a35122bcc930`; only this evidence owner changed.
+- Bounded implementation: `8bb727b47e6744c997db5f18f295119edf00c827` (`fix(triage): align manual smoke viewport handoffs`); it changes exactly the two Breakdown owners, two Explorer owners, two Workspace owners, and two canonical Staging design owners listed in the cycle-4 write set.
+- Cycle-4 total write set is the nine paths declared in the durable start. The total branch write set is those paths plus the already committed `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`: eleven paths total, with no other tracked path.
+- Implementation `src` tree: `c1bbfb711b53a16e78e576c47dd217bd52f724a8`.
+
+### Cycle 4 RED/GREEN
+
+- Focused RED command: `pnpm exec vitest run src/components/triage/breakdown-panel.test.tsx src/components/triage/triage-workspace.test.tsx src/components/triage/hierarchy-explorer.test.tsx` exited 1 with 4 expected failures and 247 passes. DESC retained `scrollTop 240` instead of 0; Direct and Staged opening retained 20 instead of 0; compatible Remove still exposed neutral rather than destructive classes.
+- Focused GREEN: the same three-owner command exited 0 with 3/3 files and 252/252 tests in 2.93 s (`real 3.31`).
+- DESC regression proves the owning Breakdown content resets to 0 only after the authoritative row renders, the complete Context precedes the first row, Add input retains focus, document scroll is unchanged, and one `Added.` status exists. ASC continues to call `scrollIntoView({block: "end"})` and retains Add-input focus.
+- Remove regressions prove active exact-target classes `border-destructive bg-destructive/10 text-destructive`, idle/incompatible dashed neutral classes, and zero Unstage dispatch from hover.
+- Explorer regressions prove Direct/Staged phase focus with owning `scrollTop === 0`, document and unrelated-column preservation, and successful-card focus using the prior minimum reveal path rather than a top reset.
+
+### Cycle 4 full gates
+
+| Command | Result | Elapsed | Warnings |
+| --- | --- | ---: | ---: |
+| `pnpm test` | exit 0; 98/98 files, 1,146/1,146 tests | 27.32 s; `real 27.90` | 8 emissions: 1 Node DEP0205, 7 localStorage experimental |
+| `pnpm lint` | exit 0; 0 errors | `real 6.83` | 11 pre-existing warnings |
+| `pnpm typecheck` | exit 0 | `real 1.56` | 0 |
+| `pnpm build` | exit 0; compiled 4.7 s, TypeScript 4.2 s, 7 routes | `real 10.91` | 2 emissions: 1 Node DEP0205, 1 localStorage experimental |
+| `git diff --check 0e04c3e…HEAD` | exit 0 | `real 0.02` | 0 |
+
+No warning cleanup or excluded path change was performed.
+
+### Cycle 4 browser evidence
+
+Runtime: fresh Next.js 16.2.1 production build from this repair worktree at `http://localhost:3138`; Chrome `152.0.0.0` on macOS. Primary viewport 1440 x 900, secondary viewport 1024 x 768. Console: 0 errors, 0 warnings. No repository screenshot was created or retained.
+
+- DESC Add began with Breakdown `scrollTop 302`, content viewport `[32,490]`, and Context `[-254,-150]` fully hidden. Authoritative success produced `scrollTop 0`, complete Context `[48,152]`, new first row `[160,208]`, active Add input, unchanged `document.scrollY 0`, and exactly one visible `✓ Added.` status.
+- Remove idle computed neutral border `rgb(228,228,231)`, transparent background, and muted text. Compatible active hover computed destructive border/text `rgb(239,67,67)` plus 10% destructive background and the exact destructive classes. Escape removed the target, preserved the candidate/source as staged, and dispatched no write.
+- At 1440 x 900, lower-scroll Direct and short Staged confirmation each opened with owning Explorer `scrollTop 0`, phase-owner focus, complete 16 px intended top origin, and visible Confirm/Cancel inside column `[634,899]`. A long staged Result Title also opened at 0 and focused its existing input. Document scroll remained 0.
+- Direct Node focused exact authoritative `Cycle4 filler 03`, ID `5963ad27-8841-48ae-b2dd-da8661122c8c`; Direct Bit focused exact `Cycle4 filler 04`, ID `91828a7f-9113-4df8-83fd-70d4fd8212f2`.
+- Staged Node focused exact authoritative `Cycle4 filler 01`, ID `12f56407-2b18-4211-8518-649e57a9db14`; Staged Bit focused exact `Cycle4 filler 02`, ID `02bfb38b-6754-4f5f-98d9-76a381b2d348`. All four exact cards intersected their owning viewport. The final Staged Bit used destination-column `scrollTop 57`, proving successful-card focus retained minimum reveal rather than resetting to top.
+- Ordinary confirmation retained zero empty reliability rails/statuses. Real pending emitted the polite status `Placing “Cycle4 filler 03” in Home → Smoke Target 12…`.
+- Accepted DnD remained intact: Node/Bit compatible wells gained solid primary/accent feedback then returned to transparent on cancel; hierarchy `Smoke Target 12` alone was `valid`, its sibling remained `idle-valid`, and cancel restored `default`. The three canceled sources stayed `active`, proving hover-only no-write behavior.
+- At 1024 x 768, Direct and Staged confirmation each opened at owning `scrollTop 0`; placement `[570.8,733.8]` fit within the owning column ending at 767, with 16 px top and 33.2 px bottom space. Confirm/Cancel `[688.8,720.8]` were visible and operable, the phase heading owned focus, unrelated Breakdown scroll remained 219, `document.scrollY` remained 0, and `scrollWidth === clientWidth === 1024`.
+
+Browser fixtures remained local to the runtime IndexedDB and changed no tracked persistence, schema, DataStore, or candidate owner.
+
+### Cycle 4 relevant-input fingerprint
+
+- Hash domain: `griddo-phase28-post-close-repair-relevant-input-v2`, followed by LF-separated `path<TAB>SHA-256` lines with no final LF.
+- Domain: the prior v1 domain in its original order, followed by `src/components/triage/breakdown-panel.tsx`, `src/components/triage/breakdown-panel.test.tsx`, `docs/DESIGN_TOKENS.md`, and `docs/recipes/inbox-triage-staging-visual-recipe.md`.
+- Fingerprint: `a33c5bee9265fa7d0f3c3edfa423d8de37d48dc7f9555480c875023d9bd66d3b`.
+- New component hashes: Breakdown implementation `e2e4239505211a2d79a2af11af3e7a1870c4423c69c5a1e65afa609fea7ef50b`; Breakdown tests `1f0ab6f3cd9fc049d4199b4017bdb00bdc01b9a8b30c1902b86aa025699169ad`; design tokens `082ef6bc276b503d3e993de71df3c56cce8ee70b9487d2d8ee4896564fb6bc63`; Staging recipe `17a3b0b2fdd0d305f3b869c5585763d430267f0add1e74ce73b44e6d7f97dc29`.
+
+### Cycle 4 final High-risk review
+
+- Owning-scroll isolation: DESC writes only the Breakdown content ref; placement phase focus writes only the closest Explorer column; result-card focus retains the separate minimum helper. Browser and owner tests preserve document/unrelated scroll.
+- Add lifecycle: reset waits for the exact authoritative added-row render, consumes the pending ID once, does not change pending/unknown/reconciling paths, and leaves Add input plus exactly-once success ownership unchanged. ASC remains the existing end handoff.
+- Placement focus and identity: Direct heading, staged Result Title input, confirmation owner, and exact typed result-card lookup remain distinct. Reveal still uses confirmed ancestry, one-shot type-plus-ID identity, and render-driven focus.
+- DnD boundary: no arbitration, command, copy, lock, persistence, or DnD hook changed in cycle 4. Hover is visual-only.
+- Destructive scope: only exact compatible Remove hover receives the three canonical destructive tokens. Idle, cancel, Node/Bit invalid, unavailable, same-type neutral, staging wells, and Breakdown drop-back remain non-destructive; operation semantics remain Unstage.
+- Canonical wording: `docs/DESIGN_TOKENS.md` and the Staging visual recipe state the same active-only exception and exclusions as JSX/tests. Canonical impact is therefore `Reflected`.
+- React/UI review: transient scroll values remain refs/DOM effects rather than render state; no new subscription, waterfall, or rerender owner was introduced. Existing semantic controls, labels, focus-visible treatment, reduced-motion transition list, long-content handling, live status ownership, and non-color dashed/solid cues remain intact. Latest Web Interface Guidelines review found no cycle-4 blocking issue.
+- Phase 29 scope stop: audit blob and Tasks 155–158 remain unchanged and inactive. No Phase 29 work, lifecycle receipt, acceptance marker, or publication preparation occurred.
+
+### Cycle 4 disposition
+
+- Canonical impact: `Reflected`.
+- Remaining findings: no unresolved cycle-4 product finding within the approved scope.
+- Unowned remains unchanged: permanent `.next` cache-invalidation safeguard; the missing post-close repair lifecycle remains a later Phase 29 audit handoff only.
+- Publication remains withdrawn and untouched. No acceptance-only edit, Final Close preparation/receipt, push, PR, merge, integration sync, cleanup, or Phase 29 action was performed.
+- Exactly one next legal action: Control Tower disposition of this clean committed checkpoint.
