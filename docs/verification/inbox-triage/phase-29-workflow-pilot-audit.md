@@ -139,7 +139,7 @@ Required fields:
 
 | Task | Risk | Focused result/count/elapsed | Full gate run/reuse/elapsed | Relevant-input fingerprint | Token/accounting | Prompt/session | Browser / owner-test invariant | Docs | Stops / repairs / review | Gate lifecycle | Escaped defect | Outcome |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 155 |  |  |  |  |  |  |  |  |  |  |  |  |
+| 155 | High | Latest focused passed 5 files / 161 tests in `3.30s` | Latest-input full gate run, not reused: test 99 files / 1,154 tests `20.16s`; lint 0 errors, 11 unchanged warnings `6.16s`; typecheck `1.18s`; build `9.06s`; serial total `36.56s` | `1a491bbd2bda0fb26c9af723704ed657a47399472053d8d5d9700500549e8821`; implementation `0bdd1a88e1eb3c455ff8b156318f18ab7ca3b449`, `src` tree `4c20c83e393e76a10528606637a3a9be88f92183`, 99-test manifest `a011caccb51fef23f48c1cbc412568e393f987addc78170dfbbfae44a447bc8b`, exact 10-path manifest `a616930e6ebbfa9fcb63564dbdf337804b60dcb89b75ec2e3deb60e559701804`, config/command manifest `74ee27da90dc45cf1aa210c279e471a73aaf257a5ee35b4f1fcecbea06d74647` | Runtime token/accounting `not measured` | One exact Task 155 work-order prompt; prompt bytes `not measured`; Control Tower maintained, Working session maintained, duplicate count 0 | No browser run; mounted Workspace/Explorer/Card owners directly prove authoritative local result → actual typed card, independent marker/type pinning, Scratch/path/theme preservation, and remount clearing; no computed-style claim | 3 paths; `+132/-7` lines | Two bounded repair cycles; zero owner/scope stops or extra-cycle gates; review repaired scroll-identity divergence and missing immutable source/candidate Undo snapshots; final High-risk review found no remaining concrete issue | Gate C baseline not reused; first Task 155 full gate `37.25s` invalidated by snapshot repair; all focused/full inputs rerun | None observed at checkpoint | Implemented awaiting review; marker `[ ]`; Tasks 156–158 held; no final workflow verdict |
 | 156 |  |  |  |  |  |  |  |  |  |  |  |  |
 | 157 |  |  |  |  |  |  |  |  |  |  |  |  |
 | 158 |  |  |  |  |  |  |  |  |  |  |  |  |
@@ -148,7 +148,8 @@ Required fields:
 
 | Task / cycle | Actual trigger or finding | Owner discovery / `Unowned` | Focused evidence | Full-gate reuse/rerun/invalidation | Browser or owner-test evidence | Scope disposition | Outcome |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-|  |  |  |  |  |  |  |  |
+| 155 / cycle 1 | Initial hook/card/Explorer/Workspace REDs plus Motion DOM-prop typecheck failure and diff-review scroll identity finding | No owner stop; all writes stayed in the 10 approved product/test paths; `Unowned: None` | Final cycle-1 focused passed 5 files / 161 tests | Full gate passed on then-current input (`37.25s`) but was invalidated by cycle 2 | Mounted owner tests proved actual-card marker/pinning/lifetime; no browser-only claim | Implementation-local API and shared projection repairs | Proceeded to High-risk review |
+| 155 / cycle 2 | High-risk review found IDs/versions could not supply future Undo's immutable source/candidate snapshots after candidate deletion | No expansion: Workspace and canonical Newly hook are approved owners; `Unowned: None` | Snapshot RED failed 3/3 hook tests; final focused passed 5 files / 161 tests in `3.30s` | Cycle-1 full gate invalidated; latest full gate reran all four commands and passed in `36.56s` | Mounted Workspace captured exact pre-dispatch authoritative snapshots; hook tests proved direct/staged provenance | Repaired within Task 155 future-Undo provenance boundary | Implemented awaiting checkpoint; no third cycle |
 
 ## Carried post-close findings
 
