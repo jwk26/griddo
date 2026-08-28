@@ -1844,7 +1844,7 @@ questions, and the exact skill/reference/test change plan that was not applied
 during the phase. Candidate skill and Adapter files remain read-only throughout
 Phase 29. The pilot does not automatically extend to a third phase.
 
-### Task 155: [ ] Project Newly Placed provenance over actual cards
+### Task 155: [x] Project Newly Placed provenance over actual cards
 
 **Files and actions:** create canonical `src/hooks/use-triage-newly-placed.ts` and `.test.tsx`; modify `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/components/grid/node-card.tsx` and `.test.tsx`, and `src/components/grid/bit-card.tsx` and `.test.tsx`. Instantiate the hook at the mounted Inbox page/workspace, never in `triage-store`; register only Task 152 placements started/confirmed by that mounted page using stable result/type/source/candidate/operation provenance; layer a semantic marker slot on actual NodeCard/BitCard; pin locally new Nodes/Bits newest-first within their type projection without changing stored x/y; preserve marker across Scratch/path/theme changes; clear marker/pinning/Undo provenance on Inbox route exit/reload/unmount, not Scratch switch. Remote/other-tab records remain ordinary. Add no second Newly owner and do not redesign cards.
 
