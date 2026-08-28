@@ -1,0 +1,225 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "gate-c",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-29/mounted-page-newly-placed-undo",
+  "approved_base": "f3c2be6b2afa2da51cde39d22c13eabf2286f296",
+  "approved_scope": {
+    "lifecycle": "run-phase",
+    "phase": 29,
+    "worktree_role": "feature",
+    "phase_tasks": [
+      155,
+      156,
+      157,
+      158
+    ],
+    "task_batch": [
+      155
+    ],
+    "task_order": [
+      155
+    ],
+    "execution_mode": "sequential",
+    "next_task": 155
+  },
+  "next_legal_action": "$run-task",
+  "source_mode": "merged canonical Phase 29 plan plus accepted Task 123/152 foundations, approved nine-recipe package and DP-VQ10 receipt, and unchanged-candidate Track B audit continuity",
+  "issue_ledger": "docs/issues/Issues_Phase_29.md",
+  "integration": {
+    "branch": "main",
+    "remote": "origin",
+    "post_fetch_sha": "f3c2be6b2afa2da51cde39d22c13eabf2286f296",
+    "local_matches_remote": true,
+    "divergence": "0/0"
+  },
+  "worktree_preparation": {
+    "new_linked_worktree": true,
+    "reuse": false,
+    "base_exception": null,
+    "clean_start": true,
+    "approved_base_to_head_commits_before_kickoff_docs": 0,
+    "kickoff_doc_commit": "c80ab62b9e687ff2a8bfbfff1c1d99b6c3ba6c21",
+    "kickoff_doc_parent": "f3c2be6b2afa2da51cde39d22c13eabf2286f296",
+    "kickoff_doc_tree": "f636d1839eafdfff1bf22da1bb286d76a9425a6d"
+  },
+  "dependency_evidence": {
+    "task_155": {
+      "dependencies": [
+        123,
+        152
+      ],
+      "task_123": {
+        "implementation": "c1b62eff6e35b740bc693b48ad080380cdd0241f",
+        "acceptance": "54405de6aa9d1b42d1b58b19cbb68ee45a6a900e"
+      },
+      "task_152": {
+        "implementation": "7ba936147722e1e8ebb4a3fb6b9bceed9a65ca88",
+        "checkpoint": "e25b1ebe0275d8a7ff16c612195b11780da98b21",
+        "acceptance": "12fd2a9dedd282a784e0f9113950cb1a7646477c"
+      },
+      "state_at_gate": "ready"
+    },
+    "later_phase_tasks": {
+      "tasks": [
+        156,
+        157,
+        158
+      ],
+      "state_at_gate": "held_for_separate_run-task_scope_and_dependency_revalidation"
+    }
+  },
+  "readiness": {
+    "plan_code_drift": "none blocking",
+    "recipe_header_disposition": "resolved false blocker through the approved nine-recipe package index and accepted DP-VQ10 receipt; no leaf-header repair authorized",
+    "open_decision_receipts_for_batch": [],
+    "active_blocking_issues": [],
+    "task_155_started": false,
+    "production_implementation_started": false,
+    "task_155_measurement_row_written": false,
+    "task_155_relevant_input_fingerprint": null,
+    "baseline_src_tree": "c1bbfb711b53a16e78e576c47dd217bd52f724a8",
+    "kickoff_src_tree": "c1bbfb711b53a16e78e576c47dd217bd52f724a8"
+  },
+  "verification": {
+    "setup": {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "elapsed_seconds": 3.43,
+      "result": "lockfile unchanged; 537 packages linked; tracked state remained clean"
+    },
+    "baseline_full_gate": [
+      {
+        "command": "pnpm test",
+        "exit": 0,
+        "elapsed_seconds": 29.47,
+        "result": "98 test files and 1146 tests passed; Vitest duration 27.91s",
+        "warnings": "Node module.register() deprecation and localStorage experimental warnings"
+      },
+      {
+        "command": "pnpm lint",
+        "exit": 0,
+        "elapsed_seconds": 7.56,
+        "result": "0 errors and 11 existing warnings"
+      },
+      {
+        "command": "pnpm typecheck",
+        "exit": 0,
+        "elapsed_seconds": 4.09,
+        "result": "tsc --noEmit passed"
+      },
+      {
+        "command": "pnpm build",
+        "exit": 0,
+        "elapsed_seconds": 12.39,
+        "result": "Next.js 16.2.1 production build passed; compile 5.1s; TypeScript 4.0s; seven pages generated",
+        "warnings": "Node module.register() deprecation and localStorage experimental warnings"
+      }
+    ]
+  },
+  "artifact_pins": [
+    {
+      "commit": "c80ab62b9e687ff2a8bfbfff1c1d99b6c3ba6c21",
+      "path": "docs/issues/Issues_Phase_29.md",
+      "sha256": "9cdd71205bbb77cfec45ef27d98ab273e67317fffb79c600c4193c1da6e4b4c9"
+    },
+    {
+      "commit": "c80ab62b9e687ff2a8bfbfff1c1d99b6c3ba6c21",
+      "path": "docs/verification/inbox-triage/phase-29-workflow-pilot-audit.md",
+      "sha256": "af5a0b72e3badbe06a6a6fb3010b644e2aa43caa2fba10b6f8a109b1bcb0cb16"
+    },
+    {
+      "commit": "f3c2be6b2afa2da51cde39d22c13eabf2286f296",
+      "path": "docs/CODEX_WORKFLOW_ADAPTER.json",
+      "sha256": "7824499e03228e1b4261e4b8d198041130354acfe28f670141da33b303fc4aff"
+    },
+    {
+      "commit": "f3c2be6b2afa2da51cde39d22c13eabf2286f296",
+      "path": "docs/EXECUTION_PLAN.md",
+      "sha256": "bd8d506361e59a62cbd4b596cec5b219debf90b845a976b117a8dce117dc3a99"
+    },
+    {
+      "commit": "f3c2be6b2afa2da51cde39d22c13eabf2286f296",
+      "path": "docs/issues/Issues_Phase_24.Task_117.dp-vq10.json",
+      "sha256": "9d292903aab5db1740590e920f202609de2b984374eaccb8957be006d0e26c3f"
+    },
+    {
+      "commit": "f3c2be6b2afa2da51cde39d22c13eabf2286f296",
+      "path": "docs/recipes/inbox-triage-visual-recipe-index.md",
+      "sha256": "023b5f24d33ba8431cb2f9b2bd4520849017f945e475b15bf3eafe1eebdb992d"
+    },
+    {
+      "commit": "f3c2be6b2afa2da51cde39d22c13eabf2286f296",
+      "path": "docs/issues/Final_Close_Phase_28.json",
+      "sha256": "d9b844a4ec666c9de759ca439f22cf1f2d3e51e9829ca07ffc82bf0882b46cbb"
+    },
+    {
+      "commit": "f3c2be6b2afa2da51cde39d22c13eabf2286f296",
+      "path": "docs/issues/Final_Close_Phase_28_Post_Close_Smoke_Repair.json",
+      "sha256": "0d90eaf5d058c2d33cee7c1f42df9d463d378f40c334254a679eaa6894712aba"
+    },
+    {
+      "commit": "f3c2be6b2afa2da51cde39d22c13eabf2286f296",
+      "path": "docs/verification/inbox-triage/phase-28-workflow-pilot-audit.md",
+      "sha256": "8587fcb6b267c43d377079d551b8b153bd866fa54fcab9449cf289cdd89a9506"
+    }
+  ],
+  "workflow_audit": {
+    "path": "docs/verification/inbox-triage/phase-29-workflow-pilot-audit.md",
+    "pre_kickoff_blob": "21a1a8b6e23c4aef22bf360961bf7b4235563aa2",
+    "kickoff_blob": "4cab7eec6b29cdf6fcdc81f3d1a31eaf0b19482d",
+    "header": "Phase 29 pilot active",
+    "carried_post_close_findings": 9,
+    "hypotheses_open": [
+      "WF28-01",
+      "WF28-02",
+      "WF28-03",
+      "WF28-04",
+      "WF28-05",
+      "WF28-06",
+      "WF28-07",
+      "WF28-08",
+      "WF28-09",
+      "WF28-10",
+      "WF28-11"
+    ],
+    "decision_questions_open": 7,
+    "task_155_row": "blank",
+    "verdicts_recorded": false
+  },
+  "phase_28_continuity": {
+    "original_receipt_commit": "5595e96ef3414143219af1e239918c34456ad0f9",
+    "original_merge": "3b2782287bc12fa6595427254cd4c698d60e5105",
+    "original_pr": 43,
+    "merged_audit_blob": "59948cc5ec3891babc6b14f859d1608697c0c2bd",
+    "post_close_repair_receipt_commit": "7a2d2df26e8db0269788e50bd73b3ce8fb6c624d",
+    "post_close_repair_merge": "f3c2be6b2afa2da51cde39d22c13eabf2286f296",
+    "post_close_repair_pr": 44
+  },
+  "workflow_candidate": {
+    "repository": "/Users/jwk/Documents/codex-workflow-clean-design-mode-implementation",
+    "branch": "post-v1/workflow-candidate-low-cost",
+    "commit": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
+    "run_phase_skill": "skills/run-phase/SKILL.md",
+    "future_run_task_skill": "skills/run-task/SKILL.md",
+    "future_run_task_sha256": "614631c56866549feb298d995ea0cf1311caa1cacaaefc2ba2ca753e43910531",
+    "global_lifecycle_skills_allowed": false
+  },
+  "gate_c_approval": {
+    "date": "2026-08-28",
+    "approval_kind": "new-phase-kickoff",
+    "exact_scope_confirmed": true,
+    "user_statement": "내 승인합니다"
+  },
+  "kickoff_state": {
+    "clean_start": true,
+    "kickoff_docs_committed": true,
+    "task_155_durable_start_recorded": false,
+    "production_implementation_started": false,
+    "run_task_invoked": false,
+    "push_or_publication_started": false,
+    "integration_or_cleanup_started": false
+  }
+}
