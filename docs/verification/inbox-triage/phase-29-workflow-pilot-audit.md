@@ -1,6 +1,6 @@
 # GridDO Codex Workflow Phase 29 Pilot Audit
 
-> Status: Inactive until the separately approved Phase 29 Gate C
+> Status: Phase 29 pilot active
 > Created: 2026-08-26 during the Phase 28 close preview
 > Evidence role: Phase 29 workflow experiment continuity and comparison owner
 > Authority: Not product, plan, skill, Adapter, receipt, or acceptance authority
@@ -13,8 +13,9 @@ disposition remain in the future Phase 29 ledger; lifecycle authority remains
 in exact whole-file receipts. This file cannot mark a task `[x]`, change the
 workflow candidate, modify the Project Adapter, or authorize publication.
 
-The audit is created by the Phase 28 close but remains inactive until Phase 29
-receives its own Gate C. Phase 29 must use the unchanged candidate commit:
+The audit was created by the Phase 28 close and activated by the separately
+approved Phase 29 Gate C on 2026-08-28. Phase 29 uses the unchanged candidate
+commit:
 
 `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`
 
@@ -23,10 +24,37 @@ Terminal Phase 28 baseline:
 - Path: `docs/verification/inbox-triage/phase-28-workflow-pilot-audit.md`
 - Close-preview Git blob: `59948cc5ec3891babc6b14f859d1608697c0c2bd`
 
-At Phase 29 kickoff, record the exact merged Phase 28 commit, merged Phase 28
-audit blob, Phase 28 Final Close receipt, Phase 29 Gate C, branch, worktree,
-base, and kickoff HEAD. None exists in this inactive baseline, so no SHA or
-receipt placeholder is used as evidence.
+Phase 29 kickoff identity:
+
+- Gate C receipt: `docs/issues/Issues_Phase_29.gate-c.json`; user statement
+  `내 승인합니다`; disposition `approved`; first sequential batch Task 155 only.
+- Integration, approved base, and pre-document kickoff HEAD:
+  `f3c2be6b2afa2da51cde39d22c13eabf2286f296`; no base exception.
+- Feature branch: `phase-29/mounted-page-newly-placed-undo`.
+- Linked worktree:
+  `/Users/jwk/Documents/griddo2-codex-phase-29-mounted-page-newly-placed-undo`;
+  new worktree, no reuse.
+- Candidate: branch `post-v1/workflow-candidate-low-cost`, commit
+  `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`.
+- Adapter blob: `7903892c04c4eb6fcd694712d5a01fdb608e183f`.
+- This pre-kickoff audit blob:
+  `21a1a8b6e23c4aef22bf360961bf7b4235563aa2`.
+- Original Phase 28 Final Close receipt:
+  `docs/issues/Final_Close_Phase_28.json`, SHA-256
+  `d9b844a4ec666c9de759ca439f22cf1f2d3e51e9829ca07ffc82bf0882b46cbb`,
+  receipt commit `5595e96ef3414143219af1e239918c34456ad0f9`, merge
+  `3b2782287bc12fa6595427254cd4c698d60e5105`, PR #43.
+- Merged Phase 28 audit blob:
+  `59948cc5ec3891babc6b14f859d1608697c0c2bd`.
+- Phase 28 post-close smoke repair Final Close receipt:
+  `docs/issues/Final_Close_Phase_28_Post_Close_Smoke_Repair.json`, SHA-256
+  `0d90eaf5d058c2d33cee7c1f42df9d463d378f40c334254a679eaa6894712aba`,
+  receipt commit `7a2d2df26e8db0269788e50bd73b3ce8fb6c624d`, merge
+  `f3c2be6b2afa2da51cde39d22c13eabf2286f296`, PR #44.
+
+No Task 155 measurement row or relevant-input fingerprint exists at kickoff.
+The pinned `run-task` constructs those only from its exact approved worktree
+inputs after the separate Task 155 lifecycle starts.
 
 During Phase 29 the candidate skill and Project Adapter are read-only. Any
 candidate or Adapter improvement requires a separate user-approved lifecycle
@@ -122,6 +150,29 @@ Required fields:
 | --- | --- | --- | --- | --- | --- | --- | --- |
 |  |  |  |  |  |  |  |  |
 
+## Carried post-close findings
+
+These findings have no Phase 29 verdict at kickoff. Tasks 155–158 measure and
+disposition them without treating audit evidence as product authority.
+
+1. The original workflow had no legal post-close repair receipt lifecycle.
+2. One-off workflow-support candidate
+   `fbd1a1995b50c26c3e669bdb5243cec3ca324bb8` and an Adapter extension were
+   required for repair publication.
+3. That support candidate is historical evidence, not the Phase 29 candidate
+   or a preselected permanent improvement.
+4. The post-close product repair used explicitly approved repair cycle `4/4`.
+5. A permanent `.next`/Turbopack stale generated-output safeguard is
+   `Unowned`.
+6. The `test-task4-craft-docs` stale SUT evidence hash failure already exists
+   at candidate base `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`.
+7. Do not regenerate that unrelated stale evidence without separate owner
+   approval.
+8. Evaluate lifecycle coverage, bounded repair budgets, browser evidence,
+   escaped-smoke handling, session rollover, and durable evidence ownership.
+9. Keep the already implemented one-off receipt compatibility support
+   separate from Phase 29's future audit verdict.
+
 ## Carried hypotheses
 
 No carried item has a final verdict at baseline. Phase 29 must replicate and
@@ -147,6 +198,8 @@ relaxations may therefore remain unvalidated; record that as a limitation
 rather than inferring a result.
 
 ## Seven decision questions
+
+All seven questions remain open at kickoff.
 
 1. Which candidates reduced elapsed time or tokens without an escaped defect?
 2. Which safeguards detected a real defect and must remain mandatory?
