@@ -1489,7 +1489,7 @@ describe("TriageWorkspace", () => {
     ).toHaveClass("h-12", "motion-safe:animate-jiggle");
   });
 
-  it("applies neutral hover styling while the staged remove target is hovered", () => {
+  it("applies destructive tokens only while the compatible staged remove target is active", () => {
     useTriageDndMock.mockReturnValue(
       createDndState({
         activeDragItem: {
@@ -1508,7 +1508,44 @@ describe("TriageWorkspace", () => {
       document.querySelector(
         '[aria-label="Drop staged item here to remove from staging"]',
       ),
-    ).toHaveClass("bg-muted", "border-solid");
+    ).toHaveClass(
+      "bg-destructive/10",
+      "border-destructive",
+      "border-solid",
+      "text-destructive",
+    );
+    expect(unstageCandidateMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps idle and incompatible staged remove states neutral", () => {
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        activeDragItem: {
+          kind: "triage-staged-node",
+          id: "candidate-1",
+          label: "Project",
+          sourceBreakdownId: "breakdown-1",
+        },
+        overTargetId: "triage-bit-zone-drop",
+      }),
+    );
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    const removeTarget = document.querySelector(
+      '[aria-label="Drop staged item here to remove from staging"]',
+    );
+    expect(removeTarget).toHaveClass(
+      "border-dashed",
+      "border-border",
+      "text-muted-foreground",
+    );
+    expect(removeTarget).not.toHaveClass(
+      "border-destructive",
+      "bg-destructive/10",
+      "text-destructive",
+    );
+    expect(unstageCandidateMock).not.toHaveBeenCalled();
   });
 
   it("shows hierarchy cells as valid while a breakdown row is dragged", () => {

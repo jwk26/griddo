@@ -621,7 +621,7 @@ function TriageRemoveDropTarget({
       className={cn(
         "flex h-12 w-full items-center justify-center gap-2 border-t bg-transparent px-3 text-xs font-medium transition-[background-color,border-color,color] motion-reduce:transition-none",
         isOver
-          ? "border-solid border-border bg-muted text-foreground"
+          ? "border-solid border-destructive bg-destructive/10 text-destructive"
           : "border-dashed border-border text-muted-foreground motion-safe:animate-jiggle",
       )}
     >

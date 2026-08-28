@@ -18,6 +18,7 @@
 - The candidate root is the full drag activator. Production retains the shared compact pointer-centered `TriageDragToken`; no internal handle, native snapshot, primary click, detail, or menu is adopted.
 - During staged drag, the dedicated lower unstage overlay and Breakdown drop-back share one meaning. The overlay must not resize, blur, or move the lists.
 - Base pending, invalid, same-type neutral, opposite-type unavailable, and drop-back meanings remain semantic states. Source mock mutations do not define their lifecycle.
+- The lower Remove-from-staging target stays dashed and neutral while idle. Only when a compatible staged drag actively owns that exact target does it use the canonical destructive border, restrained destructive background, and destructive text/icon tokens. This is an explicit removal affordance for Unstage, not deletion; cancellation, invalid, unavailable, same-type neutral, Node/Bit wells, and Breakdown drop-back remain non-destructive.
 
 ## Decision-Prerequisite Boundary
 

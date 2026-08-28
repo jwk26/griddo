@@ -957,13 +957,14 @@ describe("HierarchyExplorer Task 152 target-column placement", () => {
   });
 
   it.each(["direct", "staged"] as const)(
-    "issues minimum owning-viewport scroll intent when a %s affordance opens above the visible column",
+    "resets only the owning column to its complete top spacing when a %s affordance opens",
     (kind) => {
       const target = createNode({ id: "target-1", title: "Target" });
       setGrid(null, [target]);
       const view = render(<HierarchyExplorer {...defaultProps} />);
       const body = screen.getByTestId("hierarchy-section-body-home");
       body.scrollTop = 80;
+      const documentScroll = window.scrollY;
       vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
         function (this: HTMLElement) {
           if (this === body) {
@@ -1036,9 +1037,118 @@ describe("HierarchyExplorer Task 152 target-column placement", () => {
           ? screen.getByText("Choose a result type")
           : screen.getByRole("textbox", { name: "Result title" });
       expect(focusOwner).toHaveFocus();
-      expect(body.scrollTop).toBe(20);
+      expect(body.scrollTop).toBe(0);
+      expect(window.scrollY).toBe(documentScroll);
     },
   );
+
+  it("preserves document and unrelated-column scroll when placement opens", () => {
+    const parent = createNode({ id: "parent-1", title: "Parent" });
+    const target = createNode({
+      id: "target-1",
+      parentId: parent.id,
+      title: "Target",
+    });
+    setGrid(null, [parent]);
+    setGrid(parent.id, [target]);
+    useTriageStore.setState({
+      explorerPathIds: [parent.id],
+      explorerOpenColumnIds: ["home", parent.id],
+    });
+    const view = render(<HierarchyExplorer {...defaultProps} />);
+    const homeBody = screen.getByTestId("hierarchy-section-body-home");
+    const targetBody = screen.getByTestId("hierarchy-section-body-l1");
+    homeBody.scrollTop = 37;
+    targetBody.scrollTop = 80;
+    const documentScroll = window.scrollY;
+
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        placementSnapshot={placementSnapshot({
+          release: {
+            ...placementSnapshot().release,
+            target: {
+              ...placementSnapshot().release.target,
+              dropId: getTriageHierarchyDropId(target.id),
+              parentId: target.id,
+              level: 1,
+              title: target.title,
+              path: ["Home", parent.title, target.title],
+              expectedAncestorIds: [parent.id, target.id],
+            },
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText("Choose a result type")).toHaveFocus();
+    expect(targetBody.scrollTop).toBe(0);
+    expect(homeBody.scrollTop).toBe(37);
+    expect(window.scrollY).toBe(documentScroll);
+  });
+
+  it("keeps successful-card focus on minimum owning-column reveal instead of resetting to top", () => {
+    const placed = createNode({ id: "placed-node", title: "Placed node" });
+    setGrid(null, [placed]);
+    const view = render(<HierarchyExplorer {...defaultProps} />);
+    const body = screen.getByTestId("hierarchy-section-body-home");
+    body.scrollTop = 80;
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+      function (this: HTMLElement) {
+        if (this === body) {
+          return {
+            top: 100,
+            bottom: 300,
+            left: 0,
+            right: 300,
+            width: 300,
+            height: 200,
+            x: 0,
+            y: 100,
+            toJSON() {},
+          };
+        }
+        if (this.dataset.explorerItemId === placed.id) {
+          return {
+            top: 290,
+            bottom: 330,
+            left: 0,
+            right: 300,
+            width: 300,
+            height: 40,
+            x: 0,
+            y: 290,
+            toJSON() {},
+          };
+        }
+        return {
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          width: 0,
+          height: 0,
+          x: 0,
+          y: 0,
+          toJSON() {},
+        };
+      },
+    );
+
+    body.scrollTop = 80;
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        localPlacementResult={{ id: placed.id, type: "node", pathIds: [] }}
+      />,
+    );
+
+    expect(
+      document.querySelector(`[data-explorer-item-id="${placed.id}"]`),
+    ).toHaveFocus();
+    expect(body.scrollTop).toBe(110);
+  });
 
   it("closes headless Search, renders the direct step inside the exact target column, and focuses the step heading", async () => {
     const target = createNode({ id: "target-1", title: "Target" });

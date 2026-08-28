@@ -184,12 +184,19 @@ function focusFallback(validPathIds: string[]) {
     ?.focus();
 }
 
-function focusInOwningExplorerViewport(element: HTMLElement) {
+function focusInOwningExplorerViewport(
+  element: HTMLElement,
+  scrollMode: "minimum" | "top" = "minimum",
+) {
   element.focus({ preventScroll: true });
   const viewport = element.closest<HTMLElement>(
     "[data-triage-explorer-column]",
   );
   if (viewport === null) return;
+  if (scrollMode === "top") {
+    viewport.scrollTop = 0;
+    return;
+  }
 
   const visibilityOwner =
     element.closest<HTMLElement>("[data-triage-role='placement-affordance']") ??
@@ -1190,7 +1197,7 @@ function PlacementAffordance({
     } else if (snapshot.phase === "terminal") {
       focusOwner = cancelRef.current;
     }
-    if (focusOwner !== null) focusInOwningExplorerViewport(focusOwner);
+    if (focusOwner !== null) focusInOwningExplorerViewport(focusOwner, "top");
   }, [snapshot.phase, snapshot.terminalKind]);
 
   const reliabilityCopy = placementReliabilityCopy(snapshot);

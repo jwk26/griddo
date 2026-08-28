@@ -997,6 +997,7 @@ export function BreakdownPanel({
   const signaledSuccessIdentitiesRef = useRef(new Set<string>());
   const inputRef = useRef<HTMLInputElement>(null);
   const addEntryRef = useRef<HTMLInputElement | HTMLDivElement | null>(null);
+  const contentRegionRef = useRef<HTMLDivElement>(null);
   const addCommandRef = useRef<AddBreakdownCommand | null>(null);
   const deleteCommandRefs = useRef(new Map<string, DeleteBreakdownCommand>());
   const addReliabilityActionRef = useRef<HTMLButtonElement>(null);
@@ -1394,9 +1395,13 @@ export function BreakdownPanel({
     if (row === undefined) return;
 
     pendingAddedRowIdRef.current = null;
-    row.scrollIntoView({
-      block: breakdownCreatedAtSort === "DESC" ? "nearest" : "end",
-    });
+    if (breakdownCreatedAtSort === "DESC") {
+      if (contentRegionRef.current !== null) {
+        contentRegionRef.current.scrollTop = 0;
+      }
+    } else {
+      row.scrollIntoView({ block: "end" });
+    }
   }, [breakdownCreatedAtSort, breakdowns, newContent]);
 
   useEffect(() => {
@@ -1728,6 +1733,7 @@ export function BreakdownPanel({
         {editorAnnouncement}
       </div>
       <div
+        ref={contentRegionRef}
         className="min-h-0 flex-1 overflow-y-auto px-3 py-2"
         data-testid="breakdown-content-region"
         inert={isDepartureDecision ? true : undefined}
