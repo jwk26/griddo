@@ -1,0 +1,110 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "post-close-repair-final-close",
+  "approved_repository": "jwk26/griddo",
+  "approved_base": "3b2782287bc12fa6595427254cd4c698d60e5105",
+  "approved_branch": "phase-28/post-close-smoke-repair",
+  "approved_scope": {
+    "lifecycle": "post-close-repair-final-close",
+    "phase": 28,
+    "worktree_role": "feature"
+  },
+  "user_disposition": "approved",
+  "next_legal_action": "execute-post-close-repair-final-close",
+  "transaction": {
+    "workflow_support_candidate": {
+      "commit": "fbd1a1995b50c26c3e669bdb5243cec3ca324bb8",
+      "parent": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
+      "tree": "2d26ea1ea22ea91781165d59fb9f5eb14c7c6f2f",
+      "diff_hash_domain": "git-diff-binary-parent-to-candidate",
+      "diff_sha256": "26dca462e861a1a89daa9e34f3f7397905c3fafb834837519d6aa7f300f2e86a",
+      "synchronized_resolver_sha256": "b0e077d764f3db6027cf242c7024ec0e1980940faca28a650e35cd3948cd5841"
+    },
+    "phase_29_workflow_candidate": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
+    "repair_base": "3b2782287bc12fa6595427254cd4c698d60e5105",
+    "product_checkpoint": "b32bab4209476843001601e59aa9b72f805a7296",
+    "candidate_a": {
+      "commit": "3dc1c10c4b4fc1a2852b1c87de4f406a4a4f538a",
+      "parent": "b32bab4209476843001601e59aa9b72f805a7296",
+      "tree": "08366623dff163cc8925616c7dab1e4609ba7dda",
+      "diff_base": "3b2782287bc12fa6595427254cd4c698d60e5105",
+      "diff_hash_domain": "git-diff-binary-base-to-candidate",
+      "diff_sha256": "ca03c4baf4bf2447758d20b3b1a540a7956089a2da474ceea486eedf6cbac642",
+      "write_set_paths": [
+        "docs/CODEX_WORKFLOW_ADAPTER.json",
+        "docs/DESIGN_TOKENS.md",
+        "docs/recipes/inbox-triage-staging-visual-recipe.md",
+        "docs/verification/inbox-triage/phase-28-post-close-smoke-repair.md",
+        "src/components/triage/breakdown-panel.test.tsx",
+        "src/components/triage/breakdown-panel.tsx",
+        "src/components/triage/hierarchy-explorer.test.tsx",
+        "src/components/triage/hierarchy-explorer.tsx",
+        "src/components/triage/triage-workspace.test.tsx",
+        "src/components/triage/triage-workspace.tsx",
+        "src/hooks/use-dnd.ts",
+        "src/hooks/use-triage-dnd.test.ts"
+      ],
+      "adapter_blob": "7903892c04c4eb6fcd694712d5a01fdb608e183f",
+      "adapter_sha256": "7824499e03228e1b4261e4b8d198041130354acfe28f670141da33b303fc4aff"
+    },
+    "accepted_repair_evidence": {
+      "product_src_tree": "c1bbfb711b53a16e78e576c47dd217bd52f724a8",
+      "evidence_blob": "1af497b74c7eb2a65f4d8bd61cba909152507b95",
+      "relevant_input_fingerprint": "a33c5bee9265fa7d0f3c3edfa423d8de37d48dc7f9555480c875023d9bd66d3b",
+      "focused": "3 files / 252 tests",
+      "full": "98 files / 1,146 tests",
+      "lint": "0 errors / 11 unchanged warnings",
+      "typecheck_build_diff_check": "passed",
+      "browser": "Chrome 152 at 1440x900 and 1024x768",
+      "browser_console": "0 errors / 0 warnings",
+      "remaining_product_finding": "none",
+      "repair_cycles": "4/4",
+      "canonical_impact": "Reflected"
+    },
+    "historical_phase_28_receipt": {
+      "path": "docs/issues/Final_Close_Phase_28.json",
+      "sha256": "d9b844a4ec666c9de759ca439f22cf1f2d3e51e9829ca07ffc82bf0882b46cbb",
+      "status": "consumed and immutable"
+    },
+    "receipt_path": "docs/issues/Final_Close_Phase_28_Post_Close_Smoke_Repair.json",
+    "receipt_commit_message": "docs: record Phase 28 post-close smoke repair final close",
+    "publication_head_construction": "at the clean candidate_a.commit, add only this exact receipt file and create receipt commit B with B^ equal to candidate_a.commit",
+    "publication": {
+      "provider": "github",
+      "command": "scripts/codex-gh",
+      "remote": "origin",
+      "remote_url": "https://github.com/jwk26/griddo.git",
+      "integration_base_oid": "3b2782287bc12fa6595427254cd4c698d60e5105",
+      "base_branch": "main",
+      "head_branch": "phase-28/post-close-smoke-repair",
+      "pr_action": "create",
+      "pr_number": null,
+      "pr_url": null,
+      "title": "fix(triage): land Phase 28 post-close smoke repair",
+      "body": "## Summary\n\n- land the accepted Phase 28 post-close smoke repair for DnD feedback, placement reveal/focus, viewport handoffs, and active Remove styling\n- publish the repair's canonical design and durable verification evidence without changing the consumed Phase 28 close record\n- preserve Phase 29's unchanged workflow candidate and leave Tasks 155-158 inactive\n\n## Validation\n\n- focused: 3 files / 252 tests\n- full: 98 files / 1,146 tests\n- lint: 0 errors / 11 unchanged warnings; typecheck, build, and diff check passed\n- Chrome 152 at 1440x900 and 1024x768; console 0 errors / 0 warnings\n- Candidate A changes exactly the approved 11 repair paths plus the Adapter; exact-main merge-tree passed\n- Advisory: test-task4-craft-docs has an inherited stale SUT evidence hash failure also present at base 94e89782f7fe2cdbdd035e842ca6881b4a87ce49; the new lifecycle structure, semantics, resolver, synchronization, compatibility, and schema checks passed",
+      "draft": false,
+      "merge_method": "merge",
+      "expected_head": "receipt commit B",
+      "expected_head_mechanism": "scripts/codex-gh pr merge --merge --match-head-commit B",
+      "status_source": "GitHub PR headRefOid, mergeStateStatus, statusCheckRollup, branch protection, and repository rulesets",
+      "required_checks": "all reported required checks reach terminal success",
+      "queue": "forbidden",
+      "auto_merge": "forbidden",
+      "admin_bypass": "forbidden",
+      "implicit_branch_deletion": "forbidden",
+      "bounded_wait_retry": "at most 20 status reads at 15-second intervals"
+    },
+    "integration_sync": {
+      "primary_worktree": "/Users/jwk/Documents/griddo2-codex-integration",
+      "branch": "main",
+      "method": "fetch then fast-forward-only sync followed by method-neutral candidate inclusion proof"
+    },
+    "cleanup": {
+      "remote_ref": "refs/heads/phase-28/post-close-smoke-repair",
+      "feature_worktree": "/Users/jwk/Documents/griddo2-codex-phase-28-post-close-smoke-repair",
+      "local_branch": "phase-28/post-close-smoke-repair",
+      "policy": "guarded non-force only after exact merge proof and primary integration sync"
+    }
+  }
+}
