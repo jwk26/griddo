@@ -3,7 +3,7 @@
 > Branch: `phase-29/mounted-page-newly-placed-undo`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-29-mounted-page-newly-placed-undo`
 > Kickoff date: 2026-08-28
-> State: Gate C approved; Tasks 155–158 remain `[ ]`; Task 155 has not started
+> State: Task 155 `In Progress`; Tasks 155–158 remain `[ ]`
 
 ## Status Legend
 
@@ -24,14 +24,14 @@
 | Gate | `gate-c`, explicitly approved by the user on 2026-08-28 with statement `내 승인합니다` |
 | Phase scope | Phase 29, Tasks 155–158, equal-weight product and workflow-audit tracks |
 | First bounded batch | Task 155 only; sequential execution; Tasks 156–158 held for fresh dependency/readiness recheck |
-| Task state | Tasks 155–158 remain `[ ]`; Task 155 product work and audit measurement have not started |
+| Task state | Task 155 is `In Progress` and remains `[ ]`; Tasks 156–158 remain `[ ]`, held |
 | Source mode | Merged canonical Phase 29 plan plus accepted Task 123/152 foundations, approved nine-recipe package and DP-VQ10 receipt, and unchanged-candidate Track B audit continuity |
 | Integration | `origin/main` at `f3c2be6b2afa2da51cde39d22c13eabf2286f296`, local divergence `0/0` after fetch |
 | Approved base | `f3c2be6b2afa2da51cde39d22c13eabf2286f296`; no base exception |
 | Feature branch | `phase-29/mounted-page-newly-placed-undo` |
 | Worktree choice | New linked feature worktree at `/Users/jwk/Documents/griddo2-codex-phase-29-mounted-page-newly-placed-undo`; no reuse |
 | Whole-file receipt | `docs/issues/Issues_Phase_29.gate-c.json` |
-| Next legal action | After a green receipt-only commit and Control Tower acceptance, use the pinned candidate `$run-task` in a fresh session for Task 155 only |
+| Next legal action | Execute Task 155 test-first product work, verification, review, evidence, and actual audit measurement only; stop at the clean implementation checkpoint |
 
 ## Readiness And Clean-Start Evidence
 
@@ -85,13 +85,18 @@ No Phase 29 product issue is active at kickoff. The nine carried post-close
 workflow findings are owned without verdict by
 `docs/verification/inbox-triage/phase-29-workflow-pilot-audit.md`.
 
-## Task 155 Handoff
+## Task 155 Durable Start
 
 | Field | Durable value |
 | --- | --- |
 | Task | `155 — Project Newly Placed provenance over actual cards` |
-| State | `[ ]`, unstarted; no product/test file changed and no Task 155 audit row or fingerprint exists |
+| State | `In Progress`; Task 155 remains `[ ]`; no product/test write preceded this durable start |
+| Approval | Exact candidate-pinned Task 155 work order on 2026-08-28, bounded by the committed `docs/issues/Issues_Phase_29.gate-c.json` Gate C receipt and the current Task 155 contract |
+| Approved base / entrypoint | Integration base `f3c2be6b2afa2da51cde39d22c13eabf2286f296`; Task 155 entrypoint and recovery anchor `d81f924e209afd1cced22fdbfdca12e2c11af11b` |
 | Dependencies | Tasks 123 and 152 are `[x]`, Accepted and contained in the approved base |
-| Scope | The exact existing Task 155 contract in `docs/EXECUTION_PLAN.md`; no Task 156–158 scope |
+| Exact scope | Create the canonical Newly hook/test and Task 155 evidence; modify only the approved Workspace/test, Explorer/test, NodeCard/test, and BitCard/test owners; update this ledger and the actual Task 155 workflow-audit row; no Task 156–158 behavior |
+| Behavior | Own mounted-page-only local placement provenance; project static semantic markers and newest-first type pinning over actual NodeCard/BitCard records without changing stored `x/y`; preserve across Scratch/path/theme and clear on route exit/reload/unmount; remote/other-tab records remain ordinary; no Zustand Newly state, persistence, replacement card model, or common-card redesign |
+| Issues / deviations | None at start; the accepted Task 152 placement producer and Task 123 command foundation require no owner expansion |
+| Canonical impact | `None` — Task 155 implements the existing approved product/design/data/lifetime contract without changing canonical authority |
 | Audit invariant | The implementation checkpoint is incomplete until product evidence and the actual Task 155 audit measurement row are committed together; acceptance-only work does not edit the audit |
-| Next action | Control Tower reviews the committed Gate C receipt, then a fresh session invokes only the pinned candidate `run-task` for Task 155 |
+| Next action | Begin with failing Task 155 hook/card/Workspace/Explorer behavior tests, implement within the bounded three-cycle loop, run focused and full gates, perform High-risk review, commit product evidence plus the actual audit row, and stop with Task 155 still `[ ]` |
