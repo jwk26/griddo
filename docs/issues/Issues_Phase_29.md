@@ -101,3 +101,19 @@ workflow findings are owned without verdict by
 | Verification / evidence | Latest focused 5 files / 161 tests; latest full gate 99 files / 1,154 tests, lint 0 errors with 11 unchanged warnings, typecheck and build passed; exact results, review repairs, and fingerprint `1a491bbd2bda0fb26c9af723704ed657a47399472053d8d5d9700500549e8821` are owned by `docs/verification/inbox-triage/task-155.md` |
 | Audit invariant | The implementation checkpoint is incomplete until product evidence and the actual Task 155 audit measurement row are committed together; acceptance-only work does not edit the audit |
 | Next action | Control Tower reviews this acceptance-only checkpoint; Task 156 remains unstarted and may begin only after a fresh `run-task` prompt |
+
+## Task 156 Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Task | `156 — Connect ordinary-card source-aware Undo independently of search` |
+| State | `In Progress`; Task 156 remains `[ ]` and is not user-accepted |
+| Approval | Exact candidate-pinned Task 156-only work order on 2026-08-29, bounded by the committed `docs/issues/Issues_Phase_29.gate-c.json` Gate C receipt, the completed dependency revalidation, and the current Task 156 contract |
+| Approved base / entrypoint | Integration base `f3c2be6b2afa2da51cde39d22c13eabf2286f296`; exact clean Task 156 entrypoint and recovery anchor `2dfab8058e2b34ee55bab6460bbc152865434b5b` |
+| Dependencies | Tasks 124, 136, 137, 139, 152, and 155 are `[x]`, Accepted and their acceptance commits are ancestors of the entrypoint; Tasks 114 and 151 are deliberately not dependencies |
+| Exact scope | Modify only the approved Newly hook/test, ordinary Explorer/test, NodeCard/test, BitCard/test, and shared operation-lock test owners; create Task 156 evidence; update this ledger and the actual Task 156 workflow-audit row; no Search, `DP-VQ07`, Task 157 realization, Task 158, data/persistence/schema, or common-card redesign |
+| Behavior | Connect ordinary-card source-aware Undo from exact current result/source/candidate/dependency truth; keep marker and eligibility independent; synchronously acquire the shared `undo` lock before dispatch; retain exact provenance and blockers through pending/unknown/reconciling; reject duplicate/competing intent without write/navigation/queue/replay; release only on terminal result; restore staged/direct provenance and canonical next → previous → column-heading focus |
+| Issues / deviations | None at durable start; approved owner discovery found no additional product/test write path |
+| Canonical impact | `None` — Task 156 implements the existing approved ordinary-card Undo contract without changing canonical authority |
+| Audit invariant | The implementation checkpoint is incomplete until product evidence and the actual Task 156 audit measurement row are committed together; Task 155 evidence and its audit row remain immutable |
+| Next action | Begin Task 156 TDD in the exact approved product/test paths; stop at the paired implementation/evidence and audit checkpoint with Task 156 still `[ ]` |
