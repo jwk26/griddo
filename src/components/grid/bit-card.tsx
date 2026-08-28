@@ -25,6 +25,7 @@ type BitCardProps = {
   onClick: () => void;
   onDelete?: () => void;
   isDragging?: boolean;
+  isNewlyPlaced?: boolean;
 } & Omit<ComponentPropsWithoutRef<"div">, "children" | "onClick">;
 
 export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard(
@@ -35,6 +36,7 @@ export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard
     onClick,
     onDelete,
     isDragging = false,
+    isNewlyPlaced = false,
     className,
     onKeyDown,
     role,
@@ -56,6 +58,7 @@ export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard
   return (
     <div
       {...divProps}
+      data-newly-placed={isNewlyPlaced ? "true" : undefined}
       className={cn(
         "group/bit relative z-10 inline-flex shrink-0 cursor-grab select-none items-stretch rounded-[10px] border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-colors hover:bg-accent/50 active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
         isDragging && "z-20 cursor-grabbing",
@@ -148,6 +151,15 @@ export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard
           </div>
         ) : null}
       </div>
+
+      {isNewlyPlaced ? (
+        <span
+          className="absolute left-0 top-0 z-20 text-[10px] font-semibold"
+          data-card-marker="newly-placed"
+        >
+          Newly placed
+        </span>
+      ) : null}
 
       {/* Past-deadline overlay */}
       {pastDeadline ? (

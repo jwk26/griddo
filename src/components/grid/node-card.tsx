@@ -1,7 +1,8 @@
 "use client";
 
 import { MoreHorizontal, X } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, type HTMLMotionProps } from "motion/react";
+import type { Ref } from "react";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import {
   nodeCardTransition,
@@ -18,40 +19,74 @@ import {
 import { useArchiveActions } from "@/hooks/use-archive";
 import type { Node } from "@/types";
 
+type NodeCardProps = {
+  node: Node;
+  onClick: () => void;
+  onDelete?: () => void;
+  isEditMode?: boolean;
+  isDragging?: boolean;
+  isNewlyPlaced?: boolean;
+  ref?: Ref<HTMLButtonElement>;
+} & Omit<
+  HTMLMotionProps<"button">,
+  | "animate"
+  | "children"
+  | "initial"
+  | "onClick"
+  | "transition"
+  | "variants"
+  | "whileHover"
+>;
+
 export function NodeCard({
   node,
   onClick,
   onDelete,
   isEditMode = false,
   isDragging = false,
-}: {
-  node: Node;
-  onClick: () => void;
-  onDelete?: () => void;
-  isEditMode?: boolean;
-  isDragging?: boolean;
-}) {
+  isNewlyPlaced = false,
+  className,
+  ref,
+  style,
+  ...buttonProps
+}: NodeCardProps) {
   const Icon = NODE_ICON_MAP[node.icon] ?? NODE_ICON_MAP.Box;
   const agingFilter = getAgingFilter(getAgingState(node.mtime));
   const { archive } = useArchiveActions();
 
   return (
-    <div className="group/card relative flex h-full items-center justify-center">
+    <div
+      className="group/card relative flex h-full items-center justify-center"
+      data-newly-placed={isNewlyPlaced ? "true" : undefined}
+    >
       <motion.button
+        {...buttonProps}
+        ref={ref}
         type="button"
+        aria-label={buttonProps["aria-label"] ?? node.title}
         animate={isDragging ? "dragging" : "rest"}
         className={cn(
           "theme-node-card relative grid h-[var(--grid-node-size)] w-[var(--grid-node-size)] max-h-full max-w-full cursor-grab grid-rows-[1fr_var(--grid-node-title-height)] justify-items-center px-[var(--grid-node-padding-x)] pb-[var(--grid-node-padding-bottom)] pt-[var(--grid-node-padding-top)] transition-[box-shadow,background-color] hover:bg-muted/40 active:cursor-grabbing active:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           isDragging && "cursor-grabbing bg-muted/60 [box-shadow:var(--theme-shadow-hover)]",
           isEditMode && "motion-safe:animate-jiggle",
+          className,
         )}
+        data-newly-placed={isNewlyPlaced ? "true" : undefined}
         initial={false}
         onClick={onClick}
-        style={{ filter: agingFilter }}
+        style={{ ...style, filter: agingFilter }}
         transition={nodeCardTransition}
         variants={nodeCardVariants}
         whileHover={isDragging ? undefined : "hover"}
       >
+        {isNewlyPlaced ? (
+          <span
+            className="absolute left-0 top-0 z-20 text-[10px] font-semibold"
+            data-card-marker="newly-placed"
+          >
+            Newly placed
+          </span>
+        ) : null}
         {/* Fixed icon slot so title length never shifts or scales the icon */}
         <div className="flex min-h-0 items-center justify-center self-center pb-[var(--grid-node-icon-lift)]">
           <Icon

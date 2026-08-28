@@ -83,6 +83,21 @@ afterEach(() => {
 });
 
 describe("NodeCard", () => {
+  it("layers an independent semantic Newly Placed marker on the actual card", () => {
+    const node = createNode({ title: "Placed node" });
+    const { rerender } = render(
+      <NodeCard isNewlyPlaced={true} node={node} onClick={vi.fn()} />,
+    );
+
+    const marker = screen.getByText("Newly placed");
+    expect(marker).toHaveAttribute("data-card-marker", "newly-placed");
+    expect(marker.closest('[data-newly-placed="true"]')).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Placed node" })).toBeInTheDocument();
+
+    rerender(<NodeCard node={node} onClick={vi.fn()} />);
+    expect(screen.queryByText("Newly placed")).not.toBeInTheDocument();
+  });
+
   it("uses a fixed square footprint with a non-shrinking icon and truncating title slot", () => {
     const node = createNode({ title: "Very long node title that should truncate" });
     const { container } = render(

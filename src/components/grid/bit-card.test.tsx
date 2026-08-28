@@ -56,6 +56,34 @@ afterEach(() => {
 });
 
 describe("BitCard", () => {
+  it("layers an independent semantic Newly Placed marker on the actual card", () => {
+    const bit = createBit({ title: "Placed bit" });
+    const { rerender } = render(
+      <BitCard
+        bit={bit}
+        chunkStats={{ completed: 0, total: 0 }}
+        isNewlyPlaced={true}
+        onClick={vi.fn()}
+        parentColor="hsl(221, 83%, 53%)"
+      />,
+    );
+
+    const marker = screen.getByText("Newly placed");
+    expect(marker).toHaveAttribute("data-card-marker", "newly-placed");
+    expect(marker.closest('[data-newly-placed="true"]')).not.toBeNull();
+    expect(screen.getByText("Placed bit")).toBeInTheDocument();
+
+    rerender(
+      <BitCard
+        bit={bit}
+        chunkStats={{ completed: 0, total: 0 }}
+        onClick={vi.fn()}
+        parentColor="hsl(221, 83%, 53%)"
+      />,
+    );
+    expect(screen.queryByText("Newly placed")).not.toBeInTheDocument();
+  });
+
   it("renders deadline, priority, progress, and aging saturation", () => {
     const handleClick = vi.fn();
     const bit = createBit({

@@ -1,7 +1,7 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import { Folder, ListTodo, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import {
   useEffect,
   useId,
@@ -13,6 +13,8 @@ import {
   type UIEvent,
 } from "react";
 import { GridExplorerSearchResults } from "@/components/triage/grid-explorer-search-results";
+import { BitCard } from "@/components/grid/bit-card";
+import { NodeCard } from "@/components/grid/node-card";
 import { Button } from "@/components/ui/button";
 import { useGridData } from "@/hooks/use-grid-data";
 import {
@@ -25,6 +27,11 @@ import type {
   TriageTargetFeedback,
 } from "@/hooks/use-dnd";
 import type { TriagePlacementSnapshot } from "@/hooks/use-triage-placement";
+import {
+  isTriageNewlyPlaced,
+  projectTriageNewlyPlaced,
+  type TriageNewlyPlacedProvenance,
+} from "@/hooks/use-triage-newly-placed";
 import {
   getTriageHierarchyDropId,
   type TriageDropData,
@@ -54,6 +61,7 @@ interface HierarchyExplorerProps {
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
   localPlacementResult: LocalPlacementResult | null;
+  newlyPlacedEntries?: readonly TriageNewlyPlacedProvenance[];
   placementSnapshot?: TriagePlacementSnapshot | null;
   onPlacementCancel?: () => void;
   onPlacementConfirm?: () => void;
@@ -87,6 +95,7 @@ const EMPTY_SCROLL_POSITION: TriageSessionScrollPosition = {
   anchorId: null,
   offset: 0,
 };
+const EMPTY_NEWLY_PLACED_ENTRIES: readonly TriageNewlyPlacedProvenance[] = [];
 
 const CELL_BASE_CLASS =
   "flex w-full items-center gap-2 rounded-md border border-transparent px-3 py-2 text-left transition-[background-color,border-color,box-shadow,color] touch-action-manipulation cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
@@ -280,6 +289,7 @@ export function HierarchyExplorer({
   overTargetId,
   pendingPlacementDropId,
   localPlacementResult,
+  newlyPlacedEntries = EMPTY_NEWLY_PLACED_ENTRIES,
   placementSnapshot = null,
   onPlacementCancel,
   onPlacementConfirm,
@@ -1042,6 +1052,16 @@ export function HierarchyExplorer({
           const parentPath = ["Home", ...pathNodes.slice(0, index).map(({ title }) => title)];
           const targetParentPath =
             index === 0 ? [] : parentPath.slice(0, -1);
+          const projectedNodes = projectTriageNewlyPlaced(
+            newlyPlacedEntries,
+            "node",
+            column.nodes,
+          );
+          const projectedBits = projectTriageNewlyPlaced(
+            newlyPlacedEntries,
+            "bit",
+            column.bits,
+          );
           const sectionDropId = getTriageHierarchyDropId(
             index === 0 ? "body-home" : `body-l${index}`,
           );
@@ -1067,7 +1087,7 @@ export function HierarchyExplorer({
               columnId={column.columnId}
               hasRightBorder={index < COLUMN_LABELS.length - 1}
               isDimmed={index > 0 && column.parentNode === null}
-              itemIds={idsForColumn(column.nodes, column.bits)}
+              itemIds={idsForColumn(projectedNodes, projectedBits)}
               label={COLUMN_LABELS[index]}
               pathStatusAnnouncementSuppressed={
                 explorerPathStatus === announcementSuppressedPathStatus
@@ -1116,9 +1136,10 @@ export function HierarchyExplorer({
               {index > 0 && column.parentNode === null ? null : (
                 <HierarchyItemList
                   activeDragItem={activeDragItem}
-                  bits={column.bits}
+                  bits={projectedBits}
                   isLoading={column.isLoading}
-                  nodes={column.nodes}
+                  nodes={projectedNodes}
+                  newlyPlacedEntries={newlyPlacedEntries}
                   onSelectNode={
                     index < 3
                       ? (nodeId) =>
@@ -1130,6 +1151,7 @@ export function HierarchyExplorer({
                   }
                   overTargetId={overTargetId}
                   parentPath={parentPath}
+                  parentColor={column.parentNode?.color ?? "hsl(221, 83%, 53%)"}
                   pendingPlacementDropId={effectivePendingPlacementDropId}
                   reveal={reveal}
                   selectedNodeId={column.selectedNodeId}
@@ -1756,9 +1778,11 @@ function HierarchyItemList({
   bits,
   isLoading,
   nodes,
+  newlyPlacedEntries,
   onSelectNode,
   overTargetId,
   parentPath,
+  parentColor,
   pendingPlacementDropId,
   reveal,
   selectedNodeId,
@@ -1768,9 +1792,11 @@ function HierarchyItemList({
   bits: Bit[];
   isLoading: boolean;
   nodes: Node[];
+  newlyPlacedEntries: readonly TriageNewlyPlacedProvenance[];
   onSelectNode?: (nodeId: string) => void;
   overTargetId: string | null;
   parentPath: string[];
+  parentColor: string;
   pendingPlacementDropId: string | null;
   reveal: GridExplorerSearchResult | null;
   selectedNodeId?: string | null;
@@ -1795,6 +1821,7 @@ function HierarchyItemList({
           isSelected={selectedNodeId === node.id}
           isRevealed={reveal?.type === "node" && reveal.id === node.id}
           node={node}
+          isNewlyPlaced={isTriageNewlyPlaced(newlyPlacedEntries, "node", node.id)}
           onSelectNode={onSelectNode}
           overTargetId={overTargetId}
           parentPath={parentPath}
@@ -1813,6 +1840,8 @@ function HierarchyItemList({
                 key={bit.id}
                 bit={bit}
                 isRevealed={reveal?.type === "bit" && reveal.id === bit.id}
+                isNewlyPlaced={isTriageNewlyPlaced(newlyPlacedEntries, "bit", bit.id)}
+                parentColor={parentColor}
               />
             ))}
           </div>
@@ -1826,6 +1855,7 @@ function NodeDropCell({
   activeDragItem,
   isSelected,
   isRevealed,
+  isNewlyPlaced,
   node,
   onSelectNode,
   overTargetId,
@@ -1836,6 +1866,7 @@ function NodeDropCell({
   activeDragItem: TriageDragItem;
   isSelected: boolean;
   isRevealed: boolean;
+  isNewlyPlaced: boolean;
   node: Node;
   onSelectNode?: (nodeId: string) => void;
   overTargetId: string | null;
@@ -1868,84 +1899,65 @@ function NodeDropCell({
     pendingPlacementDropId,
     targetFeedback,
   });
-  const content = (
-    <>
-      <Folder
-        aria-hidden="true"
-        className="h-4 w-4 flex-shrink-0 text-muted-foreground/80"
-      />
-      <span className="min-w-0 truncate text-sm font-medium text-foreground">
-        {node.title}
-      </span>
-    </>
-  );
-
-  if (onSelectNode !== undefined) {
-    return (
-      <button
-        ref={setNodeRef}
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        onSelectNode === undefined ? CELL_DROP_ONLY_CLASS : CELL_BASE_CLASS,
+        activeDragItem === null && onSelectNode !== undefined && "hover:bg-muted hover:text-foreground",
+        CELL_STATE_CLASSES[state],
+      )}
+      data-triage-drop-id={dropId}
+      data-triage-hierarchy-drop={JSON.stringify(dropData)}
+      data-triage-target-state={state}
+    >
+      <NodeCard
         aria-current={isSelected ? "true" : undefined}
         aria-disabled={state === "invalid"}
         aria-label={`Select Node: ${node.title}`}
         className={cn(
-          CELL_BASE_CLASS,
-          activeDragItem === null && "hover:bg-muted hover:text-foreground",
           isSelected && "bg-accent text-foreground ring-1 ring-primary",
           isRevealed && "explorer-revealed-row",
-          CELL_STATE_CLASSES[state],
         )}
         data-explorer-item-id={node.id}
         data-explorer-item-type="node"
         data-triage-drop-id={dropId}
         data-triage-hierarchy-drop={JSON.stringify(dropData)}
         data-triage-target-state={state}
-        type="button"
-        onClick={() => onSelectNode(node.id)}
-      >
-        {content}
-      </button>
-    );
-  }
-
-  return (
-    <div
-      ref={setNodeRef}
-      aria-disabled={state === "invalid"}
-      className={cn(
-        CELL_DROP_ONLY_CLASS,
-        CELL_STATE_CLASSES[state],
-        isRevealed && "explorer-revealed-row",
-      )}
-      data-explorer-item-id={node.id}
-      data-explorer-item-type="node"
-      data-triage-drop-id={dropId}
-      data-triage-hierarchy-drop={JSON.stringify(dropData)}
-      data-triage-target-state={state}
-      tabIndex={-1}
-    >
-      {content}
+        isNewlyPlaced={isNewlyPlaced}
+        node={node}
+        onClick={() => onSelectNode?.(node.id)}
+        tabIndex={onSelectNode === undefined ? -1 : 0}
+      />
     </div>
   );
 }
 
-function BitContextRow({ bit, isRevealed }: { bit: Bit; isRevealed: boolean }) {
+function BitContextRow({
+  bit,
+  isRevealed,
+  isNewlyPlaced,
+  parentColor,
+}: {
+  bit: Bit;
+  isRevealed: boolean;
+  isNewlyPlaced: boolean;
+  parentColor: string;
+}) {
   return (
-    <div
+    <BitCard
+      aria-label={`Bit: ${bit.title}`}
+      bit={bit}
+      chunkStats={{ completed: 0, total: 0 }}
       className={cn(
-        "flex items-center gap-2 rounded-md px-3 py-1.5",
         isRevealed && "explorer-revealed-row",
       )}
       data-explorer-item-id={bit.id}
       data-explorer-item-type="bit"
+      isNewlyPlaced={isNewlyPlaced}
+      onClick={() => undefined}
+      parentColor={parentColor}
       tabIndex={-1}
-    >
-      <ListTodo
-        aria-hidden="true"
-        className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/60"
-      />
-      <span className="min-w-0 truncate text-xs text-muted-foreground/80">
-        {bit.title}
-      </span>
-    </div>
+    />
   );
 }

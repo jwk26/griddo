@@ -48,6 +48,7 @@ import {
   type TriagePlacementRelease,
   useTriagePlacement,
 } from "@/hooks/use-triage-placement";
+import { useTriageNewlyPlaced } from "@/hooks/use-triage-newly-placed";
 import {
   createScratchTitleBlockerHandle,
   ScratchTitleBlockerContext,
@@ -963,6 +964,7 @@ function TriageWorkspaceContent({
     type: "node" | "bit";
     pathIds: readonly string[];
   } | null>(null);
+  const newlyPlaced = useTriageNewlyPlaced();
   const placement = useTriagePlacement({
     operationLock,
     onApplied: (result, command) => {
@@ -971,6 +973,44 @@ function TriageWorkspaceContent({
         type: command.resultType,
         pathIds: [...command.expectedAncestorIds],
       } as const;
+      const sourceSnapshot = authoritativeBreakdowns.find(
+        (source) =>
+          source.id === command.sourceBreakdownId &&
+          source.scratchBitId === command.scratchBitId &&
+          source.version === command.sourceExpectedVersion &&
+          source.consumedAt === null,
+      );
+      const candidateProjection =
+        "candidateId" in command
+          ? authoritativeStagedCandidates.find(
+              (candidate) =>
+                candidate.id === command.candidateId &&
+                candidate.sourceBreakdownId === command.sourceBreakdownId &&
+                candidate.scratchBitId === command.scratchBitId &&
+                candidate.resultType === command.resultType &&
+                candidate.version === command.candidateExpectedVersion,
+            )
+          : null;
+      if (sourceSnapshot !== undefined) {
+        newlyPlaced.registerPlacement({
+          result,
+          command,
+          sourceSnapshot,
+          candidateSnapshot:
+            candidateProjection === null || candidateProjection === undefined
+              ? null
+              : {
+                  id: candidateProjection.id,
+                  scratchBitId: candidateProjection.scratchBitId,
+                  sourceBreakdownId: candidateProjection.sourceBreakdownId,
+                  resultType: candidateProjection.resultType,
+                  lifecycle: candidateProjection.lifecycle,
+                  createdAt: candidateProjection.createdAt,
+                  updatedAt: candidateProjection.updatedAt,
+                  version: candidateProjection.version,
+                },
+        });
+      }
       useTriageStore.getState().registerExplorerLocalPlacement(identity);
       setLocalPlacementResult(identity);
     },
@@ -1770,6 +1810,7 @@ function TriageWorkspaceContent({
                   placement.snapshot?.release.target.dropId ?? null
                 }
                 localPlacementResult={localPlacementResult}
+                newlyPlacedEntries={newlyPlaced.entries}
                 placementSnapshot={placement.snapshot}
                 onPlacementCancel={cancelPlacement}
                 onPlacementConfirm={() => {

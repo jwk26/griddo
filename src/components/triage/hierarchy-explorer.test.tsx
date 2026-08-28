@@ -16,6 +16,7 @@ import type {
   TriageTargetFeedback,
 } from "@/hooks/use-dnd";
 import type { TriagePlacementSnapshot } from "@/hooks/use-triage-placement";
+import type { TriageNewlyPlacedProvenance } from "@/hooks/use-triage-newly-placed";
 import { getTriageHierarchyDropId } from "@/lib/grid-dnd";
 import { useTriageStore } from "@/stores/triage-store";
 import type { Bit, Node } from "@/types";
@@ -143,6 +144,42 @@ function createBit(overrides: Partial<Bit> = {}): Bit {
 
 function setGrid(parentId: string | null, nodes: Node[], bits: Bit[] = []) {
   gridByParent.set(parentId, { nodes, bits, isLoading: false });
+}
+
+function newlyPlacedEntry(
+  result: Node | Bit,
+  resultType: "node" | "bit",
+  completedOrder: number,
+): TriageNewlyPlacedProvenance {
+  return {
+    operationId: `operation-${completedOrder}`,
+    resultId: result.id,
+    resultType,
+    resultVersion: result.version,
+    resultSnapshot: { ...result },
+    source: {
+      scratchBitId: "scratch-1",
+      breakdownId: `source-${completedOrder}`,
+      expectedVersion: completedOrder,
+      snapshot: {
+        id: `source-${completedOrder}`,
+        scratchBitId: "scratch-1",
+        content: `Source ${completedOrder}`,
+        order: completedOrder,
+        createdAt: completedOrder,
+        consumedAt: null,
+        version: completedOrder,
+      },
+    },
+    candidate: null,
+    destination: {
+      parentId: result.parentId,
+      pathIds: result.parentId === null ? [] : [result.parentId],
+      x: result.x,
+      y: result.y,
+    },
+    completedOrder,
+  };
 }
 
 function searchResult(
@@ -1217,6 +1254,77 @@ describe("HierarchyExplorer Task 152 target-column placement", () => {
       key: "Escape",
     });
     expect(onPlacementCancel).toHaveBeenCalledOnce();
+  });
+});
+
+describe("HierarchyExplorer Task 155 actual-card Newly Placed projection", () => {
+  it("renders actual cards and pins multiple local results newest-first within each type", () => {
+    const ordinaryNode = createNode({ id: "ordinary-node", title: "Ordinary node", x: 1, y: 2 });
+    const firstNode = createNode({ id: "first-node", title: "First placed node", x: 30, y: 40 });
+    const secondNode = createNode({ id: "second-node", title: "Second placed node", x: 50, y: 60 });
+    const parent = createNode({ id: "parent-1", title: "Parent" });
+    const ordinaryBit = createBit({ id: "ordinary-bit", parentId: parent.id, title: "Ordinary bit" });
+    const localBit = createBit({ id: "local-bit", parentId: parent.id, title: "Placed bit", x: 70, y: 80 });
+    setGrid(null, [ordinaryNode, firstNode, secondNode, parent]);
+    setGrid(parent.id, [], [ordinaryBit, localBit]);
+    useTriageStore.setState({
+      explorerPathIds: [parent.id],
+      explorerOpenColumnIds: ["home", parent.id],
+    });
+
+    render(
+      <HierarchyExplorer
+        {...defaultProps}
+        newlyPlacedEntries={[
+          newlyPlacedEntry(firstNode, "node", 1),
+          newlyPlacedEntry(localBit, "bit", 2),
+          newlyPlacedEntry(secondNode, "node", 3),
+        ]}
+      />,
+    );
+
+    const home = screen.getByTestId("hierarchy-section-body-home");
+    expect(
+      Array.from(home.querySelectorAll('[data-explorer-item-type="node"]')).map(
+        (element) => element.getAttribute("data-explorer-item-id"),
+      ),
+    ).toEqual([secondNode.id, firstNode.id, ordinaryNode.id, parent.id]);
+    const levelOne = screen.getByTestId("hierarchy-section-body-l1");
+    expect(
+      Array.from(levelOne.querySelectorAll('[data-explorer-item-type="bit"]')).map(
+        (element) => element.getAttribute("data-explorer-item-id"),
+      ),
+    ).toEqual([localBit.id, ordinaryBit.id]);
+    expect(home.querySelector(".theme-node-card")).not.toBeNull();
+    expect(levelOne.querySelector(".group\\/bit")).not.toBeNull();
+    expect(document.querySelectorAll('[data-card-marker="newly-placed"]')).toHaveLength(3);
+    expect(secondNode).toMatchObject({ x: 50, y: 60 });
+    expect(localBit).toMatchObject({ x: 70, y: 80 });
+  });
+
+  it("keeps marker semantics independent from selection and theme rerenders", () => {
+    const placed = createNode({ id: "placed-node", title: "Placed node" });
+    setGrid(null, [placed]);
+    useTriageStore.setState({
+      explorerPathIds: [placed.id],
+      explorerOpenColumnIds: ["home", placed.id],
+    });
+    const entry = newlyPlacedEntry(placed, "node", 1);
+    const view = render(
+      <HierarchyExplorer {...defaultProps} newlyPlacedEntries={[entry]} />,
+    );
+
+    const card = screen.getByRole("button", { name: "Select Node: Placed node" });
+    expect(card).toHaveAttribute("aria-current", "true");
+    expect(card).toHaveAttribute("data-newly-placed", "true");
+    expect(card).toContainElement(screen.getByText("Newly placed"));
+
+    document.documentElement.dataset.colorTheme = "terminal";
+    view.rerender(
+      <HierarchyExplorer {...defaultProps} newlyPlacedEntries={[entry]} />,
+    );
+    expect(screen.getByText("Newly placed")).toBeInTheDocument();
+    delete document.documentElement.dataset.colorTheme;
   });
 });
 
