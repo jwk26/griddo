@@ -40,6 +40,10 @@ import {
 import type { Bit, Node } from "@/types";
 import type { GridExplorerSearchResult } from "@/lib/utils/grid-explorer-search";
 
+type LocalPlacementResult = ExplorerItemIdentity & {
+  pathIds: readonly string[];
+};
+
 interface HierarchyExplorerProps {
   activeDragItem: TriageDragItem;
   onPendingPlacementInvalidated: (
@@ -49,7 +53,7 @@ interface HierarchyExplorerProps {
   onPointerGeometryChange: (point: { x: number; y: number }) => void;
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
-  localPlacementResult: ExplorerItemIdentity | null;
+  localPlacementResult: LocalPlacementResult | null;
   placementSnapshot?: TriagePlacementSnapshot | null;
   onPlacementCancel?: () => void;
   onPlacementConfirm?: () => void;
@@ -180,6 +184,32 @@ function focusFallback(validPathIds: string[]) {
     ?.focus();
 }
 
+function focusInOwningExplorerViewport(
+  element: HTMLElement,
+  scrollMode: "minimum" | "top" = "minimum",
+) {
+  element.focus({ preventScroll: true });
+  const viewport = element.closest<HTMLElement>(
+    "[data-triage-explorer-column]",
+  );
+  if (viewport === null) return;
+  if (scrollMode === "top") {
+    viewport.scrollTop = 0;
+    return;
+  }
+
+  const visibilityOwner =
+    element.closest<HTMLElement>("[data-triage-role='placement-affordance']") ??
+    element;
+  const viewportBounds = viewport.getBoundingClientRect();
+  const ownerBounds = visibilityOwner.getBoundingClientRect();
+  if (ownerBounds.top < viewportBounds.top) {
+    viewport.scrollTop -= viewportBounds.top - ownerBounds.top;
+  } else if (ownerBounds.bottom > viewportBounds.bottom) {
+    viewport.scrollTop += ownerBounds.bottom - viewportBounds.bottom;
+  }
+}
+
 function explorerTemplate(
   template: string,
   values: Record<string, string | number>,
@@ -263,6 +293,7 @@ export function HierarchyExplorer({
   const explorerRef = useRef<HTMLDivElement>(null);
   const searchEntryRef = useRef<HTMLButtonElement>(null);
   const previousDragRef = useRef<TriageDragItem>(null);
+  const revealedLocalPlacementKeyRef = useRef<string | null>(null);
   const focusedLocalPlacementKeyRef = useRef<string | null>(null);
   const acknowledgedPlacementSuccessRef = useRef<string | null>(null);
   const placementLiveRegionRef = useRef<HTMLParagraphElement>(null);
@@ -586,7 +617,7 @@ export function HierarchyExplorer({
         element.dataset.explorerItemType === localPlacementResult.type,
     );
     if (result === undefined) return;
-    result.focus({ preventScroll: true });
+    focusInOwningExplorerViewport(result);
     focusedLocalPlacementKeyRef.current = placementKey;
   }, [
     level1Bits,
@@ -753,6 +784,19 @@ export function HierarchyExplorer({
     validation,
     visibleItemIdsByColumn,
   ]);
+
+  useEffect(() => {
+    if (localPlacementResult === null) {
+      revealedLocalPlacementKeyRef.current = null;
+      return;
+    }
+    const placementKey = `${localPlacementResult.type}:${localPlacementResult.id}`;
+    if (revealedLocalPlacementKeyRef.current === placementKey) return;
+    revealedLocalPlacementKeyRef.current = placementKey;
+    const pathIds = [...localPlacementResult.pathIds];
+    setExplorerPathIds(pathIds);
+    setExplorerOpenColumnIds(["home", ...pathIds]);
+  }, [localPlacementResult, setExplorerOpenColumnIds, setExplorerPathIds]);
 
   function selectPath(pathIds: string[]) {
     if (
@@ -1134,24 +1178,26 @@ function PlacementAffordance({
     snapshot.phase === "reconciling";
 
   useLayoutEffect(() => {
+    let focusOwner: HTMLElement | null = null;
     if (snapshot.phase === "result-title") {
-      resultTitleInputRef.current?.focus({ preventScroll: true });
+      focusOwner = resultTitleInputRef.current;
     } else if (
       snapshot.phase === "direct-selection" ||
       snapshot.phase === "confirmation"
     ) {
-      headingRef.current?.focus({ preventScroll: true });
+      focusOwner = headingRef.current;
     } else if (snapshot.phase === "unknown") {
-      reconcileRef.current?.focus({ preventScroll: true });
+      focusOwner = reconcileRef.current;
     } else if (snapshot.phase === "pending") {
-      confirmRef.current?.focus({ preventScroll: true });
+      focusOwner = confirmRef.current;
     } else if (snapshot.phase === "reconciling") {
-      reconcileRef.current?.focus({ preventScroll: true });
+      focusOwner = reconcileRef.current;
     } else if (snapshot.terminalKind === "not-applied") {
-      retryRef.current?.focus({ preventScroll: true });
+      focusOwner = retryRef.current;
     } else if (snapshot.phase === "terminal") {
-      cancelRef.current?.focus({ preventScroll: true });
+      focusOwner = cancelRef.current;
     }
+    if (focusOwner !== null) focusInOwningExplorerViewport(focusOwner, "top");
   }, [snapshot.phase, snapshot.terminalKind]);
 
   const reliabilityCopy = placementReliabilityCopy(snapshot);
@@ -1365,20 +1411,22 @@ function PlacementAffordance({
               No available grid cell in this target
             </p>
           ) : null}
-          <div
-            aria-atomic={reliabilityCopy === null ? undefined : "true"}
-            aria-label={reliabilityCopy === null ? undefined : "Placement status"}
-            aria-live={reliabilityCopy === null ? undefined : "polite"}
-            className="placement-reliability-rail"
-            role={reliabilityCopy === null ? undefined : "status"}
-          >
-            <span
-              aria-hidden="true"
-              className="placement-reliability-mark"
-              data-placement-reliability-mark={reliabilityState}
-            />
-            <span>{reliabilityCopy}</span>
-          </div>
+          {reliabilityCopy === null ? null : (
+            <div
+              aria-atomic="true"
+              aria-label="Placement status"
+              aria-live="polite"
+              className="placement-reliability-rail"
+              role="status"
+            >
+              <span
+                aria-hidden="true"
+                className="placement-reliability-mark"
+                data-placement-reliability-mark={reliabilityState}
+              />
+              <span>{reliabilityCopy}</span>
+            </div>
+          )}
           <div className="placement-reliability-actions mt-3 flex gap-2">
             {snapshot.phase === "unknown" || snapshot.phase === "reconciling" ? (
               <Button

@@ -2166,14 +2166,57 @@ describe("BreakdownPanel", () => {
     expect(screen.queryByText("Not added. Your draft is still here.")).toBeNull();
   });
 
-  it.each([
-    ["DESC", "nearest"],
-    ["ASC", "end"],
-  ] as const)(
-    "scrolls the confirmed Add row into view with the minimum %s handoff",
-    async (sort, expectedBlock) => {
+  it("resets only the owning Breakdown viewport for a deep-scroll DESC Add", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    useTriagePreferencesStore.setState({ breakdownCreatedAtSort: "DESC" });
+    const scrollIntoView = vi.fn();
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoView,
+    });
+
+    const view = render(<BreakdownPanel />);
+    const contentRegion = screen.getByTestId("breakdown-content-region");
+    contentRegion.scrollTop = 240;
+    const documentScroll = window.scrollY;
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.change(input, { target: { value: "New confirmed row" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    await waitFor(() => expect(hookState.createBreakdown).toHaveBeenCalledOnce());
+    await waitFor(() => expect(operationLockState.release).toHaveBeenCalled());
+
+    const command = hookState.createBreakdown.mock.calls[0][0];
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({
+        id: command.breakdownId,
+        content: "New confirmed row",
+      }),
+    ];
+    view.rerender(<BreakdownPanel />);
+
+    await waitFor(() => expect(contentRegion.scrollTop).toBe(0));
+    expect(scrollIntoView).not.toHaveBeenCalled();
+    expect(input).toHaveFocus();
+    expect(window.scrollY).toBe(documentScroll);
+    expect(
+      screen
+        .getByTestId("selected-scratch-context")
+        .compareDocumentPosition(screen.getByText("New confirmed row")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(screen.getByRole("status")).toHaveTextContent("Added.");
+
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: originalScrollIntoView,
+    });
+  });
+
+  it("preserves the confirmed ASC Add end handoff", async () => {
       triageStoreState.selectedScratchId = "scratch-1";
-      useTriagePreferencesStore.setState({ breakdownCreatedAtSort: sort });
+      useTriagePreferencesStore.setState({ breakdownCreatedAtSort: "ASC" });
       const scrollIntoView = vi.fn();
       const originalScrollIntoView = Element.prototype.scrollIntoView;
       Object.defineProperty(Element.prototype, "scrollIntoView", {
@@ -2201,14 +2244,14 @@ describe("BreakdownPanel", () => {
       view.rerender(<BreakdownPanel />);
 
       await waitFor(() => {
-        expect(scrollIntoView).toHaveBeenCalledWith({ block: expectedBlock });
+        expect(scrollIntoView).toHaveBeenCalledWith({ block: "end" });
       });
+      expect(screen.getByPlaceholderText("Add a note...")).toHaveFocus();
       Object.defineProperty(Element.prototype, "scrollIntoView", {
         configurable: true,
         value: originalScrollIntoView,
       });
-    },
-  );
+  });
 
   it("shows consumed completion without exposing the later Archive action", () => {
     triageStoreState.selectedScratchId = "scratch-1";

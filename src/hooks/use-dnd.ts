@@ -443,6 +443,7 @@ export function useTriageDnd(
   const pointerRef = useRef<{ x: number; y: number } | null>(null);
   const feedbackRequestRef = useRef(0);
   const feedbackIdentityRef = useRef<string | null>(null);
+  const nonHierarchyFeedbackRef = useRef<string | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -463,6 +464,7 @@ export function useTriageDnd(
     dragCancelledRef.current = false;
     feedbackRequestRef.current += 1;
     feedbackIdentityRef.current = null;
+    nonHierarchyFeedbackRef.current = null;
     setOverTargetId(null);
     setTargetFeedback(null);
     setActiveDragItem(isCurrentScratch ? snapshot : null);
@@ -471,6 +473,7 @@ export function useTriageDnd(
   const clearDragTarget = useCallback(() => {
     feedbackRequestRef.current += 1;
     feedbackIdentityRef.current = null;
+    nonHierarchyFeedbackRef.current = null;
     setOverTargetId(null);
     setTargetFeedback(null);
   }, []);
@@ -482,14 +485,18 @@ export function useTriageDnd(
       dragCancelledRef.current ||
       pointerRef.current === null
     ) {
-      return;
+      return false;
     }
     const target = readRenderedHierarchyTarget(point);
     if (target === null) {
-      clearDragTarget();
-      return;
+      feedbackRequestRef.current += 1;
+      feedbackIdentityRef.current = null;
+      setOverTargetId(nonHierarchyFeedbackRef.current);
+      setTargetFeedback(null);
+      return false;
     }
 
+    nonHierarchyFeedbackRef.current = null;
     setOverTargetId(target.dropId);
     const targetIdentity = JSON.stringify([
       target.dropId,
@@ -498,12 +505,12 @@ export function useTriageDnd(
       target.targetTitle,
       target.targetParentPath,
     ]);
-    if (feedbackIdentityRef.current === targetIdentity) return;
+    if (feedbackIdentityRef.current === targetIdentity) return true;
     feedbackIdentityRef.current = targetIdentity;
     if (!acceptsHierarchyTarget(source, target)) {
       feedbackRequestRef.current += 1;
       setTargetFeedback({ dropId: target.dropId, state: "invalid" });
-      return;
+      return true;
     }
 
     const request = feedbackRequestRef.current + 1;
@@ -532,6 +539,7 @@ export function useTriageDnd(
       .catch(() => {
         if (feedbackRequestRef.current === request) clearDragTarget();
       });
+    return true;
   }, [clearDragTarget]);
 
   const finishStage = async (command: StageCandidateCommand): Promise<void> => {
@@ -637,7 +645,23 @@ export function useTriageDnd(
 
   const handleDragOver = (event: DragOverEvent) => {
     if (pointerRef.current !== null) {
-      updateRenderedTarget(pointerRef.current);
+      if (updateRenderedTarget(pointerRef.current)) return;
+
+      const source = activationSnapshotRef.current;
+      const eventTarget = event.over?.data.current;
+      if (
+        source === null ||
+        !isTriageDropData(eventTarget) ||
+        eventTarget.kind === "triage-hierarchy-drop" ||
+        classifyTriageDropIntent(source, eventTarget) === null
+      ) {
+        clearDragTarget();
+        return;
+      }
+      const dropId = event.over?.id ? String(event.over.id) : null;
+      nonHierarchyFeedbackRef.current = dropId;
+      setOverTargetId(dropId);
+      setTargetFeedback(null);
       return;
     }
     setOverTargetId(event.over?.id ? String(event.over.id) : null);

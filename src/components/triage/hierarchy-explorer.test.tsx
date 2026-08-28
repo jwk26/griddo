@@ -825,7 +825,11 @@ describe("HierarchyExplorer Task 152 target-column placement", () => {
     });
     setGrid(null, []);
     const result = createNode({ id: "placed-node", title: "Placed node" });
-    const localPlacementResult = { id: result.id, type: "node" as const };
+    const localPlacementResult = {
+      id: result.id,
+      type: "node" as const,
+      pathIds: [] as const,
+    };
     const view = render(
       <HierarchyExplorer
         {...defaultProps}
@@ -851,6 +855,299 @@ describe("HierarchyExplorer Task 152 target-column placement", () => {
     expect(
       document.querySelector(`[data-explorer-item-id="${result.id}"]`),
     ).toHaveFocus();
+
+    const unrelatedFocus = screen.getByRole("button", { name: "Home" });
+    unrelatedFocus.focus();
+    setGrid(null, [result, createNode({ id: "unrelated", title: "Unrelated" })]);
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        localPlacementResult={localPlacementResult}
+      />,
+    );
+    expect(unrelatedFocus).toHaveFocus();
+  });
+
+  it.each([
+    ["direct", "node"],
+    ["direct", "bit"],
+    ["staged", "node"],
+    ["staged", "bit"],
+  ] as const)(
+    "reveals only the %s %s destination and focuses the exact authoritative card",
+    async (kind, type) => {
+      const target = createNode({ id: "target-1", title: "Target" });
+      const resultId = `placed-${kind}-${type}`;
+      const result =
+        type === "node"
+          ? createNode({ id: resultId, parentId: target.id, title: "Placed Node" })
+          : createBit({ id: resultId, parentId: target.id, title: "Placed Bit" });
+      setGrid(null, [target]);
+      setGrid(
+        target.id,
+        type === "node" ? [result as Node] : [],
+        type === "bit" ? [result as Bit] : [],
+      );
+
+      render(
+        <HierarchyExplorer
+          {...defaultProps}
+          localPlacementResult={{ id: resultId, type, pathIds: [target.id] }}
+          placementSnapshot={placementSnapshot({
+            phase: "success",
+            resultType: type,
+            terminalStatus: "applied",
+            release: {
+              ...placementSnapshot().release,
+              kind,
+              ...(kind === "staged"
+                ? {
+                    candidate: {
+                      id: "candidate-1",
+                      version: 1,
+                      resultType: type,
+                    },
+                  }
+                : {}),
+            },
+          })}
+        />,
+      );
+
+      await waitFor(() =>
+        expect(useTriageStore.getState().explorerPathIds).toEqual([target.id]),
+      );
+      await waitFor(() =>
+        expect(
+          document.querySelector(
+            `[data-explorer-item-id="${resultId}"][data-explorer-item-type="${type}"]`,
+          ),
+        ).toHaveFocus(),
+      );
+    },
+  );
+
+  it("rejects a same-ID card with the wrong result type", async () => {
+    const target = createNode({ id: "target-1", title: "Target" });
+    const sameId = "same-result-id";
+    const node = createNode({ id: sameId, parentId: target.id, title: "Node result" });
+    const bit = createBit({ id: sameId, parentId: target.id, title: "Bit result" });
+    setGrid(null, [target]);
+    setGrid(target.id, [node], [bit]);
+
+    render(
+      <HierarchyExplorer
+        {...defaultProps}
+        localPlacementResult={{ id: sameId, type: "node", pathIds: [target.id] }}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(
+        document.querySelector(
+          `[data-explorer-item-id="${sameId}"][data-explorer-item-type="node"]`,
+        ),
+      ).toHaveFocus(),
+    );
+    expect(
+      document.querySelector(
+        `[data-explorer-item-id="${sameId}"][data-explorer-item-type="bit"]`,
+      ),
+    ).not.toHaveFocus();
+  });
+
+  it.each(["direct", "staged"] as const)(
+    "resets only the owning column to its complete top spacing when a %s affordance opens",
+    (kind) => {
+      const target = createNode({ id: "target-1", title: "Target" });
+      setGrid(null, [target]);
+      const view = render(<HierarchyExplorer {...defaultProps} />);
+      const body = screen.getByTestId("hierarchy-section-body-home");
+      body.scrollTop = 80;
+      const documentScroll = window.scrollY;
+      vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+        function (this: HTMLElement) {
+          if (this === body) {
+            return {
+              top: 100,
+              bottom: 300,
+              left: 0,
+              right: 300,
+              width: 300,
+              height: 200,
+              x: 0,
+              y: 100,
+              toJSON() {},
+            };
+          }
+          if (this.closest('[data-triage-role="placement-affordance"]')) {
+            return {
+              top: 40,
+              bottom: 70,
+              left: 0,
+              right: 300,
+              width: 300,
+              height: 30,
+              x: 0,
+              y: 40,
+              toJSON() {},
+            };
+          }
+          return {
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            width: 0,
+            height: 0,
+            x: 0,
+            y: 0,
+            toJSON() {},
+          };
+        },
+      );
+      const snapshot =
+        kind === "direct"
+          ? placementSnapshot()
+          : placementSnapshot({
+              phase: "result-title",
+              resultType: "bit",
+              resultTitleDraft: "",
+              release: {
+                ...placementSnapshot().release,
+                kind: "staged",
+                source: {
+                  ...placementSnapshot().release.source,
+                  title: "s".repeat(201),
+                },
+                candidate: {
+                  id: "candidate-1",
+                  version: 1,
+                  resultType: "bit",
+                },
+              },
+            });
+
+      view.rerender(
+        <HierarchyExplorer {...defaultProps} placementSnapshot={snapshot} />,
+      );
+
+      const focusOwner =
+        kind === "direct"
+          ? screen.getByText("Choose a result type")
+          : screen.getByRole("textbox", { name: "Result title" });
+      expect(focusOwner).toHaveFocus();
+      expect(body.scrollTop).toBe(0);
+      expect(window.scrollY).toBe(documentScroll);
+    },
+  );
+
+  it("preserves document and unrelated-column scroll when placement opens", () => {
+    const parent = createNode({ id: "parent-1", title: "Parent" });
+    const target = createNode({
+      id: "target-1",
+      parentId: parent.id,
+      title: "Target",
+    });
+    setGrid(null, [parent]);
+    setGrid(parent.id, [target]);
+    useTriageStore.setState({
+      explorerPathIds: [parent.id],
+      explorerOpenColumnIds: ["home", parent.id],
+    });
+    const view = render(<HierarchyExplorer {...defaultProps} />);
+    const homeBody = screen.getByTestId("hierarchy-section-body-home");
+    const targetBody = screen.getByTestId("hierarchy-section-body-l1");
+    homeBody.scrollTop = 37;
+    targetBody.scrollTop = 80;
+    const documentScroll = window.scrollY;
+
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        placementSnapshot={placementSnapshot({
+          release: {
+            ...placementSnapshot().release,
+            target: {
+              ...placementSnapshot().release.target,
+              dropId: getTriageHierarchyDropId(target.id),
+              parentId: target.id,
+              level: 1,
+              title: target.title,
+              path: ["Home", parent.title, target.title],
+              expectedAncestorIds: [parent.id, target.id],
+            },
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText("Choose a result type")).toHaveFocus();
+    expect(targetBody.scrollTop).toBe(0);
+    expect(homeBody.scrollTop).toBe(37);
+    expect(window.scrollY).toBe(documentScroll);
+  });
+
+  it("keeps successful-card focus on minimum owning-column reveal instead of resetting to top", () => {
+    const placed = createNode({ id: "placed-node", title: "Placed node" });
+    setGrid(null, [placed]);
+    const view = render(<HierarchyExplorer {...defaultProps} />);
+    const body = screen.getByTestId("hierarchy-section-body-home");
+    body.scrollTop = 80;
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+      function (this: HTMLElement) {
+        if (this === body) {
+          return {
+            top: 100,
+            bottom: 300,
+            left: 0,
+            right: 300,
+            width: 300,
+            height: 200,
+            x: 0,
+            y: 100,
+            toJSON() {},
+          };
+        }
+        if (this.dataset.explorerItemId === placed.id) {
+          return {
+            top: 290,
+            bottom: 330,
+            left: 0,
+            right: 300,
+            width: 300,
+            height: 40,
+            x: 0,
+            y: 290,
+            toJSON() {},
+          };
+        }
+        return {
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          width: 0,
+          height: 0,
+          x: 0,
+          y: 0,
+          toJSON() {},
+        };
+      },
+    );
+
+    body.scrollTop = 80;
+    view.rerender(
+      <HierarchyExplorer
+        {...defaultProps}
+        localPlacementResult={{ id: placed.id, type: "node", pathIds: [] }}
+      />,
+    );
+
+    expect(
+      document.querySelector(`[data-explorer-item-id="${placed.id}"]`),
+    ).toHaveFocus();
+    expect(body.scrollTop).toBe(110);
   });
 
   it("closes headless Search, renders the direct step inside the exact target column, and focuses the step heading", async () => {
@@ -1001,7 +1298,7 @@ describe("HierarchyExplorer Task 153 placement reliability rail", () => {
     render(
       <HierarchyExplorer
         {...defaultProps}
-        localPlacementResult={{ id: placed.id, type: "bit" }}
+        localPlacementResult={{ id: placed.id, type: "bit", pathIds: ["target-1"] }}
         placementSnapshot={{
           ...placementSnapshot({
             release: {
@@ -1040,7 +1337,7 @@ describe("HierarchyExplorer Task 153 placement reliability rail", () => {
     render(
       <HierarchyExplorer
         {...defaultProps}
-        localPlacementResult={{ id: placed.id, type: "node" }}
+        localPlacementResult={{ id: placed.id, type: "node", pathIds: [] }}
         placementSnapshot={placementSnapshot({
           phase: "success",
           resultType: "node",
@@ -1058,6 +1355,25 @@ describe("HierarchyExplorer Task 153 placement reliability rail", () => {
       screen.getByRole("button", { name: "Select Node: Project" }),
     ).toHaveFocus();
     await waitFor(() => expect(onPlacementConfirm).toHaveBeenCalledOnce());
+  });
+
+  it("omits the empty reliability rail while preserving ordinary confirmation actions", () => {
+    const target = createNode({ id: "target-1", title: "Target" });
+    setGrid(null, [target]);
+
+    render(
+      <HierarchyExplorer
+        {...defaultProps}
+        placementSnapshot={placementSnapshot({
+          phase: "confirmation",
+          resultType: "node",
+        })}
+      />,
+    );
+
+    expect(document.querySelector(".placement-reliability-rail")).toBeNull();
+    expect(screen.getByRole("button", { name: "Confirm" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
   });
 
   it("defines fixed geometry, static reduced-motion parity, and all eight placement theme families", () => {

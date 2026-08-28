@@ -42,7 +42,8 @@
       "craft-docs": "docs/receipts/Craft_Docs.{gate}.json",
       "run-phase": "docs/issues/Issues_Phase_{phase}.{gate}.json",
       "run-task": "docs/issues/Issues_Phase_{phase}.Task_{task}.{gate}.json",
-      "end-phase": "docs/issues/Final_Close_Phase_{phase}.json"
+      "end-phase": "docs/issues/Final_Close_Phase_{phase}.json",
+      "post-close-repair-final-close": "docs/issues/Final_Close_Phase_{phase}_Post_Close_Smoke_Repair.json"
     }
   },
   "verification_policy": {
@@ -87,6 +88,18 @@
         ]
       },
       "end-phase": {
+        "focused": [
+          "diff-check",
+          "typecheck"
+        ],
+        "full": [
+          "test",
+          "lint",
+          "typecheck",
+          "build"
+        ]
+      },
+      "post-close-repair-final-close": {
         "focused": [
           "diff-check",
           "typecheck"

@@ -432,6 +432,8 @@ beforeEach(() => {
   useTriageStore.setState({
     selectedScratchId: "scratch-1",
     externalScratchRemoval: null,
+    explorerPathIds: [],
+    explorerOpenColumnIds: ["home"],
     scratchPoolQuery: "",
     scratchPoolActiveIds: ["scratch-1", "scratch-2", "scratch-3"],
     scratchPoolResultIds: ["scratch-1", "scratch-2", "scratch-3"],
@@ -1487,7 +1489,7 @@ describe("TriageWorkspace", () => {
     ).toHaveClass("h-12", "motion-safe:animate-jiggle");
   });
 
-  it("applies neutral hover styling while the staged remove target is hovered", () => {
+  it("applies destructive tokens only while the compatible staged remove target is active", () => {
     useTriageDndMock.mockReturnValue(
       createDndState({
         activeDragItem: {
@@ -1506,7 +1508,44 @@ describe("TriageWorkspace", () => {
       document.querySelector(
         '[aria-label="Drop staged item here to remove from staging"]',
       ),
-    ).toHaveClass("bg-muted", "border-solid");
+    ).toHaveClass(
+      "bg-destructive/10",
+      "border-destructive",
+      "border-solid",
+      "text-destructive",
+    );
+    expect(unstageCandidateMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps idle and incompatible staged remove states neutral", () => {
+    useTriageDndMock.mockReturnValue(
+      createDndState({
+        activeDragItem: {
+          kind: "triage-staged-node",
+          id: "candidate-1",
+          label: "Project",
+          sourceBreakdownId: "breakdown-1",
+        },
+        overTargetId: "triage-bit-zone-drop",
+      }),
+    );
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    const removeTarget = document.querySelector(
+      '[aria-label="Drop staged item here to remove from staging"]',
+    );
+    expect(removeTarget).toHaveClass(
+      "border-dashed",
+      "border-border",
+      "text-muted-foreground",
+    );
+    expect(removeTarget).not.toHaveClass(
+      "border-destructive",
+      "bg-destructive/10",
+      "text-destructive",
+    );
+    expect(unstageCandidateMock).not.toHaveBeenCalled();
   });
 
   it("shows hierarchy cells as valid while a breakdown row is dragged", () => {
@@ -1558,7 +1597,14 @@ describe("TriageWorkspace", () => {
     expect(screen.getByTestId("hierarchy-section-body-l3")).toBeInTheDocument();
   });
 
-  it("projects only the successful coordinator result identity into Explorer", async () => {
+  it.each([
+    ["direct", "node"],
+    ["direct", "bit"],
+    ["staged", "node"],
+    ["staged", "bit"],
+  ] as const)(
+    "projects the successful %s %s identity and confirmed destination path into Explorer",
+    async (kind, resultType) => {
     const target = {
       ...createNode({ id: "parent-1", title: "Parent" }),
       systemRole: null,
@@ -1568,26 +1614,68 @@ describe("TriageWorkspace", () => {
       bits: [],
       isLoading: false,
     }));
+    if (kind === "staged") {
+      const source = authoritativeBreakdown();
+      useStagedCandidatesMock.mockReturnValue({
+        isReady: true,
+        candidates: [
+          authoritativeCandidate({
+            content: source.content,
+            resultType,
+            source,
+          }),
+        ],
+        integrityCandidates: [],
+        pendingOperations: [],
+        unknownOperations: [],
+        reconcilingOperations: [],
+        counts: { nodes: resultType === "node" ? 1 : 0, bits: resultType === "bit" ? 1 : 0 },
+        eligibility: { stagedSourceIds: new Set(["breakdown-1"]) },
+        stageCandidate: stageCandidateMock,
+        reconcileStageCandidate: reconcileStageCandidateMock,
+        unstageCandidate: unstageCandidateMock,
+        reconcileUnstageCandidate: reconcileUnstageCandidateMock,
+      });
+    }
     useTriageDndMock.mockReturnValue(
       createDndState({
-        pendingPlacement: createDirectPendingPlacement(),
+        pendingPlacement:
+          kind === "direct"
+            ? createDirectPendingPlacement()
+            : createStagedPendingPlacement({
+                candidateLabel: "Project",
+                candidateType: resultType,
+              }),
       }),
     );
 
     render(<TriageWorkspace node={createNode()} />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Node" }));
+    if (kind === "direct") {
+      fireEvent.click(
+        await screen.findByRole("button", {
+          name: resultType === "node" ? "Node" : "Bit",
+        }),
+      );
+    }
     fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
 
     await waitFor(() =>
       expect(useExplorerRemoteStatusMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          localPlacementResult: expect.objectContaining({ type: "node" }),
+          localPlacementResult: {
+            id: expect.any(String),
+            type: resultType,
+            pathIds: ["parent-1"],
+          },
         }),
       ),
     );
-    expect(placeDirectBreakdownMock).toHaveBeenCalledOnce();
-  });
+    expect(
+      kind === "direct" ? placeDirectBreakdownMock : placeStagedCandidateMock,
+    ).toHaveBeenCalledOnce();
+  },
+  );
 
   it("closes the actual placement owner when Explorer validation invalidates its target", async () => {
     const target = {

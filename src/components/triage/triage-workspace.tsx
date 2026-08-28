@@ -621,7 +621,7 @@ function TriageRemoveDropTarget({
       className={cn(
         "flex h-12 w-full items-center justify-center gap-2 border-t bg-transparent px-3 text-xs font-medium transition-[background-color,border-color,color] motion-reduce:transition-none",
         isOver
-          ? "border-solid border-border bg-muted text-foreground"
+          ? "border-solid border-destructive bg-destructive/10 text-destructive"
           : "border-dashed border-border text-muted-foreground motion-safe:animate-jiggle",
       )}
     >
@@ -961,11 +961,16 @@ function TriageWorkspaceContent({
   const [localPlacementResult, setLocalPlacementResult] = useState<{
     id: string;
     type: "node" | "bit";
+    pathIds: readonly string[];
   } | null>(null);
   const placement = useTriagePlacement({
     operationLock,
     onApplied: (result, command) => {
-      const identity = { id: result.id, type: command.resultType } as const;
+      const identity = {
+        id: result.id,
+        type: command.resultType,
+        pathIds: [...command.expectedAncestorIds],
+      } as const;
       useTriageStore.getState().registerExplorerLocalPlacement(identity);
       setLocalPlacementResult(identity);
     },

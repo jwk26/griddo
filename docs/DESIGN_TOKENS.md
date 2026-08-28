@@ -556,7 +556,7 @@ surface target below.
 | Scratch Pool | Use the Pool role family for the tools/search region, total count, selected row, compact switcher/marker, and hidden-scroll viewport. Exact product behavior remains in SPEC. | `R-POOL` |
 | Selected Scratch Context | Use the standalone signature plate above ordinary rows, never a compact context strip or heading metadata. Working and complete presentations share the Context role family but remain semantically distinct. | `R-CONTEXT` |
 | Breakdown | Keep active and staged rows distinct, with grip/action, Add, ordinary-empty, and consumed-completion roles. Staged is not strike-through completion, and empty is not an Archive surface. | `R-BREAKDOWN` |
-| Staging | Keep visible `Staging`, `Nodes`, and `Bits`; Node cards and Bit rows use distinct shapes and independent wells. Neutral, unavailable, invalid, pending, and transient unstage-target meanings stay separate and non-destructive. | `R-STAGING` |
+| Staging | Keep visible `Staging`, `Nodes`, and `Bits`; Node cards and Bit rows use distinct shapes and independent wells. Neutral, unavailable, invalid, and pending meanings remain separate and non-destructive. The transient unstage target is neutral while idle; only its compatible active-hover state uses the canonical destructive border, restrained destructive background, and destructive text/icon tokens as an explicit removal affordance. It remains semantically Unstage, not deletion. | `R-STAGING` |
 | Explorer base | Use four ordinary progressive columns, full level labels, native Node/Bit row shapes, and eligible/hovered/invalid/unavailable target roles. This base excludes the absent replacement search body. | `R-EXPLORER` |
 | Placement base | Direct and staged shells, target path, Confirm/Cancel, full-target warning, and disabled Confirm use the Placement base roles. The affordance stays inside the target column; unsupported reliability and Result Title/direct-limit bodies remain excluded. | `R-PLACEMENT` |
 | Newly Placed / Undo | Compose the source-backed marker/dot or visible `NEW` badge over the unchanged actual Node/Bit card; keep selection authoritative; expose Undo in a separate stable trailing slot and the approved always-visible status rail immediately below the card inside the same Explorer item wrapper. Never introduce a replacement indicator card, internal card footer/menu, or common-card redesign. | `R-NEWLY`, `DP-VQ10` |
@@ -566,6 +566,13 @@ The shared compact drag preview remains pointer-centered and type-aware rather
 than copying the full source row/card. Invalid and unavailable targets mean a
 non-destructive operation cannot proceed; they must not inherit destructive
 delete styling merely because the current drop is rejected.
+
+The compatible active-hover state of `staging-unstage-target` is the sole
+Staging exception: use `border-destructive`, a restrained
+`bg-destructive/10`, and `text-destructive` while the exact Remove target owns
+the staged drag. Idle, cancellation, Node/Bit invalid, unavailable, same-type
+neutral, and every other DnD state remain non-destructive. This visual emphasis
+does not change the Unstage command, copy, persistence, or target arbitration.
 
 The old active-section/active-column search is superseded and is not fallback
 authority. `DP-VQ07` Choice A supplies the full-hierarchy replacement body;
