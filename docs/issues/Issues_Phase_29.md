@@ -3,7 +3,7 @@
 > Branch: `phase-29/mounted-page-newly-placed-undo`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-29-mounted-page-newly-placed-undo`
 > Kickoff date: 2026-08-28
-> State: Tasks 155–157 Accepted; Task 158 `[ ]`, In Progress
+> State: Tasks 155–157 Accepted; Task 158 `[ ]`, Implemented awaiting review
 
 ## Status Legend
 
@@ -142,14 +142,15 @@ workflow findings are owned without verdict by
 | Field | Durable value |
 | --- | --- |
 | Task | `158 — Integrate Undo into Explorer search results only` |
-| State | `[ ]`, In Progress; implementation and acceptance remain separate |
+| State | `[ ]`, Implemented awaiting review; implementation and acceptance remain separate |
 | Approval | Exact fresh candidate-pinned Task 158-only Control Tower work order on 2026-08-29, bounded by the committed `docs/issues/Issues_Phase_29.gate-c.json` Gate C receipt, accepted `DP-VQ07=A` and `DP-VQ10=A` receipts, and the current Task 158 contract |
 | Approved base / entrypoint | Integration base `f3c2be6b2afa2da51cde39d22c13eabf2286f296`; exact clean Task 158 entrypoint and recovery anchor `57afa67e6cad93bbef74c8a23fad6f719e442d4c` |
 | Dependencies | Tasks 114, 151, 156, and 157 are `[x]`, Accepted; acceptance commits `be2a842fa87395031e8f15b81751b3ac67e3869b`, `0ab994e867754db96d64c34691942d27cf9c8efc`, `d0bb079fe0ae1ab2cdcca50c200b19a56c37e0f5`, and `57afa67e6cad93bbef74c8a23fad6f719e442d4c` are ancestors of the entrypoint |
 | Exact scope | Modify only the four approved Search/Explorer/Newly product owners and their four tests; create Task 158 evidence; update this ledger and only Task 158 audit measurement/repair records; no ordinary-card Undo change, copy/style/canonical document change, query/ranking change, DnD source behavior, persistence/schema/data change, or Phase 30–31 work |
 | Behavior | Compose the accepted Tasks 156–157 Undo model and DP-VQ10 realization into DP-VQ07 search results only: matching local placements enter current results; independent trailing Undo never reveals or drags; query and result scroll survive every Undo state; non-success retains the exact result; terminal success removes only that result, announces `Restored “{title}” to {source}.`, and focuses the next surviving result at the removed position or otherwise the search input, never a previous result |
-| Issues / deviations | None at durable start; actual owners and tests match the approved paths and no new owner or product decision is required |
+| Issues / deviations | Resolved with canonical impact `None`: cycle 1 focused typecheck repaired a test-only readonly fixture; High-risk async review then found stale activation-time results could choose the wrong focus after a pending-Undo refresh, and cycle 2 recomputed the exact latest removed-row position. No remaining material finding, scope deviation, blocker, owner stop, extra-cycle gate, or `Unowned` item |
 | Canonical impact | `None` — Task 158 consumes the existing approved Search-only composition without changing canonical authority |
 | Audit invariant | Product/evidence checkpoint is incomplete until the exact Task 158 measurement row and any Task 158 repair rows are committed with actual measurements; Tasks 155–157 evidence and audit rows remain immutable; Task 157 Working session is closed/archive-only, this is the sole active Task 158 Working session, and duplicate-session count is `0` |
-| Fingerprint | None at durable start; compute the exact Task 158 relevant-input fingerprint only at the implementation/evidence checkpoint |
-| Next action | Begin Task 158 with a failing owner test, then run the bounded product/evidence/audit loop; do not accept Task 158 or start Phase 30–31 |
+| Implementation / evidence | Durable start `dd2be1f65bb3709677b6af3e4ffbe319468d5f1f`; implementation `f041af0cf8eacfcf994b64481d489d393dd94b31`; latest focused 4 files / 145 tests in `3.24s`; exact serial full gate 99 files / 1,196 tests `20.98s`, lint 0 errors with 11 unchanged warnings `6.62s`, typecheck `1.21s`, build `9.78s`, total `38.59s`; exact detail is owned by `docs/verification/inbox-triage/task-158.md` |
+| Fingerprint | `15f4a0ee45363c41f510a1057c24b49d6f7c068fb61b3050136b594ac4cfc425` on implementation `f041af0cf8eacfcf994b64481d489d393dd94b31`; Gate C, Tasks 155–157, and cycle 1 Task 158 evidence were not reused |
+| Next action | Control Tower reviews this paired Task 158 product/evidence/audit checkpoint; do not accept Task 158 or start Phase 30–31 |
