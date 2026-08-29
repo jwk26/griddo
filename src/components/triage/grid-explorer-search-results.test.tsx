@@ -154,6 +154,11 @@ describe("GridExplorerSearchResults", () => {
       name: "Undo placement of Alpha",
     });
     expect(resultRow).not.toContainElement(undo);
+    expect(undo).toHaveClass("explorer-search-undo", "newly-undo-action");
+    expect(undo).toHaveAttribute(
+      "data-triage-role",
+      "explorer-search-undo",
+    );
     expect(undo).toHaveAttribute("data-undo-action", "Undo");
     expect(undo).not.toHaveAttribute("draggable");
     expect(screen.getByText("Undo this placement.")).toBeVisible();

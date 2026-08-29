@@ -113,7 +113,8 @@ function SearchResultUndo({
         aria-describedby={statusId}
         aria-disabled={undo.disabled ? "true" : undefined}
         aria-label={actionName}
-        className="newly-undo-action shrink-0"
+        className="explorer-search-undo newly-undo-action shrink-0"
+        data-triage-role="explorer-search-undo"
         data-undo-action={undo.actionLabel}
         type="button"
         onClick={(event) => {
