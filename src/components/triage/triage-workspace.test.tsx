@@ -2362,27 +2362,27 @@ describe("TriageWorkspace", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Node" }));
     fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
 
-    expect(await screen.findByText("Newly placed")).toBeInTheDocument();
+    expect(await screen.findByText("NEW")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Select Node: Project" })).toHaveAttribute(
       "data-newly-placed",
       "true",
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Second Scratch" }));
-    expect(screen.getByText("Newly placed")).toBeInTheDocument();
+    expect(screen.getByText("NEW")).toBeInTheDocument();
     document.documentElement.dataset.colorTheme = "graphite";
     mounted.rerender(<TriageWorkspace node={createNode()} />);
-    expect(screen.getByText("Newly placed")).toBeInTheDocument();
+    expect(screen.getByText("NEW")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Home" }));
-    expect(screen.queryByText("Newly placed")).not.toBeInTheDocument();
+    expect(screen.queryByText("NEW")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Select Node: Parent" }));
-    expect(await screen.findByText("Newly placed")).toBeInTheDocument();
+    expect(await screen.findByText("NEW")).toBeInTheDocument();
 
     mounted.unmount();
     render(<TriageWorkspace node={createNode()} />);
     expect(screen.getByRole("button", { name: "Select Node: Project" })).toBeInTheDocument();
-    expect(screen.queryByText("Newly placed")).not.toBeInTheDocument();
+    expect(screen.queryByText("NEW")).not.toBeInTheDocument();
     delete document.documentElement.dataset.colorTheme;
   });
 });

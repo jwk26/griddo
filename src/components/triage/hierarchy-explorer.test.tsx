@@ -1367,13 +1367,13 @@ describe("HierarchyExplorer Task 155 actual-card Newly Placed projection", () =>
     const card = screen.getByRole("button", { name: "Select Node: Placed node" });
     expect(card).toHaveAttribute("aria-current", "true");
     expect(card).toHaveAttribute("data-newly-placed", "true");
-    expect(card).toContainElement(screen.getByText("Newly placed"));
+    expect(card).toContainElement(screen.getByText("NEW"));
 
     document.documentElement.dataset.colorTheme = "terminal";
     view.rerender(
       <HierarchyExplorer {...defaultProps} newlyPlacedEntries={[entry]} />,
     );
-    expect(screen.getByText("Newly placed")).toBeInTheDocument();
+    expect(screen.getByText("NEW")).toBeInTheDocument();
     delete document.documentElement.dataset.colorTheme;
   });
 });
@@ -1432,7 +1432,7 @@ describe("HierarchyExplorer Task 156 ordinary-card Undo", () => {
     await waitFor(() => expect(undoButton).toBeEnabled());
 
     act(() => titleBlocker.setSnapshot("dirty"));
-    await waitFor(() => expect(undoButton).toBeDisabled());
+    await waitFor(() => expect(undoButton).toHaveAttribute("aria-disabled", "true"));
     fireEvent.click(undoButton);
     expect(undoRepository.undoDirectPlacement).not.toHaveBeenCalled();
     expect(useTriageStore.getState().explorerPathIds).toEqual([target.id]);
@@ -1472,7 +1472,7 @@ describe("HierarchyExplorer Task 156 ordinary-card Undo", () => {
     const undoButton = await screen.findByRole("button", {
       name: "Undo placement of Undo target",
     });
-    await waitFor(() => expect(undoButton).toBeDisabled());
+    await waitFor(() => expect(undoButton).toHaveAttribute("aria-disabled", "true"));
     fireEvent.click(undoButton);
     expect(undoRepository.undoDirectPlacement).not.toHaveBeenCalled();
     expect(activeOperation).toBeNull();
@@ -1569,7 +1569,10 @@ describe("HierarchyExplorer Task 156 ordinary-card Undo", () => {
     await waitFor(() => expect(undoButton).toBeEnabled());
     fireEvent.click(undoButton);
 
-    await waitFor(() => expect(undoButton).toBeDisabled());
+    await waitFor(() => {
+      expect(undoButton).toHaveAttribute("aria-disabled", "false");
+      expect(undoButton).toHaveAccessibleName("Check again");
+    });
     expect(
       screen.getByRole("button", { name: "Select Node: Undo target" }),
     ).toBeInTheDocument();
@@ -1630,6 +1633,158 @@ describe("HierarchyExplorer Task 156 ordinary-card Undo", () => {
       expect.objectContaining({ candidateSnapshot: candidate }),
     );
     expect(undoRepository.undoDirectPlacement).not.toHaveBeenCalled();
+  });
+});
+
+describe("HierarchyExplorer Task 157 DP-VQ10 Newly and Undo rail", () => {
+  it("composes selected, Newly, available Undo, and the visible rail independently", async () => {
+    const target = createNode({ id: "undo-target", title: "Undo target" });
+    const entry = newlyPlacedEntry(target, "node", 1);
+    setGrid(null, [target]);
+    useTriageStore.setState({
+      explorerPathIds: [target.id],
+      explorerOpenColumnIds: ["home", target.id],
+    });
+
+    render(
+      <TriageOperationLockContext.Provider
+        value={{
+          activeOperation: null,
+          acquire: vi.fn(() => true),
+          isLocked: () => false,
+          release: vi.fn(() => true),
+        }}
+      >
+        <HierarchyExplorer {...defaultProps} newlyPlacedEntries={[entry]} />
+      </TriageOperationLockContext.Provider>,
+    );
+
+    const card = screen.getByRole("button", { name: "Select Node: Undo target" });
+    const undoButton = await screen.findByRole("button", {
+      name: "Undo placement of Undo target",
+    });
+    const rail = await screen.findByText("Undo this placement.");
+    await waitFor(() => expect(undoButton).toHaveAttribute("aria-disabled", "false"));
+
+    expect(card).toHaveAttribute("aria-current", "true");
+    expect(card).toHaveAttribute("data-newly-placed", "true");
+    expect(screen.getByText("NEW")).toHaveAttribute(
+      "data-card-marker",
+      "newly-placed",
+    );
+    expect(rail.closest("[data-undo-state='available']")).not.toBeNull();
+    expect(undoButton).toHaveAttribute("aria-describedby", rail.id);
+  });
+
+  it("keeps Retry on the same operation and preserves ordinary success focus", async () => {
+    const target = createNode({ id: "undo-target", title: "Undo target" });
+    const next = createNode({ id: "next-node", title: "Next node" });
+    const entry = newlyPlacedEntry(target, "node", 1);
+    setGrid(null, [target, next]);
+    useTriageStore.setState({
+      explorerPathIds: [target.id],
+      explorerOpenColumnIds: ["home", target.id],
+    });
+    let activeOperationId: string | null = null;
+    const operationLock: TriageOperationLock = {
+      activeOperation: null,
+      acquire: (_kind, operationId) => {
+        if (activeOperationId !== null) return false;
+        activeOperationId = operationId;
+        return true;
+      },
+      isLocked: () => activeOperationId !== null,
+      release: (operationId) => {
+        if (activeOperationId !== operationId) return false;
+        activeOperationId = null;
+        return true;
+      },
+    };
+    undoRepository.undoDirectPlacement
+      .mockImplementationOnce(async (command) => ({
+        operationId: command.operationId,
+        status: "not_applied" as const,
+        result: command.resultSnapshot,
+        source: command.sourceSnapshot,
+        candidate: null,
+      }))
+      .mockImplementationOnce(async (command) => {
+        setGrid(null, [next]);
+        return {
+          operationId: command.operationId,
+          status: "applied" as const,
+          result: null,
+          source: {
+            ...command.sourceSnapshot,
+            consumedAt: null,
+            version: command.sourceSnapshot.version + 1,
+          },
+          candidate: null,
+        };
+      });
+
+    render(
+      <TriageOperationLockContext.Provider value={operationLock}>
+        <HierarchyExplorer {...defaultProps} newlyPlacedEntries={[entry]} />
+      </TriageOperationLockContext.Provider>,
+    );
+    const undoButton = await screen.findByRole("button", {
+      name: "Undo placement of Undo target",
+    });
+    await waitFor(() => expect(undoButton).toHaveAttribute("aria-disabled", "false"));
+    fireEvent.click(undoButton);
+
+    const retry = await screen.findByRole("button", { name: "Retry" });
+    expect(retry).toHaveFocus();
+    expect(screen.getByText("“Undo target” wasn’t undone. Nothing changed.")).toBeInTheDocument();
+    const firstOperationId = undoRepository.undoDirectPlacement.mock.calls[0]![0].operationId;
+    fireEvent.click(retry);
+
+    const nextCard = screen.getByRole("button", { name: "Select Node: Next node" });
+    await waitFor(() => expect(nextCard).toHaveFocus());
+    expect(undoRepository.undoDirectPlacement.mock.calls[1]![0].operationId).toBe(
+      firstOperationId,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("Restored “Source 1”.");
+  });
+
+  it("defines static reduced-motion parity and all eight Newly rail theme families", () => {
+    for (const role of [
+      "newly-card-shell",
+      "newly-marker",
+      "newly-undo-action",
+      "newly-status-rail",
+      "newly-status-mark",
+      "newly-status-reason",
+    ]) {
+      expect(globalsCss).toContain(`.${role}`);
+    }
+    for (const theme of [
+      "tiny-desk",
+      "neumorphism",
+      "claymorphism",
+      "origami",
+      "terminal",
+      "retro-mac",
+      "graphite",
+    ]) {
+      expect(globalsCss).toContain(
+        `:root[data-color-theme="${theme}"] .newly-status-rail`,
+      );
+    }
+    expect(globalsCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.newly-status-rail[\s\S]*transition: none/,
+    );
+    const newlyBlocks = [
+      ...globalsCss.matchAll(/[^{}]*\.newly-(?:marker|undo|status)[^{}]*\{([^}]*)\}/g),
+    ];
+    for (const [, block] of newlyBlocks) {
+      for (const [, value] of block.matchAll(
+        /(?:animation|transition):\s*([^;]+);/g,
+      )) {
+        expect(value.trim()).toMatch(/^none(?:\s*!important)?$/);
+      }
+    }
   });
 });
 

@@ -89,13 +89,13 @@ describe("NodeCard", () => {
       <NodeCard isNewlyPlaced={true} node={node} onClick={vi.fn()} />,
     );
 
-    const marker = screen.getByText("Newly placed");
+    const marker = screen.getByText("NEW");
     expect(marker).toHaveAttribute("data-card-marker", "newly-placed");
     expect(marker.closest('[data-newly-placed="true"]')).not.toBeNull();
     expect(screen.getByRole("button", { name: "Placed node" })).toBeInTheDocument();
 
     rerender(<NodeCard node={node} onClick={vi.fn()} />);
-    expect(screen.queryByText("Newly placed")).not.toBeInTheDocument();
+    expect(screen.queryByText("NEW")).not.toBeInTheDocument();
   });
 
   it("keeps marker and Undo eligibility independent and never bubbles Undo into navigation", () => {
@@ -114,7 +114,7 @@ describe("NodeCard", () => {
     fireEvent.click(screen.getByRole("button", { name: "Undo placement of Undo node" }));
     expect(activateUndo).toHaveBeenCalledTimes(1);
     expect(navigate).not.toHaveBeenCalled();
-    expect(screen.queryByText("Newly placed")).not.toBeInTheDocument();
+    expect(screen.queryByText("NEW")).not.toBeInTheDocument();
 
     rerender(
       <NodeCard
@@ -124,8 +124,14 @@ describe("NodeCard", () => {
         undo={{ disabled: true, onActivate: activateUndo, reason: "dependencies" }}
       />,
     );
-    expect(screen.getByText("Newly placed")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Undo placement of Undo node" })).toBeDisabled();
+    expect(screen.getByText("NEW")).toBeInTheDocument();
+    const unavailableUndo = screen.getByRole("button", {
+      name: "Undo placement of Undo node",
+    });
+    expect(unavailableUndo).toHaveAttribute("aria-disabled", "true");
+    expect(unavailableUndo).not.toBeDisabled();
+    fireEvent.click(unavailableUndo);
+    expect(activateUndo).toHaveBeenCalledTimes(1);
   });
 
   it("uses a fixed square footprint with a non-shrinking icon and truncating title slot", () => {

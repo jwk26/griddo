@@ -49,6 +49,7 @@ export type TriagePlacementUndoCommand =
 export type TriageNewlyPlacedUndoReason =
   | "checking"
   | "available"
+  | "reenabled"
   | "active-owner"
   | "placement-open"
   | "dirty-edit"
@@ -235,6 +236,8 @@ export function useTriageNewlyPlacedUndo({
     new Map(),
   );
   const truthRef = useRef(truth);
+  const reenabledKeysRef = useRef(new Set<string>());
+  const [, setEligibilityRevision] = useState(0);
   const [operations, setOperations] = useState<
     ReadonlyMap<string, TriageNewlyPlacedUndoState>
   >(new Map());
@@ -263,23 +266,31 @@ export function useTriageNewlyPlacedUndo({
 
   useEffect(() => {
     return observeTruthRef.current(entriesRef.current, (next) => {
-      truthRef.current = next;
-      setTruth(next);
-      let changed = false;
-      const nextOperations = new Map(operationsRef.current);
-      for (const [key, operation] of nextOperations) {
+      let eligibilityChanged = false;
+      for (const entry of entriesRef.current) {
+        const key = placementKey(entry.resultType, entry.resultId);
+        const previousReason = classifyUndoTruth(
+          entry,
+          truthRef.current.get(key),
+        );
+        const nextReason = classifyUndoTruth(entry, next.get(key));
         if (
-          operation.phase === "terminal" &&
-          next.get(key)?.status === "not_applied"
+          previousReason === "dependencies" &&
+          nextReason === "available" &&
+          !reenabledKeysRef.current.has(key)
         ) {
-          nextOperations.delete(key);
-          changed = true;
+          reenabledKeysRef.current.add(key);
+          eligibilityChanged = true;
+        } else if (
+          nextReason !== "available" &&
+          reenabledKeysRef.current.delete(key)
+        ) {
+          eligibilityChanged = true;
         }
       }
-      if (changed) {
-        operationsRef.current = nextOperations;
-        setOperations(nextOperations);
-      }
+      truthRef.current = next;
+      setTruth(next);
+      if (eligibilityChanged) setEligibilityRevision((revision) => revision + 1);
     });
   }, [entryFingerprint]);
 
@@ -311,7 +322,10 @@ export function useTriageNewlyPlacedUndo({
       if (reason === "checking") return CHECKING_UNDO_STATE;
       return {
         phase: reason === "available" ? "available" : "blocked",
-        reason,
+        reason:
+          reason === "available" && reenabledKeysRef.current.has(key)
+            ? "reenabled"
+            : reason,
         command: null,
         terminalStatus: null,
       };
@@ -326,6 +340,10 @@ export function useTriageNewlyPlacedUndo({
       result: PlacementUndoResult,
     ): boolean => {
       operationLock.release(command.operationId, result.status);
+      const provenance = findEntry(
+        "level" in command.resultSnapshot ? "node" : "bit",
+        command.resultSnapshot.id,
+      );
       commitOperation(key, {
         phase:
           result.status === "applied" || result.status === "already_applied"
@@ -334,13 +352,15 @@ export function useTriageNewlyPlacedUndo({
         reason:
           result.status === "applied" || result.status === "already_applied"
             ? "already-undone"
-            : "truth-unknown",
+            : provenance === null
+              ? "truth-unknown"
+              : classifyUndoTruth(provenance, result),
         command,
         terminalStatus: result.status,
       });
       return result.status === "applied" || result.status === "already_applied";
     },
-    [commitOperation, operationLock],
+    [commitOperation, findEntry, operationLock],
   );
 
   const activate = useCallback(
@@ -352,6 +372,7 @@ export function useTriageNewlyPlacedUndo({
       }
       const command = createTriagePlacementUndoCommand(provenance, createId());
       if (!operationLock.acquire("undo", command.operationId)) return false;
+      reenabledKeysRef.current.delete(key);
       const pending: TriageNewlyPlacedUndoState = {
         phase: "pending",
         reason: "available",
@@ -388,7 +409,53 @@ export function useTriageNewlyPlacedUndo({
     [applyTerminal, commitOperation, reconcileUndo],
   );
 
-  return { truth, operations, getState, activate, reconcile } as const;
+  const retry = useCallback(
+    async (type: NewlyPlacedResultType, id: string): Promise<boolean> => {
+      const key = placementKey(type, id);
+      const current = operationsRef.current.get(key);
+      if (
+        current?.phase !== "terminal" ||
+        current.terminalStatus !== "not_applied" ||
+        current.command === null ||
+        !operationLock.acquire("undo", current.command.operationId)
+      ) {
+        return false;
+      }
+      const pending = {
+        ...current,
+        phase: "pending",
+        terminalStatus: null,
+      } as const;
+      commitOperation(key, pending);
+      try {
+        const result = await dispatchUndo(current.command);
+        return applyTerminal(key, current.command, result);
+      } catch {
+        commitOperation(key, { ...pending, phase: "unknown" });
+        return false;
+      }
+    },
+    [applyTerminal, commitOperation, dispatchUndo, operationLock],
+  );
+
+  const acknowledgeReenabled = useCallback(
+    (type: NewlyPlacedResultType, id: string) => {
+      if (reenabledKeysRef.current.delete(placementKey(type, id))) {
+        setEligibilityRevision((revision) => revision + 1);
+      }
+    },
+    [],
+  );
+
+  return {
+    truth,
+    operations,
+    getState,
+    activate,
+    reconcile,
+    retry,
+    acknowledgeReenabled,
+  } as const;
 }
 
 export function isTriageNewlyPlaced(

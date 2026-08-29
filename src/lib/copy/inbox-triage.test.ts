@@ -42,7 +42,7 @@ describe("Inbox/Triage core-English copy", () => {
       "This item is no longer available.",
       "This path is no longer available. Returned to {destination}.",
       "Placement closed because this Explorer path changed.",
-      RECEIPT_COPY_UNAVAILABLE,
+      "This item or its source changed. Undo is unavailable.",
       RECEIPT_COPY_UNAVAILABLE,
       RECEIPT_COPY_UNAVAILABLE,
     ]);
@@ -59,6 +59,7 @@ describe("Inbox/Triage core-English copy", () => {
           key === "poolActivity" ||
           key === "stagingActivity" ||
           key === "explorerSearch" ||
+          key === "newlyPlacedUndo" ||
           value === RECEIPT_COPY_UNAVAILABLE,
       ),
     ).toBe(true);
@@ -368,9 +369,45 @@ describe("Inbox/Triage core-English copy", () => {
     );
   });
 
+  it("owns the exact approved DP-VQ10 Newly and Undo wording", () => {
+    expect(INBOX_TRIAGE_COPY.newlyPlacedUndo).toEqual({
+      marker: "NEW",
+      eligibility: {
+        available: "Undo this placement.",
+        reenabled: "Undo is available again.",
+        resultMutated:
+          "This item changed after placement. Undo is unavailable.",
+        descendants: "Undo newly placed items below this one first.",
+        placementOpen: "Finish or cancel the placement in progress first.",
+        operationLocked: "Wait for the current action to finish.",
+        editBlocked: "Save or cancel the current edit before undoing.",
+        conflict: "This item or its source changed. Undo is unavailable.",
+      },
+      operation: {
+        pending: "Undoing “{title}”…",
+        unknown: "We couldn’t confirm whether “{title}” was undone.",
+        reconciling: "Checking whether “{title}” was undone…",
+        notApplied: "“{title}” wasn’t undone. Nothing changed.",
+        success: "Restored “{source}”.",
+      },
+      actions: {
+        undo: "Undo",
+        checkAgain: "Check again",
+        retry: "Retry",
+      },
+    });
+    expect(INBOX_TRIAGE_COPY.lifecycleReasons.undoUnavailable).toBe(
+      "This item or its source changed. Undo is unavailable.",
+    );
+    expect(INBOX_TRIAGE_COPY.liveRegions.newlyPlacedUndo).toBe(
+      "Newly placed item Undo status.",
+    );
+    expect(157 in INBOX_TRIAGE_COPY.receiptDependent).toBe(false);
+  });
+
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      148, 157, 160, 162,
+      148, 160, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {

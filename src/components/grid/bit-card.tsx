@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef, Ref } from "react";
 import { forwardRef } from "react";
 import { format } from "date-fns";
 import { Check, MoreHorizontal, X } from "lucide-react";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useArchiveActions } from "@/hooks/use-archive";
 import { useEditModeStore } from "@/stores/edit-mode-store";
+import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import type { Bit } from "@/types";
 
 type BitCardProps = {
@@ -26,8 +27,11 @@ type BitCardProps = {
   onDelete?: () => void;
   isDragging?: boolean;
   isNewlyPlaced?: boolean;
+  undoActionRef?: Ref<HTMLButtonElement>;
   undo?: Readonly<{
     disabled: boolean;
+    describedBy?: string;
+    label?: string;
     onActivate: () => void;
     reason: string;
   }>;
@@ -42,6 +46,7 @@ export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard
     onDelete,
     isDragging = false,
     isNewlyPlaced = false,
+    undoActionRef,
     undo,
     className,
     onKeyDown,
@@ -160,26 +165,34 @@ export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard
 
       {isNewlyPlaced ? (
         <span
-          className="absolute left-0 top-0 z-20 text-[10px] font-semibold"
+          className="newly-marker absolute left-0 top-0 z-20 text-[10px] font-semibold"
           data-card-marker="newly-placed"
         >
-          Newly placed
+          {INBOX_TRIAGE_COPY.newlyPlacedUndo.marker}
         </span>
       ) : null}
 
       {undo !== undefined ? (
         <button
           type="button"
-          aria-label={`Undo placement of ${bit.title}`}
-          className="absolute bottom-0 right-0 z-20 rounded px-1 text-[10px] font-semibold"
+          aria-describedby={undo.describedBy}
+          aria-disabled={undo.disabled}
+          aria-label={
+            undo.label === undefined ||
+            undo.label === INBOX_TRIAGE_COPY.newlyPlacedUndo.actions.undo
+              ? `Undo placement of ${bit.title}`
+              : undo.label
+          }
+          className="newly-undo-action absolute bottom-0 right-0 z-20 rounded px-1 text-[10px] font-semibold"
           data-undo-reason={undo.reason}
-          disabled={undo.disabled}
+          ref={undoActionRef}
           onClick={(event) => {
             event.stopPropagation();
+            if (undo.disabled) return;
             undo.onActivate();
           }}
         >
-          Undo
+          {undo.label ?? INBOX_TRIAGE_COPY.newlyPlacedUndo.actions.undo}
         </button>
       ) : null}
 

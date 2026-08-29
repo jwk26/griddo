@@ -68,7 +68,7 @@ describe("BitCard", () => {
       />,
     );
 
-    const marker = screen.getByText("Newly placed");
+    const marker = screen.getByText("NEW");
     expect(marker).toHaveAttribute("data-card-marker", "newly-placed");
     expect(marker.closest('[data-newly-placed="true"]')).not.toBeNull();
     expect(screen.getByText("Placed bit")).toBeInTheDocument();
@@ -81,7 +81,7 @@ describe("BitCard", () => {
         parentColor="hsl(221, 83%, 53%)"
       />,
     );
-    expect(screen.queryByText("Newly placed")).not.toBeInTheDocument();
+    expect(screen.queryByText("NEW")).not.toBeInTheDocument();
   });
 
   it("keeps marker and Undo eligibility independent and never bubbles Undo into navigation", () => {
@@ -102,7 +102,30 @@ describe("BitCard", () => {
     fireEvent.click(screen.getByRole("button", { name: "Undo placement of Undo bit" }));
     expect(activateUndo).toHaveBeenCalledTimes(1);
     expect(navigate).not.toHaveBeenCalled();
-    expect(screen.getByText("Newly placed")).toBeInTheDocument();
+    expect(screen.getByText("NEW")).toBeInTheDocument();
+  });
+
+  it("keeps unavailable Undo focusable and suppresses activation", () => {
+    const bit = createBit({ title: "Blocked bit" });
+    const activateUndo = vi.fn();
+    render(
+      <BitCard
+        bit={bit}
+        chunkStats={{ completed: 0, total: 0 }}
+        isNewlyPlaced={true}
+        onClick={vi.fn()}
+        parentColor="hsl(221, 83%, 53%)"
+        undo={{ disabled: true, onActivate: activateUndo, reason: "dependencies" }}
+      />,
+    );
+
+    const unavailableUndo = screen.getByRole("button", {
+      name: "Undo placement of Blocked bit",
+    });
+    expect(unavailableUndo).toHaveAttribute("aria-disabled", "true");
+    expect(unavailableUndo).not.toBeDisabled();
+    fireEvent.click(unavailableUndo);
+    expect(activateUndo).not.toHaveBeenCalled();
   });
 
   it("renders deadline, priority, progress, and aging saturation", () => {

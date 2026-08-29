@@ -271,7 +271,7 @@ describe("useTriageNewlyPlaced", () => {
     });
     const entry = placed.result.current.entries[0]!;
     let active: { kind: "undo"; operationId: string } | null = null;
-    const acquire = vi.fn((_kind: "undo", operationId: string) => {
+    const acquire = vi.fn((_kind: Parameters<TriageOperationLock["acquire"]>[0], operationId: string) => {
       if (active !== null) return false;
       active = { kind: "undo", operationId };
       return true;
@@ -424,8 +424,89 @@ describe("useTriageNewlyPlaced", () => {
     });
     expect(undo.result.current.getState("node", node.id)).toMatchObject({
       phase: "available",
-      reason: "available",
+      reason: "reenabled",
     });
+  });
+
+  it("retries only authoritative not-applied with the same logical operation ID", async () => {
+    const node = createNode("node-retry", 10, 20);
+    node.createdAt = 100;
+    node.mtime = 100;
+    const placed = renderHook(() => useTriageNewlyPlaced());
+    act(() => {
+      placed.result.current.registerPlacement({
+        result: node,
+        command: command(node.id, "node", 1),
+        sourceSnapshot: source(1),
+        candidateSnapshot: null,
+      });
+    });
+    const entry = placed.result.current.entries[0]!;
+    let lockedOperationId: string | null = null;
+    const acquire = vi.fn((_kind: Parameters<TriageOperationLock["acquire"]>[0], operationId: string) => {
+      if (lockedOperationId !== null) return false;
+      lockedOperationId = operationId;
+      return true;
+    });
+    const release = vi.fn((operationId: string) => {
+      if (lockedOperationId !== operationId) return false;
+      lockedOperationId = null;
+      return true;
+    });
+    const notApplied: PlacementUndoResult = {
+      operationId: "undo-retry",
+      status: "not_applied",
+      result: node,
+      source: { ...source(1), consumedAt: 100, version: 2 },
+      candidate: null,
+    };
+    const applied: PlacementUndoResult = {
+      operationId: "undo-retry",
+      status: "applied",
+      result: null,
+      source: { ...source(1), consumedAt: null, version: 3 },
+      candidate: null,
+    };
+    const dispatchUndo = vi
+      .fn<(command: ReturnType<typeof createTriagePlacementUndoCommand>) => Promise<PlacementUndoResult>>()
+      .mockResolvedValueOnce(notApplied)
+      .mockResolvedValueOnce(applied);
+    const undo = renderHook(() => useTriageNewlyPlacedUndo({
+      entries: [entry],
+      operationLock: {
+        activeOperation: null,
+        acquire,
+        isLocked: () => lockedOperationId !== null,
+        release,
+      },
+      placementOpen: false,
+      hasDirtyEdit: () => false,
+      createId: () => "undo-retry",
+      observeTruth: (_entries, publish) => {
+        publish(new Map([["node:node-retry", notApplied]]));
+        return () => undefined;
+      },
+      dispatchUndo,
+      reconcileUndo: vi.fn(),
+    }));
+
+    await waitFor(() => expect(undo.result.current.getState("node", node.id).phase).toBe("available"));
+    await act(async () => {
+      expect(await undo.result.current.activate("node", node.id)).toBe(false);
+    });
+    expect(undo.result.current.getState("node", node.id)).toMatchObject({
+      phase: "terminal",
+      terminalStatus: "not_applied",
+      command: expect.objectContaining({ operationId: "undo-retry" }),
+    });
+
+    await act(async () => {
+      expect(await undo.result.current.retry("node", node.id)).toBe(true);
+    });
+    expect(acquire).toHaveBeenNthCalledWith(1, "undo", "undo-retry");
+    expect(acquire).toHaveBeenNthCalledWith(2, "undo", "undo-retry");
+    expect(dispatchUndo).toHaveBeenCalledTimes(2);
+    expect(dispatchUndo.mock.calls[1]![0]).toEqual(dispatchUndo.mock.calls[0]![0]);
   });
 
   it.each([

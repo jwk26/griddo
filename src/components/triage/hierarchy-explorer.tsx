@@ -34,6 +34,7 @@ import {
   projectTriageNewlyPlaced,
   useTriageNewlyPlacedUndo,
   type TriageNewlyPlacedProvenance,
+  type TriageNewlyPlacedUndoState,
 } from "@/hooks/use-triage-newly-placed";
 import {
   TriageOperationLockContext,
@@ -126,6 +127,133 @@ type UndoFocusPlan = Readonly<{
 
 function undoKey(type: "node" | "bit", id: string): string {
   return `${type}:${id}`;
+}
+
+type NewlyUndoPresentation = Readonly<{
+  action: "undo" | "check-again" | "retry";
+  actionLabel: string;
+  copy: string;
+  disabled: boolean;
+  state: string;
+}>;
+
+function newlyUndoTemplate(template: string, title: string): string {
+  return template.replace("{title}", title);
+}
+
+function getNewlyUndoPresentation(
+  state: TriageNewlyPlacedUndoState,
+  title: string,
+): NewlyUndoPresentation {
+  const copy = INBOX_TRIAGE_COPY.newlyPlacedUndo;
+  if (state.phase === "pending") {
+    return {
+      action: "undo",
+      actionLabel: copy.actions.undo,
+      copy: newlyUndoTemplate(copy.operation.pending, title),
+      disabled: true,
+      state: "pending",
+    };
+  }
+  if (state.phase === "unknown") {
+    return {
+      action: "check-again",
+      actionLabel: copy.actions.checkAgain,
+      copy: newlyUndoTemplate(copy.operation.unknown, title),
+      disabled: false,
+      state: "unknown",
+    };
+  }
+  if (state.phase === "reconciling") {
+    return {
+      action: "check-again",
+      actionLabel: copy.actions.checkAgain,
+      copy: newlyUndoTemplate(copy.operation.reconciling, title),
+      disabled: true,
+      state: "reconciling",
+    };
+  }
+  if (state.phase === "terminal" && state.terminalStatus === "not_applied") {
+    return {
+      action: "retry",
+      actionLabel: copy.actions.retry,
+      copy: newlyUndoTemplate(copy.operation.notApplied, title),
+      disabled: false,
+      state: "not-applied",
+    };
+  }
+
+  const eligibility = (() => {
+    switch (state.reason) {
+      case "available":
+        return { copy: copy.eligibility.available, state: "available" };
+      case "reenabled":
+        return { copy: copy.eligibility.reenabled, state: "reenabled" };
+      case "result-mutated":
+        return { copy: copy.eligibility.resultMutated, state: "result-mutated" };
+      case "dependencies":
+        return { copy: copy.eligibility.descendants, state: "descendants" };
+      case "placement-open":
+        return { copy: copy.eligibility.placementOpen, state: "placement-open" };
+      case "active-owner":
+        return { copy: copy.eligibility.operationLocked, state: "operation-locked" };
+      case "dirty-edit":
+        return { copy: copy.eligibility.editBlocked, state: "edit-blocked" };
+      default:
+        return { copy: copy.eligibility.conflict, state: "conflict" };
+    }
+  })();
+  return {
+    action: "undo",
+    actionLabel: copy.actions.undo,
+    copy: eligibility.copy,
+    disabled: state.phase !== "available",
+    state: eligibility.state,
+  };
+}
+
+function useNewlyUndoActionFocus(state: TriageNewlyPlacedUndoState) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const previousPhaseRef = useRef(state.phase);
+  const previousTerminalStatusRef = useRef(state.terminalStatus);
+  useEffect(() => {
+    const enteredFocusState =
+      (state.phase === "unknown" && previousPhaseRef.current !== "unknown") ||
+      (state.phase === "terminal" &&
+        (previousPhaseRef.current !== "terminal" ||
+          previousTerminalStatusRef.current !== state.terminalStatus));
+    previousPhaseRef.current = state.phase;
+    previousTerminalStatusRef.current = state.terminalStatus;
+    if (enteredFocusState) ref.current?.focus({ preventScroll: true });
+  }, [state.phase, state.terminalStatus]);
+  return ref;
+}
+
+function NewlyUndoStatusRail({
+  presentation,
+  statusId,
+}: {
+  presentation: NewlyUndoPresentation;
+  statusId: string;
+}) {
+  return (
+    <div
+      aria-atomic="true"
+      aria-live="polite"
+      className="newly-status-rail"
+      data-undo-state={presentation.state}
+      role="status"
+    >
+      <span
+        aria-hidden="true"
+        className="newly-status-mark"
+        data-undo-status-mark={presentation.state}
+      />
+      <p className="newly-status-reason" id={statusId}>
+        {presentation.copy}
+      </p>
+    </div>
+  );
 }
 
 function retainUndoRecords<T extends Node | Bit>(
@@ -352,6 +480,8 @@ export function HierarchyExplorer({
   const focusedLocalPlacementKeyRef = useRef<string | null>(null);
   const acknowledgedPlacementSuccessRef = useRef<string | null>(null);
   const placementLiveRegionRef = useRef<HTMLParagraphElement>(null);
+  const undoLiveRegionRef = useRef<HTMLParagraphElement>(null);
+  const announcedUndoSuccessRef = useRef(new Set<string>());
   const focusedRevealKeyRef = useRef<string | null>(null);
   const focusedSelectionClearIdRef = useRef<string | null>(null);
   const mountedRef = useRef(false);
@@ -417,6 +547,20 @@ export function HierarchyExplorer({
       ) {
         continue;
       }
+      if (
+        !announcedUndoSuccessRef.current.has(operation.command.operationId) &&
+        undoLiveRegionRef.current !== null
+      ) {
+        announcedUndoSuccessRef.current.add(operation.command.operationId);
+        undoLiveRegionRef.current.setAttribute("role", "status");
+        undoLiveRegionRef.current.setAttribute("aria-live", "polite");
+        undoLiveRegionRef.current.setAttribute("aria-atomic", "true");
+        undoLiveRegionRef.current.textContent =
+          INBOX_TRIAGE_COPY.newlyPlacedUndo.operation.success.replace(
+            "{source}",
+            operation.command.sourceSnapshot.content,
+          );
+      }
       focusedUndoOperationsRef.current.add(operation.command.operationId);
       const plan = undoFocusPlansRef.current.get(key);
       undoFocusPlansRef.current.delete(key);
@@ -476,7 +620,11 @@ export function HierarchyExplorer({
       heading: section.querySelector("h3"),
     });
     void undo.activate(type, id).then((applied) => {
-      if (!applied && undo.getState(type, id).phase !== "unknown") {
+      const state = undo.getState(type, id);
+      const canStillSucceed =
+        state.phase === "unknown" ||
+        (state.phase === "terminal" && state.terminalStatus === "not_applied");
+      if (!applied && !canStillSucceed) {
         undoFocusPlansRef.current.delete(key);
       }
     });
@@ -1254,6 +1402,7 @@ export function HierarchyExplorer({
       </nav>
 
       <p ref={placementLiveRegionRef} className="sr-only" />
+      <p ref={undoLiveRegionRef} className="sr-only" />
 
       {search.mode === "active" ? (
         <GridExplorerSearchResults
@@ -2116,6 +2265,9 @@ function NodeDropCell({
   targetFeedback: TriageTargetFeedback;
 }) {
   const undoState = undo.getState("node", node.id);
+  const undoPresentation = getNewlyUndoPresentation(undoState, node.title);
+  const undoStatusId = useId();
+  const undoActionRef = useNewlyUndoActionFocus(undoState);
   const dropId = getTriageHierarchyDropId(node.id);
   const dropData = {
     kind: "triage-hierarchy-drop",
@@ -2153,33 +2305,58 @@ function NodeDropCell({
       data-triage-hierarchy-drop={JSON.stringify(dropData)}
       data-triage-target-state={state}
     >
-      <NodeCard
-        aria-current={isSelected ? "true" : undefined}
-        aria-disabled={state === "invalid"}
-        aria-label={`Select Node: ${node.title}`}
-        className={cn(
-          isSelected && "bg-accent text-foreground ring-1 ring-primary",
-          isRevealed && "explorer-revealed-row",
-        )}
-        data-explorer-item-id={node.id}
-        data-explorer-item-type="node"
-        data-triage-drop-id={dropId}
-        data-triage-hierarchy-drop={JSON.stringify(dropData)}
-        data-triage-target-state={state}
-        isNewlyPlaced={isNewlyPlaced}
-        node={node}
-        onClick={() => onSelectNode?.(node.id)}
-        tabIndex={onSelectNode === undefined ? -1 : 0}
-        undo={
-          isNewlyPlaced
-            ? {
-                disabled: undoState.phase !== "available",
-                onActivate: () => onUndo("node", node.id),
-                reason: undoState.reason,
-              }
-            : undefined
-        }
-      />
+      <div
+        className={cn(isNewlyPlaced && "newly-card-shell")}
+        data-undo-state={isNewlyPlaced ? undoPresentation.state : undefined}
+      >
+        <NodeCard
+          aria-current={isSelected ? "true" : undefined}
+          aria-disabled={state === "invalid"}
+          aria-label={`Select Node: ${node.title}`}
+          className={cn(
+            isSelected && "bg-accent text-foreground ring-1 ring-primary",
+            isRevealed && "explorer-revealed-row",
+          )}
+          data-explorer-item-id={node.id}
+          data-explorer-item-type="node"
+          data-triage-drop-id={dropId}
+          data-triage-hierarchy-drop={JSON.stringify(dropData)}
+          data-triage-target-state={state}
+          isNewlyPlaced={isNewlyPlaced}
+          node={node}
+          onClick={() => {
+            undo.acknowledgeReenabled("node", node.id);
+            onSelectNode?.(node.id);
+          }}
+          tabIndex={onSelectNode === undefined ? -1 : 0}
+          undoActionRef={undoActionRef}
+          undo={
+            isNewlyPlaced
+              ? {
+                  describedBy: undoStatusId,
+                  disabled: undoPresentation.disabled,
+                  label: undoPresentation.actionLabel,
+                  onActivate: () => {
+                    if (undoPresentation.action === "check-again") {
+                      void undo.reconcile("node", node.id);
+                    } else if (undoPresentation.action === "retry") {
+                      void undo.retry("node", node.id);
+                    } else {
+                      onUndo("node", node.id);
+                    }
+                  },
+                  reason: undoState.reason,
+                }
+              : undefined
+          }
+        />
+        {isNewlyPlaced ? (
+          <NewlyUndoStatusRail
+            presentation={undoPresentation}
+            statusId={undoStatusId}
+          />
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -2200,29 +2377,54 @@ function BitContextRow({
   parentColor: string;
 }) {
   const undoState = undo.getState("bit", bit.id);
+  const undoPresentation = getNewlyUndoPresentation(undoState, bit.title);
+  const undoStatusId = useId();
+  const undoActionRef = useNewlyUndoActionFocus(undoState);
   return (
-    <BitCard
-      aria-label={`Bit: ${bit.title}`}
-      bit={bit}
-      chunkStats={{ completed: 0, total: 0 }}
-      className={cn(
-        isRevealed && "explorer-revealed-row",
-      )}
-      data-explorer-item-id={bit.id}
-      data-explorer-item-type="bit"
-      isNewlyPlaced={isNewlyPlaced}
-      onClick={() => undefined}
-      parentColor={parentColor}
-      tabIndex={-1}
-      undo={
-        isNewlyPlaced
-          ? {
-              disabled: undoState.phase !== "available",
-              onActivate: () => onUndo("bit", bit.id),
-              reason: undoState.reason,
-            }
-          : undefined
-      }
-    />
+    <div
+      className={cn(isNewlyPlaced && "newly-card-shell")}
+      data-undo-state={isNewlyPlaced ? undoPresentation.state : undefined}
+    >
+      <BitCard
+        aria-label={`Bit: ${bit.title}`}
+        bit={bit}
+        chunkStats={{ completed: 0, total: 0 }}
+        className={cn(
+          isRevealed && "explorer-revealed-row",
+        )}
+        data-explorer-item-id={bit.id}
+        data-explorer-item-type="bit"
+        isNewlyPlaced={isNewlyPlaced}
+        onClick={() => undo.acknowledgeReenabled("bit", bit.id)}
+        parentColor={parentColor}
+        tabIndex={-1}
+        undoActionRef={undoActionRef}
+        undo={
+          isNewlyPlaced
+            ? {
+                describedBy: undoStatusId,
+                disabled: undoPresentation.disabled,
+                label: undoPresentation.actionLabel,
+                onActivate: () => {
+                  if (undoPresentation.action === "check-again") {
+                    void undo.reconcile("bit", bit.id);
+                  } else if (undoPresentation.action === "retry") {
+                    void undo.retry("bit", bit.id);
+                  } else {
+                    onUndo("bit", bit.id);
+                  }
+                },
+                reason: undoState.reason,
+              }
+            : undefined
+        }
+      />
+      {isNewlyPlaced ? (
+        <NewlyUndoStatusRail
+          presentation={undoPresentation}
+          statusId={undoStatusId}
+        />
+      ) : null}
+    </div>
   );
 }
