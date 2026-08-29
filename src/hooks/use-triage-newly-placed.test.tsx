@@ -1,4 +1,5 @@
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, render, renderHook, screen, waitFor } from "@testing-library/react";
+import { Suspense } from "react";
 import { describe, expect, it, vi } from "vitest";
 import type { TriagePlacementCommand } from "@/hooks/use-triage-placement";
 import type { TriageOperationLock } from "@/hooks/use-triage-operation-lock";
@@ -503,6 +504,13 @@ describe("useTriageNewlyPlaced", () => {
     });
     expect(undo.result.current.getState("node", node.id).reason).toBe("reenabled");
 
+    if (kind !== "open placement") {
+      blocked = true;
+      expect(undo.result.current.getState("node", node.id).reason).toBe(expectedReason);
+      blocked = false;
+      expect(undo.result.current.getState("node", node.id).reason).toBe("reenabled");
+    }
+
     blocked = true;
     undo.rerender({ placementOpen: kind === "open placement" });
     expect(undo.result.current.getState("node", node.id).reason).toBe(expectedReason);
@@ -512,6 +520,84 @@ describe("useTriageNewlyPlaced", () => {
       phase: "available",
       reason: "available",
     });
+  });
+
+  it("does not consume re-enabled lifetime from a suspended render", async () => {
+    const node = createNode("node-reenabled-suspended", 10, 20);
+    node.createdAt = 100;
+    node.mtime = 100;
+    const placed = renderHook(() => useTriageNewlyPlaced());
+    act(() => {
+      placed.result.current.registerPlacement({
+        result: node,
+        command: command(node.id, "node", 1),
+        sourceSnapshot: source(1),
+        candidateSnapshot: null,
+      });
+    });
+    const entry = placed.result.current.entries[0]!;
+    let publish!: (truth: ReadonlyMap<string, PlacementUndoResult>) => void;
+    const suspended = new Promise<never>(() => undefined);
+
+    function Harness({ blocked, suspend }: { blocked: boolean; suspend: boolean }) {
+      const undo = useTriageNewlyPlacedUndo({
+        entries: [entry],
+        operationLock: {
+          activeOperation: null,
+          acquire: vi.fn(() => true),
+          isLocked: () => false,
+          release: vi.fn(() => true),
+        },
+        placementOpen: false,
+        hasDirtyEdit: () => blocked,
+        observeTruth: (_entries, next) => {
+          publish = next;
+          return () => undefined;
+        },
+        dispatchUndo: vi.fn(),
+        reconcileUndo: vi.fn(),
+      });
+      const renderedReason = undo.getState("node", node.id).reason;
+      if (suspend) throw suspended;
+      return <span>{renderedReason}</span>;
+    }
+
+    const view = render(
+      <Suspense fallback={<span>Suspended</span>}>
+        <Harness blocked={false} suspend={false} />
+      </Suspense>,
+    );
+    const exactSource = { ...source(1), consumedAt: 100, version: 2 };
+    act(() => {
+      publish(new Map([[`node:${node.id}`, {
+        operationId: "truth-probe",
+        status: "conflict",
+        result: node,
+        source: exactSource,
+        candidate: null,
+      }]]));
+      publish(new Map([[`node:${node.id}`, {
+        operationId: "truth-probe",
+        status: "not_applied",
+        result: node,
+        source: exactSource,
+        candidate: null,
+      }]]));
+    });
+    expect(await screen.findByText("reenabled")).not.toBeNull();
+
+    view.rerender(
+      <Suspense fallback={<span>Suspended</span>}>
+        <Harness blocked suspend />
+      </Suspense>,
+    );
+
+    view.rerender(
+      <Suspense fallback={<span>Suspended</span>}>
+        <Harness blocked={false} suspend={false} />
+      </Suspense>,
+    );
+    expect(await screen.findByText("reenabled")).not.toBeNull();
   });
 
   it("retries only authoritative not-applied with the same logical operation ID", async () => {

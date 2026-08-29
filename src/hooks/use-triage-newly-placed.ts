@@ -308,6 +308,15 @@ export function useTriageNewlyPlacedUndo({
     if (hasDirtyEdit()) return "dirty-edit";
     return null;
   }, [hasDirtyEdit, operationLock, placementOpen]);
+  const committedEligibilityBlocker = getEligibilityBlocker();
+
+  useEffect(() => {
+    if (
+      committedEligibilityBlocker === null ||
+      reenabledKeysRef.current.size === 0
+    ) return;
+    reenabledKeysRef.current.clear();
+  }, [committedEligibilityBlocker]);
 
   const getState = useCallback(
     (type: NewlyPlacedResultType, id: string): TriageNewlyPlacedUndoState => {
@@ -321,7 +330,6 @@ export function useTriageNewlyPlacedUndo({
       if (provenance === null) return CHECKING_UNDO_STATE;
       const blocker = getEligibilityBlocker();
       if (blocker !== null) {
-        reenabledKeysRef.current.delete(key);
         return operation === undefined
           ? { ...CHECKING_UNDO_STATE, phase: "blocked", reason: blocker }
           : { ...operation, phase: "blocked", reason: blocker };

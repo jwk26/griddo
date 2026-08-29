@@ -176,6 +176,7 @@ export interface InboxTriageCopy {
   readonly newlyPlacedUndo: {
     readonly marker: string;
     readonly eligibility: {
+      readonly checking: string;
       readonly available: string;
       readonly reenabled: string;
       readonly resultMutated: string;
@@ -491,6 +492,7 @@ export const INBOX_TRIAGE_COPY = {
   newlyPlacedUndo: {
     marker: "NEW",
     eligibility: {
+      checking: "Checking whether Undo is available…",
       available: "Undo this placement.",
       reenabled: "Undo is available again.",
       resultMutated:

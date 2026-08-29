@@ -150,7 +150,7 @@ function getNewlyUndoPresentation(
     return {
       action: "undo",
       actionLabel: copy.actions.undo,
-      copy: copy.eligibility.operationLocked,
+      copy: copy.eligibility.checking,
       disabled: true,
       state: "checking",
     };

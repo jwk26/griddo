@@ -1640,6 +1640,7 @@ describe("HierarchyExplorer Task 157 DP-VQ10 Newly and Undo rail", () => {
   it("does not project conflict while initial authority is still checking", async () => {
     const target = createNode({ id: "checking-target", title: "Checking target" });
     const entry = newlyPlacedEntry(target, "node", 1);
+    const acquire = vi.fn(() => true);
     setGrid(null, [target]);
     undoRepository.reconcileDirectPlacementUndo.mockImplementation(
       () => new Promise<never>(() => undefined),
@@ -1649,7 +1650,7 @@ describe("HierarchyExplorer Task 157 DP-VQ10 Newly and Undo rail", () => {
       <TriageOperationLockContext.Provider
         value={{
           activeOperation: null,
-          acquire: vi.fn(() => true),
+          acquire,
           isLocked: () => false,
           release: vi.fn(() => true),
         }}
@@ -1658,9 +1659,52 @@ describe("HierarchyExplorer Task 157 DP-VQ10 Newly and Undo rail", () => {
       </TriageOperationLockContext.Provider>,
     );
 
-    expect(await screen.findByText("Wait for the current action to finish.")).toBeInTheDocument();
+    const checkingCopy = await screen.findByText(
+      "Checking whether Undo is available…",
+    );
+    expect(checkingCopy.closest("[data-undo-state='checking']")).not.toBeNull();
+    const undoButton = screen.getByRole("button", {
+      name: "Undo placement of Checking target",
+    });
+    expect(undoButton).toHaveAttribute("aria-disabled", "true");
+    expect(undoButton).not.toBeDisabled();
+    undoButton.focus();
+    fireEvent.click(undoButton);
+    expect(undoButton).toHaveFocus();
+    expect(acquire).not.toHaveBeenCalled();
+    expect(undoRepository.undoDirectPlacement).not.toHaveBeenCalled();
+    expect(
+      screen.queryByText("Wait for the current action to finish."),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByText("This item or its source changed. Undo is unavailable."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps the shared-lock reason distinct from initial authority checking", async () => {
+    const target = createNode({ id: "locked-target", title: "Locked target" });
+    const entry = newlyPlacedEntry(target, "node", 1);
+    setGrid(null, [target]);
+
+    render(
+      <TriageOperationLockContext.Provider
+        value={{
+          activeOperation: { kind: "archive", operationId: "archive-1" },
+          acquire: vi.fn(() => false),
+          isLocked: () => true,
+          release: vi.fn(() => false),
+        }}
+      >
+        <HierarchyExplorer {...defaultProps} newlyPlacedEntries={[entry]} />
+      </TriageOperationLockContext.Provider>,
+    );
+
+    const lockedCopy = await screen.findByText(
+      "Wait for the current action to finish.",
+    );
+    expect(lockedCopy.closest("[data-undo-state='operation-locked']")).not.toBeNull();
+    expect(
+      screen.queryByText("Checking whether Undo is available…"),
     ).not.toBeInTheDocument();
   });
 

@@ -373,6 +373,7 @@ describe("Inbox/Triage core-English copy", () => {
     expect(INBOX_TRIAGE_COPY.newlyPlacedUndo).toEqual({
       marker: "NEW",
       eligibility: {
+        checking: "Checking whether Undo is available…",
         available: "Undo this placement.",
         reenabled: "Undo is available again.",
         resultMutated:
