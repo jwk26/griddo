@@ -1876,7 +1876,7 @@ Phase 29. The pilot does not automatically extend to a third phase.
 
 **Commit contract:** ordinary-card Undo model/adapter, tests, and Task 156 evidence only; `feat(triage): connect ordinary card undo`.
 
-### Task 157: [ ] Render `DP-VQ10` Newly and Undo states
+### Task 157: [x] Render `DP-VQ10` Newly and Undo states
 
 **Files and actions:** after `DP-VQ10`, modify `src/hooks/use-triage-newly-placed.ts` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/components/grid/node-card.tsx` and `.test.tsx`, `src/components/grid/bit-card.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Populate approved wording and render selected+newly overlap, available/ineligible/re-enabled reasons, undoing/failure/reconcile/retry/conflict, marker/control placement, timing, focus, reduced motion, and themes without repeated motion or common-card redesign.
 

@@ -3,7 +3,7 @@
 > Branch: `phase-29/mounted-page-newly-placed-undo`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-29-mounted-page-newly-placed-undo`
 > Kickoff date: 2026-08-28
-> State: Tasks 155–156 Accepted; Task 157 In Progress; Task 158 remains `[ ]`
+> State: Tasks 155–157 Accepted; Task 158 remains `[ ]`, unstarted
 
 ## Status Legend
 
@@ -24,14 +24,14 @@
 | Gate | `gate-c`, explicitly approved by the user on 2026-08-28 with statement `내 승인합니다` |
 | Phase scope | Phase 29, Tasks 155–158, equal-weight product and workflow-audit tracks |
 | First bounded batch | Task 155 only; sequential execution; Tasks 156–158 held for fresh dependency/readiness recheck |
-| Task state | Task 155 is `[x]`, Accepted; Tasks 156–158 remain `[ ]`, held |
+| Task state | Tasks 155–157 are `[x]`, Accepted; Task 158 remains `[ ]`, unstarted and held |
 | Source mode | Merged canonical Phase 29 plan plus accepted Task 123/152 foundations, approved nine-recipe package and DP-VQ10 receipt, and unchanged-candidate Track B audit continuity |
 | Integration | `origin/main` at `f3c2be6b2afa2da51cde39d22c13eabf2286f296`, local divergence `0/0` after fetch |
 | Approved base | `f3c2be6b2afa2da51cde39d22c13eabf2286f296`; no base exception |
 | Feature branch | `phase-29/mounted-page-newly-placed-undo` |
 | Worktree choice | New linked feature worktree at `/Users/jwk/Documents/griddo2-codex-phase-29-mounted-page-newly-placed-undo`; no reuse |
 | Whole-file receipt | `docs/issues/Issues_Phase_29.gate-c.json` |
-| Next legal action | Control Tower reviews the Task 155 acceptance-only checkpoint; Task 156 remains unstarted and may begin only with a fresh `run-task` prompt |
+| Next legal action | Control Tower reviews the Task 157 acceptance-only checkpoint; Task 158 may begin only with a fresh candidate-pinned `run-task` prompt |
 
 ## Readiness And Clean-Start Evidence
 
@@ -124,15 +124,15 @@ workflow findings are owned without verdict by
 | Field | Durable value |
 | --- | --- |
 | Task | `157 — Render DP-VQ10 Newly and Undo states` |
-| State | `[ ]`, Repaired through user-approved cycle `7/7`; awaiting user checkpoint review; acceptance has not occurred |
+| State | `[x]`, Accepted |
 | Approval | Exact candidate-pinned Task 157-only Control Tower work order on 2026-08-29, bounded by the committed `docs/issues/Issues_Phase_29.gate-c.json` Gate C receipt, the accepted `DP-VQ10=A` receipt, and the current Task 157 contract |
 | Approved base / entrypoint | Integration base `f3c2be6b2afa2da51cde39d22c13eabf2286f296`; exact clean Task 157 entrypoint and recovery anchor `d0bb079fe0ae1ab2cdcca50c200b19a56c37e0f5` |
 | Dependencies | Tasks 117, 128, 155, and 156 are `[x]`, Accepted and their acceptance commits are ancestors of the entrypoint |
 | Exact scope | Original eleven approved product/test owners plus the cycle-5 Workspace test expansion; cycle 7 is further bounded to hook/test, Explorer/test, copy/test, and canonical reflection only in `docs/recipes/inbox-triage-newly-placed-undo-visual-recipe.md` and `docs/DESIGN_TOKENS.md`; update Task 157 evidence, this ledger, and only Task 157 audit records; no Task 158/Search, common-card redesign, repository command, persistence, schema, or unrelated evidence work |
 | Behavior | Realize the approved `DP-VQ10=A` actual-card static Newly marker, separate stable Undo action, and card-attached always-visible status rail over the accepted Tasks 155–156 model, including independent selection/marker/eligibility, exact reasons and operation states, focus, lifetime, accessibility, reduced-motion parity, and eight-theme presentation |
-| Issues / deviations | Resolved with canonical impact `Reflected`: cycle 6 repaired the four prior Control Tower findings, but its checkpoint review found initial checking borrowed shared-lock copy without authority and render-time `getState()` mutated re-enabled lifetime. The user selected exact choice A and approved cycle `7/7`. Repair now separates checking/shared-lock copy, suppresses checking activation, and clears re-enabled lifetime only after a committed blocker render; a suspended render cannot consume it. One intermediate lint error rejected a redundant effect state update and all invalidated gates were rerun. Final review found no remaining finding, extra owner, or `Unowned` item. Historical cycle 5/6 records remain superseded evidence; the recipe header remains unchanged. |
+| Issues / deviations | Accepted with canonical impact `Reflected`: cycle 6 repaired the four prior Control Tower findings, and user-approved cycle `7/7` resolved the later checking-authority omission and render-time state mutation. The accepted repair separates checking/shared-lock copy, suppresses checking activation, and clears re-enabled lifetime only after a committed blocker render; a suspended render cannot consume it. There is no remaining material finding, scope deviation, blocker, extra owner, or `Unowned` item. Historical cycle 5/6 records remain superseded evidence; the recipe header remains unchanged. |
 | Canonical impact | `Reflected` — exact user-approved choice A checking and existing success data-state mappings were recorded only in `docs/recipes/inbox-triage-newly-placed-undo-visual-recipe.md` and `docs/DESIGN_TOKENS.md` |
-| Recovery anchor | Durable start `5400c3d4097a58c224aabc7f107617bd4a7fd6c2`; durable owner stop `5f3d1916227cbf7d4403270aaa6e7462872b0480`; superseded cycle-6 checkpoint `cf74e6c0980bc9ccb66f63f105612bc01d91f7a8`; cycle-7 repair/canonical reflection `489f6a08686f44a5323c112e62703b48dee68968`; replacement fingerprint `2081f807dbb4d15d52a8fd4a893fd3599ee023628893babc324df9fcecfa7697` |
+| Recovery anchor | Durable start `5400c3d4097a58c224aabc7f107617bd4a7fd6c2`; durable owner stop `5f3d1916227cbf7d4403270aaa6e7462872b0480`; accepted repair/canonical reflection `489f6a08686f44a5323c112e62703b48dee68968`; accepted evidence/audit checkpoint `fef2c01b06098e9f30f0fb9ec7ccb7bbb23f9794`; accepted fingerprint `2081f807dbb4d15d52a8fd4a893fd3599ee023628893babc324df9fcecfa7697` |
 | Verification / evidence | Latest focused 6 files / 207 tests in `4.23s`; exact serial full gate 99 files / 1,187 tests `25.83s`, lint 0 errors with 11 unchanged warnings `7.24s`, typecheck `1.35s`, build `12.58s`, four-command total `47.00s`; focused diff check and typecheck passed; final High-risk review found no remaining concrete issue; exact details are owned by `docs/verification/inbox-triage/task-157.md` |
-| Audit invariant | The implementation checkpoint is incomplete until product evidence and the actual Task 157 measurement row are committed together; Tasks 155–156 rows and evidence remain unchanged |
-| Next action | Control Tower reviews this paired implementation/evidence/audit checkpoint and accepts, rejects with targeted feedback, or dispositions an issue; Task 157 remains `[ ]` and Task 158 remains unstarted and held. |
+| Audit invariant | The accepted Task 157 evidence and actual measurement row remain immutable; this acceptance-only transaction does not edit either owner or Tasks 155–156 evidence/audit records |
+| Next action | Control Tower reviews this Task 157 acceptance-only checkpoint; Task 158 remains `[ ]`, unstarted, and may begin only with a fresh candidate-pinned `run-task` prompt. |
