@@ -2,6 +2,8 @@
 
 import { X } from "lucide-react";
 import {
+  useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   type ChangeEvent,
@@ -31,7 +33,18 @@ export interface GridExplorerSearchResultsProps {
   onRetry: () => void;
   onScrollTopChange: (scrollTop: number) => void;
   onSelectResult: (result: GridExplorerSearchResult) => void;
+  getResultUndo?: (
+    result: GridExplorerSearchResult,
+  ) => GridExplorerSearchResultUndo | null;
 }
+
+export type GridExplorerSearchResultUndo = Readonly<{
+  actionLabel: string;
+  copy: string;
+  disabled: boolean;
+  onActivate: () => void;
+  state: string;
+}>;
 
 function fill(
   template: string,
@@ -58,10 +71,76 @@ function stateCopy({
   if (status === "refreshing") return copy.refreshing;
   if (status === "error") return copy.error;
   if (feedback === "stale-selection") return copy.staleSelection;
+  if (feedback?.kind === "undo-success") {
+    return `Restored “${feedback.title}” to ${feedback.source}.`;
+  }
   if (status === "ready" && results.length === 0) {
     return fill(copy.noResults, { query });
   }
   return "";
+}
+
+function SearchResultUndo({
+  result,
+  undo,
+}: {
+  result: GridExplorerSearchResult;
+  undo: GridExplorerSearchResultUndo;
+}) {
+  const actionRef = useRef<HTMLButtonElement>(null);
+  const statusId = useId();
+  const previousStateRef = useRef(undo.state);
+
+  useEffect(() => {
+    const enteredRecoveryState =
+      previousStateRef.current !== undo.state &&
+      (undo.state === "unknown" ||
+        undo.state === "not-applied" ||
+        undo.state === "conflict");
+    previousStateRef.current = undo.state;
+    if (enteredRecoveryState) actionRef.current?.focus({ preventScroll: true });
+  }, [undo.state]);
+
+  const actionName =
+    undo.actionLabel === INBOX_TRIAGE_COPY.newlyPlacedUndo.actions.undo
+      ? `Undo placement of ${result.title}`
+      : undo.actionLabel;
+
+  return (
+    <>
+      <button
+        ref={actionRef}
+        aria-describedby={statusId}
+        aria-disabled={undo.disabled ? "true" : undefined}
+        aria-label={actionName}
+        className="newly-undo-action shrink-0"
+        data-undo-action={undo.actionLabel}
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          if (!undo.disabled) undo.onActivate();
+        }}
+      >
+        {undo.actionLabel}
+      </button>
+      <div
+        aria-atomic="true"
+        aria-live="polite"
+        className="newly-status-rail col-span-2"
+        data-undo-state={undo.state}
+        role="status"
+      >
+        <span
+          aria-hidden="true"
+          className="newly-status-mark"
+          data-undo-status-mark={undo.state}
+        />
+        <p className="newly-status-reason" id={statusId}>
+          {undo.copy}
+        </p>
+      </div>
+    </>
+  );
 }
 
 export function GridExplorerSearchResults({
@@ -78,6 +157,7 @@ export function GridExplorerSearchResults({
   onRetry,
   onScrollTopChange,
   onSelectResult,
+  getResultUndo = () => null,
 }: GridExplorerSearchResultsProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLUListElement>(null);
@@ -165,6 +245,7 @@ export function GridExplorerSearchResults({
         </button>
       </div>
       <div
+        aria-label="Explorer search status"
         aria-atomic="true"
         aria-live="polite"
         className="explorer-search-status"
@@ -195,14 +276,23 @@ export function GridExplorerSearchResults({
       >
         {results.map((result, index) => {
           const Icon = NODE_ICON_MAP[result.icon] ?? NODE_ICON_MAP.Box;
+          const resultUndo = getResultUndo(result);
           return (
-            <li className="explorer-search-result-item" key={result.key}>
+            <li
+              className={
+                resultUndo === null
+                  ? "explorer-search-result-item"
+                  : "explorer-search-result-item grid grid-cols-[minmax(0,1fr)_auto] gap-2"
+              }
+              data-undo-state={resultUndo?.state}
+              key={result.key}
+            >
               <button
                 ref={(node) => {
                   if (node === null) resultRefs.current.delete(result.key);
                   else resultRefs.current.set(result.key, node);
                 }}
-                className="explorer-search-result"
+                className="explorer-search-result min-w-0"
                 data-triage-role="explorer-search-result"
                 type="button"
                 onClick={() => onSelectResult(result)}
@@ -254,6 +344,9 @@ export function GridExplorerSearchResults({
                 )}
               </span>
               </button>
+              {resultUndo === null ? null : (
+                <SearchResultUndo result={result} undo={resultUndo} />
+              )}
             </li>
           );
         })}

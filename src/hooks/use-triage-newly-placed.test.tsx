@@ -257,6 +257,42 @@ describe("useTriageNewlyPlaced", () => {
     });
   });
 
+  it("exposes the exact mounted provenance to approved Search composition", async () => {
+    const target = createNode("search-undo", 10, 20);
+    const placement = renderHook(() => useTriageNewlyPlaced());
+    act(() => {
+      placement.result.current.registerPlacement({
+        result: target,
+        command: command(target.id, "node", 1),
+        sourceSnapshot: source(1),
+        candidateSnapshot: null,
+      });
+    });
+    const entry = placement.result.current.entries[0]!;
+    let publish!: (truth: ReadonlyMap<string, PlacementUndoResult>) => void;
+    const undo = renderHook(() => useTriageNewlyPlacedUndo({
+      entries: [entry],
+      operationLock: {
+        activeOperation: null,
+        acquire: vi.fn(() => true),
+        isLocked: vi.fn(() => false),
+        release: vi.fn(() => true),
+      },
+      placementOpen: false,
+      hasDirtyEdit: () => false,
+      observeTruth: (_entries, next) => {
+        publish = next;
+        return () => undefined;
+      },
+      dispatchUndo: vi.fn(),
+      reconcileUndo: vi.fn(),
+    }));
+    act(() => publish(new Map()));
+
+    expect(undo.result.current.getProvenance("node", target.id)).toEqual(entry);
+    expect(undo.result.current.getProvenance("bit", target.id)).toBeNull();
+  });
+
   it("acquires Undo synchronously, retains exact provenance through unknown reconciliation, and releases only terminally", async () => {
     const node = createNode("node-undo", 10, 20);
     node.createdAt = 100;

@@ -82,7 +82,10 @@ const explorerSearchState = vi.hoisted(() => ({
   focusTarget: { kind: "input" } as
     | { kind: "input" }
     | { kind: "result"; resultKey: GridExplorerSearchResult["key"] },
-  feedback: null as "stale-selection" | null,
+  feedback: null as
+    | "stale-selection"
+    | { kind: "undo-success"; source: string; title: string }
+    | null,
   revealPresentation: null as
     | null
     | { kind: "revealed"; result: GridExplorerSearchResult }
@@ -95,6 +98,7 @@ const explorerSearchState = vi.hoisted(() => ({
   setResultScrollTop: vi.fn(),
   focusInput: vi.fn(),
   focusResult: vi.fn(),
+  completeResultUndo: vi.fn(),
   selectResult: vi.fn(),
   invalidatePendingSelection: vi.fn(),
   clearReveal: vi.fn(),
@@ -402,6 +406,7 @@ beforeEach(async () => {
     explorerSearchState.setResultScrollTop,
     explorerSearchState.focusInput,
     explorerSearchState.focusResult,
+    explorerSearchState.completeResultUndo,
     explorerSearchState.selectResult,
     explorerSearchState.invalidatePendingSelection,
     explorerSearchState.clearReveal,
@@ -3096,5 +3101,104 @@ describe("HierarchyExplorer Task 151 dedicated search and reveal", () => {
     expect(globalsCss).toMatch(
       /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.explorer-search-body[\s\S]*transition: none/,
     );
+  });
+});
+
+describe("HierarchyExplorer Task 158 search-result Undo", () => {
+  function renderSearchUndo(entries: readonly TriageNewlyPlacedProvenance[]) {
+    let activeOperation: { kind: "undo"; operationId: string } | null = null;
+    const operationLock: TriageOperationLock = {
+      get activeOperation() {
+        return activeOperation;
+      },
+      acquire: (kind, operationId) => {
+        if (activeOperation !== null || kind !== "undo") return false;
+        activeOperation = { kind, operationId };
+        return true;
+      },
+      isLocked: () => activeOperation !== null,
+      release: (operationId) => {
+        if (activeOperation?.operationId !== operationId) return false;
+        activeOperation = null;
+        return true;
+      },
+    };
+    return render(
+      <TriageOperationLockContext.Provider value={operationLock}>
+        <HierarchyExplorer
+          {...defaultProps}
+          newlyPlacedEntries={entries}
+        />
+      </TriageOperationLockContext.Provider>,
+    );
+  }
+
+  it("routes an independent result Undo through the mounted controller and Search success owner", async () => {
+    const target = createNode({ id: "search-undo", title: "Search Undo" });
+    const entry = newlyPlacedEntry(target, "node", 1);
+    const selected = searchResult("node:search-undo", {
+      title: target.title,
+      nodePathIds: [target.id],
+    });
+    explorerSearchState.mode = "active";
+    explorerSearchState.activeQuery = "search";
+    explorerSearchState.resultScrollTop = 84;
+    explorerSearchState.results = [selected];
+    explorerSearchState.status = "ready";
+    undoRepository.undoDirectPlacement.mockImplementation(async (undoCommand) => ({
+      operationId: undoCommand.operationId,
+      status: "applied" as const,
+      result: null,
+      source: { ...undoCommand.sourceSnapshot, consumedAt: null, version: 3 },
+      candidate: null,
+    }));
+    renderSearchUndo([entry]);
+
+    const undo = await screen.findByRole("button", {
+      name: "Undo placement of Search Undo",
+    });
+    await waitFor(() => expect(undo).not.toHaveAttribute("aria-disabled", "true"));
+    fireEvent.click(undo);
+
+    await waitFor(() =>
+      expect(explorerSearchState.completeResultUndo).toHaveBeenCalledWith({
+        removedIndex: 0,
+        resultKey: selected.key,
+        source: "Source 1",
+        title: "Search Undo",
+      }),
+    );
+    expect(explorerSearchState.selectResult).not.toHaveBeenCalled();
+    expect(explorerSearchState.activeQuery).toBe("search");
+    expect(explorerSearchState.resultScrollTop).toBe(84);
+  });
+
+  it("retains the exact result through unknown and exposes read-only reconciliation", async () => {
+    const target = createNode({ id: "search-unknown", title: "Search Unknown" });
+    const entry = newlyPlacedEntry(target, "node", 1);
+    const selected = searchResult("node:search-unknown", {
+      title: target.title,
+      nodePathIds: [target.id],
+    });
+    explorerSearchState.mode = "active";
+    explorerSearchState.activeQuery = "search";
+    explorerSearchState.results = [selected];
+    explorerSearchState.status = "ready";
+    undoRepository.undoDirectPlacement.mockRejectedValue(new Error("ambiguous"));
+    renderSearchUndo([entry]);
+
+    const undo = await screen.findByRole("button", {
+      name: "Undo placement of Search Unknown",
+    });
+    await waitFor(() => expect(undo).not.toHaveAttribute("aria-disabled", "true"));
+    fireEvent.click(undo);
+
+    expect(await screen.findByText(
+      "We couldn’t confirm whether “Search Unknown” was undone.",
+    )).toBeVisible();
+    expect(screen.getByRole("button", { name: "Check again" })).toHaveFocus();
+    expect(explorerSearchResultRow()).toBeVisible();
+    expect(explorerSearchState.completeResultUndo).not.toHaveBeenCalled();
+    expect(explorerSearchState.selectResult).not.toHaveBeenCalled();
   });
 });

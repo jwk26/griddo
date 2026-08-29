@@ -21,7 +21,16 @@ export type GridExplorerSearchStatus =
 export type GridExplorerSearchFocusTarget =
   | Readonly<{ kind: "input" }>
   | Readonly<{ kind: "result"; resultKey: GridExplorerSearchResult["key"] }>;
-export type GridExplorerSearchFeedback = "stale-selection" | null;
+export type GridExplorerSearchFeedback =
+  | "stale-selection"
+  | Readonly<{ kind: "undo-success"; source: string; title: string }>
+  | null;
+export type GridExplorerResultUndoSuccess = Readonly<{
+  removedIndex: number;
+  resultKey: GridExplorerSearchResult["key"];
+  source: string;
+  title: string;
+}>;
 export type GridExplorerSearchSelectionOutcome =
   | Readonly<{ kind: "selected"; result: GridExplorerSearchResult }>
   | Readonly<{ kind: "stale" }>;
@@ -77,6 +86,7 @@ export type UseGridExplorerSearchResult = Readonly<{
   setResultScrollTop: (scrollTop: number) => void;
   focusInput: () => void;
   focusResult: (resultKey: GridExplorerSearchResult["key"]) => void;
+  completeResultUndo: (success: GridExplorerResultUndoSuccess) => void;
   selectResult: (
     result: GridExplorerSearchResult,
   ) => Promise<GridExplorerSearchSelectionOutcome>;
@@ -177,8 +187,13 @@ export function useGridExplorerSearch(
   const [retryRevision, setRetryRevision] = useState(0);
   const requestIdRef = useRef(0);
   const selectionOperationIdRef = useRef(0);
+  const projectionResultsRef = useRef(projection.results);
   const mountedRef = useRef(false);
   const searchEnabled = session.mode !== "closed";
+
+  useEffect(() => {
+    projectionResultsRef.current = projection.results;
+  }, [projection.results]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -394,6 +409,31 @@ export function useGridExplorerSearch(
     [projection.results],
   );
 
+  const completeResultUndo = useCallback(
+    ({ removedIndex, resultKey, source, title }: GridExplorerResultUndoSuccess) => {
+      const currentResults = projectionResultsRef.current;
+      const currentIndex = currentResults.findIndex(({ key }) => key === resultKey);
+      const survivingResults = currentResults.filter(
+        ({ key }) => key !== resultKey,
+      );
+      projectionResultsRef.current = survivingResults;
+      setProjection((current) => ({
+        ...current,
+        results: current.results.filter(({ key }) => key !== resultKey),
+      }));
+      setFeedback({ kind: "undo-success", source, title });
+      const next = survivingResults[
+        currentIndex === -1 ? removedIndex : currentIndex
+      ];
+      setFocusTarget(
+        next === undefined
+          ? INPUT_FOCUS
+          : { kind: "result", resultKey: next.key },
+      );
+    },
+    [],
+  );
+
   const selectResult = useCallback(
     async (
       selected: GridExplorerSearchResult,
@@ -476,6 +516,7 @@ export function useGridExplorerSearch(
       setResultScrollTop,
       focusInput,
       focusResult,
+      completeResultUndo,
       selectResult,
       invalidatePendingSelection,
       clearReveal,
@@ -484,6 +525,7 @@ export function useGridExplorerSearch(
       closeSearch,
       focusInput,
       focusResult,
+      completeResultUndo,
       focusTarget,
       feedback,
       revealPresentation,

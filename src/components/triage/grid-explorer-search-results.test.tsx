@@ -43,6 +43,7 @@ const defaultProps = {
   onRetry: vi.fn(),
   onScrollTopChange: vi.fn(),
   onSelectResult: vi.fn(),
+  getResultUndo: () => null,
 };
 
 const globalsCss = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
@@ -122,6 +123,85 @@ describe("GridExplorerSearchResults", () => {
     expect(icons[0]).toHaveStyle({ color: "rgb(12, 34, 56)" });
     expect(icons[1]).toHaveClass("lucide-heart");
     expect(icons[1]).toHaveStyle({ color: "rgb(78, 90, 12)" });
+  });
+
+  it("composes a trailing independent Undo control without reveal or drag behavior", () => {
+    const onActivate = vi.fn();
+    const onSelectResult = vi.fn();
+    render(
+      <GridExplorerSearchResults
+        {...defaultProps}
+        query="alpha"
+        status="ready"
+        results={[result("node:alpha"), result("bit:alpha-note")]}
+        getResultUndo={(item) =>
+          item.key === "node:alpha"
+            ? {
+                actionLabel: "Undo",
+                copy: "Undo this placement.",
+                disabled: false,
+                onActivate,
+                state: "available",
+              }
+            : null
+        }
+        onSelectResult={onSelectResult}
+      />,
+    );
+
+    const resultRow = renderedResultRows()[0]!;
+    const undo = screen.getByRole("button", {
+      name: "Undo placement of Alpha",
+    });
+    expect(resultRow).not.toContainElement(undo);
+    expect(undo).toHaveAttribute("data-undo-action", "Undo");
+    expect(undo).not.toHaveAttribute("draggable");
+    expect(screen.getByText("Undo this placement.")).toBeVisible();
+
+    fireEvent.click(undo);
+    expect(onActivate).toHaveBeenCalledOnce();
+    expect(onSelectResult).not.toHaveBeenCalled();
+  });
+
+  it("renders exact Search Undo success feedback and focuses recovery actions in place", () => {
+    const item = result("node:alpha");
+    const view = render(
+      <GridExplorerSearchResults
+        {...defaultProps}
+        query="alpha"
+        status="ready"
+        results={[item]}
+        getResultUndo={() => ({
+          actionLabel: "Undo",
+          copy: "Undoing “Alpha”…",
+          disabled: true,
+          onActivate: vi.fn(),
+          state: "pending",
+        })}
+      />,
+    );
+
+    view.rerender(
+      <GridExplorerSearchResults
+        {...defaultProps}
+        feedback={{ kind: "undo-success", source: "Source 1", title: "Alpha" }}
+        query="alpha"
+        status="ready"
+        results={[item]}
+        getResultUndo={() => ({
+          actionLabel: "Check again",
+          copy: "We couldn’t confirm whether “Alpha” was undone.",
+          disabled: false,
+          onActivate: vi.fn(),
+          state: "unknown",
+        })}
+      />,
+    );
+
+    expect(screen.getByRole("status", { name: "Explorer search status" })).toHaveTextContent(
+      "Restored “Alpha” to Source 1.",
+    );
+    expect(screen.getByRole("button", { name: "Check again" })).toHaveFocus();
   });
 
   it("moves focus with arrows and activates the focused result with Enter", () => {

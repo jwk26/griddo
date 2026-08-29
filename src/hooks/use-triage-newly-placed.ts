@@ -475,6 +475,7 @@ export function useTriageNewlyPlacedUndo({
   return {
     truth,
     operations,
+    getProvenance: findEntry,
     getState,
     activate,
     reconcile,

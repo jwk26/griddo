@@ -529,6 +529,7 @@ export function HierarchyExplorer({
         editBlockerSnapshot === "conflicted"),
   });
   const undoFocusPlansRef = useRef(new Map<string, UndoFocusPlan>());
+  const searchUndoKeysRef = useRef(new Set<string>());
   const focusedUndoOperationsRef = useRef(new Set<string>());
   const invalidatePendingSearchSelection = search.invalidatePendingSelection;
   const reveal =
@@ -570,6 +571,10 @@ export function HierarchyExplorer({
         operation.command === null ||
         focusedUndoOperationsRef.current.has(operation.command.operationId)
       ) {
+        continue;
+      }
+      if (searchUndoKeysRef.current.has(key)) {
+        focusedUndoOperationsRef.current.add(operation.command.operationId);
         continue;
       }
       if (
@@ -652,6 +657,41 @@ export function HierarchyExplorer({
       if (!applied && !canStillSucceed) {
         undoFocusPlansRef.current.delete(key);
       }
+    });
+  }
+
+  function activateSearchResultUndo(
+    result: GridExplorerSearchResult,
+    action: NewlyUndoPresentation["action"],
+  ) {
+    const key = undoKey(result.type, result.id);
+    const removedIndex = search.results.findIndex(
+      ({ key: resultKey }) => resultKey === result.key,
+    );
+    const provenance = undo.getProvenance(result.type, result.id);
+    if (removedIndex < 0 || provenance === null) return;
+    searchUndoKeysRef.current.add(key);
+    const request =
+      action === "check-again"
+        ? undo.reconcile(result.type, result.id)
+        : action === "retry"
+          ? undo.retry(result.type, result.id)
+          : undo.activate(result.type, result.id);
+    void request.then((applied) => {
+      if (applied) {
+        search.completeResultUndo({
+          removedIndex,
+          resultKey: result.key,
+          source: provenance.source.snapshot.content,
+          title: result.title,
+        });
+        return;
+      }
+      const state = undo.getState(result.type, result.id);
+      const canStillSucceed =
+        state.phase === "unknown" ||
+        (state.phase === "terminal" && state.terminalStatus === "not_applied");
+      if (!canStillSucceed) searchUndoKeysRef.current.delete(key);
     });
   }
 
@@ -1437,6 +1477,23 @@ export function HierarchyExplorer({
           resultScrollTop={search.resultScrollTop}
           results={search.results}
           status={search.status}
+          getResultUndo={(result) => {
+            if (undo.getProvenance(result.type, result.id) === null) return null;
+            const presentation = getNewlyUndoPresentation(
+              undo.getState(result.type, result.id),
+              result.title,
+            );
+            return presentation.action === "none"
+              ? null
+              : {
+                  actionLabel: presentation.actionLabel,
+                  copy: presentation.copy,
+                  disabled: presentation.disabled,
+                  onActivate: () =>
+                    activateSearchResultUndo(result, presentation.action),
+                  state: presentation.state,
+                };
+          }}
           onClose={closeSearchAndFocusEntry}
           onFocusInput={search.focusInput}
           onFocusResult={search.focusResult}
