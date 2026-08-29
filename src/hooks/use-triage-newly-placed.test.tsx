@@ -355,7 +355,7 @@ describe("useTriageNewlyPlaced", () => {
     expect(undo.result.current.getState("node", node.id).phase).toBe("success");
   });
 
-  it("derives result/source/candidate/dependency blockers and re-enables after child-first truth", () => {
+  it("derives truth blockers and dispatches re-enabled Undo through the ordinary path", async () => {
     const node = createNode("node-truth", 10, 20);
     node.createdAt = 100;
     node.mtime = 100;
@@ -370,21 +370,30 @@ describe("useTriageNewlyPlaced", () => {
     });
     const entry = placed.result.current.entries[0]!;
     let publish!: (truth: ReadonlyMap<string, PlacementUndoResult>) => void;
+    const acquire = vi.fn(() => true);
+    const dispatchUndo = vi.fn(async (undoCommand) => ({
+      operationId: undoCommand.operationId,
+      status: "applied" as const,
+      result: null,
+      source: { ...source(1), consumedAt: null, version: 3 },
+      candidate: null,
+    }));
     const undo = renderHook(() => useTriageNewlyPlacedUndo({
       entries: [entry],
       operationLock: {
         activeOperation: null,
-        acquire: vi.fn(() => true),
+        acquire,
         isLocked: () => false,
         release: vi.fn(() => true),
       },
       placementOpen: false,
       hasDirtyEdit: () => false,
+      createId: () => "reenabled-undo",
       observeTruth: (_entries, next) => {
         publish = next;
         return () => undefined;
       },
-      dispatchUndo: vi.fn(),
+      dispatchUndo,
       reconcileUndo: vi.fn(),
     }));
     const exactSource = {
@@ -425,6 +434,83 @@ describe("useTriageNewlyPlaced", () => {
     expect(undo.result.current.getState("node", node.id)).toMatchObject({
       phase: "available",
       reason: "reenabled",
+    });
+    await act(async () => {
+      expect(await undo.result.current.activate("node", node.id)).toBe(true);
+    });
+    expect(acquire).toHaveBeenCalledOnce();
+    expect(acquire).toHaveBeenCalledWith("undo", "reenabled-undo");
+    expect(dispatchUndo).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    ["open placement", "placement-open"],
+    ["shared lock", "active-owner"],
+    ["dirty Edit", "dirty-edit"],
+  ] as const)("clears re-enabled lifetime across %s", async (kind, expectedReason) => {
+    const node = createNode(`node-reenabled-${kind}`, 10, 20);
+    node.createdAt = 100;
+    node.mtime = 100;
+    const placed = renderHook(() => useTriageNewlyPlaced());
+    act(() => {
+      placed.result.current.registerPlacement({
+        result: node,
+        command: command(node.id, "node", 1),
+        sourceSnapshot: source(1),
+        candidateSnapshot: null,
+      });
+    });
+    let blocked = false;
+    let publish!: (truth: ReadonlyMap<string, PlacementUndoResult>) => void;
+    const operationLock: TriageOperationLock = {
+      activeOperation: null,
+      acquire: vi.fn(() => true),
+      isLocked: () => kind === "shared lock" && blocked,
+      release: vi.fn(() => true),
+    };
+    const undo = renderHook(
+      ({ placementOpen }: { placementOpen: boolean }) =>
+        useTriageNewlyPlacedUndo({
+          entries: placed.result.current.entries,
+          operationLock,
+          placementOpen,
+          hasDirtyEdit: () => kind === "dirty Edit" && blocked,
+          observeTruth: (_entries, next) => {
+            publish = next;
+            return () => undefined;
+          },
+          dispatchUndo: vi.fn(),
+          reconcileUndo: vi.fn(),
+        }),
+      { initialProps: { placementOpen: false } },
+    );
+    const exactSource = { ...source(1), consumedAt: 100, version: 2 };
+    act(() => {
+      publish(new Map([[`node:${node.id}`, {
+        operationId: "truth-probe",
+        status: "conflict",
+        result: node,
+        source: exactSource,
+        candidate: null,
+      }]]));
+      publish(new Map([[`node:${node.id}`, {
+        operationId: "truth-probe",
+        status: "not_applied",
+        result: node,
+        source: exactSource,
+        candidate: null,
+      }]]));
+    });
+    expect(undo.result.current.getState("node", node.id).reason).toBe("reenabled");
+
+    blocked = true;
+    undo.rerender({ placementOpen: kind === "open placement" });
+    expect(undo.result.current.getState("node", node.id).reason).toBe(expectedReason);
+    blocked = false;
+    undo.rerender({ placementOpen: false });
+    expect(undo.result.current.getState("node", node.id)).toMatchObject({
+      phase: "available",
+      reason: "available",
     });
   });
 
@@ -507,6 +593,106 @@ describe("useTriageNewlyPlaced", () => {
     expect(acquire).toHaveBeenNthCalledWith(2, "undo", "undo-retry");
     expect(dispatchUndo).toHaveBeenCalledTimes(2);
     expect(dispatchUndo.mock.calls[1]![0]).toEqual(dispatchUndo.mock.calls[0]![0]);
+  });
+
+  it.each([
+    ["open placement", "placement-open"],
+    ["shared lock", "active-owner"],
+    ["dirty Edit", "dirty-edit"],
+  ] as const)("blocks authoritative Retry during %s without replay", async (kind, expectedReason) => {
+    const node = createNode(`node-retry-${kind}`, 10, 20);
+    node.createdAt = 100;
+    node.mtime = 100;
+    const placed = renderHook(() => useTriageNewlyPlaced());
+    act(() => {
+      placed.result.current.registerPlacement({
+        result: node,
+        command: command(node.id, "node", 1),
+        sourceSnapshot: source(1),
+        candidateSnapshot: null,
+      });
+    });
+    let activeOperationId: string | null = null;
+    let blocked = false;
+    const acquire = vi.fn((_kind: Parameters<TriageOperationLock["acquire"]>[0], operationId: string) => {
+      if (activeOperationId !== null || (kind === "shared lock" && blocked)) return false;
+      activeOperationId = operationId;
+      return true;
+    });
+    const release = vi.fn((operationId: string) => {
+      if (activeOperationId !== operationId) return false;
+      activeOperationId = null;
+      return true;
+    });
+    const notApplied: PlacementUndoResult = {
+      operationId: "blocked-retry",
+      status: "not_applied",
+      result: node,
+      source: { ...source(1), consumedAt: 100, version: 2 },
+      candidate: null,
+    };
+    const dispatchUndo = vi
+      .fn<(undoCommand: ReturnType<typeof createTriagePlacementUndoCommand>) => Promise<PlacementUndoResult>>()
+      .mockResolvedValueOnce(notApplied)
+      .mockResolvedValueOnce({
+        ...notApplied,
+        status: "applied",
+        result: null,
+        source: { ...source(1), consumedAt: null, version: 3 },
+      });
+    const operationLock: TriageOperationLock = {
+      activeOperation: null,
+      acquire,
+      isLocked: () => activeOperationId !== null || (kind === "shared lock" && blocked),
+      release,
+    };
+    const undo = renderHook(
+      ({ placementOpen }: { placementOpen: boolean }) =>
+        useTriageNewlyPlacedUndo({
+          entries: placed.result.current.entries,
+          operationLock,
+          placementOpen,
+          hasDirtyEdit: () => kind === "dirty Edit" && blocked,
+          createId: () => "blocked-retry",
+          observeTruth: (_entries, publish) => {
+            publish(new Map([[`node:${node.id}`, notApplied]]));
+            return () => undefined;
+          },
+          dispatchUndo,
+          reconcileUndo: vi.fn(),
+        }),
+      { initialProps: { placementOpen: false } },
+    );
+    await waitFor(() => expect(undo.result.current.getState("node", node.id).phase).toBe("available"));
+    await act(async () => {
+      expect(await undo.result.current.activate("node", node.id)).toBe(false);
+    });
+
+    blocked = true;
+    undo.rerender({ placementOpen: kind === "open placement" });
+    expect(undo.result.current.getState("node", node.id)).toMatchObject({
+      phase: "blocked",
+      reason: expectedReason,
+      terminalStatus: "not_applied",
+    });
+    await act(async () => {
+      expect(await undo.result.current.retry("node", node.id)).toBe(false);
+    });
+    expect(acquire).toHaveBeenCalledTimes(1);
+    expect(dispatchUndo).toHaveBeenCalledTimes(1);
+
+    blocked = false;
+    undo.rerender({ placementOpen: false });
+    expect(undo.result.current.getState("node", node.id)).toMatchObject({
+      phase: "terminal",
+      reason: "available",
+      terminalStatus: "not_applied",
+    });
+    await act(async () => {
+      expect(await undo.result.current.retry("node", node.id)).toBe(true);
+    });
+    expect(acquire).toHaveBeenCalledTimes(2);
+    expect(dispatchUndo).toHaveBeenCalledTimes(2);
   });
 
   it.each([

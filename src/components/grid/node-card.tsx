@@ -124,7 +124,7 @@ export function NodeCard({
               ? `Undo placement of ${node.title}`
               : undo.label
           }
-          className="newly-undo-action absolute bottom-0 left-0 z-20 rounded px-1 text-[10px] font-semibold"
+          className="newly-undo-action absolute bottom-0 right-0 z-20 rounded px-1 text-[10px] font-semibold"
           data-undo-reason={undo.reason}
           ref={undoActionRef}
           onClick={(event) => {

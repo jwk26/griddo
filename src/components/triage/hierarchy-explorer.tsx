@@ -130,7 +130,7 @@ function undoKey(type: "node" | "bit", id: string): string {
 }
 
 type NewlyUndoPresentation = Readonly<{
-  action: "undo" | "check-again" | "retry";
+  action: "none" | "undo" | "check-again" | "retry";
   actionLabel: string;
   copy: string;
   disabled: boolean;
@@ -146,6 +146,15 @@ function getNewlyUndoPresentation(
   title: string,
 ): NewlyUndoPresentation {
   const copy = INBOX_TRIAGE_COPY.newlyPlacedUndo;
+  if (state.phase === "checking") {
+    return {
+      action: "undo",
+      actionLabel: copy.actions.undo,
+      copy: copy.eligibility.operationLocked,
+      disabled: true,
+      state: "checking",
+    };
+  }
   if (state.phase === "pending") {
     return {
       action: "undo",
@@ -182,6 +191,18 @@ function getNewlyUndoPresentation(
       state: "not-applied",
     };
   }
+  if (state.phase === "success" && state.command !== null) {
+    return {
+      action: "none",
+      actionLabel: copy.actions.undo,
+      copy: copy.operation.success.replace(
+        "{source}",
+        state.command.sourceSnapshot.content,
+      ),
+      disabled: true,
+      state: "success",
+    };
+  }
 
   const eligibility = (() => {
     switch (state.reason) {
@@ -204,8 +225,11 @@ function getNewlyUndoPresentation(
     }
   })();
   return {
-    action: "undo",
-    actionLabel: copy.actions.undo,
+    action: state.terminalStatus === "not_applied" ? "retry" : "undo",
+    actionLabel:
+      state.terminalStatus === "not_applied"
+        ? copy.actions.retry
+        : copy.actions.undo,
     copy: eligibility.copy,
     disabled: state.phase !== "available",
     state: eligibility.state,
@@ -236,13 +260,14 @@ function NewlyUndoStatusRail({
   presentation: NewlyUndoPresentation;
   statusId: string;
 }) {
+  const ownsLiveStatus = presentation.state !== "success";
   return (
     <div
-      aria-atomic="true"
-      aria-live="polite"
+      aria-atomic={ownsLiveStatus ? "true" : undefined}
+      aria-live={ownsLiveStatus ? "polite" : undefined}
       className="newly-status-rail"
       data-undo-state={presentation.state}
-      role="status"
+      role={ownsLiveStatus ? "status" : undefined}
     >
       <span
         aria-hidden="true"
@@ -2331,7 +2356,7 @@ function NodeDropCell({
           tabIndex={onSelectNode === undefined ? -1 : 0}
           undoActionRef={undoActionRef}
           undo={
-            isNewlyPlaced
+            isNewlyPlaced && undoPresentation.action !== "none"
               ? {
                   describedBy: undoStatusId,
                   disabled: undoPresentation.disabled,
@@ -2400,7 +2425,7 @@ function BitContextRow({
         tabIndex={-1}
         undoActionRef={undoActionRef}
         undo={
-          isNewlyPlaced
+          isNewlyPlaced && undoPresentation.action !== "none"
             ? {
                 describedBy: undoStatusId,
                 disabled: undoPresentation.disabled,

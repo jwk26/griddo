@@ -130,6 +130,8 @@ describe("NodeCard", () => {
     });
     expect(unavailableUndo).toHaveAttribute("aria-disabled", "true");
     expect(unavailableUndo).not.toBeDisabled();
+    expect(unavailableUndo).toHaveClass("right-0");
+    expect(unavailableUndo).not.toHaveClass("left-0");
     fireEvent.click(unavailableUndo);
     expect(activateUndo).toHaveBeenCalledTimes(1);
   });

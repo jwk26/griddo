@@ -302,22 +302,31 @@ export function useTriageNewlyPlacedUndo({
     );
   }, []);
 
+  const getEligibilityBlocker = useCallback((): TriageNewlyPlacedUndoReason | null => {
+    if (operationLock.isLocked()) return "active-owner";
+    if (placementOpen) return "placement-open";
+    if (hasDirtyEdit()) return "dirty-edit";
+    return null;
+  }, [hasDirtyEdit, operationLock, placementOpen]);
+
   const getState = useCallback(
     (type: NewlyPlacedResultType, id: string): TriageNewlyPlacedUndoState => {
       const key = placementKey(type, id);
       const operation = operationsRef.current.get(key);
-      if (operation !== undefined) return operation;
+      const isRetryable =
+        operation?.phase === "terminal" &&
+        operation.terminalStatus === "not_applied";
+      if (operation !== undefined && !isRetryable) return operation;
       const provenance = findEntry(type, id);
       if (provenance === null) return CHECKING_UNDO_STATE;
-      if (operationLock.isLocked()) {
-        return { ...CHECKING_UNDO_STATE, phase: "blocked", reason: "active-owner" };
+      const blocker = getEligibilityBlocker();
+      if (blocker !== null) {
+        reenabledKeysRef.current.delete(key);
+        return operation === undefined
+          ? { ...CHECKING_UNDO_STATE, phase: "blocked", reason: blocker }
+          : { ...operation, phase: "blocked", reason: blocker };
       }
-      if (placementOpen) {
-        return { ...CHECKING_UNDO_STATE, phase: "blocked", reason: "placement-open" };
-      }
-      if (hasDirtyEdit()) {
-        return { ...CHECKING_UNDO_STATE, phase: "blocked", reason: "dirty-edit" };
-      }
+      if (operation !== undefined) return operation;
       const reason = classifyUndoTruth(provenance, truthRef.current.get(key));
       if (reason === "checking") return CHECKING_UNDO_STATE;
       return {
@@ -330,7 +339,7 @@ export function useTriageNewlyPlacedUndo({
         terminalStatus: null,
       };
     },
-    [findEntry, hasDirtyEdit, operationLock, placementOpen],
+    [findEntry, getEligibilityBlocker],
   );
 
   const applyTerminal = useCallback(
@@ -367,7 +376,12 @@ export function useTriageNewlyPlacedUndo({
     async (type: NewlyPlacedResultType, id: string): Promise<boolean> => {
       const key = placementKey(type, id);
       const provenance = findEntry(type, id);
-      if (provenance === null || getState(type, id).reason !== "available") {
+      const state = getState(type, id);
+      if (
+        provenance === null ||
+        state.phase !== "available" ||
+        (state.reason !== "available" && state.reason !== "reenabled")
+      ) {
         return false;
       }
       const command = createTriagePlacementUndoCommand(provenance, createId());
@@ -413,10 +427,13 @@ export function useTriageNewlyPlacedUndo({
     async (type: NewlyPlacedResultType, id: string): Promise<boolean> => {
       const key = placementKey(type, id);
       const current = operationsRef.current.get(key);
+      const projected = getState(type, id);
       if (
         current?.phase !== "terminal" ||
         current.terminalStatus !== "not_applied" ||
         current.command === null ||
+        projected.phase !== "terminal" ||
+        projected.terminalStatus !== "not_applied" ||
         !operationLock.acquire("undo", current.command.operationId)
       ) {
         return false;
@@ -435,7 +452,7 @@ export function useTriageNewlyPlacedUndo({
         return false;
       }
     },
-    [applyTerminal, commitOperation, dispatchUndo, operationLock],
+    [applyTerminal, commitOperation, dispatchUndo, getState, operationLock],
   );
 
   const acknowledgeReenabled = useCallback(

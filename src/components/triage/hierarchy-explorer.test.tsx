@@ -1637,6 +1637,80 @@ describe("HierarchyExplorer Task 156 ordinary-card Undo", () => {
 });
 
 describe("HierarchyExplorer Task 157 DP-VQ10 Newly and Undo rail", () => {
+  it("does not project conflict while initial authority is still checking", async () => {
+    const target = createNode({ id: "checking-target", title: "Checking target" });
+    const entry = newlyPlacedEntry(target, "node", 1);
+    setGrid(null, [target]);
+    undoRepository.reconcileDirectPlacementUndo.mockImplementation(
+      () => new Promise<never>(() => undefined),
+    );
+
+    render(
+      <TriageOperationLockContext.Provider
+        value={{
+          activeOperation: null,
+          acquire: vi.fn(() => true),
+          isLocked: () => false,
+          release: vi.fn(() => true),
+        }}
+      >
+        <HierarchyExplorer {...defaultProps} newlyPlacedEntries={[entry]} />
+      </TriageOperationLockContext.Provider>,
+    );
+
+    expect(await screen.findByText("Wait for the current action to finish.")).toBeInTheDocument();
+    expect(
+      screen.queryByText("This item or its source changed. Undo is unavailable."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("projects committed success with restoration copy and no stale action", async () => {
+    const target = createNode({ id: "success-target", title: "Success target" });
+    const entry = newlyPlacedEntry(target, "node", 1);
+    setGrid(null, [target]);
+    undoRepository.undoDirectPlacement.mockImplementation(async (undoCommand) => ({
+      operationId: undoCommand.operationId,
+      status: "applied" as const,
+      result: null,
+      source: { ...undoCommand.sourceSnapshot, consumedAt: null, version: 3 },
+      candidate: null,
+    }));
+
+    render(
+      <TriageOperationLockContext.Provider
+        value={{
+          activeOperation: null,
+          acquire: vi.fn(() => true),
+          isLocked: () => false,
+          release: vi.fn(() => true),
+        }}
+      >
+        <HierarchyExplorer {...defaultProps} newlyPlacedEntries={[entry]} />
+      </TriageOperationLockContext.Provider>,
+    );
+    const undoButton = await screen.findByRole("button", {
+      name: "Undo placement of Success target",
+    });
+    await waitFor(() => expect(undoButton).toHaveAttribute("aria-disabled", "false"));
+    fireEvent.click(undoButton);
+
+    const successRail = await screen.findByText("Restored “Source 1”.", {
+      selector: ".newly-status-reason",
+    });
+    expect(successRail.closest("[data-undo-state='success']")).not.toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Undo placement of Success target" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("This item or its source changed. Undo is unavailable."),
+    ).not.toBeInTheDocument();
+    expect(
+      screen
+        .getAllByRole("status")
+        .filter((status) => status.textContent?.includes("Restored “Source 1”.")),
+    ).toHaveLength(1);
+  });
+
   it("composes selected, Newly, available Undo, and the visible rail independently", async () => {
     const target = createNode({ id: "undo-target", title: "Undo target" });
     const entry = newlyPlacedEntry(target, "node", 1);
