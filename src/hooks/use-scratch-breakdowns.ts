@@ -65,15 +65,26 @@ export type ScratchTitleBlockerSnapshot =
 
 export type ScratchTitleBlockerHandle = Readonly<{
   getSnapshot: () => ScratchTitleBlockerSnapshot | null;
+  hasDirtyEditIntent: () => boolean;
   setSnapshot: (snapshot: ScratchTitleBlockerSnapshot | null) => void;
+  subscribe: (listener: () => void) => () => void;
 }>;
 
 export function createScratchTitleBlockerHandle(): ScratchTitleBlockerHandle {
   let current: ScratchTitleBlockerSnapshot | null = null;
+  const listeners = new Set<() => void>();
   return {
     getSnapshot: () => current,
+    hasDirtyEditIntent: () =>
+      current === "dirty" || current === "conflicted",
     setSnapshot: (snapshot) => {
+      if (snapshot === current) return;
       current = snapshot;
+      for (const listener of listeners) listener();
+    },
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
     },
   };
 }
@@ -152,6 +163,17 @@ function getScratchTitleBlocker(
   return "dirty";
 }
 
+function getScratchEditBlocker(
+  snapshot: ConditionalEditorSnapshot,
+): ScratchTitleBlockerSnapshot | null {
+  if (snapshot === null || snapshot.phase === "invalidated") return null;
+  if (snapshot.phase === "pristine") return "open";
+  if (snapshot.phase === "saving") return "saving";
+  if (snapshot.phase === "reconciling") return "reconciling";
+  if (snapshot.phase === "conflict") return "conflicted";
+  return "dirty";
+}
+
 export type ConditionalEditor = Readonly<{
   snapshot: ConditionalEditorSnapshot;
   titleBlocker: ScratchTitleBlockerSnapshot | null;
@@ -210,7 +232,7 @@ export function useScratchBreakdowns(
     (next: ConditionalEditorSnapshot) => {
       editorSnapshotRef.current = next;
       editorOptions.titleBlockerHandle?.setSnapshot(
-        getScratchTitleBlocker(next),
+        getScratchEditBlocker(next),
       );
       setEditorSnapshot(next);
       if (next !== null) setEditorFocusIntent(next.focusIntent);

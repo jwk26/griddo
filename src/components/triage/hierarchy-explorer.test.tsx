@@ -1403,7 +1403,7 @@ describe("HierarchyExplorer Task 156 ordinary-card Undo", () => {
       },
     };
     const titleBlocker = createScratchTitleBlockerHandle();
-    return render(
+    const view = render(
       <TriageOperationLockContext.Provider value={operationLock}>
         <ScratchTitleBlockerContext.Provider value={titleBlocker}>
           <HierarchyExplorer
@@ -1413,7 +1413,75 @@ describe("HierarchyExplorer Task 156 ordinary-card Undo", () => {
         </ScratchTitleBlockerContext.Provider>
       </TriageOperationLockContext.Provider>,
     );
+    return { ...view, titleBlocker };
   }
+
+  it("reactively blocks dirty Edit intent without dispatch or navigation and re-enables after resolution", async () => {
+    const target = createNode({ id: "undo-target", title: "Undo target" });
+    const entry = newlyPlacedEntry(target, "node", 1);
+    setGrid(null, [target]);
+    useTriageStore.setState({
+      explorerPathIds: [target.id],
+      explorerOpenColumnIds: ["home", target.id],
+    });
+
+    const { titleBlocker } = renderWithUndo([entry]);
+    const undoButton = await screen.findByRole("button", {
+      name: "Undo placement of Undo target",
+    });
+    await waitFor(() => expect(undoButton).toBeEnabled());
+
+    act(() => titleBlocker.setSnapshot("dirty"));
+    await waitFor(() => expect(undoButton).toBeDisabled());
+    fireEvent.click(undoButton);
+    expect(undoRepository.undoDirectPlacement).not.toHaveBeenCalled();
+    expect(useTriageStore.getState().explorerPathIds).toEqual([target.id]);
+
+    act(() => titleBlocker.setSnapshot("open"));
+    await waitFor(() => expect(undoButton).toBeEnabled());
+  });
+
+  it("blocks conflicted Edit intent while leaving pristine open Edit eligible", async () => {
+    const target = createNode({ id: "undo-target", title: "Undo target" });
+    const entry = newlyPlacedEntry(target, "node", 1);
+    setGrid(null, [target]);
+    useTriageStore.setState({
+      explorerPathIds: [target.id],
+      explorerOpenColumnIds: ["home", target.id],
+    });
+    const titleBlocker = createScratchTitleBlockerHandle();
+    titleBlocker.setSnapshot("conflicted");
+    let activeOperation: { kind: "undo"; operationId: string } | null = null;
+    const operationLock: TriageOperationLock = {
+      activeOperation: null,
+      acquire: (kind, operationId) => {
+        if (activeOperation !== null || kind !== "undo") return false;
+        activeOperation = { kind, operationId };
+        return true;
+      },
+      isLocked: () => activeOperation !== null,
+      release: () => false,
+    };
+    render(
+      <TriageOperationLockContext.Provider value={operationLock}>
+        <ScratchTitleBlockerContext.Provider value={titleBlocker}>
+          <HierarchyExplorer {...defaultProps} newlyPlacedEntries={[entry]} />
+        </ScratchTitleBlockerContext.Provider>
+      </TriageOperationLockContext.Provider>,
+    );
+    const undoButton = await screen.findByRole("button", {
+      name: "Undo placement of Undo target",
+    });
+    await waitFor(() => expect(undoButton).toBeDisabled());
+    fireEvent.click(undoButton);
+    expect(undoRepository.undoDirectPlacement).not.toHaveBeenCalled();
+    expect(activeOperation).toBeNull();
+    expect(useTriageStore.getState().explorerPathIds).toEqual([target.id]);
+
+    act(() => titleBlocker.setSnapshot("open"));
+    await waitFor(() => expect(undoButton).toBeEnabled());
+    expect(undoRepository.undoDirectPlacement).not.toHaveBeenCalled();
+  });
 
   it.each([
     ["next card", "next"],

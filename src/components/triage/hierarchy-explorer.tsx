@@ -10,6 +10,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
   type UIEvent,
 } from "react";
@@ -103,6 +104,8 @@ const EMPTY_SCROLL_POSITION: TriageSessionScrollPosition = {
   offset: 0,
 };
 const EMPTY_NEWLY_PLACED_ENTRIES: readonly TriageNewlyPlacedProvenance[] = [];
+const EMPTY_EDIT_BLOCKER_SUBSCRIBE = () => () => undefined;
+const EMPTY_EDIT_BLOCKER_SNAPSHOT = () => null;
 
 const UNAVAILABLE_UNDO_LOCK: TriageOperationLock = {
   activeOperation: null,
@@ -356,11 +359,19 @@ export function HierarchyExplorer({
   const operationLock =
     useContext(TriageOperationLockContext) ?? UNAVAILABLE_UNDO_LOCK;
   const titleBlockerHandle = useContext(ScratchTitleBlockerContext);
+  const editBlockerSnapshot = useSyncExternalStore(
+    titleBlockerHandle?.subscribe ?? EMPTY_EDIT_BLOCKER_SUBSCRIBE,
+    titleBlockerHandle?.getSnapshot ?? EMPTY_EDIT_BLOCKER_SNAPSHOT,
+    EMPTY_EDIT_BLOCKER_SNAPSHOT,
+  );
   const undo = useTriageNewlyPlacedUndo({
     entries: newlyPlacedEntries,
     operationLock,
     placementOpen: placementSnapshot !== null,
-    hasDirtyEdit: () => titleBlockerHandle?.getSnapshot() === "dirty",
+    hasDirtyEdit: () =>
+      titleBlockerHandle?.hasDirtyEditIntent() ??
+      (editBlockerSnapshot === "dirty" ||
+        editBlockerSnapshot === "conflicted"),
   });
   const undoFocusPlansRef = useRef(new Map<string, UndoFocusPlan>());
   const focusedUndoOperationsRef = useRef(new Set<string>());
