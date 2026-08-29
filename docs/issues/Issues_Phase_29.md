@@ -3,7 +3,7 @@
 > Branch: `phase-29/mounted-page-newly-placed-undo`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-29-mounted-page-newly-placed-undo`
 > Kickoff date: 2026-08-28
-> State: Tasks 155–156 Accepted; Tasks 157–158 remain `[ ]`
+> State: Tasks 155–156 Accepted; Task 157 In Progress; Task 158 remains `[ ]`
 
 ## Status Legend
 
@@ -118,3 +118,20 @@ workflow findings are owned without verdict by
 | Verification / evidence | Initial implementation `5b370843de9440455706fef177e0a80734c13e23`; repair `b81bd442d8df72824345827977e8a28ecad4cbf7`; latest focused 6 files / 168 tests; exact serial full gate 99 files / 1,171 tests, lint 0 errors with 11 unchanged warnings, typecheck and build passed; replacement fingerprint `f397bf954ca3fe3c8e424b31d60cab928964d628baac0711b1aea69ff7d29558`; exact results are owned by `docs/verification/inbox-triage/task-156.md` |
 | Audit invariant | The accepted repaired implementation/evidence and audit checkpoint remains immutable; this acceptance-only transaction does not edit Task 155/156 evidence or the Phase 29 audit |
 | Next action | Control Tower reviews this Task 156 acceptance-only checkpoint; Task 157 remains unstarted and may begin only with a fresh `run-task` prompt |
+
+## Task 157 Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Task | `157 — Render DP-VQ10 Newly and Undo states` |
+| State | `[ ]`, In Progress; implementation and acceptance have not occurred |
+| Approval | Exact candidate-pinned Task 157-only Control Tower work order on 2026-08-29, bounded by the committed `docs/issues/Issues_Phase_29.gate-c.json` Gate C receipt, the accepted `DP-VQ10=A` receipt, and the current Task 157 contract |
+| Approved base / entrypoint | Integration base `f3c2be6b2afa2da51cde39d22c13eabf2286f296`; exact clean Task 157 entrypoint and recovery anchor `d0bb079fe0ae1ab2cdcca50c200b19a56c37e0f5` |
+| Dependencies | Tasks 117, 128, 155, and 156 are `[x]`, Accepted and their acceptance commits are ancestors of the entrypoint |
+| Exact scope | Modify only the approved Newly hook/test, Explorer/test, NodeCard/test, BitCard/test, core Inbox/Triage copy/test, and `src/app/globals.css`; create Task 157 evidence; update this ledger and only the actual Task 157 workflow-audit row; no Task 158/Search, common-card redesign, repository command, persistence, schema, or unrelated evidence work |
+| Behavior | Realize the approved `DP-VQ10=A` actual-card static Newly marker, separate stable Undo action, and card-attached always-visible status rail over the accepted Tasks 155–156 model, including independent selection/marker/eligibility, exact reasons and operation states, focus, lifetime, accessibility, reduced-motion parity, and eight-theme presentation |
+| Issues / deviations | None at durable start; recipe `Proposed` header is the known resolved false blocker and remains unchanged |
+| Canonical impact | `None` — Task 157 realizes the existing accepted `DP-VQ10=A` product/design/copy contract without changing canonical authority |
+| Recovery anchor | This ledger-only durable-start commit must precede all Task 157 production/test writes; Task 157 relevant-input fingerprint and product evidence do not yet exist |
+| Audit invariant | The implementation checkpoint is incomplete until product evidence and the actual Task 157 measurement row are committed together; Tasks 155–156 rows and evidence remain unchanged |
+| Next action | Execute the pinned Task 157 bounded TDD, verification, review, fingerprint, and checkpoint procedure; Task 158 remains unstarted and held |
