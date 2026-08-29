@@ -1892,7 +1892,7 @@ Phase 29. The pilot does not automatically extend to a third phase.
 
 **Commit contract:** DP-VQ10 copy/realization, tests, styles, and Task 157 evidence only; `feat(triage): render newly placed undo states`.
 
-### Task 158: [ ] Integrate Undo into Explorer search results only
+### Task 158: [x] Integrate Undo into Explorer search results only
 
 **Files and actions:** modify `src/components/triage/grid-explorer-search-results.tsx` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/hooks/use-grid-explorer-search.ts` and `.test.tsx`, and `src/hooks/use-triage-newly-placed.ts` and `.test.tsx`. Reuse Tasks 156–157 Undo model/realization in the `DP-VQ07` body without making search rows DnD sources. Locally placed records enter matching results immediately. Undo from a result retains active query/scroll, removes only the undone result after terminal success, announces source restoration, and focuses the next surviving result at the removed row's position when one exists; otherwise it focuses the search input, with no previous-result fallback. Unknown/failure keeps the result. Do not change ordinary-column Undo dependencies or behavior.
 

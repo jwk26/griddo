@@ -3,7 +3,7 @@
 > Branch: `phase-29/mounted-page-newly-placed-undo`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-29-mounted-page-newly-placed-undo`
 > Kickoff date: 2026-08-28
-> State: Tasks 155–157 Accepted; Task 158 `[ ]`, Implemented awaiting review
+> State: Tasks 155–158 `[x]`, Accepted; all Phase 29 product tasks are accepted, but Phase 29 is not closed and terminal Track B work remains for a fresh candidate-pinned `end-phase` lifecycle
 
 ## Status Legend
 
@@ -24,14 +24,14 @@
 | Gate | `gate-c`, explicitly approved by the user on 2026-08-28 with statement `내 승인합니다` |
 | Phase scope | Phase 29, Tasks 155–158, equal-weight product and workflow-audit tracks |
 | First bounded batch | Task 155 only; sequential execution; Tasks 156–158 held for fresh dependency/readiness recheck |
-| Task state | Tasks 155–157 are `[x]`, Accepted; Task 158 remains `[ ]`, unstarted and held |
+| Task state | Tasks 155–158 are `[x]`, Accepted; all four Phase 29 product tasks are accepted, but Phase 29 is not closed |
 | Source mode | Merged canonical Phase 29 plan plus accepted Task 123/152 foundations, approved nine-recipe package and DP-VQ10 receipt, and unchanged-candidate Track B audit continuity |
 | Integration | `origin/main` at `f3c2be6b2afa2da51cde39d22c13eabf2286f296`, local divergence `0/0` after fetch |
 | Approved base | `f3c2be6b2afa2da51cde39d22c13eabf2286f296`; no base exception |
 | Feature branch | `phase-29/mounted-page-newly-placed-undo` |
 | Worktree choice | New linked feature worktree at `/Users/jwk/Documents/griddo2-codex-phase-29-mounted-page-newly-placed-undo`; no reuse |
 | Whole-file receipt | `docs/issues/Issues_Phase_29.gate-c.json` |
-| Next legal action | Control Tower reviews the Task 157 acceptance-only checkpoint; Task 158 may begin only with a fresh candidate-pinned `run-task` prompt |
+| Next legal action | Control Tower reviews the Task 158 acceptance-only checkpoint; only a fresh candidate-pinned `end-phase` prompt may then begin Track B terminal comparison, verdict, safeguards, owner-classification, limitations, and unapplied-improvement work; Phase 30–31 remain unstarted |
 
 ## Readiness And Clean-Start Evidence
 
@@ -142,7 +142,7 @@ workflow findings are owned without verdict by
 | Field | Durable value |
 | --- | --- |
 | Task | `158 — Integrate Undo into Explorer search results only` |
-| State | `[ ]`, Implemented awaiting review; implementation and acceptance remain separate |
+| State | `[x]`, Accepted at the acceptance-only checkpoint; all four Phase 29 product tasks are accepted, while Phase 29 remains open |
 | Approval | Exact fresh candidate-pinned Task 158-only Control Tower work order on 2026-08-29, bounded by the committed `docs/issues/Issues_Phase_29.gate-c.json` Gate C receipt, accepted `DP-VQ07=A` and `DP-VQ10=A` receipts, and the current Task 158 contract |
 | Approved base / entrypoint | Integration base `f3c2be6b2afa2da51cde39d22c13eabf2286f296`; exact clean Task 158 entrypoint and recovery anchor `57afa67e6cad93bbef74c8a23fad6f719e442d4c` |
 | Dependencies | Tasks 114, 151, 156, and 157 are `[x]`, Accepted; acceptance commits `be2a842fa87395031e8f15b81751b3ac67e3869b`, `0ab994e867754db96d64c34691942d27cf9c8efc`, `d0bb079fe0ae1ab2cdcca50c200b19a56c37e0f5`, and `57afa67e6cad93bbef74c8a23fad6f719e442d4c` are ancestors of the entrypoint |
@@ -150,7 +150,7 @@ workflow findings are owned without verdict by
 | Behavior | Compose the accepted Tasks 156–157 Undo model and DP-VQ10 realization into DP-VQ07 search results only: matching local placements enter current results; independent trailing Undo never reveals or drags; query and result scroll survive every Undo state; non-success retains the exact result; terminal success removes only that result, announces `Restored “{title}” to {source}.`, and focuses the next surviving result at the removed position or otherwise the search input, never a previous result |
 | Issues / deviations | Resolved with canonical impact `None`: cycle 1 focused typecheck repaired a test-only readonly fixture; High-risk async review then found stale activation-time results could choose the wrong focus after a pending-Undo refresh, and cycle 2 recomputed the exact latest removed-row position. Checkpoint review found the missing Search-owned `explorer-search-undo` class/role and a non-reproducible test-manifest ordering claim; cycle 3/3 reproduced and repaired both within the exact two product/test and three documentation owners. No remaining material finding, scope deviation, blocker, owner stop, path expansion, fourth-cycle gate, or `Unowned` item |
 | Canonical impact | `None` — Task 158 consumes the existing approved Search-only composition without changing canonical authority |
-| Audit invariant | Product/evidence checkpoint is incomplete until the exact Task 158 measurement row and any Task 158 repair rows are committed with actual measurements; Tasks 155–157 evidence and audit rows remain immutable; Task 157 Working session is closed/archive-only, this is the sole active Task 158 Working session, and duplicate-session count is `0` |
-| Implementation / evidence | Durable start `dd2be1f65bb3709677b6af3e4ffbe319468d5f1f`; original implementation `f041af0cf8eacfcf994b64481d489d393dd94b31`; cycle 3 repair `81c2f1e1f1229d79b0e32e08e300024853469324`, exact parent `66010d3481f5f4aa698a84b1de3c1b58c5e5dcd0`; latest focused 4 files / 145 tests in `3.37s`; exact serial full gate 99 files / 1,196 tests `21.50s`, lint 0 errors with 11 unchanged warnings `6.68s`, typecheck `1.24s`, build `9.91s`, total `39.33s`; exact detail is owned by `docs/verification/inbox-triage/task-158.md` |
-| Fingerprint | Replacement `4616261c3066cd220583e34b1628045ff622c2863fe4d6b8e3e3880b10de50bc` on repair implementation `81c2f1e1f1229d79b0e32e08e300024853469324`; components: `src` tree `36a32647ec8fd7587e0942960f948881d819f624`, lexicographically path-ordered 99-test manifest `5f7629e1261deb4ef795ce2ae6cee568a0809b0f0d6631c8d5f6e6167bd64d2f`, exact 8-path manifest `2259f694e1f5ea74b95033cbf42a0a8157c3d49cf9235fee8d1bc6825629a24e`, config/command manifest `111450e6805057e33bc917444dcb1e86baf893a55e711e03634c9bc0f4d0a3fd`; superseded `0c6d86a7…` used tree traversal rather than the stated global path order (`ac757dff…` is reproducible on the old commit), while the repair also changed implementation inputs, so neither it nor `15f4a0ee…` was reused |
-| Next action | Control Tower reviews this paired Task 158 product/evidence/audit checkpoint; do not accept Task 158 or start Phase 30–31 |
+| Audit invariant | The accepted product/evidence/audit checkpoint includes the exact Task 158 measurement and cycle 3/3 repair rows; Task 158 evidence and the Phase 29 audit remain unchanged by acceptance. Track B terminal comparison, `WF28-01`–`WF28-11` verdicts, seven questions, safeguards, owner classification, limitations, and the unapplied improvement plan remain open for a fresh candidate-pinned `end-phase` lifecycle |
+| Implementation / evidence | Durable start `dd2be1f65bb3709677b6af3e4ffbe319468d5f1f`; original implementation `f041af0cf8eacfcf994b64481d489d393dd94b31`; accepted cycle 3 repair implementation `81c2f1e1f1229d79b0e32e08e300024853469324`; accepted evidence/audit checkpoint `0ccbae0f7998066f573819cd036e745ff4dac92a`; no remaining material finding, scope deviation, blocker, or `Unowned` item |
+| Fingerprint | Accepted replacement `4616261c3066cd220583e34b1628045ff622c2863fe4d6b8e3e3880b10de50bc` on repair implementation `81c2f1e1f1229d79b0e32e08e300024853469324`; components remain `src` tree `36a32647ec8fd7587e0942960f948881d819f624`, lexicographically path-ordered 99-test manifest `5f7629e1261deb4ef795ce2ae6cee568a0809b0f0d6631c8d5f6e6167bd64d2f`, exact 8-path manifest `2259f694e1f5ea74b95033cbf42a0a8157c3d49cf9235fee8d1bc6825629a24e`, and config/command manifest `111450e6805057e33bc917444dcb1e86baf893a55e711e03634c9bc0f4d0a3fd` |
+| Next action | Control Tower reviews this acceptance-only checkpoint; only a fresh candidate-pinned `end-phase` prompt may follow. Phase 29 is not closed, and Phase 30–31 remain unstarted |
