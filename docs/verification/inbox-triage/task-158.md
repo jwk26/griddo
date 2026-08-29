@@ -1,8 +1,8 @@
 # Task 158 — Integrate Undo Into Explorer Search Results Only
 
-> State: Implemented; awaiting user checkpoint review
+> State: Repaired through cycle 3/3; awaiting user checkpoint review
 > Task marker: `[ ]`
-> Implementation: `f041af0cf8eacfcf994b64481d489d393dd94b31`
+> Implementation: `81c2f1e1f1229d79b0e32e08e300024853469324`
 
 ## Scope And Result
 
@@ -13,6 +13,8 @@
 - Each eligible result has a trailing `Undo` action that is a sibling of the
   result activation button. It does not nest interactive controls, trigger
   reveal, bubble into selection, add `draggable`, or create a DnD source.
+  The action binds both the Search-owned `explorer-search-undo` class/role and
+  the accepted `newly-undo-action` realization class.
 - Matching records observed during an active query enter its current results
   without reopening Search. Query and recorded result scroll remain unchanged
   through Undo states.
@@ -34,7 +36,8 @@
 | --- | --- |
 | Entrypoint | `57afa67e6cad93bbef74c8a23fad6f719e442d4c`; accepted Task 157 |
 | Durable start | `dd2be1f65bb3709677b6af3e4ffbe319468d5f1f`; ledger-only parent of every Task 158 product/test write |
-| Implementation | `f041af0cf8eacfcf994b64481d489d393dd94b31`; exact eight approved product/test paths |
+| Original implementation | `f041af0cf8eacfcf994b64481d489d393dd94b31`; exact eight approved product/test paths |
+| Cycle 3 repair implementation | `81c2f1e1f1229d79b0e32e08e300024853469324`; parent `66010d3481f5f4aa698a84b1de3c1b58c5e5dcd0`; exact Search-result component/test paths only |
 | Dependencies | Accepted Tasks 114, 151, 156, and 157 were revalidated as ancestors before the first write |
 | Canonical impact | `None` — exact DP-VQ07/DP-VQ10 Search-only composition; no canonical document changed |
 | Owner gate / unowned | No owner-discovery stop, scope stop, path expansion, or extra-cycle gate; `Unowned: None` |
@@ -62,31 +65,42 @@
    removed row's actual current index, while retaining the captured index only
    if repository observation already removed that row. The targeted RED then
    passed.
-5. Latest focused and every catalog full command reran on the repaired input.
-   Final High-risk review found no remaining concrete issue, extra path,
-   authority need, or `Unowned` item. Two repair cycles were used; no extra
-   cycle gate was needed.
+5. The cycle 2 focused and full evidence was later invalidated by checkpoint
+   review: the trailing action omitted the canonical Search-owned role, and
+   the recorded 99-test manifest did not apply the stated global
+   lexicographic path ordering.
+6. Cycle 3 RED added the exact role assertions to the result owner. It failed
+   1 of 9 tests in `1.46s`, receiving only
+   `newly-undo-action shrink-0`. The minimal repair added
+   `explorer-search-undo` as both class and `data-triage-role`, preserving the
+   existing realization class; the same owner passed 9/9 in `1.01s`.
+7. Latest focused and every catalog full command reran on repair commit input.
+   Final High-risk diff review found no remaining concrete issue, extra path,
+   authority need, or `Unowned` item. All three approved cycles were used; no
+   fourth-cycle gate was requested or used.
 
 ## Latest Verification
 
 | Command | Exit | Elapsed | Relevant result |
 | --- | ---: | ---: | --- |
-| `pnpm exec vitest run src/components/triage/grid-explorer-search-results.test.tsx src/components/triage/hierarchy-explorer.test.tsx src/hooks/use-grid-explorer-search.test.tsx src/hooks/use-triage-newly-placed.test.tsx` | 0 | `3.24s` | 4 selected files / 145 tests passed |
+| `pnpm exec vitest run src/components/triage/grid-explorer-search-results.test.tsx src/components/triage/hierarchy-explorer.test.tsx src/hooks/use-grid-explorer-search.test.tsx src/hooks/use-triage-newly-placed.test.tsx` | 0 | `3.37s` | 4 selected files / 145 tests passed |
 | `git diff --check` | 0 | `0.01s` | Adapter focused diff check passed |
-| `pnpm typecheck` (focused) | 0 | `1.39s` | Adapter focused typecheck passed before the latest full gate |
-| `pnpm test` | 0 | `20.98s` | 99 files / 1,196 tests passed; existing Node deprecation and worker `localStorage` warnings only |
-| `pnpm lint` | 0 | `6.62s` | 0 errors; 11 unchanged warnings outside Task 158 paths |
-| `pnpm typecheck` | 0 | `1.21s` | `tsc --noEmit` passed |
-| `pnpm build` | 0 | `9.78s` | Next.js 16.2.1 build passed; compile `4.2s`, TypeScript `3.7s`, seven pages generated |
+| `pnpm typecheck` (focused) | 0 | `1.53s` | Adapter focused typecheck passed before the latest full gate |
+| `pnpm test` | 0 | `21.50s` | 99 files / 1,196 tests passed; existing Node deprecation and worker `localStorage` warnings only |
+| `pnpm lint` | 0 | `6.68s` | 0 errors; 11 unchanged warnings outside Task 158 paths |
+| `pnpm typecheck` | 0 | `1.24s` | `tsc --noEmit` passed |
+| `pnpm build` | 0 | `9.91s` | Next.js 16.2.1 build passed; compile `4.4s`, TypeScript `3.7s`, seven pages generated |
 
-The latest exact four-command serial full-gate total was `38.59s`. No Gate C,
-Task 155–157, or earlier Task 158 gate was reused. Cycle 1's `38.75s` full gate
-was invalidated by the async review repair; every focused and full command was
-rerun on the implementation commit input.
+The latest exact four-command serial full-gate total was `39.33s`. No Gate C,
+Task 155–157, or earlier Task 158 gate was reused. Cycle 2's `38.59s` gate and
+fingerprint were invalidated by the role repair and the manifest-ordering
+finding; every focused and full command was rerun on the cycle 3 implementation
+commit input.
 
 No browser run was used. Result-component owner tests establish sibling
 interactive controls, non-drag semantics, event isolation, recovery-action
-focus, exact visible status, and scripted result-viewport ownership. Search
+focus, the exact Search-owned plus realization role binding, exact visible
+status, and scripted result-viewport ownership. Search
 hook tests establish active query and recorded scroll retention, reactive
 matching additions, exact-result removal, latest-index next-result/input focus,
 and no previous fallback. Mounted Explorer/Newly owner tests establish the
@@ -102,15 +116,15 @@ Domain: `griddo-task-relevant-input-v1`. Each manifest is the SHA-256 of
 newline-terminated, lexicographically path-ordered `Git-blob<TAB>path` lines at
 the implementation commit. The following newline-terminated canonical payload
 hashes to SHA-256
-`15f4a0ee45363c41f510a1057c24b49d6f7c068fb61b3050136b594ac4cfc425`:
+`4616261c3066cd220583e34b1628045ff622c2863fe4d6b8e3e3880b10de50bc`:
 
 ```text
 domain=griddo-task-relevant-input-v1
 task=158
-implementation=f041af0cf8eacfcf994b64481d489d393dd94b31
-src_tree=8b02c1853c2e09ba9421c63a4f4bbec8c82d10d8
-test_manifest_sha256=0c6d86a74b1dcb181798301efd9aa6e4c60ca5dc5dc0f49d7fb5a39258108f48
-task_path_manifest_sha256=c918670422f5c4769418ce43c057627a160b438c816d0dc5a83f0a275787a619
+implementation=81c2f1e1f1229d79b0e32e08e300024853469324
+src_tree=36a32647ec8fd7587e0942960f948881d819f624
+test_manifest_sha256=5f7629e1261deb4ef795ce2ae6cee568a0809b0f0d6631c8d5f6e6167bd64d2f
+task_path_manifest_sha256=2259f694e1f5ea74b95033cbf42a0a8157c3d49cf9235fee8d1bc6825629a24e
 config_command_manifest_sha256=111450e6805057e33bc917444dcb1e86baf893a55e711e03634c9bc0f4d0a3fd
 adapter_blob=7903892c04c4eb6fcd694712d5a01fdb608e183f
 command_catalog_blob=2063146db0b8920dc8ee5805001e1541da49c2a0
@@ -124,8 +138,15 @@ task-path manifest covers the exact eight approved product/test paths. The
 config/command manifest covers `package.json`, `pnpm-lock.yaml`,
 `tsconfig.json`, `eslint.config.mjs`, `next.config.ts`, `vitest.config.ts`,
 `postcss.config.mjs`, `docs/CODEX_WORKFLOW_COMMANDS.json`, and the Adapter.
-Runtime token/accounting and prompt byte size were not measured. One exact
-Task 158 work-order prompt was mechanically identifiable.
+Runtime token/accounting and prompt byte size were not measured. Two exact
+Task 158 prompts were mechanically identifiable: the initial work order and
+the delta-only cycle 3 continuation.
+
+The superseded `0c6d86a7…` test manifest hashed Git tree traversal order rather
+than the claimed global path order; applying the stated algorithm to the old
+implementation reproducibly yields `ac757dff…`. The cycle 3 product/test
+change independently invalidated every implementation-dependent component.
+Accordingly neither the old manifest nor fingerprint `15f4a0ee…` was reused.
 
 ## Checkpoint Buckets
 
