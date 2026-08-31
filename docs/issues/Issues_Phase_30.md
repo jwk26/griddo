@@ -3,7 +3,7 @@
 > Branch: `phase-30/completion-archive-recovery`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-30-completion-archive-recovery`
 > Kickoff date: 2026-08-31
-> State: Tasks 159–162 remain `[ ]`; green `run-phase` kickoff complete; Task 159 not started
+> State: Tasks 159–162 remain `[ ]`; Task 159 `In Progress`
 
 ## Status Legend
 
@@ -95,4 +95,16 @@ during kickoff.
 
 ## Active Issues
 
-None. No Phase 30 item is `Open`, `In Progress`, or `Awaiting User Decision`.
+### Task 159 — In Progress
+
+| Field | Durable value |
+| --- | --- |
+| Approved scope | Task 159 only — durable completion, Cancel, and explicit Reopen in the six named hook/component source and test files, task-local evidence, and this minimum matching ledger state |
+| Kickoff receipt | `docs/issues/Issues_Phase_30.gate-c.json` at kickoff commit `fbb3bc36e1593513d5bb811de0c7c70c723137a2` |
+| Approved base | `a4e00c4ef8d684bdfd52bd59523d1de6e4c11541` |
+| Entrypoint / recovery anchor | `fbb3bc36e1593513d5bb811de0c7c70c723137a2`; resume from this committed start signal before any Task 159 product or test write |
+| State | `In Progress`; Task 159 remains `[ ]` pending explicit user acceptance |
+| Issues / deviations | None. The handoff's truncated Task 136 summary SHA is recovered from the authoritative Gate C receipt as acceptance commit `02675c3c2c44939bb71506eb64dd1904d8e0bfa7`, which is an ancestor of the approved base. |
+| Canonical impact | `None` — Task 159 is implementation-local and does not alter canonical product, design, schema, or workflow authority |
+
+No other Phase 30 item is `Open`, `In Progress`, or `Awaiting User Decision`.
