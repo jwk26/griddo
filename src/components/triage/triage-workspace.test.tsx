@@ -2322,4 +2322,67 @@ describe("TriageWorkspace", () => {
     expect(warning).toHaveClass("text-muted-foreground");
     expect(screen.getByRole("button", { name: "Confirm" })).toBeDisabled();
   });
+
+  it("owns Newly Placed for the mounted page across Scratch, path, and theme and clears it on remount", async () => {
+    const target = {
+      ...createNode({ id: "parent-1", title: "Parent", systemRole: null }),
+      systemRole: null,
+    };
+    let placedNodes: Node[] = [];
+    useGridDataMock.mockImplementation((parentId) => ({
+      nodes: parentId === null ? [target] : parentId === target.id ? placedNodes : [],
+      bits: [],
+      isLoading: false,
+    }));
+    useTriageDndMock.mockReturnValue(
+      createDndState({ pendingPlacement: createDirectPendingPlacement() }),
+    );
+    placeDirectBreakdownMock.mockImplementation(async (command) => {
+      const placed = createNode({
+        id: command.resultId,
+        title: command.title,
+        parentId: command.targetParentId,
+        level: 1,
+        systemRole: null,
+        x: command.x,
+        y: command.y,
+        version: 1,
+      });
+      placedNodes = [placed];
+      return {
+        operationId: command.operationId,
+        status: "applied",
+        result: placed,
+        source: null,
+        candidate: null,
+      };
+    });
+
+    const mounted = render(<TriageWorkspace node={createNode()} />);
+    fireEvent.click(await screen.findByRole("button", { name: "Node" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+
+    expect(await screen.findByText("NEW")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Select Node: Project" })).toHaveAttribute(
+      "data-newly-placed",
+      "true",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Second Scratch" }));
+    expect(screen.getByText("NEW")).toBeInTheDocument();
+    document.documentElement.dataset.colorTheme = "graphite";
+    mounted.rerender(<TriageWorkspace node={createNode()} />);
+    expect(screen.getByText("NEW")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Home" }));
+    expect(screen.queryByText("NEW")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Select Node: Parent" }));
+    expect(await screen.findByText("NEW")).toBeInTheDocument();
+
+    mounted.unmount();
+    render(<TriageWorkspace node={createNode()} />);
+    expect(screen.getByRole("button", { name: "Select Node: Project" })).toBeInTheDocument();
+    expect(screen.queryByText("NEW")).not.toBeInTheDocument();
+    delete document.documentElement.dataset.colorTheme;
+  });
 });

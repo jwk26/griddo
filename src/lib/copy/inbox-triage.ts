@@ -173,6 +173,32 @@ export interface InboxTriageCopy {
       };
     };
   };
+  readonly newlyPlacedUndo: {
+    readonly marker: string;
+    readonly eligibility: {
+      readonly checking: string;
+      readonly available: string;
+      readonly reenabled: string;
+      readonly resultMutated: string;
+      readonly descendants: string;
+      readonly placementOpen: string;
+      readonly operationLocked: string;
+      readonly editBlocked: string;
+      readonly conflict: string;
+    };
+    readonly operation: {
+      readonly pending: string;
+      readonly unknown: string;
+      readonly reconciling: string;
+      readonly notApplied: string;
+      readonly success: string;
+    };
+    readonly actions: {
+      readonly undo: string;
+      readonly checkAgain: string;
+      readonly retry: string;
+    };
+  };
   readonly breakdownSuccess: {
     readonly add: string;
     readonly unstage: string;
@@ -463,6 +489,33 @@ export const INBOX_TRIAGE_COPY = {
       actions: { node: "Node", bit: "Bit", cancel: "Cancel" },
     },
   },
+  newlyPlacedUndo: {
+    marker: "NEW",
+    eligibility: {
+      checking: "Checking whether Undo is available…",
+      available: "Undo this placement.",
+      reenabled: "Undo is available again.",
+      resultMutated:
+        "This item changed after placement. Undo is unavailable.",
+      descendants: "Undo newly placed items below this one first.",
+      placementOpen: "Finish or cancel the placement in progress first.",
+      operationLocked: "Wait for the current action to finish.",
+      editBlocked: "Save or cancel the current edit before undoing.",
+      conflict: "This item or its source changed. Undo is unavailable.",
+    },
+    operation: {
+      pending: "Undoing “{title}”…",
+      unknown: "We couldn’t confirm whether “{title}” was undone.",
+      reconciling: "Checking whether “{title}” was undone…",
+      notApplied: "“{title}” wasn’t undone. Nothing changed.",
+      success: "Restored “{source}”.",
+    },
+    actions: {
+      undo: "Undo",
+      checkAgain: "Check again",
+      retry: "Retry",
+    },
+  },
   breakdownSuccess: {
     add: "Added.",
     unstage: "Returned to Breakdown.",
@@ -570,7 +623,8 @@ export const INBOX_TRIAGE_COPY = {
     explorerPathFallback:
       "This path is no longer available. Returned to {destination}.",
     placementStale: "Placement closed because this Explorer path changed.",
-    undoUnavailable: UNAVAILABLE,
+    undoUnavailable:
+      "This item or its source changed. Undo is unavailable.",
     completionWithdrawal: UNAVAILABLE,
     archiveRecovery: UNAVAILABLE,
   },
@@ -586,7 +640,7 @@ export const INBOX_TRIAGE_COPY = {
     explorerSearch: "Search the entire Grid Explorer.",
     placement: UNAVAILABLE,
     resultTitle: UNAVAILABLE,
-    newlyPlacedUndo: UNAVAILABLE,
+    newlyPlacedUndo: "Newly placed item Undo status.",
     completion: UNAVAILABLE,
     archive: UNAVAILABLE,
   },
@@ -602,7 +656,6 @@ export const INBOX_TRIAGE_COPY = {
   },
   receiptDependent: {
     148: UNAVAILABLE,
-    157: UNAVAILABLE,
     160: UNAVAILABLE,
     162: UNAVAILABLE,
   },

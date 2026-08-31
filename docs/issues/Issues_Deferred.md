@@ -39,6 +39,7 @@ It is **not** the source of truth for issue details. The source remains each `do
 | `Issues_Phase_21.md` | ISSUE-21-03 | UX/Low | Weekly header now shows `"June 2026"` instead of date range; cross-month weeks lose date-range information. Recipe canonical, intentional tradeoff. | Post-Phase 21 UX review — assess whether date-range label is needed alongside month name. |
 | `Issues_Phase_27.md` | P27-06 | Inbox/Triage hydration | Persisted-dark reload can expose the pre-existing `ThemeToggle` Moon/Sun server/client mismatch. | Address only in a separately approved future lifecycle; comparative baseline evidence is retained with Task 144. |
 | `Issues_Phase_27.md` | P27-08 | Staging remote authority | Confirmed-orphan production/browser reachability has no authoritative proof producer or production caller. | Define remote-authority proof and reachability in a future lifecycle without inferring it from candidate disappearance. |
+| `Issues_Phase_29.md` | P29-01 | Inbox/Triage visual fidelity | Advisory: the Phase 29 ordinary Explorer-card regression/gap and broader eight-theme prototype-fidelity debt are explicitly deferred, not accepted as visually complete. | Phase 31, after Task 163 and before Task 164, performs a read-only eight-prototype/canonical-recipe gap audit naming exact owners, paths, affected tasks, and follow-up scope. This index grants no implementation or repair authority; any reopening, owner expansion, product/design decision, or new task remains a user gate. |
 
 ## Resolved Historical Deferrals
 

@@ -234,6 +234,134 @@ describe("useGridExplorerSearch", () => {
     expect(result.current.resultScrollTop).toBe(70);
   });
 
+  it("projects matching mounted-page additions into the current query without reopening Search", async () => {
+    nodes = [];
+    const { result } = renderHook(() => useGridExplorerSearch());
+    act(() => {
+      result.current.openSearch();
+      result.current.setQuery("alpha");
+    });
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+    act(() => result.current.setResultScrollTop(31));
+
+    nodes = [node("alpha", "Alpha")];
+    await emit();
+
+    await waitFor(() => expect(result.current.results.map(({ key }) => key)).toEqual(["node:alpha"]));
+    expect(result.current.mode).toBe("active");
+    expect(result.current.activeQuery).toBe("alpha");
+    expect(result.current.resultScrollTop).toBe(31);
+  });
+
+  it("removes only a terminally undone result and focuses the same surviving row index", async () => {
+    nodes = [node("alpha", "Alpha"), node("alpine", "Alpine"), node("alto", "Alto")];
+    const { result } = renderHook(() => useGridExplorerSearch());
+    act(() => {
+      result.current.openSearch();
+      result.current.setQuery("al");
+    });
+    await waitFor(() => expect(result.current.results).toHaveLength(3));
+    act(() => {
+      result.current.setResultScrollTop(73);
+      result.current.focusResult("node:alpine");
+      result.current.completeResultUndo({
+        removedIndex: 1,
+        resultKey: "node:alpine",
+        source: "Breakdown source",
+        title: "Alpine",
+      });
+    });
+
+    expect(result.current.results.map(({ key }) => key)).toEqual([
+      "node:alpha",
+      "node:alto",
+    ]);
+    expect(result.current).toMatchObject({
+      activeQuery: "al",
+      feedback: {
+        kind: "undo-success",
+        source: "Breakdown source",
+        title: "Alpine",
+      },
+      focusTarget: { kind: "result", resultKey: "node:alto" },
+      mode: "active",
+      resultScrollTop: 73,
+    });
+  });
+
+  it("focuses the search input after last-row Undo without a previous-result fallback", async () => {
+    nodes = [
+      node("alpha", "Alpha", { x: 0 }),
+      node("alpine", "Alpine", { x: 1 }),
+    ];
+    const { result } = renderHook(() => useGridExplorerSearch());
+    act(() => {
+      result.current.openSearch();
+      result.current.setQuery("al");
+    });
+    await waitFor(() => expect(result.current.results).toHaveLength(2));
+    act(() => {
+      result.current.focusResult("node:alpine");
+      result.current.completeResultUndo({
+        removedIndex: 1,
+        resultKey: "node:alpine",
+        source: "Breakdown source",
+        title: "Alpine",
+      });
+    });
+
+    expect(result.current.results.map(({ key }) => key)).toEqual(["node:alpha"]);
+    expect(result.current.focusTarget).toEqual({ kind: "input" });
+  });
+
+  it("uses the latest surviving result order when Search refreshes during pending Undo", async () => {
+    nodes = [
+      node("alpha", "Alpha", { x: 0 }),
+      node("alpine", "Alpine", { x: 2 }),
+      node("alto", "Alto", { x: 3 }),
+    ];
+    const { result } = renderHook(() => useGridExplorerSearch());
+    act(() => {
+      result.current.openSearch();
+      result.current.setQuery("al");
+    });
+    await waitFor(() => expect(result.current.results).toHaveLength(3));
+    const completePendingUndo = result.current.completeResultUndo;
+
+    nodes = [
+      node("alpha", "Alpha", { x: 0 }),
+      node("albatross", "Albatross", { x: 1 }),
+      node("alpine", "Alpine", { x: 2 }),
+      node("alto", "Alto", { x: 3 }),
+    ];
+    await emit();
+    await waitFor(() =>
+      expect(result.current.results.map(({ key }) => key)).toEqual([
+        "node:alpha",
+        "node:albatross",
+        "node:alpine",
+        "node:alto",
+      ]),
+    );
+
+    act(() => completePendingUndo({
+      removedIndex: 1,
+      resultKey: "node:alpine",
+      source: "Breakdown source",
+      title: "Alpine",
+    }));
+
+    expect(result.current.results.map(({ key }) => key)).toEqual([
+      "node:alpha",
+      "node:albatross",
+      "node:alto",
+    ]);
+    expect(result.current.focusTarget).toEqual({
+      kind: "result",
+      resultKey: "node:alto",
+    });
+  });
+
   it("reports request failure and retries the current query", async () => {
     const runner = vi.fn<GridExplorerSearchRunner>()
       .mockRejectedValueOnce(new Error("offline"))

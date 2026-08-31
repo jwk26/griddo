@@ -1,18 +1,22 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import { Folder, ListTodo, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import {
+  useContext,
   useEffect,
   useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
   type UIEvent,
 } from "react";
 import { GridExplorerSearchResults } from "@/components/triage/grid-explorer-search-results";
+import { BitCard } from "@/components/grid/bit-card";
+import { NodeCard } from "@/components/grid/node-card";
 import { Button } from "@/components/ui/button";
 import { useGridData } from "@/hooks/use-grid-data";
 import {
@@ -25,6 +29,18 @@ import type {
   TriageTargetFeedback,
 } from "@/hooks/use-dnd";
 import type { TriagePlacementSnapshot } from "@/hooks/use-triage-placement";
+import {
+  isTriageNewlyPlaced,
+  projectTriageNewlyPlaced,
+  useTriageNewlyPlacedUndo,
+  type TriageNewlyPlacedProvenance,
+  type TriageNewlyPlacedUndoState,
+} from "@/hooks/use-triage-newly-placed";
+import {
+  TriageOperationLockContext,
+  type TriageOperationLock,
+} from "@/hooks/use-triage-operation-lock";
+import { ScratchTitleBlockerContext } from "@/hooks/use-scratch-breakdowns";
 import {
   getTriageHierarchyDropId,
   type TriageDropData,
@@ -54,6 +70,7 @@ interface HierarchyExplorerProps {
   overTargetId: string | null;
   pendingPlacementDropId: string | null;
   localPlacementResult: LocalPlacementResult | null;
+  newlyPlacedEntries?: readonly TriageNewlyPlacedProvenance[];
   placementSnapshot?: TriagePlacementSnapshot | null;
   onPlacementCancel?: () => void;
   onPlacementConfirm?: () => void;
@@ -87,6 +104,196 @@ const EMPTY_SCROLL_POSITION: TriageSessionScrollPosition = {
   anchorId: null,
   offset: 0,
 };
+const EMPTY_NEWLY_PLACED_ENTRIES: readonly TriageNewlyPlacedProvenance[] = [];
+const EMPTY_EDIT_BLOCKER_SUBSCRIBE = () => () => undefined;
+const EMPTY_EDIT_BLOCKER_SNAPSHOT = () => null;
+
+const UNAVAILABLE_UNDO_LOCK: TriageOperationLock = {
+  activeOperation: null,
+  acquire: () => false,
+  isLocked: () => true,
+  release: () => false,
+};
+
+type TriageNewlyPlacedUndoController = ReturnType<
+  typeof useTriageNewlyPlacedUndo
+>;
+
+type UndoFocusPlan = Readonly<{
+  nextKey: string | null;
+  previousKey: string | null;
+  heading: HTMLElement | null;
+}>;
+
+function undoKey(type: "node" | "bit", id: string): string {
+  return `${type}:${id}`;
+}
+
+type NewlyUndoPresentation = Readonly<{
+  action: "none" | "undo" | "check-again" | "retry";
+  actionLabel: string;
+  copy: string;
+  disabled: boolean;
+  state: string;
+}>;
+
+function newlyUndoTemplate(template: string, title: string): string {
+  return template.replace("{title}", title);
+}
+
+function getNewlyUndoPresentation(
+  state: TriageNewlyPlacedUndoState,
+  title: string,
+): NewlyUndoPresentation {
+  const copy = INBOX_TRIAGE_COPY.newlyPlacedUndo;
+  if (state.phase === "checking") {
+    return {
+      action: "undo",
+      actionLabel: copy.actions.undo,
+      copy: copy.eligibility.checking,
+      disabled: true,
+      state: "checking",
+    };
+  }
+  if (state.phase === "pending") {
+    return {
+      action: "undo",
+      actionLabel: copy.actions.undo,
+      copy: newlyUndoTemplate(copy.operation.pending, title),
+      disabled: true,
+      state: "pending",
+    };
+  }
+  if (state.phase === "unknown") {
+    return {
+      action: "check-again",
+      actionLabel: copy.actions.checkAgain,
+      copy: newlyUndoTemplate(copy.operation.unknown, title),
+      disabled: false,
+      state: "unknown",
+    };
+  }
+  if (state.phase === "reconciling") {
+    return {
+      action: "check-again",
+      actionLabel: copy.actions.checkAgain,
+      copy: newlyUndoTemplate(copy.operation.reconciling, title),
+      disabled: true,
+      state: "reconciling",
+    };
+  }
+  if (state.phase === "terminal" && state.terminalStatus === "not_applied") {
+    return {
+      action: "retry",
+      actionLabel: copy.actions.retry,
+      copy: newlyUndoTemplate(copy.operation.notApplied, title),
+      disabled: false,
+      state: "not-applied",
+    };
+  }
+  if (state.phase === "success" && state.command !== null) {
+    return {
+      action: "none",
+      actionLabel: copy.actions.undo,
+      copy: copy.operation.success.replace(
+        "{source}",
+        state.command.sourceSnapshot.content,
+      ),
+      disabled: true,
+      state: "success",
+    };
+  }
+
+  const eligibility = (() => {
+    switch (state.reason) {
+      case "available":
+        return { copy: copy.eligibility.available, state: "available" };
+      case "reenabled":
+        return { copy: copy.eligibility.reenabled, state: "reenabled" };
+      case "result-mutated":
+        return { copy: copy.eligibility.resultMutated, state: "result-mutated" };
+      case "dependencies":
+        return { copy: copy.eligibility.descendants, state: "descendants" };
+      case "placement-open":
+        return { copy: copy.eligibility.placementOpen, state: "placement-open" };
+      case "active-owner":
+        return { copy: copy.eligibility.operationLocked, state: "operation-locked" };
+      case "dirty-edit":
+        return { copy: copy.eligibility.editBlocked, state: "edit-blocked" };
+      default:
+        return { copy: copy.eligibility.conflict, state: "conflict" };
+    }
+  })();
+  return {
+    action: state.terminalStatus === "not_applied" ? "retry" : "undo",
+    actionLabel:
+      state.terminalStatus === "not_applied"
+        ? copy.actions.retry
+        : copy.actions.undo,
+    copy: eligibility.copy,
+    disabled: state.phase !== "available",
+    state: eligibility.state,
+  };
+}
+
+function useNewlyUndoActionFocus(state: TriageNewlyPlacedUndoState) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const previousPhaseRef = useRef(state.phase);
+  const previousTerminalStatusRef = useRef(state.terminalStatus);
+  useEffect(() => {
+    const enteredFocusState =
+      (state.phase === "unknown" && previousPhaseRef.current !== "unknown") ||
+      (state.phase === "terminal" &&
+        (previousPhaseRef.current !== "terminal" ||
+          previousTerminalStatusRef.current !== state.terminalStatus));
+    previousPhaseRef.current = state.phase;
+    previousTerminalStatusRef.current = state.terminalStatus;
+    if (enteredFocusState) ref.current?.focus({ preventScroll: true });
+  }, [state.phase, state.terminalStatus]);
+  return ref;
+}
+
+function NewlyUndoStatusRail({
+  presentation,
+  statusId,
+}: {
+  presentation: NewlyUndoPresentation;
+  statusId: string;
+}) {
+  const ownsLiveStatus = presentation.state !== "success";
+  return (
+    <div
+      aria-atomic={ownsLiveStatus ? "true" : undefined}
+      aria-live={ownsLiveStatus ? "polite" : undefined}
+      className="newly-status-rail"
+      data-undo-state={presentation.state}
+      role={ownsLiveStatus ? "status" : undefined}
+    >
+      <span
+        aria-hidden="true"
+        className="newly-status-mark"
+        data-undo-status-mark={presentation.state}
+      />
+      <p className="newly-status-reason" id={statusId}>
+        {presentation.copy}
+      </p>
+    </div>
+  );
+}
+
+function retainUndoRecords<T extends Node | Bit>(
+  records: readonly T[],
+  retained: readonly T[],
+  parentId: string | null,
+): T[] {
+  const existingIds = new Set(records.map(({ id }) => id));
+  return [
+    ...records,
+    ...retained.filter(
+      (record) => record.parentId === parentId && !existingIds.has(record.id),
+    ),
+  ];
+}
 
 const CELL_BASE_CLASS =
   "flex w-full items-center gap-2 rounded-md border border-transparent px-3 py-2 text-left transition-[background-color,border-color,box-shadow,color] touch-action-manipulation cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
@@ -280,6 +487,7 @@ export function HierarchyExplorer({
   overTargetId,
   pendingPlacementDropId,
   localPlacementResult,
+  newlyPlacedEntries = EMPTY_NEWLY_PLACED_ENTRIES,
   placementSnapshot = null,
   onPlacementCancel,
   onPlacementConfirm,
@@ -297,10 +505,32 @@ export function HierarchyExplorer({
   const focusedLocalPlacementKeyRef = useRef<string | null>(null);
   const acknowledgedPlacementSuccessRef = useRef<string | null>(null);
   const placementLiveRegionRef = useRef<HTMLParagraphElement>(null);
+  const undoLiveRegionRef = useRef<HTMLParagraphElement>(null);
+  const announcedUndoSuccessRef = useRef(new Set<string>());
   const focusedRevealKeyRef = useRef<string | null>(null);
   const focusedSelectionClearIdRef = useRef<string | null>(null);
   const mountedRef = useRef(false);
   const [entryFocusRevision, setEntryFocusRevision] = useState(0);
+  const operationLock =
+    useContext(TriageOperationLockContext) ?? UNAVAILABLE_UNDO_LOCK;
+  const titleBlockerHandle = useContext(ScratchTitleBlockerContext);
+  const editBlockerSnapshot = useSyncExternalStore(
+    titleBlockerHandle?.subscribe ?? EMPTY_EDIT_BLOCKER_SUBSCRIBE,
+    titleBlockerHandle?.getSnapshot ?? EMPTY_EDIT_BLOCKER_SNAPSHOT,
+    EMPTY_EDIT_BLOCKER_SNAPSHOT,
+  );
+  const undo = useTriageNewlyPlacedUndo({
+    entries: newlyPlacedEntries,
+    operationLock,
+    placementOpen: placementSnapshot !== null,
+    hasDirtyEdit: () =>
+      titleBlockerHandle?.hasDirtyEditIntent() ??
+      (editBlockerSnapshot === "dirty" ||
+        editBlockerSnapshot === "conflicted"),
+  });
+  const undoFocusPlansRef = useRef(new Map<string, UndoFocusPlan>());
+  const searchUndoKeysRef = useRef(new Set<string>());
+  const focusedUndoOperationsRef = useRef(new Set<string>());
   const invalidatePendingSearchSelection = search.invalidatePendingSelection;
   const reveal =
     search.revealPresentation?.kind === "revealed"
@@ -333,6 +563,137 @@ export function HierarchyExplorer({
       mountedRef.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    for (const [key, operation] of undo.operations) {
+      if (
+        operation.phase !== "success" ||
+        operation.command === null ||
+        focusedUndoOperationsRef.current.has(operation.command.operationId)
+      ) {
+        continue;
+      }
+      if (searchUndoKeysRef.current.has(key)) {
+        focusedUndoOperationsRef.current.add(operation.command.operationId);
+        continue;
+      }
+      if (
+        !announcedUndoSuccessRef.current.has(operation.command.operationId) &&
+        undoLiveRegionRef.current !== null
+      ) {
+        announcedUndoSuccessRef.current.add(operation.command.operationId);
+        undoLiveRegionRef.current.setAttribute("role", "status");
+        undoLiveRegionRef.current.setAttribute("aria-live", "polite");
+        undoLiveRegionRef.current.setAttribute("aria-atomic", "true");
+        undoLiveRegionRef.current.textContent =
+          INBOX_TRIAGE_COPY.newlyPlacedUndo.operation.success.replace(
+            "{source}",
+            operation.command.sourceSnapshot.content,
+          );
+      }
+      focusedUndoOperationsRef.current.add(operation.command.operationId);
+      const plan = undoFocusPlansRef.current.get(key);
+      undoFocusPlansRef.current.delete(key);
+      if (plan === undefined) continue;
+      queueMicrotask(() => {
+        const cards = Array.from(
+          explorerRef.current?.querySelectorAll<HTMLElement>(
+            "[data-explorer-item-id][data-explorer-item-type]",
+          ) ?? [],
+        );
+        const find = (targetKey: string | null) =>
+          targetKey === null
+            ? undefined
+            : cards.find(
+                (card) =>
+                  undoKey(
+                    card.dataset.explorerItemType as "node" | "bit",
+                    card.dataset.explorerItemId ?? "",
+                  ) === targetKey,
+              );
+        (find(plan.nextKey) ?? find(plan.previousKey) ?? plan.heading)?.focus({
+          preventScroll: true,
+        });
+      });
+    }
+  }, [undo.operations]);
+
+  function activateUndo(type: "node" | "bit", id: string) {
+    const currentCard = Array.from(
+      explorerRef.current?.querySelectorAll<HTMLElement>(
+        "[data-explorer-item-id][data-explorer-item-type]",
+      ) ?? [],
+    ).find(
+      (card) =>
+        card.dataset.explorerItemType === type &&
+        card.dataset.explorerItemId === id,
+    );
+    const section = currentCard?.closest("section");
+    if (currentCard === undefined || section == null) return;
+    const cards = Array.from(
+      section.querySelectorAll<HTMLElement>(
+        "[data-explorer-item-id][data-explorer-item-type]",
+      ),
+    );
+    const index = cards.indexOf(currentCard);
+    const cardKey = (card: HTMLElement | undefined) =>
+      card === undefined
+        ? null
+        : undoKey(
+            card.dataset.explorerItemType as "node" | "bit",
+            card.dataset.explorerItemId ?? "",
+          );
+    const key = undoKey(type, id);
+    undoFocusPlansRef.current.set(key, {
+      nextKey: cardKey(cards[index + 1]),
+      previousKey: cardKey(cards[index - 1]),
+      heading: section.querySelector("h3"),
+    });
+    void undo.activate(type, id).then((applied) => {
+      const state = undo.getState(type, id);
+      const canStillSucceed =
+        state.phase === "unknown" ||
+        (state.phase === "terminal" && state.terminalStatus === "not_applied");
+      if (!applied && !canStillSucceed) {
+        undoFocusPlansRef.current.delete(key);
+      }
+    });
+  }
+
+  function activateSearchResultUndo(
+    result: GridExplorerSearchResult,
+    action: NewlyUndoPresentation["action"],
+  ) {
+    const key = undoKey(result.type, result.id);
+    const removedIndex = search.results.findIndex(
+      ({ key: resultKey }) => resultKey === result.key,
+    );
+    const provenance = undo.getProvenance(result.type, result.id);
+    if (removedIndex < 0 || provenance === null) return;
+    searchUndoKeysRef.current.add(key);
+    const request =
+      action === "check-again"
+        ? undo.reconcile(result.type, result.id)
+        : action === "retry"
+          ? undo.retry(result.type, result.id)
+          : undo.activate(result.type, result.id);
+    void request.then((applied) => {
+      if (applied) {
+        search.completeResultUndo({
+          removedIndex,
+          resultKey: result.key,
+          source: provenance.source.snapshot.content,
+          title: result.title,
+        });
+        return;
+      }
+      const state = undo.getState(result.type, result.id);
+      const canStillSucceed =
+        state.phase === "unknown" ||
+        (state.phase === "terminal" && state.terminalStatus === "not_applied");
+      if (!canStillSucceed) searchUndoKeysRef.current.delete(key);
+    });
+  }
 
   useEffect(() => {
     let previousScratchId = useTriageStore.getState().selectedScratchId;
@@ -571,33 +932,103 @@ export function HierarchyExplorer({
   const level2Grid = useGridData(selectedL1Id);
   const level3Grid = useGridData(selectedL2Id);
 
+  const retainedUndoRecords = useMemo(() => {
+    const nodes: Node[] = [];
+    const bits: Bit[] = [];
+    for (const [key, operation] of undo.operations) {
+      if (
+        operation.command === null ||
+        !["pending", "unknown", "reconciling"].includes(operation.phase)
+      ) {
+        continue;
+      }
+      if (key.startsWith("node:")) {
+        nodes.push(operation.command.resultSnapshot as Node);
+      } else if (key.startsWith("bit:")) {
+        bits.push(operation.command.resultSnapshot as Bit);
+      }
+    }
+    return { bits, nodes };
+  }, [undo.operations]);
+  const retainedUndoNodesById = useMemo(
+    () => new Map(retainedUndoRecords.nodes.map((node) => [node.id, node])),
+    [retainedUndoRecords.nodes],
+  );
+
   const rootNodes = useMemo(
-    () => rootGrid.nodes.filter((node) => node.systemRole === null),
-    [rootGrid.nodes],
+    () =>
+      retainUndoRecords(
+        rootGrid.nodes.filter((node) => node.systemRole === null),
+        retainedUndoRecords.nodes,
+        null,
+      ),
+    [retainedUndoRecords.nodes, rootGrid.nodes],
   );
   const level1Nodes = useMemo(
-    () => (selectedHomeId === null ? [] : level1Grid.nodes),
-    [level1Grid.nodes, selectedHomeId],
+    () =>
+      selectedHomeId === null
+        ? []
+        : retainUndoRecords(
+            level1Grid.nodes,
+            retainedUndoRecords.nodes,
+            selectedHomeId,
+          ),
+    [level1Grid.nodes, retainedUndoRecords.nodes, selectedHomeId],
   );
   const level1Bits = useMemo(
-    () => (selectedHomeId === null ? [] : level1Grid.bits),
-    [level1Grid.bits, selectedHomeId],
+    () =>
+      selectedHomeId === null
+        ? []
+        : retainUndoRecords(
+            level1Grid.bits,
+            retainedUndoRecords.bits,
+            selectedHomeId,
+          ),
+    [level1Grid.bits, retainedUndoRecords.bits, selectedHomeId],
   );
   const level2Nodes = useMemo(
-    () => (selectedL1Id === null ? [] : level2Grid.nodes),
-    [level2Grid.nodes, selectedL1Id],
+    () =>
+      selectedL1Id === null
+        ? []
+        : retainUndoRecords(
+            level2Grid.nodes,
+            retainedUndoRecords.nodes,
+            selectedL1Id,
+          ),
+    [level2Grid.nodes, retainedUndoRecords.nodes, selectedL1Id],
   );
   const level2Bits = useMemo(
-    () => (selectedL1Id === null ? [] : level2Grid.bits),
-    [level2Grid.bits, selectedL1Id],
+    () =>
+      selectedL1Id === null
+        ? []
+        : retainUndoRecords(
+            level2Grid.bits,
+            retainedUndoRecords.bits,
+            selectedL1Id,
+          ),
+    [level2Grid.bits, retainedUndoRecords.bits, selectedL1Id],
   );
   const level3Nodes = useMemo(
-    () => (selectedL2Id === null ? [] : level3Grid.nodes),
-    [level3Grid.nodes, selectedL2Id],
+    () =>
+      selectedL2Id === null
+        ? []
+        : retainUndoRecords(
+            level3Grid.nodes,
+            retainedUndoRecords.nodes,
+            selectedL2Id,
+          ),
+    [level3Grid.nodes, retainedUndoRecords.nodes, selectedL2Id],
   );
   const level3Bits = useMemo(
-    () => (selectedL2Id === null ? [] : level3Grid.bits),
-    [level3Grid.bits, selectedL2Id],
+    () =>
+      selectedL2Id === null
+        ? []
+        : retainUndoRecords(
+            level3Grid.bits,
+            retainedUndoRecords.bits,
+            selectedL2Id,
+          ),
+    [level3Grid.bits, retainedUndoRecords.bits, selectedL2Id],
   );
 
   useLayoutEffect(() => {
@@ -740,8 +1171,27 @@ export function HierarchyExplorer({
     ) {
       return null;
     }
-    return authoritativePath;
-  }, [authoritativeRemoteStatus, gridValidation]);
+    const retainedPath = [...authoritativePath];
+    while (retainedPath.length < gridValidation.length) {
+      const index = retainedPath.length;
+      const id = gridValidation[index];
+      const retainedNode = retainedUndoNodesById.get(id);
+      const expectedParentId = retainedPath.at(-1) ?? null;
+      if (
+        explorerPathIds[index] !== id ||
+        retainedNode?.parentId !== expectedParentId
+      ) {
+        break;
+      }
+      retainedPath.push(id);
+    }
+    return retainedPath;
+  }, [
+    authoritativeRemoteStatus,
+    explorerPathIds,
+    gridValidation,
+    retainedUndoNodesById,
+  ]);
 
   const visibleItemIdsByColumn = useMemo(() => {
     const columns: Record<string, string[]> = {
@@ -1017,6 +1467,7 @@ export function HierarchyExplorer({
       </nav>
 
       <p ref={placementLiveRegionRef} className="sr-only" />
+      <p ref={undoLiveRegionRef} className="sr-only" />
 
       {search.mode === "active" ? (
         <GridExplorerSearchResults
@@ -1026,6 +1477,23 @@ export function HierarchyExplorer({
           resultScrollTop={search.resultScrollTop}
           results={search.results}
           status={search.status}
+          getResultUndo={(result) => {
+            if (undo.getProvenance(result.type, result.id) === null) return null;
+            const presentation = getNewlyUndoPresentation(
+              undo.getState(result.type, result.id),
+              result.title,
+            );
+            return presentation.action === "none"
+              ? null
+              : {
+                  actionLabel: presentation.actionLabel,
+                  copy: presentation.copy,
+                  disabled: presentation.disabled,
+                  onActivate: () =>
+                    activateSearchResultUndo(result, presentation.action),
+                  state: presentation.state,
+                };
+          }}
           onClose={closeSearchAndFocusEntry}
           onFocusInput={search.focusInput}
           onFocusResult={search.focusResult}
@@ -1042,6 +1510,16 @@ export function HierarchyExplorer({
           const parentPath = ["Home", ...pathNodes.slice(0, index).map(({ title }) => title)];
           const targetParentPath =
             index === 0 ? [] : parentPath.slice(0, -1);
+          const projectedNodes = projectTriageNewlyPlaced(
+            newlyPlacedEntries,
+            "node",
+            column.nodes,
+          );
+          const projectedBits = projectTriageNewlyPlaced(
+            newlyPlacedEntries,
+            "bit",
+            column.bits,
+          );
           const sectionDropId = getTriageHierarchyDropId(
             index === 0 ? "body-home" : `body-l${index}`,
           );
@@ -1067,7 +1545,7 @@ export function HierarchyExplorer({
               columnId={column.columnId}
               hasRightBorder={index < COLUMN_LABELS.length - 1}
               isDimmed={index > 0 && column.parentNode === null}
-              itemIds={idsForColumn(column.nodes, column.bits)}
+              itemIds={idsForColumn(projectedNodes, projectedBits)}
               label={COLUMN_LABELS[index]}
               pathStatusAnnouncementSuppressed={
                 explorerPathStatus === announcementSuppressedPathStatus
@@ -1116,9 +1594,12 @@ export function HierarchyExplorer({
               {index > 0 && column.parentNode === null ? null : (
                 <HierarchyItemList
                   activeDragItem={activeDragItem}
-                  bits={column.bits}
+                  bits={projectedBits}
                   isLoading={column.isLoading}
-                  nodes={column.nodes}
+                  nodes={projectedNodes}
+                  newlyPlacedEntries={newlyPlacedEntries}
+                  undo={undo}
+                  onUndo={activateUndo}
                   onSelectNode={
                     index < 3
                       ? (nodeId) =>
@@ -1130,6 +1611,7 @@ export function HierarchyExplorer({
                   }
                   overTargetId={overTargetId}
                   parentPath={parentPath}
+                  parentColor={column.parentNode?.color ?? "hsl(221, 83%, 53%)"}
                   pendingPlacementDropId={effectivePendingPlacementDropId}
                   reveal={reveal}
                   selectedNodeId={column.selectedNodeId}
@@ -1756,9 +2238,13 @@ function HierarchyItemList({
   bits,
   isLoading,
   nodes,
+  newlyPlacedEntries,
+  undo,
+  onUndo,
   onSelectNode,
   overTargetId,
   parentPath,
+  parentColor,
   pendingPlacementDropId,
   reveal,
   selectedNodeId,
@@ -1768,9 +2254,13 @@ function HierarchyItemList({
   bits: Bit[];
   isLoading: boolean;
   nodes: Node[];
+  newlyPlacedEntries: readonly TriageNewlyPlacedProvenance[];
+  undo: TriageNewlyPlacedUndoController;
+  onUndo: (type: "node" | "bit", id: string) => void;
   onSelectNode?: (nodeId: string) => void;
   overTargetId: string | null;
   parentPath: string[];
+  parentColor: string;
   pendingPlacementDropId: string | null;
   reveal: GridExplorerSearchResult | null;
   selectedNodeId?: string | null;
@@ -1795,6 +2285,9 @@ function HierarchyItemList({
           isSelected={selectedNodeId === node.id}
           isRevealed={reveal?.type === "node" && reveal.id === node.id}
           node={node}
+          isNewlyPlaced={isTriageNewlyPlaced(newlyPlacedEntries, "node", node.id)}
+          undo={undo}
+          onUndo={onUndo}
           onSelectNode={onSelectNode}
           overTargetId={overTargetId}
           parentPath={parentPath}
@@ -1813,6 +2306,10 @@ function HierarchyItemList({
                 key={bit.id}
                 bit={bit}
                 isRevealed={reveal?.type === "bit" && reveal.id === bit.id}
+                isNewlyPlaced={isTriageNewlyPlaced(newlyPlacedEntries, "bit", bit.id)}
+                undo={undo}
+                onUndo={onUndo}
+                parentColor={parentColor}
               />
             ))}
           </div>
@@ -1826,7 +2323,10 @@ function NodeDropCell({
   activeDragItem,
   isSelected,
   isRevealed,
+  isNewlyPlaced,
   node,
+  undo,
+  onUndo,
   onSelectNode,
   overTargetId,
   parentPath,
@@ -1836,13 +2336,20 @@ function NodeDropCell({
   activeDragItem: TriageDragItem;
   isSelected: boolean;
   isRevealed: boolean;
+  isNewlyPlaced: boolean;
   node: Node;
+  undo: TriageNewlyPlacedUndoController;
+  onUndo: (type: "node" | "bit", id: string) => void;
   onSelectNode?: (nodeId: string) => void;
   overTargetId: string | null;
   parentPath: string[];
   pendingPlacementDropId: string | null;
   targetFeedback: TriageTargetFeedback;
 }) {
+  const undoState = undo.getState("node", node.id);
+  const undoPresentation = getNewlyUndoPresentation(undoState, node.title);
+  const undoStatusId = useId();
+  const undoActionRef = useNewlyUndoActionFocus(undoState);
   const dropId = getTriageHierarchyDropId(node.id);
   const dropData = {
     kind: "triage-hierarchy-drop",
@@ -1868,84 +2375,138 @@ function NodeDropCell({
     pendingPlacementDropId,
     targetFeedback,
   });
-  const content = (
-    <>
-      <Folder
-        aria-hidden="true"
-        className="h-4 w-4 flex-shrink-0 text-muted-foreground/80"
-      />
-      <span className="min-w-0 truncate text-sm font-medium text-foreground">
-        {node.title}
-      </span>
-    </>
-  );
-
-  if (onSelectNode !== undefined) {
-    return (
-      <button
-        ref={setNodeRef}
-        aria-current={isSelected ? "true" : undefined}
-        aria-disabled={state === "invalid"}
-        aria-label={`Select Node: ${node.title}`}
-        className={cn(
-          CELL_BASE_CLASS,
-          activeDragItem === null && "hover:bg-muted hover:text-foreground",
-          isSelected && "bg-accent text-foreground ring-1 ring-primary",
-          isRevealed && "explorer-revealed-row",
-          CELL_STATE_CLASSES[state],
-        )}
-        data-explorer-item-id={node.id}
-        data-explorer-item-type="node"
-        data-triage-drop-id={dropId}
-        data-triage-hierarchy-drop={JSON.stringify(dropData)}
-        data-triage-target-state={state}
-        type="button"
-        onClick={() => onSelectNode(node.id)}
-      >
-        {content}
-      </button>
-    );
-  }
-
   return (
     <div
       ref={setNodeRef}
-      aria-disabled={state === "invalid"}
       className={cn(
-        CELL_DROP_ONLY_CLASS,
+        onSelectNode === undefined ? CELL_DROP_ONLY_CLASS : CELL_BASE_CLASS,
+        activeDragItem === null && onSelectNode !== undefined && "hover:bg-muted hover:text-foreground",
         CELL_STATE_CLASSES[state],
-        isRevealed && "explorer-revealed-row",
       )}
-      data-explorer-item-id={node.id}
-      data-explorer-item-type="node"
       data-triage-drop-id={dropId}
       data-triage-hierarchy-drop={JSON.stringify(dropData)}
       data-triage-target-state={state}
-      tabIndex={-1}
     >
-      {content}
+      <div
+        className={cn(isNewlyPlaced && "newly-card-shell")}
+        data-undo-state={isNewlyPlaced ? undoPresentation.state : undefined}
+      >
+        <NodeCard
+          aria-current={isSelected ? "true" : undefined}
+          aria-disabled={state === "invalid"}
+          aria-label={`Select Node: ${node.title}`}
+          className={cn(
+            isSelected && "bg-accent text-foreground ring-1 ring-primary",
+            isRevealed && "explorer-revealed-row",
+          )}
+          data-explorer-item-id={node.id}
+          data-explorer-item-type="node"
+          data-triage-drop-id={dropId}
+          data-triage-hierarchy-drop={JSON.stringify(dropData)}
+          data-triage-target-state={state}
+          isNewlyPlaced={isNewlyPlaced}
+          node={node}
+          onClick={() => {
+            undo.acknowledgeReenabled("node", node.id);
+            onSelectNode?.(node.id);
+          }}
+          tabIndex={onSelectNode === undefined ? -1 : 0}
+          undoActionRef={undoActionRef}
+          undo={
+            isNewlyPlaced && undoPresentation.action !== "none"
+              ? {
+                  describedBy: undoStatusId,
+                  disabled: undoPresentation.disabled,
+                  label: undoPresentation.actionLabel,
+                  onActivate: () => {
+                    if (undoPresentation.action === "check-again") {
+                      void undo.reconcile("node", node.id);
+                    } else if (undoPresentation.action === "retry") {
+                      void undo.retry("node", node.id);
+                    } else {
+                      onUndo("node", node.id);
+                    }
+                  },
+                  reason: undoState.reason,
+                }
+              : undefined
+          }
+        />
+        {isNewlyPlaced ? (
+          <NewlyUndoStatusRail
+            presentation={undoPresentation}
+            statusId={undoStatusId}
+          />
+        ) : null}
+      </div>
     </div>
   );
 }
 
-function BitContextRow({ bit, isRevealed }: { bit: Bit; isRevealed: boolean }) {
+function BitContextRow({
+  bit,
+  isRevealed,
+  isNewlyPlaced,
+  undo,
+  onUndo,
+  parentColor,
+}: {
+  bit: Bit;
+  isRevealed: boolean;
+  isNewlyPlaced: boolean;
+  undo: TriageNewlyPlacedUndoController;
+  onUndo: (type: "node" | "bit", id: string) => void;
+  parentColor: string;
+}) {
+  const undoState = undo.getState("bit", bit.id);
+  const undoPresentation = getNewlyUndoPresentation(undoState, bit.title);
+  const undoStatusId = useId();
+  const undoActionRef = useNewlyUndoActionFocus(undoState);
   return (
     <div
-      className={cn(
-        "flex items-center gap-2 rounded-md px-3 py-1.5",
-        isRevealed && "explorer-revealed-row",
-      )}
-      data-explorer-item-id={bit.id}
-      data-explorer-item-type="bit"
-      tabIndex={-1}
+      className={cn(isNewlyPlaced && "newly-card-shell")}
+      data-undo-state={isNewlyPlaced ? undoPresentation.state : undefined}
     >
-      <ListTodo
-        aria-hidden="true"
-        className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/60"
+      <BitCard
+        aria-label={`Bit: ${bit.title}`}
+        bit={bit}
+        chunkStats={{ completed: 0, total: 0 }}
+        className={cn(
+          isRevealed && "explorer-revealed-row",
+        )}
+        data-explorer-item-id={bit.id}
+        data-explorer-item-type="bit"
+        isNewlyPlaced={isNewlyPlaced}
+        onClick={() => undo.acknowledgeReenabled("bit", bit.id)}
+        parentColor={parentColor}
+        tabIndex={-1}
+        undoActionRef={undoActionRef}
+        undo={
+          isNewlyPlaced && undoPresentation.action !== "none"
+            ? {
+                describedBy: undoStatusId,
+                disabled: undoPresentation.disabled,
+                label: undoPresentation.actionLabel,
+                onActivate: () => {
+                  if (undoPresentation.action === "check-again") {
+                    void undo.reconcile("bit", bit.id);
+                  } else if (undoPresentation.action === "retry") {
+                    void undo.retry("bit", bit.id);
+                  } else {
+                    onUndo("bit", bit.id);
+                  }
+                },
+                reason: undoState.reason,
+              }
+            : undefined
+        }
       />
-      <span className="min-w-0 truncate text-xs text-muted-foreground/80">
-        {bit.title}
-      </span>
+      {isNewlyPlaced ? (
+        <NewlyUndoStatusRail
+          presentation={undoPresentation}
+          statusId={undoStatusId}
+        />
+      ) : null}
     </div>
   );
 }

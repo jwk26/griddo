@@ -7,12 +7,12 @@
 > This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
 > its supersession rules. It accepts no phase, task, implementation, branch,
 > publication, or completion state.
-> **Task markers:** Tasks 101–154 were explicitly accepted. Phases 23–28 are
-> completed and archived. Tasks 155–165 remain open (`[ ]`) and may be
+> **Task markers:** Tasks 101–158 were explicitly accepted. Phases 23–29 are
+> completed and archived. Tasks 159–165 remain open (`[ ]`) and may be
 > checked only after their own observable acceptance and verification evidence
 > is explicitly accepted by the user.
-> **Execution lifecycle:** Phases 23–28 are complete. The three open phases are
-> Phases 29–31 with 11 open Tasks 155–165. Phase 29 requires its own Gate C,
+> **Execution lifecycle:** Phases 23–29 are complete. The two open phases are
+> Phases 30–31 with seven open Tasks 159–165. Phase 29 completed its own Gate C,
 > fresh branch/worktree, and equal-weight product and workflow-audit tracks.
 > This planning receipt alone does not authorize later implementation, Git
 > lifecycle work, or publication.
@@ -92,12 +92,12 @@ The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were exclu
 | Area | Current status | Smallest blocker / next condition |
 |---|---|---|
 | Document approval | `APPROVED` | The approval receipt above remains the planning authority. |
-| Execution lifecycle | Phases 23–28 complete and archived | Three open phases (29–31) remain; each requires its own approved lifecycle gate and exact branch/worktree authority. Phase 29 also requires its equal-weight audit track. |
+| Execution lifecycle | Phases 23–29 complete and archived | Two open phases (30–31) remain; each requires its own approved lifecycle gate and exact branch/worktree authority. Neither inherits Phase 29 authority. |
 | Data foundations | `COMPLETED` | Tasks 101–105A and authoritative command Tasks 120–126 are accepted and recorded in their phase archives. |
 | Decision prerequisites | `COMPLETED` | Tasks 106–119 and all fourteen DP receipts are accepted, reflected, and recorded in the Phase 24 archive. |
-| Headless/base UI | Phase 28 Explorer and placement owners completed | Tasks 127–154 are accepted and archived; Tasks 155–156, 159, and 161 follow only their named dependencies and lifecycle gates. |
+| Headless/base UI | Phase 29 Newly/Undo owners completed | Tasks 127–158 are accepted and archived; Tasks 159 and 161 follow only their named dependencies and lifecycle gates. |
 | VQ realization | `BLOCKED_PENDING_USER_DECISIONS` | Each realization task resumes only from its exact DP receipt. |
-| Full close | Not ready | Tasks 155–164 complete, then Task 165 passes on top of the archived Phase 23–28 foundations. |
+| Full close | Not ready | Tasks 159–164 complete, then Task 165 passes on top of the archived Phase 23–29 foundations. |
 
 ## Dependency Graph
 
@@ -137,7 +137,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | Phase 26 | Completed | [Lifetime, copy, and source-backed base-surface owners](execution-plan/archive/phase-26.md) | 127–135 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
 | Phase 27 | Completed | [Breakdown, Pool, and Staging headless adapters and exact realizations](execution-plan/archive/phase-27.md) | 136–148 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
 | Phase 28 | Completed | [Explorer status/search and pointer placement](execution-plan/archive/phase-28.md) | 149–154 | Accepted and archived; the terminal workflow measurement baseline transfers comparative audit to Phase 29. |
-| Phase 29 | Proposed | Equal-weight product Newly/Undo implementation and unchanged-candidate comparative workflow audit | 155–158 | Requires its own Gate C and fresh branch/worktree; every implementation checkpoint needs product evidence plus its committed audit row. |
+| Phase 29 | Completed | [Mounted-page Newly/Undo and comparative workflow audit](execution-plan/archive/phase-29.md) | 155–158 | Accepted and archived; one Advisory visual-fidelity finding is Explicitly Deferred to a read-only Phase 31 audit after Task 163 and before Task 164. |
 | Phase 30 | Proposed | Completion and Archive coordinator/recovery | 159–162 | Completion foundation does not depend on `VQ-03`/`VQ-04` realization. |
 | Phase 31 | Proposed | Route integration, nine-recipe conformance, full gate | 163–165 | Requires all named predecessors and task-local evidence. |
 | Phase 32 | Reserved | Retired-number reservation | none | No tasks may be assigned. |
@@ -1844,7 +1844,7 @@ questions, and the exact skill/reference/test change plan that was not applied
 during the phase. Candidate skill and Adapter files remain read-only throughout
 Phase 29. The pilot does not automatically extend to a third phase.
 
-### Task 155: [ ] Project Newly Placed provenance over actual cards
+### Task 155: [x] Project Newly Placed provenance over actual cards
 
 **Files and actions:** create canonical `src/hooks/use-triage-newly-placed.ts` and `.test.tsx`; modify `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/components/grid/node-card.tsx` and `.test.tsx`, and `src/components/grid/bit-card.tsx` and `.test.tsx`. Instantiate the hook at the mounted Inbox page/workspace, never in `triage-store`; register only Task 152 placements started/confirmed by that mounted page using stable result/type/source/candidate/operation provenance; layer a semantic marker slot on actual NodeCard/BitCard; pin locally new Nodes/Bits newest-first within their type projection without changing stored x/y; preserve marker across Scratch/path/theme changes; clear marker/pinning/Undo provenance on Inbox route exit/reload/unmount, not Scratch switch. Remote/other-tab records remain ordinary. Add no second Newly owner and do not redesign cards.
 
@@ -1860,7 +1860,7 @@ Phase 29. The pilot does not automatically extend to a third phase.
 
 **Commit contract:** canonical mounted-page Newly owner, actual-card semantic slots, tests, and Task 155 evidence only; `feat(triage): project newly placed cards`.
 
-### Task 156: [ ] Connect ordinary-card source-aware Undo independently of search
+### Task 156: [x] Connect ordinary-card source-aware Undo independently of search
 
 **Files and actions:** modify `src/hooks/use-triage-newly-placed.ts` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/components/grid/node-card.tsx` and `.test.tsx`, and `src/components/grid/bit-card.tsx` and `.test.tsx`; extend `src/hooks/use-triage-operation-lock.test.tsx`. Derive ordinary-card Undo availability/reason from exact current result/source/candidate/dependency truth; keep marker and eligibility separate; stop Undo activation from bubbling into card navigation. Before dispatch, synchronously acquire Task 136's shared `undo` lock; retain actual card/source and the complete matrix through pending/unknown/reconciling, reject duplicate/competing action without queue/replay, and release only on terminal result. Another active owner, result mutation, descendants, open placement, or dirty Edit intent disables Undo; re-enable after terminal release or child-first Undo. Restore staged/direct source/candidate/path and focus. Do not import or depend on Explorer search or `DP-VQ07`.
 
@@ -1876,7 +1876,7 @@ Phase 29. The pilot does not automatically extend to a third phase.
 
 **Commit contract:** ordinary-card Undo model/adapter, tests, and Task 156 evidence only; `feat(triage): connect ordinary card undo`.
 
-### Task 157: [ ] Render `DP-VQ10` Newly and Undo states
+### Task 157: [x] Render `DP-VQ10` Newly and Undo states
 
 **Files and actions:** after `DP-VQ10`, modify `src/hooks/use-triage-newly-placed.ts` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/components/grid/node-card.tsx` and `.test.tsx`, `src/components/grid/bit-card.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts`. Populate approved wording and render selected+newly overlap, available/ineligible/re-enabled reasons, undoing/failure/reconcile/retry/conflict, marker/control placement, timing, focus, reduced motion, and themes without repeated motion or common-card redesign.
 
@@ -1892,7 +1892,7 @@ Phase 29. The pilot does not automatically extend to a third phase.
 
 **Commit contract:** DP-VQ10 copy/realization, tests, styles, and Task 157 evidence only; `feat(triage): render newly placed undo states`.
 
-### Task 158: [ ] Integrate Undo into Explorer search results only
+### Task 158: [x] Integrate Undo into Explorer search results only
 
 **Files and actions:** modify `src/components/triage/grid-explorer-search-results.tsx` and `.test.tsx`, `src/components/triage/hierarchy-explorer.tsx` and `.test.tsx`, `src/hooks/use-grid-explorer-search.ts` and `.test.tsx`, and `src/hooks/use-triage-newly-placed.ts` and `.test.tsx`. Reuse Tasks 156–157 Undo model/realization in the `DP-VQ07` body without making search rows DnD sources. Locally placed records enter matching results immediately. Undo from a result retains active query/scroll, removes only the undone result after terminal success, announces source restoration, and focuses the next surviving result at the removed row's position when one exists; otherwise it focuses the search input, with no previous-result fallback. Unknown/failure keeps the result. Do not change ordinary-column Undo dependencies or behavior.
 
@@ -1911,6 +1911,20 @@ Phase 29. The pilot does not automatically extend to a third phase.
 ---
 
 ## Phase 30 — Completion And Archive Recovery
+
+### Bounded browser-evidence handoff
+
+Phase 30 preserves every existing functional and recipe contract while avoiding
+a premature campaign-wide fidelity matrix. Task 159 still supplies bounded
+running-app evidence for eligibility transition, Cancel/Reopen, withdrawal,
+and focus; it does not redesign the existing canonical presentation. Task 160
+adds one representative running check for its fixed Context geometry and
+blocker placement. Tasks 161–162 may share one final-input browser session for
+real `sessionStorage`, reload/reconciliation ordering, and browser
+focus/lifecycle invariants that owner tests cannot establish. Any newly
+observed mismatch is recorded rather than silently repaired outside the
+current task contract. The full eight-theme, light/dark, viewport, motion,
+accessibility, and prototype/recipe comparison remains Task 164 work.
 
 ### Task 159: [ ] Implement durable completion, Cancel, and explicit reopen
 
@@ -1979,6 +1993,16 @@ Phase 29. The pilot does not automatically extend to a third phase.
 ---
 
 ## Phase 31 — Integration, Conformance, And Full Gate
+
+After Task 163 integration and before Task 164 repair work, perform a read-only
+visual-fidelity gap audit against the eight Inbox prototypes and the canonical
+recipe package. It must identify exact owners, paths, affected tasks, and
+follow-up scope, distinguishing the Phase 29 ordinary Explorer-card gap from
+broader campaign-wide fidelity debt. The audit grants no repair, task-reopen,
+owner-expansion, product/design-decision, or new-task authority; those remain
+separate user gates. Task 164 then owns only the conformance/fidelity work
+already granted by its canonical contract plus any separately approved
+follow-up plan.
 
 ### Task 163: [ ] Integrate the canonical route and remove superseded owners
 
@@ -2095,9 +2119,9 @@ This register is complete for every exact path declared by two or more tasks. Ev
 
 - **Next planned phase:** Phase 34. Phases 32 and 33 are reserved and receive no tasks.
 - **Next planned task:** Task 166.
-- Active graph count: 3 open implementation phases (29–31), 11 open tasks
-  (155–165), 6 completed archives (Phases 23–28 with accepted Tasks 101–154),
+- Active graph count: 2 open implementation phases (30–31), 7 open tasks
+  (159–165), 7 completed archives (Phases 23–29 with accepted Tasks 101–158),
   and 2 reserved phase numbers (32–33).
 - The document is **user-approved for planning authority** under the receipt at
-  the top of this file; Tasks 101–154 are accepted, Phases 23–28 are archived,
-  and Tasks 155–165 remain open.
+  the top of this file; Tasks 101–158 are accepted, Phases 23–29 are archived,
+  and Tasks 159–165 remain open.

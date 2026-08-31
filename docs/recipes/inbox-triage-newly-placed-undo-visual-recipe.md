@@ -57,6 +57,7 @@ reason is shown.
 
 | Eligibility state | Exact visible rail copy | Trailing action |
 |---|---|---|
+| Initial authoritative checking | `Checking whether Undo is available…` | Unavailable `Undo` |
 | Available | `Undo this placement.` | `Undo` |
 | Re-enabled after dependencies clear | `Undo is available again.` | `Undo` |
 | Result mutated or lifecycle changed | `This item changed after placement. Undo is unavailable.` | Unavailable `Undo` |
@@ -72,6 +73,11 @@ eligibility. When same-session reversible descendants are undone child-first
 and no other blocker survives, the parent rail changes to the re-enabled row,
 announces it once, and exposes `Undo` without moving focus.
 
+Initial authoritative checking uses `data-undo-state="checking"`, keeps the
+stable trailing Undo keyboard-focusable with `aria-disabled="true"`, suppresses
+activation and focus movement, and ends at the first authoritative eligibility
+classification. It never implies that another operation owns the shared lock.
+
 ### Exact Operation And Recovery Copy
 
 Undo is non-optimistic: the actual result card, marker, source truth, and rail
@@ -84,7 +90,7 @@ remain rendered until authoritative success.
 | Read-only reconciliation | `Checking whether “{title}” was undone…` | Unavailable `Check again` |
 | Authoritative `not_applied` | `“{title}” wasn’t undone. Nothing changed.` | `Retry` |
 | Authoritative `rejected` / `conflict` | Use the exact current eligibility reason above; if returned authority proves no narrower reason, use `This item or its source changed. Undo is unavailable.` | Unavailable `Undo`; no Retry |
-| Authoritative `applied` / `already_applied` | `Restored “{source}”.` | None; remove only the result card after commit |
+| Authoritative `applied` / `already_applied` (`data-undo-state="success"`) | `Restored “{source}”.` | None; announce once and remove only the result card after the committed removal/focus handoff |
 
 `Check again` performs read-only reconciliation with the same operation ID and
 never resends Undo. `Retry` appears only for authoritative `not_applied`, reuses

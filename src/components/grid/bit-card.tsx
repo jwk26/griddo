@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef, Ref } from "react";
 import { forwardRef } from "react";
 import { format } from "date-fns";
 import { Check, MoreHorizontal, X } from "lucide-react";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useArchiveActions } from "@/hooks/use-archive";
 import { useEditModeStore } from "@/stores/edit-mode-store";
+import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import type { Bit } from "@/types";
 
 type BitCardProps = {
@@ -25,6 +26,15 @@ type BitCardProps = {
   onClick: () => void;
   onDelete?: () => void;
   isDragging?: boolean;
+  isNewlyPlaced?: boolean;
+  undoActionRef?: Ref<HTMLButtonElement>;
+  undo?: Readonly<{
+    disabled: boolean;
+    describedBy?: string;
+    label?: string;
+    onActivate: () => void;
+    reason: string;
+  }>;
 } & Omit<ComponentPropsWithoutRef<"div">, "children" | "onClick">;
 
 export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard(
@@ -35,6 +45,9 @@ export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard
     onClick,
     onDelete,
     isDragging = false,
+    isNewlyPlaced = false,
+    undoActionRef,
+    undo,
     className,
     onKeyDown,
     role,
@@ -56,6 +69,7 @@ export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard
   return (
     <div
       {...divProps}
+      data-newly-placed={isNewlyPlaced ? "true" : undefined}
       className={cn(
         "group/bit relative z-10 inline-flex shrink-0 cursor-grab select-none items-stretch rounded-[10px] border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-colors hover:bg-accent/50 active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
         isDragging && "z-20 cursor-grabbing",
@@ -148,6 +162,39 @@ export const BitCard = forwardRef<HTMLDivElement, BitCardProps>(function BitCard
           </div>
         ) : null}
       </div>
+
+      {isNewlyPlaced ? (
+        <span
+          className="newly-marker absolute left-0 top-0 z-20 text-[10px] font-semibold"
+          data-card-marker="newly-placed"
+        >
+          {INBOX_TRIAGE_COPY.newlyPlacedUndo.marker}
+        </span>
+      ) : null}
+
+      {undo !== undefined ? (
+        <button
+          type="button"
+          aria-describedby={undo.describedBy}
+          aria-disabled={undo.disabled}
+          aria-label={
+            undo.label === undefined ||
+            undo.label === INBOX_TRIAGE_COPY.newlyPlacedUndo.actions.undo
+              ? `Undo placement of ${bit.title}`
+              : undo.label
+          }
+          className="newly-undo-action absolute bottom-0 right-0 z-20 rounded px-1 text-[10px] font-semibold"
+          data-undo-reason={undo.reason}
+          ref={undoActionRef}
+          onClick={(event) => {
+            event.stopPropagation();
+            if (undo.disabled) return;
+            undo.onActivate();
+          }}
+        >
+          {undo.label ?? INBOX_TRIAGE_COPY.newlyPlacedUndo.actions.undo}
+        </button>
+      ) : null}
 
       {/* Past-deadline overlay */}
       {pastDeadline ? (

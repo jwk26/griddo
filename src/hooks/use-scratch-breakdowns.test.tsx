@@ -878,4 +878,44 @@ describe("useScratchBreakdowns", () => {
     });
     expect(blockerHandle.getSnapshot()).toBe("conflicted");
   });
+
+  it("publishes pristine, dirty, saving, conflicted, and resolved breakdown-row intent through the mounted handle", async () => {
+    const lock = createOperationLock();
+    const blockerHandle = createScratchTitleBlockerHandle();
+    const row = createScratchBreakdown({
+      id: "row-edit-intent",
+      content: "Base row",
+      version: 2,
+    });
+    let resolveSave: ((value: unknown) => void) | undefined;
+    dataStore.saveBreakdown.mockImplementation(
+      () => new Promise((resolve) => { resolveSave = resolve; }),
+    );
+    const { result } = renderHook(() =>
+      useScratchBreakdowns("scratch-1", "DESC", {
+        operationLock: lock,
+        titleBlockerHandle: blockerHandle,
+      }),
+    );
+
+    act(() => expect(result.current.editor.openBreakdown(row, false)).toBe(true));
+    expect(blockerHandle.getSnapshot()).toBe("open");
+    act(() => result.current.editor.changeDraft("Dirty row"));
+    expect(blockerHandle.getSnapshot()).toBe("dirty");
+    let pendingSave: Promise<boolean> | undefined;
+    act(() => { pendingSave = result.current.editor.save(); });
+    await waitFor(() => expect(resolveSave).toBeTypeOf("function"));
+    expect(blockerHandle.getSnapshot()).toBe("saving");
+    await act(async () => {
+      resolveSave?.({
+        operationId: lock.activeOperation?.operationId,
+        status: "conflict",
+        breakdown: { ...row, content: "Latest row", version: 3 },
+      });
+      await pendingSave;
+    });
+    expect(blockerHandle.getSnapshot()).toBe("conflicted");
+    act(() => expect(result.current.editor.cancel()).toBe(true));
+    expect(blockerHandle.getSnapshot()).toBeNull();
+  });
 });

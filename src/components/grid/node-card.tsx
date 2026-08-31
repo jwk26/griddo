@@ -1,7 +1,8 @@
 "use client";
 
 import { MoreHorizontal, X } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, type HTMLMotionProps } from "motion/react";
+import type { Ref } from "react";
 import { NODE_ICON_MAP } from "@/lib/constants/node-icons";
 import {
   nodeCardTransition,
@@ -16,7 +17,35 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useArchiveActions } from "@/hooks/use-archive";
+import { INBOX_TRIAGE_COPY } from "@/lib/copy/inbox-triage";
 import type { Node } from "@/types";
+
+type NodeCardProps = {
+  node: Node;
+  onClick: () => void;
+  onDelete?: () => void;
+  isEditMode?: boolean;
+  isDragging?: boolean;
+  isNewlyPlaced?: boolean;
+  undoActionRef?: Ref<HTMLButtonElement>;
+  undo?: Readonly<{
+    disabled: boolean;
+    describedBy?: string;
+    label?: string;
+    onActivate: () => void;
+    reason: string;
+  }>;
+  ref?: Ref<HTMLButtonElement>;
+} & Omit<
+  HTMLMotionProps<"button">,
+  | "animate"
+  | "children"
+  | "initial"
+  | "onClick"
+  | "transition"
+  | "variants"
+  | "whileHover"
+>;
 
 export function NodeCard({
   node,
@@ -24,34 +53,51 @@ export function NodeCard({
   onDelete,
   isEditMode = false,
   isDragging = false,
-}: {
-  node: Node;
-  onClick: () => void;
-  onDelete?: () => void;
-  isEditMode?: boolean;
-  isDragging?: boolean;
-}) {
+  isNewlyPlaced = false,
+  undoActionRef,
+  undo,
+  className,
+  ref,
+  style,
+  ...buttonProps
+}: NodeCardProps) {
   const Icon = NODE_ICON_MAP[node.icon] ?? NODE_ICON_MAP.Box;
   const agingFilter = getAgingFilter(getAgingState(node.mtime));
   const { archive } = useArchiveActions();
 
   return (
-    <div className="group/card relative flex h-full items-center justify-center">
+    <div
+      className="group/card relative flex h-full items-center justify-center"
+      data-newly-placed={isNewlyPlaced ? "true" : undefined}
+    >
       <motion.button
+        {...buttonProps}
+        ref={ref}
         type="button"
+        aria-label={buttonProps["aria-label"] ?? node.title}
         animate={isDragging ? "dragging" : "rest"}
         className={cn(
           "theme-node-card relative grid h-[var(--grid-node-size)] w-[var(--grid-node-size)] max-h-full max-w-full cursor-grab grid-rows-[1fr_var(--grid-node-title-height)] justify-items-center px-[var(--grid-node-padding-x)] pb-[var(--grid-node-padding-bottom)] pt-[var(--grid-node-padding-top)] transition-[box-shadow,background-color] hover:bg-muted/40 active:cursor-grabbing active:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           isDragging && "cursor-grabbing bg-muted/60 [box-shadow:var(--theme-shadow-hover)]",
           isEditMode && "motion-safe:animate-jiggle",
+          className,
         )}
+        data-newly-placed={isNewlyPlaced ? "true" : undefined}
         initial={false}
         onClick={onClick}
-        style={{ filter: agingFilter }}
+        style={{ ...style, filter: agingFilter }}
         transition={nodeCardTransition}
         variants={nodeCardVariants}
         whileHover={isDragging ? undefined : "hover"}
       >
+        {isNewlyPlaced ? (
+          <span
+            className="newly-marker absolute left-0 top-0 z-20 text-[10px] font-semibold"
+            data-card-marker="newly-placed"
+          >
+            {INBOX_TRIAGE_COPY.newlyPlacedUndo.marker}
+          </span>
+        ) : null}
         {/* Fixed icon slot so title length never shifts or scales the icon */}
         <div className="flex min-h-0 items-center justify-center self-center pb-[var(--grid-node-icon-lift)]">
           <Icon
@@ -66,6 +112,30 @@ export function NodeCard({
           </p>
         </div>
       </motion.button>
+
+      {undo !== undefined ? (
+        <button
+          type="button"
+          aria-describedby={undo.describedBy}
+          aria-disabled={undo.disabled}
+          aria-label={
+            undo.label === undefined ||
+            undo.label === INBOX_TRIAGE_COPY.newlyPlacedUndo.actions.undo
+              ? `Undo placement of ${node.title}`
+              : undo.label
+          }
+          className="newly-undo-action absolute bottom-0 right-0 z-20 rounded px-1 text-[10px] font-semibold"
+          data-undo-reason={undo.reason}
+          ref={undoActionRef}
+          onClick={(event) => {
+            event.stopPropagation();
+            if (undo.disabled) return;
+            undo.onActivate();
+          }}
+        >
+          {undo.label ?? INBOX_TRIAGE_COPY.newlyPlacedUndo.actions.undo}
+        </button>
+      ) : null}
 
       {isEditMode ? (
         <button
