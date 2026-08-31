@@ -3,7 +3,7 @@
 > Branch: `phase-30/completion-archive-recovery`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-30-completion-archive-recovery`
 > Kickoff date: 2026-08-31
-> State: Tasks 159–162 remain `[ ]`; Task 159 `In Progress`
+> State: Tasks 159–162 remain `[ ]`; Task 159 implemented and awaiting user checkpoint review
 
 ## Status Legend
 
@@ -95,16 +95,18 @@ during kickoff.
 
 ## Active Issues
 
-### Task 159 — In Progress
+### Task 159 — Implemented; Awaiting User Checkpoint Review
 
 | Field | Durable value |
 | --- | --- |
 | Approved scope | Task 159 only — durable completion, Cancel, and explicit Reopen in the six named hook/component source and test files, task-local evidence, and this minimum matching ledger state |
 | Kickoff receipt | `docs/issues/Issues_Phase_30.gate-c.json` at kickoff commit `fbb3bc36e1593513d5bb811de0c7c70c723137a2` |
 | Approved base | `a4e00c4ef8d684bdfd52bd59523d1de6e4c11541` |
-| Entrypoint / recovery anchor | `fbb3bc36e1593513d5bb811de0c7c70c723137a2`; resume from this committed start signal before any Task 159 product or test write |
-| State | `In Progress`; Task 159 remains `[ ]` pending explicit user acceptance |
-| Issues / deviations | None. The handoff's truncated Task 136 summary SHA is recovered from the authoritative Gate C receipt as acceptance commit `02675c3c2c44939bb71506eb64dd1904d8e0bfa7`, which is an ancestor of the approved base. |
+| Entrypoint / recovery anchor | `fbb3bc36e1593513d5bb811de0c7c70c723137a2`; durable-start commit `4a5aa09987595bbf576854d8631be053eff88ad7` is the ledger-only parent of all product/test writes |
+| Implementation / evidence | `68404f72aa47924ecf61dd3b14d8e4bbfbe3c631`; `docs/verification/inbox-triage/task-159.md` |
+| State | `Implemented through repair cycle 2/3; awaiting user checkpoint review`; Task 159 remains `[ ]` pending explicit user acceptance |
+| Verification | Latest focused gate: 3 files / 195 tests, target lint clean, typecheck passed. Latest full gate: 99 files / 1,211 tests, lint 0 errors with 11 unchanged warnings, typecheck passed, build passed with seven pages, and `git diff --check` passed. Bounded running-app evidence covered mounted false-to-true, Cancel/complete/Reopen, explicit Reopen, withdrawal/recovery, focus, Scratch switch/return, same-session route re-entry, and reload. |
+| Issues / deviations | None open. The handoff's truncated Task 136 summary SHA is recovered from the authoritative Gate C receipt as acceptance commit `02675c3c2c44939bb71506eb64dd1904d8e0bfa7`, which is an ancestor of the approved base. Two TDD repair cycles resolved the browser focus defect and all four independent Important review findings; re-review found no new Critical or Important finding. `Unowned: None`. |
 | Canonical impact | `None` — Task 159 is implementation-local and does not alter canonical product, design, schema, or workflow authority |
 
 No other Phase 30 item is `Open`, `In Progress`, or `Awaiting User Decision`.
