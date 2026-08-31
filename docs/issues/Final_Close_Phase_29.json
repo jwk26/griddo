@@ -1,0 +1,67 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "final-close",
+  "approved_repository": "jwk26/griddo",
+  "approved_base": "197e2dc92c39b85d6b62319ae7f18edbd73c15ce",
+  "approved_branch": "phase-29/mounted-page-newly-placed-undo",
+  "approved_scope": {
+    "lifecycle": "end-phase",
+    "phase": 29,
+    "worktree_role": "feature"
+  },
+  "user_disposition": "approved",
+  "next_legal_action": "execute-final-close",
+  "transaction": {
+    "workflow_candidate": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
+    "pre_close_head": "197e2dc92c39b85d6b62319ae7f18edbd73c15ce",
+    "candidate_a": {
+      "commit": "1d4914452cc2e2bb6077ff1798665e9d3dc92727",
+      "parent": "197e2dc92c39b85d6b62319ae7f18edbd73c15ce",
+      "tree": "ccc7d2ea0c97f5423848bd03c63971a32a05abe3",
+      "diff_hash_domain": "git-diff-binary-parent-to-candidate",
+      "diff_sha256": "9c04f5e64f69d7e54291d4649b5c773520ef8d564c10d1c9be0570f092aefe50"
+    },
+    "receipt_path": "docs/issues/Final_Close_Phase_29.json",
+    "receipt_commit_message": "docs: record Phase 29 final close receipt",
+    "publication_head_construction": "fast-forward the clean feature branch from pre_close_head to candidate_a.commit, add only this exact receipt file, and create receipt commit B with B^ equal to candidate_a.commit",
+    "publication": {
+      "provider": "github",
+      "command": "scripts/codex-gh",
+      "remote": "origin",
+      "remote_url": "https://github.com/jwk26/griddo.git",
+      "integration_base_oid": "f3c2be6b2afa2da51cde39d22c13eabf2286f296",
+      "base_branch": "main",
+      "head_branch": "phase-29/mounted-page-newly-placed-undo",
+      "pr_action": "create",
+      "pr_number": null,
+      "pr_url": null,
+      "title": "feat(triage): land Phase 29 mounted-page undo",
+      "body": "## Summary\n\n- land the accepted Phase 29 mounted-page Newly provenance and source-aware Undo scope across ordinary Explorer cards and Explorer Search results\n- archive the completed Phase 29 product scope and the completed, revised Phase 28/29 workflow audit\n- disclose Advisory P29-01: fresh-output manual smoke found the ordinary Explorer-card gap and broader eight-theme prototype-fidelity debt; explicitly defer a read-only owner/path/task audit to Phase 31 after Task 163 and before Task 164, with no repair authority\n\n## Validation\n\n- pnpm test - 99 files / 1,196 tests passed at pre-close and in the replacement detached preview\n- pnpm lint - 0 errors / 11 unchanged warnings\n- pnpm typecheck\n- pnpm build - seven routes generated\n- git diff --check, Gate C artifact-pin validation, and exact-main merge-tree passed\n- task owner tests cover only their declared DOM/state/interaction invariants; no Phase 29 browser visual-fidelity comparison is claimed",
+      "draft": false,
+      "merge_method": "merge",
+      "expected_head": "receipt commit B",
+      "expected_head_mechanism": "scripts/codex-gh pr merge --merge --match-head-commit B",
+      "status_source": "GitHub PR headRefOid, mergeStateStatus, statusCheckRollup, branch protection, and repository rulesets",
+      "required_checks": "all reported required checks reach terminal success",
+      "queue": "forbidden",
+      "auto_merge": "forbidden",
+      "admin_bypass": "forbidden",
+      "implicit_branch_deletion": "forbidden",
+      "bounded_wait_retry": "at most 20 status reads at 15-second intervals"
+    },
+    "integration_sync": {
+      "primary_worktree": "/Users/jwk/Documents/griddo2-codex-integration",
+      "branch": "main",
+      "method": "fetch then fast-forward-only sync followed by method-neutral candidate inclusion proof"
+    },
+    "cleanup": {
+      "preview_worktree": "/Users/jwk/Documents/griddo2-codex-phase-29-final-close-preview",
+      "preview_cleanup_timing": "after candidate_a is moved to the feature branch and receipt commit B is verified, remove clean preview non-force",
+      "remote_ref": "refs/heads/phase-29/mounted-page-newly-placed-undo",
+      "feature_worktree": "/Users/jwk/Documents/griddo2-codex-phase-29-mounted-page-newly-placed-undo",
+      "local_branch": "phase-29/mounted-page-newly-placed-undo",
+      "policy": "guarded non-force only after exact merge proof and primary integration sync"
+    }
+  }
+}
