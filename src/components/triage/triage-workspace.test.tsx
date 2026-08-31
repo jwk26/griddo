@@ -29,6 +29,7 @@ const workspaceSource = readFileSync(
 const useTriageDndMock = vi.hoisted(() => vi.fn());
 const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
 const useScratchBreakdownsMock = vi.hoisted(() => vi.fn());
+const useCanArchiveScratchMock = vi.hoisted(() => vi.fn());
 const stageCandidateMock = vi.hoisted(() => vi.fn());
 const reconcileStageCandidateMock = vi.hoisted(() => vi.fn());
 const unstageCandidateMock = vi.hoisted(() => vi.fn());
@@ -58,6 +59,11 @@ const titleBlockerHandleState = vi.hoisted(() => ({
 const departureControllerState = vi.hoisted(() => ({
   controller: null as TriageDepartureController | null,
 }));
+const completionState = vi.hoisted(() => ({
+  presentation: "working" as "working" | "overlay" | "complete",
+  cancel: vi.fn(),
+  reopen: vi.fn(),
+}));
 
 vi.mock("@/hooks/use-dnd", () => ({
   useTriageDnd: useTriageDndMock,
@@ -73,6 +79,10 @@ vi.mock("@/hooks/use-scratch-breakdowns", async (importOriginal) => {
   >();
   return { ...actual, useScratchBreakdowns: useScratchBreakdownsMock };
 });
+
+vi.mock("@/hooks/use-can-archive-scratch", () => ({
+  useCanArchiveScratch: useCanArchiveScratchMock,
+}));
 
 vi.mock("@/hooks/use-grid-data", () => ({
   useGridData: useGridDataMock,
@@ -128,10 +138,14 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
   return {
     BreakdownPanel: ({
       activeDragItem,
+      completion,
+      onAddDraftBlockerChange,
       overTargetId,
       successSignal,
     }: {
       activeDragItem?: TriageDragItem;
+      completion?: typeof completionState;
+      onAddDraftBlockerChange?: (blocked: boolean) => void;
       overTargetId?: string | null;
       successSignal?: {
         kind: "add" | "unstage";
@@ -145,12 +159,22 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
       return (
         <div
           data-active-drag-kind={activeDragItem?.kind}
+          data-completion-presentation={completion?.presentation}
           data-over-target-id={overTargetId ?? undefined}
           data-success-kind={successSignal?.kind}
           data-success-operation-id={successSignal?.operationId}
           data-success-row-id={successSignal?.rowId}
           data-testid="breakdown-panel"
         >
+          <button type="button" onClick={() => completion?.cancel()}>
+            Cancel completion
+          </button>
+          <button type="button" onClick={() => completion?.reopen()}>
+            Reopen completion
+          </button>
+          <button type="button" onClick={() => onAddDraftBlockerChange?.(true)}>
+            Set Add blocker
+          </button>
           {breakdownSurfaceState.showSource ? (
             <div data-breakdown-id="breakdown-1">
               <button aria-label="Drag breakdown" type="button">
@@ -461,6 +485,11 @@ beforeEach(() => {
     breakdowns: [authoritativeBreakdown()],
     isReady: true,
   });
+  completionState.presentation = "working";
+  completionState.cancel.mockReset();
+  completionState.reopen.mockReset();
+  useCanArchiveScratchMock.mockReset();
+  useCanArchiveScratchMock.mockReturnValue(completionState);
 });
 
 afterEach(() => {
@@ -469,6 +498,48 @@ afterEach(() => {
 });
 
 describe("TriageWorkspace", () => {
+  it("owns completion above the keyed Breakdown surface and combines Add/title blockers", () => {
+    completionState.presentation = "overlay";
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(useCanArchiveScratchMock).toHaveBeenLastCalledWith("scratch-1", {
+      hasAddDraft: false,
+      titleBlocker: null,
+    });
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-completion-presentation",
+      "overlay",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Cancel completion" }));
+    fireEvent.click(screen.getByRole("button", { name: "Reopen completion" }));
+    expect(completionState.cancel).toHaveBeenCalledOnce();
+    expect(completionState.reopen).toHaveBeenCalledOnce();
+
+    fireEvent.click(screen.getByRole("button", { name: "Set Add blocker" }));
+    expect(useCanArchiveScratchMock).toHaveBeenLastCalledWith("scratch-1", {
+      hasAddDraft: true,
+      titleBlocker: null,
+    });
+
+    act(() => titleBlockerHandleState.handle?.setSnapshot("dirty"));
+    expect(useCanArchiveScratchMock).toHaveBeenLastCalledWith("scratch-1", {
+      hasAddDraft: true,
+      titleBlocker: "dirty",
+    });
+
+    act(() => useTriageStore.getState().selectScratch("scratch-2"));
+    expect(useCanArchiveScratchMock).toHaveBeenLastCalledWith("scratch-2", {
+      hasAddDraft: false,
+      titleBlocker: null,
+    });
+
+    act(() => titleBlockerHandleState.handle?.setSnapshot("dirty"));
+    expect(useCanArchiveScratchMock).toHaveBeenLastCalledWith("scratch-2", {
+      hasAddDraft: false,
+      titleBlocker: "dirty",
+    });
+  });
+
   it("keeps library auto-scroll disabled and wires explicit drag cancellation", () => {
     expect(workspaceSource).toContain("autoScroll={false}");
     expect(workspaceSource).toContain("onDragCancel={handleDragCancel}");

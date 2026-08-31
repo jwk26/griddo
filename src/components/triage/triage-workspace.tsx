@@ -10,9 +10,11 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import {
   BreakdownPanel,
+  type BreakdownCompletionProjection,
   type BreakdownSuccessSignal,
 } from "@/components/triage/breakdown-panel";
 import { HierarchyExplorer } from "@/components/triage/hierarchy-explorer";
@@ -30,6 +32,7 @@ import {
   type TriageDragItem,
 } from "@/hooks/use-dnd";
 import { useExternalScratchRemovalData } from "@/hooks/use-external-scratch-removal-data";
+import { useCanArchiveScratch } from "@/hooks/use-can-archive-scratch";
 import {
   useStagedCandidates,
   type CandidateCommandOutcome,
@@ -635,11 +638,36 @@ function TriageRemoveDropTarget({
 export function TriageWorkspace({ node }: { node: Node }) {
   const operationLock = useTriageOperationLock();
   const departure = useTriageDeparture(operationLock);
-  const [titleBlockerHandle] = useState(createScratchTitleBlockerHandle);
   const externalScratchRemoval = useTriageStore(
     (state) => state.externalScratchRemoval,
   );
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
+  const titleBlockerHandle = useMemo(() => {
+    // Scope the producer to the same selected-Scratch lifetime as BreakdownPanel.
+    void selectedScratchId;
+    return createScratchTitleBlockerHandle();
+  }, [selectedScratchId]);
+  const titleBlocker = useSyncExternalStore(
+    titleBlockerHandle.subscribe,
+    titleBlockerHandle.getSnapshot,
+    () => null,
+  );
+  const [addDraftBlocker, setAddDraftBlocker] = useState<{
+    scratchId: string | null;
+    blocked: boolean;
+  }>({ scratchId: null, blocked: false });
+  const hasAddDraft =
+    addDraftBlocker.scratchId === selectedScratchId && addDraftBlocker.blocked;
+  const setCurrentAddDraftBlocker = useCallback(
+    (blocked: boolean) => {
+      setAddDraftBlocker({ scratchId: selectedScratchId, blocked });
+    },
+    [selectedScratchId],
+  );
+  const completion = useCanArchiveScratch(selectedScratchId, {
+    hasAddDraft,
+    titleBlocker,
+  });
   const setExternalScratchRemovalLifecycle = useTriageStore(
     (state) => state.setExternalScratchRemovalLifecycle,
   );
@@ -683,10 +711,12 @@ export function TriageWorkspace({ node }: { node: Node }) {
       <TriageDepartureContext.Provider value={departure}>
         <ScratchTitleBlockerContext.Provider value={titleBlockerHandle}>
           <TriageWorkspaceContent
+            completion={completion}
             departure={departure}
             isDepartureDecision={departure.pendingDestination !== null}
             node={node}
             operationLock={operationLock}
+            onAddDraftBlockerChange={setCurrentAddDraftBlocker}
             readTerminalSnapshot={readTerminalSnapshot}
           />
         </ScratchTitleBlockerContext.Provider>
@@ -696,16 +726,20 @@ export function TriageWorkspace({ node }: { node: Node }) {
 }
 
 function TriageWorkspaceContent({
+  completion,
   departure,
   isDepartureDecision,
   node,
   operationLock,
+  onAddDraftBlockerChange,
   readTerminalSnapshot,
 }: {
+  completion: BreakdownCompletionProjection;
   departure: ReturnType<typeof useTriageDeparture>;
   isDepartureDecision: boolean;
   node: Node;
   operationLock: ReturnType<typeof useTriageOperationLock>;
+  onAddDraftBlockerChange: (blocked: boolean) => void;
   readTerminalSnapshot: ReturnType<
     typeof useExternalScratchRemovalData
   >["readTerminalSnapshot"];
@@ -1630,6 +1664,8 @@ function TriageWorkspaceContent({
                 <BreakdownPanel
                   key={selectedScratchId ?? "none"}
                   activeDragItem={activeDragItem}
+                  completion={completion}
+                  onAddDraftBlockerChange={onAddDraftBlockerChange}
                   overTargetId={overTargetId}
                   successSignal={
                     breakdownSuccessScope?.scratchId === selectedScratchId &&

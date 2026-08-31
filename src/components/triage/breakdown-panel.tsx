@@ -77,6 +77,13 @@ export type BreakdownSuccessSignal = Readonly<{
   rowId: string;
 }>;
 
+export type BreakdownCompletionProjection = Readonly<{
+  presentation: "working" | "overlay" | "complete";
+  persistedEligible?: boolean;
+  cancel: () => void;
+  reopen: () => void;
+}>;
+
 function subscribeToBrowserConnectivity(onStoreChange: () => void) {
   window.addEventListener("online", onStoreChange);
   window.addEventListener("offline", onStoreChange);
@@ -925,10 +932,14 @@ function formatScratchTimestamp(createdAt: number): string {
 
 export function BreakdownPanel({
   activeDragItem = null,
+  completion,
+  onAddDraftBlockerChange,
   overTargetId = null,
   successSignal = null,
 }: {
   activeDragItem?: TriageDragItem;
+  completion?: BreakdownCompletionProjection;
+  onAddDraftBlockerChange?: (blocked: boolean) => void;
   overTargetId?: string | null;
   successSignal?: BreakdownSuccessSignal | null;
 } = {}) {
@@ -999,6 +1010,7 @@ export function BreakdownPanel({
   const addEntryRef = useRef<HTMLInputElement | HTMLDivElement | null>(null);
   const contentRegionRef = useRef<HTMLDivElement>(null);
   const addCommandRef = useRef<AddBreakdownCommand | null>(null);
+  const addCompletionHoldRef = useRef(false);
   const deleteCommandRefs = useRef(new Map<string, DeleteBreakdownCommand>());
   const addReliabilityActionRef = useRef<HTMLButtonElement>(null);
   const deleteReliabilityActionRefs = useRef(
@@ -1006,6 +1018,15 @@ export function BreakdownPanel({
   );
   const contextRef = useRef<HTMLDivElement>(null);
   const contextEditRef = useRef<HTMLButtonElement>(null);
+  const completionOverlayRef = useRef<HTMLDivElement>(null);
+  const completionHeadingRef = useRef<HTMLHeadingElement>(null);
+  const completionCancelRef = useRef<HTMLButtonElement>(null);
+  const completionReopenRef = useRef<HTMLButtonElement>(null);
+  const completionFocusIntentRef = useRef<"heading" | "reopen" | null>(null);
+  const completionHadFocusRef = useRef(false);
+  const previousCompletionPresentationRef = useRef<
+    BreakdownCompletionProjection["presentation"]
+  >("working");
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
   const rowEditRefs = useRef(new Map<string, HTMLButtonElement>());
   const lastEditorTargetRef = useRef<OpenEditorSnapshot["target"] | null>(null);
@@ -1150,10 +1171,16 @@ export function BreakdownPanel({
         clearDraft: () => {
           setAddDraft("");
           setNewContent("");
+          onAddDraftBlockerChange?.(false);
         },
         focusDraft: () => inputRef.current?.focus(),
       }),
-    [registerAddDraftOwner, setAddDraft],
+    [onAddDraftBlockerChange, registerAddDraftOwner, setAddDraft],
+  );
+
+  useEffect(
+    () => () => onAddDraftBlockerChange?.(false),
+    [onAddDraftBlockerChange],
   );
 
   const reliabilityScopeRef = useRef({
@@ -1287,6 +1314,9 @@ export function BreakdownPanel({
     }
     setAddDraft(draft);
     setNewContent(draft);
+    onAddDraftBlockerChange?.(
+      draft.length > 0 || addCompletionHoldRef.current,
+    );
   }
 
   async function handleEditorSave(): Promise<boolean> {
@@ -1371,10 +1401,25 @@ export function BreakdownPanel({
       editor.invalidate();
     }
   }, [breakdowns, editor, selectedScratch?.id, stagedEligibility.stagedSourceIds]);
-  const isConsumedCompletion =
+  const persistedConsumedCompletion =
     selectedScratch !== null &&
     isArchiveEligible &&
     breakdowns.length === 0;
+  const completionPresentation =
+    completion?.presentation ??
+    (persistedConsumedCompletion ? "complete" : "working");
+  const isConsumedCompletion =
+    completion === undefined
+      ? persistedConsumedCompletion
+      : selectedScratch !== null && completionPresentation !== "working";
+  const isCompletionOverlayOpen =
+    completion !== undefined &&
+    isConsumedCompletion &&
+    completionPresentation === "overlay";
+  const isCompletionComplete =
+    completion !== undefined &&
+    isConsumedCompletion &&
+    completionPresentation === "complete";
   const emptyState = isConsumedCompletion
     ? "consumed-completion"
     : consumedBreakdownCount > 0 || stagedCandidateCounts.authoritative > 0
@@ -1387,6 +1432,74 @@ export function BreakdownPanel({
     if (!isAdding) return;
     inputRef.current?.focus();
   }, [isAdding]);
+
+  useLayoutEffect(() => {
+    if (
+      completionFocusIntentRef.current === "heading" &&
+      isCompletionOverlayOpen
+    ) {
+      completionFocusIntentRef.current = null;
+      completionHeadingRef.current?.focus();
+    } else if (
+      completionFocusIntentRef.current === "reopen" &&
+      isCompletionComplete
+    ) {
+      completionFocusIntentRef.current = null;
+      completionReopenRef.current?.focus();
+    }
+  }, [isCompletionComplete, isCompletionOverlayOpen]);
+
+  useLayoutEffect(() => {
+    if (
+      previousCompletionPresentationRef.current === "working" &&
+      completionPresentation === "overlay" &&
+      (document.activeElement === document.body ||
+        document.activeElement?.closest("[inert]") !== null)
+    ) {
+      completionHeadingRef.current?.focus();
+    }
+    if (
+      previousCompletionPresentationRef.current !== "working" &&
+      completionPresentation === "working" &&
+      completionHadFocusRef.current
+    ) {
+      document.getElementById("triage-breakdown-heading")?.focus();
+      completionHadFocusRef.current = false;
+    }
+    previousCompletionPresentationRef.current = completionPresentation;
+  }, [completionPresentation]);
+
+  useEffect(() => {
+    if (
+      !addCompletionHoldRef.current ||
+      completion?.persistedEligible !== false
+    ) {
+      return;
+    }
+    addCompletionHoldRef.current = false;
+    onAddDraftBlockerChange?.(newContent.length > 0);
+  }, [completion?.persistedEligible, newContent, onAddDraftBlockerChange]);
+
+  function trackCompletionBlur(event: FocusEvent<HTMLElement>) {
+    if (
+      event.relatedTarget instanceof Node &&
+      event.currentTarget.contains(event.relatedTarget)
+    ) {
+      return;
+    }
+    completionHadFocusRef.current = false;
+  }
+
+  function cancelCompletion() {
+    completionFocusIntentRef.current = "reopen";
+    if (newContent.length === 0) setIsAdding(false);
+    completion?.cancel();
+  }
+
+  function reopenCompletion() {
+    completionFocusIntentRef.current = "heading";
+    completion?.reopen();
+  }
 
   useEffect(() => {
     const addedRowId = pendingAddedRowIdRef.current;
@@ -1428,12 +1541,19 @@ export function BreakdownPanel({
 
     if (rowAction !== undefined && rowAction !== null) {
       rowAction.focus();
+    } else if (isCompletionOverlayOpen) {
+      completionHeadingRef.current?.focus();
     } else if (isConsumedCompletion) {
       contextRef.current?.focus();
     } else {
       addEntryRef.current?.focus();
     }
-  }, [breakdowns, isConsumedCompletion, pendingDeleteId]);
+  }, [
+    breakdowns,
+    isCompletionOverlayOpen,
+    isConsumedCompletion,
+    pendingDeleteId,
+  ]);
 
   useEffect(() => {
     if (pendingDeleteId !== null || failedDeleteFocusIdRef.current === null) return;
@@ -1471,6 +1591,7 @@ export function BreakdownPanel({
       });
       addCommandRef.current = null;
       pendingAddedRowIdRef.current = command.breakdownId;
+      addCompletionHoldRef.current = completion !== undefined;
       updateAddDraft("");
       if (keepInputOpen) {
         setIsAdding(true);
@@ -1733,10 +1854,18 @@ export function BreakdownPanel({
         {editorAnnouncement}
       </div>
       <div
+        aria-atomic="true"
+        aria-live="polite"
+        className="sr-only"
+        data-testid="archive-completion-announcement"
+      >
+        {isCompletionOverlayOpen ? "Scratch complete" : ""}
+      </div>
+      <div
         ref={contentRegionRef}
         className="min-h-0 flex-1 overflow-y-auto px-3 py-2"
         data-testid="breakdown-content-region"
-        inert={isDepartureDecision ? true : undefined}
+        inert={isDepartureDecision || isCompletionOverlayOpen ? true : undefined}
       >
         <div
           ref={contextRef}
@@ -1745,7 +1874,7 @@ export function BreakdownPanel({
           data-testid="selected-scratch-context"
           data-triage-layout="fixed-inline-editor"
           data-triage-role="context-signature-plate"
-          data-triage-state="working"
+          data-triage-state={isCompletionComplete ? "complete" : "working"}
           tabIndex={-1}
         >
           <Inbox
@@ -1931,21 +2060,48 @@ export function BreakdownPanel({
             }
             data-triage-state={emptyState}
           >
-            {isConsumedCompletion ? (
+            {isCompletionComplete ? (
+              <>
+                <CheckCircle2 aria-hidden="true" className="h-6 w-6 text-primary/70" />
+                <span className="mt-2 text-xs font-medium text-muted-foreground">
+                  Scratch complete
+                </span>
+                <Button
+                  ref={completionReopenRef}
+                  className="mt-3"
+                  data-triage-role="archive-completion-reopen"
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                  onClick={reopenCompletion}
+                  onFocus={() => {
+                    completionHadFocusRef.current = true;
+                  }}
+                  onBlur={trackCompletionBlur}
+                >
+                  Reopen
+                </Button>
+              </>
+            ) : isConsumedCompletion ? (
               <CheckCircle2 aria-hidden="true" className="h-6 w-6 text-primary/70" />
             ) : emptyState === "all-deleted" ? (
               <RotateCcw aria-hidden="true" className="h-6 w-6 text-muted-foreground/55" />
             ) : (
               <Lightbulb aria-hidden="true" className="h-6 w-6 text-muted-foreground/55" />
             )}
-            <span className="mt-2 text-xs font-medium text-muted-foreground">
-              {isConsumedCompletion ? "All items processed" : "Add a note..."}
-            </span>
+            {!isCompletionComplete ? (
+              <span className="mt-2 text-xs font-medium text-muted-foreground">
+                {isConsumedCompletion ? "All items processed" : "Add a note..."}
+              </span>
+            ) : null}
           </div>
         )}
       </div>
 
-      <div className="border-t border-border px-3 py-2">
+      <div
+        className="border-t border-border px-3 py-2"
+        inert={isCompletionOverlayOpen ? true : undefined}
+      >
         <div
           className="breakdown-add-region grid grid-cols-[minmax(0,1fr)_auto] gap-2"
           data-testid="breakdown-add-row"
@@ -2094,6 +2250,53 @@ export function BreakdownPanel({
           </div>
         ) : null}
       </div>
+
+      {isCompletionOverlayOpen ? (
+        <div
+          ref={completionOverlayRef}
+          aria-labelledby="archive-completion-heading"
+          className="absolute inset-0 z-30 flex items-center justify-center bg-background/50 p-4 backdrop-blur-[2px]"
+          data-triage-role="archive-completion-overlay"
+          role="region"
+          onFocusCapture={() => {
+            completionHadFocusRef.current = true;
+          }}
+          onBlurCapture={trackCompletionBlur}
+          onKeyDown={(event) => {
+            if (event.key !== "Escape") return;
+            event.preventDefault();
+            cancelCompletion();
+          }}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-primary/30 bg-card p-5 text-center shadow-lg"
+            data-triage-role="archive-card"
+          >
+            <CheckCircle2 aria-hidden="true" className="mx-auto h-7 w-7 text-primary" />
+            <h3
+              ref={completionHeadingRef}
+              className="mt-3 text-base font-semibold text-foreground"
+              id="archive-completion-heading"
+              tabIndex={-1}
+            >
+              Scratch complete
+            </h3>
+            <div className="mt-4 flex justify-center gap-2">
+              <Button disabled type="button">
+                Archive Scratch
+              </Button>
+              <Button
+                ref={completionCancelRef}
+                type="button"
+                variant="outline"
+                onClick={cancelCompletion}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <AlertDialog
         open={pendingDeleteId !== null}

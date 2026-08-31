@@ -1,104 +1,182 @@
-import { renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ScratchBreakdown } from "@/lib/db/schema";
+import type { ScratchArchiveEligibility } from "@/lib/db/datastore";
 import { useCanArchiveScratch } from "@/hooks/use-can-archive-scratch";
 
-const stagedCandidatesMock = vi.hoisted(
-  () =>
-    ({} as Record<
-      string,
-      {
-        id: string;
-        type: "node" | "bit";
-        sourceBreakdownId: string;
-        label: string;
-      }[]
-    >),
+const eligibilityByScratch = vi.hoisted(
+  () => new Map<string, ScratchArchiveEligibility>(),
 );
+const listeners = vi.hoisted(() => new Set<() => void>());
 
-vi.mock("@/stores/triage-store", () => ({
-  useTriageStore: (selector: (state: { stagedCandidates: typeof stagedCandidatesMock }) => unknown) =>
-    selector({ stagedCandidates: stagedCandidatesMock }),
+vi.mock("dexie", () => ({
+  liveQuery: (query: () => Promise<unknown>) => ({
+    subscribe: (observer: { next: (value: unknown) => void; error: (error: unknown) => void }) => {
+      let active = true;
+      const publish = () => {
+        void query().then(
+          (value) => {
+            if (active) observer.next(value);
+          },
+          (error) => {
+            if (active) observer.error(error);
+          },
+        );
+      };
+      listeners.add(publish);
+      publish();
+      return {
+        unsubscribe: () => {
+          active = false;
+          listeners.delete(publish);
+        },
+      };
+    },
+  }),
 }));
 
-function createBreakdown(
-  id: string,
-  consumedAt: ScratchBreakdown["consumedAt"],
-): ScratchBreakdown {
+vi.mock("@/lib/db/datastore", () => ({
+  getDataStore: async () => ({
+    getScratchArchiveEligibility: async (scratchId: string) =>
+      eligibilityByScratch.get(scratchId) ?? eligibility(false),
+  }),
+}));
+
+function eligibility(
+  eligible: boolean,
+  overrides: Partial<ScratchArchiveEligibility> = {},
+): ScratchArchiveEligibility {
   return {
-    id,
-    scratchBitId: "scratch-1",
-    content: "Breakdown row",
-    order: 0,
-    createdAt: 1,
-    consumedAt,
-    version: 1,
+    eligible,
+    scratch: null,
+    consumedCount: eligible ? 1 : 0,
+    unconsumedCount: 0,
+    stagedCandidateCount: 0,
+    ...overrides,
   };
+}
+
+async function publishEligibility() {
+  await act(async () => {
+    for (const listener of listeners) listener();
+  });
 }
 
 describe("useCanArchiveScratch", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    for (const key of Object.keys(stagedCandidatesMock)) {
-      delete stagedCandidatesMock[key];
-    }
+    eligibilityByScratch.clear();
+    listeners.clear();
   });
 
-  it("returns false when scratchId is null", () => {
-    const { result } = renderHook(() =>
-      useCanArchiveScratch(null, [createBreakdown("row-1", 1)]),
-    );
-
-    expect(result.current).toBe(false);
-  });
-
-  it("returns false when there are no breakdown rows", () => {
-    const { result } = renderHook(() => useCanArchiveScratch("scratch-1", []));
-
-    expect(result.current).toBe(false);
-  });
-
-  it("returns false when any breakdown row is unconsumed", () => {
-    const { result } = renderHook(() =>
-      useCanArchiveScratch("scratch-1", [
-        createBreakdown("row-1", 1),
-        createBreakdown("row-2", null),
-      ]),
-    );
-
-    expect(result.current).toBe(false);
-  });
-
-  it("returns false when all breakdowns are consumed but staged candidates remain", () => {
-    stagedCandidatesMock["scratch-1"] = [
-      {
-        id: "candidate-1",
-        type: "node",
-        sourceBreakdownId: "row-1",
-        label: "Project",
-      },
-    ];
+  it.each([
+    ["inactive Scratch", eligibility(false, { consumedCount: 1 })],
+    ["never used", eligibility(false)],
+    ["unconsumed row", eligibility(false, { consumedCount: 1, unconsumedCount: 1 })],
+    ["staged candidate", eligibility(false, { consumedCount: 1, stagedCandidateCount: 1 })],
+  ])("fails closed for %s Task 125 truth", async (_label, snapshot) => {
+    eligibilityByScratch.set("scratch-1", snapshot);
 
     const { result } = renderHook(() =>
-      useCanArchiveScratch("scratch-1", [
-        createBreakdown("row-1", 1),
-        createBreakdown("row-2", 2),
-      ]),
+      useCanArchiveScratch("scratch-1", {
+        hasAddDraft: false,
+        titleBlocker: null,
+      }),
     );
 
-    expect(result.current).toBe(false);
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    expect(result.current.persistedEligible).toBe(false);
+    expect(result.current.eligible).toBe(false);
+    expect(result.current.presentation).toBe("working");
   });
 
-  it("returns true when all breakdowns are consumed and no staged candidates remain", () => {
-    stagedCandidatesMock["scratch-1"] = [];
-
+  it("uses already-eligible entry as a complete baseline and auto-opens only after false-to-true", async () => {
+    eligibilityByScratch.set("scratch-1", eligibility(true));
     const { result } = renderHook(() =>
-      useCanArchiveScratch("scratch-1", [
-        createBreakdown("row-1", 1),
-        createBreakdown("row-2", 2),
-      ]),
+      useCanArchiveScratch("scratch-1", {
+        hasAddDraft: false,
+        titleBlocker: null,
+      }),
     );
 
-    expect(result.current).toBe(true);
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    expect(result.current.presentation).toBe("complete");
+
+    eligibilityByScratch.set(
+      "scratch-1",
+      eligibility(false, { consumedCount: 1, unconsumedCount: 1 }),
+    );
+    await publishEligibility();
+    await waitFor(() => expect(result.current.presentation).toBe("working"));
+
+    eligibilityByScratch.set("scratch-1", eligibility(true));
+    await publishEligibility();
+    await waitFor(() => expect(result.current.presentation).toBe("overlay"));
+  });
+
+  it.each(["open", "dirty", "saving", "conflicted", "reconciling"] as const)(
+    "combines the %s title blocker without persisting or changing Task 125 truth",
+    async (titleBlocker) => {
+      eligibilityByScratch.set("scratch-1", eligibility(true));
+      const { result } = renderHook(() =>
+        useCanArchiveScratch("scratch-1", {
+          hasAddDraft: false,
+          titleBlocker,
+        }),
+      );
+
+      await waitFor(() => expect(result.current.isReady).toBe(true));
+      expect(result.current.persistedEligible).toBe(true);
+      expect(result.current.eligible).toBe(false);
+      expect(result.current.presentation).toBe("working");
+    },
+  );
+
+  it("treats a non-empty Add draft as a transient blocker and opens when it clears", async () => {
+    eligibilityByScratch.set("scratch-1", eligibility(true));
+    let hasAddDraft = true;
+    const { result, rerender } = renderHook(() =>
+      useCanArchiveScratch("scratch-1", {
+        hasAddDraft,
+        titleBlocker: null,
+      }),
+    );
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    expect(result.current.persistedEligible).toBe(true);
+    expect(result.current.presentation).toBe("working");
+
+    hasAddDraft = false;
+    rerender();
+    await waitFor(() => expect(result.current.presentation).toBe("overlay"));
+  });
+
+  it("keeps Cancel/Reopen page-local and returns to complete after a Scratch switch", async () => {
+    eligibilityByScratch.set("scratch-1", eligibility(false));
+    eligibilityByScratch.set("scratch-2", eligibility(true));
+    let scratchId = "scratch-1";
+    const { result, rerender } = renderHook(() =>
+      useCanArchiveScratch(scratchId, {
+        hasAddDraft: false,
+        titleBlocker: null,
+      }),
+    );
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+
+    eligibilityByScratch.set("scratch-1", eligibility(true));
+    await publishEligibility();
+    await waitFor(() => expect(result.current.presentation).toBe("overlay"));
+
+    act(() => result.current.cancel());
+    expect(result.current.presentation).toBe("complete");
+    rerender();
+    expect(result.current.presentation).toBe("complete");
+    act(() => result.current.reopen());
+    expect(result.current.presentation).toBe("overlay");
+
+    scratchId = "scratch-2";
+    rerender();
+    await waitFor(() => expect(result.current.presentation).toBe("complete"));
+    scratchId = "scratch-1";
+    rerender();
+    await waitFor(() => expect(result.current.presentation).toBe("complete"));
   });
 });

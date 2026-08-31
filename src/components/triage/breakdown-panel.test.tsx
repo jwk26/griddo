@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   act,
   cleanup,
@@ -262,6 +262,28 @@ function DepartureIntegrationHarness() {
     <TriageDepartureContext.Provider value={departure}>
       <BreakdownPanel />
     </TriageDepartureContext.Provider>
+  );
+}
+
+function CompletionHarness({
+  initial = "overlay",
+}: {
+  initial?: "working" | "overlay" | "complete";
+}) {
+  const [presentation, setPresentation] = useState(initial);
+  return (
+    <>
+      <h2 id="triage-breakdown-heading" tabIndex={-1}>
+        Breakdown
+      </h2>
+      <BreakdownPanel
+        completion={{
+          presentation,
+          cancel: () => setPresentation("complete"),
+          reopen: () => setPresentation("overlay"),
+        }}
+      />
+    </>
   );
 }
 
@@ -2253,7 +2275,7 @@ describe("BreakdownPanel", () => {
       });
   });
 
-  it("shows consumed completion without exposing the later Archive action", () => {
+  it("shows the section-scoped completion overlay without dispatching Archive", () => {
     triageStoreState.selectedScratchId = "scratch-1";
     hookState.breakdownsByScratch["scratch-1"] = [
       createScratchBreakdown({
@@ -2263,15 +2285,194 @@ describe("BreakdownPanel", () => {
       }),
     ];
 
-    render(<BreakdownPanel />);
+    render(<CompletionHarness />);
 
-    expect(screen.getByText("All items processed")).toBeInTheDocument();
+    const overlay = screen.getByRole("region", { name: "Scratch complete" });
+    expect(overlay).toHaveAttribute(
+      "data-triage-role",
+      "archive-completion-overlay",
+    );
+    expect(screen.getByTestId("breakdown-content-region")).toHaveAttribute(
+      "inert",
+    );
     expect(
-      screen.queryByRole("button", { name: "Archive Scratch" }),
-    ).not.toBeInTheDocument();
+      within(overlay).getByRole("button", { name: "Archive Scratch" }),
+    ).toBeDisabled();
+    expect(within(overlay).getByRole("button", { name: "Cancel" })).toBeEnabled();
     expect(
-      screen.getByRole("button", { name: "Add a note..." }),
-    ).toBeInTheDocument();
+      screen.getByTestId("archive-completion-announcement"),
+    ).toHaveTextContent("Scratch complete");
+    expect(archiveBitMock).not.toHaveBeenCalled();
+  });
+
+  it("Cancel restores Add, marks Context complete, and focuses explicit Reopen", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", consumedAt: currentTime }),
+    ];
+    render(<CompletionHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(screen.queryByRole("region", { name: "Scratch complete" })).toBeNull();
+    expect(screen.getByTestId("selected-scratch-context")).toHaveAttribute(
+      "data-triage-state",
+      "complete",
+    );
+    expect(screen.getByRole("button", { name: "Add a note..." })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Reopen" })).toHaveFocus();
+  });
+
+  it("Cancel restores the Add entry after an empty Add draft opens completion", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", consumedAt: currentTime }),
+    ];
+    const completion = {
+      presentation: "working" as "working" | "overlay" | "complete",
+      cancel: vi.fn(),
+      reopen: vi.fn(),
+    };
+    const view = render(<BreakdownPanel completion={completion} />);
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    expect(screen.getByPlaceholderText("Add a note...")).toHaveValue("");
+
+    completion.presentation = "overlay";
+    view.rerender(<BreakdownPanel completion={completion} />);
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    completion.presentation = "complete";
+    view.rerender(<BreakdownPanel completion={completion} />);
+
+    expect(screen.getByRole("button", { name: "Add a note..." })).toBeEnabled();
+  });
+
+  it("explicit Reopen restores the overlay and focuses its heading", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", consumedAt: currentTime }),
+    ];
+    render(<CompletionHarness initial="complete" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Reopen" }));
+
+    expect(
+      screen.getByRole("heading", { name: "Scratch complete" }),
+    ).toHaveFocus();
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeEnabled();
+  });
+
+  it("moves completion focus to the Breakdown heading when eligibility is withdrawn", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    const completion = {
+      presentation: "overlay" as "working" | "overlay" | "complete",
+      cancel: vi.fn(),
+      reopen: vi.fn(),
+    };
+    const { rerender } = render(
+      <>
+        <h2 id="triage-breakdown-heading" tabIndex={-1}>
+          Breakdown
+        </h2>
+        <BreakdownPanel completion={completion} />
+      </>,
+    );
+    screen.getByRole("button", { name: "Cancel" }).focus();
+
+    completion.presentation = "working";
+    rerender(
+      <>
+        <h2 id="triage-breakdown-heading" tabIndex={-1}>
+          Breakdown
+        </h2>
+        <BreakdownPanel completion={completion} />
+      </>,
+    );
+
+    expect(screen.getByRole("heading", { name: "Breakdown" })).toHaveFocus();
+    expect(screen.queryByRole("button", { name: "Reopen" })).toBeNull();
+  });
+
+  it("preserves Add focus when withdrawal removes a previously focused Reopen", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    const completion = {
+      presentation: "complete" as "working" | "overlay" | "complete",
+      cancel: vi.fn(),
+      reopen: vi.fn(),
+    };
+    const view = render(
+      <>
+        <h2 id="triage-breakdown-heading" tabIndex={-1}>
+          Breakdown
+        </h2>
+        <BreakdownPanel completion={completion} />
+      </>,
+    );
+    screen.getByRole("button", { name: "Reopen" }).focus();
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.change(input, { target: { value: "Keep this focus" } });
+
+    completion.presentation = "working";
+    view.rerender(
+      <>
+        <h2 id="triage-breakdown-heading" tabIndex={-1}>
+          Breakdown
+        </h2>
+        <BreakdownPanel completion={completion} />
+      </>,
+    );
+
+    expect(input).toHaveFocus();
+  });
+
+  it("holds completion blocked after Add success until persisted truth catches up", async () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    const onAddDraftBlockerChange = vi.fn();
+    const completion = {
+      presentation: "working" as "working" | "overlay" | "complete",
+      persistedEligible: true,
+      cancel: vi.fn(),
+      reopen: vi.fn(),
+    };
+    const view = render(
+      <BreakdownPanel
+        completion={completion}
+        onAddDraftBlockerChange={onAddDraftBlockerChange}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Add a note..." }));
+    const input = screen.getByPlaceholderText("Add a note...");
+    fireEvent.change(input, { target: { value: "New active work" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    await waitFor(() => expect(hookState.createBreakdown).toHaveBeenCalledOnce());
+
+    expect(onAddDraftBlockerChange).toHaveBeenLastCalledWith(true);
+    completion.persistedEligible = false;
+    view.rerender(
+      <BreakdownPanel
+        completion={completion}
+        onAddDraftBlockerChange={onAddDraftBlockerChange}
+      />,
+    );
+    await waitFor(() =>
+      expect(onAddDraftBlockerChange).toHaveBeenLastCalledWith(false),
+    );
+  });
+
+  it("limits Escape cancellation to focus inside the completion overlay", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", consumedAt: currentTime }),
+    ];
+    render(<CompletionHarness />);
+
+    fireEvent.keyDown(document.body, { key: "Escape" });
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
+
+    const cancel = screen.getByRole("button", { name: "Cancel" });
+    cancel.focus();
+    fireEvent.keyDown(cancel, { key: "Escape" });
+    expect(screen.getByRole("button", { name: "Reopen" })).toHaveFocus();
   });
 
   it("keeps the add-note bar when consumed breakdowns still have staged candidates", () => {
@@ -2650,13 +2851,18 @@ describe("BreakdownPanel", () => {
     });
   });
 
-  it("focuses Context after confirmed Delete creates consumed completion", async () => {
+  it("focuses the overlay heading after confirmed Delete creates completion", async () => {
     triageStoreState.selectedScratchId = "scratch-1";
     hookState.breakdownsByScratch["scratch-1"] = [
       createScratchBreakdown({ id: "row-1", content: "Delete final active" }),
     ];
 
-    const view = render(<BreakdownPanel />);
+    const completion = {
+      presentation: "working" as "working" | "overlay" | "complete",
+      cancel: vi.fn(),
+      reopen: vi.fn(),
+    };
+    const view = render(<BreakdownPanel completion={completion} />);
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     fireEvent.click(
       within(await screen.findByRole("alertdialog")).getByRole("button", {
@@ -2672,10 +2878,16 @@ describe("BreakdownPanel", () => {
         consumedAt: currentTime,
       }),
     ];
-    view.rerender(<BreakdownPanel />);
+    view.rerender(<BreakdownPanel completion={completion} />);
+
+    (document.activeElement as HTMLElement).blur();
+    completion.presentation = "overlay";
+    view.rerender(<BreakdownPanel completion={completion} />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("selected-scratch-context")).toHaveFocus();
+      expect(
+        screen.getByRole("heading", { name: "Scratch complete" }),
+      ).toHaveFocus();
     });
   });
 
