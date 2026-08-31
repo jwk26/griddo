@@ -3,7 +3,9 @@
 > Branch: `phase-29/mounted-page-newly-placed-undo`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-29-mounted-page-newly-placed-undo`
 > Kickoff date: 2026-08-28
-> State: Tasks 155–158 `[x]`, Accepted; all Phase 29 product tasks are accepted, but Phase 29 is not closed and terminal Track B work remains for a fresh candidate-pinned `end-phase` lifecycle
+> State: Tasks 155–158 `[x]`, Accepted; terminal Track B reconciliation is
+> complete in the replacement detached close candidate, but Phase 29 remains
+> open until exact Final Close approval and execution
 
 ## Status Legend
 
@@ -81,9 +83,58 @@ occurred during kickoff.
 
 ## Active Issues
 
-No Phase 29 product issue is active at kickoff. The nine carried post-close
-workflow findings are owned without verdict by
-`docs/verification/inbox-triage/phase-29-workflow-pilot-audit.md`.
+No Phase 29 issue remains `Open`, `In Progress`, or `Awaiting User Decision`.
+The nine carried workflow findings have terminal dispositions in
+`docs/verification/inbox-triage/phase-29-workflow-pilot-audit.md`. The
+user-reported visual issue below is terminally `Deferred`, not visually
+accepted as complete.
+
+## Minor Issues
+
+### P29-01: Explorer-card regression/gap and broader Inbox visual-fidelity debt
+
+- **Status:** `Deferred` — user-approved `Explicitly Deferred` disposition.
+- **Conformance tier:** `Advisory`; it remains visible at Final Close and is
+  not a claim that the Phase 29 UI or broader Inbox UI is visually complete.
+- **Reported:** On 2026-08-31, after stale `.next` output was cleared and fresh
+  development output was generated, the user manually observed that ordinary
+  Explorer Node/Bit cards in the Phase 29 result no longer resemble the
+  theme-specific compact card/list treatment in the eight Inbox prototypes.
+  The broader latest Inbox surface also remains materially distant from those
+  prototypes in theme-specific typography, borders, section treatment,
+  Breakdown Edit/Delete controls, Node/Bit card shapes, and related visual
+  details.
+- **Phase 29-specific evidence:** Tasks 155–158 established their claimed
+  DOM/state/interaction invariants through owner tests. No Phase 29 browser
+  visual-fidelity comparison was run. Read-only source inspection confirms
+  that ordinary Explorer rows in
+  `src/components/triage/hierarchy-explorer.tsx` compose the shared
+  `src/components/grid/node-card.tsx` and
+  `src/components/grid/bit-card.tsx` owners; this establishes the composition
+  path only, not rendered fidelity.
+- **Evidence limits:** exact route `not captured`; viewport `not captured`;
+  capture ID `not captured`; theme/mode `not captured`; interaction/focus
+  metadata `not captured`; smoke elapsed time `not measured`; smoke token usage
+  `not measured`. No value is estimated or backfilled.
+- **Boundary:** the Phase 29 Explorer-card regression/gap is distinct from the
+  broader campaign-wide eight-theme fidelity debt. Existing `D-CARD`, recipe,
+  Task 164, and shared-owner boundaries must be reconciled before assigning a
+  repair owner.
+- **Disposition:** no Phase 29 product repair is performed before close.
+  Phase 30 implements its existing functional contracts and canonical recipes
+  without a campaign-wide redesign. Task 159 retains its existing visual
+  authority and still requires bounded running-app confirmation of eligibility
+  transition, Cancel/Reopen, withdrawal, and focus; it neither skips those
+  checks nor separately repairs overall fidelity.
+- **Resume owner and boundary:** Phase 31, after Task 163 integration and before
+  Task 164 repair work, performs a read-only gap audit against all eight Inbox
+  prototypes and canonical recipes. The audit identifies exact owners, paths,
+  affected tasks, and follow-up scope. It grants no repair, task reopening,
+  owner expansion, product/design decision, or new follow-up task; each remains
+  a user gate. Task 164 then owns its canonical conformance/fidelity contract
+  and any separately approved follow-up plan.
+- **Deferred index:** synchronized in `docs/issues/Issues_Deferred.md`; that
+  index is navigation only and is not implementation authority.
 
 ## Task 155 Durable Start
 
@@ -150,7 +201,27 @@ workflow findings are owned without verdict by
 | Behavior | Compose the accepted Tasks 156–157 Undo model and DP-VQ10 realization into DP-VQ07 search results only: matching local placements enter current results; independent trailing Undo never reveals or drags; query and result scroll survive every Undo state; non-success retains the exact result; terminal success removes only that result, announces `Restored “{title}” to {source}.`, and focuses the next surviving result at the removed position or otherwise the search input, never a previous result |
 | Issues / deviations | Resolved with canonical impact `None`: cycle 1 focused typecheck repaired a test-only readonly fixture; High-risk async review then found stale activation-time results could choose the wrong focus after a pending-Undo refresh, and cycle 2 recomputed the exact latest removed-row position. Checkpoint review found the missing Search-owned `explorer-search-undo` class/role and a non-reproducible test-manifest ordering claim; cycle 3/3 reproduced and repaired both within the exact two product/test and three documentation owners. No remaining material finding, scope deviation, blocker, owner stop, path expansion, fourth-cycle gate, or `Unowned` item |
 | Canonical impact | `None` — Task 158 consumes the existing approved Search-only composition without changing canonical authority |
-| Audit invariant | The accepted product/evidence/audit checkpoint includes the exact Task 158 measurement and cycle 3/3 repair rows; Task 158 evidence and the Phase 29 audit remain unchanged by acceptance. Track B terminal comparison, `WF28-01`–`WF28-11` verdicts, seven questions, safeguards, owner classification, limitations, and the unapplied improvement plan remain open for a fresh candidate-pinned `end-phase` lifecycle |
+| Audit invariant | The accepted product/evidence/audit checkpoint includes the exact Task 158 measurement and cycle 3/3 repair rows; Task 158 evidence remained unchanged by acceptance. At that checkpoint the Track B terminal outputs were open; this replacement end-phase reconciliation completes them in the terminal audit below |
 | Implementation / evidence | Durable start `dd2be1f65bb3709677b6af3e4ffbe319468d5f1f`; original implementation `f041af0cf8eacfcf994b64481d489d393dd94b31`; accepted cycle 3 repair implementation `81c2f1e1f1229d79b0e32e08e300024853469324`; accepted evidence/audit checkpoint `0ccbae0f7998066f573819cd036e745ff4dac92a`; no remaining material finding, scope deviation, blocker, or `Unowned` item |
 | Fingerprint | Accepted replacement `4616261c3066cd220583e34b1628045ff622c2863fe4d6b8e3e3880b10de50bc` on repair implementation `81c2f1e1f1229d79b0e32e08e300024853469324`; components remain `src` tree `36a32647ec8fd7587e0942960f948881d819f624`, lexicographically path-ordered 99-test manifest `5f7629e1261deb4ef795ce2ae6cee568a0809b0f0d6631c8d5f6e6167bd64d2f`, exact 8-path manifest `2259f694e1f5ea74b95033cbf42a0a8157c3d49cf9235fee8d1bc6825629a24e`, and config/command manifest `111450e6805057e33bc917444dcb1e86baf893a55e711e03634c9bc0f4d0a3fd` |
-| Next action | Control Tower reviews this acceptance-only checkpoint; only a fresh candidate-pinned `end-phase` prompt may follow. Phase 29 is not closed, and Phase 30–31 remain unstarted |
+| Next action | Stop for the user's exact Phase 29 Final Close approval against the single replacement packet; Phase 29 is not closed, and Phase 30–31 remain unstarted |
+
+## Terminal End-Phase Audit
+
+| Field | Durable value |
+| --- | --- |
+| Lifecycle | Sole fresh candidate-pinned `end-phase` revision Working session; previous end-phase and Task 155–158 sessions are closed/archive-only; duplicate session prohibited; Control Tower maintained |
+| Pinned input | Clean feature HEAD `197e2dc92c39b85d6b62319ae7f18edbd73c15ce`, parent `0ccbae0f7998066f573819cd036e745ff4dac92a`, tree `1c262dd5d3d7cfe1ecbac5a9fe39aeb0108044a8`, accepted `src` tree `36a32647ec8fd7587e0942960f948881d819f624` |
+| Acceptance | Tasks 155–158 are `[x]`, Accepted at `2dfab8058e2b34ee55bab6460bbc152865434b5b`, `d0bb079fe0ae1ab2cdcca50c200b19a56c37e0f5`, `57afa67e6cad93bbef74c8a23fad6f719e442d4c`, and `197e2dc92c39b85d6b62319ae7f18edbd73c15ce` |
+| Gate C / Adapter | Gate C commit `d81f924e209afd1cced22fdbfdca12e2c11af11b`, receipt blob `ad1071695af8c5868067f0abc35cdff05a6110c3`, receipt SHA-256 `66b26a538b7b696e90a8f974e0a51a0ca20b20fc8bef7b14a576b6bd957c7909`; all nine artifact pins passed the pinned synchronized validator; Adapter blob `7903892c04c4eb6fcd694712d5a01fdb608e183f` |
+| Fresh pre-close gate | No prior Candidate A result reused. Focused `git diff --check` passed in `0.00s`; focused `pnpm typecheck` passed in `3.95s`; full `pnpm test` passed 99 files / 1,196 tests in `23.26s`; `pnpm lint` passed with 0 errors / 11 unchanged warnings in `8.57s`; `pnpm typecheck` passed in `1.28s`; `pnpm build` passed Next.js 16.2.1 with seven routes in `11.40s`; full four-command total `44.51s` |
+| Canonical impact | Tasks 155, 156, and 158 remain `None`; Task 157 remains `Reflected` in its approved recipe and `docs/DESIGN_TOKENS.md`; P29-01 is user-approved `Explicitly Deferred` to the Phase 31 boundary; no unresolved `Tagged` item remains |
+| Conformance / issues | Blocking `0`; Advisory `1` (`P29-01`, Explicitly Deferred). Active `Open`, `In Progress`, or `Awaiting User Decision` issues: `0`. Owner tests establish only their stated DOM/state/interaction semantics and do not establish prototype/theme visual fidelity |
+| Integration preservation | Primary `/Users/jwk/Documents/griddo2-codex-integration` is clean on `main` at `f3c2be6b2afa2da51cde39d22c13eabf2286f296`, equal to fresh `origin/main`. Duplicate user work is preserved in stash `fbc33307802ca8a1baa334eb3f20507f39c86c9d` with message `phase-29-final-close: duplicate integration copy preserved at f92189d` and preservation branch `wip/storage-reliability-cloud-sync-2026-08-26` at `f92189d3a698cce2fab98b1d8fb981647f387771`; unrelated stash `de07832a8b4150203b663349a1eaf220bfd4b1a6` also remains untouched |
+| Publication state | Remote feature branch absent; `docs/issues/Final_Close_Phase_29.json` absent; no receipt write, active-feature close commit, push, PR, checks poll, merge, integration sync, cleanup, or Phase 30–31 implementation occurred |
+| Next legal action | Prepare and present exactly one replacement approval-ready Phase 29 Final Close packet, then stop for the user's exact Final Close approval |
+
+The superseded candidate `65a9634d9d2b970643b6f667e647dd3f72b3f7f1`
+and its old payload remain history-only. The workflow-support candidate
+`fbd1a1995b50c26c3e669bdb5243cec3ca324bb8` remains Track B evidence only.
+Neither is execution, publication, merge, or cleanup authority.

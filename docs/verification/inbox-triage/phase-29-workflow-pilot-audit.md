@@ -1,6 +1,7 @@
 # GridDO Codex Workflow Phase 29 Pilot Audit
 
-> Status: Phase 29 pilot active
+> Status: Phase 29 terminal comparison complete; one Advisory visual-fidelity
+> finding Explicitly Deferred; Final Close not executed
 > Created: 2026-08-26 during the Phase 28 close preview
 > Evidence role: Phase 29 workflow experiment continuity and comparison owner
 > Authority: Not product, plan, skill, Adapter, receipt, or acceptance authority
@@ -244,3 +245,278 @@ Phase 29 `end-phase` must provide all of the following before close:
 
 Phase 29 does not modify the candidate skill or Adapter and does not
 automatically extend the experiment into a third pilot.
+
+## Fresh end-phase terminal gate
+
+The pinned `end-phase` resolver returned `approval_required`,
+`contract_ready=true`, and `writes_allowed=false`; this was compatibility
+evidence only. The user-owned revision prompt supplied the bounded close-doc
+authority. At exact clean pre-close HEAD
+`197e2dc92c39b85d6b62319ae7f18edbd73c15ce`, tree
+`1c262dd5d3d7cfe1ecbac5a9fe39aeb0108044a8`, the Adapter-declared gates ran
+serially and did not reuse Task 158 or superseded Candidate A evidence:
+
+| Tier / command | Exit | Count / result | Elapsed | Warnings |
+| --- | ---: | --- | ---: | --- |
+| focused `git diff --check` | 0 | no whitespace errors | `0.00s` | none |
+| focused `pnpm typecheck` | 0 | `tsc --noEmit` passed | `3.95s` | none |
+| full `pnpm test` | 0 | 99 files / 1,196 tests | `23.26s` | one Node `DEP0205`; seven worker `localStorage` experimental emissions |
+| full `pnpm lint` | 0 | 0 errors | `8.57s` | 11 unchanged warnings |
+| full `pnpm typecheck` | 0 | `tsc --noEmit` passed | `1.28s` | none |
+| full `pnpm build` | 0 | Next.js 16.2.1; seven routes | `11.40s` | one Node `DEP0205`; one `localStorage` experimental emission |
+
+The full four-command elapsed total was `44.51s`. Runtime token/accounting and
+prompt bytes were not mechanically exposed and are `not measured`. The
+terminal input pins the accepted `src` tree
+`36a32647ec8fd7587e0942960f948881d819f624`, Adapter blob
+`7903892c04c4eb6fcd694712d5a01fdb608e183f`, command-catalog blob
+`2063146db0b8920dc8ee5805001e1541da49c2a0`, and planning-standard blob
+`25833afe1dbaf0b9b7b7a0e7e18968986f290b37`. A fresh detached-preview gate is
+packet evidence and cannot be replaced by this pre-close run.
+
+## Escaped manual visual finding
+
+After stale `.next` output was cleared and fresh development output was
+generated, the user manually observed that ordinary Explorer Node/Bit cards in
+the Phase 29 result no longer resemble the theme-specific compact card/list
+treatment in the eight Inbox prototypes. The broader latest Inbox surface also
+remains materially distant from the prototypes in theme-specific typography,
+borders, section treatment, Breakdown Edit/Delete controls, Node/Bit card
+shapes, and related visual details.
+
+This finding is escaped from Phase 29's owner-test evidence only in the
+evidence-modality sense: owner tests proved the claimed DOM/state/interaction
+semantics, but no Phase 29 browser visual-fidelity comparison was run and those
+tests did not establish prototype/theme fidelity. Read-only inspection confirms
+that ordinary rows in `src/components/triage/hierarchy-explorer.tsx` compose
+shared `src/components/grid/node-card.tsx` and
+`src/components/grid/bit-card.tsx`; it does not prove rendered appearance.
+
+The evidence is intentionally bounded to what was actually observed:
+
+- exact route: `not captured`;
+- viewport: `not captured`;
+- capture ID: `not captured`;
+- theme/mode: `not captured`;
+- interaction and focus metadata: `not captured`;
+- smoke elapsed time: `not measured`;
+- smoke token usage: `not measured`.
+
+The Phase 29 ordinary Explorer-card regression/gap is distinct from broader
+campaign-wide eight-theme fidelity debt. It is classified `Advisory` and
+user-approved `Explicitly Deferred`, not accepted as visually complete. No
+Phase 29 repair is authorized. Resume owner: Phase 31, after Task 163 and before
+Task 164, through a read-only gap audit against the eight prototype routes and
+canonical recipes. That audit names exact owners, paths, affected tasks, and
+follow-up scope but grants no repair, task reopening, owner expansion,
+product/design decision, or new follow-up task.
+
+## Phase 28 versus Phase 29
+
+Only mechanically committed or explicitly user-reported values are compared.
+Missing elapsed, token, prompt-size, and manual-smoke metadata remain `not
+measured` or `not captured`.
+
+| Measure | Phase 28 | Phase 29 | Disposition |
+| --- | --- | --- | --- |
+| Accepted product tasks | 6 (149–154) | 4 (155–158) | Different task counts; totals are not direct speed claims. |
+| Risk mix | all High | all High | Medium/Low relaxations were not tested. |
+| Implementation repair cycles | `27` (`5,6,4,4,4,4`) | `15` (`2,3,7,3`) | Average fell from `4.50` to `3.75`, but Task 157 required `7/7`; a fixed three-cycle budget is rejected. |
+| Focused elapsed | Tasks 152–154 only: `7.33s`; Tasks 149–151 `not measured` | all tasks: `14.95s` | Non-equivalent coverage; no aggregate saving inferred. |
+| Serial task full-gate elapsed | Tasks 152–154 only: `117.37s`; Tasks 149–151 `not measured` | all tasks: `167.42s` | Non-equivalent coverage; no aggregate saving inferred. |
+| Fresh phase terminal full gate | counts only: 98 files / 1,124 tests; elapsed `not measured` | 99 files / 1,196 tests, `44.51s` | Both passed; no elapsed saving can be compared. |
+| Browser evidence | Tasks 149 and 151 had fresh browser evidence; other claims used selective owner-test substitution | No Phase 29 browser fidelity comparison; later manual fresh-output smoke reported the visual gap, with route/viewport/capture metadata `not captured` | Owner tests were valid for semantics but insufficient for prototype/theme fidelity. |
+| Duplicate Working sessions | `not measured` as one aggregate | `0` during Tasks 155–158; this revision is the sole active end-phase Working session | Continuity control worked; cost is `not measured`. |
+| Runtime tokens / prompt bytes | `not measured` | `not measured` | No token or prompt-size saving claim. |
+| Escaped findings | later manual smoke produced a separate post-close repair | Task 157 cycle-6 and Task 158 checkpoint findings were repaired before acceptance; the later manual visual finding is Advisory and Explicitly Deferred | Review, fresh-output smoke, and modality-matched visual safeguards remain necessary. |
+
+## WF28 verdicts
+
+| ID | Verdict | Evidence-based conclusion | Owner |
+| --- | --- | --- | --- |
+| `WF28-01` | `change` | Retain test-first High-risk work, but replace a presumed three-cycle ceiling with an explicit initial budget plus evidence-backed continuation gates. Task 157 required `7/7`; Medium/Low tiers remain untested. | `run-task` |
+| `WF28-02` | `retain` | Content fingerprints correctly invalidated superseded gates in Tasks 155–158; no stale test result was reused. Reuse is allowed only for identical declared inputs and never for volatile publication state or rendered output. | `run-task` |
+| `WF28-03` | `change` | Focused gates remain mandatory per task and full gates remain mandatory at widened-owner/API/risk boundaries. Phase 29 ran a full gate for every final task input, so clustered-full-gate savings were not demonstrated. | `run-task` |
+| `WF28-04` | `retain` | Product repairs stayed in `run-task`; `end-phase` performed terminal acceptance/issue/canonical/conformance reconciliation and recorded the newly reported Advisory without silently repairing product scope. | `end-phase` |
+| `WF28-05` | `change` | Owner separation worked, but ledger/audit checkpoint states needed terminal reconciliation, and the Task 158 message variance shows commit-contract materiality/disposition should have one durable field instead of repeated prose. | `run-task` |
+| `WF28-06` | `change` | Early seam discovery must record producer, mounted owner, consumer, direct test, visual owner, and canonical owner before RED. Task 156 required one owner expansion, Task 157 had one historical owner stop, and the visual gap now requires Phase 31 owner classification. | `run-task` |
+| `WF28-07` | `change` | Early High-risk and Control Tower review caught semantic defects, but terminal review initially had no rendered comparison and therefore could not identify the visual-fidelity Advisory. Add an explicit modality/conformance disposition before a user-facing task is treated as visually evidenced. | `run-task` |
+| `WF28-08` | `retain` | Delta continuations, explicit rollover state, sole-session ownership, and duplicate prohibition produced duplicate count `0`. Token and prompt-byte savings remain `not measured`. | `Control Tower policy` |
+| `WF28-09` | `change` | The manual fresh-output finding demonstrates that owner tests cannot substitute for prototype/theme fidelity. Require bounded task-local browser evidence for browser-only invariants, while reserving the aggregate matrix for Task 164. | `run-task` |
+| `WF28-10` | `retain` | Proportional High-risk review found concrete defects in every task family; final no-finding reviews remain useful, but cannot be represented as rendered-fidelity evidence. Token savings are `not measured`. | `Control Tower policy` |
+| `WF28-11` | `retain` | Product gates, rendered-output freshness, and current remote/base/worktree guards have different lifetimes. The integration worktree is now clean through separate stash/branch preservation, without reusing product evidence. | `end-phase` |
+
+## Seven decision answers
+
+1. No candidate can be proven to reduce tokens or total elapsed time because
+   both token/accounting and comparable Phase 28 timing are incomplete. Repair
+   average decreased from `4.50` to `3.75`, but task mix differs, Task 157
+   needed seven cycles, and the manual visual finding prevents a no-escaped-gap
+   visual claim.
+2. Mandatory safeguards are High-risk RED/reproduction, latest-input focused
+   tests, full gates after owner/API/input changes, exact fingerprint
+   invalidation, semantic conformance review, independent checkpoint review,
+   fresh generated output, browser evidence for browser-only invariants,
+   explicit owner/scope gates, fresh end-phase terminal gates, expected-head
+   publication protection, and merge/integration/cleanup proof.
+3. No pair of repeated task gates was mechanically recorded with an identical
+   complete relevant-input fingerprint. Acceptance-only commits preserved
+   product trees, but the project-declared fresh terminal gate and rendered
+   output were separately required and not treated as Task 158 reuse.
+4. Product contracts had one plan owner, execution disposition one ledger
+   owner, detailed results one task-evidence owner, and workflow measurements
+   one audit owner. The deferred index is only a pointer. Checkpoint-state
+   prose still competed until terminal reconciliation.
+5. Task 156's extra hook/test pair and Task 157's Workspace-test expansion were
+   real user-owned scope decisions because committed task write sets excluded
+   those paths. Producer/consumer discovery inside named owners was ordinary
+   implementation discovery. The Phase 31 visual audit must classify
+   `NodeCard`/`BitCard`, `D-CARD`, recipe, Task 164, and any prior-task owners
+   before requesting a separate repair gate.
+6. `run-task` owns risk tiering, TDD, seam inventory, repair budgets,
+   fingerprints, task-local browser modality, and checkpoint evidence.
+   `end-phase` owns fresh terminal verification, acceptance/issue/canonical/
+   conformance reconciliation, escaped-finding disposition, detached candidate
+   A, and volatile transaction guards. The Project Adapter owns stable logical
+   gates and lifecycle/publication policy. Control Tower policy owns session
+   rollover, duplicate prevention, delta prompts, and approval routing.
+7. The exact unapplied candidate/reference/test/scenario changes are listed
+   below. None was applied to candidate `94e89782…`, the Adapter, the Track B
+   support candidate, or product source.
+
+## Carried post-close finding disposition
+
+| # | Disposition | Terminal finding | Owner |
+| ---: | --- | --- | --- |
+| 1 | `change` | Add a permanent, tested post-close escaped-smoke repair route; ordinary `end-phase` authority must not be retroactively reused. | `Project Adapter` |
+| 2 | `retain` | `fbd1a199…` proves the one-off support shape only and remains read-only Track B evidence. | `Control Tower policy` |
+| 3 | `retain` | Historical support is not the Phase 29 workflow candidate or a preselected permanent improvement. | `Control Tower policy` |
+| 4 | `change` | Retain explicit approval for extra repair cycles, but make budgets evidence-bounded rather than assuming three cycles fit every High-risk task. | `run-task` |
+| 5 | `change` | A permanent stale `.next`/Turbopack generated-output precondition remains unapplied; this manual finding reinforces that fresh output must precede rendered evidence. Stable policy belongs in the Adapter only after a safe project command exists. | `Project Adapter` |
+| 6 | `reject` | The inherited `test-task4-craft-docs` stale SUT evidence hash is not Phase 29 evidence and must not block or be silently regenerated here. | `Control Tower policy` |
+| 7 | `retain` | Regeneration of unrelated candidate evidence requires its own owner and approval. | `Control Tower policy` |
+| 8 | `change` | Lifecycle coverage, budgets, browser modality, escaped-smoke routing, rollover, durable ownership, reuse/invalidation, duplicate sessions, and `Unowned` outcomes become explicit scenario assertions below. | `Control Tower policy` |
+| 9 | `retain` | One-off compatibility support stays separate from the final recommendation and any future permanent candidate patch. | `Control Tower policy` |
+
+## Mandatory safeguards and limitations
+
+- Preserve exact user-owned `[x]`, owner expansion, canonical decision, Final
+  Close, expected-head, and cleanup gates. A cycle budget never grants scope.
+- Preserve fresh Git/runtime discovery and artifact-pin validation; resolver
+  compatibility never grants writes.
+- Preserve serial gates that share `.next`/generated output, and clear or
+  otherwise prove fresh output before rendered comparison. Stale output is not
+  evidence that source passed or failed.
+- Preserve modality matching: owner tests cannot establish computed pixels,
+  physical pointer/touch, real browser focus, viewport geometry, or runtime
+  media-query behavior.
+- Preserve durable evidence separation and exact invalidation reasons; never
+  infer evidence reuse from commit ancestry alone.
+- All Phase 29 tasks were High risk; Medium/Low risk-tier behavior is
+  `insufficient evidence`.
+- Phase 28 Tasks 149–151 elapsed, both phases' runtime tokens, and prompt bytes
+  are `not measured`; no values are estimated.
+- Phase 29 did not run a browser fidelity comparison. The manual finding has
+  route, viewport, capture ID, theme/mode, interaction/focus metadata `not
+  captured`, and elapsed/token values `not measured`; it is not a full matrix.
+- Phase 29 did not exercise publication/merge/cleanup, so end-to-end
+  transaction savings remain `not measured`.
+- The primary integration worktree is clean after user work was preserved in
+  stash `fbc333…` and branch `wip/storage-reliability-cloud-sync-2026-08-26`
+  at `f92189d…`; stash `de07832…` remains untouched. Preservation resolves the
+  former blocker but is not Phase 29 product evidence.
+
+## Phase 30 low-cost browser handoff
+
+- Do not run a Phase 30 eight-theme × light/dark × multi-viewport fidelity
+  matrix. Task 164 owns aggregate visual conformance.
+- Task 159 receives its bounded task-local running-app evidence for eligibility
+  transition, Cancel/Reopen, withdrawal, and focus. Its existing canonical
+  recipes remain unchanged; no special redesign or overall-fidelity repair is
+  added.
+- Task 160 receives one representative running check for fixed Context
+  geometry and blocker placement rather than a full theme matrix.
+- Tasks 161–162 may share one final-input browser session for real
+  `sessionStorage`, reload/reconciliation ordering, and browser
+  focus/lifecycle invariants that owner tests cannot establish.
+- Any newly observed mismatch is recorded, not silently repaired outside the
+  current task contract.
+- Task 164 performs the full eight-theme, light/dark, viewport, motion,
+  accessibility, and prototype/recipe comparison in its canonical contract.
+
+## Exact unapplied workflow change plan
+
+Apply only in a separate post-publication workflow-improvement lifecycle:
+
+1. `run-task` — update `skills/run-task/SKILL.md`,
+   `references/task-contract.md`, `references/verification-and-review.md`, and
+   `references/checkpoints-and-recovery.md` to define seam inventory including
+   visual owners, tiered initial repair budgets, evidence-backed extra-cycle
+   gates, exact fingerprint invalidation, task-local browser-only modality
+   routing, owner-test substitution limits, and material/non-material
+   commit-contract variance disposition.
+2. `end-phase` — update `skills/end-phase/SKILL.md`,
+   `references/completion-audit.md`, `references/conformance.md`,
+   `references/archive-and-handoff.md`, and
+   `references/publication-and-cleanup.md` to distinguish immutable evidence
+   from volatile guards, require escaped manual-smoke metadata to use explicit
+   `not captured`/`not measured` values, support Advisory plus Explicitly
+   Deferred close disposition, and require fresh preview verification before
+   one packet.
+3. Project Adapter — update the v2 contract/schema/fixtures and resolver tests
+   so a separately approved post-close-repair lifecycle and an optional
+   project-owned generated-output freshness logical gate are explicit stable
+   policy, never inferred from ordinary `end-phase`.
+4. Control Tower policy — document sole-active-session identity, delta-only
+   continuation, rollover handoff, duplicate count, exact ownership of
+   historical support candidates, and the prohibition on treating a read-only
+   visual audit as repair authority.
+5. Tests — extend `tests/test-task6-run-task`, `tests/test-task7-end-phase`,
+   `tests/test-project-adapter-v2`, and their contract suites; add paired
+   prompts/scenarios/expected fixtures for bounded extra-cycle approval, owner
+   expansion versus discoverable owner, identical-fingerprint reuse and
+   changed-input invalidation, browser-only evidence required/omitted,
+   semantic-owner tests versus visual-fidelity claims, escaped manual smoke
+   with missing metadata, fresh `.next` output, non-material commit-message
+   variance, post-close smoke repair, duplicate-session rejection,
+   stash-preserved clean primary integration, and exact packet suppression
+   until all guards are green.
+
+## Post-publication handoff
+
+After Phase 29 is published, merged, integration-synced, and cleaned, start a
+separate workflow-improvement lifecycle pinned to all of:
+
+- merged Phase 29 audit blob (unknown until merge; resolve from the merge
+  result, do not predict it);
+- exact `docs/issues/Final_Close_Phase_29.json` blob and SHA-256 (not yet
+  created); and
+- workflow candidate `94e89782f7fe2cdbdd035e842ca6881b4a87ce49`.
+
+That lifecycle must reproduce RED in the named tests/scenarios, implement the
+minimum candidate/Adapter changes, run synchronized resolver and candidate
+qualification, and stop at its own publication gate. It must not reuse,
+modify, merge, publish, or clean `fbd1a199…` by ancestry or assumption.
+
+## Terminal review outcome
+
+Tasks 155–158 are accepted; canonical impacts are `None`, `None`, `Reflected`,
+and `None`. No unresolved `Tagged`, active issue, Blocking violation, scope
+ambiguity, duplicate session, or terminal `Unowned` product outcome remains.
+One Advisory, `P29-01`, is user-approved `Explicitly Deferred`; this is not a
+visual-completeness claim. Accepted task evidence is reused only for its
+declared DOM/state/interaction invariants and no browser-fidelity claim is
+manufactured.
+
+Task 158 acceptance commit `197e2dc92c39b85d6b62319ae7f18edbd73c15ce`
+has actual message `docs(phase-29): accept task 158`, while the requested
+message included the additional word `checkpoint`. Parent
+`0ccbae0f7998066f573819cd036e745ff4dac92a`, tree, acceptance marker, and scope
+are exact. This is a non-material commit-contract variance; do not rewrite it.
+
+Control Tower is maintained. Task 155–158 and the previous end-phase Working
+sessions are closed/archive-only. This fresh end-phase revision Working session
+is the sole active Working session; duplicate session is prohibited. Phase
+30–31 remain unstarted. Exactly one next legal action remains: prepare and
+return the replacement Phase 29 Final Close packet, then stop for exact user
+approval.
