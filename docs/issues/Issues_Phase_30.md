@@ -146,9 +146,21 @@ during kickoff.
 | Start base / entrypoint | Current accepted Task 161 commit `6add953a1b6355b349145dff51e78aa49f9a2d3d`; approved Phase 30 base `a4e00c4ef8d684bdfd52bd59523d1de6e4c11541` |
 | Recovery anchor | This ledger-only durable-start commit; it must remain the parent of every Task 162 product/test write |
 | Implementation / evidence | Pending; `docs/verification/inbox-triage/task-162.md` is not written yet; relevant-input fingerprint pending final implementation input |
-| State | `In Progress`; Tasks 159–161 remain `[x]`; Task 162 remains `[ ]`; acceptance-only work, Phase 31, and end-phase remain prohibited |
+| State | `Awaiting User Decision` on `P30-162-01`; Tasks 159–161 remain `[x]`; Task 162 remains `[ ]`; acceptance-only work, Phase 31, and end-phase remain prohibited |
 | Verification | Pending Task 162 focused Archive/copy state-table/storage tests, Adapter full gate, final-input fingerprint, and one fresh bounded running-app session |
-| Issues / deviations | None open; owner expansion `None`; `Unowned: None`; repair count `0/3` |
+| Issues / deviations | `P30-162-01` is awaiting an exact path-owner disposition before the first product/test write; `Unowned: None`; repair count `0/3` |
 | Canonical impact | `None` — Task 162 realizes the already-reflected `DP-VQ12=A` contract without changing canonical product, design, schema, or workflow authority |
+
+#### P30-162-01 — Archive coordinator state has no approved presentation seam
+
+| Field | Durable value |
+| --- | --- |
+| Status | `Awaiting User Decision` |
+| Trigger | Task 162 seam discovery before the first product/test write |
+| Evidence | `src/components/triage/triage-workspace.tsx` owns `useArchiveScratch`, returns `null` while `isProjectionReady` is false, and passes only `archiveScratch` into `ReadyTriageWorkspace`; `BreakdownCompletionProjection` therefore receives no coordinator `state` or `reconcile` owner |
+| Consequence | The seven Task 162 paths cannot render forced-reload recovery before ordinary Inbox projection, distinguish unknown/reconciling/terminal states, invoke read-only Check again, or dismiss/retry the same logical operation without introducing an unapproved parallel/global state owner |
+| Smallest safe disposition | Add `src/components/triage/triage-workspace.tsx` and `src/components/triage/triage-workspace.test.tsx` to Task 162 only, solely to project the existing coordinator state/actions into the approved single Breakdown card and preserve Task 161 handoff semantics |
+| Prohibited workaround | No module-global mirror, DOM event bus, second context owner, extra persistence, detached recovery panel, or Task 161 semantic rewrite |
+| Canonical impact | `None` if the two-file seam expansion is approved as an implementation-local Task 162 correction; otherwise Task 162 remains stopped before product/test writes |
 
 No other Phase 30 item is `Open` or `Awaiting User Decision`.
