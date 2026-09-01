@@ -3,7 +3,9 @@
 > Branch: `phase-30/completion-archive-recovery`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-30-completion-archive-recovery`
 > Kickoff date: 2026-08-31
-> State: Tasks 159–162 are `[x]` after user acceptance; the Task 162 Working session is closed/archive-only after its acceptance commit
+> State: Tasks 159–162 are `[x]` after user acceptance; terminal reconciliation
+> is complete in the detached close candidate, but Phase 30 remains open until
+> exact Final Close approval and execution
 
 ## Status Legend
 
@@ -164,3 +166,21 @@ during kickoff.
 | Canonical impact | `Reflected` for path ownership only in the current Task 162 section of `docs/EXECUTION_PLAN.md`; product semantics and all other scope remain unchanged |
 
 No other Phase 30 item is `Open` or `Awaiting User Decision`.
+
+## Terminal End-Phase Audit
+
+| Field | Durable value |
+| --- | --- |
+| Lifecycle | Sole fresh pinned-candidate Phase 30 `end-phase` Working session; Task 159–162 sessions are closed/archive-only and duplicate Phase 30 sessions are prohibited |
+| Pinned input | Clean feature HEAD `0b76a547d276b6d7effa8d7b59f1a54fc2ea68cd`, tree `c6a968ee99c9837d14d82efc394b76a5cbef72fb`, accepted `src` tree `3f700774fd43d73501618b3146133d57962e9d59` |
+| Acceptance | Tasks 159–162 are `[x]`, Accepted at `b742538bc1f72300912d8d6f2a310e7328deed5b`, `23184e06ae20ede9d6b5c18db02a11b4553ee7b0`, `6add953a1b6355b349145dff51e78aa49f9a2d3d`, and `0b76a547d276b6d7effa8d7b59f1a54fc2ea68cd` |
+| Gate C / Adapter | Gate C commit `fbb3bc36e1593513d5bb811de0c7c70c723137a2`, receipt blob `788f07be49753c17065827ae192892e7e7ae6cb8`, receipt SHA-256 `d289e118947f0fd980e6ad7c73055ad8e10ad09928c586fbc9bfe09156292350`; all seven artifact pins passed the pinned synchronized validator; Adapter blob `7903892c04c4eb6fcd694712d5a01fdb608e183f` |
+| Fresh pre-close gate | `git diff --check` passed; `pnpm test` passed 100 files / 1,270 tests; `pnpm lint` passed with 0 errors / 11 unchanged warnings; `pnpm typecheck` passed; `pnpm build` passed Next.js 16.2.1 with seven routes |
+| Canonical impact | Tasks 159 and 161 remain `None`; Task 160 remains `Reflected` in the execution plan, design tokens, and selected Context recipe; Task 162 path ownership remains `Reflected` in the execution plan; no unresolved `Tagged` item remains |
+| Conformance / issues | Phase 30 Blocking `0`; Phase 30 Advisory `0`; active `Open`, `In Progress`, or `Awaiting User Decision` issues `0`; owner expansion is only the approved Task 162 Workspace source/test pair; `Unowned: None` |
+| Visible evidence | Reused the accepted bounded Task 159–162 running-app evidence because relevant inputs and claimed invariants are unchanged; no missing metadata was invented and the aggregate eight-theme/light-dark/multi-viewport matrix remains Task 164 authority |
+| Deferred boundary | `P29-01` remains an Explicitly Deferred Advisory owned by Phase 31 after Task 163 and before Task 164; it is not a Phase 30 issue and creates no Phase 30 workflow-audit track |
+| Integration / provider | Fresh `origin/main` and clean primary `main` are `a4e00c4ef8d684bdfd52bd59523d1de6e4c11541` with divergence `0/0`; remote feature ref is absent and GitHub reports no PR for the feature head, so publication action is exact new-PR creation |
+| Preservation / isolation | Stashes `fbc33307802ca8a1baa334eb3f20507f39c86c9d` and `de07832a8b4150203b663349a1eaf220bfd4b1a6`, preservation branch `wip/storage-reliability-cloud-sync-2026-08-26` at `f92189d3a698cce2fab98b1d8fb981647f387771`, and isolated workflow-improvement HEAD `85a32bf00e6270b6a01920c68341b8e918d4a5ee` remain untouched |
+| Publication state | `docs/issues/Final_Close_Phase_30.json` remains absent; no active-feature close/receipt commit, push, PR, merge, integration sync, cleanup, Phase 31 work, or workflow-improvement publication occurred |
+| Next legal action | Present exactly one Phase 30 Final Close packet and stop for the user's exact approval |

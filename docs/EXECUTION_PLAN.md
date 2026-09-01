@@ -7,13 +7,13 @@
 > This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
 > its supersession rules. It accepts no phase, task, implementation, branch,
 > publication, or completion state.
-> **Task markers:** Tasks 101–158 were explicitly accepted. Phases 23–29 are
-> completed and archived. Tasks 159–165 remain open (`[ ]`) and may be
+> **Task markers:** Tasks 101–162 were explicitly accepted. Phases 23–30 are
+> completed and archived. Tasks 163–165 remain open (`[ ]`) and may be
 > checked only after their own observable acceptance and verification evidence
 > is explicitly accepted by the user.
-> **Execution lifecycle:** Phases 23–29 are complete. The two open phases are
-> Phases 30–31 with seven open Tasks 159–165. Phase 29 completed its own Gate C,
-> fresh branch/worktree, and equal-weight product and workflow-audit tracks.
+> **Execution lifecycle:** Phases 23–30 are complete. The one open phase is
+> Phase 31 with three open Tasks 163–165. Phase 30 completed its own Gate C,
+> isolated feature branch/worktree, and accepted Task 159–162 chain.
 > This planning receipt alone does not authorize later implementation, Git
 > lifecycle work, or publication.
 
@@ -92,12 +92,12 @@ The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were exclu
 | Area | Current status | Smallest blocker / next condition |
 |---|---|---|
 | Document approval | `APPROVED` | The approval receipt above remains the planning authority. |
-| Execution lifecycle | Phases 23–29 complete and archived | Two open phases (30–31) remain; each requires its own approved lifecycle gate and exact branch/worktree authority. Neither inherits Phase 29 authority. |
+| Execution lifecycle | Phases 23–30 complete and archived | One open phase (31) remains and requires its own approved lifecycle gate and exact branch/worktree authority. It inherits no Phase 30 write or publication authority. |
 | Data foundations | `COMPLETED` | Tasks 101–105A and authoritative command Tasks 120–126 are accepted and recorded in their phase archives. |
 | Decision prerequisites | `COMPLETED` | Tasks 106–119 and all fourteen DP receipts are accepted, reflected, and recorded in the Phase 24 archive. |
-| Headless/base UI | Phase 29 Newly/Undo owners completed | Tasks 127–158 are accepted and archived; Tasks 159 and 161 follow only their named dependencies and lifecycle gates. |
+| Headless/base UI | Phase 30 completion/Archive owners completed | Tasks 127–162 are accepted and archived; Task 163 follows only its named dependencies and lifecycle gate. |
 | VQ realization | `BLOCKED_PENDING_USER_DECISIONS` | Each realization task resumes only from its exact DP receipt. |
-| Full close | Not ready | Tasks 159–164 complete, then Task 165 passes on top of the archived Phase 23–29 foundations. |
+| Full close | Not ready | Tasks 163–164 complete, then Task 165 passes on top of the archived Phase 23–30 foundations. |
 
 ## Dependency Graph
 
@@ -138,7 +138,7 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | Phase 27 | Completed | [Breakdown, Pool, and Staging headless adapters and exact realizations](execution-plan/archive/phase-27.md) | 136–148 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
 | Phase 28 | Completed | [Explorer status/search and pointer placement](execution-plan/archive/phase-28.md) | 149–154 | Accepted and archived; the terminal workflow measurement baseline transfers comparative audit to Phase 29. |
 | Phase 29 | Completed | [Mounted-page Newly/Undo and comparative workflow audit](execution-plan/archive/phase-29.md) | 155–158 | Accepted and archived; one Advisory visual-fidelity finding is Explicitly Deferred to a read-only Phase 31 audit after Task 163 and before Task 164. |
-| Phase 30 | Proposed | Completion and Archive coordinator/recovery | 159–162 | Completion foundation does not depend on `VQ-03`/`VQ-04` realization. |
+| Phase 30 | Completed | [Completion and Archive coordinator/recovery](execution-plan/archive/phase-30.md) | 159–162 | Accepted and archived; bounded Task evidence remains reusable while its relevant inputs and claimed invariants remain unchanged. |
 | Phase 31 | Proposed | Route integration, nine-recipe conformance, full gate | 163–165 | Requires all named predecessors and task-local evidence. |
 | Phase 32 | Reserved | Retired-number reservation | none | No tasks may be assigned. |
 | Phase 33 | Reserved | Retired-number reservation | none | No tasks may be assigned. |
@@ -2119,9 +2119,9 @@ This register is complete for every exact path declared by two or more tasks. Ev
 
 - **Next planned phase:** Phase 34. Phases 32 and 33 are reserved and receive no tasks.
 - **Next planned task:** Task 166.
-- Active graph count: 2 open implementation phases (30–31), 7 open tasks
-  (159–165), 7 completed archives (Phases 23–29 with accepted Tasks 101–158),
+- Active graph count: 1 open implementation phase (31), 3 open tasks
+  (163–165), 8 completed archives (Phases 23–30 with accepted Tasks 101–162),
   and 2 reserved phase numbers (32–33).
 - The document is **user-approved for planning authority** under the receipt at
-  the top of this file; Tasks 101–158 are accepted, Phases 23–29 are archived,
-  and Tasks 159–165 remain open.
+  the top of this file; Tasks 101–162 are accepted, Phases 23–30 are archived,
+  and Tasks 163–165 remain open.
