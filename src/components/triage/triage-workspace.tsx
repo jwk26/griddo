@@ -790,8 +790,20 @@ export function TriageWorkspace({ node }: { node: Node }) {
     retry: archiveCoordinator.retry,
     dismissTerminal: archiveCoordinator.dismissTerminal,
   };
+  const archiveState = archiveCoordinator.state;
+  const terminalSuccess =
+    archiveState.phase === "terminal" &&
+    (archiveState.terminalStatus === "applied" ||
+      archiveState.terminalStatus === "already_applied");
+  const recoveryScratchIsNotSelected =
+    "recovery" in archiveState &&
+    archiveState.recovery !== null &&
+    archiveState.recovery.scratchBitId !== selectedScratchId;
 
-  if (!archiveCoordinator.isProjectionReady) {
+  if (
+    !archiveCoordinator.isProjectionReady ||
+    (!terminalSuccess && recoveryScratchIsNotSelected)
+  ) {
     const recoveryOperation = {
       ...archiveOperation,
       isRecoveryProjection: true,

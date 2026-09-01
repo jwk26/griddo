@@ -158,14 +158,20 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
   return {
     ArchiveOperationCard: ({
       operation,
+      onCancel,
     }: {
       operation: { state: { phase: string }; isRecoveryProjection: boolean };
+      onCancel?: () => void;
     }) => (
       <div
         data-is-recovery-projection={String(operation.isRecoveryProjection)}
         data-phase={operation.state.phase}
         data-testid="archive-recovery-card"
-      />
+      >
+        {operation.state.phase === "terminal" ? (
+          <button type="button" onClick={onCancel}>Cancel</button>
+        ) : null}
+      </div>
     ),
     BreakdownPanel: ({
       activeDragItem,
@@ -620,6 +626,42 @@ describe("TriageWorkspace", () => {
       "Checking the Archive request from before this reload…",
     );
     expect(useCanArchiveScratchMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps a forced-reload terminal result in the Breakdown recovery boundary until Cancel", () => {
+    useTriageStore.setState({ selectedScratchId: null });
+    useArchiveScratchMock.mockReturnValue({
+      state: {
+        phase: "terminal",
+        recovery: {
+          operationId: "00000000-0000-4000-8000-000000000001",
+          kind: "archive_scratch",
+          scratchBitId: "scratch-1",
+          expectedVersion: 7,
+          startedAt: 100,
+        },
+        terminalStatus: "conflict",
+      },
+      isProjectionReady: true,
+      archiveScratch: archiveScratchMock,
+      reconcile: archiveReconcileMock,
+      retry: archiveRetryMock,
+      dismissTerminal: archiveDismissMock,
+    });
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.queryByTestId("triage-workspace")).not.toBeInTheDocument();
+    expect(screen.getByTestId("archive-recovery-card")).toHaveAttribute(
+      "data-is-recovery-projection",
+      "true",
+    );
+    expect(screen.getByTestId("archive-recovery-card")).toHaveAttribute(
+      "data-phase",
+      "terminal",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(archiveDismissMock).toHaveBeenCalledOnce();
   });
 
   it("projects the mounted coordinator state and exact actions into Breakdown", () => {
