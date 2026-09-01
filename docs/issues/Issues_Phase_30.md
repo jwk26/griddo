@@ -3,7 +3,7 @@
 > Branch: `phase-30/completion-archive-recovery`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-30-completion-archive-recovery`
 > Kickoff date: 2026-08-31
-> State: Task 159 is `[x]` after user acceptance; Task 160 is implemented and awaiting user checkpoint review while remaining `[ ]`; Tasks 161–162 remain `[ ]`
+> State: Tasks 159–160 are `[x]` after user acceptance; Tasks 161–162 remain `[ ]`
 
 ## Status Legend
 
@@ -109,7 +109,7 @@ during kickoff.
 | Issues / deviations | None open. The handoff's truncated Task 136 summary SHA is recovered from the authoritative Gate C receipt as acceptance commit `02675c3c2c44939bb71506eb64dd1904d8e0bfa7`, which is an ancestor of the approved base. Two TDD repair cycles resolved the browser focus defect and all four independent Important review findings; re-review found no new Critical or Important finding. `Unowned: None`. |
 | Canonical impact | `None` — Task 159 is implementation-local and does not alter canonical product, design, schema, or workflow authority |
 
-### Task 160 — Implemented; Awaiting User Review
+### Task 160 — User Accepted
 
 | Field | Durable value |
 | --- | --- |
@@ -118,7 +118,7 @@ during kickoff.
 | Start base / entrypoint | Current accepted Task 159 commit `b742538bc1f72300912d8d6f2a310e7328deed5b`; approved Phase 30 base `a4e00c4ef8d684bdfd52bd59523d1de6e4c11541` |
 | Recovery anchor | Documentation-only durable-start/C1 reflection commit `7aa2b6e6784acc935bcea4f785ca88ff5d05b8d1`; it is the parent of every Task 160 product/test write |
 | Implementation / evidence | `8f46ba31aab223ed6a150f2723eefc5abe5c376d`; `docs/verification/inbox-triage/task-160.md`; relevant-input fingerprint `1b226b09eecac2138fbca465fc77da7a0f429c3d0da8ec7b4aef5faaa57416f0` |
-| State | `Implemented; awaiting user review`; Task 160 remains `[ ]` and Tasks 161–162 are held |
+| State | `Accepted`; the user accepted checkpoint `5de1431eb12e0f6f1112f154202d74dfbfab2ec6`, and Task 160 is `[x]` |
 | Verification | Latest focused gate: 4 files / 230 tests, target lint clean, typecheck passed. Latest full gate: 99 files / 1,230 tests, lint 0 errors with 11 unchanged warnings, typecheck passed, build passed with seven pages, and `git diff --check` passed. One fresh GridDO light 1440×900 running-app check confirmed 104px Context, 152px action region, C1/Add visibility and non-overlap, local/remote withdrawal/recovery placement, and current-truth focus. |
 | Issues / deviations | None open; owner expansion `None`; `Unowned: None`; repair count `3/3`. The cycles resolved assertion/copy-registry alignment, accessible blocker association plus fixed-Context wrapping, and background-tab Reopen focus ownership. No extra cycle was attempted. |
 | Canonical impact | `Reflected` — C1 is recorded narrowly in `docs/EXECUTION_PLAN.md`, `docs/DESIGN_TOKENS.md`, and `docs/recipes/inbox-triage-selected-scratch-context-visual-recipe.md`; it supersedes only the stale persistent Scratch-title editor-status placement and leaves every other `DP-VQ11` contract unchanged |
