@@ -869,3 +869,64 @@ describe("useTriageNewlyPlaced", () => {
     expect(acquire).toHaveBeenCalledTimes(blocker.locked ? 0 : 0);
   });
 });
+
+describe("useTriageNewlyPlacedUndo — Archive exclusion", () => {
+  it("keeps Undo blocked for an Archive owner without dispatch or queued replay", async () => {
+    const dispatchUndo = vi.fn();
+    const operationLock: TriageOperationLock = {
+      activeOperation: { kind: "archive", operationId: "archive-1" },
+      isLocked: () => true,
+      acquire: vi.fn(() => false),
+      release: vi.fn(() => false),
+    };
+    const placed = createNode("node-archive-blocked", 10, 20);
+    const provenance = {
+      operationId: "operation-1",
+      resultId: placed.id,
+      resultType: "node" as const,
+      resultVersion: placed.version,
+      resultSnapshot: placed,
+      source: {
+        scratchBitId: "scratch-1",
+        breakdownId: "source-1",
+        expectedVersion: 1,
+        snapshot: source(1),
+      },
+      candidate: null,
+      destination: { parentId: null, pathIds: [], x: 10, y: 20 },
+      completedOrder: 1,
+    };
+    const { result } = renderHook(() =>
+      useTriageNewlyPlacedUndo({
+        entries: [provenance],
+        operationLock,
+        placementOpen: false,
+        hasDirtyEdit: () => false,
+        dispatchUndo,
+        reconcileUndo: vi.fn(),
+        observeTruth: (_entries, emit) => {
+          emit(new Map([["node:node-archive-blocked", {
+            operationId: "truth-probe",
+            status: "conflict",
+            result: placed,
+            source: source(1),
+            candidate: null,
+          }]]));
+          return () => undefined;
+        },
+      }),
+    );
+
+    await waitFor(() =>
+      expect(result.current.getState("node", placed.id)).toMatchObject({
+        phase: "blocked",
+        reason: "active-owner",
+      }),
+    );
+    await act(async () => {
+      await expect(result.current.activate("node", placed.id)).resolves.toBe(false);
+    });
+    expect(dispatchUndo).not.toHaveBeenCalled();
+    expect(operationLock.acquire).not.toHaveBeenCalled();
+  });
+});

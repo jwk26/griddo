@@ -92,6 +92,7 @@ export type BreakdownCompletionProjection = Readonly<{
     | null;
   cancel: () => void;
   reopen: () => void;
+  archive?: () => Promise<boolean>;
 }>;
 
 function subscribeToBrowserConnectivity(onStoreChange: () => void) {
@@ -1555,6 +1556,7 @@ export function BreakdownPanel({
   }
 
   function cancelCompletion() {
+    if (operationLock.isLocked()) return;
     completionFocusIntentRef.current = "reopen";
     if (newContent.length === 0) setIsAdding(false);
     completion?.cancel();
@@ -2389,6 +2391,7 @@ export function BreakdownPanel({
           onBlurCapture={trackCompletionBlur}
           onKeyDown={(event) => {
             if (event.key !== "Escape") return;
+            if (operationLock.isLocked()) return;
             event.preventDefault();
             cancelCompletion();
           }}
@@ -2407,11 +2410,19 @@ export function BreakdownPanel({
               Scratch complete
             </h3>
             <div className="mt-4 flex justify-center gap-2">
-              <Button disabled type="button">
+              <Button
+                disabled={
+                  completion?.archive === undefined ||
+                  operationLock.activeOperation !== null
+                }
+                type="button"
+                onClick={() => void completion?.archive?.()}
+              >
                 Archive Scratch
               </Button>
               <Button
                 ref={completionCancelRef}
+                disabled={operationLock.activeOperation !== null}
                 type="button"
                 variant="outline"
                 onClick={cancelCompletion}

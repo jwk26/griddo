@@ -676,6 +676,49 @@ describe("ScratchPool", () => {
     expect(useTriageStore.getState().selectedScratchId).toBe("scratch-1");
   });
 
+  it("exposes exact filtered-null focus owners without changing query or selecting a hidden Scratch", () => {
+    useInboxMock.mockReturnValue({
+      activeScratchBits: [
+        createBit({ id: "scratch-hidden", title: "Hidden Scratch" }),
+      ],
+    });
+    useTriageStore.setState({
+      selectedScratchId: null,
+      scratchPoolQuery: "no match",
+    });
+
+    render(<ScratchPool />);
+
+    expect(screen.getByRole("textbox", { name: "Search scratches" })).toHaveAttribute(
+      "data-archive-handoff-focus",
+      "search-empty",
+    );
+    expect(screen.getByText("No matches")).toHaveAttribute(
+      "data-archive-handoff-focus",
+      "search-empty-status",
+    );
+    expect(useTriageStore.getState()).toMatchObject({
+      selectedScratchId: null,
+      scratchPoolQuery: "no match",
+    });
+  });
+
+  it("keeps the final filtered-null result in search-empty instead of true-empty presentation", () => {
+    useInboxMock.mockReturnValue({ activeScratchBits: [] });
+    useTriageStore.setState({
+      selectedScratchId: null,
+      scratchPoolQuery: "still filtered",
+    });
+
+    render(<ScratchPool />);
+
+    expect(screen.getByText("No matches")).toHaveAttribute(
+      "data-archive-handoff-focus",
+      "search-empty-status",
+    );
+    expect(screen.queryByText("No active scratches")).not.toBeInTheDocument();
+  });
+
   it("captures a Scratch destination before selection mutation and preserves its focus owner", () => {
     useInboxMock.mockReturnValue({
       activeScratchBits: [

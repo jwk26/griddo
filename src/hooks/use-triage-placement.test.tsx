@@ -113,6 +113,24 @@ describe("useTriagePlacement — Task 152 atomic foreground owner", () => {
     vi.restoreAllMocks();
   });
 
+  it("rejects Placement throughout an Archive owner without mutation, queue, or replay", () => {
+    const dispatchPlacement = vi.fn();
+    const operationLock: TriageOperationLock = {
+      activeOperation: { kind: "archive", operationId: "archive-1" },
+      isLocked: () => true,
+      acquire: vi.fn(() => false),
+      release: vi.fn(() => false),
+    };
+    const { result } = renderHook(() =>
+      useTriagePlacement({ operationLock, dispatchPlacement }),
+    );
+
+    act(() => expect(result.current.begin(directRelease)).toBe(false));
+    expect(result.current.snapshot).toBeNull();
+    expect(dispatchPlacement).not.toHaveBeenCalled();
+    expect(operationLock.acquire).not.toHaveBeenCalled();
+  });
+
   it("keeps direct type selection distinct from confirmation while staged placement enters confirmation directly", () => {
     const direct = renderHook(() =>
       useTriagePlacement({

@@ -30,6 +30,8 @@ const useTriageDndMock = vi.hoisted(() => vi.fn());
 const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
 const useScratchBreakdownsMock = vi.hoisted(() => vi.fn());
 const useCanArchiveScratchMock = vi.hoisted(() => vi.fn());
+const useArchiveScratchMock = vi.hoisted(() => vi.fn());
+const archiveScratchMock = vi.hoisted(() => vi.fn());
 const stageCandidateMock = vi.hoisted(() => vi.fn());
 const reconcileStageCandidateMock = vi.hoisted(() => vi.fn());
 const unstageCandidateMock = vi.hoisted(() => vi.fn());
@@ -65,6 +67,15 @@ const completionState = vi.hoisted(() => ({
   withdrawalReason: null as null | "active-breakdown",
   cancel: vi.fn(),
   reopen: vi.fn(),
+  archive: undefined as undefined | (() => Promise<boolean>),
+  eligibility: {
+    scratch: {
+      id: "scratch-1",
+      version: 7,
+      title: "First Scratch",
+      createdAt: 3,
+    },
+  },
 }));
 
 vi.mock("@/hooks/use-dnd", () => ({
@@ -84,6 +95,10 @@ vi.mock("@/hooks/use-scratch-breakdowns", async (importOriginal) => {
 
 vi.mock("@/hooks/use-can-archive-scratch", () => ({
   useCanArchiveScratch: useCanArchiveScratchMock,
+}));
+
+vi.mock("@/hooks/use-archive-scratch", () => ({
+  useArchiveScratch: useArchiveScratchMock,
 }));
 
 vi.mock("@/hooks/use-grid-data", () => ({
@@ -180,6 +195,9 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
           </button>
           <button type="button" onClick={() => completion?.reopen()}>
             Reopen completion
+          </button>
+          <button type="button" onClick={() => void completion?.archive?.()}>
+            Archive completion
           </button>
           <button type="button" onClick={() => onAddDraftBlockerChange?.(true)}>
             Set Add blocker
@@ -501,6 +519,15 @@ beforeEach(() => {
   completionState.reopen.mockReset();
   useCanArchiveScratchMock.mockReset();
   useCanArchiveScratchMock.mockReturnValue(completionState);
+  archiveScratchMock.mockReset();
+  archiveScratchMock.mockResolvedValue(true);
+  useArchiveScratchMock.mockReset();
+  useArchiveScratchMock.mockReturnValue({
+    state: { phase: "idle" },
+    isProjectionReady: true,
+    archiveScratch: archiveScratchMock,
+    reconcile: vi.fn(),
+  });
 });
 
 afterEach(() => {
@@ -509,6 +536,43 @@ afterEach(() => {
 });
 
 describe("TriageWorkspace", () => {
+  it("wires the mounted blockers, shared lock, guarded Archive action, and projection gate into one coordinator", () => {
+    completionState.presentation = "overlay";
+    render(<TriageWorkspace node={createNode()} />);
+
+    const options = useArchiveScratchMock.mock.calls.at(-1)?.[0];
+    expect(options).toMatchObject({
+      operationLock: expect.objectContaining({
+        acquire: expect.any(Function),
+        isLocked: expect.any(Function),
+      }),
+      readAddDraftBlocker: expect.any(Function),
+      readTitleBlocker: expect.any(Function),
+      onApplied: expect.any(Function),
+    });
+    expect(options.readAddDraftBlocker()).toBe(false);
+    expect(options.readTitleBlocker()).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Archive completion" }));
+    expect(archiveScratchMock).toHaveBeenCalledWith(
+      completionState.eligibility.scratch,
+    );
+  });
+
+  it("does not mount the normal Inbox projection while reload reconciliation owns startup", () => {
+    useArchiveScratchMock.mockReturnValue({
+      state: { phase: "recovering" },
+      isProjectionReady: false,
+      archiveScratch: archiveScratchMock,
+      reconcile: vi.fn(),
+    });
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.queryByTestId("triage-workspace")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("scratch-pool")).not.toBeInTheDocument();
+  });
+
   it("owns completion above the keyed Breakdown surface and combines Add/title blockers", () => {
     completionState.presentation = "overlay";
     render(<TriageWorkspace node={createNode()} />);

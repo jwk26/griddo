@@ -266,8 +266,10 @@ function DepartureIntegrationHarness() {
 }
 
 function CompletionHarness({
+  archive = vi.fn(async () => true),
   initial = "overlay",
 }: {
+  archive?: () => Promise<boolean>;
   initial?: "working" | "overlay" | "complete";
 }) {
   const [presentation, setPresentation] = useState(initial);
@@ -279,6 +281,7 @@ function CompletionHarness({
       <BreakdownPanel
         completion={{
           presentation,
+          archive,
           cancel: () => setPresentation("complete"),
           reopen: () => setPresentation("overlay"),
         }}
@@ -2275,7 +2278,7 @@ describe("BreakdownPanel", () => {
       });
   });
 
-  it("shows the section-scoped completion overlay without dispatching Archive", () => {
+  it("shows the section-scoped completion overlay and delegates guarded Archive only to its coordinator", () => {
     triageStoreState.selectedScratchId = "scratch-1";
     hookState.breakdownsByScratch["scratch-1"] = [
       createScratchBreakdown({
@@ -2285,7 +2288,8 @@ describe("BreakdownPanel", () => {
       }),
     ];
 
-    render(<CompletionHarness />);
+    const archive = vi.fn(async () => true);
+    render(<CompletionHarness archive={archive} />);
 
     const overlay = screen.getByRole("region", { name: "Scratch complete" });
     expect(overlay).toHaveAttribute(
@@ -2295,14 +2299,39 @@ describe("BreakdownPanel", () => {
     expect(screen.getByTestId("breakdown-content-region")).toHaveAttribute(
       "inert",
     );
-    expect(
-      within(overlay).getByRole("button", { name: "Archive Scratch" }),
-    ).toBeDisabled();
+    const archiveAction = within(overlay).getByRole("button", {
+      name: "Archive Scratch",
+    });
+    expect(archiveAction).toBeEnabled();
+    fireEvent.click(archiveAction);
+    expect(archive).toHaveBeenCalledOnce();
     expect(within(overlay).getByRole("button", { name: "Cancel" })).toBeEnabled();
     expect(
       screen.getByTestId("archive-completion-announcement"),
     ).toHaveTextContent("Scratch complete");
     expect(archiveBitMock).not.toHaveBeenCalled();
+  });
+
+  it("locks Archive, Cancel, and Escape while the shared Archive owner is active", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", consumedAt: currentTime }),
+    ];
+    operationLockState.activeOperation = {
+      kind: "archive" as never,
+      operationId: "archive-1",
+    };
+    const archive = vi.fn(async () => true);
+    render(<CompletionHarness archive={archive} />);
+
+    const overlay = screen.getByRole("region", { name: "Scratch complete" });
+    expect(
+      within(overlay).getByRole("button", { name: "Archive Scratch" }),
+    ).toBeDisabled();
+    expect(within(overlay).getByRole("button", { name: "Cancel" })).toBeDisabled();
+    fireEvent.keyDown(overlay, { key: "Escape" });
+    expect(screen.getByRole("region", { name: "Scratch complete" })).toBeVisible();
+    expect(archive).not.toHaveBeenCalled();
   });
 
   it("Cancel restores Add, marks Context complete, and focuses explicit Reopen", () => {
