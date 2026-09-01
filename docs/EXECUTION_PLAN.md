@@ -1974,7 +1974,7 @@ accessibility, and prototype/recipe comparison remains Task 164 work.
 
 **Commit contract:** Archive coordinator/storage/handoff, tests, and Task 161 evidence only; `feat(triage): coordinate recoverable scratch archive`.
 
-### Task 162: [ ] Render `DP-VQ12` Archive reliability and recovery states
+### Task 162: [x] Render `DP-VQ12` Archive reliability and recovery states
 
 **Files and actions:** after `DP-VQ12`, modify `src/hooks/use-archive-scratch.ts` and `.test.ts`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, `src/app/globals.css`, `src/lib/copy/inbox-triage.ts` and `.test.ts` to populate approved wording and render pending, reconciling, explicit failure, forced-reload recovery, Check again, Retry/Cancel, terminal handoff, current-action focus, timing, reduced-motion, and theme variants inside the Breakdown-scoped flow. The workspace pair may only project the existing mounted Task 161 Archive coordinator state/actions into that card and expose the same card during forced reload while normal Inbox projection remains blocked. Retry is unavailable until authoritative not-applied; unknown retains same descriptor/operation; no global spinner/toast/dialog.
 

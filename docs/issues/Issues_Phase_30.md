@@ -3,7 +3,7 @@
 > Branch: `phase-30/completion-archive-recovery`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-30-completion-archive-recovery`
 > Kickoff date: 2026-08-31
-> State: Tasks 159–161 are `[x]` after user acceptance; Task 162 is implemented, awaiting Control Tower review, and remains `[ ]`
+> State: Tasks 159–162 are `[x]` after user acceptance; the Task 162 Working session is closed/archive-only after its acceptance commit
 
 ## Status Legend
 
@@ -137,7 +137,7 @@ during kickoff.
 | Issues / deviations | None open; owner expansion `None`; `Unowned: None`; repair count `3/3`. The cycles resolved pre-projection recovery gating/fallback, filtered-null versus true-empty focus, and terminal handoff exception classification. No fourth cycle was attempted. |
 | Canonical impact | `None` — Task 161 implements the existing SCHEMA/SPEC/plan contract without altering product, design, schema, or workflow authority |
 
-### Task 162 — In Progress
+### Task 162 — User Accepted
 
 | Field | Durable value |
 | --- | --- |
@@ -146,7 +146,7 @@ during kickoff.
 | Start base / entrypoint | Current accepted Task 161 commit `6add953a1b6355b349145dff51e78aa49f9a2d3d`; approved Phase 30 base `a4e00c4ef8d684bdfd52bd59523d1de6e4c11541` |
 | Recovery anchor | Ledger-only durable-start commit `376e1648a53add1ed845da566e25e1c98846f4da`; it is the parent of every Task 162 product/test write |
 | Implementation / evidence | Primary implementation `53be5ad4f86d4742fe822b914ae71413612a005b`; bounded repair `f4ba8ca0fc091a7d40b51694a8cbb42e462a9e7d`; `docs/verification/inbox-triage/task-162.md`; relevant-input fingerprint `8557451c7a50b62c4615a145b9377f7878354fe0f0705d1577aeee2f7cf8f82e` |
-| State | `Implemented; awaiting Control Tower review`; Tasks 159–161 remain `[x]`; Task 162 remains `[ ]`; acceptance-only work, Phase 31, and end-phase remain prohibited |
+| State | `Accepted`; the user accepted checkpoint `e4dc245dab8fed433fce129e66451424dfbb6b97`; Tasks 159–162 are `[x]`; the Task 162 Working session is closed/archive-only after this acceptance commit; the next lifecycle is a fresh pinned end-phase session, which is not started here |
 | Verification | Final focused gate: 4 files / 246 tests, target lint clean, typecheck passed. Final full gate: 100 files / 1,270 tests, lint 0 errors with 11 unchanged warnings, typecheck passed, build passed with seven pages, and `git diff --check` passed. One fresh final-input running-app session confirmed forced-reload blocking/focus, unknown → Check again → reconciling, authoritative not-applied → same-operation Retry/Cancel, storage-failure/rejected/conflict Cancel placement, success announcement, Task 161 handoff, and one stable card with no fallback surface. |
 | Issues / deviations | `P30-162-01` remains `Closed` by the user's exact two-path scope expansion. Repair count `2/3`: cycle 1 resolved Workspace mock/export coupling found by review; cycle 2 resolved the browser-found forced-reload terminal card loss with a RED owner test and rerun gates. No open finding; owner expansion is exactly the approved Workspace pair and no more; `Unowned: None`. |
 | Canonical impact | `Reflected` for Task 162 path ownership only in `docs/EXECUTION_PLAN.md`; `DP-VQ12=A` product, design, copy, persistence, Task 161 semantics, dependencies, acceptance, and every Task marker are unchanged |
