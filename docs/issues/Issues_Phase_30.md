@@ -3,7 +3,7 @@
 > Branch: `phase-30/completion-archive-recovery`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-30-completion-archive-recovery`
 > Kickoff date: 2026-08-31
-> State: Tasks 159–161 are `[x]` after user acceptance; Task 162 remains `[ ]`
+> State: Tasks 159–161 are `[x]` after user acceptance; Task 162 is `In Progress` and remains `[ ]`
 
 ## Status Legend
 
@@ -136,5 +136,19 @@ during kickoff.
 | Verification | Latest focused gate: 8 files / 343 tests, target lint clean, typecheck passed. Latest full gate: 100 files / 1,254 tests, lint 0 errors with 11 unchanged warnings, typecheck passed, build passed with seven pages, and `git diff --check` passed. One final-input browser session confirmed write/readback-before-dispatch, forced-reload reconciliation-before-workspace mount, and all four exact selection/focus handoffs. |
 | Issues / deviations | None open; owner expansion `None`; `Unowned: None`; repair count `3/3`. The cycles resolved pre-projection recovery gating/fallback, filtered-null versus true-empty focus, and terminal handoff exception classification. No fourth cycle was attempted. |
 | Canonical impact | `None` — Task 161 implements the existing SCHEMA/SPEC/plan contract without altering product, design, schema, or workflow authority |
+
+### Task 162 — In Progress
+
+| Field | Durable value |
+| --- | --- |
+| Approved scope | Task 162 only — render the approved `DP-VQ12` Archive reliability/recovery states in the seven named hook/component/style/copy source and test paths, add `docs/verification/inbox-triage/task-162.md`, and maintain this minimum matching ledger state |
+| Authority | Exact Phase 30 Control Tower Task 162 work order on 2026-09-02; the Phase 30 Gate C receipt remains `run-phase` authority and is not represented as a Task 162 receipt |
+| Start base / entrypoint | Current accepted Task 161 commit `6add953a1b6355b349145dff51e78aa49f9a2d3d`; approved Phase 30 base `a4e00c4ef8d684bdfd52bd59523d1de6e4c11541` |
+| Recovery anchor | This ledger-only durable-start commit; it must remain the parent of every Task 162 product/test write |
+| Implementation / evidence | Pending; `docs/verification/inbox-triage/task-162.md` is not written yet; relevant-input fingerprint pending final implementation input |
+| State | `In Progress`; Tasks 159–161 remain `[x]`; Task 162 remains `[ ]`; acceptance-only work, Phase 31, and end-phase remain prohibited |
+| Verification | Pending Task 162 focused Archive/copy state-table/storage tests, Adapter full gate, final-input fingerprint, and one fresh bounded running-app session |
+| Issues / deviations | None open; owner expansion `None`; `Unowned: None`; repair count `0/3` |
+| Canonical impact | `None` — Task 162 realizes the already-reflected `DP-VQ12=A` contract without changing canonical product, design, schema, or workflow authority |
 
 No other Phase 30 item is `Open` or `Awaiting User Decision`.
