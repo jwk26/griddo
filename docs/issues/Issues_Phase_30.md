@@ -123,16 +123,18 @@ during kickoff.
 | Issues / deviations | None open; owner expansion `None`; `Unowned: None`; repair count `3/3`. The cycles resolved assertion/copy-registry alignment, accessible blocker association plus fixed-Context wrapping, and background-tab Reopen focus ownership. No extra cycle was attempted. |
 | Canonical impact | `Reflected` — C1 is recorded narrowly in `docs/EXECUTION_PLAN.md`, `docs/DESIGN_TOKENS.md`, and `docs/recipes/inbox-triage-selected-scratch-context-visual-recipe.md`; it supersedes only the stale persistent Scratch-title editor-status placement and leaves every other `DP-VQ11` contract unchanged |
 
-### Task 161 — In Progress
+### Task 161 — Implemented, Awaiting User Review
 
 | Field | Durable value |
 | --- | --- |
 | Approved scope | Task 161 only — guarded Archive coordination, current-tab recovery, exact Pool selection/focus handoff, the exact named product/test paths, task-local evidence, and this minimum matching ledger state |
 | Authority | Exact Phase 30 Control Tower Task 161 work order on 2026-09-01; the Phase 30 Gate C receipt remains `run-phase` authority and is not represented as a Task 161 receipt |
 | Start base / entrypoint | Current accepted Task 160 commit `23184e06ae20ede9d6b5c18db02a11b4553ee7b0`; approved Phase 30 base `a4e00c4ef8d684bdfd52bd59523d1de6e4c11541` |
-| Recovery anchor | This ledger-only durable-start commit; it must be the parent of every Task 161 product/test write |
-| State | `In Progress`; Task 161 remains `[ ]`; Task 162 and Phase 31 remain prohibited |
-| Issues / deviations | None open; owner expansion `None`; `Unowned: None`; repair count `0/3` |
+| Recovery anchor | Ledger-only durable-start commit `c8cdf783a7fd21540036f025278e27816c6262e8`; it is the parent of every Task 161 product/test write |
+| Implementation / evidence | `300250b364a50f676e525b1e1c1fc1af220085e4`; `docs/verification/inbox-triage/task-161.md`; relevant-input fingerprint `8db1b9add3f5b65d1ac2b0954f636982549c79406ffdb2ff1135ddccd5126e4b` |
+| State | `Implemented, awaiting user review`; Task 161 remains `[ ]`; Task 162 and Phase 31 remain prohibited |
+| Verification | Latest focused gate: 8 files / 343 tests, target lint clean, typecheck passed. Latest full gate: 100 files / 1,254 tests, lint 0 errors with 11 unchanged warnings, typecheck passed, build passed with seven pages, and `git diff --check` passed. One final-input browser session confirmed write/readback-before-dispatch, forced-reload reconciliation-before-workspace mount, and all four exact selection/focus handoffs. |
+| Issues / deviations | None open; owner expansion `None`; `Unowned: None`; repair count `3/3`. The cycles resolved pre-projection recovery gating/fallback, filtered-null versus true-empty focus, and terminal handoff exception classification. No fourth cycle was attempted. |
 | Canonical impact | `None` — Task 161 implements the existing SCHEMA/SPEC/plan contract without altering product, design, schema, or workflow authority |
 
 No other Phase 30 item is `Open` or `Awaiting User Decision`.
