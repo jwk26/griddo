@@ -1926,7 +1926,7 @@ observed mismatch is recorded rather than silently repaired outside the
 current task contract. The full eight-theme, light/dark, viewport, motion,
 accessibility, and prototype/recipe comparison remains Task 164 work.
 
-### Task 159: [ ] Implement durable completion, Cancel, and explicit reopen
+### Task 159: [x] Implement durable completion, Cancel, and explicit reopen
 
 **Files and actions:** modify `src/hooks/use-can-archive-scratch.ts` and `.test.ts`, `src/components/triage/breakdown-panel.tsx` and `.test.tsx`, and `src/components/triage/triage-workspace.tsx` and `.test.tsx`. Subscribe to Task 125 eligibility: active Scratch, consumed≥1, unconsumed=0, staged=0; combine but do not persist Task 136 non-empty Add-draft and Task 137 Scratch-title blocker snapshots. Only a mounted-page false→true transition auto-opens the source-backed Breakdown-scoped completion overlay. Cancel closes it, restores Add entry, changes Context to complete, and exposes an explicit Reopen control. Scratch return, same-session re-entry, route entry, or reload onto already eligible truth shows complete Context/Reopen and **never auto-reopens**. Reopen is explicit and restores heading/safe-Cancel focus; new active row/candidate withdraws overlay/complete/reopen. Do not depend on VQ-03/04 realization.
 
