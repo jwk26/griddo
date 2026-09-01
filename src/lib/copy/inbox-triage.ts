@@ -85,6 +85,20 @@ export interface InboxTriageCopy {
     readonly continueAction: string;
     readonly discardAction: string;
   };
+  readonly completion: {
+    readonly addBlocker: string;
+    readonly titleBlocker: {
+      readonly openOrDirty: string;
+      readonly saving: string;
+      readonly conflicted: string;
+      readonly reconciling: string;
+    };
+    readonly withdrawal: {
+      readonly activeBreakdown: string;
+      readonly staging: string;
+      readonly breakdownAndStaging: string;
+    };
+  };
   readonly externalRemoval: {
     readonly title: {
       readonly archive: string;
@@ -398,6 +412,25 @@ export const INBOX_TRIAGE_COPY = {
     continueAction: "Continue writing",
     discardAction: "Discard and move",
   },
+  completion: {
+    addBlocker: "Add this idea or clear the draft to complete this Scratch.",
+    titleBlocker: {
+      openOrDirty:
+        "Save or cancel the Scratch title edit to complete this Scratch.",
+      saving: "Saving the Scratch title before completion…",
+      conflicted:
+        "Resolve the Scratch title conflict to complete this Scratch.",
+      reconciling: "Checking the Scratch title before completion…",
+    },
+    withdrawal: {
+      activeBreakdown:
+        "Completion is no longer available because a Breakdown item is active.",
+      staging:
+        "Completion is no longer available because an item is in Staging.",
+      breakdownAndStaging:
+        "Completion is no longer available because Breakdown and Staging have active items.",
+    },
+  },
   externalRemoval: {
     title: {
       archive: "This Scratch was archived elsewhere",
@@ -656,7 +689,6 @@ export const INBOX_TRIAGE_COPY = {
   },
   receiptDependent: {
     148: UNAVAILABLE,
-    160: UNAVAILABLE,
     162: UNAVAILABLE,
   },
 } as const satisfies InboxTriageCopy;

@@ -149,6 +149,112 @@ describe("useCanArchiveScratch", () => {
     await waitFor(() => expect(result.current.presentation).toBe("overlay"));
   });
 
+  it("exposes only otherwise-eligible Add and title blockers without changing persisted truth", async () => {
+    eligibilityByScratch.set("scratch-1", eligibility(true));
+    let hasAddDraft = true;
+    let titleBlocker: "dirty" | null = "dirty";
+    const { result, rerender } = renderHook(() =>
+      useCanArchiveScratch("scratch-1", { hasAddDraft, titleBlocker }),
+    );
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    expect(result.current.completionBlockers).toEqual({
+      addDraft: true,
+      title: "dirty",
+    });
+    expect(result.current.persistedEligible).toBe(true);
+
+    hasAddDraft = false;
+    titleBlocker = null;
+    rerender();
+    expect(result.current.completionBlockers).toEqual({
+      addDraft: false,
+      title: null,
+    });
+
+    eligibilityByScratch.set(
+      "scratch-1",
+      eligibility(false, { consumedCount: 1, unconsumedCount: 1 }),
+    );
+    hasAddDraft = true;
+    titleBlocker = "dirty";
+    await publishEligibility();
+    rerender();
+    await waitFor(() =>
+      expect(result.current.completionBlockers).toEqual({
+        addDraft: false,
+        title: null,
+      }),
+    );
+  });
+
+  it.each([
+    [1, 0, "active-breakdown"],
+    [0, 1, "staging"],
+    [1, 1, "breakdown-and-staging"],
+  ] as const)(
+    "reports mounted completion withdrawal for active=%i staged=%i",
+    async (unconsumedCount, stagedCandidateCount, reason) => {
+      eligibilityByScratch.set("scratch-1", eligibility(true));
+      const { result } = renderHook(() =>
+        useCanArchiveScratch("scratch-1", {
+          hasAddDraft: false,
+          titleBlocker: null,
+        }),
+      );
+      await waitFor(() => expect(result.current.presentation).toBe("complete"));
+
+      eligibilityByScratch.set(
+        "scratch-1",
+        eligibility(false, {
+          scratch: { id: "scratch-1" } as ScratchArchiveEligibility["scratch"],
+          consumedCount: 1,
+          unconsumedCount,
+          stagedCandidateCount,
+        }),
+      );
+      await publishEligibility();
+
+      await waitFor(() => expect(result.current.withdrawalReason).toBe(reason));
+      expect(result.current.presentation).toBe("working");
+
+      eligibilityByScratch.set("scratch-1", eligibility(true));
+      await publishEligibility();
+      await waitFor(() => expect(result.current.withdrawalReason).toBeNull());
+      expect(result.current.presentation).toBe("overlay");
+    },
+  );
+
+  it("does not report withdrawal before completion presentation or for an inactive Scratch", async () => {
+    eligibilityByScratch.set(
+      "scratch-1",
+      eligibility(false, {
+        scratch: { id: "scratch-1" } as ScratchArchiveEligibility["scratch"],
+        consumedCount: 1,
+        unconsumedCount: 1,
+      }),
+    );
+    const { result } = renderHook(() =>
+      useCanArchiveScratch("scratch-1", {
+        hasAddDraft: false,
+        titleBlocker: null,
+      }),
+    );
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    expect(result.current.withdrawalReason).toBeNull();
+
+    eligibilityByScratch.set("scratch-1", eligibility(true));
+    await publishEligibility();
+    await waitFor(() => expect(result.current.presentation).toBe("overlay"));
+    eligibilityByScratch.set(
+      "scratch-1",
+      eligibility(false, { consumedCount: 1, unconsumedCount: 1, scratch: null }),
+    );
+    await publishEligibility();
+    await waitFor(() => expect(result.current.presentation).toBe("working"));
+    expect(result.current.withdrawalReason).toBeNull();
+  });
+
   it("keeps Cancel/Reopen page-local and returns to complete after a Scratch switch", async () => {
     eligibilityByScratch.set("scratch-1", eligibility(false));
     eligibilityByScratch.set("scratch-2", eligibility(true));

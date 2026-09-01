@@ -61,6 +61,8 @@ const departureControllerState = vi.hoisted(() => ({
 }));
 const completionState = vi.hoisted(() => ({
   presentation: "working" as "working" | "overlay" | "complete",
+  completionBlockers: { addDraft: false, title: null as null | "dirty" },
+  withdrawalReason: null as null | "active-breakdown",
   cancel: vi.fn(),
   reopen: vi.fn(),
 }));
@@ -160,6 +162,13 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
         <div
           data-active-drag-kind={activeDragItem?.kind}
           data-completion-presentation={completion?.presentation}
+          data-add-completion-blocker={
+            completion?.completionBlockers.addDraft ? "true" : undefined
+          }
+          data-title-completion-blocker={
+            completion?.completionBlockers.title ?? undefined
+          }
+          data-withdrawal-reason={completion?.withdrawalReason ?? undefined}
           data-over-target-id={overTargetId ?? undefined}
           data-success-kind={successSignal?.kind}
           data-success-operation-id={successSignal?.operationId}
@@ -486,6 +495,8 @@ beforeEach(() => {
     isReady: true,
   });
   completionState.presentation = "working";
+  completionState.completionBlockers = { addDraft: false, title: null };
+  completionState.withdrawalReason = null;
   completionState.cancel.mockReset();
   completionState.reopen.mockReset();
   useCanArchiveScratchMock.mockReset();
@@ -514,6 +525,24 @@ describe("TriageWorkspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Reopen completion" }));
     expect(completionState.cancel).toHaveBeenCalledOnce();
     expect(completionState.reopen).toHaveBeenCalledOnce();
+
+    completionState.completionBlockers = { addDraft: true, title: "dirty" };
+    completionState.withdrawalReason = "active-breakdown";
+    useCanArchiveScratchMock.mockReturnValue(completionState);
+    act(() => titleBlockerHandleState.handle?.setSnapshot("dirty"));
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-add-completion-blocker",
+      "true",
+    );
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-title-completion-blocker",
+      "dirty",
+    );
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-withdrawal-reason",
+      "active-breakdown",
+    );
+    act(() => titleBlockerHandleState.handle?.setSnapshot(null));
 
     fireEvent.click(screen.getByRole("button", { name: "Set Add blocker" }));
     expect(useCanArchiveScratchMock).toHaveBeenLastCalledWith("scratch-1", {

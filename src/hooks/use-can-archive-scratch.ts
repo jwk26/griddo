@@ -10,6 +10,11 @@ import type { ScratchTitleBlockerSnapshot } from "@/hooks/use-scratch-breakdowns
 
 export type ScratchCompletionPresentation = "working" | "overlay" | "complete";
 
+export type ScratchCompletionWithdrawalReason =
+  | "active-breakdown"
+  | "staging"
+  | "breakdown-and-staging";
+
 type CompletionBlockers = Readonly<{
   hasAddDraft: boolean;
   titleBlocker: ScratchTitleBlockerSnapshot | null;
@@ -22,6 +27,7 @@ type EligibilitySnapshot = Readonly<{
 
 type CompletionRecord = {
   eligible: boolean;
+  hasPresentedCompletion: boolean;
   presentation: ScratchCompletionPresentation;
 };
 
@@ -101,12 +107,21 @@ export function useCanArchiveScratch(
       if (previous === undefined || enteredReadyTruth) {
         record = {
           eligible,
+          hasPresentedCompletion: eligible,
           presentation: eligible ? "complete" : "working",
         };
       } else if (!eligible) {
-        record = { eligible: false, presentation: "working" };
+        record = {
+          eligible: false,
+          hasPresentedCompletion: previous.hasPresentedCompletion,
+          presentation: "working",
+        };
       } else if (!previous.eligible) {
-        record = { eligible: true, presentation: "overlay" };
+        record = {
+          eligible: true,
+          hasPresentedCompletion: true,
+          presentation: "overlay",
+        };
       } else {
         record = previous;
       }
@@ -146,6 +161,24 @@ export function useCanArchiveScratch(
     scratchId === null || !isReady
       ? "working"
       : currentMachine.records.get(scratchId)?.presentation ?? "working";
+  const currentRecord =
+    scratchId === null ? undefined : currentMachine.records.get(scratchId);
+  const activeBreakdown =
+    (currentSnapshot?.eligibility.unconsumedCount ?? 0) > 0;
+  const activeStaging =
+    (currentSnapshot?.eligibility.stagedCandidateCount ?? 0) > 0;
+  const withdrawalReason: ScratchCompletionWithdrawalReason | null =
+    currentRecord?.hasPresentedCompletion === true &&
+    presentation === "working" &&
+    !persistedEligible &&
+    currentSnapshot?.eligibility.scratch !== null &&
+    (activeBreakdown || activeStaging)
+      ? activeBreakdown && activeStaging
+        ? "breakdown-and-staging"
+        : activeBreakdown
+          ? "active-breakdown"
+          : "staging"
+      : null;
 
   return {
     isReady,
@@ -153,6 +186,11 @@ export function useCanArchiveScratch(
     persistedEligible,
     eligible,
     presentation,
+    completionBlockers: {
+      addDraft: persistedEligible && blockers.hasAddDraft,
+      title: persistedEligible ? blockers.titleBlocker : null,
+    },
+    withdrawalReason,
     cancel,
     reopen,
   } as const;

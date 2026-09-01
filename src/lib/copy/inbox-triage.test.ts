@@ -114,6 +114,29 @@ describe("Inbox/Triage core-English copy", () => {
     );
   });
 
+  it("owns the exact approved DP-VQ11 blocker and withdrawal wording", () => {
+    expect(INBOX_TRIAGE_COPY.completion).toEqual({
+      addBlocker: "Add this idea or clear the draft to complete this Scratch.",
+      titleBlocker: {
+        openOrDirty:
+          "Save or cancel the Scratch title edit to complete this Scratch.",
+        saving: "Saving the Scratch title before completion…",
+        conflicted:
+          "Resolve the Scratch title conflict to complete this Scratch.",
+        reconciling: "Checking the Scratch title before completion…",
+      },
+      withdrawal: {
+        activeBreakdown:
+          "Completion is no longer available because a Breakdown item is active.",
+        staging:
+          "Completion is no longer available because an item is in Staging.",
+        breakdownAndStaging:
+          "Completion is no longer available because Breakdown and Staging have active items.",
+      },
+    });
+    expect(160 in INBOX_TRIAGE_COPY.receiptDependent).toBe(false);
+  });
+
   it("owns the complete approved DP-VQ03 departure wording", () => {
     expect(INBOX_TRIAGE_COPY.departure).toEqual({
       eyebrow: "Unsaved Add draft",
@@ -408,7 +431,7 @@ describe("Inbox/Triage core-English copy", () => {
 
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      148, 160, 162,
+      148, 162,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {

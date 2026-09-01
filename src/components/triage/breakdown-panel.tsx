@@ -46,6 +46,7 @@ import {
   type BreakdownOperationProjection,
   type ConditionalEditor,
   type ConditionalEditorSnapshot,
+  type ScratchTitleBlockerSnapshot,
 } from "@/hooks/use-scratch-breakdowns";
 import { useStagedCandidates } from "@/hooks/use-staged-candidates";
 import { useTriageDepartureContext } from "@/hooks/use-triage-departure";
@@ -80,6 +81,15 @@ export type BreakdownSuccessSignal = Readonly<{
 export type BreakdownCompletionProjection = Readonly<{
   presentation: "working" | "overlay" | "complete";
   persistedEligible?: boolean;
+  completionBlockers?: Readonly<{
+    addDraft: boolean;
+    title: ScratchTitleBlockerSnapshot | null;
+  }>;
+  withdrawalReason?:
+    | "active-breakdown"
+    | "staging"
+    | "breakdown-and-staging"
+    | null;
   cancel: () => void;
   reopen: () => void;
 }>;
@@ -110,6 +120,8 @@ function InlineEditor({
   successSignal,
   actionRole,
   actionTestId,
+  completionBlockerCopy = null,
+  completionBlockerDescriptionId,
 }: {
   contentAfter?: ReactNode;
   contentBefore?: ReactNode;
@@ -123,6 +135,8 @@ function InlineEditor({
   successSignal?: BreakdownSuccessSignal | null;
   actionRole: string;
   actionTestId: string;
+  completionBlockerCopy?: string | null;
+  completionBlockerDescriptionId?: string;
 }) {
   const copy = INBOX_TRIAGE_COPY.inlineEditor;
   const isScratchTitle = snapshot.target.kind === "scratch-title";
@@ -245,11 +259,14 @@ function InlineEditor({
     }
   }
 
+  const describedBy = [
+    snapshot.phase === "pristine" || snapshot.phase === "dirty"
+      ? null
+      : statusId,
+    completionBlockerDescriptionId ?? null,
+  ].filter((id): id is string => id !== null);
   const commonFieldProps = {
-    "aria-describedby":
-      snapshot.phase === "pristine" || snapshot.phase === "dirty"
-        ? undefined
-        : statusId,
+    "aria-describedby": describedBy.length > 0 ? describedBy.join(" ") : undefined,
     "aria-invalid": snapshot.phase === "validation" || undefined,
     "aria-label": fieldLabel,
     className: "triage-inline-editor__field",
@@ -435,6 +452,12 @@ function InlineEditor({
             data-triage-role="inline-editor-issue-status"
           >
             {statusCopy}
+            {completionBlockerCopy !== null ? (
+              <span data-triage-role="context-completion-blocker">
+                {" "}
+                {completionBlockerCopy}
+              </span>
+            ) : null}
             {latestStatus && <span> {latestStatus}</span>}
             {copyStatus && (
               <span data-triage-role="inline-editor-copy-status">
@@ -510,6 +533,22 @@ function InlineEditor({
       )}
     </>
   );
+}
+
+function getTitleCompletionBlockerCopy(
+  blocker: ScratchTitleBlockerSnapshot | null,
+): string | null {
+  if (blocker === null) return null;
+  if (blocker === "saving") {
+    return INBOX_TRIAGE_COPY.completion.titleBlocker.saving;
+  }
+  if (blocker === "conflicted") {
+    return INBOX_TRIAGE_COPY.completion.titleBlocker.conflicted;
+  }
+  if (blocker === "reconciling") {
+    return INBOX_TRIAGE_COPY.completion.titleBlocker.reconciling;
+  }
+  return INBOX_TRIAGE_COPY.completion.titleBlocker.openOrDirty;
 }
 
 type ReliabilityState =
@@ -957,6 +996,8 @@ export function BreakdownPanel({
   const isDepartureDecision = departure.pendingDestination !== null;
   const departureHeadingId = useId();
   const departureDescriptionId = `${departureHeadingId}-departure-description`;
+  const addCompletionBlockerId = useId();
+  const titleCompletionBlockerId = useId();
   const departureContinueRef = useRef<HTMLButtonElement>(null);
   const departureDiscardRef = useRef<HTMLButtonElement>(null);
   const departureSheetRef = useRef<HTMLDivElement>(null);
@@ -1420,6 +1461,26 @@ export function BreakdownPanel({
     completion !== undefined &&
     isConsumedCompletion &&
     completionPresentation === "complete";
+  const addCompletionBlocker =
+    completion?.completionBlockers?.addDraft === true;
+  const titleCompletionBlocker =
+    completion?.completionBlockers?.title ?? null;
+  const titleCompletionBlockerCopy = getTitleCompletionBlockerCopy(
+    titleCompletionBlocker,
+  );
+  const isTitleIssueOverlay =
+    editor.snapshot?.target.kind === "scratch-title" &&
+    (editor.snapshot.phase === "offline" ||
+      editor.snapshot.phase === "not_applied" ||
+      editor.snapshot.phase === "conflict");
+  const withdrawalCopy =
+    completion?.withdrawalReason === "active-breakdown"
+      ? INBOX_TRIAGE_COPY.completion.withdrawal.activeBreakdown
+      : completion?.withdrawalReason === "staging"
+        ? INBOX_TRIAGE_COPY.completion.withdrawal.staging
+        : completion?.withdrawalReason === "breakdown-and-staging"
+          ? INBOX_TRIAGE_COPY.completion.withdrawal.breakdownAndStaging
+          : null;
   const emptyState = isConsumedCompletion
     ? "consumed-completion"
     : consumedBreakdownCount > 0 || stagedCandidateCounts.authoritative > 0
@@ -1485,6 +1546,9 @@ export function BreakdownPanel({
       event.relatedTarget instanceof Node &&
       event.currentTarget.contains(event.relatedTarget)
     ) {
+      return;
+    }
+    if (event.relatedTarget === null && !document.hasFocus()) {
       return;
     }
     completionHadFocusRef.current = false;
@@ -1887,10 +1951,33 @@ export function BreakdownPanel({
               actionTestId="context-action-slot"
               contentBefore={
                 <div
-                  className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
-                  data-triage-role="context-eyebrow-meta"
+                  aria-atomic={titleCompletionBlockerCopy !== null || undefined}
+                  aria-live={titleCompletionBlockerCopy !== null ? "polite" : undefined}
+                  className={cn(
+                    "text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground",
+                    titleCompletionBlockerCopy !== null &&
+                      !isTitleIssueOverlay &&
+                      "context-completion-blocker-mark",
+                  )}
+                  data-triage-role={
+                    titleCompletionBlockerCopy !== null && !isTitleIssueOverlay
+                      ? "context-completion-blocker-mark"
+                      : "context-eyebrow-meta"
+                  }
+                  id={
+                    titleCompletionBlockerCopy !== null && !isTitleIssueOverlay
+                      ? titleCompletionBlockerId
+                      : undefined
+                  }
                 >
-                  Selected Scratch
+                  {titleCompletionBlockerCopy !== null && !isTitleIssueOverlay ? (
+                    <>
+                      <span aria-hidden="true">!</span>{" "}
+                      {titleCompletionBlockerCopy}
+                    </>
+                  ) : (
+                    "Selected Scratch"
+                  )}
                 </div>
               }
               contentAfter={
@@ -1904,6 +1991,14 @@ export function BreakdownPanel({
               contentRole="context-content-slot"
               contentTestId="context-content-slot"
               editor={editor}
+              completionBlockerCopy={
+                isTitleIssueOverlay ? titleCompletionBlockerCopy : null
+              }
+              completionBlockerDescriptionId={
+                titleCompletionBlockerCopy !== null && !isTitleIssueOverlay
+                  ? titleCompletionBlockerId
+                  : undefined
+              }
               onSave={handleEditorSave}
               onUseMine={handleEditorUseMine}
               snapshot={editor.snapshot}
@@ -2096,6 +2191,20 @@ export function BreakdownPanel({
             ) : null}
           </div>
         )}
+        {withdrawalCopy !== null ? (
+          <div
+            aria-atomic="true"
+            aria-live="polite"
+            className="archive-withdrawal-status"
+            data-triage-role="archive-withdrawal-status"
+            role="status"
+          >
+            <span aria-hidden="true" data-triage-role="archive-withdrawal-mark">
+              !
+            </span>
+            <span>{withdrawalCopy}</span>
+          </div>
+        ) : null}
       </div>
 
       <div
@@ -2118,6 +2227,9 @@ export function BreakdownPanel({
                 addEntryRef.current = element;
               }}
               className="block h-8 w-full appearance-none rounded-md border border-border bg-background px-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
+              aria-describedby={
+                addCompletionBlocker ? addCompletionBlockerId : undefined
+              }
               data-triage-role="breakdown-add-field"
               maxLength={500}
               onChange={(event) => updateAddDraft(event.target.value)}
@@ -2184,6 +2296,19 @@ export function BreakdownPanel({
                   : () => void handleReconcileAdd()
               }
             />
+          ) : null}
+          {addCompletionBlocker ? (
+            <div
+              aria-atomic="true"
+              aria-live="polite"
+              className="breakdown-add-completion-blocker"
+              data-triage-role="breakdown-add-completion-blocker"
+              id={addCompletionBlockerId}
+              role="status"
+            >
+              <span aria-hidden="true">!</span>
+              <span>{INBOX_TRIAGE_COPY.completion.addBlocker}</span>
+            </div>
           ) : null}
         </div>
         {isDepartureDecision ? (
