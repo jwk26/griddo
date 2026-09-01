@@ -32,6 +32,9 @@ const useScratchBreakdownsMock = vi.hoisted(() => vi.fn());
 const useCanArchiveScratchMock = vi.hoisted(() => vi.fn());
 const useArchiveScratchMock = vi.hoisted(() => vi.fn());
 const archiveScratchMock = vi.hoisted(() => vi.fn());
+const archiveReconcileMock = vi.hoisted(() => vi.fn());
+const archiveRetryMock = vi.hoisted(() => vi.fn());
+const archiveDismissMock = vi.hoisted(() => vi.fn());
 const stageCandidateMock = vi.hoisted(() => vi.fn());
 const reconcileStageCandidateMock = vi.hoisted(() => vi.fn());
 const unstageCandidateMock = vi.hoisted(() => vi.fn());
@@ -153,6 +156,17 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
   );
   const { useTriageStore } = await import("@/stores/triage-store");
   return {
+    ArchiveOperationCard: ({
+      operation,
+    }: {
+      operation: { state: { phase: string }; isRecoveryProjection: boolean };
+    }) => (
+      <div
+        data-is-recovery-projection={String(operation.isRecoveryProjection)}
+        data-phase={operation.state.phase}
+        data-testid="archive-recovery-card"
+      />
+    ),
     BreakdownPanel: ({
       activeDragItem,
       completion,
@@ -177,6 +191,10 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
         <div
           data-active-drag-kind={activeDragItem?.kind}
           data-completion-presentation={completion?.presentation}
+          data-archive-phase={
+            (completion as { archiveOperation?: { state: { phase: string } } })
+              ?.archiveOperation?.state.phase
+          }
           data-add-completion-blocker={
             completion?.completionBlockers.addDraft ? "true" : undefined
           }
@@ -521,12 +539,20 @@ beforeEach(() => {
   useCanArchiveScratchMock.mockReturnValue(completionState);
   archiveScratchMock.mockReset();
   archiveScratchMock.mockResolvedValue(true);
+  archiveReconcileMock.mockReset();
+  archiveReconcileMock.mockResolvedValue(false);
+  archiveRetryMock.mockReset();
+  archiveRetryMock.mockResolvedValue(false);
+  archiveDismissMock.mockReset();
+  archiveDismissMock.mockReturnValue(true);
   useArchiveScratchMock.mockReset();
   useArchiveScratchMock.mockReturnValue({
     state: { phase: "idle" },
     isProjectionReady: true,
     archiveScratch: archiveScratchMock,
-    reconcile: vi.fn(),
+    reconcile: archiveReconcileMock,
+    retry: archiveRetryMock,
+    dismissTerminal: archiveDismissMock,
   });
 });
 
@@ -561,17 +587,112 @@ describe("TriageWorkspace", () => {
 
   it("does not mount the normal Inbox projection while reload reconciliation owns startup", () => {
     useArchiveScratchMock.mockReturnValue({
-      state: { phase: "recovering" },
+      state: {
+        phase: "recovering",
+        recovery: {
+          operationId: "00000000-0000-4000-8000-000000000001",
+          kind: "archive_scratch",
+          scratchBitId: "scratch-1",
+          expectedVersion: 7,
+          startedAt: 100,
+        },
+      },
       isProjectionReady: false,
       archiveScratch: archiveScratchMock,
-      reconcile: vi.fn(),
+      reconcile: archiveReconcileMock,
+      retry: archiveRetryMock,
+      dismissTerminal: archiveDismissMock,
     });
 
     render(<TriageWorkspace node={createNode()} />);
 
     expect(screen.queryByTestId("triage-workspace")).not.toBeInTheDocument();
     expect(screen.queryByTestId("scratch-pool")).not.toBeInTheDocument();
+    expect(screen.getByTestId("archive-recovery-card")).toHaveAttribute(
+      "data-is-recovery-projection",
+      "true",
+    );
+    expect(screen.getByTestId("archive-recovery-card")).toHaveAttribute(
+      "data-phase",
+      "recovering",
+    );
+    expect(screen.getByTestId("archive-live-region")).toHaveTextContent(
+      "Checking the Archive request from before this reload…",
+    );
+    expect(useCanArchiveScratchMock).not.toHaveBeenCalled();
   });
+
+  it("projects the mounted coordinator state and exact actions into Breakdown", () => {
+    useArchiveScratchMock.mockReturnValue({
+      state: {
+        phase: "unknown",
+        recovery: {
+          operationId: "00000000-0000-4000-8000-000000000001",
+          kind: "archive_scratch",
+          scratchBitId: "scratch-1",
+          expectedVersion: 7,
+          startedAt: 100,
+        },
+      },
+      isProjectionReady: true,
+      archiveScratch: archiveScratchMock,
+      reconcile: archiveReconcileMock,
+      retry: archiveRetryMock,
+      dismissTerminal: archiveDismissMock,
+    });
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-archive-phase",
+      "unknown",
+    );
+    expect(screen.getByTestId("archive-live-region")).toHaveTextContent(
+      "We couldn’t confirm whether this Scratch was archived.",
+    );
+    expect(screen.getByTestId("archive-live-region")).toHaveAttribute(
+      "aria-live",
+      "polite",
+    );
+    expect(screen.getByTestId("archive-live-region")).toHaveAttribute(
+      "aria-atomic",
+      "true",
+    );
+  });
+
+  it.each(["applied", "already_applied"] as const)(
+    "announces terminal %s once without projecting a lingering success card",
+    (terminalStatus) => {
+      useArchiveScratchMock.mockReturnValue({
+        state: {
+          phase: "terminal",
+          recovery: {
+            operationId: "00000000-0000-4000-8000-000000000001",
+            kind: "archive_scratch",
+            scratchBitId: "scratch-1",
+            expectedVersion: 7,
+            startedAt: 100,
+          },
+          terminalStatus,
+        },
+        isProjectionReady: true,
+        archiveScratch: archiveScratchMock,
+        reconcile: archiveReconcileMock,
+        retry: archiveRetryMock,
+        dismissTerminal: archiveDismissMock,
+      });
+
+      render(<TriageWorkspace node={createNode()} />);
+
+      expect(screen.getByTestId("archive-live-region")).toHaveTextContent(
+        "Scratch archived.",
+      );
+      expect(screen.queryByTestId("archive-recovery-card")).toBeNull();
+      expect(screen.getByTestId("breakdown-panel")).not.toHaveAttribute(
+        "data-archive-phase",
+      );
+    },
+  );
 
   it("owns completion above the keyed Breakdown surface and combines Add/title blockers", () => {
     completionState.presentation = "overlay";

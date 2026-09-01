@@ -13,7 +13,9 @@ import {
   useSyncExternalStore,
 } from "react";
 import {
+  ArchiveOperationCard,
   BreakdownPanel,
+  type ArchiveOperationProjection,
   type BreakdownCompletionProjection,
   type BreakdownSuccessSignal,
 } from "@/components/triage/breakdown-panel";
@@ -781,13 +783,70 @@ export function TriageWorkspace({ node }: { node: Node }) {
     setExternalScratchRemovalLifecycle,
   ]);
 
-  if (!archiveCoordinator.isProjectionReady) return null;
+  const archiveOperation: ArchiveOperationProjection = {
+    state: archiveCoordinator.state,
+    isRecoveryProjection: false,
+    reconcile: archiveCoordinator.reconcile,
+    retry: archiveCoordinator.retry,
+    dismissTerminal: archiveCoordinator.dismissTerminal,
+  };
+
+  if (!archiveCoordinator.isProjectionReady) {
+    const recoveryOperation = {
+      ...archiveOperation,
+      isRecoveryProjection: true,
+    };
+    return (
+      <>
+        <ArchiveLiveRegion
+          sentence={archiveLiveSentence(recoveryOperation.state, true)}
+        />
+        <div
+        className="archive-recovery-boundary"
+        data-triage-role="archive-recovery-boundary"
+      >
+        <section
+          aria-labelledby="triage-breakdown-heading"
+          className="archive-recovery-breakdown"
+          data-triage-role="section-surface"
+        >
+          <h2
+            className="triage-shell__section-heading"
+            data-triage-role="section-header"
+            id="triage-breakdown-heading"
+            tabIndex={-1}
+          >
+            {INBOX_TRIAGE_COPY.sectionNames.breakdown}
+          </h2>
+          <div
+            aria-labelledby="archive-completion-heading"
+            className="archive-operation-overlay"
+            data-triage-role="archive-completion-overlay"
+            role="region"
+          >
+            <ArchiveOperationCard
+              operation={recoveryOperation}
+              onCancel={() => {
+                archiveCoordinator.dismissTerminal();
+              }}
+            />
+          </div>
+        </section>
+        </div>
+      </>
+    );
+  }
 
   return (
-    <TriageOperationLockContext.Provider value={operationLock}>
+    <>
+      <ArchiveLiveRegion
+        sentence={archiveLiveSentence(archiveOperation.state, false)}
+      />
+      <TriageOperationLockContext.Provider value={operationLock}>
       <TriageDepartureContext.Provider value={departure}>
         <ScratchTitleBlockerContext.Provider value={titleBlockerHandle}>
           <ReadyTriageWorkspace
+            archiveOperation={archiveOperation}
             archiveScratch={archiveCoordinator.archiveScratch}
             departure={departure}
             hasAddDraft={hasAddDraft}
@@ -800,7 +859,8 @@ export function TriageWorkspace({ node }: { node: Node }) {
           />
         </ScratchTitleBlockerContext.Provider>
       </TriageDepartureContext.Provider>
-    </TriageOperationLockContext.Provider>
+      </TriageOperationLockContext.Provider>
+    </>
   );
 }
 
@@ -816,7 +876,47 @@ function focusArchiveDestination(
   document.querySelector<HTMLElement>(selector)?.focus();
 }
 
+function archiveLiveSentence(
+  state: ArchiveOperationProjection["state"],
+  isRecoveryProjection: boolean,
+): string {
+  const copy = INBOX_TRIAGE_COPY.archive.states;
+  if (
+    isRecoveryProjection &&
+    (state.phase === "recovering" || state.phase === "reconciling")
+  ) return copy.forcedReload;
+  if (state.phase === "pending") return copy.pending;
+  if (state.phase === "unknown") return copy.unknown;
+  if (state.phase === "reconciling") return copy.reconciling;
+  if (state.phase === "recovering") return copy.forcedReload;
+  if (state.phase === "storage_failed") return copy.storageFailure;
+  if (state.phase !== "terminal") return "";
+  if (
+    state.terminalStatus === "applied" ||
+    state.terminalStatus === "already_applied"
+  ) return copy.success;
+  if (state.terminalStatus === "not_applied") return copy.notApplied;
+  if (state.terminalStatus === "rejected") return copy.rejected;
+  return copy.conflict;
+}
+
+function ArchiveLiveRegion({ sentence }: { sentence: string }) {
+  return (
+    <div
+      aria-atomic="true"
+      aria-live="polite"
+      className="sr-only"
+      data-testid="archive-live-region"
+      data-triage-role="archive-live-region"
+      role="status"
+    >
+      {sentence}
+    </div>
+  );
+}
+
 function ReadyTriageWorkspace({
+  archiveOperation,
   archiveScratch,
   departure,
   hasAddDraft,
@@ -827,6 +927,7 @@ function ReadyTriageWorkspace({
   selectedScratchId,
   titleBlocker,
 }: {
+  archiveOperation: ArchiveOperationProjection;
   archiveScratch: ReturnType<typeof useArchiveScratch>["archiveScratch"];
   departure: ReturnType<typeof useTriageDeparture>;
   hasAddDraft: boolean;
@@ -847,6 +948,13 @@ function ReadyTriageWorkspace({
   });
   const completionWithArchive = {
     ...completion,
+    archiveOperation:
+      archiveOperation.state.phase === "idle" ||
+      (archiveOperation.state.phase === "terminal" &&
+        (archiveOperation.state.terminalStatus === "applied" ||
+          archiveOperation.state.terminalStatus === "already_applied"))
+        ? undefined
+        : archiveOperation,
     archive: async () => {
       const scratch = completion.eligibility.scratch;
       return scratch === null ? false : archiveScratch(scratch);

@@ -111,6 +111,20 @@ function isApplied(status: RepositoryOperationStatus): boolean {
   return status === "applied" || status === "already_applied";
 }
 
+function commandForRecovery(
+  recovery: PendingOperationRecovery,
+): ArchiveScratchCommand {
+  return {
+    operationId: recovery.operationId,
+    scratchBitId: recovery.scratchBitId,
+    expectedVersion: recovery.expectedVersion,
+    callerAssertion: {
+      addDraftClear: true,
+      titleBlockerClear: true,
+    },
+  };
+}
+
 export function useArchiveScratch({
   operationLock,
   readAddDraftBlocker,
@@ -221,6 +235,7 @@ export function useArchiveScratch({
         stateRef.current.phase === "unknown" ||
         stateRef.current.phase === "reconciling" ||
         stateRef.current.phase === "recovering" ||
+        stateRef.current.phase === "terminal" ||
         operationLock.isLocked() ||
         readAddDraftBlocker() ||
         (titleBlocker !== null && titleBlocker !== false)
@@ -237,15 +252,7 @@ export function useArchiveScratch({
       });
       if (!operationLock.acquire("archive", recovery.operationId)) return false;
 
-      const command: ArchiveScratchCommand = {
-        operationId: recovery.operationId,
-        scratchBitId: recovery.scratchBitId,
-        expectedVersion: recovery.expectedVersion,
-        callerAssertion: {
-          addDraftClear: true,
-          titleBlockerClear: true,
-        },
-      };
+      const command = commandForRecovery(recovery);
       if (!persistBeforeDispatch(recovery)) {
         operationLock.release(recovery.operationId, "not_applied");
         commit({
@@ -310,6 +317,68 @@ export function useArchiveScratch({
     }
   }, [applyTerminal, commit, operationLock, reconcileArchive]);
 
+  const retry = useCallback(async (): Promise<boolean> => {
+    const current = stateRef.current;
+    const titleBlocker = readTitleBlocker();
+    if (
+      current.phase !== "terminal" ||
+      current.terminalStatus !== "not_applied" ||
+      operationLock.isLocked() ||
+      readAddDraftBlocker() ||
+      (titleBlocker !== null && titleBlocker !== false) ||
+      !operationLock.acquire("archive", current.recovery.operationId)
+    ) {
+      return false;
+    }
+    const recovery = current.recovery;
+    if (!persistBeforeDispatch(recovery)) {
+      operationLock.release(recovery.operationId, "not_applied");
+      commit({
+        blocksProjection: false,
+        state: { phase: "storage_failed", recovery: null },
+      });
+      return false;
+    }
+    commit({
+      blocksProjection: false,
+      state: { phase: "pending", recovery },
+    });
+    try {
+      return applyTerminal(
+        recovery,
+        await dispatchArchive(commandForRecovery(recovery)),
+      );
+    } catch {
+      commit({
+        blocksProjection: false,
+        state: { phase: "unknown", recovery },
+      });
+      return false;
+    }
+  }, [
+    applyTerminal,
+    commit,
+    dispatchArchive,
+    operationLock,
+    persistBeforeDispatch,
+    readAddDraftBlocker,
+    readTitleBlocker,
+  ]);
+
+  const dismissTerminal = useCallback((): boolean => {
+    const current = stateRef.current;
+    const isDismissibleTerminal =
+      current.phase === "terminal" &&
+      (current.terminalStatus === "not_applied" ||
+        current.terminalStatus === "rejected" ||
+        current.terminalStatus === "conflict");
+    const isPredispatchStorageFailure =
+      current.phase === "storage_failed" && current.recovery === null;
+    if (!isDismissibleTerminal && !isPredispatchStorageFailure) return false;
+    commit({ blocksProjection: false, state: { phase: "idle" } });
+    return true;
+  }, [commit]);
+
   useEffect(() => {
     if (
       snapshot.state.phase !== "recovering" ||
@@ -326,5 +395,7 @@ export function useArchiveScratch({
     isProjectionReady: !snapshot.blocksProjection,
     archiveScratch,
     reconcile,
+    retry,
+    dismissTerminal,
   } as const;
 }

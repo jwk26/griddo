@@ -267,9 +267,11 @@ function DepartureIntegrationHarness() {
 
 function CompletionHarness({
   archive = vi.fn(async () => true),
+  archiveOperation,
   initial = "overlay",
 }: {
   archive?: () => Promise<boolean>;
+  archiveOperation?: Record<string, unknown>;
   initial?: "working" | "overlay" | "complete";
 }) {
   const [presentation, setPresentation] = useState(initial);
@@ -282,9 +284,10 @@ function CompletionHarness({
         completion={{
           presentation,
           archive,
+          archiveOperation,
           cancel: () => setPresentation("complete"),
           reopen: () => setPresentation("overlay"),
-        }}
+        } as never}
       />
     </>
   );
@@ -2332,6 +2335,133 @@ describe("BreakdownPanel", () => {
     fireEvent.keyDown(overlay, { key: "Escape" });
     expect(screen.getByRole("region", { name: "Scratch complete" })).toBeVisible();
     expect(archive).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["pending", undefined, "Archiving this Scratch…", "Archive Scratch"],
+    ["unknown", undefined, "We couldn’t confirm whether this Scratch was archived.", "Check again"],
+    ["reconciling", undefined, "Checking whether this Scratch was archived…", "Check again"],
+    ["terminal", "not_applied", "This Scratch was not archived.", "Retry"],
+    ["terminal", "rejected", "Archive stopped because this Scratch is no longer ready.", "Cancel"],
+    ["terminal", "conflict", "Archive couldn’t finish because this Scratch changed while the result was being checked.", "Cancel"],
+    ["storage_failed", undefined, "Archive couldn’t start because this tab couldn’t keep its recovery details.", "Cancel"],
+  ] as const)(
+    "renders one stable Archive card for %s/%s",
+    (phase, terminalStatus, sentence, currentAction) => {
+      triageStoreState.selectedScratchId = "scratch-1";
+      hookState.breakdownsByScratch["scratch-1"] = [
+        createScratchBreakdown({ id: "row-1", consumedAt: currentTime }),
+      ];
+      const recovery = {
+        operationId: "00000000-0000-4000-8000-000000000001",
+        kind: "archive_scratch",
+        scratchBitId: "scratch-1",
+        expectedVersion: 7,
+        startedAt: currentTime,
+      };
+      const state =
+        phase === "terminal"
+          ? { phase, recovery, terminalStatus }
+          : phase === "storage_failed"
+            ? { phase, recovery: null }
+            : { phase, recovery };
+      render(
+        <CompletionHarness
+          archiveOperation={{
+            state,
+            isRecoveryProjection: false,
+            reconcile: vi.fn(),
+            retry: vi.fn(),
+            dismissTerminal: vi.fn(() => true),
+          }}
+        />,
+      );
+
+      const card = screen.getByRole("region", { name: sentence });
+      expect(card).toHaveAttribute("data-triage-role", "archive-completion-overlay");
+      expect(within(card).getAllByText(sentence)).toHaveLength(1);
+      const action = within(card).getByRole("button", { name: currentAction });
+      expect(action).toHaveAttribute("data-triage-role", "archive-current-action");
+      if (phase === "pending" || phase === "reconciling") {
+        expect(action).toHaveAttribute("aria-disabled", "true");
+      }
+      if (terminalStatus === "not_applied") {
+        expect(within(card).getByRole("button", { name: "Cancel" })).toBeEnabled();
+      } else if (phase !== "storage_failed" && phase !== "terminal") {
+        expect(within(card).queryByRole("button", { name: "Cancel" })).toBeNull();
+      }
+    },
+  );
+
+  it("uses Check again without resend, retains its focus while reconciling, and blocks Escape dismissal", () => {
+    triageStoreState.selectedScratchId = "scratch-1";
+    hookState.breakdownsByScratch["scratch-1"] = [
+      createScratchBreakdown({ id: "row-1", consumedAt: currentTime }),
+    ];
+    const reconcile = vi.fn();
+    const archive = vi.fn(async () => true);
+    const archiveOperation = {
+      state: {
+        phase: "unknown",
+        recovery: {
+          operationId: "00000000-0000-4000-8000-000000000001",
+          kind: "archive_scratch",
+          scratchBitId: "scratch-1",
+          expectedVersion: 7,
+          startedAt: currentTime,
+        },
+      },
+      isRecoveryProjection: false,
+      reconcile,
+      retry: vi.fn(),
+      dismissTerminal: vi.fn(),
+    };
+    const view = render(
+      <CompletionHarness archive={archive} archiveOperation={archiveOperation} />,
+    );
+    const checkAgain = screen.getByRole("button", { name: "Check again" });
+    expect(checkAgain).toHaveFocus();
+    fireEvent.click(checkAgain);
+    expect(reconcile).toHaveBeenCalledOnce();
+    expect(archive).not.toHaveBeenCalled();
+
+    archiveOperation.state = {
+      ...archiveOperation.state,
+      phase: "reconciling",
+    };
+    view.rerender(
+      <CompletionHarness archive={archive} archiveOperation={archiveOperation} />,
+    );
+    const retained = screen.getByRole("button", { name: "Check again" });
+    expect(retained).toHaveFocus();
+    fireEvent.keyDown(retained, { key: "Escape" });
+    expect(screen.getByText("Checking whether this Scratch was archived…")).toBeVisible();
+  });
+
+  it("binds the Archive card roles to every theme with static reduced-motion-identical treatment", () => {
+    for (const selector of [
+      ".archive-card",
+      ".archive-status",
+      ".archive-status-mark",
+      ".archive-current-action",
+    ]) {
+      expect(globalsCss).toContain(selector);
+    }
+    expect(globalsCss).toMatch(/\.archive-card[\s\S]*animation: none !important;/);
+    expect(globalsCss).toMatch(/\.archive-card[\s\S]*transition: none !important;/);
+    for (const theme of [
+      "tiny-desk",
+      "neumorphism",
+      "claymorphism",
+      "origami",
+      "terminal",
+      "retro-mac",
+      "graphite",
+    ]) {
+      expect(globalsCss).toContain(
+        `:root[data-color-theme="${theme}"] .archive-card`,
+      );
+    }
   });
 
   it("Cancel restores Add, marks Context complete, and focuses explicit Reopen", () => {

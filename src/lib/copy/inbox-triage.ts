@@ -99,6 +99,24 @@ export interface InboxTriageCopy {
       readonly breakdownAndStaging: string;
     };
   };
+  readonly archive: {
+    readonly states: {
+      readonly pending: string;
+      readonly unknown: string;
+      readonly reconciling: string;
+      readonly forcedReload: string;
+      readonly notApplied: string;
+      readonly storageFailure: string;
+      readonly rejected: string;
+      readonly conflict: string;
+      readonly success: string;
+    };
+    readonly actions: {
+      readonly checkAgain: string;
+      readonly retry: string;
+      readonly cancel: string;
+    };
+  };
   readonly externalRemoval: {
     readonly title: {
       readonly archive: string;
@@ -431,6 +449,26 @@ export const INBOX_TRIAGE_COPY = {
         "Completion is no longer available because Breakdown and Staging have active items.",
     },
   },
+  archive: {
+    states: {
+      pending: "Archiving this Scratch…",
+      unknown: "We couldn’t confirm whether this Scratch was archived.",
+      reconciling: "Checking whether this Scratch was archived…",
+      forcedReload: "Checking the Archive request from before this reload…",
+      notApplied: "This Scratch was not archived.",
+      storageFailure:
+        "Archive couldn’t start because this tab couldn’t keep its recovery details.",
+      rejected: "Archive stopped because this Scratch is no longer ready.",
+      conflict:
+        "Archive couldn’t finish because this Scratch changed while the result was being checked.",
+      success: "Scratch archived.",
+    },
+    actions: {
+      checkAgain: "Check again",
+      retry: "Retry",
+      cancel: "Cancel",
+    },
+  },
   externalRemoval: {
     title: {
       archive: "This Scratch was archived elsewhere",
@@ -659,7 +697,8 @@ export const INBOX_TRIAGE_COPY = {
     undoUnavailable:
       "This item or its source changed. Undo is unavailable.",
     completionWithdrawal: UNAVAILABLE,
-    archiveRecovery: UNAVAILABLE,
+    archiveRecovery:
+      "Checking the Archive request from before this reload…",
   },
   liveRegions: {
     inlineEditor: UNAVAILABLE,
@@ -675,7 +714,7 @@ export const INBOX_TRIAGE_COPY = {
     resultTitle: UNAVAILABLE,
     newlyPlacedUndo: "Newly placed item Undo status.",
     completion: UNAVAILABLE,
-    archive: UNAVAILABLE,
+    archive: "Scratch archived.",
   },
   accessibleNames: {
     scratchPool: "Scratch Pool",
@@ -689,7 +728,6 @@ export const INBOX_TRIAGE_COPY = {
   },
   receiptDependent: {
     148: UNAVAILABLE,
-    162: UNAVAILABLE,
   },
 } as const satisfies InboxTriageCopy;
 

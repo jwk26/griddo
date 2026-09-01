@@ -11,6 +11,7 @@ import {
   type ChangeEvent,
   type FocusEvent,
   type KeyboardEvent,
+  type RefObject,
   type ReactNode,
 } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
@@ -40,6 +41,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useInbox } from "@/hooks/use-inbox";
+import type { ArchiveScratchCoordinatorState } from "@/hooks/use-archive-scratch";
 import {
   useScratchBreakdowns,
   useScratchTitleBlockerContext,
@@ -93,7 +95,194 @@ export type BreakdownCompletionProjection = Readonly<{
   cancel: () => void;
   reopen: () => void;
   archive?: () => Promise<boolean>;
+  archiveOperation?: ArchiveOperationProjection;
 }>;
+
+export type ArchiveOperationProjection = Readonly<{
+  state: ArchiveScratchCoordinatorState;
+  isRecoveryProjection: boolean;
+  reconcile: () => Promise<boolean>;
+  retry: () => Promise<boolean>;
+  dismissTerminal: () => boolean;
+}>;
+
+function getArchiveOperationSentence(
+  state: ArchiveScratchCoordinatorState,
+  isRecoveryProjection: boolean,
+): string | null {
+  const copy = INBOX_TRIAGE_COPY.archive.states;
+  if (
+    isRecoveryProjection &&
+    (state.phase === "recovering" || state.phase === "reconciling")
+  ) {
+    return copy.forcedReload;
+  }
+  if (state.phase === "pending") return copy.pending;
+  if (state.phase === "unknown") return copy.unknown;
+  if (state.phase === "reconciling") return copy.reconciling;
+  if (state.phase === "recovering") return copy.forcedReload;
+  if (state.phase === "storage_failed") return copy.storageFailure;
+  if (state.phase !== "terminal") return null;
+  if (
+    state.terminalStatus === "applied" ||
+    state.terminalStatus === "already_applied"
+  ) {
+    return copy.success;
+  }
+  if (state.terminalStatus === "not_applied") return copy.notApplied;
+  if (state.terminalStatus === "rejected") return copy.rejected;
+  return copy.conflict;
+}
+
+export function ArchiveOperationCard({
+  headingRef: providedHeadingRef,
+  isLocked = false,
+  operation,
+  onArchive,
+  onCancel,
+}: {
+  headingRef?: RefObject<HTMLHeadingElement | null>;
+  isLocked?: boolean;
+  operation?: ArchiveOperationProjection;
+  onArchive?: () => Promise<boolean>;
+  onCancel: () => void;
+}) {
+  const internalHeadingRef = useRef<HTMLHeadingElement>(null);
+  const headingRef = providedHeadingRef ?? internalHeadingRef;
+  const currentActionRef = useRef<HTMLButtonElement>(null);
+  const sentence =
+    operation === undefined
+      ? "Scratch complete"
+      : operation.state.phase === "terminal" &&
+          (operation.state.terminalStatus === "applied" ||
+            operation.state.terminalStatus === "already_applied")
+        ? null
+        : getArchiveOperationSentence(
+            operation.state,
+            operation.isRecoveryProjection,
+          );
+  const state = operation?.state;
+  const terminalStatus = state?.phase === "terminal" ? state.terminalStatus : null;
+  const isInactive = state?.phase === "pending" || state?.phase === "reconciling";
+  const currentAction =
+    operation === undefined
+      ? "Archive Scratch"
+      : state?.phase === "pending"
+        ? "Archive Scratch"
+        : state?.phase === "unknown" || state?.phase === "reconciling"
+          ? INBOX_TRIAGE_COPY.archive.actions.checkAgain
+          : state?.phase === "terminal" && state.terminalStatus === "not_applied"
+            ? INBOX_TRIAGE_COPY.archive.actions.retry
+            : state?.phase === "storage_failed" ||
+                (state?.phase === "terminal" &&
+                  (state.terminalStatus === "rejected" ||
+                    state.terminalStatus === "conflict"))
+              ? INBOX_TRIAGE_COPY.archive.actions.cancel
+              : null;
+  const hasSecondaryCancel =
+    operation === undefined ||
+    (state?.phase === "terminal" && state.terminalStatus === "not_applied");
+
+  useLayoutEffect(() => {
+    if (
+      operation?.isRecoveryProjection &&
+      (state?.phase === "recovering" || state?.phase === "reconciling")
+    ) {
+      headingRef.current?.focus();
+      return;
+    }
+    if (
+      state?.phase === "unknown" ||
+      state?.phase === "storage_failed" ||
+      (state?.phase === "terminal" &&
+        (terminalStatus === "not_applied" ||
+          terminalStatus === "rejected" ||
+          terminalStatus === "conflict"))
+    ) {
+      currentActionRef.current?.focus();
+    }
+  }, [headingRef, operation?.isRecoveryProjection, state?.phase, terminalStatus]);
+
+  if (sentence === null) return null;
+
+  const runCurrentAction = () => {
+    if (operation === undefined) {
+      void onArchive?.();
+    } else if (state?.phase === "unknown") {
+      void operation.reconcile();
+    } else if (state?.phase === "terminal" && state.terminalStatus === "not_applied") {
+      void operation.retry();
+    } else if (
+      state?.phase === "storage_failed" ||
+      (state?.phase === "terminal" &&
+        (state.terminalStatus === "rejected" || state.terminalStatus === "conflict"))
+    ) {
+      onCancel();
+    }
+  };
+
+  return (
+    <div
+      className="archive-card"
+      data-archive-state={state?.phase ?? "confirmation"}
+      data-triage-role="archive-card"
+    >
+        <span
+          aria-hidden="true"
+          className="archive-status-mark"
+          data-archive-status-mark={state?.phase ?? "confirmation"}
+          data-triage-role="archive-status-mark"
+        />
+        <h3
+          ref={headingRef}
+          className="archive-status"
+          data-triage-role="archive-status"
+          id="archive-completion-heading"
+          tabIndex={-1}
+        >
+          {sentence}
+        </h3>
+        <div className="archive-actions" data-triage-role="archive-actions">
+          <div
+            className="archive-current-action-slot"
+            data-triage-role="archive-current-action-slot"
+          >
+            {currentAction !== null ? (
+              <Button
+                ref={currentActionRef}
+                aria-disabled={isInactive || undefined}
+                className="archive-current-action"
+                data-triage-role="archive-current-action"
+                disabled={operation === undefined && isLocked}
+                type="button"
+                onClick={(event) => {
+                  if (isInactive) {
+                    event.preventDefault();
+                    return;
+                  }
+                  runCurrentAction();
+                }}
+              >
+                {currentAction}
+              </Button>
+            ) : null}
+          </div>
+          {hasSecondaryCancel ? (
+            <Button
+              className="archive-cancel"
+              data-triage-role="archive-cancel"
+              disabled={operation === undefined && isLocked}
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+            >
+              {INBOX_TRIAGE_COPY.archive.actions.cancel}
+            </Button>
+          ) : null}
+        </div>
+    </div>
+  );
+}
 
 function subscribeToBrowserConnectivity(onStoreChange: () => void) {
   window.addEventListener("online", onStoreChange);
@@ -1062,7 +1251,6 @@ export function BreakdownPanel({
   const contextEditRef = useRef<HTMLButtonElement>(null);
   const completionOverlayRef = useRef<HTMLDivElement>(null);
   const completionHeadingRef = useRef<HTMLHeadingElement>(null);
-  const completionCancelRef = useRef<HTMLButtonElement>(null);
   const completionReopenRef = useRef<HTMLButtonElement>(null);
   const completionFocusIntentRef = useRef<"heading" | "reopen" | null>(null);
   const completionHadFocusRef = useRef(false);
@@ -1455,9 +1643,16 @@ export function BreakdownPanel({
       ? persistedConsumedCompletion
       : selectedScratch !== null && completionPresentation !== "working";
   const isCompletionOverlayOpen =
-    completion !== undefined &&
-    isConsumedCompletion &&
-    completionPresentation === "overlay";
+    (completion?.archiveOperation !== undefined &&
+      completion.archiveOperation.state.phase !== "idle" &&
+      !(
+        completion.archiveOperation.state.phase === "terminal" &&
+        (completion.archiveOperation.state.terminalStatus === "applied" ||
+          completion.archiveOperation.state.terminalStatus === "already_applied")
+      )) ||
+    (completion !== undefined &&
+      isConsumedCompletion &&
+      completionPresentation === "overlay");
   const isCompletionComplete =
     completion !== undefined &&
     isConsumedCompletion &&
@@ -1560,6 +1755,11 @@ export function BreakdownPanel({
     completionFocusIntentRef.current = "reopen";
     if (newContent.length === 0) setIsAdding(false);
     completion?.cancel();
+  }
+
+  function cancelArchiveResult() {
+    if (completion?.archiveOperation?.dismissTerminal() !== true) return;
+    cancelCompletion();
   }
 
   function reopenCompletion() {
@@ -1925,7 +2125,9 @@ export function BreakdownPanel({
         className="sr-only"
         data-testid="archive-completion-announcement"
       >
-        {isCompletionOverlayOpen ? "Scratch complete" : ""}
+        {isCompletionOverlayOpen && completion?.archiveOperation === undefined
+          ? "Scratch complete"
+          : ""}
       </div>
       <div
         ref={contentRegionRef}
@@ -2382,7 +2584,7 @@ export function BreakdownPanel({
         <div
           ref={completionOverlayRef}
           aria-labelledby="archive-completion-heading"
-          className="absolute inset-0 z-30 flex items-center justify-center bg-background/50 p-4 backdrop-blur-[2px]"
+          className="archive-operation-overlay absolute inset-0 z-30 flex items-center justify-center bg-background/50 p-4 backdrop-blur-[2px]"
           data-triage-role="archive-completion-overlay"
           role="region"
           onFocusCapture={() => {
@@ -2391,46 +2593,25 @@ export function BreakdownPanel({
           onBlurCapture={trackCompletionBlur}
           onKeyDown={(event) => {
             if (event.key !== "Escape") return;
-            if (operationLock.isLocked()) return;
+            if (
+              operationLock.isLocked() ||
+              completion?.archiveOperation !== undefined
+            ) return;
             event.preventDefault();
             cancelCompletion();
           }}
         >
-          <div
-            className="w-full max-w-sm rounded-2xl border border-primary/30 bg-card p-5 text-center shadow-lg"
-            data-triage-role="archive-card"
-          >
-            <CheckCircle2 aria-hidden="true" className="mx-auto h-7 w-7 text-primary" />
-            <h3
-              ref={completionHeadingRef}
-              className="mt-3 text-base font-semibold text-foreground"
-              id="archive-completion-heading"
-              tabIndex={-1}
-            >
-              Scratch complete
-            </h3>
-            <div className="mt-4 flex justify-center gap-2">
-              <Button
-                disabled={
-                  completion?.archive === undefined ||
-                  operationLock.activeOperation !== null
-                }
-                type="button"
-                onClick={() => void completion?.archive?.()}
-              >
-                Archive Scratch
-              </Button>
-              <Button
-                ref={completionCancelRef}
-                disabled={operationLock.activeOperation !== null}
-                type="button"
-                variant="outline"
-                onClick={cancelCompletion}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
+          <ArchiveOperationCard
+            headingRef={completionHeadingRef}
+            isLocked={operationLock.activeOperation !== null}
+            operation={completion?.archiveOperation}
+            onArchive={completion?.archive}
+            onCancel={
+              completion?.archiveOperation === undefined
+                ? cancelCompletion
+                : cancelArchiveResult
+            }
+          />
         </div>
       ) : null}
 

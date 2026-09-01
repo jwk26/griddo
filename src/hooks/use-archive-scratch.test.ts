@@ -495,4 +495,87 @@ describe("useArchiveScratch — Task 161 guarded current-tab owner", () => {
     expect(reconcileArchive).not.toHaveBeenCalled();
     expect(storage.getItem(ARCHIVE_SCRATCH_RECOVERY_STORAGE_KEY)).toBeNull();
   });
+
+  it("retries only authoritative not_applied with the same logical operation identity", async () => {
+    const lock = makeLock();
+    const storage = memoryStorage();
+    const retryResult = deferred<ArchiveScratchResult>();
+    const createOperationId = vi.fn(
+      () => "00000000-0000-4000-8000-000000000001",
+    );
+    const dispatchArchive = vi
+      .fn<(command: ArchiveScratchCommand) => Promise<ArchiveScratchResult>>()
+      .mockImplementationOnce(async (command) => terminal(command, "not_applied"))
+      .mockImplementationOnce(() => retryResult.promise);
+    const onApplied = vi.fn();
+    const { result } = renderHook(() =>
+      useArchiveScratch({
+        operationLock: lock,
+        readAddDraftBlocker: () => false,
+        readTitleBlocker: () => null,
+        createOperationId,
+        getStorage: () => storage,
+        dispatchArchive,
+        reconcileArchive: vi.fn(),
+        onApplied,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.archiveScratch({
+        id: "10000000-0000-4000-8000-000000000001",
+        version: 7,
+      });
+    });
+    expect(result.current.state).toMatchObject({
+      phase: "terminal",
+      terminalStatus: "not_applied",
+    });
+    expect(result.current.retry).toEqual(expect.any(Function));
+
+    let retry!: Promise<boolean>;
+    act(() => {
+      retry = result.current.retry();
+    });
+    expect(result.current.state.phase).toBe("pending");
+    expect(createOperationId).toHaveBeenCalledOnce();
+    expect(dispatchArchive).toHaveBeenCalledTimes(2);
+    expect(dispatchArchive.mock.calls[1]?.[0]).toEqual(
+      dispatchArchive.mock.calls[0]?.[0],
+    );
+
+    retryResult.resolve(
+      terminal(dispatchArchive.mock.calls[1]![0], "already_applied"),
+    );
+    await act(async () => {
+      await expect(retry).resolves.toBe(true);
+    });
+    expect(onApplied).toHaveBeenCalledOnce();
+  });
+
+  it("dismisses only a presented terminal or storage-failure result", async () => {
+    const lock = makeLock();
+    const { result } = renderHook(() =>
+      useArchiveScratch({
+        operationLock: lock,
+        readAddDraftBlocker: () => false,
+        readTitleBlocker: () => null,
+        createOperationId: () => "00000000-0000-4000-8000-000000000001",
+        getStorage: () => {
+          throw new DOMException("denied", "SecurityError");
+        },
+        dispatchArchive: vi.fn(),
+        reconcileArchive: vi.fn(),
+      }),
+    );
+
+    expect(result.current.state.phase).toBe("storage_failed");
+    expect(result.current.dismissTerminal).toEqual(expect.any(Function));
+    act(() => {
+      expect(result.current.dismissTerminal()).toBe(true);
+    });
+    expect(result.current.state.phase).toBe("idle");
+    expect(result.current.isProjectionReady).toBe(true);
+    expect(result.current.dismissTerminal()).toBe(false);
+  });
 });
