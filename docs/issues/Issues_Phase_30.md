@@ -3,7 +3,7 @@
 > Branch: `phase-30/completion-archive-recovery`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-30-completion-archive-recovery`
 > Kickoff date: 2026-08-31
-> State: Tasks 159–160 are `[x]` after user acceptance; Tasks 161–162 remain `[ ]`
+> State: Tasks 159–161 are `[x]` after user acceptance; Task 162 remains `[ ]`
 
 ## Status Legend
 
@@ -123,7 +123,7 @@ during kickoff.
 | Issues / deviations | None open; owner expansion `None`; `Unowned: None`; repair count `3/3`. The cycles resolved assertion/copy-registry alignment, accessible blocker association plus fixed-Context wrapping, and background-tab Reopen focus ownership. No extra cycle was attempted. |
 | Canonical impact | `Reflected` — C1 is recorded narrowly in `docs/EXECUTION_PLAN.md`, `docs/DESIGN_TOKENS.md`, and `docs/recipes/inbox-triage-selected-scratch-context-visual-recipe.md`; it supersedes only the stale persistent Scratch-title editor-status placement and leaves every other `DP-VQ11` contract unchanged |
 
-### Task 161 — Implemented, Awaiting User Review
+### Task 161 — User Accepted
 
 | Field | Durable value |
 | --- | --- |
@@ -132,7 +132,7 @@ during kickoff.
 | Start base / entrypoint | Current accepted Task 160 commit `23184e06ae20ede9d6b5c18db02a11b4553ee7b0`; approved Phase 30 base `a4e00c4ef8d684bdfd52bd59523d1de6e4c11541` |
 | Recovery anchor | Ledger-only durable-start commit `c8cdf783a7fd21540036f025278e27816c6262e8`; it is the parent of every Task 161 product/test write |
 | Implementation / evidence | `300250b364a50f676e525b1e1c1fc1af220085e4`; `docs/verification/inbox-triage/task-161.md`; relevant-input fingerprint `8db1b9add3f5b65d1ac2b0954f636982549c79406ffdb2ff1135ddccd5126e4b` |
-| State | `Implemented, awaiting user review`; Task 161 remains `[ ]`; Task 162 and Phase 31 remain prohibited |
+| State | `Accepted`; the user accepted checkpoint `ffa423cba234ed85d6e61f1d954040cabcde226e`, and Task 161 is `[x]`; Task 162 and Phase 31 remain prohibited |
 | Verification | Latest focused gate: 8 files / 343 tests, target lint clean, typecheck passed. Latest full gate: 100 files / 1,254 tests, lint 0 errors with 11 unchanged warnings, typecheck passed, build passed with seven pages, and `git diff --check` passed. One final-input browser session confirmed write/readback-before-dispatch, forced-reload reconciliation-before-workspace mount, and all four exact selection/focus handoffs. |
 | Issues / deviations | None open; owner expansion `None`; `Unowned: None`; repair count `3/3`. The cycles resolved pre-projection recovery gating/fallback, filtered-null versus true-empty focus, and terminal handoff exception classification. No fourth cycle was attempted. |
 | Canonical impact | `None` — Task 161 implements the existing SCHEMA/SPEC/plan contract without altering product, design, schema, or workflow authority |
