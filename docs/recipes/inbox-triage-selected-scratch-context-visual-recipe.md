@@ -23,16 +23,21 @@
 ## Decision-Prerequisite Boundary
 
 - `VQ-04` — **resolved by `DP-VQ04` on 2026-08-09.** The user selected Choice A, the direct in-place Scratch-title and Breakdown-content editor system. This recipe owns the Context half specified below; Task 138 is the only realization edge and Task 137 remains headless.
-- Context subset of `VQ-11` — **behavior/copy resolved by `DP-VQ11` on 2026-08-11; fixed-geometry compatibility planned later.** Preserve the editor, exact blocker copy, and logical focus with no detached completion surface, but do not reuse the superseded persistent status region. Task 160 alone must select and obtain authority for a fixed-`DP-VQ04`-compatible expression after Task 118 checkpoint acceptance.
+- Context subset of `VQ-11` — **behavior/copy resolved by `DP-VQ11` on 2026-08-11; fixed-geometry compatibility C1 approved on 2026-09-01.** Preserve the editor, exact blocker copy, logical focus, fixed `104px` Context geometry, and fixed `9.5rem` action region with no detached completion surface. Task 160 uses the existing eyebrow/meta line for `open|dirty|saving|reconciling` and the existing source-bound issue-overlay status column for visual `offline|not_applied|conflict`.
 - `D-LENS` — Neumorphism water-lens sort treatment is deferred and excluded.
 
 ## `DP-VQ11` Scratch-Title Completion Blocker Compatibility
 
 The prior prescription to append completion copy to a persistent visible editor
-status region is superseded by the fixed `DP-VQ04` geometry. This recipe does
-not select a replacement UI. Task 160 owns the later fixed-geometry-compatible
-presentation after its prerequisites and user gate; Task 138 does not render
-completion blockers.
+status region is superseded by the fixed `DP-VQ04` geometry. Approved C1
+supersedes only that stale placement. For `open|dirty|saving|reconciling`,
+replace only the existing Context eyebrow/meta value `Selected Scratch` with
+static `context-completion-blocker-mark` plus the exact blocker sentence. For
+visual `offline|not_applied|conflict`, append the matching exact blocker
+sentence after the current editor-state sentence inside the existing
+source-bound issue-overlay status column. Restore `Selected Scratch` without
+moving focus when the blocker clears. Every other approved `DP-VQ11` copy,
+behavior, action, focus, lifetime, theme, and prohibition remains unchanged.
 
 ### Preserved Copy And Behavior
 
@@ -50,14 +55,14 @@ auto-cancels, discards, or persists the draft, and never moves logical focus.
 It lasts only while the matching synchronous blocker snapshot and otherwise-
 eligible Scratch remain current.
 
-### Task 160 Ownership — Planned Later
+### Task 160 Ownership — Approved C1 Compatibility
 
-Task 160 must choose and verify a source-bound expression that coexists with the
-fixed Context geometry, fixed `9.5rem` action region, absent ordinary status
-line, progress action, and issue overlay without expanding or displacing them.
-This recipe intentionally specifies no new placement, overlay composition,
-theme treatment, or announcement container. Task 160 must reflect and obtain
-authority for that compatibility decision before changing product code.
+Task 160 must verify that the approved source-bound expression coexists with the
+fixed `104px` Context geometry, title field and timestamp, fixed `9.5rem` action
+region, Save/Cancel, saving/reconciling progress action, and issue-overlay
+actions without expanding or displacing them. It must not add an ordinary
+status row, another overlay, panel, completion action, toast, dialog, detached
+surface, or adjacent fallback.
 
 ## `DP-VQ04` Approved Scratch-Title Inline Editor
 

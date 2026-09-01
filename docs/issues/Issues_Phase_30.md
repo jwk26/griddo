@@ -3,7 +3,7 @@
 > Branch: `phase-30/completion-archive-recovery`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-30-completion-archive-recovery`
 > Kickoff date: 2026-08-31
-> State: Task 159 is `[x]` after user acceptance; Tasks 160–162 remain `[ ]`
+> State: Task 159 is `[x]` after user acceptance; Task 160 is `In Progress` and remains `[ ]`; Tasks 161–162 remain `[ ]`
 
 ## Status Legend
 
@@ -108,5 +108,17 @@ during kickoff.
 | Verification | Latest focused gate: 3 files / 195 tests, target lint clean, typecheck passed. Latest full gate: 99 files / 1,211 tests, lint 0 errors with 11 unchanged warnings, typecheck passed, build passed with seven pages, and `git diff --check` passed. Bounded running-app evidence covered mounted false-to-true, Cancel/complete/Reopen, explicit Reopen, withdrawal/recovery, focus, Scratch switch/return, same-session route re-entry, and reload. |
 | Issues / deviations | None open. The handoff's truncated Task 136 summary SHA is recovered from the authoritative Gate C receipt as acceptance commit `02675c3c2c44939bb71506eb64dd1904d8e0bfa7`, which is an ancestor of the approved base. Two TDD repair cycles resolved the browser focus defect and all four independent Important review findings; re-review found no new Critical or Important finding. `Unowned: None`. |
 | Canonical impact | `None` — Task 159 is implementation-local and does not alter canonical product, design, schema, or workflow authority |
+
+### Task 160 — In Progress
+
+| Field | Durable value |
+| --- | --- |
+| Approved scope | Task 160 only — C1 canonical reflection, `DP-VQ11` Add/title blocker and eligibility-withdrawal realization in the exact named product/test paths, one representative running-app check, task-local evidence, and this minimum matching ledger state |
+| Authority | User-approved ad-hoc work order and C1 statement `승인` on 2026-09-01; the Phase 30 Gate C receipt remains `run-phase` authority and is not represented as a Task 160 receipt |
+| Start base / entrypoint | Current accepted Task 159 commit `b742538bc1f72300912d8d6f2a310e7328deed5b`; approved Phase 30 base `a4e00c4ef8d684bdfd52bd59523d1de6e4c11541` |
+| Recovery anchor | This documentation-only durable-start/C1 reflection commit; it must remain the parent of every Task 160 product/test write |
+| State | `In Progress`; Task 160 remains `[ ]` and Tasks 161–162 are held |
+| Issues / deviations | None open; owner expansion `None`; `Unowned: None`; repair count `0/3` |
+| Canonical impact | `Reflected` — C1 is recorded narrowly in `docs/EXECUTION_PLAN.md`, `docs/DESIGN_TOKENS.md`, and `docs/recipes/inbox-triage-selected-scratch-context-visual-recipe.md`; it supersedes only the stale persistent Scratch-title editor-status placement and leaves every other `DP-VQ11` contract unchanged |
 
 No other Phase 30 item is `Open`, `In Progress`, or `Awaiting User Decision`.
