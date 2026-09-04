@@ -10,9 +10,13 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import {
+  ArchiveOperationCard,
   BreakdownPanel,
+  type ArchiveOperationProjection,
+  type BreakdownCompletionProjection,
   type BreakdownSuccessSignal,
 } from "@/components/triage/breakdown-panel";
 import { HierarchyExplorer } from "@/components/triage/hierarchy-explorer";
@@ -30,6 +34,8 @@ import {
   type TriageDragItem,
 } from "@/hooks/use-dnd";
 import { useExternalScratchRemovalData } from "@/hooks/use-external-scratch-removal-data";
+import { useArchiveScratch } from "@/hooks/use-archive-scratch";
+import { useCanArchiveScratch } from "@/hooks/use-can-archive-scratch";
 import {
   useStagedCandidates,
   type CandidateCommandOutcome,
@@ -70,7 +76,7 @@ import { cn } from "@/lib/utils";
 import { useTriagePreferencesStore } from "@/stores/triage-preferences-store";
 import { useTriageStore } from "@/stores/triage-store";
 import type { ExternalScratchRemovalState } from "@/stores/triage-store";
-import type { Node } from "@/types";
+import type { Bit, Node } from "@/types";
 
 function formatStagingHeading(label: string, count: number) {
   return count >= 2 ? `${count} ${label}` : label;
@@ -635,11 +641,32 @@ function TriageRemoveDropTarget({
 export function TriageWorkspace({ node }: { node: Node }) {
   const operationLock = useTriageOperationLock();
   const departure = useTriageDeparture(operationLock);
-  const [titleBlockerHandle] = useState(createScratchTitleBlockerHandle);
   const externalScratchRemoval = useTriageStore(
     (state) => state.externalScratchRemoval,
   );
   const selectedScratchId = useTriageStore((state) => state.selectedScratchId);
+  const titleBlockerHandle = useMemo(() => {
+    // Scope the producer to the same selected-Scratch lifetime as BreakdownPanel.
+    void selectedScratchId;
+    return createScratchTitleBlockerHandle();
+  }, [selectedScratchId]);
+  const titleBlocker = useSyncExternalStore(
+    titleBlockerHandle.subscribe,
+    titleBlockerHandle.getSnapshot,
+    () => null,
+  );
+  const [addDraftBlocker, setAddDraftBlocker] = useState<{
+    scratchId: string | null;
+    blocked: boolean;
+  }>({ scratchId: null, blocked: false });
+  const hasAddDraft =
+    addDraftBlocker.scratchId === selectedScratchId && addDraftBlocker.blocked;
+  const setCurrentAddDraftBlocker = useCallback(
+    (blocked: boolean) => {
+      setAddDraftBlocker({ scratchId: selectedScratchId, blocked });
+    },
+    [selectedScratchId],
+  );
   const setExternalScratchRemovalLifecycle = useTriageStore(
     (state) => state.setExternalScratchRemovalLifecycle,
   );
@@ -656,6 +683,84 @@ export function TriageWorkspace({ node }: { node: Node }) {
           ? externalScratchRemoval.scratchId
           : null,
     });
+  const scratchPoolQuery = useTriageStore((state) => state.scratchPoolQuery);
+  const finishScratchArchive = useTriageStore(
+    (state) => state.finishScratchArchive,
+  );
+  const poolCreatedAtSort = useTriagePreferencesStore(
+    (state) => state.poolCreatedAtSort,
+  );
+  const handleArchiveApplied = useCallback(
+    async (
+      recovery: { scratchBitId: string },
+      result: unknown,
+    ) => {
+      const poolSnapshot = useTriageStore.getState();
+      let terminalSnapshot: Awaited<ReturnType<typeof readTerminalSnapshot>>;
+      try {
+        terminalSnapshot = await readTerminalSnapshot(
+          node.id,
+          recovery.scratchBitId,
+        );
+      } catch {
+        const destination = finishScratchArchive(recovery.scratchBitId, {
+          activeIds: poolSnapshot.scratchPoolActiveIds,
+          visibleIds: poolSnapshot.scratchPoolResultIds,
+        });
+        requestAnimationFrame(() => focusArchiveDestination(destination.kind));
+        return;
+      }
+      const { projectedActiveScratchBits, source } = terminalSnapshot;
+      const remaining = projectedActiveScratchBits.filter(
+        (scratch) => scratch.id !== recovery.scratchBitId,
+      );
+      const resultScratch =
+        typeof result === "object" &&
+        result !== null &&
+        "scratch" in result
+          ? (result.scratch as Bit | null)
+          : null;
+      const sourceForOrder = source ?? resultScratch;
+      const orderedWithSource = (
+        sourceForOrder === null ||
+        sourceForOrder === undefined ||
+        remaining.some((scratch) => scratch.id === sourceForOrder.id)
+          ? remaining
+          : [...remaining, sourceForOrder]
+      ).toSorted((left, right) =>
+        poolCreatedAtSort === "ASC"
+          ? left.createdAt - right.createdAt
+          : right.createdAt - left.createdAt,
+      );
+      const normalizedQuery = scratchPoolQuery.toLocaleLowerCase();
+      const visible =
+        normalizedQuery.length === 0
+          ? orderedWithSource
+          : orderedWithSource.filter((scratch) =>
+              scratch.title.toLocaleLowerCase().includes(normalizedQuery),
+            );
+      const destination = finishScratchArchive(recovery.scratchBitId, {
+        activeIds: orderedWithSource.map((scratch) => scratch.id),
+        visibleIds: visible.map((scratch) => scratch.id),
+      });
+      requestAnimationFrame(() => {
+        focusArchiveDestination(destination.kind);
+      });
+    },
+    [
+      finishScratchArchive,
+      node.id,
+      poolCreatedAtSort,
+      readTerminalSnapshot,
+      scratchPoolQuery,
+    ],
+  );
+  const archiveCoordinator = useArchiveScratch({
+    operationLock,
+    readAddDraftBlocker: departure.hasAddDraft,
+    readTitleBlocker: titleBlockerHandle.getSnapshot,
+    onApplied: handleArchiveApplied,
+  });
 
   useEffect(() => {
     return registerActiveTriageDeparture(departure);
@@ -678,34 +783,224 @@ export function TriageWorkspace({ node }: { node: Node }) {
     setExternalScratchRemovalLifecycle,
   ]);
 
+  const archiveOperation: ArchiveOperationProjection = {
+    state: archiveCoordinator.state,
+    isRecoveryProjection: false,
+    reconcile: archiveCoordinator.reconcile,
+    retry: archiveCoordinator.retry,
+    dismissTerminal: archiveCoordinator.dismissTerminal,
+  };
+  const archiveState = archiveCoordinator.state;
+  const terminalSuccess =
+    archiveState.phase === "terminal" &&
+    (archiveState.terminalStatus === "applied" ||
+      archiveState.terminalStatus === "already_applied");
+  const recoveryScratchIsNotSelected =
+    "recovery" in archiveState &&
+    archiveState.recovery !== null &&
+    archiveState.recovery.scratchBitId !== selectedScratchId;
+
+  if (
+    !archiveCoordinator.isProjectionReady ||
+    (!terminalSuccess && recoveryScratchIsNotSelected)
+  ) {
+    const recoveryOperation = {
+      ...archiveOperation,
+      isRecoveryProjection: true,
+    };
+    return (
+      <>
+        <ArchiveLiveRegion
+          sentence={archiveLiveSentence(recoveryOperation.state, true)}
+        />
+        <div
+        className="archive-recovery-boundary"
+        data-triage-role="archive-recovery-boundary"
+      >
+        <section
+          aria-labelledby="triage-breakdown-heading"
+          className="archive-recovery-breakdown"
+          data-triage-role="section-surface"
+        >
+          <h2
+            className="triage-shell__section-heading"
+            data-triage-role="section-header"
+            id="triage-breakdown-heading"
+            tabIndex={-1}
+          >
+            {INBOX_TRIAGE_COPY.sectionNames.breakdown}
+          </h2>
+          <div
+            aria-labelledby="archive-completion-heading"
+            className="archive-operation-overlay"
+            data-triage-role="archive-completion-overlay"
+            role="region"
+          >
+            <ArchiveOperationCard
+              operation={recoveryOperation}
+              onCancel={() => {
+                archiveCoordinator.dismissTerminal();
+              }}
+            />
+          </div>
+        </section>
+        </div>
+      </>
+    );
+  }
+
   return (
-    <TriageOperationLockContext.Provider value={operationLock}>
+    <>
+      <ArchiveLiveRegion
+        sentence={archiveLiveSentence(archiveOperation.state, false)}
+      />
+      <TriageOperationLockContext.Provider value={operationLock}>
       <TriageDepartureContext.Provider value={departure}>
         <ScratchTitleBlockerContext.Provider value={titleBlockerHandle}>
-          <TriageWorkspaceContent
+          <ReadyTriageWorkspace
+            archiveOperation={archiveOperation}
+            archiveScratch={archiveCoordinator.archiveScratch}
             departure={departure}
-            isDepartureDecision={departure.pendingDestination !== null}
+            hasAddDraft={hasAddDraft}
             node={node}
             operationLock={operationLock}
+            onAddDraftBlockerChange={setCurrentAddDraftBlocker}
             readTerminalSnapshot={readTerminalSnapshot}
+            selectedScratchId={selectedScratchId}
+            titleBlocker={titleBlocker}
           />
         </ScratchTitleBlockerContext.Provider>
       </TriageDepartureContext.Provider>
-    </TriageOperationLockContext.Provider>
+      </TriageOperationLockContext.Provider>
+    </>
+  );
+}
+
+function focusArchiveDestination(
+  kind: "scratch" | "search-empty" | "inbox-empty",
+): void {
+  const selector =
+    kind === "scratch"
+      ? '[data-testid="selected-scratch-context"]'
+      : kind === "search-empty"
+        ? '[data-archive-handoff-focus="search-empty"]'
+        : 'button[aria-label="Add item"]';
+  document.querySelector<HTMLElement>(selector)?.focus();
+}
+
+function archiveLiveSentence(
+  state: ArchiveOperationProjection["state"],
+  isRecoveryProjection: boolean,
+): string {
+  const copy = INBOX_TRIAGE_COPY.archive.states;
+  if (
+    isRecoveryProjection &&
+    (state.phase === "recovering" || state.phase === "reconciling")
+  ) return copy.forcedReload;
+  if (state.phase === "pending") return copy.pending;
+  if (state.phase === "unknown") return copy.unknown;
+  if (state.phase === "reconciling") return copy.reconciling;
+  if (state.phase === "recovering") return copy.forcedReload;
+  if (state.phase === "storage_failed") return copy.storageFailure;
+  if (state.phase !== "terminal") return "";
+  if (
+    state.terminalStatus === "applied" ||
+    state.terminalStatus === "already_applied"
+  ) return copy.success;
+  if (state.terminalStatus === "not_applied") return copy.notApplied;
+  if (state.terminalStatus === "rejected") return copy.rejected;
+  return copy.conflict;
+}
+
+function ArchiveLiveRegion({ sentence }: { sentence: string }) {
+  return (
+    <div
+      aria-atomic="true"
+      aria-live="polite"
+      className="sr-only"
+      data-testid="archive-live-region"
+      data-triage-role="archive-live-region"
+      role="status"
+    >
+      {sentence}
+    </div>
+  );
+}
+
+function ReadyTriageWorkspace({
+  archiveOperation,
+  archiveScratch,
+  departure,
+  hasAddDraft,
+  node,
+  operationLock,
+  onAddDraftBlockerChange,
+  readTerminalSnapshot,
+  selectedScratchId,
+  titleBlocker,
+}: {
+  archiveOperation: ArchiveOperationProjection;
+  archiveScratch: ReturnType<typeof useArchiveScratch>["archiveScratch"];
+  departure: ReturnType<typeof useTriageDeparture>;
+  hasAddDraft: boolean;
+  node: Node;
+  operationLock: ReturnType<typeof useTriageOperationLock>;
+  onAddDraftBlockerChange: (blocked: boolean) => void;
+  readTerminalSnapshot: ReturnType<
+    typeof useExternalScratchRemovalData
+  >["readTerminalSnapshot"];
+  selectedScratchId: string | null;
+  titleBlocker: ReturnType<
+    ReturnType<typeof createScratchTitleBlockerHandle>["getSnapshot"]
+  >;
+}) {
+  const completion = useCanArchiveScratch(selectedScratchId, {
+    hasAddDraft,
+    titleBlocker,
+  });
+  const completionWithArchive = {
+    ...completion,
+    archiveOperation:
+      archiveOperation.state.phase === "idle" ||
+      (archiveOperation.state.phase === "terminal" &&
+        (archiveOperation.state.terminalStatus === "applied" ||
+          archiveOperation.state.terminalStatus === "already_applied"))
+        ? undefined
+        : archiveOperation,
+    archive: async () => {
+      const scratch = completion.eligibility.scratch;
+      return scratch === null ? false : archiveScratch(scratch);
+    },
+  };
+
+  return (
+    <TriageWorkspaceContent
+      completion={completionWithArchive}
+      departure={departure}
+      isDepartureDecision={departure.pendingDestination !== null}
+      node={node}
+      operationLock={operationLock}
+      onAddDraftBlockerChange={onAddDraftBlockerChange}
+      readTerminalSnapshot={readTerminalSnapshot}
+    />
   );
 }
 
 function TriageWorkspaceContent({
+  completion,
   departure,
   isDepartureDecision,
   node,
   operationLock,
+  onAddDraftBlockerChange,
   readTerminalSnapshot,
 }: {
+  completion: BreakdownCompletionProjection;
   departure: ReturnType<typeof useTriageDeparture>;
   isDepartureDecision: boolean;
   node: Node;
   operationLock: ReturnType<typeof useTriageOperationLock>;
+  onAddDraftBlockerChange: (blocked: boolean) => void;
   readTerminalSnapshot: ReturnType<
     typeof useExternalScratchRemovalData
   >["readTerminalSnapshot"];
@@ -1630,6 +1925,8 @@ function TriageWorkspaceContent({
                 <BreakdownPanel
                   key={selectedScratchId ?? "none"}
                   activeDragItem={activeDragItem}
+                  completion={completion}
+                  onAddDraftBlockerChange={onAddDraftBlockerChange}
                   overTargetId={overTargetId}
                   successSignal={
                     breakdownSuccessScope?.scratchId === selectedScratchId &&

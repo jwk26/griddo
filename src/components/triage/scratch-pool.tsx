@@ -462,6 +462,7 @@ export function ScratchPool() {
               onChange={(event) => setSearchQuery(event.target.value)}
               aria-label={INBOX_TRIAGE_COPY.accessibleNames.searchScratches}
               data-triage-role="pool-search-field"
+              data-archive-handoff-focus="search-empty"
               className="h-6 w-full rounded-sm bg-muted/40 pl-5 pr-1 text-[10px] text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             {searchQuery && !selectedIsHidden ? (
@@ -581,12 +582,13 @@ export function ScratchPool() {
             onScroll={handleScroll}
             tabIndex={0}
           >
-            {activeScratchBits.length === 0 ? (
+            {activeScratchBits.length === 0 && searchQuery.length === 0 ? (
               <EmptyState />
             ) : sortedFilteredBits.length === 0 ? (
               <div
                 className="px-3 py-4 text-center text-[10px] text-muted-foreground/60"
                 data-external-removal-focus="search-empty"
+                data-archive-handoff-focus="search-empty-status"
                 tabIndex={-1}
               >
                 No matches

@@ -44,7 +44,7 @@ describe("Inbox/Triage core-English copy", () => {
       "Placement closed because this Explorer path changed.",
       "This item or its source changed. Undo is unavailable.",
       RECEIPT_COPY_UNAVAILABLE,
-      RECEIPT_COPY_UNAVAILABLE,
+      "Checking the Archive request from before this reload…",
     ]);
     expect(Object.values(INBOX_TRIAGE_COPY.liveRegions)).toHaveLength(14);
     expect(INBOX_TRIAGE_COPY.liveRegions.poolActivity).toBe(
@@ -60,6 +60,7 @@ describe("Inbox/Triage core-English copy", () => {
           key === "stagingActivity" ||
           key === "explorerSearch" ||
           key === "newlyPlacedUndo" ||
+          (key === "archive" && value === "Scratch archived.") ||
           value === RECEIPT_COPY_UNAVAILABLE,
       ),
     ).toBe(true);
@@ -112,6 +113,59 @@ describe("Inbox/Triage core-English copy", () => {
     expect(INBOX_TRIAGE_COPY.liveRegions.inlineEditor).toBe(
       RECEIPT_COPY_UNAVAILABLE,
     );
+  });
+
+  it("owns the exact approved DP-VQ11 blocker and withdrawal wording", () => {
+    expect(INBOX_TRIAGE_COPY.completion).toEqual({
+      addBlocker: "Add this idea or clear the draft to complete this Scratch.",
+      titleBlocker: {
+        openOrDirty:
+          "Save or cancel the Scratch title edit to complete this Scratch.",
+        saving: "Saving the Scratch title before completion…",
+        conflicted:
+          "Resolve the Scratch title conflict to complete this Scratch.",
+        reconciling: "Checking the Scratch title before completion…",
+      },
+      withdrawal: {
+        activeBreakdown:
+          "Completion is no longer available because a Breakdown item is active.",
+        staging:
+          "Completion is no longer available because an item is in Staging.",
+        breakdownAndStaging:
+          "Completion is no longer available because Breakdown and Staging have active items.",
+      },
+    });
+    expect(160 in INBOX_TRIAGE_COPY.receiptDependent).toBe(false);
+  });
+
+  it("owns the exact approved DP-VQ12 Archive state and action wording", () => {
+    expect(INBOX_TRIAGE_COPY.archive).toEqual({
+      states: {
+        pending: "Archiving this Scratch…",
+        unknown: "We couldn’t confirm whether this Scratch was archived.",
+        reconciling: "Checking whether this Scratch was archived…",
+        forcedReload: "Checking the Archive request from before this reload…",
+        notApplied: "This Scratch was not archived.",
+        storageFailure:
+          "Archive couldn’t start because this tab couldn’t keep its recovery details.",
+        rejected: "Archive stopped because this Scratch is no longer ready.",
+        conflict:
+          "Archive couldn’t finish because this Scratch changed while the result was being checked.",
+        success: "Scratch archived.",
+      },
+      actions: {
+        checkAgain: "Check again",
+        retry: "Retry",
+        cancel: "Cancel",
+      },
+    });
+    expect(INBOX_TRIAGE_COPY.lifecycleReasons.archiveRecovery).toBe(
+      INBOX_TRIAGE_COPY.archive.states.forcedReload,
+    );
+    expect(INBOX_TRIAGE_COPY.liveRegions.archive).toBe(
+      INBOX_TRIAGE_COPY.archive.states.success,
+    );
+    expect(162 in INBOX_TRIAGE_COPY.receiptDependent).toBe(false);
   });
 
   it("owns the complete approved DP-VQ03 departure wording", () => {
@@ -408,7 +462,7 @@ describe("Inbox/Triage core-English copy", () => {
 
   it("keeps every later receipt-owned copy bundle explicitly unavailable", () => {
     expect(Object.keys(INBOX_TRIAGE_COPY.receiptDependent).map(Number)).toEqual([
-      148, 160, 162,
+      148,
     ]);
 
     for (const value of Object.values(INBOX_TRIAGE_COPY.receiptDependent)) {

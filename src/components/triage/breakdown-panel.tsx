@@ -11,6 +11,7 @@ import {
   type ChangeEvent,
   type FocusEvent,
   type KeyboardEvent,
+  type RefObject,
   type ReactNode,
 } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
@@ -40,12 +41,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useInbox } from "@/hooks/use-inbox";
+import type { ArchiveScratchCoordinatorState } from "@/hooks/use-archive-scratch";
 import {
   useScratchBreakdowns,
   useScratchTitleBlockerContext,
   type BreakdownOperationProjection,
   type ConditionalEditor,
   type ConditionalEditorSnapshot,
+  type ScratchTitleBlockerSnapshot,
 } from "@/hooks/use-scratch-breakdowns";
 import { useStagedCandidates } from "@/hooks/use-staged-candidates";
 import { useTriageDepartureContext } from "@/hooks/use-triage-departure";
@@ -77,6 +80,210 @@ export type BreakdownSuccessSignal = Readonly<{
   rowId: string;
 }>;
 
+export type BreakdownCompletionProjection = Readonly<{
+  presentation: "working" | "overlay" | "complete";
+  persistedEligible?: boolean;
+  completionBlockers?: Readonly<{
+    addDraft: boolean;
+    title: ScratchTitleBlockerSnapshot | null;
+  }>;
+  withdrawalReason?:
+    | "active-breakdown"
+    | "staging"
+    | "breakdown-and-staging"
+    | null;
+  cancel: () => void;
+  reopen: () => void;
+  archive?: () => Promise<boolean>;
+  archiveOperation?: ArchiveOperationProjection;
+}>;
+
+export type ArchiveOperationProjection = Readonly<{
+  state: ArchiveScratchCoordinatorState;
+  isRecoveryProjection: boolean;
+  reconcile: () => Promise<boolean>;
+  retry: () => Promise<boolean>;
+  dismissTerminal: () => boolean;
+}>;
+
+function getArchiveOperationSentence(
+  state: ArchiveScratchCoordinatorState,
+  isRecoveryProjection: boolean,
+): string | null {
+  const copy = INBOX_TRIAGE_COPY.archive.states;
+  if (
+    isRecoveryProjection &&
+    (state.phase === "recovering" || state.phase === "reconciling")
+  ) {
+    return copy.forcedReload;
+  }
+  if (state.phase === "pending") return copy.pending;
+  if (state.phase === "unknown") return copy.unknown;
+  if (state.phase === "reconciling") return copy.reconciling;
+  if (state.phase === "recovering") return copy.forcedReload;
+  if (state.phase === "storage_failed") return copy.storageFailure;
+  if (state.phase !== "terminal") return null;
+  if (
+    state.terminalStatus === "applied" ||
+    state.terminalStatus === "already_applied"
+  ) {
+    return copy.success;
+  }
+  if (state.terminalStatus === "not_applied") return copy.notApplied;
+  if (state.terminalStatus === "rejected") return copy.rejected;
+  return copy.conflict;
+}
+
+export function ArchiveOperationCard({
+  headingRef: providedHeadingRef,
+  isLocked = false,
+  operation,
+  onArchive,
+  onCancel,
+}: {
+  headingRef?: RefObject<HTMLHeadingElement | null>;
+  isLocked?: boolean;
+  operation?: ArchiveOperationProjection;
+  onArchive?: () => Promise<boolean>;
+  onCancel: () => void;
+}) {
+  const internalHeadingRef = useRef<HTMLHeadingElement>(null);
+  const headingRef = providedHeadingRef ?? internalHeadingRef;
+  const currentActionRef = useRef<HTMLButtonElement>(null);
+  const sentence =
+    operation === undefined
+      ? "Scratch complete"
+      : operation.state.phase === "terminal" &&
+          (operation.state.terminalStatus === "applied" ||
+            operation.state.terminalStatus === "already_applied")
+        ? null
+        : getArchiveOperationSentence(
+            operation.state,
+            operation.isRecoveryProjection,
+          );
+  const state = operation?.state;
+  const terminalStatus = state?.phase === "terminal" ? state.terminalStatus : null;
+  const isInactive = state?.phase === "pending" || state?.phase === "reconciling";
+  const currentAction =
+    operation === undefined
+      ? "Archive Scratch"
+      : state?.phase === "pending"
+        ? "Archive Scratch"
+        : state?.phase === "unknown" || state?.phase === "reconciling"
+          ? INBOX_TRIAGE_COPY.archive.actions.checkAgain
+          : state?.phase === "terminal" && state.terminalStatus === "not_applied"
+            ? INBOX_TRIAGE_COPY.archive.actions.retry
+            : state?.phase === "storage_failed" ||
+                (state?.phase === "terminal" &&
+                  (state.terminalStatus === "rejected" ||
+                    state.terminalStatus === "conflict"))
+              ? INBOX_TRIAGE_COPY.archive.actions.cancel
+              : null;
+  const hasSecondaryCancel =
+    operation === undefined ||
+    (state?.phase === "terminal" && state.terminalStatus === "not_applied");
+
+  useLayoutEffect(() => {
+    if (
+      operation?.isRecoveryProjection &&
+      (state?.phase === "recovering" || state?.phase === "reconciling")
+    ) {
+      headingRef.current?.focus();
+      return;
+    }
+    if (
+      state?.phase === "unknown" ||
+      state?.phase === "storage_failed" ||
+      (state?.phase === "terminal" &&
+        (terminalStatus === "not_applied" ||
+          terminalStatus === "rejected" ||
+          terminalStatus === "conflict"))
+    ) {
+      currentActionRef.current?.focus();
+    }
+  }, [headingRef, operation?.isRecoveryProjection, state?.phase, terminalStatus]);
+
+  if (sentence === null) return null;
+
+  const runCurrentAction = () => {
+    if (operation === undefined) {
+      void onArchive?.();
+    } else if (state?.phase === "unknown") {
+      void operation.reconcile();
+    } else if (state?.phase === "terminal" && state.terminalStatus === "not_applied") {
+      void operation.retry();
+    } else if (
+      state?.phase === "storage_failed" ||
+      (state?.phase === "terminal" &&
+        (state.terminalStatus === "rejected" || state.terminalStatus === "conflict"))
+    ) {
+      onCancel();
+    }
+  };
+
+  return (
+    <div
+      className="archive-card"
+      data-archive-state={state?.phase ?? "confirmation"}
+      data-triage-role="archive-card"
+    >
+        <span
+          aria-hidden="true"
+          className="archive-status-mark"
+          data-archive-status-mark={state?.phase ?? "confirmation"}
+          data-triage-role="archive-status-mark"
+        />
+        <h3
+          ref={headingRef}
+          className="archive-status"
+          data-triage-role="archive-status"
+          id="archive-completion-heading"
+          tabIndex={-1}
+        >
+          {sentence}
+        </h3>
+        <div className="archive-actions" data-triage-role="archive-actions">
+          <div
+            className="archive-current-action-slot"
+            data-triage-role="archive-current-action-slot"
+          >
+            {currentAction !== null ? (
+              <Button
+                ref={currentActionRef}
+                aria-disabled={isInactive || undefined}
+                className="archive-current-action"
+                data-triage-role="archive-current-action"
+                disabled={operation === undefined && isLocked}
+                type="button"
+                onClick={(event) => {
+                  if (isInactive) {
+                    event.preventDefault();
+                    return;
+                  }
+                  runCurrentAction();
+                }}
+              >
+                {currentAction}
+              </Button>
+            ) : null}
+          </div>
+          {hasSecondaryCancel ? (
+            <Button
+              className="archive-cancel"
+              data-triage-role="archive-cancel"
+              disabled={operation === undefined && isLocked}
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+            >
+              {INBOX_TRIAGE_COPY.archive.actions.cancel}
+            </Button>
+          ) : null}
+        </div>
+    </div>
+  );
+}
+
 function subscribeToBrowserConnectivity(onStoreChange: () => void) {
   window.addEventListener("online", onStoreChange);
   window.addEventListener("offline", onStoreChange);
@@ -103,6 +310,8 @@ function InlineEditor({
   successSignal,
   actionRole,
   actionTestId,
+  completionBlockerCopy = null,
+  completionBlockerDescriptionId,
 }: {
   contentAfter?: ReactNode;
   contentBefore?: ReactNode;
@@ -116,6 +325,8 @@ function InlineEditor({
   successSignal?: BreakdownSuccessSignal | null;
   actionRole: string;
   actionTestId: string;
+  completionBlockerCopy?: string | null;
+  completionBlockerDescriptionId?: string;
 }) {
   const copy = INBOX_TRIAGE_COPY.inlineEditor;
   const isScratchTitle = snapshot.target.kind === "scratch-title";
@@ -238,11 +449,14 @@ function InlineEditor({
     }
   }
 
+  const describedBy = [
+    snapshot.phase === "pristine" || snapshot.phase === "dirty"
+      ? null
+      : statusId,
+    completionBlockerDescriptionId ?? null,
+  ].filter((id): id is string => id !== null);
   const commonFieldProps = {
-    "aria-describedby":
-      snapshot.phase === "pristine" || snapshot.phase === "dirty"
-        ? undefined
-        : statusId,
+    "aria-describedby": describedBy.length > 0 ? describedBy.join(" ") : undefined,
     "aria-invalid": snapshot.phase === "validation" || undefined,
     "aria-label": fieldLabel,
     className: "triage-inline-editor__field",
@@ -428,6 +642,12 @@ function InlineEditor({
             data-triage-role="inline-editor-issue-status"
           >
             {statusCopy}
+            {completionBlockerCopy !== null ? (
+              <span data-triage-role="context-completion-blocker">
+                {" "}
+                {completionBlockerCopy}
+              </span>
+            ) : null}
             {latestStatus && <span> {latestStatus}</span>}
             {copyStatus && (
               <span data-triage-role="inline-editor-copy-status">
@@ -503,6 +723,22 @@ function InlineEditor({
       )}
     </>
   );
+}
+
+function getTitleCompletionBlockerCopy(
+  blocker: ScratchTitleBlockerSnapshot | null,
+): string | null {
+  if (blocker === null) return null;
+  if (blocker === "saving") {
+    return INBOX_TRIAGE_COPY.completion.titleBlocker.saving;
+  }
+  if (blocker === "conflicted") {
+    return INBOX_TRIAGE_COPY.completion.titleBlocker.conflicted;
+  }
+  if (blocker === "reconciling") {
+    return INBOX_TRIAGE_COPY.completion.titleBlocker.reconciling;
+  }
+  return INBOX_TRIAGE_COPY.completion.titleBlocker.openOrDirty;
 }
 
 type ReliabilityState =
@@ -925,10 +1161,14 @@ function formatScratchTimestamp(createdAt: number): string {
 
 export function BreakdownPanel({
   activeDragItem = null,
+  completion,
+  onAddDraftBlockerChange,
   overTargetId = null,
   successSignal = null,
 }: {
   activeDragItem?: TriageDragItem;
+  completion?: BreakdownCompletionProjection;
+  onAddDraftBlockerChange?: (blocked: boolean) => void;
   overTargetId?: string | null;
   successSignal?: BreakdownSuccessSignal | null;
 } = {}) {
@@ -946,6 +1186,8 @@ export function BreakdownPanel({
   const isDepartureDecision = departure.pendingDestination !== null;
   const departureHeadingId = useId();
   const departureDescriptionId = `${departureHeadingId}-departure-description`;
+  const addCompletionBlockerId = useId();
+  const titleCompletionBlockerId = useId();
   const departureContinueRef = useRef<HTMLButtonElement>(null);
   const departureDiscardRef = useRef<HTMLButtonElement>(null);
   const departureSheetRef = useRef<HTMLDivElement>(null);
@@ -999,6 +1241,7 @@ export function BreakdownPanel({
   const addEntryRef = useRef<HTMLInputElement | HTMLDivElement | null>(null);
   const contentRegionRef = useRef<HTMLDivElement>(null);
   const addCommandRef = useRef<AddBreakdownCommand | null>(null);
+  const addCompletionHoldRef = useRef(false);
   const deleteCommandRefs = useRef(new Map<string, DeleteBreakdownCommand>());
   const addReliabilityActionRef = useRef<HTMLButtonElement>(null);
   const deleteReliabilityActionRefs = useRef(
@@ -1006,6 +1249,14 @@ export function BreakdownPanel({
   );
   const contextRef = useRef<HTMLDivElement>(null);
   const contextEditRef = useRef<HTMLButtonElement>(null);
+  const completionOverlayRef = useRef<HTMLDivElement>(null);
+  const completionHeadingRef = useRef<HTMLHeadingElement>(null);
+  const completionReopenRef = useRef<HTMLButtonElement>(null);
+  const completionFocusIntentRef = useRef<"heading" | "reopen" | null>(null);
+  const completionHadFocusRef = useRef(false);
+  const previousCompletionPresentationRef = useRef<
+    BreakdownCompletionProjection["presentation"]
+  >("working");
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
   const rowEditRefs = useRef(new Map<string, HTMLButtonElement>());
   const lastEditorTargetRef = useRef<OpenEditorSnapshot["target"] | null>(null);
@@ -1150,10 +1401,16 @@ export function BreakdownPanel({
         clearDraft: () => {
           setAddDraft("");
           setNewContent("");
+          onAddDraftBlockerChange?.(false);
         },
         focusDraft: () => inputRef.current?.focus(),
       }),
-    [registerAddDraftOwner, setAddDraft],
+    [onAddDraftBlockerChange, registerAddDraftOwner, setAddDraft],
+  );
+
+  useEffect(
+    () => () => onAddDraftBlockerChange?.(false),
+    [onAddDraftBlockerChange],
   );
 
   const reliabilityScopeRef = useRef({
@@ -1287,6 +1544,9 @@ export function BreakdownPanel({
     }
     setAddDraft(draft);
     setNewContent(draft);
+    onAddDraftBlockerChange?.(
+      draft.length > 0 || addCompletionHoldRef.current,
+    );
   }
 
   async function handleEditorSave(): Promise<boolean> {
@@ -1371,10 +1631,52 @@ export function BreakdownPanel({
       editor.invalidate();
     }
   }, [breakdowns, editor, selectedScratch?.id, stagedEligibility.stagedSourceIds]);
-  const isConsumedCompletion =
+  const persistedConsumedCompletion =
     selectedScratch !== null &&
     isArchiveEligible &&
     breakdowns.length === 0;
+  const completionPresentation =
+    completion?.presentation ??
+    (persistedConsumedCompletion ? "complete" : "working");
+  const isConsumedCompletion =
+    completion === undefined
+      ? persistedConsumedCompletion
+      : selectedScratch !== null && completionPresentation !== "working";
+  const isCompletionOverlayOpen =
+    (completion?.archiveOperation !== undefined &&
+      completion.archiveOperation.state.phase !== "idle" &&
+      !(
+        completion.archiveOperation.state.phase === "terminal" &&
+        (completion.archiveOperation.state.terminalStatus === "applied" ||
+          completion.archiveOperation.state.terminalStatus === "already_applied")
+      )) ||
+    (completion !== undefined &&
+      isConsumedCompletion &&
+      completionPresentation === "overlay");
+  const isCompletionComplete =
+    completion !== undefined &&
+    isConsumedCompletion &&
+    completionPresentation === "complete";
+  const addCompletionBlocker =
+    completion?.completionBlockers?.addDraft === true;
+  const titleCompletionBlocker =
+    completion?.completionBlockers?.title ?? null;
+  const titleCompletionBlockerCopy = getTitleCompletionBlockerCopy(
+    titleCompletionBlocker,
+  );
+  const isTitleIssueOverlay =
+    editor.snapshot?.target.kind === "scratch-title" &&
+    (editor.snapshot.phase === "offline" ||
+      editor.snapshot.phase === "not_applied" ||
+      editor.snapshot.phase === "conflict");
+  const withdrawalCopy =
+    completion?.withdrawalReason === "active-breakdown"
+      ? INBOX_TRIAGE_COPY.completion.withdrawal.activeBreakdown
+      : completion?.withdrawalReason === "staging"
+        ? INBOX_TRIAGE_COPY.completion.withdrawal.staging
+        : completion?.withdrawalReason === "breakdown-and-staging"
+          ? INBOX_TRIAGE_COPY.completion.withdrawal.breakdownAndStaging
+          : null;
   const emptyState = isConsumedCompletion
     ? "consumed-completion"
     : consumedBreakdownCount > 0 || stagedCandidateCounts.authoritative > 0
@@ -1387,6 +1689,83 @@ export function BreakdownPanel({
     if (!isAdding) return;
     inputRef.current?.focus();
   }, [isAdding]);
+
+  useLayoutEffect(() => {
+    if (
+      completionFocusIntentRef.current === "heading" &&
+      isCompletionOverlayOpen
+    ) {
+      completionFocusIntentRef.current = null;
+      completionHeadingRef.current?.focus();
+    } else if (
+      completionFocusIntentRef.current === "reopen" &&
+      isCompletionComplete
+    ) {
+      completionFocusIntentRef.current = null;
+      completionReopenRef.current?.focus();
+    }
+  }, [isCompletionComplete, isCompletionOverlayOpen]);
+
+  useLayoutEffect(() => {
+    if (
+      previousCompletionPresentationRef.current === "working" &&
+      completionPresentation === "overlay" &&
+      (document.activeElement === document.body ||
+        document.activeElement?.closest("[inert]") !== null)
+    ) {
+      completionHeadingRef.current?.focus();
+    }
+    if (
+      previousCompletionPresentationRef.current !== "working" &&
+      completionPresentation === "working" &&
+      completionHadFocusRef.current
+    ) {
+      document.getElementById("triage-breakdown-heading")?.focus();
+      completionHadFocusRef.current = false;
+    }
+    previousCompletionPresentationRef.current = completionPresentation;
+  }, [completionPresentation]);
+
+  useEffect(() => {
+    if (
+      !addCompletionHoldRef.current ||
+      completion?.persistedEligible !== false
+    ) {
+      return;
+    }
+    addCompletionHoldRef.current = false;
+    onAddDraftBlockerChange?.(newContent.length > 0);
+  }, [completion?.persistedEligible, newContent, onAddDraftBlockerChange]);
+
+  function trackCompletionBlur(event: FocusEvent<HTMLElement>) {
+    if (
+      event.relatedTarget instanceof Node &&
+      event.currentTarget.contains(event.relatedTarget)
+    ) {
+      return;
+    }
+    if (event.relatedTarget === null && !document.hasFocus()) {
+      return;
+    }
+    completionHadFocusRef.current = false;
+  }
+
+  function cancelCompletion() {
+    if (operationLock.isLocked()) return;
+    completionFocusIntentRef.current = "reopen";
+    if (newContent.length === 0) setIsAdding(false);
+    completion?.cancel();
+  }
+
+  function cancelArchiveResult() {
+    if (completion?.archiveOperation?.dismissTerminal() !== true) return;
+    cancelCompletion();
+  }
+
+  function reopenCompletion() {
+    completionFocusIntentRef.current = "heading";
+    completion?.reopen();
+  }
 
   useEffect(() => {
     const addedRowId = pendingAddedRowIdRef.current;
@@ -1428,12 +1807,19 @@ export function BreakdownPanel({
 
     if (rowAction !== undefined && rowAction !== null) {
       rowAction.focus();
+    } else if (isCompletionOverlayOpen) {
+      completionHeadingRef.current?.focus();
     } else if (isConsumedCompletion) {
       contextRef.current?.focus();
     } else {
       addEntryRef.current?.focus();
     }
-  }, [breakdowns, isConsumedCompletion, pendingDeleteId]);
+  }, [
+    breakdowns,
+    isCompletionOverlayOpen,
+    isConsumedCompletion,
+    pendingDeleteId,
+  ]);
 
   useEffect(() => {
     if (pendingDeleteId !== null || failedDeleteFocusIdRef.current === null) return;
@@ -1471,6 +1857,7 @@ export function BreakdownPanel({
       });
       addCommandRef.current = null;
       pendingAddedRowIdRef.current = command.breakdownId;
+      addCompletionHoldRef.current = completion !== undefined;
       updateAddDraft("");
       if (keepInputOpen) {
         setIsAdding(true);
@@ -1733,10 +2120,20 @@ export function BreakdownPanel({
         {editorAnnouncement}
       </div>
       <div
+        aria-atomic="true"
+        aria-live="polite"
+        className="sr-only"
+        data-testid="archive-completion-announcement"
+      >
+        {isCompletionOverlayOpen && completion?.archiveOperation === undefined
+          ? "Scratch complete"
+          : ""}
+      </div>
+      <div
         ref={contentRegionRef}
         className="min-h-0 flex-1 overflow-y-auto px-3 py-2"
         data-testid="breakdown-content-region"
-        inert={isDepartureDecision ? true : undefined}
+        inert={isDepartureDecision || isCompletionOverlayOpen ? true : undefined}
       >
         <div
           ref={contextRef}
@@ -1745,7 +2142,7 @@ export function BreakdownPanel({
           data-testid="selected-scratch-context"
           data-triage-layout="fixed-inline-editor"
           data-triage-role="context-signature-plate"
-          data-triage-state="working"
+          data-triage-state={isCompletionComplete ? "complete" : "working"}
           tabIndex={-1}
         >
           <Inbox
@@ -1758,10 +2155,33 @@ export function BreakdownPanel({
               actionTestId="context-action-slot"
               contentBefore={
                 <div
-                  className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
-                  data-triage-role="context-eyebrow-meta"
+                  aria-atomic={titleCompletionBlockerCopy !== null || undefined}
+                  aria-live={titleCompletionBlockerCopy !== null ? "polite" : undefined}
+                  className={cn(
+                    "text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground",
+                    titleCompletionBlockerCopy !== null &&
+                      !isTitleIssueOverlay &&
+                      "context-completion-blocker-mark",
+                  )}
+                  data-triage-role={
+                    titleCompletionBlockerCopy !== null && !isTitleIssueOverlay
+                      ? "context-completion-blocker-mark"
+                      : "context-eyebrow-meta"
+                  }
+                  id={
+                    titleCompletionBlockerCopy !== null && !isTitleIssueOverlay
+                      ? titleCompletionBlockerId
+                      : undefined
+                  }
                 >
-                  Selected Scratch
+                  {titleCompletionBlockerCopy !== null && !isTitleIssueOverlay ? (
+                    <>
+                      <span aria-hidden="true">!</span>{" "}
+                      {titleCompletionBlockerCopy}
+                    </>
+                  ) : (
+                    "Selected Scratch"
+                  )}
                 </div>
               }
               contentAfter={
@@ -1775,6 +2195,14 @@ export function BreakdownPanel({
               contentRole="context-content-slot"
               contentTestId="context-content-slot"
               editor={editor}
+              completionBlockerCopy={
+                isTitleIssueOverlay ? titleCompletionBlockerCopy : null
+              }
+              completionBlockerDescriptionId={
+                titleCompletionBlockerCopy !== null && !isTitleIssueOverlay
+                  ? titleCompletionBlockerId
+                  : undefined
+              }
               onSave={handleEditorSave}
               onUseMine={handleEditorUseMine}
               snapshot={editor.snapshot}
@@ -1931,21 +2359,62 @@ export function BreakdownPanel({
             }
             data-triage-state={emptyState}
           >
-            {isConsumedCompletion ? (
+            {isCompletionComplete ? (
+              <>
+                <CheckCircle2 aria-hidden="true" className="h-6 w-6 text-primary/70" />
+                <span className="mt-2 text-xs font-medium text-muted-foreground">
+                  Scratch complete
+                </span>
+                <Button
+                  ref={completionReopenRef}
+                  className="mt-3"
+                  data-triage-role="archive-completion-reopen"
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                  onClick={reopenCompletion}
+                  onFocus={() => {
+                    completionHadFocusRef.current = true;
+                  }}
+                  onBlur={trackCompletionBlur}
+                >
+                  Reopen
+                </Button>
+              </>
+            ) : isConsumedCompletion ? (
               <CheckCircle2 aria-hidden="true" className="h-6 w-6 text-primary/70" />
             ) : emptyState === "all-deleted" ? (
               <RotateCcw aria-hidden="true" className="h-6 w-6 text-muted-foreground/55" />
             ) : (
               <Lightbulb aria-hidden="true" className="h-6 w-6 text-muted-foreground/55" />
             )}
-            <span className="mt-2 text-xs font-medium text-muted-foreground">
-              {isConsumedCompletion ? "All items processed" : "Add a note..."}
-            </span>
+            {!isCompletionComplete ? (
+              <span className="mt-2 text-xs font-medium text-muted-foreground">
+                {isConsumedCompletion ? "All items processed" : "Add a note..."}
+              </span>
+            ) : null}
           </div>
         )}
+        {withdrawalCopy !== null ? (
+          <div
+            aria-atomic="true"
+            aria-live="polite"
+            className="archive-withdrawal-status"
+            data-triage-role="archive-withdrawal-status"
+            role="status"
+          >
+            <span aria-hidden="true" data-triage-role="archive-withdrawal-mark">
+              !
+            </span>
+            <span>{withdrawalCopy}</span>
+          </div>
+        ) : null}
       </div>
 
-      <div className="border-t border-border px-3 py-2">
+      <div
+        className="border-t border-border px-3 py-2"
+        inert={isCompletionOverlayOpen ? true : undefined}
+      >
         <div
           className="breakdown-add-region grid grid-cols-[minmax(0,1fr)_auto] gap-2"
           data-testid="breakdown-add-row"
@@ -1962,6 +2431,9 @@ export function BreakdownPanel({
                 addEntryRef.current = element;
               }}
               className="block h-8 w-full appearance-none rounded-md border border-border bg-background px-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
+              aria-describedby={
+                addCompletionBlocker ? addCompletionBlockerId : undefined
+              }
               data-triage-role="breakdown-add-field"
               maxLength={500}
               onChange={(event) => updateAddDraft(event.target.value)}
@@ -2029,6 +2501,19 @@ export function BreakdownPanel({
               }
             />
           ) : null}
+          {addCompletionBlocker ? (
+            <div
+              aria-atomic="true"
+              aria-live="polite"
+              className="breakdown-add-completion-blocker"
+              data-triage-role="breakdown-add-completion-blocker"
+              id={addCompletionBlockerId}
+              role="status"
+            >
+              <span aria-hidden="true">!</span>
+              <span>{INBOX_TRIAGE_COPY.completion.addBlocker}</span>
+            </div>
+          ) : null}
         </div>
         {isDepartureDecision ? (
           <div
@@ -2094,6 +2579,41 @@ export function BreakdownPanel({
           </div>
         ) : null}
       </div>
+
+      {isCompletionOverlayOpen ? (
+        <div
+          ref={completionOverlayRef}
+          aria-labelledby="archive-completion-heading"
+          className="archive-operation-overlay absolute inset-0 z-30 flex items-center justify-center bg-background/50 p-4 backdrop-blur-[2px]"
+          data-triage-role="archive-completion-overlay"
+          role="region"
+          onFocusCapture={() => {
+            completionHadFocusRef.current = true;
+          }}
+          onBlurCapture={trackCompletionBlur}
+          onKeyDown={(event) => {
+            if (event.key !== "Escape") return;
+            if (
+              operationLock.isLocked() ||
+              completion?.archiveOperation !== undefined
+            ) return;
+            event.preventDefault();
+            cancelCompletion();
+          }}
+        >
+          <ArchiveOperationCard
+            headingRef={completionHeadingRef}
+            isLocked={operationLock.activeOperation !== null}
+            operation={completion?.archiveOperation}
+            onArchive={completion?.archive}
+            onCancel={
+              completion?.archiveOperation === undefined
+                ? cancelCompletion
+                : cancelArchiveResult
+            }
+          />
+        </div>
+      ) : null}
 
       <AlertDialog
         open={pendingDeleteId !== null}

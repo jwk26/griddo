@@ -115,6 +115,10 @@ interface TriageState {
   finishExternalScratchRemoval: (
     context: ScratchPoolContext,
   ) => ExternalScratchRemovalDestination | null;
+  finishScratchArchive: (
+    scratchId: string,
+    context: ScratchPoolContext,
+  ) => ExternalScratchRemovalDestination;
   setExplorerPathIds: (ids: string[]) => void;
   setExplorerOpenColumnIds: (ids: string[]) => void;
   setExplorerColumnScroll: (
@@ -302,6 +306,32 @@ export const useTriageStore = create<TriageState>((set) => ({
           visibleIds: context.visibleIds.filter((id) => id !== removal.scratchId),
         },
       );
+      return {
+        selectedScratchId: terminalDestination.id,
+        scratchPoolManualExpandedForId: null,
+        externalScratchRemoval: null,
+      };
+    });
+    return terminalDestination;
+  },
+  finishScratchArchive: (scratchId, context) => {
+    let terminalDestination: ExternalScratchRemovalDestination = {
+      id: null,
+      kind: "inbox-empty",
+    };
+    set((state) => {
+      const resolved = resolveExternalRemovalDestination(
+        context.activeIds,
+        scratchId,
+        {
+          activeIds: context.activeIds.filter((id) => id !== scratchId),
+          visibleIds: context.visibleIds.filter((id) => id !== scratchId),
+        },
+      );
+      terminalDestination =
+        resolved.kind === "inbox-empty" && state.scratchPoolQuery.length > 0
+          ? { id: null, kind: "search-empty" }
+          : resolved;
       return {
         selectedScratchId: terminalDestination.id,
         scratchPoolManualExpandedForId: null,

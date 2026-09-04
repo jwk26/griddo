@@ -29,6 +29,12 @@ const workspaceSource = readFileSync(
 const useTriageDndMock = vi.hoisted(() => vi.fn());
 const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
 const useScratchBreakdownsMock = vi.hoisted(() => vi.fn());
+const useCanArchiveScratchMock = vi.hoisted(() => vi.fn());
+const useArchiveScratchMock = vi.hoisted(() => vi.fn());
+const archiveScratchMock = vi.hoisted(() => vi.fn());
+const archiveReconcileMock = vi.hoisted(() => vi.fn());
+const archiveRetryMock = vi.hoisted(() => vi.fn());
+const archiveDismissMock = vi.hoisted(() => vi.fn());
 const stageCandidateMock = vi.hoisted(() => vi.fn());
 const reconcileStageCandidateMock = vi.hoisted(() => vi.fn());
 const unstageCandidateMock = vi.hoisted(() => vi.fn());
@@ -58,6 +64,22 @@ const titleBlockerHandleState = vi.hoisted(() => ({
 const departureControllerState = vi.hoisted(() => ({
   controller: null as TriageDepartureController | null,
 }));
+const completionState = vi.hoisted(() => ({
+  presentation: "working" as "working" | "overlay" | "complete",
+  completionBlockers: { addDraft: false, title: null as null | "dirty" },
+  withdrawalReason: null as null | "active-breakdown",
+  cancel: vi.fn(),
+  reopen: vi.fn(),
+  archive: undefined as undefined | (() => Promise<boolean>),
+  eligibility: {
+    scratch: {
+      id: "scratch-1",
+      version: 7,
+      title: "First Scratch",
+      createdAt: 3,
+    },
+  },
+}));
 
 vi.mock("@/hooks/use-dnd", () => ({
   useTriageDnd: useTriageDndMock,
@@ -73,6 +95,14 @@ vi.mock("@/hooks/use-scratch-breakdowns", async (importOriginal) => {
   >();
   return { ...actual, useScratchBreakdowns: useScratchBreakdownsMock };
 });
+
+vi.mock("@/hooks/use-can-archive-scratch", () => ({
+  useCanArchiveScratch: useCanArchiveScratchMock,
+}));
+
+vi.mock("@/hooks/use-archive-scratch", () => ({
+  useArchiveScratch: useArchiveScratchMock,
+}));
 
 vi.mock("@/hooks/use-grid-data", () => ({
   useGridData: useGridDataMock,
@@ -126,12 +156,33 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
   );
   const { useTriageStore } = await import("@/stores/triage-store");
   return {
+    ArchiveOperationCard: ({
+      operation,
+      onCancel,
+    }: {
+      operation: { state: { phase: string }; isRecoveryProjection: boolean };
+      onCancel?: () => void;
+    }) => (
+      <div
+        data-is-recovery-projection={String(operation.isRecoveryProjection)}
+        data-phase={operation.state.phase}
+        data-testid="archive-recovery-card"
+      >
+        {operation.state.phase === "terminal" ? (
+          <button type="button" onClick={onCancel}>Cancel</button>
+        ) : null}
+      </div>
+    ),
     BreakdownPanel: ({
       activeDragItem,
+      completion,
+      onAddDraftBlockerChange,
       overTargetId,
       successSignal,
     }: {
       activeDragItem?: TriageDragItem;
+      completion?: typeof completionState;
+      onAddDraftBlockerChange?: (blocked: boolean) => void;
       overTargetId?: string | null;
       successSignal?: {
         kind: "add" | "unstage";
@@ -145,12 +196,36 @@ vi.mock("@/components/triage/breakdown-panel", async () => {
       return (
         <div
           data-active-drag-kind={activeDragItem?.kind}
+          data-completion-presentation={completion?.presentation}
+          data-archive-phase={
+            (completion as { archiveOperation?: { state: { phase: string } } })
+              ?.archiveOperation?.state.phase
+          }
+          data-add-completion-blocker={
+            completion?.completionBlockers.addDraft ? "true" : undefined
+          }
+          data-title-completion-blocker={
+            completion?.completionBlockers.title ?? undefined
+          }
+          data-withdrawal-reason={completion?.withdrawalReason ?? undefined}
           data-over-target-id={overTargetId ?? undefined}
           data-success-kind={successSignal?.kind}
           data-success-operation-id={successSignal?.operationId}
           data-success-row-id={successSignal?.rowId}
           data-testid="breakdown-panel"
         >
+          <button type="button" onClick={() => completion?.cancel()}>
+            Cancel completion
+          </button>
+          <button type="button" onClick={() => completion?.reopen()}>
+            Reopen completion
+          </button>
+          <button type="button" onClick={() => void completion?.archive?.()}>
+            Archive completion
+          </button>
+          <button type="button" onClick={() => onAddDraftBlockerChange?.(true)}>
+            Set Add blocker
+          </button>
           {breakdownSurfaceState.showSource ? (
             <div data-breakdown-id="breakdown-1">
               <button aria-label="Drag breakdown" type="button">
@@ -461,6 +536,30 @@ beforeEach(() => {
     breakdowns: [authoritativeBreakdown()],
     isReady: true,
   });
+  completionState.presentation = "working";
+  completionState.completionBlockers = { addDraft: false, title: null };
+  completionState.withdrawalReason = null;
+  completionState.cancel.mockReset();
+  completionState.reopen.mockReset();
+  useCanArchiveScratchMock.mockReset();
+  useCanArchiveScratchMock.mockReturnValue(completionState);
+  archiveScratchMock.mockReset();
+  archiveScratchMock.mockResolvedValue(true);
+  archiveReconcileMock.mockReset();
+  archiveReconcileMock.mockResolvedValue(false);
+  archiveRetryMock.mockReset();
+  archiveRetryMock.mockResolvedValue(false);
+  archiveDismissMock.mockReset();
+  archiveDismissMock.mockReturnValue(true);
+  useArchiveScratchMock.mockReset();
+  useArchiveScratchMock.mockReturnValue({
+    state: { phase: "idle" },
+    isProjectionReady: true,
+    archiveScratch: archiveScratchMock,
+    reconcile: archiveReconcileMock,
+    retry: archiveRetryMock,
+    dismissTerminal: archiveDismissMock,
+  });
 });
 
 afterEach(() => {
@@ -469,6 +568,234 @@ afterEach(() => {
 });
 
 describe("TriageWorkspace", () => {
+  it("wires the mounted blockers, shared lock, guarded Archive action, and projection gate into one coordinator", () => {
+    completionState.presentation = "overlay";
+    render(<TriageWorkspace node={createNode()} />);
+
+    const options = useArchiveScratchMock.mock.calls.at(-1)?.[0];
+    expect(options).toMatchObject({
+      operationLock: expect.objectContaining({
+        acquire: expect.any(Function),
+        isLocked: expect.any(Function),
+      }),
+      readAddDraftBlocker: expect.any(Function),
+      readTitleBlocker: expect.any(Function),
+      onApplied: expect.any(Function),
+    });
+    expect(options.readAddDraftBlocker()).toBe(false);
+    expect(options.readTitleBlocker()).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Archive completion" }));
+    expect(archiveScratchMock).toHaveBeenCalledWith(
+      completionState.eligibility.scratch,
+    );
+  });
+
+  it("does not mount the normal Inbox projection while reload reconciliation owns startup", () => {
+    useArchiveScratchMock.mockReturnValue({
+      state: {
+        phase: "recovering",
+        recovery: {
+          operationId: "00000000-0000-4000-8000-000000000001",
+          kind: "archive_scratch",
+          scratchBitId: "scratch-1",
+          expectedVersion: 7,
+          startedAt: 100,
+        },
+      },
+      isProjectionReady: false,
+      archiveScratch: archiveScratchMock,
+      reconcile: archiveReconcileMock,
+      retry: archiveRetryMock,
+      dismissTerminal: archiveDismissMock,
+    });
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.queryByTestId("triage-workspace")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("scratch-pool")).not.toBeInTheDocument();
+    expect(screen.getByTestId("archive-recovery-card")).toHaveAttribute(
+      "data-is-recovery-projection",
+      "true",
+    );
+    expect(screen.getByTestId("archive-recovery-card")).toHaveAttribute(
+      "data-phase",
+      "recovering",
+    );
+    expect(screen.getByTestId("archive-live-region")).toHaveTextContent(
+      "Checking the Archive request from before this reload…",
+    );
+    expect(useCanArchiveScratchMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps a forced-reload terminal result in the Breakdown recovery boundary until Cancel", () => {
+    useTriageStore.setState({ selectedScratchId: null });
+    useArchiveScratchMock.mockReturnValue({
+      state: {
+        phase: "terminal",
+        recovery: {
+          operationId: "00000000-0000-4000-8000-000000000001",
+          kind: "archive_scratch",
+          scratchBitId: "scratch-1",
+          expectedVersion: 7,
+          startedAt: 100,
+        },
+        terminalStatus: "conflict",
+      },
+      isProjectionReady: true,
+      archiveScratch: archiveScratchMock,
+      reconcile: archiveReconcileMock,
+      retry: archiveRetryMock,
+      dismissTerminal: archiveDismissMock,
+    });
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.queryByTestId("triage-workspace")).not.toBeInTheDocument();
+    expect(screen.getByTestId("archive-recovery-card")).toHaveAttribute(
+      "data-is-recovery-projection",
+      "true",
+    );
+    expect(screen.getByTestId("archive-recovery-card")).toHaveAttribute(
+      "data-phase",
+      "terminal",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(archiveDismissMock).toHaveBeenCalledOnce();
+  });
+
+  it("projects the mounted coordinator state and exact actions into Breakdown", () => {
+    useArchiveScratchMock.mockReturnValue({
+      state: {
+        phase: "unknown",
+        recovery: {
+          operationId: "00000000-0000-4000-8000-000000000001",
+          kind: "archive_scratch",
+          scratchBitId: "scratch-1",
+          expectedVersion: 7,
+          startedAt: 100,
+        },
+      },
+      isProjectionReady: true,
+      archiveScratch: archiveScratchMock,
+      reconcile: archiveReconcileMock,
+      retry: archiveRetryMock,
+      dismissTerminal: archiveDismissMock,
+    });
+
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-archive-phase",
+      "unknown",
+    );
+    expect(screen.getByTestId("archive-live-region")).toHaveTextContent(
+      "We couldn’t confirm whether this Scratch was archived.",
+    );
+    expect(screen.getByTestId("archive-live-region")).toHaveAttribute(
+      "aria-live",
+      "polite",
+    );
+    expect(screen.getByTestId("archive-live-region")).toHaveAttribute(
+      "aria-atomic",
+      "true",
+    );
+  });
+
+  it.each(["applied", "already_applied"] as const)(
+    "announces terminal %s once without projecting a lingering success card",
+    (terminalStatus) => {
+      useArchiveScratchMock.mockReturnValue({
+        state: {
+          phase: "terminal",
+          recovery: {
+            operationId: "00000000-0000-4000-8000-000000000001",
+            kind: "archive_scratch",
+            scratchBitId: "scratch-1",
+            expectedVersion: 7,
+            startedAt: 100,
+          },
+          terminalStatus,
+        },
+        isProjectionReady: true,
+        archiveScratch: archiveScratchMock,
+        reconcile: archiveReconcileMock,
+        retry: archiveRetryMock,
+        dismissTerminal: archiveDismissMock,
+      });
+
+      render(<TriageWorkspace node={createNode()} />);
+
+      expect(screen.getByTestId("archive-live-region")).toHaveTextContent(
+        "Scratch archived.",
+      );
+      expect(screen.queryByTestId("archive-recovery-card")).toBeNull();
+      expect(screen.getByTestId("breakdown-panel")).not.toHaveAttribute(
+        "data-archive-phase",
+      );
+    },
+  );
+
+  it("owns completion above the keyed Breakdown surface and combines Add/title blockers", () => {
+    completionState.presentation = "overlay";
+    render(<TriageWorkspace node={createNode()} />);
+
+    expect(useCanArchiveScratchMock).toHaveBeenLastCalledWith("scratch-1", {
+      hasAddDraft: false,
+      titleBlocker: null,
+    });
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-completion-presentation",
+      "overlay",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Cancel completion" }));
+    fireEvent.click(screen.getByRole("button", { name: "Reopen completion" }));
+    expect(completionState.cancel).toHaveBeenCalledOnce();
+    expect(completionState.reopen).toHaveBeenCalledOnce();
+
+    completionState.completionBlockers = { addDraft: true, title: "dirty" };
+    completionState.withdrawalReason = "active-breakdown";
+    useCanArchiveScratchMock.mockReturnValue(completionState);
+    act(() => titleBlockerHandleState.handle?.setSnapshot("dirty"));
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-add-completion-blocker",
+      "true",
+    );
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-title-completion-blocker",
+      "dirty",
+    );
+    expect(screen.getByTestId("breakdown-panel")).toHaveAttribute(
+      "data-withdrawal-reason",
+      "active-breakdown",
+    );
+    act(() => titleBlockerHandleState.handle?.setSnapshot(null));
+
+    fireEvent.click(screen.getByRole("button", { name: "Set Add blocker" }));
+    expect(useCanArchiveScratchMock).toHaveBeenLastCalledWith("scratch-1", {
+      hasAddDraft: true,
+      titleBlocker: null,
+    });
+
+    act(() => titleBlockerHandleState.handle?.setSnapshot("dirty"));
+    expect(useCanArchiveScratchMock).toHaveBeenLastCalledWith("scratch-1", {
+      hasAddDraft: true,
+      titleBlocker: "dirty",
+    });
+
+    act(() => useTriageStore.getState().selectScratch("scratch-2"));
+    expect(useCanArchiveScratchMock).toHaveBeenLastCalledWith("scratch-2", {
+      hasAddDraft: false,
+      titleBlocker: null,
+    });
+
+    act(() => titleBlockerHandleState.handle?.setSnapshot("dirty"));
+    expect(useCanArchiveScratchMock).toHaveBeenLastCalledWith("scratch-2", {
+      hasAddDraft: false,
+      titleBlocker: "dirty",
+    });
+  });
+
   it("keeps library auto-scroll disabled and wires explicit drag cancellation", () => {
     expect(workspaceSource).toContain("autoScroll={false}");
     expect(workspaceSource).toContain("onDragCancel={handleDragCancel}");

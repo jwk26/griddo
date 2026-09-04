@@ -1,0 +1,67 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "final-close",
+  "approved_repository": "jwk26/griddo",
+  "approved_base": "0b76a547d276b6d7effa8d7b59f1a54fc2ea68cd",
+  "approved_branch": "phase-30/completion-archive-recovery",
+  "approved_scope": {
+    "lifecycle": "end-phase",
+    "phase": 30,
+    "worktree_role": "feature"
+  },
+  "user_disposition": "approved",
+  "next_legal_action": "execute-final-close",
+  "transaction": {
+    "workflow_candidate": "94e89782f7fe2cdbdd035e842ca6881b4a87ce49",
+    "pre_close_head": "0b76a547d276b6d7effa8d7b59f1a54fc2ea68cd",
+    "candidate_a": {
+      "commit": "abdfd26b8ed40b64fc979ea9fd5d3da035114be2",
+      "parent": "0b76a547d276b6d7effa8d7b59f1a54fc2ea68cd",
+      "tree": "16b58a91562caaf1156bb3d08fd882b6bd8c91ce",
+      "diff_hash_domain": "git-diff-binary-parent-to-candidate",
+      "diff_sha256": "a6fe37b6b0dffea74a5a48546b84a8887021583692fe78147ca77ef512bb18c9"
+    },
+    "receipt_path": "docs/issues/Final_Close_Phase_30.json",
+    "receipt_commit_message": "docs: record Phase 30 final close receipt",
+    "publication_head_construction": "fast-forward the clean feature branch from pre_close_head to candidate_a.commit, add only this exact receipt file, and create receipt commit B with B^ equal to candidate_a.commit",
+    "publication": {
+      "provider": "github",
+      "command": "scripts/codex-gh",
+      "remote": "origin",
+      "remote_url": "https://github.com/jwk26/griddo.git",
+      "integration_base_oid": "a4e00c4ef8d684bdfd52bd59523d1de6e4c11541",
+      "base_branch": "main",
+      "head_branch": "phase-30/completion-archive-recovery",
+      "pr_action": "create",
+      "pr_number": null,
+      "pr_url": null,
+      "title": "feat(triage): land Phase 30 completion and archive recovery",
+      "body": "## Summary\n\n- land the accepted Phase 30 completion, DP-VQ11 blocker/withdrawal, guarded Archive recovery/handoff, and DP-VQ12 reliability presentation scope\n- archive Phase 30 with Tasks 159-162 accepted while leaving Phase 31 unstarted and separately gated\n- reuse the accepted bounded Task 159-162 running-app evidence without inventing missing metadata; keep the aggregate theme/mode/viewport matrix with Task 164 and P29-01 with its Phase 31 audit owner\n\n## Validation\n\n- pnpm test - 100 files / 1,270 tests passed at pre-close and in the detached preview\n- pnpm lint - 0 errors / 11 unchanged warnings\n- pnpm typecheck\n- pnpm build - seven routes generated\n- git diff --check, all seven Gate C artifact-pin validations, and exact-main merge-tree passed\n- no Phase 30 Blocking or Advisory finding, active issue, unresolved Tagged impact, owner expansion beyond the accepted Task 162 Workspace pair, or Unowned item remains",
+      "draft": false,
+      "merge_method": "merge",
+      "expected_head": "receipt commit B",
+      "expected_head_mechanism": "scripts/codex-gh pr merge --merge --match-head-commit B",
+      "status_source": "GitHub PR headRefOid, mergeStateStatus, statusCheckRollup, branch protection, and repository rulesets",
+      "required_checks": "all reported required checks reach terminal success",
+      "queue": "forbidden",
+      "auto_merge": "forbidden",
+      "admin_bypass": "forbidden",
+      "implicit_branch_deletion": "forbidden",
+      "bounded_wait_retry": "at most 20 status reads at 15-second intervals"
+    },
+    "integration_sync": {
+      "primary_worktree": "/Users/jwk/Documents/griddo2-codex-integration",
+      "branch": "main",
+      "method": "fetch then fast-forward-only sync followed by method-neutral candidate inclusion proof"
+    },
+    "cleanup": {
+      "preview_worktree": "/Users/jwk/Documents/griddo2-codex-phase-30-final-close-preview",
+      "preview_cleanup_timing": "after candidate_a is moved to the feature branch and receipt commit B is verified, remove clean preview non-force",
+      "remote_ref": "refs/heads/phase-30/completion-archive-recovery",
+      "feature_worktree": "/Users/jwk/Documents/griddo2-codex-phase-30-completion-archive-recovery",
+      "local_branch": "phase-30/completion-archive-recovery",
+      "policy": "guarded non-force only after exact merge proof and primary integration sync"
+    }
+  }
+}

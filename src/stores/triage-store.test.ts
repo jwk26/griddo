@@ -72,6 +72,7 @@ describe("useTriageStore app-session ownership", () => {
       "explorerRemoteArrivalIds",
       "externalScratchRemoval",
       "finishExternalScratchRemoval",
+      "finishScratchArchive",
       "reconcileExplorerContext",
       "reconcileScratchPoolContext",
       "recordExplorerRemoteArrivals",
@@ -208,6 +209,75 @@ describe("useTriageStore app-session ownership", () => {
       destinationId: "previous",
       destinationKind: "scratch",
     });
+  });
+
+  it("finishes owned Archive with exact next-visible then previous-visible handoff while preserving Pool state", () => {
+    useTriageStore.setState({
+      selectedScratchId: "selected",
+      scratchPoolQuery: "project",
+      scratchPoolResultIds: ["previous", "selected", "next"],
+      scratchPoolActiveIds: ["previous", "selected", "next"],
+      scratchPoolScroll: { anchorId: "selected", offset: 18 },
+    });
+
+    expect(
+      useTriageStore.getState().finishScratchArchive("selected", {
+        activeIds: ["previous", "selected", "next"],
+        visibleIds: ["previous", "selected", "next"],
+      }),
+    ).toEqual({ id: "next", kind: "scratch" });
+    expect(useTriageStore.getState()).toMatchObject({
+      selectedScratchId: "next",
+      scratchPoolQuery: "project",
+      scratchPoolScroll: { anchorId: "selected", offset: 18 },
+      externalScratchRemoval: null,
+    });
+
+    useTriageStore.setState({ selectedScratchId: "selected" });
+    expect(
+      useTriageStore.getState().finishScratchArchive("selected", {
+        activeIds: ["previous", "selected", "hidden-next"],
+        visibleIds: ["previous"],
+      }),
+    ).toEqual({ id: "previous", kind: "scratch" });
+    expect(useTriageStore.getState().selectedScratchId).toBe("previous");
+  });
+
+  it("never selects a hidden Scratch and distinguishes filtered-null from true empty", () => {
+    useTriageStore.setState({
+      selectedScratchId: "selected",
+      scratchPoolQuery: "no match",
+    });
+    expect(
+      useTriageStore.getState().finishScratchArchive("selected", {
+        activeIds: ["selected", "hidden"],
+        visibleIds: [],
+      }),
+    ).toEqual({ id: null, kind: "search-empty" });
+    expect(useTriageStore.getState()).toMatchObject({
+      selectedScratchId: null,
+      scratchPoolQuery: "no match",
+    });
+
+    useTriageStore.setState({
+      selectedScratchId: "selected",
+      scratchPoolQuery: "still filtered",
+    });
+    expect(
+      useTriageStore.getState().finishScratchArchive("selected", {
+        activeIds: ["selected"],
+        visibleIds: [],
+      }),
+    ).toEqual({ id: null, kind: "search-empty" });
+
+    useTriageStore.setState({ selectedScratchId: "selected", scratchPoolQuery: "" });
+    expect(
+      useTriageStore.getState().finishScratchArchive("selected", {
+        activeIds: ["selected"],
+        visibleIds: [],
+      }),
+    ).toEqual({ id: null, kind: "inbox-empty" });
+    expect(useTriageStore.getState().selectedScratchId).toBeNull();
   });
 
   it("keeps a paused external-removal lifecycle until authoritative restore", () => {
