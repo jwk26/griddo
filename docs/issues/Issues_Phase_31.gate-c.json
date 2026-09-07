@@ -1,0 +1,145 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "gate-c",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-31/integration-conformance-full-gate",
+  "approved_base": "a1a632abf364e4818d046b742b590805ccd2acb6",
+  "approved_scope": {
+    "lifecycle": "run-phase",
+    "phase": 31,
+    "worktree_role": "feature",
+    "phase_tasks": [163, 164, 165],
+    "task_batch": [163],
+    "task_order": [163],
+    "execution_mode": "sequential",
+    "held_tasks": [164, 165],
+    "next_task": 163
+  },
+  "next_legal_action": "$run-task",
+  "source_mode": "merged canonical Phase 31 plan; accepted and archived Phase 23-30 foundations; Task 163 exact accepted dependencies; canonical Inbox/Triage recipe index and nine approved recipes; P29-01 only as an Explicitly Deferred Advisory for a read-only audit after Task 163 acceptance and before Task 164",
+  "issue_ledger": "docs/issues/Issues_Phase_31.md",
+  "integration": {
+    "branch": "main",
+    "remote": "origin",
+    "post_fetch_sha": "a1a632abf364e4818d046b742b590805ccd2acb6",
+    "local_matches_remote": true,
+    "divergence": "0/0"
+  },
+  "worktree_preparation": {
+    "new_linked_worktree": true,
+    "reuse": false,
+    "base_exception": null,
+    "clean_start": true,
+    "approved_base_to_head_commits_before_kickoff_docs": 0
+  },
+  "dependency_evidence": {
+    "task_163": {
+      "dependencies": "Tasks 127-162",
+      "canonical_markers": "all accepted [x]",
+      "archive_evidence": [
+        "docs/execution-plan/archive/phase-26.md",
+        "docs/execution-plan/archive/phase-27.md",
+        "docs/execution-plan/archive/phase-28.md",
+        "docs/execution-plan/archive/phase-29.md",
+        "docs/execution-plan/archive/phase-30.md"
+      ],
+      "decision_receipts": "all fourteen approved",
+      "last_dependency_acceptance": "0b76a547d276b6d7effa8d7b59f1a54fc2ea68cd",
+      "predecessor_final_close_receipt_commit": "0f2a676a992a4796a19930d612d817b67c678174",
+      "state_at_gate": "ready"
+    },
+    "later_phase_tasks": {
+      "tasks": [164, 165],
+      "state_at_gate": "held"
+    }
+  },
+  "readiness": {
+    "plan_code_drift": "none blocking",
+    "open_decision_receipts_for_batch": [],
+    "active_blocking_issues": [],
+    "owner_expansion": null,
+    "unowned": [],
+    "task_163_started": false,
+    "production_implementation_started": false,
+    "task_163_evidence_written": false,
+    "baseline_src_tree": "3f700774fd43d73501618b3146133d57962e9d59",
+    "p29_01": "Explicitly Deferred; read-only audit only after Task 163 acceptance and before Task 164"
+  },
+  "verification": {
+    "setup": {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "elapsed_seconds": 3.58,
+      "result": "537 packages linked; lockfile and tracked tree unchanged",
+      "lockfile_blob_before_and_after": "6b375d09d72e462fe23589c0442be7db85b9e91d"
+    },
+    "baseline_full_gate": [
+      {
+        "command": "pnpm test",
+        "exit": 0,
+        "elapsed_seconds": 24.84,
+        "result": "100 test files and 1270 tests passed; Vitest duration 23.43s",
+        "warnings": "Node module.register() deprecation and localStorage experimental warnings"
+      },
+      {
+        "command": "pnpm lint",
+        "exit": 0,
+        "elapsed_seconds": 7.37,
+        "result": "0 errors and 11 existing warnings"
+      },
+      {
+        "command": "pnpm typecheck",
+        "exit": 0,
+        "elapsed_seconds": 4.08,
+        "result": "tsc --noEmit passed"
+      },
+      {
+        "command": "pnpm build",
+        "exit": 0,
+        "elapsed_seconds": 12.19,
+        "result": "Next.js 16.2.1 production build passed; seven routes generated",
+        "warnings": "Node module.register() deprecation and localStorage experimental warnings"
+      }
+    ]
+  },
+  "artifact_pins": [
+    {
+      "commit": "a1a632abf364e4818d046b742b590805ccd2acb6",
+      "path": "docs/CODEX_WORKFLOW_ADAPTER.json",
+      "sha256": "7824499e03228e1b4261e4b8d198041130354acfe28f670141da33b303fc4aff"
+    },
+    {
+      "commit": "a1a632abf364e4818d046b742b590805ccd2acb6",
+      "path": "docs/EXECUTION_PLAN.md",
+      "sha256": "8387127a1cfc2931f61e3357307d513717a5437e84699ce2906b2279e6998e1f"
+    },
+    {
+      "commit": "a1a632abf364e4818d046b742b590805ccd2acb6",
+      "path": "docs/issues/Final_Close_Phase_30.json",
+      "sha256": "ea633641808e14d07d446f341a3039d2f82bd8b1b4f6146bfde0c1e0e6d06aa8"
+    },
+    {
+      "commit": "a1a632abf364e4818d046b742b590805ccd2acb6",
+      "path": "docs/recipes/inbox-triage-visual-recipe-index.md",
+      "sha256": "023b5f24d33ba8431cb2f9b2bd4520849017f945e475b15bf3eafe1eebdb992d"
+    }
+  ],
+  "gate_c_approval": {
+    "date": "2026-09-07",
+    "approval_kind": "new-phase-kickoff",
+    "exact_scope_confirmed": true,
+    "user_statement": "승인"
+  },
+  "kickoff_state": {
+    "clean_start": true,
+    "kickoff_docs_committed": true,
+    "task_163_durable_start_recorded": false,
+    "production_implementation_started": false,
+    "run_task_invoked": false,
+    "visual_audit_started": false,
+    "push_or_publication_started": false,
+    "integration_or_cleanup_started": false
+  }
+}
