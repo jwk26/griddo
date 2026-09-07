@@ -1,0 +1,73 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "gate-c",
+  "user_disposition": "approved",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-31/integration-conformance-full-gate",
+  "approved_base": "a1a632abf364e4818d046b742b590805ccd2acb6",
+  "approved_scope": {
+    "lifecycle": "run-task",
+    "phase": 31,
+    "task": 163,
+    "worktree_role": "feature"
+  },
+  "next_legal_action": "$run-task",
+  "compatibility_serialization": {
+    "kind": "compatibility serialization of the existing approved Phase 31 Gate C",
+    "new_product_scope_approval": false,
+    "disposition": "Task 163 compatibility receipt authorized with no product-scope expansion",
+    "existing_gate_c_receipt": {
+      "commit": "0607fc18f959079b791311e89a0794e11c0f57b9",
+      "path": "docs/issues/Issues_Phase_31.gate-c.json",
+      "sha256": "45e3d238cd9e3396efbb5129c45976543ebbe603db5f2118452038e4585dbb1a"
+    },
+    "approval_context": {
+      "exact_recovery_packet_response": "승인. 진행.",
+      "clarification": "현재 issue는 이 Working session에서 먼저 기록하고, 정식 skill audit은 Phase 31 종료 시점에 수행한다."
+    }
+  },
+  "session_continuity": {
+    "control_tower": {
+      "identity": "phase-31-control-tower",
+      "status": "active"
+    },
+    "predecessor_working_session": {
+      "identity": "phase-31-run-phase-kickoff-01",
+      "status": "closed/archive-only",
+      "terminal_commit": "0607fc18f959079b791311e89a0794e11c0f57b9"
+    },
+    "current_working_session": {
+      "identity": "phase-31-task-163-run-task-01",
+      "status": "active"
+    },
+    "duplicate_session_count": 0
+  },
+  "deferred_issue": {
+    "id": "WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF",
+    "state": "Deferred until Phase 31 Final Close",
+    "classification": "codex-workflow cross-lifecycle handoff contract/integration defect",
+    "product_impact": "Not a GridDO product-code or Task 163 implementation defect",
+    "finding": [
+      "run-phase produces a valid lifecycle run-phase Gate C receipt.",
+      "run-task requires lifecycle run-task, one integer task, and the task-specific receipt path.",
+      "The documented run-phase → run-task handoff therefore cannot be consumed directly by the current resolver."
+    ],
+    "reproduction": {
+      "run-phase": "ready",
+      "run-task": "invalid_approval",
+      "errors": [
+        "approved_scope.lifecycle",
+        "approved_scope.task",
+        "receipt path"
+      ]
+    },
+    "secondary_finding": "The original Phase 31 Gate C receipt/ledger did not durably record the required Control Tower and Working-session continuity fields.",
+    "installed_workflow_repository": "/Users/jwk/Documents/codex-workflow",
+    "installed_workflow_head_at_discovery": "c4c6cd83237ebd05023c233ba9a3bbae82227ad4",
+    "resolver_sha256": "39635eed538967ebc8d5396e96e0543196b02bc85bff6c175ed8cfacb5b33faa",
+    "current_disposition": "Task 163 compatibility receipt authorized with no product-scope expansion.",
+    "prohibition": "No skill, resolver, shared-contract or workflow-test change before Phase 31 Final Close.",
+    "required_later_action": "After Phase 31 Final Close, perform a dedicated skill audit, decide the canonical run-phase → run-task handoff model, synchronize all affected skills/contracts/resolver copies, and add a real run-phase → committed handoff → fresh run-task regression scenario."
+  }
+}
