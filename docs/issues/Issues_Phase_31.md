@@ -99,7 +99,7 @@ publication, integration, or cleanup action occurred during kickoff.
 | Approved scope | The nine production/test paths declared by Task 163 plus `docs/verification/inbox-triage/task-163.md` and this ledger; Tasks 164–165 and the intervening visual audit remain held |
 | Approval | Compatibility receipt `docs/issues/Issues_Phase_31.Task_163.gate-c.json`, commit `1943ada60c406ef86e768bc7dc178e1c8407e01c`; installed `run-task` resolver returned `ready`, `contract_ready=true`, exit 0 |
 | Start base / entrypoint | Approved base `a1a632abf364e4818d046b742b590805ccd2acb6`; kickoff `0607fc18f959079b791311e89a0794e11c0f57b9`; Task 163 entrypoint `1943ada60c406ef86e768bc7dc178e1c8407e01c` |
-| Recovery anchor | Resume only in Working session `phase-31-task-163-run-task-01` on this feature branch from the committed durable-start signal; Control Tower `phase-31-control-tower` remains active; duplicate-session count `0` |
+| Recovery anchor | Predecessor Working session `phase-31-task-163-run-task-01` is `closed/archive-only` at checkpoint `e4d036f51d0885947dc0c7b5935b8fa86dfe4846` and must never be reactivated; the sole successor repair Working session is `phase-31-task-163-checkpoint-repair-01`, `active / awaiting user disposition`; Control Tower `phase-31-control-tower` remains active; duplicate-session count `0` |
 | Workflow issue | `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF` is durably deferred in the compatibility receipt until Phase 31 Final Close; no workflow skill/contract/resolver/test change is permitted now |
 | Canonical impact | `None` — Task 163 implements the already-current SCHEMA/SPEC/design/execution contracts and changes no canonical product decision |
 
@@ -143,23 +143,42 @@ while the broader audit and conformance matrix remain later-owned.
 | Compatibility recovery | Receipt `docs/issues/Issues_Phase_31.Task_163.gate-c.json`; commit `1943ada60c406ef86e768bc7dc178e1c8407e01c`; installed `run-task` resolver exit `0`, `status=ready`, `contract_ready=true` |
 | Implementation | `cbf33cfdddc0cf1bdc0f285f1ebd9acf9780b540`; exact canonical message `refactor(triage): integrate authoritative inbox workspace` |
 | Evidence | `docs/verification/inbox-triage/task-163.md`; relevant-input fingerprint `68fb5698e8b33c2c7c066252502a545238e4b8038ca6694d4f7eac86863aa5ce` |
-| Verification | Focused owners: 4 files / 170 tests; full gate: 100 files / 1,267 tests, lint 0 errors, typecheck pass, production build pass, `git diff --check` pass; fresh bounded route/state/focus smoke passed with zero page console errors |
-| Review / repair | Repair count `1/3`; no extra cycle or no-progress stop; remaining concrete Critical/Important/medium/low finding `None`; owner expansion `None`; `Unowned: None` |
+| Verification | Focused owners: 4 files / 170 tests; full gate: 100 files / 1,267 tests, lint 0 errors, typecheck pass, production build pass. The original unqualified `git diff --check` pass claim is invalidated: cumulative approved-base-to-checkpoint and implementation-to-checkpoint checks each exited 2 on `task-163.md:695: new blank line at EOF`; cycle 2 requires a fresh post-repair committed cumulative guard. The prior browser smoke is volatile and requires a fresh post-repair run |
+| Review / repair | Cycle `2/3`: cycle 1 was RED-to-green implementation; cycle-2 failure set is `task-163.md:695 new blank line at EOF`; expected post-repair failure set `empty`; extra-cycle approval `not required`; no-progress stop `not triggered`; remaining concrete Critical/Important/medium/low finding `None`; owner expansion `None`; material variance `None`; `Unowned: None` |
 | Commit contract | Parent, exact nine product/test paths, `[ ]` marker, receipt payload, and pinned message all match; variance `None` |
 | Canonical impact | `None`; no product decision, SCHEMA, SPEC, design, plan direction, or recipe changed |
 | Deferred workflow issue | `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF` remains open as `Deferred until Phase 31 Final Close`; the required post-Final-Close skill audit remains unperformed and no workflow skill/contract/resolver/test changed |
+| Successor repair | Exactly one successor Working session, `phase-31-task-163-checkpoint-repair-01`, repairs only this checkpoint discrepancy. Relevant-input fingerprint reproduces unchanged as `68fb5698e8b33c2c7c066252502a545238e4b8038ca6694d4f7eac86863aa5ce`, so non-volatile test/lint/typecheck/build evidence remains reusable; cumulative diff and volatile browser output require fresh post-commit guards |
 | Held scope | Task 164, the intervening read-only visual-fidelity audit, Task 165, Phase 32+, and all publication/integration/cleanup work did not start |
+
+### WF-2026-09-07-RUN-TASK-PREMATURE-CHECKPOINT-CLOSURE
+
+| Field | Durable value |
+| --- | --- |
+| State | `Deferred until Phase 31 Final Close` |
+| Classification | `Control Tower prompt / lifecycle-continuity integration defect` |
+| Finding | The Task 163 integration prompt required the Working session to become `closed/archive-only` immediately when returning its checkpoint |
+| Conflict | `run-task` supports user acceptance, rejection, and targeted repair after the checkpoint, but premature closure prevents same-session targeted repair |
+| Consequence | A one-line checkpoint-evidence correction requires a successor recovery session even though no product scope changed |
+| Product impact | `None`; this does not identify a GridDO product-code defect |
+| Current disposition | Use exactly one successor repair Working session, `phase-31-task-163-checkpoint-repair-01`; never reactivate committed closed predecessor `phase-31-task-163-run-task-01` |
+| Required later audit | After Phase 31 Final Close, audit both `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF` and this finding; decide and document the canonical checkpoint-session status; add coverage proving a Working session remains `active / awaiting user disposition` through acceptance or targeted rejection repair and closes only at the actual handoff/rollover boundary |
+| Prohibition | No installed skill, resolver, shared-contract, or workflow-test change before Phase 31 Final Close |
 
 ## Working-Session Checkpoint Handoff
 
 - Control Tower `phase-31-control-tower`: `active`.
-- Predecessor Working session `phase-31-run-phase-kickoff-01`:
+- Earlier predecessor Working session `phase-31-run-phase-kickoff-01`:
   `closed/archive-only`, terminal commit
   `0607fc18f959079b791311e89a0794e11c0f57b9`.
-- Current Working session `phase-31-task-163-run-task-01`:
-  `closed/archive-only` when this checkpoint returns to the Control Tower.
+- Immediate predecessor Working session `phase-31-task-163-run-task-01`:
+  `closed/archive-only`, terminal checkpoint commit
+  `e4d036f51d0885947dc0c7b5935b8fa86dfe4846`; never reactivate or reuse this
+  identity.
+- Current Working session `phase-31-task-163-checkpoint-repair-01`:
+  `active / awaiting user disposition`.
 - Duplicate-session count: `0`.
-- Next legal action: Control Tower presents the Task 163 checkpoint for
-  explicit user acceptance or rejection. Acceptance alone may produce the
-  distinct `[x]` state transition; it does not start the visual audit or Task
-  164.
+- Next legal action: `Task 163 explicit user acceptance or targeted rejection
+  feedback`. Acceptance alone may produce the distinct `[x]` state transition;
+  until that separate state commit, this successor remains active and neither
+  the visual audit nor Task 164 starts.

@@ -9,14 +9,18 @@
 | Compatibility receipt | `docs/issues/Issues_Phase_31.Task_163.gate-c.json` at `1943ada60c406ef86e768bc7dc178e1c8407e01c` |
 | Durable start | `1ec8b19d0a40b2513ed8b6b32a132f89ba003982` |
 | Implementation | `cbf33cfdddc0cf1bdc0f285f1ebd9acf9780b540` |
+| Original checkpoint | `e4d036f51d0885947dc0c7b5935b8fa86dfe4846` |
 | Relevant-input fingerprint | `68fb5698e8b33c2c7c066252502a545238e4b8038ca6694d4f7eac86863aa5ce` |
 | Canonical impact | `None` — no product decision, schema, specification, design, or plan direction changed |
 
 Task 163 is `Implemented` and remains `[ ]` pending Control Tower review and
-explicit user acceptance. The current Working-session identity
-`phase-31-task-163-run-task-01` closes as `closed/archive-only` at this
-checkpoint; Control Tower `phase-31-control-tower` remains active and the
-duplicate-session count remains `0`.
+explicit user acceptance. Predecessor Working session
+`phase-31-task-163-run-task-01` is committed as `closed/archive-only` at
+checkpoint `e4d036f51d0885947dc0c7b5935b8fa86dfe4846` and is never reactivated.
+The sole successor repair Working session is
+`phase-31-task-163-checkpoint-repair-01`, status
+`active / awaiting user disposition`. Control Tower
+`phase-31-control-tower` remains active and duplicate-session count is `0`.
 
 ## Approval And Workflow Recovery
 
@@ -33,6 +37,25 @@ It exited `0` with `status: ready` and `contract_ready: true`. Deferred issue
 `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF` remains open with state
 `Deferred until Phase 31 Final Close`. No installed skill, resolver, shared
 contract, workflow test, or `/Users/jwk/Documents/codex-workflow` file changed.
+
+The separate deferred issue
+`WF-2026-09-07-RUN-TASK-PREMATURE-CHECKPOINT-CLOSURE` is also
+`Deferred until Phase 31 Final Close`. It is classified as a Control Tower
+prompt / lifecycle-continuity integration defect: the Task 163 integration
+prompt required the Working session to become `closed/archive-only`
+immediately when returning its checkpoint, although `run-task` supports user
+acceptance, rejection, and targeted repair after that checkpoint. Premature
+closure prevents same-session targeted repair, so this one-line evidence
+correction requires exactly one successor recovery session even though no
+product scope changed. Product impact is `None`; the disposition is to keep the
+predecessor closed and use only successor
+`phase-31-task-163-checkpoint-repair-01`. After Phase 31 Final Close, audit
+this issue together with `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF`, decide and
+document the canonical checkpoint-session status, and add coverage proving a
+Working session remains `active / awaiting user disposition` through
+acceptance or targeted rejection repair and closes only at the actual
+handoff/rollover boundary. No installed skill, resolver, shared contract, or
+workflow test may change before that audit.
 
 ## Implemented Surface
 
@@ -80,7 +103,24 @@ candidate-shape assertion, and the missing canonical placement handoff.
 The implementation then made those assertions green. During the same refactor,
 seven stale flat-shape test expectations were converted to the canonical nested
 `TriagePlacementRelease` contract; the failure set shrank to zero. Repair count
-is `1/3`, no extra cycle was requested, and no no-progress signature occurred.
+for that RED-to-green implementation was cycle `1/3`.
+
+Cycle `2/3` repairs checkpoint evidence and final cumulative-diff verification.
+Fresh Control Tower verification, reproduced by this successor before any
+write, ran both
+`git diff --check a1a632abf364e4818d046b742b590805ccd2acb6..e4d036f51d0885947dc0c7b5935b8fa86dfe4846`
+and
+`git diff --check cbf33cfdddc0cf1bdc0f285f1ebd9acf9780b540..e4d036f51d0885947dc0c7b5935b8fa86dfe4846`.
+Each exited `2` with the same failure set:
+`docs/verification/inbox-triage/task-163.md:695: new blank line at EOF.`
+That result invalidates the original checkpoint's unqualified claim that
+`git diff --check` passed: a pre-document or working-tree-only check did not
+prove the final committed cumulative diff. The repair removes that trailing
+blank line and corrects the claim. The expected post-repair failure set is
+empty. No extra-cycle approval is required, and no-progress is not triggered.
+The post-commit cumulative command remains an always-fresh guard and is
+reported only after the repair commit; this document does not treat a
+pre-commit working-tree result as proof of the final commit.
 
 A post-commit independent diff/contract review covered route dispatch, recovery
 ordering, placement callback ownership, candidate-store removal, named
@@ -105,7 +145,7 @@ All final commands below ran after the last Task 163 product/test input.
 | `pnpm lint` | 0 | 0 errors; 11 unchanged existing warnings |
 | `pnpm typecheck` | 0 | `tsc --noEmit` passed |
 | `pnpm build` | 0 | Next.js 16.2.1 production build passed; compile `6.2s`, TypeScript `4.5s`, seven routes generated |
-| `git diff --check` | 0 | whitespace verification passed |
+| Original checkpoint `git diff --check` claim | Invalidated | The recorded command lacked a final committed cumulative range; fresh cumulative verification over both approved-base-to-checkpoint and implementation-to-checkpoint exited 2 on `task-163.md:695: new blank line at EOF` |
 
 The known Node `module.register()` deprecation and worker `localStorage`
 experimental warnings were unchanged.
@@ -153,10 +193,17 @@ mutable ledger are excluded to avoid self-reference.
 
 - Manifest SHA-256: `68fb5698e8b33c2c7c066252502a545238e4b8038ca6694d4f7eac86863aa5ce`
 - Provenance commit: `cbf33cfdddc0cf1bdc0f285f1ebd9acf9780b540`
-- Reuse decision: `None`. All test/build/static/browser guards were fresh;
-  browser output is never reusable.
-- Invalidated evidence: the pre-implementation baseline and RED run were not
-  used as completion evidence.
+- Fingerprint comparison for cycle 2: recomputed manifest SHA-256 is identical
+  to `68fb5698e8b33c2c7c066252502a545238e4b8038ca6694d4f7eac86863aa5ce`.
+- Reuse decision: the non-volatile focused/full test, lint, typecheck, build,
+  and static-audit evidence remains reusable because the evidence and ledger
+  paths are excluded from the exact manifest and its invariant/modalities are
+  unchanged. Browser output is volatile and must be freshly rerun after the
+  repair commit.
+- Invalidated evidence: the original checkpoint's unqualified
+  `git diff --check` pass claim is invalidated and replaced by the recorded
+  failure plus a required post-repair cumulative committed-diff guard. The
+  pre-implementation baseline and RED run remain non-completion evidence.
 
 <details>
 <summary>Exact manifest JSON value (JCS-equivalent formatting)</summary>
@@ -686,10 +733,11 @@ No rewrite, amend, repin, or commit variance disposition was needed.
   verification, commit contract, and this evidence checkpoint.
 - **Planned later:** only after explicit Task 163 acceptance, the read-only
   visual-fidelity audit may occur; Task 164 and Task 165 remain separately
-  held. After Phase 31 Final Close, deferred issue
-  `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF` requires its dedicated skill audit.
+  held. After Phase 31 Final Close, deferred issues
+  `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF` and
+  `WF-2026-09-07-RUN-TASK-PREMATURE-CHECKPOINT-CLOSURE` require the combined
+  lifecycle audit described above.
 - **Unowned:** None.
 
 Task 164, the intervening visual audit, Task 165, Phase 32+, push, merge,
 publication, branch/worktree topology change, and cleanup did not start.
-
