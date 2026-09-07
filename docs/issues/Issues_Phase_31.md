@@ -3,7 +3,7 @@
 > Branch: `phase-31/integration-conformance-full-gate`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate`
 > Kickoff date: 2026-09-07
-> State: Gate C kickoff is complete; Task 163 has not started
+> State: Task 163 is In Progress; implementation has not started
 
 ## Status Legend
 
@@ -90,4 +90,47 @@ publication, integration, or cleanup action occurred during kickoff.
 
 ## Active Issues
 
-None. Task 163 has not started.
+### Task 163 Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Task | Task 163 only — canonical route integration and superseded-owner removal |
+| State | `In Progress`; `[ ]` remains unchanged and user acceptance is pending |
+| Approved scope | The nine production/test paths declared by Task 163 plus `docs/verification/inbox-triage/task-163.md` and this ledger; Tasks 164–165 and the intervening visual audit remain held |
+| Approval | Compatibility receipt `docs/issues/Issues_Phase_31.Task_163.gate-c.json`, commit `1943ada60c406ef86e768bc7dc178e1c8407e01c`; installed `run-task` resolver returned `ready`, `contract_ready=true`, exit 0 |
+| Start base / entrypoint | Approved base `a1a632abf364e4818d046b742b590805ccd2acb6`; kickoff `0607fc18f959079b791311e89a0794e11c0f57b9`; Task 163 entrypoint `1943ada60c406ef86e768bc7dc178e1c8407e01c` |
+| Recovery anchor | Resume only in Working session `phase-31-task-163-run-task-01` on this feature branch from the committed durable-start signal; Control Tower `phase-31-control-tower` remains active; duplicate-session count `0` |
+| Workflow issue | `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF` is durably deferred in the compatibility receipt until Phase 31 Final Close; no workflow skill/contract/resolver/test change is permitted now |
+| Canonical impact | `None` — Task 163 implements the already-current SCHEMA/SPEC/design/execution contracts and changes no canonical product decision |
+
+#### Pre-RED seam inventory
+
+| Behavior | Producer | Mounted owner | Consumers | Direct test | Visual owner | Canonical owner |
+| --- | --- | --- | --- | --- | --- | --- |
+| One canonical Inbox route body | `useNode()` system-role projection | `GridRuntime` route dispatcher and standard-grid page body | `TriageWorkspace`, `ArchiveView`, ordinary grid children | `grid-runtime.test.tsx` | `/grid/[nodeId]`; Task 163 bounded route smoke only | SPEC §§ System Node Routing / Routes; Task 163 |
+| Archive recovery before normal Inbox projection | `useArchiveScratch` current-tab recovery state | `TriageWorkspace` recovery boundary | `ReadyTriageWorkspace` and its composed Inbox hooks | `triage-workspace.test.tsx` | Task 163 bounded recovery/route state record; no fidelity claim | SPEC architecture/lifetime rules; Tasks 161–163 |
+| Durable staged-candidate truth only | DataStore commands plus `useStagedCandidates` reactive join | `TriageWorkspace` | staging projection, `useTriageDnd`, placement/newly owners | `triage-workspace.test.tsx`, `use-triage-dnd.test.ts`, `triage-store.test.ts` | Existing Staging surface; no Task 164 matrix claim | SCHEMA candidate model; SPEC target ownership; Task 131 and Task 163 |
+| General Grid DnD and unrelated surface preservation | existing `useDnd` and `GridRuntime` branches | shared Grid runtime | ordinary Grid, Calendar, Archive View, Quick Capture and shell overlays | `grid-runtime.test.tsx`, `use-triage-dnd.test.ts` | Task 163 preservation smoke only | SPEC architecture rules 12 and 15; Task 163 |
+
+No owner expansion is required. The semantic invariants are route dispatch,
+startup ordering, one durable candidate source, atomic placement delegation,
+and preservation of the named unrelated branches. Direct owner tests cover
+these code/DOM semantics. Browser-only pixel, physical pointer/touch, focus,
+viewport geometry, theme fidelity, and the full theme/mode/viewport matrix are
+not claimed here; the bounded Task 163 route smoke is fresh runtime evidence,
+while the broader audit and conformance matrix remain later-owned.
+
+#### Expected implementation commit contract
+
+- Parent: this Task 163 durable-start commit, with no intervening product or
+  future-scope commit.
+- Content intent and approved path set: only the Task 163 route/runtime/
+  workspace/store/DnD owners and their declared tests, plus
+  `docs/verification/inbox-triage/task-163.md` and this ledger evidence.
+- Task and marker: Task 163 implementation reaches `Implemented` awaiting user
+  review; canonical `Task 163: [ ]` remains unchanged.
+- Receipt/payload: exact committed compatibility receipt
+  `1943ada60c406ef86e768bc7dc178e1c8407e01c`; no scope expansion.
+- Commit message: exact canonical value
+  `refactor(triage): integrate authoritative inbox workspace`; treated as
+  pinned by the Task 163 commit contract.
