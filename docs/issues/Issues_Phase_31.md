@@ -3,7 +3,8 @@
 > Branch: `phase-31/integration-conformance-full-gate`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate`
 > Kickoff date: 2026-09-07
-> State: Task 163 is Implemented and awaiting explicit user acceptance
+> State: Task 163 is `[x]` after explicit user acceptance; final acceptance
+> recovery evidence is pending before Working-session closure
 
 ## Status Legend
 
@@ -24,7 +25,7 @@
 | Gate | `gate-c`; the user approved the exact packet on 2026-09-07 |
 | Phase scope | Phase 31 — Integration, Conformance, And Full Gate; Tasks 163–165 |
 | First bounded batch | Task 163 only; Tasks 164–165 are held |
-| Task state | Tasks 163–165 remain `[ ]`; Task 163 is Implemented with committed checkpoint evidence and awaits explicit user acceptance |
+| Task state | Task 163 is `[x]` after explicit user acceptance; Tasks 164–165 remain `[ ]` and held |
 | Source mode | Merged canonical Phase 31 plan; accepted and archived Phase 23–30 foundations; Task 163 exact accepted dependencies; canonical Inbox/Triage recipe index and nine approved recipes; `P29-01` only as an Explicitly Deferred Advisory for a read-only audit after Task 163 acceptance and before Task 164 |
 | Integration | After fresh `git fetch origin --prune`, local `main` and `origin/main` equal `a1a632abf364e4818d046b742b590805ccd2acb6` with divergence `0/0` |
 | Approved base | `a1a632abf364e4818d046b742b590805ccd2acb6`; no base exception |
@@ -95,11 +96,11 @@ publication, integration, or cleanup action occurred during kickoff.
 | Field | Durable value |
 | --- | --- |
 | Task | Task 163 only — canonical route integration and superseded-owner removal |
-| State | `Implemented`; `[ ]` remains unchanged and user acceptance is pending |
+| State | `Accepted`; Task 163 is `[x]` by the user's explicit acceptance of implementation `cbf33cfdddc0cf1bdc0f285f1ebd9acf9780b540` and repaired checkpoint `74ffba6778c73570af38e07bdc8db775e3ce0426` |
 | Approved scope | The nine production/test paths declared by Task 163 plus `docs/verification/inbox-triage/task-163.md` and this ledger; Tasks 164–165 and the intervening visual audit remain held |
 | Approval | Compatibility receipt `docs/issues/Issues_Phase_31.Task_163.gate-c.json`, commit `1943ada60c406ef86e768bc7dc178e1c8407e01c`; installed `run-task` resolver returned `ready`, `contract_ready=true`, exit 0 |
 | Start base / entrypoint | Approved base `a1a632abf364e4818d046b742b590805ccd2acb6`; kickoff `0607fc18f959079b791311e89a0794e11c0f57b9`; Task 163 entrypoint `1943ada60c406ef86e768bc7dc178e1c8407e01c` |
-| Recovery anchor | Predecessor Working session `phase-31-task-163-run-task-01` is `closed/archive-only` at checkpoint `e4d036f51d0885947dc0c7b5935b8fa86dfe4846` and must never be reactivated; the sole successor repair Working session is `phase-31-task-163-checkpoint-repair-01`, `active / awaiting user disposition`; Control Tower `phase-31-control-tower` remains active; duplicate-session count `0` |
+| Recovery anchor | Predecessor Working session `phase-31-task-163-run-task-01` remains `closed/archive-only` at checkpoint `e4d036f51d0885947dc0c7b5935b8fa86dfe4846` and is never reactivated; the sole successor repair Working session remains `phase-31-task-163-checkpoint-repair-01`, `active / acceptance committed; final recovery verification pending`; Control Tower `phase-31-control-tower` remains active; duplicate-session count `0` |
 | Workflow issue | `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF` is durably deferred in the compatibility receipt until Phase 31 Final Close; no workflow skill/contract/resolver/test change is permitted now |
 | Canonical impact | `None` — Task 163 implements the already-current SCHEMA/SPEC/design/execution contracts and changes no canonical product decision |
 
@@ -135,21 +136,23 @@ while the broader audit and conformance matrix remain later-owned.
   `refactor(triage): integrate authoritative inbox workspace`; treated as
   pinned by the Task 163 commit contract.
 
-### Task 163 Checkpoint
+### Task 163 — User Accepted
 
 | Field | Durable value |
 | --- | --- |
-| State | `Implemented`; canonical `Task 163: [ ]` remains unchanged pending explicit user acceptance |
+| State | `Accepted`; canonical `Task 163: [x]` records the user's explicit Task 163 checkpoint acceptance |
+| User disposition | `사용자는 Task 163 checkpoint를 명시적으로 승인합니다.` Accepted implementation `cbf33cfdddc0cf1bdc0f285f1ebd9acf9780b540`, original checkpoint `e4d036f51d0885947dc0c7b5935b8fa86dfe4846`, repair checkpoint `74ffba6778c73570af38e07bdc8db775e3ce0426`, and evidence fingerprint `68fb5698e8b33c2c7c066252502a545238e4b8038ca6694d4f7eac86863aa5ce` |
+| Acceptance state commit | This distinct commit changes only the canonical Task 163 marker and Phase 31 acceptance ledger; its exact SHA is resolved by the following recovery/handoff record without self-referential history rewriting |
 | Compatibility recovery | Receipt `docs/issues/Issues_Phase_31.Task_163.gate-c.json`; commit `1943ada60c406ef86e768bc7dc178e1c8407e01c`; installed `run-task` resolver exit `0`, `status=ready`, `contract_ready=true` |
 | Implementation | `cbf33cfdddc0cf1bdc0f285f1ebd9acf9780b540`; exact canonical message `refactor(triage): integrate authoritative inbox workspace` |
 | Evidence | `docs/verification/inbox-triage/task-163.md`; relevant-input fingerprint `68fb5698e8b33c2c7c066252502a545238e4b8038ca6694d4f7eac86863aa5ce` |
-| Verification | Focused owners: 4 files / 170 tests; full gate: 100 files / 1,267 tests, lint 0 errors, typecheck pass, production build pass. The original unqualified `git diff --check` pass claim is invalidated: cumulative approved-base-to-checkpoint and implementation-to-checkpoint checks each exited 2 on `task-163.md:695: new blank line at EOF`; cycle 2 requires a fresh post-repair committed cumulative guard. The prior browser smoke is volatile and requires a fresh post-repair run |
+| Verification | Accepted non-volatile evidence: focused owners 4 files / 170 tests; full gate 100 files / 1,267 tests, lint 0 errors, typecheck pass, production build pass. Repair checkpoint `74ffba6778c73570af38e07bdc8db775e3ce0426` passed fresh cumulative `git diff --check` with empty output and fresh bounded route/state/focus browser smoke with zero page console errors/exceptions |
 | Review / repair | Cycle `2/3`: cycle 1 was RED-to-green implementation; cycle-2 failure set is `task-163.md:695 new blank line at EOF`; expected post-repair failure set `empty`; extra-cycle approval `not required`; no-progress stop `not triggered`; remaining concrete Critical/Important/medium/low finding `None`; owner expansion `None`; material variance `None`; `Unowned: None` |
-| Commit contract | Parent, exact nine product/test paths, `[ ]` marker, receipt payload, and pinned message all match; variance `None` |
+| Commit contract | At implementation commit `cbf33cfdddc0cf1bdc0f285f1ebd9acf9780b540`, parent, exact nine product/test paths, then-current `[ ]` marker, receipt payload, and pinned message all matched; this acceptance changes only the canonical marker/state owners; variance `None` |
 | Canonical impact | `None`; no product decision, SCHEMA, SPEC, design, plan direction, or recipe changed |
 | Deferred workflow issue | `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF` remains open as `Deferred until Phase 31 Final Close`; the required post-Final-Close skill audit remains unperformed and no workflow skill/contract/resolver/test changed |
-| Successor repair | Exactly one successor Working session, `phase-31-task-163-checkpoint-repair-01`, repairs only this checkpoint discrepancy. Relevant-input fingerprint reproduces unchanged as `68fb5698e8b33c2c7c066252502a545238e4b8038ca6694d4f7eac86863aa5ce`, so non-volatile test/lint/typecheck/build evidence remains reusable; cumulative diff and volatile browser output require fresh post-commit guards |
-| Held scope | Task 164, the intervening read-only visual-fidelity audit, Task 165, Phase 32+, and all publication/integration/cleanup work did not start |
+| Successor repair | Exactly one successor Working session, `phase-31-task-163-checkpoint-repair-01`, repaired only this checkpoint discrepancy. Relevant-input fingerprint reproduced unchanged as `68fb5698e8b33c2c7c066252502a545238e4b8038ca6694d4f7eac86863aa5ce`, so non-volatile test/lint/typecheck/build evidence was reusable; cumulative diff and volatile browser output were freshly verified at repaired checkpoint `74ffba6778c73570af38e07bdc8db775e3ce0426` |
+| Held scope | The intervening read-only visual-fidelity gap audit, Task 164, Task 165, Phase 32+, and all push/publication/integration/cleanup work did not start. The next action after acceptance is the Control Tower audit, not Task 164 |
 
 ### WF-2026-09-07-RUN-TASK-PREMATURE-CHECKPOINT-CLOSURE
 
@@ -176,9 +179,9 @@ while the broader audit and conformance matrix remain later-owned.
   `e4d036f51d0885947dc0c7b5935b8fa86dfe4846`; never reactivate or reuse this
   identity.
 - Current Working session `phase-31-task-163-checkpoint-repair-01`:
-  `active / awaiting user disposition`.
+  `active / acceptance committed; final recovery verification pending`.
 - Duplicate-session count: `0`.
-- Next legal action: `Task 163 explicit user acceptance or targeted rejection
-  feedback`. Acceptance alone may produce the distinct `[x]` state transition;
-  until that separate state commit, this successor remains active and neither
-  the visual audit nor Task 164 starts.
+- Next legal action: commit the distinct Task 163 acceptance state, prepare
+  fresh final recovery evidence, then durably close this same Working session
+  and return its checkpoint to the Control Tower. The visual audit and Task 164
+  do not start in this Working session.

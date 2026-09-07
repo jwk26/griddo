@@ -7,12 +7,12 @@
 > This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
 > its supersession rules. It accepts no phase, task, implementation, branch,
 > publication, or completion state.
-> **Task markers:** Tasks 101–162 were explicitly accepted. Phases 23–30 are
-> completed and archived. Tasks 163–165 remain open (`[ ]`) and may be
+> **Task markers:** Tasks 101–163 were explicitly accepted. Phases 23–30 are
+> completed and archived. Tasks 164–165 remain open (`[ ]`) and may be
 > checked only after their own observable acceptance and verification evidence
 > is explicitly accepted by the user.
 > **Execution lifecycle:** Phases 23–30 are complete. The one open phase is
-> Phase 31 with three open Tasks 163–165. Phase 30 completed its own Gate C,
+> Phase 31 with two open Tasks 164–165. Phase 30 completed its own Gate C,
 > isolated feature branch/worktree, and accepted Task 159–162 chain.
 > This planning receipt alone does not authorize later implementation, Git
 > lifecycle work, or publication.
@@ -2004,7 +2004,7 @@ separate user gates. Task 164 then owns only the conformance/fidelity work
 already granted by its canonical contract plus any separately approved
 follow-up plan.
 
-### Task 163: [ ] Integrate the canonical route and remove superseded owners
+### Task 163: [x] Integrate the canonical route and remove superseded owners
 
 **Files and actions:** modify `src/app/(grid)/grid/[nodeId]/page.tsx`, `src/components/layout/grid-runtime.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`, and `src/stores/triage-store.ts` and `.test.ts`. Dispatch the canonical Inbox system Node to the single production workspace; compose completed lifetime/hooks/adapters; read Archive recovery before initial Inbox projection. After verifying every consumer uses Task 131 durable candidate truth, remove the deprecated candidate fields/actions retained by Task 127; Task 163 is the sole removal owner. Also remove superseded component mock writes, UI candidate arrays/Sets/labels, sequential create→consume→remove placement, active-column Explorer filtering, duplicate selection/path/overlay owners, and prototype-only handlers from these integration owners. Preserve general Grid DnD keyboard behavior, non-Inbox Grid/runtime, Calendar, Trash, Quick Capture, global Search, Bit Detail, Direct Archive, Archive View restore, and system Nodes.
 
