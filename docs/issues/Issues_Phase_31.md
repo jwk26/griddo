@@ -3,8 +3,8 @@
 > Branch: `phase-31/integration-conformance-full-gate`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate`
 > Kickoff date: 2026-09-07
-> State: Task 163 is `[x]` after explicit user acceptance; final acceptance
-> recovery evidence is pending before Working-session closure
+> State: Task 163 is `[x]` after explicit user acceptance; its successor
+> Working session is `closed/archive-only` after final recovery verification
 
 ## Status Legend
 
@@ -100,7 +100,7 @@ publication, integration, or cleanup action occurred during kickoff.
 | Approved scope | The nine production/test paths declared by Task 163 plus `docs/verification/inbox-triage/task-163.md` and this ledger; Tasks 164–165 and the intervening visual audit remain held |
 | Approval | Compatibility receipt `docs/issues/Issues_Phase_31.Task_163.gate-c.json`, commit `1943ada60c406ef86e768bc7dc178e1c8407e01c`; installed `run-task` resolver returned `ready`, `contract_ready=true`, exit 0 |
 | Start base / entrypoint | Approved base `a1a632abf364e4818d046b742b590805ccd2acb6`; kickoff `0607fc18f959079b791311e89a0794e11c0f57b9`; Task 163 entrypoint `1943ada60c406ef86e768bc7dc178e1c8407e01c` |
-| Recovery anchor | Predecessor Working session `phase-31-task-163-run-task-01` remains `closed/archive-only` at checkpoint `e4d036f51d0885947dc0c7b5935b8fa86dfe4846` and is never reactivated; the sole successor repair Working session remains `phase-31-task-163-checkpoint-repair-01`, `active / acceptance committed; final recovery verification pending`; Control Tower `phase-31-control-tower` remains active; duplicate-session count `0` |
+| Recovery anchor | Predecessor Working session `phase-31-task-163-run-task-01` remains `closed/archive-only` at checkpoint `e4d036f51d0885947dc0c7b5935b8fa86dfe4846` and was never reactivated; the sole successor repair Working session `phase-31-task-163-checkpoint-repair-01` is `closed/archive-only` only after acceptance commit `c34984b017265ed601afb32282dba292446af5c3` and fresh recovery verification; Control Tower `phase-31-control-tower` remains active; duplicate-session count `0` |
 | Workflow issue | `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF` is durably deferred in the compatibility receipt until Phase 31 Final Close; no workflow skill/contract/resolver/test change is permitted now |
 | Canonical impact | `None` — Task 163 implements the already-current SCHEMA/SPEC/design/execution contracts and changes no canonical product decision |
 
@@ -142,7 +142,8 @@ while the broader audit and conformance matrix remain later-owned.
 | --- | --- |
 | State | `Accepted`; canonical `Task 163: [x]` records the user's explicit Task 163 checkpoint acceptance |
 | User disposition | `사용자는 Task 163 checkpoint를 명시적으로 승인합니다.` Accepted implementation `cbf33cfdddc0cf1bdc0f285f1ebd9acf9780b540`, original checkpoint `e4d036f51d0885947dc0c7b5935b8fa86dfe4846`, repair checkpoint `74ffba6778c73570af38e07bdc8db775e3ce0426`, and evidence fingerprint `68fb5698e8b33c2c7c066252502a545238e4b8038ca6694d4f7eac86863aa5ce` |
-| Acceptance state commit | This distinct commit changes only the canonical Task 163 marker and Phase 31 acceptance ledger; its exact SHA is resolved by the following recovery/handoff record without self-referential history rewriting |
+| Acceptance state commit | `c34984b017265ed601afb32282dba292446af5c3`; parent `74ffba6778c73570af38e07bdc8db775e3ce0426`; changed only `docs/EXECUTION_PLAN.md` and this Phase 31 ledger |
+| Final acceptance recovery | Against acceptance commit `c34984b017265ed601afb32282dba292446af5c3`, installed `run-task` resolver exited `0` with `status=ready` and `contract_ready=true`; approved base, implementation, original checkpoint, and repair checkpoint were exact ancestors; `git diff --check a1a632abf364e4818d046b742b590805ccd2acb6..HEAD` exited `0` with empty output; `git status --short` was empty; Task 163 was `[x]` while Tasks 164–165 remained `[ ]`; receipt blob and both deferred issue records were unchanged |
 | Compatibility recovery | Receipt `docs/issues/Issues_Phase_31.Task_163.gate-c.json`; commit `1943ada60c406ef86e768bc7dc178e1c8407e01c`; installed `run-task` resolver exit `0`, `status=ready`, `contract_ready=true` |
 | Implementation | `cbf33cfdddc0cf1bdc0f285f1ebd9acf9780b540`; exact canonical message `refactor(triage): integrate authoritative inbox workspace` |
 | Evidence | `docs/verification/inbox-triage/task-163.md`; relevant-input fingerprint `68fb5698e8b33c2c7c066252502a545238e4b8038ca6694d4f7eac86863aa5ce` |
@@ -179,9 +180,11 @@ while the broader audit and conformance matrix remain later-owned.
   `e4d036f51d0885947dc0c7b5935b8fa86dfe4846`; never reactivate or reuse this
   identity.
 - Current Working session `phase-31-task-163-checkpoint-repair-01`:
-  `active / acceptance committed; final recovery verification pending`.
+  `closed/archive-only` after acceptance commit
+  `c34984b017265ed601afb32282dba292446af5c3` and fresh final recovery
+  verification. This ledger-only handoff commit records the closure.
 - Duplicate-session count: `0`.
-- Next legal action: commit the distinct Task 163 acceptance state, prepare
-  fresh final recovery evidence, then durably close this same Working session
-  and return its checkpoint to the Control Tower. The visual audit and Task 164
-  do not start in this Working session.
+- Next legal action: return this accepted Task 163 checkpoint to Control Tower
+  `phase-31-control-tower`; the Control Tower may next conduct the separately
+  bounded read-only visual-fidelity gap audit. Task 164 does not start from this
+  Working session or from Task 163 acceptance alone.
