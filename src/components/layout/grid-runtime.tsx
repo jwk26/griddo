@@ -40,6 +40,7 @@ import { findNearestEmptyCell } from "@/lib/utils/bfs";
 import { isDeadlineAfter } from "@/lib/utils/deadline";
 import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
 import { useQuickCaptureStore } from "@/stores/quick-capture-store";
+import type { Node } from "@/types";
 import { AddFlowProvider } from "./add-flow-context";
 
 type PlacementContext =
@@ -62,6 +63,22 @@ export function useDeleteFlow(): DeleteFlowContextValue {
   }
 
   return context;
+}
+
+export function GridRouteBody({
+  children,
+  node,
+}: {
+  children: React.ReactNode;
+  node: Node | null | undefined;
+}) {
+  if (node?.systemRole === "archive_view") {
+    return <ArchiveView node={node} />;
+  }
+  if (node?.systemRole === "inbox") {
+    return <TriageWorkspace node={node} />;
+  }
+  return children;
 }
 
 export function GridRuntime({ children }: { children: React.ReactNode }) {
@@ -408,13 +425,7 @@ export function GridRuntime({ children }: { children: React.ReactNode }) {
                 )}
                 data-dragging={activeItem ? "true" : undefined}
               >
-                {isArchiveRoute ? (
-                  <ArchiveView node={node} />
-                ) : isInboxRoute ? (
-                  <TriageWorkspace node={node} />
-                ) : (
-                  children
-                )}
+                <GridRouteBody node={node}>{children}</GridRouteBody>
               </div>
             </AddFlowProvider>
             <EditModeOverlay />

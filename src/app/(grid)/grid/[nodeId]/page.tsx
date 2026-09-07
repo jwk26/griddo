@@ -12,6 +12,31 @@ import type { Node } from "@/types";
 export default function NodeGridPage() {
   const { nodeId } = useParams<{ nodeId: string }>();
   const node = useNode(nodeId);
+
+  return <NodeGridBody node={node} nodeId={nodeId} />;
+}
+
+export function NodeGridBody({
+  node,
+  nodeId,
+}: {
+  node: Node | null | undefined;
+  nodeId: string;
+}) {
+  if (node?.systemRole !== null && node?.systemRole !== undefined) {
+    return null;
+  }
+
+  return <StandardNodeGrid node={node} nodeId={nodeId} />;
+}
+
+function StandardNodeGrid({
+  node,
+  nodeId,
+}: {
+  node: Node | null | undefined;
+  nodeId: string;
+}) {
   const { openAddAtCell } = useAddFlow();
   const { requestDelete } = useDeleteFlow();
   const [editingNode, setEditingNode] = useState<Node | null>(null);

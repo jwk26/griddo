@@ -5,6 +5,7 @@ import { GRID_COLS } from "@/lib/constants";
 import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
 import { useQuickCaptureStore } from "@/stores/quick-capture-store";
 import type { Bit, Node } from "@/types";
+import { NodeGridBody } from "@/app/(grid)/grid/[nodeId]/page";
 import { useAddFlow } from "./add-flow-context";
 import { GridRuntime, useDeleteFlow } from "./grid-runtime";
 
@@ -53,7 +54,6 @@ vi.mock("@/hooks/use-dnd", () => ({
     sensors: [],
     activeDragItem: null,
     overTargetId: null,
-    pendingPlacement: null,
     localPlacementResult: null,
     handleDragStart: vi.fn(),
     handleDragEnd: vi.fn(),
@@ -522,6 +522,19 @@ describe("GridRuntime", () => {
     expect(screen.queryByTestId("breadcrumbs")).not.toBeInTheDocument();
     expect(screen.getByTestId("edit-mode-overlay")).toBeInTheDocument();
   });
+
+  it.each(["inbox", "archive_view"] as const)(
+    "keeps the %s system-node page body empty so GridRuntime is the sole dispatch owner",
+    (systemRole) => {
+      const systemNode = createNode({ id: `${systemRole}-node`, systemRole });
+
+      const { container } = render(
+        <NodeGridBody node={systemNode} nodeId={systemNode.id} />,
+      );
+
+      expect(container).toBeEmptyDOMElement();
+    },
+  );
 
   it("renders children normally for standard grid nodes", () => {
     const standardNode = createNode({ id: "standard-node", systemRole: null });

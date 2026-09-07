@@ -30,7 +30,6 @@ import {
 } from "@/components/triage/staging-zone";
 import {
   useTriageDnd,
-  type PendingPlacement,
   type TriageDragItem,
 } from "@/hooks/use-dnd";
 import { useExternalScratchRemovalData } from "@/hooks/use-external-scratch-removal-data";
@@ -1378,70 +1377,27 @@ function TriageWorkspaceContent({
       focusPlacementSource(current.release);
     }
   }, [focusPlacementSource, placement]);
-  const consumedPlacementReleaseRef = useRef<PendingPlacement>(null);
   const {
     activeDragItem,
     collisionDetection,
     handleDragCancel,
     handleDragEnd,
     handleDragOver,
-    clearPendingPlacement,
     handleDragStart,
     overTargetId,
-    pendingPlacement,
     refreshRenderedTarget,
     sensors,
     targetFeedback,
   } = useTriageDnd(selectedScratchId, {
+    beginPlacement: placement.begin,
     focusUnstagedSource,
+    isPlacementOpen: () => placement.snapshot !== null,
     operationLock,
     reconcileStageCandidate,
     reconcileUnstageCandidate,
     stageCandidate,
     unstageCandidate,
   });
-  useEffect(() => {
-    if (pendingPlacement === null) {
-      consumedPlacementReleaseRef.current = null;
-      return;
-    }
-    if (consumedPlacementReleaseRef.current === pendingPlacement) return;
-    consumedPlacementReleaseRef.current = pendingPlacement;
-    const release: TriagePlacementRelease = {
-      kind: pendingPlacement.isDirectBreakdown ? "direct" : "staged",
-      scratchBitId: pendingPlacement.scratchBitId,
-      source: {
-        id: pendingPlacement.sourceBreakdownId,
-        title: pendingPlacement.candidateLabel,
-        version: pendingPlacement.sourceVersion,
-      },
-      ...(pendingPlacement.candidateType === null ||
-      pendingPlacement.candidateVersion === null
-        ? {}
-        : {
-            candidate: {
-              id: pendingPlacement.candidateId,
-              version: pendingPlacement.candidateVersion,
-              resultType: pendingPlacement.candidateType,
-            },
-          }),
-      target: {
-        dropId: pendingPlacement.dropId,
-        parentId: pendingPlacement.parentNodeId,
-        level: pendingPlacement.targetNodeLevel,
-        title: pendingPlacement.targetTitle,
-        path: [
-          ...pendingPlacement.targetParentPath,
-          pendingPlacement.targetTitle,
-        ],
-        expectedAncestorIds: pendingPlacement.expectedAncestorIds,
-        cell: pendingPlacement.cell,
-        isFull: pendingPlacement.isFull,
-      },
-    };
-    placement.begin(release);
-    clearPendingPlacement();
-  }, [clearPendingPlacement, pendingPlacement, placement]);
   useEffect(() => {
     activeDragItemRef.current = activeDragItem;
   }, [activeDragItem]);
