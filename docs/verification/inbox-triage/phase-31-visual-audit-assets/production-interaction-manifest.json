@@ -1,0 +1,1250 @@
+{
+  "schema": "phase-31-visual-audit-interaction/v1",
+  "capturedAt": "2026-09-08T07:57:21.175Z",
+  "browser": "Google Chrome 152.0.7977.82",
+  "route": "http://localhost:3102/grid/086c0083-4424-4d2e-b902-111ac098e222",
+  "entry": {
+    "ok": true,
+    "text": "Inbox",
+    "x": 87.32812309265137,
+    "y": 164
+  },
+  "production": {
+    "head": "fe43907a4efd8082ec8c7c17d132eed77ab0d7a7",
+    "acceptedImplementation": "cbf33cfdddc0cf1bdc0f285f1ebd9acf9780b540",
+    "acceptedTask163": "c34984b017265ed601afb32282dba292446af5c3"
+  },
+  "theme": "griddo",
+  "colorScheme": "light",
+  "viewport": {
+    "width": 1600,
+    "height": 1000
+  },
+  "dpr": 1,
+  "readiness": {
+    "ok": true,
+    "final": {
+      "ready": "complete",
+      "theme": "griddo",
+      "bodyBg": "rgb(238, 234, 226)",
+      "htmlBg": "rgba(0, 0, 0, 0)",
+      "fontsStatus": "loaded",
+      "fontFamilies": [
+        "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+        "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+        "__nextjs-Geist, Geist, -apple-system, \"Source Sans Pro\", sans-serif"
+      ],
+      "rects": [
+        [
+          48,
+          0,
+          1552,
+          1000
+        ],
+        [
+          48,
+          0,
+          1552,
+          1000
+        ],
+        [
+          48,
+          0,
+          288,
+          1000
+        ],
+        [
+          336,
+          0,
+          758.39,
+          599
+        ],
+        [
+          1094.39,
+          0,
+          505.61,
+          599
+        ],
+        [
+          336,
+          600,
+          1264,
+          400
+        ],
+        [
+          337,
+          662,
+          315.75,
+          337
+        ],
+        [
+          652.75,
+          662,
+          315.75,
+          337
+        ],
+        [
+          968.5,
+          662,
+          315.75,
+          337
+        ],
+        [
+          1284.25,
+          662,
+          314.75,
+          337
+        ],
+        [
+          0,
+          1000,
+          1600,
+          0
+        ]
+      ],
+      "activeAnimations": 0,
+      "scrollWidth": 1600,
+      "scrollHeight": 1000
+    },
+    "samples": [
+      {
+        "atMs": 0,
+        "ready": "complete",
+        "theme": "griddo",
+        "bodyBg": "rgb(238, 234, 226)",
+        "htmlBg": "rgba(0, 0, 0, 0)",
+        "fontsStatus": "loaded",
+        "fontFamilies": [
+          "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+          "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+          "__nextjs-Geist, Geist, -apple-system, \"Source Sans Pro\", sans-serif"
+        ],
+        "rects": [
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            48,
+            0,
+            288,
+            1000
+          ],
+          [
+            336,
+            0,
+            758.39,
+            599
+          ],
+          [
+            1094.39,
+            0,
+            505.61,
+            599
+          ],
+          [
+            336,
+            600,
+            1264,
+            400
+          ],
+          [
+            337,
+            662,
+            315.75,
+            337
+          ],
+          [
+            652.75,
+            662,
+            315.75,
+            337
+          ],
+          [
+            968.5,
+            662,
+            315.75,
+            337
+          ],
+          [
+            1284.25,
+            662,
+            314.75,
+            337
+          ],
+          [
+            0,
+            1000,
+            1600,
+            0
+          ]
+        ],
+        "activeAnimations": 0,
+        "scrollWidth": 1600,
+        "scrollHeight": 1000,
+        "stableCount": 0
+      },
+      {
+        "atMs": 100,
+        "ready": "complete",
+        "theme": "griddo",
+        "bodyBg": "rgb(238, 234, 226)",
+        "htmlBg": "rgba(0, 0, 0, 0)",
+        "fontsStatus": "loaded",
+        "fontFamilies": [
+          "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+          "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+          "__nextjs-Geist, Geist, -apple-system, \"Source Sans Pro\", sans-serif"
+        ],
+        "rects": [
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            48,
+            0,
+            288,
+            1000
+          ],
+          [
+            336,
+            0,
+            758.39,
+            599
+          ],
+          [
+            1094.39,
+            0,
+            505.61,
+            599
+          ],
+          [
+            336,
+            600,
+            1264,
+            400
+          ],
+          [
+            337,
+            662,
+            315.75,
+            337
+          ],
+          [
+            652.75,
+            662,
+            315.75,
+            337
+          ],
+          [
+            968.5,
+            662,
+            315.75,
+            337
+          ],
+          [
+            1284.25,
+            662,
+            314.75,
+            337
+          ],
+          [
+            0,
+            1000,
+            1600,
+            0
+          ]
+        ],
+        "activeAnimations": 0,
+        "scrollWidth": 1600,
+        "scrollHeight": 1000,
+        "stableCount": 1
+      },
+      {
+        "atMs": 200,
+        "ready": "complete",
+        "theme": "griddo",
+        "bodyBg": "rgb(238, 234, 226)",
+        "htmlBg": "rgba(0, 0, 0, 0)",
+        "fontsStatus": "loaded",
+        "fontFamilies": [
+          "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+          "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+          "__nextjs-Geist, Geist, -apple-system, \"Source Sans Pro\", sans-serif"
+        ],
+        "rects": [
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            48,
+            0,
+            288,
+            1000
+          ],
+          [
+            336,
+            0,
+            758.39,
+            599
+          ],
+          [
+            1094.39,
+            0,
+            505.61,
+            599
+          ],
+          [
+            336,
+            600,
+            1264,
+            400
+          ],
+          [
+            337,
+            662,
+            315.75,
+            337
+          ],
+          [
+            652.75,
+            662,
+            315.75,
+            337
+          ],
+          [
+            968.5,
+            662,
+            315.75,
+            337
+          ],
+          [
+            1284.25,
+            662,
+            314.75,
+            337
+          ],
+          [
+            0,
+            1000,
+            1600,
+            0
+          ]
+        ],
+        "activeAnimations": 0,
+        "scrollWidth": 1600,
+        "scrollHeight": 1000,
+        "stableCount": 2
+      },
+      {
+        "atMs": 300,
+        "ready": "complete",
+        "theme": "griddo",
+        "bodyBg": "rgb(238, 234, 226)",
+        "htmlBg": "rgba(0, 0, 0, 0)",
+        "fontsStatus": "loaded",
+        "fontFamilies": [
+          "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+          "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+          "__nextjs-Geist, Geist, -apple-system, \"Source Sans Pro\", sans-serif"
+        ],
+        "rects": [
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            48,
+            0,
+            288,
+            1000
+          ],
+          [
+            336,
+            0,
+            758.39,
+            599
+          ],
+          [
+            1094.39,
+            0,
+            505.61,
+            599
+          ],
+          [
+            336,
+            600,
+            1264,
+            400
+          ],
+          [
+            337,
+            662,
+            315.75,
+            337
+          ],
+          [
+            652.75,
+            662,
+            315.75,
+            337
+          ],
+          [
+            968.5,
+            662,
+            315.75,
+            337
+          ],
+          [
+            1284.25,
+            662,
+            314.75,
+            337
+          ],
+          [
+            0,
+            1000,
+            1600,
+            0
+          ]
+        ],
+        "activeAnimations": 0,
+        "scrollWidth": 1600,
+        "scrollHeight": 1000,
+        "stableCount": 3
+      },
+      {
+        "atMs": 400,
+        "ready": "complete",
+        "theme": "griddo",
+        "bodyBg": "rgb(238, 234, 226)",
+        "htmlBg": "rgba(0, 0, 0, 0)",
+        "fontsStatus": "loaded",
+        "fontFamilies": [
+          "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+          "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+          "__nextjs-Geist, Geist, -apple-system, \"Source Sans Pro\", sans-serif"
+        ],
+        "rects": [
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            48,
+            0,
+            288,
+            1000
+          ],
+          [
+            336,
+            0,
+            758.39,
+            599
+          ],
+          [
+            1094.39,
+            0,
+            505.61,
+            599
+          ],
+          [
+            336,
+            600,
+            1264,
+            400
+          ],
+          [
+            337,
+            662,
+            315.75,
+            337
+          ],
+          [
+            652.75,
+            662,
+            315.75,
+            337
+          ],
+          [
+            968.5,
+            662,
+            315.75,
+            337
+          ],
+          [
+            1284.25,
+            662,
+            314.75,
+            337
+          ],
+          [
+            0,
+            1000,
+            1600,
+            0
+          ]
+        ],
+        "activeAnimations": 0,
+        "scrollWidth": 1600,
+        "scrollHeight": 1000,
+        "stableCount": 4
+      }
+    ],
+    "animationNormalization": null,
+    "observation": "stable geometry/background/theme for 5 samples; fonts loaded; no running animations"
+  },
+  "initialProbe": {
+    "route": "http://localhost:3102/grid/086c0083-4424-4d2e-b902-111ac098e222",
+    "theme": "griddo",
+    "bodyBg": "rgb(238, 234, 226)",
+    "title": true,
+    "viewport": [
+      1600,
+      1000
+    ],
+    "dpr": 1
+  },
+  "focusHover": {
+    "target": "Scratch row",
+    "before": {
+      "outline": "rgb(9, 9, 11) none 3px",
+      "boxShadow": "none",
+      "transform": "none",
+      "borderColor": "oklab(0.919649 0.00119734 -0.00392807 / 0.3)"
+    },
+    "active": {
+      "focusVisible": false,
+      "hover": true,
+      "outline": "rgb(9, 9, 11) none 3px",
+      "boxShadow": "none",
+      "transform": "none",
+      "borderColor": "oklab(0.919649 0.00119734 -0.00392807 / 0.3)"
+    }
+  },
+  "editSaveCancel": {
+    "editStart": {
+      "ok": true,
+      "text": "Edit",
+      "x": 936.0703125,
+      "y": 100,
+      "focused": true
+    },
+    "saveDraft": {
+      "ok": true,
+      "tag": "INPUT",
+      "value": "Quarterly review preparation — saved proof",
+      "placeholder": "",
+      "aria": "Scratch title"
+    },
+    "save": {
+      "ok": true,
+      "text": "Save",
+      "x": 977.46875,
+      "y": 100,
+      "focused": true
+    },
+    "saveResult": {
+      "body": "1\nScratch Pool\n1\nQuarterly review preparation — saved proof\n5m ago\nBreakdown\nSaved.\nSELECTED SCRATCH\nQuarterly review preparation — saved proof\nSep 8, 2026, 4:51 PM\nEdit\nDESC\nAdd a note...\nAdd a note...\nAdd\nStaging\nNODES\nBITS\nGrid Explorer\nHome\nSearch Explorer\n\nHOME\nNo items in this grid\nLEVEL 1\nLEVEL 2\nLEVEL 3",
+      "live": [
+        {
+          "role": null,
+          "live": "polite",
+          "text": "Saved."
+        }
+      ]
+    },
+    "cancelDraft": {
+      "ok": true,
+      "tag": "INPUT",
+      "value": "Quarterly review preparation — cancel proof",
+      "placeholder": "",
+      "aria": "Scratch title"
+    },
+    "cancel": {
+      "ok": true,
+      "text": "Cancel",
+      "x": 1032.859375,
+      "y": 100,
+      "focused": true
+    },
+    "cancelResult": {
+      "savedTitle": true,
+      "cancelDraftAbsent": true,
+      "live": []
+    },
+    "restoredMatchedTitle": true
+  },
+  "breakdown": {
+    "records": [
+      {
+        "title": "Check budget for standing desk",
+        "open": {
+          "ok": true,
+          "text": "Add a note...",
+          "x": 685.5703125,
+          "y": 575,
+          "focused": true
+        },
+        "input": {
+          "ok": true,
+          "tag": "INPUT",
+          "value": "Check budget for standing desk",
+          "placeholder": "Add a note...",
+          "aria": null
+        },
+        "add": {
+          "ok": true,
+          "text": "Add",
+          "x": 1056.265625,
+          "y": 575,
+          "focused": true
+        },
+        "visible": true
+      },
+      {
+        "title": "Measure window dimensions for blinds",
+        "open": {
+          "ok": false,
+          "found": [
+            "Home",
+            "Add item",
+            "Toggle edit mode",
+            "Search",
+            "Calendar",
+            "1",
+            "Archive View",
+            "Trash",
+            "Change color theme",
+            "Toggle theme",
+            "Collapse Scratch Pool",
+            "Search scratches",
+            "Sort: newest first",
+            "Quarterly review preparation\n5m ago",
+            "Edit",
+            "DESC",
+            "Drag breakdown",
+            "Edit",
+            "Delete",
+            "Add",
+            "Home",
+            "Search Explorer"
+          ]
+        },
+        "input": {
+          "ok": true,
+          "tag": "INPUT",
+          "value": "Measure window dimensions for blinds",
+          "placeholder": "Add a note...",
+          "aria": null
+        },
+        "add": {
+          "ok": true,
+          "text": "Add",
+          "x": 1056.265625,
+          "y": 575,
+          "focused": true
+        },
+        "visible": true
+      },
+      {
+        "title": "Research ergonomic chair reviews",
+        "open": {
+          "ok": false,
+          "found": [
+            "Home",
+            "Add item",
+            "Toggle edit mode",
+            "Search",
+            "Calendar",
+            "1",
+            "Archive View",
+            "Trash",
+            "Change color theme",
+            "Toggle theme",
+            "Collapse Scratch Pool",
+            "Search scratches",
+            "Sort: newest first",
+            "Quarterly review preparation\n5m ago",
+            "Edit",
+            "DESC",
+            "Drag breakdown",
+            "Edit",
+            "Delete",
+            "Drag breakdown",
+            "Edit",
+            "Delete",
+            "Add",
+            "Home",
+            "Search Explorer"
+          ]
+        },
+        "input": {
+          "ok": true,
+          "tag": "INPUT",
+          "value": "Research ergonomic chair reviews",
+          "placeholder": "Add a note...",
+          "aria": null
+        },
+        "add": {
+          "ok": true,
+          "text": "Add",
+          "x": 1056.265625,
+          "y": 575,
+          "focused": true
+        },
+        "visible": true
+      }
+    ],
+    "result": {
+      "body": "1\nScratch Pool\n1\nQuarterly review preparation\n5m ago\nBreakdown\nSaved.\nSELECTED SCRATCH\nQuarterly review preparation\nSep 8, 2026, 4:51 PM\nEdit\nDESC\nResearch ergonomic chair reviews\n✓ Added.\nMeasure window dimensions for blinds\nCheck budget for standing desk\nAdd\nStaging\nNODES\nBITS\nGrid Explorer\nHome\nSearch Explorer\n\nHOME\nNo items in this grid\nLEVEL 1\nLEVEL 2\nLEVEL 3",
+      "live": [
+        {
+          "role": null,
+          "live": "polite",
+          "text": "Saved."
+        },
+        {
+          "role": "status",
+          "live": "polite",
+          "text": "✓ Added."
+        }
+      ]
+    }
+  },
+  "animationInterruption": {
+    "openControls": [
+      {
+        "ok": true,
+        "text": "Add item",
+        "x": 23.5,
+        "y": 76
+      },
+      {
+        "ok": true,
+        "text": "New Scratch",
+        "x": 162.3228416442871,
+        "y": 118,
+        "focused": true
+      }
+    ],
+    "active": {
+      "modal": true,
+      "animations": [
+        {
+          "playState": "running",
+          "currentTime": 49.99999999999982,
+          "duration": 145.32129657711874
+        },
+        {
+          "playState": "running",
+          "currentTime": 49.99999999999982,
+          "duration": 145.32129657711874
+        },
+        {
+          "playState": "running",
+          "currentTime": 49.99999999999982,
+          "duration": 150
+        },
+        {
+          "playState": "running",
+          "currentTime": 49.99999999999982,
+          "duration": 150
+        },
+        {
+          "playState": "running",
+          "currentTime": 49.99999999999982,
+          "duration": 150
+        },
+        {
+          "playState": "running",
+          "currentTime": 49.99999999999982,
+          "duration": 150
+        },
+        {
+          "playState": "running",
+          "currentTime": 583.234,
+          "duration": 600
+        },
+        {
+          "playState": "running",
+          "currentTime": 39.20000004768376,
+          "duration": 150
+        },
+        {
+          "playState": "running",
+          "currentTime": 39.20000004768376,
+          "duration": 200
+        },
+        {
+          "playState": "running",
+          "currentTime": 39.20000004768376,
+          "duration": 550
+        }
+      ]
+    },
+    "afterEscape": {
+      "modal": false,
+      "running": 0
+    }
+  },
+  "reducedMotion": {
+    "matches": true,
+    "maxTransitionMs": 0.01,
+    "maxAnimationMs": 0.01,
+    "runningAnimations": 0
+  },
+  "sequence": [
+    {
+      "state": "matched-before",
+      "fileName": "production-griddo-matched-before.png",
+      "bytes": 71083,
+      "sha256": "bf54623f88bb0548515cdfa5d5522d00a142f2cc90f07cfc2b8f6c36c98370bd"
+    },
+    {
+      "state": "focus-hover-active",
+      "fileName": "production-griddo-focus-hover-active.png",
+      "bytes": 71083,
+      "sha256": "bf54623f88bb0548515cdfa5d5522d00a142f2cc90f07cfc2b8f6c36c98370bd"
+    },
+    {
+      "state": "edit-save-active",
+      "fileName": "production-griddo-edit-save-active.png",
+      "bytes": 66135,
+      "sha256": "e994e586ada50ae371aec49deb483c93a01b60f82c787278036552697e3ad550"
+    },
+    {
+      "state": "edit-save-result",
+      "fileName": "production-griddo-edit-save-result.png",
+      "bytes": 73592,
+      "sha256": "7da481f7e4f533793a4ec74d0569f0c5cb4e1800ab58b73a054b056342008640"
+    },
+    {
+      "state": "edit-cancel-active",
+      "fileName": "production-griddo-edit-cancel-active.png",
+      "bytes": 67155,
+      "sha256": "c262d002524bd779c98d267d83928267eeeec6f958b9f1847faf60bf24fa8288"
+    },
+    {
+      "state": "edit-cancel-result",
+      "fileName": "production-griddo-edit-cancel-result.png",
+      "bytes": 73592,
+      "sha256": "7da481f7e4f533793a4ec74d0569f0c5cb4e1800ab58b73a054b056342008640"
+    },
+    {
+      "state": "breakdown-add-active",
+      "fileName": "production-griddo-breakdown-add-active.png",
+      "bytes": 74079,
+      "sha256": "634de281636373154b3c832c18674766ea0c563770e91accaaa4220119ad4fcc"
+    },
+    {
+      "state": "breakdown-add-result",
+      "fileName": "production-griddo-breakdown-add-result.png",
+      "bytes": 82512,
+      "sha256": "d8b4257886f39e9cd0a564cd4f29aa1f5217bd3ec9a1dc868189bff6d8e5d92c"
+    },
+    {
+      "state": "animation-active",
+      "fileName": "production-griddo-animation-active.png",
+      "bytes": 90326,
+      "sha256": "73e0e875430dccc144a197bb4fb3f07a6c0a88ba294bca69e20263b0f980b9b2"
+    },
+    {
+      "state": "animation-interrupted",
+      "fileName": "production-griddo-animation-interrupted.png",
+      "bytes": 82362,
+      "sha256": "36da65e9f69f175328cb88b3b6796385c5b54182217d26855f7b61e8b7691cb2"
+    },
+    {
+      "state": "reduced-motion",
+      "fileName": "production-griddo-reduced-motion.png",
+      "bytes": 82467,
+      "sha256": "4d67eb1d38f4fbf762cf97db27e5548ffb96b49e96bce6a24e72095a0eacfac4"
+    }
+  ],
+  "console": [
+    {
+      "method": "Runtime.consoleAPICalled",
+      "params": {
+        "type": "info",
+        "args": [
+          {
+            "type": "string",
+            "value": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools"
+          },
+          {
+            "type": "string",
+            "value": "font-weight:bold"
+          }
+        ],
+        "executionContextId": 2,
+        "timestamp": 1788854233949.941,
+        "stackTrace": {
+          "callFrames": [
+            {
+              "functionName": "info",
+              "scriptId": "61",
+              "url": "webpack-internal:///(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/next-devtools/shared/forward-logs-shared.js",
+              "lineNumber": 27,
+              "columnNumber": 27
+            },
+            {
+              "functionName": "eval",
+              "scriptId": "71",
+              "url": "webpack-internal:///(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js",
+              "lineNumber": 30690,
+              "columnNumber": 16
+            },
+            {
+              "functionName": "eval",
+              "scriptId": "71",
+              "url": "webpack-internal:///(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js",
+              "lineNumber": 30807,
+              "columnNumber": 4
+            },
+            {
+              "functionName": "(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js",
+              "scriptId": "5",
+              "url": "http://localhost:3102/_next/static/chunks/main-app.js?v=1788854233478",
+              "lineNumber": 1192,
+              "columnNumber": 0
+            },
+            {
+              "functionName": "options.factory",
+              "scriptId": "4",
+              "url": "http://localhost:3102/_next/static/chunks/webpack.js?v=1788854233478",
+              "lineNumber": 707,
+              "columnNumber": 30
+            },
+            {
+              "functionName": "__webpack_require__",
+              "scriptId": "4",
+              "url": "http://localhost:3102/_next/static/chunks/webpack.js?v=1788854233478",
+              "lineNumber": 28,
+              "columnNumber": 32
+            },
+            {
+              "functionName": "fn",
+              "scriptId": "4",
+              "url": "http://localhost:3102/_next/static/chunks/webpack.js?v=1788854233478",
+              "lineNumber": 360,
+              "columnNumber": 20
+            },
+            {
+              "functionName": "eval",
+              "scriptId": "70",
+              "url": "webpack-internal:///(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/client.js",
+              "lineNumber": 31,
+              "columnNumber": 19
+            },
+            {
+              "functionName": "(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/client.js",
+              "scriptId": "5",
+              "url": "http://localhost:3102/_next/static/chunks/main-app.js?v=1788854233478",
+              "lineNumber": 1214,
+              "columnNumber": 0
+            },
+            {
+              "functionName": "options.factory",
+              "scriptId": "4",
+              "url": "http://localhost:3102/_next/static/chunks/webpack.js?v=1788854233478",
+              "lineNumber": 707,
+              "columnNumber": 30
+            },
+            {
+              "functionName": "__webpack_require__",
+              "scriptId": "4",
+              "url": "http://localhost:3102/_next/static/chunks/webpack.js?v=1788854233478",
+              "lineNumber": 28,
+              "columnNumber": 32
+            },
+            {
+              "functionName": "fn",
+              "scriptId": "4",
+              "url": "http://localhost:3102/_next/static/chunks/webpack.js?v=1788854233478",
+              "lineNumber": 360,
+              "columnNumber": 20
+            },
+            {
+              "functionName": "eval",
+              "scriptId": "44",
+              "url": "webpack-internal:///(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/app-index.js",
+              "lineNumber": 13,
+              "columnNumber": 57
+            },
+            {
+              "functionName": "(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/app-index.js",
+              "scriptId": "5",
+              "url": "http://localhost:3102/_next/static/chunks/main-app.js?v=1788854233478",
+              "lineNumber": 115,
+              "columnNumber": 0
+            },
+            {
+              "functionName": "options.factory",
+              "scriptId": "4",
+              "url": "http://localhost:3102/_next/static/chunks/webpack.js?v=1788854233478",
+              "lineNumber": 707,
+              "columnNumber": 30
+            },
+            {
+              "functionName": "__webpack_require__",
+              "scriptId": "4",
+              "url": "http://localhost:3102/_next/static/chunks/webpack.js?v=1788854233478",
+              "lineNumber": 28,
+              "columnNumber": 32
+            },
+            {
+              "functionName": "fn",
+              "scriptId": "4",
+              "url": "http://localhost:3102/_next/static/chunks/webpack.js?v=1788854233478",
+              "lineNumber": 360,
+              "columnNumber": 20
+            },
+            {
+              "functionName": "eval",
+              "scriptId": "22",
+              "url": "webpack-internal:///(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/app-next-dev.js",
+              "lineNumber": 14,
+              "columnNumber": 24
+            },
+            {
+              "functionName": "eval",
+              "scriptId": "30",
+              "url": "webpack-internal:///(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/app-bootstrap.js",
+              "lineNumber": 59,
+              "columnNumber": 8
+            },
+            {
+              "functionName": "loadScriptsInSequence",
+              "scriptId": "30",
+              "url": "webpack-internal:///(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/app-bootstrap.js",
+              "lineNumber": 24,
+              "columnNumber": 15
+            },
+            {
+              "functionName": "appBootstrap",
+              "scriptId": "30",
+              "url": "webpack-internal:///(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/app-bootstrap.js",
+              "lineNumber": 53,
+              "columnNumber": 4
+            },
+            {
+              "functionName": "eval",
+              "scriptId": "22",
+              "url": "webpack-internal:///(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/app-next-dev.js",
+              "lineNumber": 12,
+              "columnNumber": 31
+            },
+            {
+              "functionName": "(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/app-next-dev.js",
+              "scriptId": "5",
+              "url": "http://localhost:3102/_next/static/chunks/main-app.js?v=1788854233478",
+              "lineNumber": 137,
+              "columnNumber": 0
+            },
+            {
+              "functionName": "options.factory",
+              "scriptId": "4",
+              "url": "http://localhost:3102/_next/static/chunks/webpack.js?v=1788854233478",
+              "lineNumber": 707,
+              "columnNumber": 30
+            },
+            {
+              "functionName": "__webpack_require__",
+              "scriptId": "4",
+              "url": "http://localhost:3102/_next/static/chunks/webpack.js?v=1788854233478",
+              "lineNumber": 28,
+              "columnNumber": 32
+            },
+            {
+              "functionName": "__webpack_exec__",
+              "scriptId": "5",
+              "url": "http://localhost:3102/_next/static/chunks/main-app.js?v=1788854233478",
+              "lineNumber": 1966,
+              "columnNumber": 47
+            },
+            {
+              "functionName": "",
+              "scriptId": "5",
+              "url": "http://localhost:3102/_next/static/chunks/main-app.js?v=1788854233478",
+              "lineNumber": 1967,
+              "columnNumber": 368
+            },
+            {
+              "functionName": "webpackJsonpCallback",
+              "scriptId": "4",
+              "url": "http://localhost:3102/_next/static/chunks/webpack.js?v=1788854233478",
+              "lineNumber": 1394,
+              "columnNumber": 38
+            },
+            {
+              "functionName": "",
+              "scriptId": "5",
+              "url": "http://localhost:3102/_next/static/chunks/main-app.js?v=1788854233478",
+              "lineNumber": 8,
+              "columnNumber": 60
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "Runtime.consoleAPICalled",
+      "params": {
+        "type": "log",
+        "args": [
+          {
+            "type": "string",
+            "value": "[HMR] connected"
+          }
+        ],
+        "executionContextId": 2,
+        "timestamp": 1788854234036.579,
+        "stackTrace": {
+          "callFrames": [
+            {
+              "functionName": "log",
+              "scriptId": "61",
+              "url": "webpack-internal:///(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/next-devtools/shared/forward-logs-shared.js",
+              "lineNumber": 27,
+              "columnNumber": 27
+            },
+            {
+              "functionName": "handleOnline",
+              "scriptId": "173",
+              "url": "webpack-internal:///(app-pages-browser)/../../../../Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate/node_modules/.pnpm/next@16.2.1_@babel+core@7.29.0_babel-plugin-react-compiler@1.0.0_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/web-socket.js",
+              "lineNumber": 64,
+              "columnNumber": 27
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "javascript",
+          "level": "warning",
+          "text": "The resource http://localhost:3102/_next/static/media/b7bd7951037de757-s.p.woff2?v=1788854233478 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+          "timestamp": 1788854237370.019,
+          "url": "http://localhost:3102/grid/086c0083-4424-4d2e-b902-111ac098e222"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "javascript",
+          "level": "warning",
+          "text": "The resource http://localhost:3102/_next/static/media/78fec81b34c4a365.p.woff2?v=1788854233478 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+          "timestamp": 1788854237370.11,
+          "url": "http://localhost:3102/grid/086c0083-4424-4d2e-b902-111ac098e222"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "javascript",
+          "level": "warning",
+          "text": "The resource http://localhost:3102/_next/static/media/e4af272ccee01ff0-s.p.woff2?v=1788854233478 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+          "timestamp": 1788854237370.126,
+          "url": "http://localhost:3102/grid/086c0083-4424-4d2e-b902-111ac098e222"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "javascript",
+          "level": "warning",
+          "text": "The resource http://localhost:3102/_next/static/media/eaead17c7dbfcd5d-s.p.woff2?v=1788854233478 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+          "timestamp": 1788854237370.136,
+          "url": "http://localhost:3102/grid/086c0083-4424-4d2e-b902-111ac098e222"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "javascript",
+          "level": "warning",
+          "text": "The resource http://localhost:3102/_next/static/media/fc727f226c737876-s.p.woff2?v=1788854233478 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+          "timestamp": 1788854237370.147,
+          "url": "http://localhost:3102/grid/086c0083-4424-4d2e-b902-111ac098e222"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "javascript",
+          "level": "warning",
+          "text": "The resource http://localhost:3102/_next/static/media/806de4d605d3ad01-s.p.woff2?v=1788854233478 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+          "timestamp": 1788854237370.158,
+          "url": "http://localhost:3102/grid/086c0083-4424-4d2e-b902-111ac098e222"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "javascript",
+          "level": "warning",
+          "text": "The resource http://localhost:3102/_next/static/media/27834908180db20f-s.p.woff2?v=1788854233478 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+          "timestamp": 1788854237370.168,
+          "url": "http://localhost:3102/grid/086c0083-4424-4d2e-b902-111ac098e222"
+        }
+      }
+    }
+  ]
+}

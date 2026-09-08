@@ -1,0 +1,38 @@
+{
+  "schema": "phase-31-visual-audit-relevant-input-fingerprint/v1",
+  "canonicalization": "RFC 8785 JCS",
+  "jcsSha256": "4039f9df60f153bcf48674b89965f0e92fd4991a5d6d6192b2ab732ba747fe29",
+  "manifest": {
+    "adapterBlob": "7903892c04c4eb6fcd694712d5a01fdb608e183f",
+    "browser": "Google Chrome 152.0.7977.82",
+    "colorScheme": "light",
+    "dpr": 1,
+    "gateReceiptBlob": "cee78af258919d88fe851cc123e2585703ddb1cc",
+    "production": {
+      "entryHead": "fe43907a4efd8082ec8c7c17d132eed77ab0d7a7",
+      "srcTree": "fe810793e64da8c1e8783315906d1815e4fc982e",
+      "tree": "2faf6b0555a6e38d71ec5c8a885c0c667ed1b714"
+    },
+    "prototype": {
+      "head": "4f39709688ceb4cac5e15d4e3502186b1f1c801b",
+      "tree": "7b8eb8766a9b57fe2174a948de09cfb7646cf7de"
+    },
+    "recipeBlobs": {
+      "archiveCompletion": "85936373f727f6f16d99837a3a352157eb21da8c",
+      "breakdownRowsEmpty": "174c80e270bb72817306dea03ca2099135fe9cd9",
+      "gridExplorer": "34a2628537f54791bb6150a53d1c432f317811c2",
+      "newlyUndo": "5f480dc095d7060edad38977e7cc3efb23c6ab6c",
+      "placement": "1cb27781fc855d4670b2b6ef3a1cf72ab09e068a",
+      "scratchPool": "1ffa72f4b34519c970eefc0d760dec6a83ec11da",
+      "selectedContext": "2b2b64cd03ea7c21b8e14aa5da863d19c91a555d",
+      "shellChrome": "47cc62b20bf101e18ae47ccbc0eb5b49edb3ab58",
+      "staging": "04274b3745a4af8b24d8e69739415b65171ce26a"
+    },
+    "recipeIndexBlob": "3b79a935ab4e3744f4abcbec265f441b6fcdd43d",
+    "viewport": {
+      "height": 1000,
+      "width": 1600
+    },
+    "workOrder": "phase-31-visual-audit-reference-evidence-repair-01"
+  }
+}

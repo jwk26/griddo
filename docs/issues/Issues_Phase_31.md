@@ -161,7 +161,7 @@ while the broader audit and conformance matrix remain later-owned.
 | Field | Durable value |
 | --- | --- |
 | Work order | User-approved 2026-09-08 ad-hoc `Task 164 이전 visual-audit reference-evidence repair`; this is not Task 164 and creates no Task number or Task compatibility receipt |
-| State | `In Progress`; Task 164 and Task 165 remain `[ ]` and unstarted |
+| State | `Implemented; awaiting user disposition`; Task 164 and Task 165 remain `[ ]` and unstarted; the Working session remains active |
 | Approved scope | Modify this ledger; create `docs/verification/inbox-triage/phase-31-visual-fidelity-gap-audit.md`; replace the eight existing `docs/recipes/assets/inbox-triage-2-3/*-1600x1000.png` settled base references; create bounded supplemental evidence only under `docs/verification/inbox-triage/phase-31-visual-audit-assets/` |
 | Approval / resolver | Exact user work order in the active session; no Task-numbered receipt exists or may be manufactured. Installed `run-task` resolver was invoked without receipt arguments and exited `0` with expected `status=approval_required`, `contract_ready=true`; resolver compatibility does not itself authorize writes |
 | Start base / entrypoint | Approved Phase 31 base `a1a632abf364e4818d046b742b590805ccd2acb6`; entry HEAD `fe43907a4efd8082ec8c7c17d132eed77ab0d7a7`; entry tree `2faf6b0555a6e38d71ec5c8a885c0c667ed1b714`; entry `src` tree `fe810793e64da8c1e8783315906d1815e4fc982e` |
@@ -202,6 +202,36 @@ not repaired here.
 - Any different parent, path set, marker, receipt state, or material content
   intent is a material variance and a stop; history will not be rewritten.
 
+### Pre-Task-164 Visual-Audit Reference-Evidence Repair — Checkpoint
+
+| Field | Durable value |
+| --- | --- |
+| State | Evidence repair implemented; `phase-31-visual-audit-reference-evidence-repair-01` remains `active / awaiting user disposition`. It is not closed or archived. |
+| Commit chain | Durable start `a0f0dbe329fa89ddb1d4c17d8351f9596bc89a4e`; evidence/checkpoint content is the single child commit containing this ledger update, the audit record, eight replaced PNGs, and bounded supplemental assets. No history rewrite, branch/worktree operation, push, publication, integration, or cleanup occurred. |
+| Changed-path boundary | Only this ledger, `docs/verification/inbox-triage/phase-31-visual-fidelity-gap-audit.md`, eight approved settled PNG paths, and files below `docs/verification/inbox-triage/phase-31-visual-audit-assets/`. No `src/**`, test, plan, recipe text, canonical document, workflow file, or prototype path changed. |
+| Replacement inventory | Eight 1600×1000 settled base references were replaced. SHA-256: GridDO `aa48f12682a2e1fa476b3041e67a361ac5478e246de29e1fe7a6ad804158304f`; Tiny Desk `c0898d63c13ab1b63f73276cbd569b45117f37874c1c30c1b55a86f80d5add17`; Neumorphism `ad2d9562fbfc77154eb446406d0101980acacff176fbbe6adfb7e03d04e2640b`; Claymorphism `3195efc42e70c3c1b43bb51d1ea781410d5377f8bbf81434a0617482dd1eabcc`; Origami `b459aa80b023d95d4df717dd814d27ce31b7b56cda79731b459f348df9c8b459`; Terminal `4e5e143996a91e0a080e40e1894449aa85dfe08b9cd8682e543e56d35677a651`; Retro Mac `a2bd3c8c70ccd26384c68b80674974d1b8681aeb43804b9ea549a2985b07a34f`; Graphite `cec241bdee608b3efd39612a86b1a296bfde6640a938cdfd0beb0894284e7af4`. |
+| Supplemental inventory | 47 bounded files: 39 PNGs, six capture/interaction manifests, one relevant-input fingerprint, and one checksum inventory. `asset-inventory.sha256` covers every replacement and supplemental file except itself and has SHA-256 `a6367eaef5cae6b417db88c1da4c7f1199af8d4ac4baac993457f2ab0356eab6`. |
+| Capture identity | Chrome `152.0.7977.82`, 1600×1000, DPR 1, zoom 1, light scheme; exact per-capture route/dataset/background/font/layout/motion readiness, identifiers, hashes, and console output are in the manifests. Relevant-input JCS fingerprint `4039f9df60f153bcf48674b89965f0e92fd4991a5d6d6192b2ab732ba747fe29`. |
+| Explorer | Six themes prove populated native Level 3. Native Claymorphism and Retro Mac do not; their native captures remain separate from two visibly labeled `derived conformance fixture` captures whose exact synthetic Node/Bit delta is recorded. Pinned prototype source stayed unchanged. |
+| Interaction | Prototype: focus/hover, DnD source, invalid/eligible target, active drop, Newly/Undo result and undo, inert Edit, reduced motion. Production: matched base, Edit Save/Cancel, attached Add success/status, motion interruption, reduced motion. Fresh injected error, production fabricated-hierarchy DnD, and destructive Archive recovery are explicit omissions, not passes. |
+| Nine recipes / classification | All nine recipes are individually compared in the audit. CSS-addressable shell/Pool/Context/Breakdown/Staging/Explorer/placement/Archive gaps are bucket 3; common Node/Bit card internals remain bucket 1 `P29-01`/`D-CARD`; flat cross-theme realization is bucket 2; native fixture/harness expansions are bucket 4; preserved Save/Cancel/Add status/interruption/reduced-motion behavior is bucket 5. |
+| Task 164 boundary | Proposed CSS scope is limited to existing semantic role/state bindings, eight-theme light/dark surface/chrome/depth/typography/shape/spacing, focus/non-color/touch bindings, static or one-shot/reduced-motion conformance, and existing status/action envelopes in `src/app/globals.css`. Component/behavior/copy/data changes and `P29-01`/`D-CARD` are excluded and must reopen an owner. |
+| Authority required | Prototype/native-fixture repair; component-level reconstruction; common card redesign; new fault/Archive harness or destructive seed; any recipe/token/schema/spec/plan/workflow/lifecycle/topology/publication/integration/cleanup action. None was taken or assigned. |
+| Checkpoint lenses | `Visible now`: corrected references and bounded native/derived/interaction/production captures. `Review now`: audit, manifests, hashes, issue dispositions, and Task 164 CSS boundary. `Planned later`: Task 164 only after user disposition and its own lifecycle authority. `Unowned`: fixture repair, `P29-01`/`D-CARD`, component reconstruction, and new failure/Archive harness work. |
+| Canonical impact | `Reflected` evidence only. No canonical product direction changed. Task 164 and Task 165 remain `[ ]`; no Task 164 file was created. |
+| Verification | Fresh serial adapter full gate: `pnpm test` 100 files / 1,267 tests passed; `pnpm lint` exit 0 with 0 errors and 11 existing warnings; `pnpm typecheck` passed; `pnpm build` passed and generated seven routes. Fresh checksum/JSON/1600×1000/path-scope checks and `git diff --check` passed. |
+
+#### Evidence-derived issue dispositions
+
+- `P31-VA-01` — **Confirmed; evidence repaired.** All eight base captures now use one explicit stabilization contract; the known Claymorphism, Neumorphism, Terminal, and Origami early-capture cases are corrected.
+- `P31-VA-02` — **Confirmed; evidence repaired without false native proof.** Native and derived Explorer evidence is visibly and durably separated.
+- `P31-VA-03` — **Confirmed; bounded interaction evidence added.** Before/active/after sequences replace single-frame inference; explicit omissions remain open as scope boundaries.
+- `P31-VA-04` — **Confirmed; prototype-only and deferred.** Invalid/non-generated utility candidates and excluded repeated motion are recorded separately and grant no production repair authority.
+
+The deferred workflow issues `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF`
+and `WF-2026-09-07-RUN-TASK-PREMATURE-CHECKPOINT-CLOSURE` remain unchanged
+and unclosed.
+
 ### WF-2026-09-07-RUN-TASK-PREMATURE-CHECKPOINT-CLOSURE
 
 | Field | Durable value |
@@ -219,19 +249,16 @@ not repaired here.
 ## Working-Session Checkpoint Handoff
 
 - Control Tower `phase-31-control-tower`: `active`.
-- Earlier predecessor Working session `phase-31-run-phase-kickoff-01`:
-  `closed/archive-only`, terminal commit
-  `0607fc18f959079b791311e89a0794e11c0f57b9`.
-- Immediate predecessor Working session `phase-31-task-163-run-task-01`:
-  `closed/archive-only`, terminal checkpoint commit
-  `e4d036f51d0885947dc0c7b5935b8fa86dfe4846`; never reactivate or reuse this
-  identity.
-- Current Working session `phase-31-task-163-checkpoint-repair-01`:
-  `closed/archive-only` after acceptance commit
-  `c34984b017265ed601afb32282dba292446af5c3` and fresh final recovery
-  verification. This ledger-only handoff commit records the closure.
+- Every predecessor Working session, including
+  `phase-31-task-163-run-task-01` and
+  `phase-31-task-163-checkpoint-repair-01`, remains `closed/archive-only` and
+  was not reactivated.
+- Current sole Working session
+  `phase-31-visual-audit-reference-evidence-repair-01` remains
+  `active / awaiting user disposition` at this evidence-repair checkpoint. It
+  must not be closed or archived until the user accepts the checkpoint or gives
+  targeted repair feedback.
 - Duplicate-session count: `0`.
-- Next legal action: return this accepted Task 163 checkpoint to Control Tower
-  `phase-31-control-tower`; the Control Tower may next conduct the separately
-  bounded read-only visual-fidelity gap audit. Task 164 does not start from this
-  Working session or from Task 163 acceptance alone.
+- Next legal action: user review of this evidence-repair checkpoint. Task 164
+  and Task 165 remain `[ ]`; no later lifecycle starts from this checkpoint
+  without its own authority.

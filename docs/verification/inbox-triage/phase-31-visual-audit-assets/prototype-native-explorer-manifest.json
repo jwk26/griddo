@@ -1,0 +1,4640 @@
+{
+  "schema": "phase-31-visual-audit-capture/v1",
+  "capturedAt": "2026-09-08T07:32:41.475Z",
+  "browser": "Google Chrome 152.0.7977.82",
+  "viewport": {
+    "width": 1600,
+    "height": 1000
+  },
+  "dpr": 1,
+  "zoom": 1,
+  "colorScheme": "light",
+  "reducedMotion": "no-preference",
+  "nativeFixture": true,
+  "derivedFixture": false,
+  "prototype": {
+    "head": "4f39709688ceb4cac5e15d4e3502186b1f1c801b",
+    "tree": "7b8eb8766a9b57fe2174a948de09cfb7646cf7de"
+  },
+  "records": [
+    {
+      "captureId": "p31-va-native-explorer-griddo-20260908",
+      "route": "http://localhost:3101/prototype/inbox-triage-griddo",
+      "themeDataset": {
+        "attribute": "data-color-theme",
+        "value": "griddo",
+        "persistedStore": "griddo-color-theme"
+      },
+      "clicks": [
+        {
+          "label": "Work",
+          "result": {
+            "ok": true,
+            "text": "Work",
+            "x": 514.125,
+            "y": 729,
+            "focused": true
+          }
+        },
+        {
+          "label": "Meetings",
+          "result": {
+            "ok": true,
+            "text": "Meetings",
+            "x": 819.375,
+            "y": 729,
+            "focused": true
+          }
+        },
+        {
+          "label": "Weekly Sync",
+          "result": {
+            "ok": true,
+            "text": "Weekly Sync",
+            "x": 1124.625,
+            "y": 729,
+            "focused": true
+          }
+        }
+      ],
+      "initialReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "griddo",
+          "bodyBg": "rgb(238, 234, 226)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 0,
+            "ready": "complete",
+            "theme": "griddo",
+            "bodyBg": "rgb(238, 234, 226)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 0
+          },
+          {
+            "atMs": 100,
+            "ready": "complete",
+            "theme": "griddo",
+            "bodyBg": "rgb(238, 234, 226)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 1
+          },
+          {
+            "atMs": 200,
+            "ready": "complete",
+            "theme": "griddo",
+            "bodyBg": "rgb(238, 234, 226)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 2
+          },
+          {
+            "atMs": 300,
+            "ready": "complete",
+            "theme": "griddo",
+            "bodyBg": "rgb(238, 234, 226)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 3
+          },
+          {
+            "atMs": 400,
+            "ready": "complete",
+            "theme": "griddo",
+            "bodyBg": "rgb(238, 234, 226)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 4
+          }
+        ],
+        "animationNormalization": null,
+        "observation": "stable geometry/background/theme for 5 samples; fonts loaded; no running animations"
+      },
+      "finalReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "griddo",
+          "bodyBg": "rgb(238, 234, 226)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 0,
+            "ready": "complete",
+            "theme": "griddo",
+            "bodyBg": "rgb(238, 234, 226)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 0
+          },
+          {
+            "atMs": 100,
+            "ready": "complete",
+            "theme": "griddo",
+            "bodyBg": "rgb(238, 234, 226)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 1
+          },
+          {
+            "atMs": 200,
+            "ready": "complete",
+            "theme": "griddo",
+            "bodyBg": "rgb(238, 234, 226)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 2
+          },
+          {
+            "atMs": 300,
+            "ready": "complete",
+            "theme": "griddo",
+            "bodyBg": "rgb(238, 234, 226)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 3
+          },
+          {
+            "atMs": 400,
+            "ready": "complete",
+            "theme": "griddo",
+            "bodyBg": "rgb(238, 234, 226)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 4
+          }
+        ],
+        "animationNormalization": null,
+        "observation": "stable geometry/background/theme for 5 samples; fonts loaded; no running animations"
+      },
+      "probe": {
+        "theme": "griddo",
+        "bodyBg": "rgb(238, 234, 226)",
+        "labels": [
+          "Home",
+          "Triage Prototypes",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "Add item",
+          "Toggle edit mode",
+          "Search",
+          "Calendar",
+          "Trash",
+          "Toggle theme",
+          "DESC",
+          "Quarterly review preparation\n2H AGO",
+          "New theme brainstorming notes\nYESTERDAY",
+          "Home office layout ideas\n2 DAYS AGO",
+          "Summer vacation itinerary draft\n6 DAYS AGO",
+          "Weekly grocery list (automated?)\n05/04/26",
+          "Quarterly review preparation",
+          "Check budget for standing desk",
+          "Edit thought: Check budget for standing desk",
+          "Remove thought: Check budget for standing desk",
+          "Measure window dimensions for blinds",
+          "Edit thought: Measure window dimensions for blinds",
+          "Remove thought: Measure window dimensions for blinds",
+          "Research ergonomic chair reviews",
+          "Edit thought: Research ergonomic chair reviews",
+          "Remove thought: Research ergonomic chair reviews",
+          "ADD",
+          "Work",
+          "Personal",
+          "Projects",
+          "Meetings",
+          "Admin",
+          "Weekly Sync"
+        ],
+        "hasPopulatedNativeLevel3": true,
+        "selectedPath": [
+          "Work",
+          "Meetings",
+          "Weekly Sync"
+        ],
+        "bodyText": "1\n2\n3\n4\n5\n6\n7\n8\nSCRATCH POOL\n5\nDESC\nQuarterly review preparation\n2H AGO\nNew theme brainstorming notes\nYESTERDAY\nHome office layout ideas\n2 DAYS AGO\nSummer vacation itinerary draft\n6 DAYS AGO\nWeekly grocery list (automated?)\n05/04/26\nBREAKDOWN\nACTIVE SCRATCH\n2h ago\nQuarterly review preparation\nCheck budget for standing desk\nMeasure window dimensions for blinds\nResearch ergonomic chair reviews\nADD\nSTAGING\n\nNODES\n\nDesk Setup\nOffice Plan\n\nBITS\n\nMeasure desk width\nOrder cable ties\nGRID EXPLORER\nHOME\nWork\nPersonal\nProjects\nLEVEL 1\nMeetings\nAdmin\nReply to project lead's email\nLEVEL 2\nWeekly Sync\nReview product roadmap\nLEVEL 3\nPrepare slide deck for sync\nShare meeting minutes"
+      },
+      "file": {
+        "fileName": "native-explorer-griddo-deepest-1600x1000.png",
+        "bytes": 145599,
+        "sha256": "6d9dbe4f4457adc8ab9a153065f34c9ed3d12e127373c563b1f86e9d285ab19a"
+      },
+      "console": []
+    },
+    {
+      "captureId": "p31-va-native-explorer-tiny-desk-20260908",
+      "route": "http://localhost:3101/prototype/inbox-triage-tiny-desk",
+      "themeDataset": {
+        "attribute": "data-color-theme",
+        "value": "tiny-desk",
+        "persistedStore": "griddo-color-theme"
+      },
+      "clicks": [
+        {
+          "label": "Work",
+          "result": {
+            "ok": true,
+            "text": "Work",
+            "x": 515.25,
+            "y": 714.796875,
+            "focused": true
+          }
+        },
+        {
+          "label": "Meetings",
+          "result": {
+            "ok": true,
+            "text": "Meetings",
+            "x": 819.75,
+            "y": 714.796875,
+            "focused": true
+          }
+        },
+        {
+          "label": "Weekly Sync",
+          "result": {
+            "ok": true,
+            "text": "Weekly Sync",
+            "x": 1124.25,
+            "y": 714.796875,
+            "focused": true
+          }
+        }
+      ],
+      "initialReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "tiny-desk",
+          "bodyBg": "rgb(245, 232, 214)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+            "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              1118,
+              82,
+              158.59,
+              484.8
+            ],
+            [
+              1288.59,
+              82,
+              277.41,
+              484.8
+            ],
+            [
+              364,
+              652.8,
+              302.5,
+              327.2
+            ],
+            [
+              668.5,
+              652.8,
+              302.5,
+              327.2
+            ],
+            [
+              973,
+              652.8,
+              302.5,
+              327.2
+            ],
+            [
+              1277.5,
+              652.8,
+              302.5,
+              327.2
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 200,
+            "ready": "complete",
+            "theme": "tiny-desk",
+            "bodyBg": "rgb(245, 232, 214)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                1117.77,
+                82,
+                158.69,
+                484.8
+              ],
+              [
+                1288.45,
+                82,
+                277.55,
+                484.8
+              ],
+              [
+                363.41,
+                652.8,
+                302.64,
+                327.2
+              ],
+              [
+                668.05,
+                652.8,
+                302.66,
+                327.2
+              ],
+              [
+                972.7,
+                652.8,
+                302.64,
+                327.2
+              ],
+              [
+                1277.34,
+                652.8,
+                302.66,
+                327.2
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 0
+          },
+          {
+            "atMs": 300,
+            "ready": "complete",
+            "theme": "tiny-desk",
+            "bodyBg": "rgb(245, 232, 214)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                1118,
+                82,
+                158.59,
+                484.8
+              ],
+              [
+                1288.59,
+                82,
+                277.41,
+                484.8
+              ],
+              [
+                364,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                668.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                973,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                1277.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 0
+          },
+          {
+            "atMs": 400,
+            "ready": "complete",
+            "theme": "tiny-desk",
+            "bodyBg": "rgb(245, 232, 214)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                1118,
+                82,
+                158.59,
+                484.8
+              ],
+              [
+                1288.59,
+                82,
+                277.41,
+                484.8
+              ],
+              [
+                364,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                668.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                973,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                1277.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 1
+          },
+          {
+            "atMs": 500,
+            "ready": "complete",
+            "theme": "tiny-desk",
+            "bodyBg": "rgb(245, 232, 214)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                1118,
+                82,
+                158.59,
+                484.8
+              ],
+              [
+                1288.59,
+                82,
+                277.41,
+                484.8
+              ],
+              [
+                364,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                668.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                973,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                1277.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 2
+          },
+          {
+            "atMs": 600,
+            "ready": "complete",
+            "theme": "tiny-desk",
+            "bodyBg": "rgb(245, 232, 214)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                1118,
+                82,
+                158.59,
+                484.8
+              ],
+              [
+                1288.59,
+                82,
+                277.41,
+                484.8
+              ],
+              [
+                364,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                668.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                973,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                1277.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 3
+          },
+          {
+            "atMs": 700,
+            "ready": "complete",
+            "theme": "tiny-desk",
+            "bodyBg": "rgb(245, 232, 214)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                1118,
+                82,
+                158.59,
+                484.8
+              ],
+              [
+                1288.59,
+                82,
+                277.41,
+                484.8
+              ],
+              [
+                364,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                668.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                973,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                1277.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 4
+          }
+        ],
+        "animationNormalization": null,
+        "observation": "stable geometry/background/theme for 5 samples; fonts loaded; no running animations"
+      },
+      "finalReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "tiny-desk",
+          "bodyBg": "rgb(245, 232, 214)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+            "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              1118,
+              82,
+              158.59,
+              484.8
+            ],
+            [
+              1288.59,
+              82,
+              277.41,
+              484.8
+            ],
+            [
+              364,
+              652.8,
+              302.5,
+              327.2
+            ],
+            [
+              668.5,
+              652.8,
+              302.5,
+              327.2
+            ],
+            [
+              973,
+              652.8,
+              302.5,
+              327.2
+            ],
+            [
+              1277.5,
+              652.8,
+              302.5,
+              327.2
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 0,
+            "ready": "complete",
+            "theme": "tiny-desk",
+            "bodyBg": "rgb(245, 232, 214)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                1118,
+                82,
+                158.59,
+                484.8
+              ],
+              [
+                1288.59,
+                82,
+                277.41,
+                484.8
+              ],
+              [
+                364,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                668.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                973,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                1277.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 0
+          },
+          {
+            "atMs": 100,
+            "ready": "complete",
+            "theme": "tiny-desk",
+            "bodyBg": "rgb(245, 232, 214)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                1118,
+                82,
+                158.59,
+                484.8
+              ],
+              [
+                1288.59,
+                82,
+                277.41,
+                484.8
+              ],
+              [
+                364,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                668.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                973,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                1277.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 1
+          },
+          {
+            "atMs": 200,
+            "ready": "complete",
+            "theme": "tiny-desk",
+            "bodyBg": "rgb(245, 232, 214)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                1118,
+                82,
+                158.59,
+                484.8
+              ],
+              [
+                1288.59,
+                82,
+                277.41,
+                484.8
+              ],
+              [
+                364,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                668.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                973,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                1277.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 2
+          },
+          {
+            "atMs": 300,
+            "ready": "complete",
+            "theme": "tiny-desk",
+            "bodyBg": "rgb(245, 232, 214)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                1118,
+                82,
+                158.59,
+                484.8
+              ],
+              [
+                1288.59,
+                82,
+                277.41,
+                484.8
+              ],
+              [
+                364,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                668.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                973,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                1277.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 3
+          },
+          {
+            "atMs": 400,
+            "ready": "complete",
+            "theme": "tiny-desk",
+            "bodyBg": "rgb(245, 232, 214)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                1118,
+                82,
+                158.59,
+                484.8
+              ],
+              [
+                1288.59,
+                82,
+                277.41,
+                484.8
+              ],
+              [
+                364,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                668.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                973,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                1277.5,
+                652.8,
+                302.5,
+                327.2
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 4
+          }
+        ],
+        "animationNormalization": null,
+        "observation": "stable geometry/background/theme for 5 samples; fonts loaded; no running animations"
+      },
+      "probe": {
+        "theme": "tiny-desk",
+        "bodyBg": "rgb(245, 232, 214)",
+        "labels": [
+          "Home",
+          "Triage Prototypes",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "Add item",
+          "Toggle edit mode",
+          "Search",
+          "Calendar",
+          "Trash",
+          "Toggle theme",
+          "Collapse scratch pool",
+          "Z-A",
+          "Weekly grocery list (automated?)\n05/04/26",
+          "Summer vacation itinerary draft\n6 days ago",
+          "New theme brainstorming notes\nyesterday",
+          "Quarterly review preparation\n2h ago",
+          "Home office layout ideas\n2 days ago",
+          "“Quarterly review preparation”",
+          "Edit Check budget for standing desk",
+          "Delete Check budget for standing desk",
+          "Edit Measure window dimensions for blinds",
+          "Delete Measure window dimensions for blinds",
+          "Edit Research ergonomic chair reviews",
+          "Delete Research ergonomic chair reviews",
+          "ADD",
+          "Work",
+          "Personal",
+          "Projects",
+          "Meetings",
+          "Admin",
+          "Weekly Sync"
+        ],
+        "hasPopulatedNativeLevel3": true,
+        "selectedPath": [
+          "Work",
+          "Meetings",
+          "Weekly Sync"
+        ],
+        "bodyText": "1\n2\n3\n4\n5\n6\n7\n8\nSCRATCH POOL\n5\nZ-A\nWeekly grocery list (automated?)\n05/04/26\nSummer vacation itinerary draft\n6 days ago\nNew theme brainstorming notes\nyesterday\nQuarterly review preparation\n2h ago\nHome office layout ideas\n2 days ago\nBREAKDOWN\nSTATIONERY // GRID_01\n“Quarterly review preparation”\nDate: 2h ago\nCheck budget for standing desk\nMeasure window dimensions for blinds\nResearch ergonomic chair reviews\nADD\nSTAGING\n\nNODES\n\nDesk Setup\nOffice Plan\n\nBITS\n\nMeasure desk width\nOrder cable ties\nLIBRARY INDEX\nHOME\nWork\nPersonal\nProjects\nLEVEL 1\nMeetings\nAdmin\nReply to project lead's email\nLEVEL 2\nWeekly Sync\nReview product roadmap\nLEVEL 3\nPrepare slide deck for sync\nShare meeting minutes"
+      },
+      "file": {
+        "fileName": "native-explorer-tiny-desk-deepest-1600x1000.png",
+        "bytes": 187310,
+        "sha256": "8dde5b168f96c044fed461bdda0e20d859f42df3945d5baa9f4d426aece667e3"
+      },
+      "console": []
+    },
+    {
+      "captureId": "p31-va-native-explorer-neumorphism-20260908",
+      "route": "http://localhost:3101/prototype/inbox-triage-neumorphism",
+      "themeDataset": {
+        "attribute": "data-color-theme",
+        "value": "neumorphism",
+        "persistedStore": "griddo-color-theme"
+      },
+      "clicks": [
+        {
+          "label": "Work",
+          "result": {
+            "ok": true,
+            "text": "Work",
+            "x": 534,
+            "y": 655.640625,
+            "focused": true
+          }
+        },
+        {
+          "label": "Meetings",
+          "result": {
+            "ok": true,
+            "text": "Meetings",
+            "x": 830,
+            "y": 791.640625,
+            "focused": true
+          }
+        },
+        {
+          "label": "Weekly Sync",
+          "result": {
+            "ok": true,
+            "text": "Weekly Sync",
+            "x": 1126,
+            "y": 655.640625,
+            "focused": true
+          }
+        }
+      ],
+      "initialReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "neumorphism",
+          "bodyBg": "rgb(224, 230, 235)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 600,
+            "ready": "complete",
+            "theme": "neumorphism",
+            "bodyBg": "rgb(224, 230, 235)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 1,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 6
+          },
+          {
+            "atMs": 700,
+            "ready": "complete",
+            "theme": "neumorphism",
+            "bodyBg": "rgb(224, 230, 235)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 1,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 7
+          },
+          {
+            "atMs": 800,
+            "ready": "complete",
+            "theme": "neumorphism",
+            "bodyBg": "rgb(224, 230, 235)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 1,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 8
+          },
+          {
+            "atMs": 900,
+            "ready": "complete",
+            "theme": "neumorphism",
+            "bodyBg": "rgb(224, 230, 235)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 1,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 9
+          },
+          {
+            "atMs": 1000,
+            "ready": "complete",
+            "theme": "neumorphism",
+            "bodyBg": "rgb(224, 230, 235)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 1,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 10
+          },
+          {
+            "atMs": 1100,
+            "ready": "complete",
+            "theme": "neumorphism",
+            "bodyBg": "rgb(224, 230, 235)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 11
+          }
+        ],
+        "animationNormalization": {
+          "reason": "animations still running after layout/theme/font/background stability; persistent animations paused (infinite animations reset to deterministic time 0)",
+          "details": [
+            {
+              "animationName": "pulse",
+              "timing": {
+                "delay": 0,
+                "direction": "normal",
+                "duration": 2000,
+                "easing": "linear",
+                "endDelay": 0,
+                "fill": "none",
+                "iterationStart": 0,
+                "iterations": null
+              },
+              "currentTime": 1066.574000151381
+            }
+          ]
+        },
+        "observation": "stable geometry/background/theme for 12 samples; fonts loaded; no running animations"
+      },
+      "finalReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "neumorphism",
+          "bodyBg": "rgb(224, 230, 235)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 0,
+            "ready": "complete",
+            "theme": "neumorphism",
+            "bodyBg": "rgb(224, 230, 235)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 0
+          },
+          {
+            "atMs": 100,
+            "ready": "complete",
+            "theme": "neumorphism",
+            "bodyBg": "rgb(224, 230, 235)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 1
+          },
+          {
+            "atMs": 200,
+            "ready": "complete",
+            "theme": "neumorphism",
+            "bodyBg": "rgb(224, 230, 235)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 2
+          },
+          {
+            "atMs": 300,
+            "ready": "complete",
+            "theme": "neumorphism",
+            "bodyBg": "rgb(224, 230, 235)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 3
+          },
+          {
+            "atMs": 400,
+            "ready": "complete",
+            "theme": "neumorphism",
+            "bodyBg": "rgb(224, 230, 235)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 4
+          }
+        ],
+        "animationNormalization": null,
+        "observation": "stable geometry/background/theme for 5 samples; fonts loaded; no running animations"
+      },
+      "probe": {
+        "theme": "neumorphism",
+        "bodyBg": "rgb(224, 230, 235)",
+        "labels": [
+          "Home",
+          "Triage Prototypes",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "Add item",
+          "Toggle edit mode",
+          "Search",
+          "Calendar",
+          "Trash",
+          "Toggle theme",
+          "Collapse Scratch Pool",
+          "Finish GridDO lifecycle plan\n\n2H AGO",
+          "Prepare product direction notes\n\n2 DAYS AGO",
+          "Review Gemini prototype direction\n\nYESTERDAY",
+          "Write down backup/export workflow idea\n\n05/04/26",
+          "Organize archive and review mode questions\n\n6 DAYS AGO",
+          "Finish GridDO lifecycle plan",
+          "DESC",
+          "Edit Check theme/calendar extraction quality",
+          "Delete Check theme/calendar extraction quality",
+          "Edit Ask Codex to merge final decision docs",
+          "Delete Ask Codex to merge final decision docs",
+          "Edit Review Claude code quality before merging",
+          "Delete Review Claude code quality before merging",
+          "Prototype Review",
+          "Docs Merge",
+          "Inspect New Morphism visual density",
+          "Check long Bit title truncation in hierarchy placement",
+          "Work",
+          "GridDO",
+          "Personal",
+          "Research",
+          "Writing",
+          "Meetings",
+          "Weekly Sync"
+        ],
+        "hasPopulatedNativeLevel3": true,
+        "selectedPath": [
+          "Work",
+          "Meetings",
+          "Weekly Sync"
+        ],
+        "bodyText": "1\n2\n3\n4\n5\n6\n7\n8\nSCRATCH POOL\n5 ITEMS\nASC\nDESC\n\nFinish GridDO lifecycle plan\n\n2H AGO\n\nPrepare product direction notes\n\n2 DAYS AGO\n\nReview Gemini prototype direction\n\nYESTERDAY\n\nWrite down backup/export workflow idea\n\n05/04/26\n\nOrganize archive and review mode questions\n\n6 DAYS AGO\n\nBREAKDOWN\nFinish GridDO lifecycle plan\nCREATED 2H AGO\nDESC\n\nCheck theme/calendar extraction quality\n\nAsk Codex to merge final decision docs\n\nReview Claude code quality before merging\n\nSTAGING\n\nNODES\n\nPrototype Review\nDocs Merge\n\nBITS\n\nInspect New Morphism visual density\nCheck long Bit title truncation in hierarchy placement\nGRID EXPLORER\nHOME\nWork\nGridDO\nPersonal\nLEVEL 1\nResearch\nWriting\nMeetings\nReply to the long project update thread before Friday\nLEVEL 2\nWeekly Sync\nReview product roadmap\nLEVEL 3\nPrepare slide deck for sync\nShare meeting minutes"
+      },
+      "file": {
+        "fileName": "native-explorer-neumorphism-deepest-1600x1000.png",
+        "bytes": 202917,
+        "sha256": "e862d420059a446eeacabee762d111375d9221fc79aae383abc07d5923138d52"
+      },
+      "console": []
+    },
+    {
+      "captureId": "p31-va-native-explorer-claymorphism-20260908",
+      "route": "http://localhost:3101/prototype/inbox-triage-claymorphism",
+      "themeDataset": {
+        "attribute": "data-color-theme",
+        "value": "claymorphism",
+        "persistedStore": "griddo-color-theme"
+      },
+      "clicks": [
+        {
+          "label": "Projects",
+          "result": {
+            "ok": true,
+            "text": "PROJECTS",
+            "x": 571,
+            "y": 871.046875,
+            "focused": true
+          }
+        },
+        {
+          "label": "GridDO Development",
+          "result": {
+            "ok": true,
+            "text": "GRIDDO DEVELOPMENT",
+            "x": 853,
+            "y": 770.046875,
+            "focused": true
+          }
+        }
+      ],
+      "initialReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "claymorphism",
+          "bodyBg": "rgb(246, 238, 241)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 100,
+            "ready": "complete",
+            "theme": "claymorphism",
+            "bodyBg": "rgb(246, 238, 241)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 8,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 1
+          },
+          {
+            "atMs": 200,
+            "ready": "complete",
+            "theme": "claymorphism",
+            "bodyBg": "rgb(246, 238, 241)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 8,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 2
+          },
+          {
+            "atMs": 300,
+            "ready": "complete",
+            "theme": "claymorphism",
+            "bodyBg": "rgb(246, 238, 241)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 8,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 3
+          },
+          {
+            "atMs": 400,
+            "ready": "complete",
+            "theme": "claymorphism",
+            "bodyBg": "rgb(246, 238, 241)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 4,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 4
+          },
+          {
+            "atMs": 500,
+            "ready": "complete",
+            "theme": "claymorphism",
+            "bodyBg": "rgb(246, 238, 241)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 4,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 5
+          },
+          {
+            "atMs": 600,
+            "ready": "complete",
+            "theme": "claymorphism",
+            "bodyBg": "rgb(246, 238, 241)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 6
+          }
+        ],
+        "animationNormalization": null,
+        "observation": "stable geometry/background/theme for 7 samples; fonts loaded; no running animations"
+      },
+      "finalReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "claymorphism",
+          "bodyBg": "rgb(246, 238, 241)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 0,
+            "ready": "complete",
+            "theme": "claymorphism",
+            "bodyBg": "rgb(246, 238, 241)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 0
+          },
+          {
+            "atMs": 100,
+            "ready": "complete",
+            "theme": "claymorphism",
+            "bodyBg": "rgb(246, 238, 241)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 1
+          },
+          {
+            "atMs": 200,
+            "ready": "complete",
+            "theme": "claymorphism",
+            "bodyBg": "rgb(246, 238, 241)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 2
+          },
+          {
+            "atMs": 300,
+            "ready": "complete",
+            "theme": "claymorphism",
+            "bodyBg": "rgb(246, 238, 241)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 3
+          },
+          {
+            "atMs": 400,
+            "ready": "complete",
+            "theme": "claymorphism",
+            "bodyBg": "rgb(246, 238, 241)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 4
+          }
+        ],
+        "animationNormalization": null,
+        "observation": "stable geometry/background/theme for 5 samples; fonts loaded; no running animations"
+      },
+      "probe": {
+        "theme": "claymorphism",
+        "bodyBg": "rgb(246, 238, 241)",
+        "labels": [
+          "Home",
+          "Triage Prototypes",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "Add item",
+          "Toggle edit mode",
+          "Search",
+          "Calendar",
+          "Trash",
+          "Toggle theme",
+          "DESC",
+          "Weekly grocery list (automated?)\n05/04/26",
+          "Summer vacation itinerary draft\n6 days ago",
+          "Home office layout ideas\n2 days ago",
+          "New theme brainstorming notes\nyesterday",
+          "Quarterly review preparation\n2h ago",
+          "Quarterly review preparation",
+          "Add",
+          "Desk Setup",
+          "Office Plan",
+          "Measure desk width",
+          "Order cable ties",
+          "WORK",
+          "PERSONAL",
+          "PROJECTS",
+          "GRIDDO DEVELOPMENT"
+        ],
+        "hasPopulatedNativeLevel3": false,
+        "selectedPath": [
+          "Projects",
+          "GridDO Development"
+        ],
+        "bodyText": "1\n2\n3\n4\n5\n6\n7\n8\nSCRATCHES\n5\nDESC\nWeekly grocery list (automated?)\n05/04/26\nSummer vacation itinerary draft\n6 days ago\nHome office layout ideas\n2 days ago\nNew theme brainstorming notes\nyesterday\nQuarterly review preparation\n2h ago\nBREAKDOWN\nDOUGH_NODE // PORT_02\nQuarterly review preparation\nSCULPTED: 2H AGO\nDESC\n\nCheck budget for standing desk\n\nMeasure window dimensions for blinds\n\nResearch ergonomic chair reviews\n\nAdd\nSTAGING\n\nNODES\n\nDesk Setup\nOffice Plan\n\nBITS\n\nMeasure desk width\nOrder cable ties\nGRID EXPLORER\nHOME\nWORK\nPERSONAL\nPROJECTS\nLEVEL 1\nGRIDDO DEVELOPMENT\nLEVEL 2\nRefactor theme engine for Claymorphism\nImplement 3D puffy interactions\nLEVEL 3"
+      },
+      "file": {
+        "fileName": "native-explorer-claymorphism-deepest-1600x1000.png",
+        "bytes": 165265,
+        "sha256": "f6549d3c2770f8d7225e593112e9f163f616eb02c50253bcc57768f963d45de1"
+      },
+      "console": []
+    },
+    {
+      "captureId": "p31-va-native-explorer-origami-20260908",
+      "route": "http://localhost:3101/prototype/inbox-triage-origami",
+      "themeDataset": {
+        "attribute": "data-color-theme",
+        "value": "origami",
+        "persistedStore": "griddo-color-theme"
+      },
+      "clicks": [
+        {
+          "label": "Work",
+          "result": {
+            "ok": true,
+            "text": "Work",
+            "x": 495.125,
+            "y": 711.203125,
+            "focused": true
+          }
+        },
+        {
+          "label": "Meetings",
+          "result": {
+            "ok": true,
+            "text": "Meetings",
+            "x": 806.375,
+            "y": 711.203125,
+            "focused": true
+          }
+        },
+        {
+          "label": "Weekly Sync",
+          "result": {
+            "ok": true,
+            "text": "Weekly Sync",
+            "x": 1117.625,
+            "y": 711.203125,
+            "focused": true
+          }
+        }
+      ],
+      "initialReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "origami",
+          "bodyBg": "rgb(245, 243, 240)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+            "\"Space Mono\", \"Space Mono Fallback\", monospace"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 600,
+            "ready": "complete",
+            "theme": "origami",
+            "bodyBg": "rgb(245, 243, 240)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 1,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 6
+          },
+          {
+            "atMs": 700,
+            "ready": "complete",
+            "theme": "origami",
+            "bodyBg": "rgb(245, 243, 240)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 1,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 7
+          },
+          {
+            "atMs": 800,
+            "ready": "complete",
+            "theme": "origami",
+            "bodyBg": "rgb(245, 243, 240)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 1,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 8
+          },
+          {
+            "atMs": 900,
+            "ready": "complete",
+            "theme": "origami",
+            "bodyBg": "rgb(245, 243, 240)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 1,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 9
+          },
+          {
+            "atMs": 1000,
+            "ready": "complete",
+            "theme": "origami",
+            "bodyBg": "rgb(245, 243, 240)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 1,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 10
+          },
+          {
+            "atMs": 1100,
+            "ready": "complete",
+            "theme": "origami",
+            "bodyBg": "rgb(245, 243, 240)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 11
+          }
+        ],
+        "animationNormalization": {
+          "reason": "animations still running after layout/theme/font/background stability; persistent animations paused (infinite animations reset to deterministic time 0)",
+          "details": [
+            {
+              "animationName": "pulse",
+              "timing": {
+                "delay": 0,
+                "direction": "normal",
+                "duration": 2000,
+                "easing": "linear",
+                "endDelay": 0,
+                "fill": "none",
+                "iterationStart": 0,
+                "iterations": null
+              },
+              "currentTime": 1083.2810002188385
+            }
+          ]
+        },
+        "observation": "stable geometry/background/theme for 12 samples; fonts loaded; no running animations"
+      },
+      "finalReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "origami",
+          "bodyBg": "rgb(245, 243, 240)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+            "\"Space Mono\", \"Space Mono Fallback\", monospace"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 600,
+            "ready": "complete",
+            "theme": "origami",
+            "bodyBg": "rgb(245, 243, 240)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 3,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 6
+          },
+          {
+            "atMs": 700,
+            "ready": "complete",
+            "theme": "origami",
+            "bodyBg": "rgb(245, 243, 240)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 3,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 7
+          },
+          {
+            "atMs": 800,
+            "ready": "complete",
+            "theme": "origami",
+            "bodyBg": "rgb(245, 243, 240)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 3,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 8
+          },
+          {
+            "atMs": 900,
+            "ready": "complete",
+            "theme": "origami",
+            "bodyBg": "rgb(245, 243, 240)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 3,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 9
+          },
+          {
+            "atMs": 1000,
+            "ready": "complete",
+            "theme": "origami",
+            "bodyBg": "rgb(245, 243, 240)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 3,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 10
+          },
+          {
+            "atMs": 1100,
+            "ready": "complete",
+            "theme": "origami",
+            "bodyBg": "rgb(245, 243, 240)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 11
+          }
+        ],
+        "animationNormalization": {
+          "reason": "animations still running after layout/theme/font/background stability; persistent animations paused (infinite animations reset to deterministic time 0)",
+          "details": [
+            {
+              "animationName": "pulse",
+              "timing": {
+                "delay": 0,
+                "direction": "normal",
+                "duration": 2000,
+                "easing": "linear",
+                "endDelay": 0,
+                "fill": "none",
+                "iterationStart": 0,
+                "iterations": null
+              },
+              "currentTime": 2416.595000165239
+            },
+            {
+              "animationName": "pulse",
+              "timing": {
+                "delay": 0,
+                "direction": "normal",
+                "duration": 2000,
+                "easing": "linear",
+                "endDelay": 0,
+                "fill": "none",
+                "iterationStart": 0,
+                "iterations": null
+              },
+              "currentTime": 1949.9470001055897
+            },
+            {
+              "animationName": "pulse",
+              "timing": {
+                "delay": 0,
+                "direction": "normal",
+                "duration": 2000,
+                "easing": "linear",
+                "endDelay": 0,
+                "fill": "none",
+                "iterationStart": 0,
+                "iterations": null
+              },
+              "currentTime": 1483.2990000459404
+            }
+          ]
+        },
+        "observation": "stable geometry/background/theme for 12 samples; fonts loaded; no running animations"
+      },
+      "probe": {
+        "theme": "origami",
+        "bodyBg": "rgb(245, 243, 240)",
+        "labels": [
+          "Home",
+          "Triage Prototypes",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "Add item",
+          "Toggle edit mode",
+          "Search",
+          "Calendar",
+          "Trash",
+          "Toggle theme",
+          "▴ ASC",
+          "Home office layout ideas\n2 DAYS AGO",
+          "Quarterly review preparation\n2H AGO",
+          "New theme brainstorming notes\nYESTERDAY",
+          "Summer vacation itinerary draft\n6 DAYS AGO",
+          "Weekly grocery list (automated?)\n05/04/26",
+          "Quarterly review preparation",
+          "▾ DESC",
+          "Edit Check budget for standing desk",
+          "Delete Check budget for standing desk",
+          "Edit Measure window dimensions for blinds",
+          "Delete Measure window dimensions for blinds",
+          "Edit Research ergonomic chair reviews",
+          "Delete Research ergonomic chair reviews",
+          "FOLD",
+          "Work",
+          "Personal",
+          "Projects",
+          "Meetings",
+          "Admin",
+          "Weekly Sync"
+        ],
+        "hasPopulatedNativeLevel3": true,
+        "selectedPath": [
+          "Work",
+          "Meetings",
+          "Weekly Sync"
+        ],
+        "bodyText": "1\n2\n3\n4\n5\n6\n7\n8\nSCRATCHES\n5\n▴ ASC\nHome office layout ideas\n2 DAYS AGO\nQuarterly review preparation\n2H AGO\nNew theme brainstorming notes\nYESTERDAY\nSummer vacation itinerary draft\n6 DAYS AGO\nWeekly grocery list (automated?)\n05/04/26\nBREAKDOWN\nHANG_TAG // s1\nQuarterly review preparation\nFILE_TIME // 2h ago\n▾ DESC\nCheck budget for standing desk\nMeasure window dimensions for blinds\nResearch ergonomic chair reviews\nFOLD\nSTAGING\n\nNODES\n\nFOLDER A\nARCHIVE\n\nBITS\n\nVerify paper specs\nCheck fold count\nGRID EXPLORER\nHOME\nWork\nPersonal\nProjects\nLEVEL 1\nMeetings\nAdmin\nReply to project lead's email\nLEVEL 2\nWeekly Sync\nReview product roadmap\nLEVEL 3\nPrepare slide deck for sync\nShare meeting minutes"
+      },
+      "file": {
+        "fileName": "native-explorer-origami-deepest-1600x1000.png",
+        "bytes": 146408,
+        "sha256": "8a521b09d8d4e65c163665a10fbe14f5d5e077d6b4d4ec8d011ca03e4fffdecf"
+      },
+      "console": []
+    },
+    {
+      "captureId": "p31-va-native-explorer-terminal-20260908",
+      "route": "http://localhost:3101/prototype/inbox-triage-terminal",
+      "themeDataset": {
+        "attribute": "data-color-theme",
+        "value": "terminal",
+        "persistedStore": "griddo-color-theme"
+      },
+      "clicks": [
+        {
+          "label": "Work",
+          "result": {
+            "ok": true,
+            "text": "[Work]",
+            "x": 531.5,
+            "y": 665.15625,
+            "focused": true
+          }
+        },
+        {
+          "label": "Meetings",
+          "result": {
+            "ok": true,
+            "text": "[Meetings]",
+            "x": 831.5,
+            "y": 665.15625,
+            "focused": true
+          }
+        },
+        {
+          "label": "Weekly Sync",
+          "result": {
+            "ok": true,
+            "text": "[Weekly Sync]",
+            "x": 1131.5,
+            "y": 665.15625,
+            "focused": true
+          }
+        }
+      ],
+      "initialReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "terminal",
+          "bodyBg": "rgb(13, 13, 13)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 600,
+            "ready": "complete",
+            "theme": "terminal",
+            "bodyBg": "rgb(13, 13, 13)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 2,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 6
+          },
+          {
+            "atMs": 700,
+            "ready": "complete",
+            "theme": "terminal",
+            "bodyBg": "rgb(13, 13, 13)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 2,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 7
+          },
+          {
+            "atMs": 800,
+            "ready": "complete",
+            "theme": "terminal",
+            "bodyBg": "rgb(13, 13, 13)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 2,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 8
+          },
+          {
+            "atMs": 900,
+            "ready": "complete",
+            "theme": "terminal",
+            "bodyBg": "rgb(13, 13, 13)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 2,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 9
+          },
+          {
+            "atMs": 1000,
+            "ready": "complete",
+            "theme": "terminal",
+            "bodyBg": "rgb(13, 13, 13)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 2,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 10
+          },
+          {
+            "atMs": 1100,
+            "ready": "complete",
+            "theme": "terminal",
+            "bodyBg": "rgb(13, 13, 13)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 11
+          }
+        ],
+        "animationNormalization": {
+          "reason": "animations still running after layout/theme/font/background stability; persistent animations paused (infinite animations reset to deterministic time 0)",
+          "details": [
+            {
+              "animationName": "flicker",
+              "timing": {
+                "delay": 0,
+                "direction": "normal",
+                "duration": 150,
+                "easing": "linear",
+                "endDelay": 0,
+                "fill": "none",
+                "iterationStart": 0,
+                "iterations": null
+              },
+              "currentTime": 1083.3149998698384
+            },
+            {
+              "animationName": "pulse",
+              "timing": {
+                "delay": 0,
+                "direction": "normal",
+                "duration": 2000,
+                "easing": "linear",
+                "endDelay": 0,
+                "fill": "none",
+                "iterationStart": 0,
+                "iterations": null
+              },
+              "currentTime": 1083.3149998698384
+            }
+          ]
+        },
+        "observation": "stable geometry/background/theme for 12 samples; fonts loaded; no running animations"
+      },
+      "finalReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "terminal",
+          "bodyBg": "rgb(13, 13, 13)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 0,
+            "ready": "complete",
+            "theme": "terminal",
+            "bodyBg": "rgb(13, 13, 13)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 0
+          },
+          {
+            "atMs": 100,
+            "ready": "complete",
+            "theme": "terminal",
+            "bodyBg": "rgb(13, 13, 13)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 1
+          },
+          {
+            "atMs": 200,
+            "ready": "complete",
+            "theme": "terminal",
+            "bodyBg": "rgb(13, 13, 13)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 2
+          },
+          {
+            "atMs": 300,
+            "ready": "complete",
+            "theme": "terminal",
+            "bodyBg": "rgb(13, 13, 13)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 3
+          },
+          {
+            "atMs": 400,
+            "ready": "complete",
+            "theme": "terminal",
+            "bodyBg": "rgb(13, 13, 13)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 4
+          }
+        ],
+        "animationNormalization": null,
+        "observation": "stable geometry/background/theme for 5 samples; fonts loaded; no running animations"
+      },
+      "probe": {
+        "theme": "terminal",
+        "bodyBg": "rgb(13, 13, 13)",
+        "labels": [
+          "Home",
+          "Triage Prototypes",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "Add item",
+          "Toggle edit mode",
+          "Search",
+          "Calendar",
+          "Trash",
+          "Toggle theme",
+          "[<]",
+          "DIR\n/O:-S ▼",
+          "Weekly grocery list (automated?)\n05/04/26",
+          "Summer vacation itinerary draft\n6 days ago",
+          "New theme brainstorming notes\nyesterday",
+          "Quarterly review preparation\n2h ago",
+          "Home office layout ideas\n2 days ago",
+          "[F2_EDIT]",
+          "[F3_SORT ▼]",
+          "Edit Check budget for standing desk",
+          "Delete Check budget for standing desk",
+          "Edit Measure window dimensions for blinds",
+          "Delete Measure window dimensions for blinds",
+          "Edit Research ergonomic chair reviews",
+          "Delete Research ergonomic chair reviews",
+          "EXECUTE",
+          "> [Work]",
+          "[Personal]",
+          "[Projects]",
+          "> [Meetings]",
+          "[Admin]",
+          "> [Weekly Sync]"
+        ],
+        "hasPopulatedNativeLevel3": true,
+        "selectedPath": [
+          "Work",
+          "Meetings",
+          "Weekly Sync"
+        ],
+        "bodyText": "1\n2\n3\n4\n5\n6\n7\n8\nSYS_META\nTRIAGE@ANTIGRAVITY-TERM:~$ STATUS --ACTIVE --CPU=0.05%\nPROCESS V3.0-ONLINE\n[SCRATCH POOL]\nItems: 5\n[<]\nDIR\n/O:-S ▼\nWeekly grocery list (automated?)\n05/04/26\nSummer vacation itinerary draft\n6 days ago\nNew theme brainstorming notes\nyesterday\nQuarterly review preparation\n2h ago\nHome office layout ideas\n2 days ago\n[BREAKDOWN]\n1# Active Scratch Buffer\n2\ntitle\n=\n\"Quarterly review preparation\"\n3stamp = \"2h ago\"\nINSERT\n\"scratch_buffer.py\"\n[F2_EDIT]\n[F3_SORT ▼]\nCheck budget for standing desk\nMeasure window dimensions for blinds\nResearch ergonomic chair reviews\nC:\\>\nEnter idea string...\nEXECUTE\n[CANDIDATE STAGING]\nNODES\nDIR_SYSTEM OVERHAUL\nDIR_NETWORK PLAN\nBITS\nEXEC_ANALYZE BANDWIDTH\nEXEC_PATCH VULNERABILITIES\nGRID EXPLORER\nPATH: HOME / WORK / MEETING / WEEKLY-SYNC\nFILTER:\nHOME\n> [Work]\n[Personal]\n[Projects]\nLEVEL 1\n> [Meetings]\n[Admin]\nEXEC_REPLY TO PROJECT LEAD'S EMAIL\nLEVEL 2\n> [Weekly Sync]\nEXEC_REVIEW PRODUCT ROADMAP\nLEVEL 3\nEXEC_PREPARE SLIDE DECK FOR SYNC\nEXEC_SHARE MEETING MINUTES\nMEM: 640KB OK\nDISK: 1.2GB FREE\nSESSION: 0x88F3 - USER: ADMIN"
+      },
+      "file": {
+        "fileName": "native-explorer-terminal-deepest-1600x1000.png",
+        "bytes": 164833,
+        "sha256": "f832f59ffafeb90cb9df4ab7da752ba057bd51b2b64606fc5b7c82e5894300e3"
+      },
+      "console": []
+    },
+    {
+      "captureId": "p31-va-native-explorer-retro-mac-20260908",
+      "route": "http://localhost:3101/prototype/inbox-triage-retro-mac",
+      "themeDataset": {
+        "attribute": "data-color-theme",
+        "value": "retro-mac",
+        "persistedStore": "griddo-color-theme"
+      },
+      "clicks": [
+        {
+          "label": "System Folder",
+          "result": {
+            "ok": true,
+            "text": "SYSTEM FOLDER",
+            "x": 500.375,
+            "y": 705.25,
+            "focused": true
+          }
+        },
+        {
+          "label": "Extensions",
+          "result": {
+            "ok": true,
+            "text": "EXTENSIONS",
+            "x": 808.125,
+            "y": 705.25,
+            "focused": true
+          }
+        }
+      ],
+      "initialReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "retro-mac",
+          "bodyBg": "rgb(230, 230, 230)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+            "\"Space Mono\", \"Space Mono Fallback\", monospace"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 0,
+            "ready": "complete",
+            "theme": "retro-mac",
+            "bodyBg": "rgb(230, 230, 230)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 0
+          },
+          {
+            "atMs": 100,
+            "ready": "complete",
+            "theme": "retro-mac",
+            "bodyBg": "rgb(230, 230, 230)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 1
+          },
+          {
+            "atMs": 200,
+            "ready": "complete",
+            "theme": "retro-mac",
+            "bodyBg": "rgb(230, 230, 230)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 2
+          },
+          {
+            "atMs": 300,
+            "ready": "complete",
+            "theme": "retro-mac",
+            "bodyBg": "rgb(230, 230, 230)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 3
+          },
+          {
+            "atMs": 400,
+            "ready": "complete",
+            "theme": "retro-mac",
+            "bodyBg": "rgb(230, 230, 230)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 4
+          }
+        ],
+        "animationNormalization": null,
+        "observation": "stable geometry/background/theme for 5 samples; fonts loaded; no running animations"
+      },
+      "finalReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "retro-mac",
+          "bodyBg": "rgb(230, 230, 230)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+            "\"Space Mono\", \"Space Mono Fallback\", monospace"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 0,
+            "ready": "complete",
+            "theme": "retro-mac",
+            "bodyBg": "rgb(230, 230, 230)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 0
+          },
+          {
+            "atMs": 100,
+            "ready": "complete",
+            "theme": "retro-mac",
+            "bodyBg": "rgb(230, 230, 230)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 1
+          },
+          {
+            "atMs": 200,
+            "ready": "complete",
+            "theme": "retro-mac",
+            "bodyBg": "rgb(230, 230, 230)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 2
+          },
+          {
+            "atMs": 300,
+            "ready": "complete",
+            "theme": "retro-mac",
+            "bodyBg": "rgb(230, 230, 230)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 3
+          },
+          {
+            "atMs": 400,
+            "ready": "complete",
+            "theme": "retro-mac",
+            "bodyBg": "rgb(230, 230, 230)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "\"Space Mono\", \"Space Mono Fallback\", monospace"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 4
+          }
+        ],
+        "animationNormalization": null,
+        "observation": "stable geometry/background/theme for 5 samples; fonts loaded; no running animations"
+      },
+      "probe": {
+        "theme": "retro-mac",
+        "bodyBg": "rgb(230, 230, 230)",
+        "labels": [
+          "Home",
+          "Triage Prototypes",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "Add item",
+          "Toggle edit mode",
+          "Search",
+          "Calendar",
+          "Trash",
+          "Toggle theme",
+          "x",
+          "Date Created\nOLD FIRST",
+          "PROJECT 'LISA' ARCHITECTURE NOTES\n2h ago",
+          "SYSTEM 7 UI REFINEMENT IDEAS\nyesterday",
+          "HYPERCARD STACK BRAINSTORMING\n2 days ago",
+          "MFS TO HFS MIGRATION PLAN\n6 days ago",
+          "QUICKDRAW OPTIMIZATION TASKS\n05/04/26",
+          "Project 'Lisa' architecture notes",
+          "OLD FIRST",
+          "Edit idea: Implement pixel-perfect window dragging",
+          "Remove idea: Implement pixel-perfect window dragging",
+          "Edit idea: Add support for 1-bit patterns",
+          "Remove idea: Add support for 1-bit patterns",
+          "Edit idea: Design custom icon set for Triage",
+          "Remove idea: Design custom icon set for Triage",
+          "ADD",
+          "SYSTEM FOLDER",
+          "APPLICATIONS",
+          "DOCUMENTS",
+          "EXTENSIONS",
+          "CONTROL PANELS"
+        ],
+        "hasPopulatedNativeLevel3": false,
+        "selectedPath": [
+          "System Folder",
+          "Extensions"
+        ],
+        "bodyText": "1\n2\n3\n4\n5\n6\n7\n8\nFILE\nEDIT\nVIEW\nLABEL\nSPECIAL\n12:00 PM\nx\nSCRATCH POOL\nFIND:\nDate Created\nOLD FIRST\nPROJECT 'LISA' ARCHITECTURE NOTES\n2h ago\nSYSTEM 7 UI REFINEMENT IDEAS\nyesterday\nHYPERCARD STACK BRAINSTORMING\n2 days ago\nMFS TO HFS MIGRATION PLAN\n6 days ago\nQUICKDRAW OPTIMIZATION TASKS\n05/04/26\nBREAKDOWN\n[ FOLDER DIALOG: INFO ]\n[X]\nREF\nFILE_PATH // DEV/ACTIVE_NODE\nProject 'Lisa' architecture notes\nLAST_STAMP: 2h ago\nOLD FIRST\nIMPLEMENT PIXEL-PERFECT WINDOW DRAGGING\nADD SUPPORT FOR 1-BIT PATTERNS\nDESIGN CUSTOM ICON SET FOR TRIAGE\nADD\nSTAGING AREA\n\nNODES\n\nSYSTEM SETUP\nAPP LAYOUT\n\nBITS\n\nCONFIGURE APPLETALK\nADJUST MOUSE SPEED\nFINDER\nFILTER:\nHOME\nSYSTEM FOLDER\nAPPLICATIONS\nDOCUMENTS\nLEVEL 1\nEXTENSIONS\nCONTROL PANELS\nFINDER 7.0\nLEVEL 2\n\nEMPTY\n\nLEVEL 3"
+      },
+      "file": {
+        "fileName": "native-explorer-retro-mac-deepest-1600x1000.png",
+        "bytes": 81817,
+        "sha256": "2d3a48c8b7a43f7f93d6d4c6f3f344084f95f708aa4956b93e390437a0e413df"
+      },
+      "console": []
+    },
+    {
+      "captureId": "p31-va-native-explorer-graphite-20260908",
+      "route": "http://localhost:3101/prototype/inbox-triage-graphite",
+      "themeDataset": {
+        "attribute": "data-color-theme",
+        "value": "graphite",
+        "persistedStore": "griddo-color-theme"
+      },
+      "clicks": [
+        {
+          "label": "Work Workspace",
+          "result": {
+            "ok": true,
+            "text": "Work Workspace",
+            "x": 545,
+            "y": 738.09375,
+            "focused": true
+          }
+        },
+        {
+          "label": "Meetings",
+          "result": {
+            "ok": true,
+            "text": "Meetings",
+            "x": 839,
+            "y": 738.09375,
+            "focused": true
+          }
+        },
+        {
+          "label": "Weekly Sync",
+          "result": {
+            "ok": true,
+            "text": "Weekly Sync",
+            "x": 1133,
+            "y": 738.09375,
+            "focused": true
+          }
+        }
+      ],
+      "initialReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "graphite",
+          "bodyBg": "rgb(255, 255, 255)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "Inter, \"Inter Fallback\", sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 0,
+            "ready": "complete",
+            "theme": "graphite",
+            "bodyBg": "rgb(255, 255, 255)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "Inter, \"Inter Fallback\", sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 0
+          },
+          {
+            "atMs": 100,
+            "ready": "complete",
+            "theme": "graphite",
+            "bodyBg": "rgb(255, 255, 255)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "Inter, \"Inter Fallback\", sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 1
+          },
+          {
+            "atMs": 200,
+            "ready": "complete",
+            "theme": "graphite",
+            "bodyBg": "rgb(255, 255, 255)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "Inter, \"Inter Fallback\", sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 2
+          },
+          {
+            "atMs": 300,
+            "ready": "complete",
+            "theme": "graphite",
+            "bodyBg": "rgb(255, 255, 255)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "Inter, \"Inter Fallback\", sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 3
+          },
+          {
+            "atMs": 400,
+            "ready": "complete",
+            "theme": "graphite",
+            "bodyBg": "rgb(255, 255, 255)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "Inter, \"Inter Fallback\", sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 4
+          }
+        ],
+        "animationNormalization": null,
+        "observation": "stable geometry/background/theme for 5 samples; fonts loaded; no running animations"
+      },
+      "finalReadiness": {
+        "ok": true,
+        "final": {
+          "ready": "complete",
+          "theme": "graphite",
+          "bodyBg": "rgb(255, 255, 255)",
+          "htmlBg": "rgba(0, 0, 0, 0)",
+          "fontsStatus": "loaded",
+          "fontFamilies": [
+            "Inter, \"Inter Fallback\", sans-serif",
+            "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+            "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+            "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+          ],
+          "rects": [
+            [
+              48,
+              0,
+              1552,
+              1000
+            ],
+            [
+              0,
+              1000,
+              1600,
+              0
+            ]
+          ],
+          "activeAnimations": 0,
+          "scrollWidth": 1600,
+          "scrollHeight": 1000
+        },
+        "samples": [
+          {
+            "atMs": 0,
+            "ready": "complete",
+            "theme": "graphite",
+            "bodyBg": "rgb(255, 255, 255)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "Inter, \"Inter Fallback\", sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 0
+          },
+          {
+            "atMs": 100,
+            "ready": "complete",
+            "theme": "graphite",
+            "bodyBg": "rgb(255, 255, 255)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "Inter, \"Inter Fallback\", sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 1
+          },
+          {
+            "atMs": 200,
+            "ready": "complete",
+            "theme": "graphite",
+            "bodyBg": "rgb(255, 255, 255)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "Inter, \"Inter Fallback\", sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 2
+          },
+          {
+            "atMs": 300,
+            "ready": "complete",
+            "theme": "graphite",
+            "bodyBg": "rgb(255, 255, 255)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "Inter, \"Inter Fallback\", sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 3
+          },
+          {
+            "atMs": 400,
+            "ready": "complete",
+            "theme": "graphite",
+            "bodyBg": "rgb(255, 255, 255)",
+            "htmlBg": "rgba(0, 0, 0, 0)",
+            "fontsStatus": "loaded",
+            "fontFamilies": [
+              "Inter, \"Inter Fallback\", sans-serif",
+              "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace",
+              "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+              "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif"
+            ],
+            "rects": [
+              [
+                48,
+                0,
+                1552,
+                1000
+              ],
+              [
+                0,
+                1000,
+                1600,
+                0
+              ]
+            ],
+            "activeAnimations": 0,
+            "scrollWidth": 1600,
+            "scrollHeight": 1000,
+            "stableCount": 4
+          }
+        ],
+        "animationNormalization": null,
+        "observation": "stable geometry/background/theme for 5 samples; fonts loaded; no running animations"
+      },
+      "probe": {
+        "theme": "graphite",
+        "bodyBg": "rgb(255, 255, 255)",
+        "labels": [
+          "Home",
+          "Triage Prototypes",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "Add item",
+          "Toggle edit mode",
+          "Search",
+          "Calendar",
+          "Trash",
+          "Toggle theme",
+          "Collapse pool",
+          "⊕\nDESC",
+          "Weekly grocery list (automated?)\n05/04/26",
+          "Summer vacation itinerary draft\n6 DAYS AGO",
+          "New theme brainstorming notes\nYESTERDAY",
+          "Quarterly review preparation\n2H AGO",
+          "Home office layout ideas\n2 DAYS AGO",
+          "Quarterly review preparation",
+          "Edit thought: Check budget for standing desk",
+          "Remove thought: Check budget for standing desk",
+          "Edit thought: Measure window dimensions for blinds",
+          "Remove thought: Measure window dimensions for blinds",
+          "Edit thought: Research ergonomic chair reviews",
+          "Remove thought: Research ergonomic chair reviews",
+          "APPEND",
+          "Work Workspace",
+          "Personal Workspace",
+          "Projects Workspace",
+          "Meetings",
+          "Admin",
+          "Weekly Sync"
+        ],
+        "hasPopulatedNativeLevel3": true,
+        "selectedPath": [
+          "Work Workspace",
+          "Meetings",
+          "Weekly Sync"
+        ],
+        "bodyText": "1\n2\n3\n4\n5\n6\n7\n8\nSCRATCH POOL\n5\nFLTR:\n⊕\nDESC\nWeekly grocery list (automated?)\n05/04/26\nSummer vacation itinerary draft\n6 DAYS AGO\nNew theme brainstorming notes\nYESTERDAY\nQuarterly review preparation\n2H AGO\nHome office layout ideas\n2 DAYS AGO\nBREAKDOWN\nREGISTRY ARCHIVE REF\nQuarterly review preparation\nTIMESTAMP // 2h ago\n⊕\nDESC\nCheck budget for standing desk\nMeasure window dimensions for blinds\nResearch ergonomic chair reviews\nAPPEND\nSTAGING\n\nNODES\n\nArchitecture\nMinimalist\n\nBITS\n\nDefine grid system\nSelect font pairings\nGRID EXPLORER\nHOME\nWork Workspace\nPersonal Workspace\nProjects Workspace\nLEVEL 1\nMeetings\nAdmin\nReply to project lead's email\nLEVEL 2\nWeekly Sync\nReview product roadmap\nLEVEL 3\nPrepare slide deck for sync\nShare meeting minutes"
+      },
+      "file": {
+        "fileName": "native-explorer-graphite-deepest-1600x1000.png",
+        "bytes": 104474,
+        "sha256": "44347ef9c30b5df29c5cd0013577e0b0dea714894eb5ed20dada95060dee6276"
+      },
+      "console": []
+    }
+  ]
+}
