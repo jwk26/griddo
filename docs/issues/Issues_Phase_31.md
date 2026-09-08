@@ -3,8 +3,9 @@
 > Branch: `phase-31/integration-conformance-full-gate`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate`
 > Kickoff date: 2026-09-07
-> State: Task 163 is `[x]` after explicit user acceptance; its successor
-> Working session is `closed/archive-only` after final recovery verification
+> State: Task 163 is `[x]` after explicit user acceptance; the sole active
+> Working session is `phase-31-visual-audit-reference-evidence-repair-01`
+> for the user-approved pre-Task-164 reference-evidence repair
 
 ## Status Legend
 
@@ -154,6 +155,52 @@ while the broader audit and conformance matrix remain later-owned.
 | Deferred workflow issue | `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF` remains open as `Deferred until Phase 31 Final Close`; the required post-Final-Close skill audit remains unperformed and no workflow skill/contract/resolver/test changed |
 | Successor repair | Exactly one successor Working session, `phase-31-task-163-checkpoint-repair-01`, repaired only this checkpoint discrepancy. Relevant-input fingerprint reproduced unchanged as `68fb5698e8b33c2c7c066252502a545238e4b8038ca6694d4f7eac86863aa5ce`, so non-volatile test/lint/typecheck/build evidence was reusable; cumulative diff and volatile browser output were freshly verified at repaired checkpoint `74ffba6778c73570af38e07bdc8db775e3ce0426` |
 | Held scope | The intervening read-only visual-fidelity gap audit, Task 164, Task 165, Phase 32+, and all push/publication/integration/cleanup work did not start. The next action after acceptance is the Control Tower audit, not Task 164 |
+
+### Pre-Task-164 Visual-Audit Reference-Evidence Repair — Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Work order | User-approved 2026-09-08 ad-hoc `Task 164 이전 visual-audit reference-evidence repair`; this is not Task 164 and creates no Task number or Task compatibility receipt |
+| State | `In Progress`; Task 164 and Task 165 remain `[ ]` and unstarted |
+| Approved scope | Modify this ledger; create `docs/verification/inbox-triage/phase-31-visual-fidelity-gap-audit.md`; replace the eight existing `docs/recipes/assets/inbox-triage-2-3/*-1600x1000.png` settled base references; create bounded supplemental evidence only under `docs/verification/inbox-triage/phase-31-visual-audit-assets/` |
+| Approval / resolver | Exact user work order in the active session; no Task-numbered receipt exists or may be manufactured. Installed `run-task` resolver was invoked without receipt arguments and exited `0` with expected `status=approval_required`, `contract_ready=true`; resolver compatibility does not itself authorize writes |
+| Start base / entrypoint | Approved Phase 31 base `a1a632abf364e4818d046b742b590805ccd2acb6`; entry HEAD `fe43907a4efd8082ec8c7c17d132eed77ab0d7a7`; entry tree `2faf6b0555a6e38d71ec5c8a885c0c667ed1b714`; entry `src` tree `fe810793e64da8c1e8783315906d1815e4fc982e` |
+| Recovery anchor | Sole Working session `phase-31-visual-audit-reference-evidence-repair-01` is `active`; Control Tower `phase-31-control-tower` remains `active`; every predecessor Working session is `closed/archive-only`; duplicate-session count `0` |
+| Prototype evidence identity | Strictly read-only worktree `/Users/jwk/Documents/griddo2-claude-themes2-3`, branch `griddo2-claude-themes2-3`, HEAD `4f39709688ceb4cac5e15d4e3502186b1f1c801b`, tree `7b8eb8766a9b57fe2174a948de09cfb7646cf7de`, clean at durable start |
+| Production evidence identity | Phase 31 feature worktree and branch above, Task-163-accepted HEAD `fe43907a4efd8082ec8c7c17d132eed77ab0d7a7`, clean at durable start |
+| Canonical impact | `Reflected` only through corrected settled base-reference PNG evidence and the bounded audit record; no recipe text, product direction, source, test, plan, schema, spec, design-token, or workflow contract change is authorized |
+| Initial issue set | `P31-VA-01` early theme/background capture; `P31-VA-02` native Explorer Level-3 proof gap; `P31-VA-03` missing interaction-state proof; `P31-VA-04` prototype-only CSS/motion warnings or invalid computed values. Evidence-derived dispositions will be recorded before checkpoint; none grants product-code authority |
+| Prohibitions | No `src/**`, test, Task 164 file, textual recipe, canonical contract, lifecycle tool, prototype-worktree, branch/worktree topology, push/publication/integration/cleanup, Task marker, or later-phase write |
+
+#### Pre-evidence seam inventory
+
+| Claim | Producer | Mounted owner | Consumers | Direct check | Visual owner | Canonical owner |
+| --- | --- | --- | --- | --- | --- | --- |
+| Settled eight-theme base references | pinned prototype HTML/CSS/theme dataset and native fixture | pinned prototype browser route | eight settled 1600×1000 recipe PNGs and comparison audit | fresh identity/readiness/hash manifest | eight approved PNG paths | prototype visual evidence plus recipe index provenance boundary |
+| Deepest natural Explorer path | pinned prototype native Explorer fixture and navigation handlers | each prototype theme route | native Explorer depth captures | scripted real-browser click/path observation | supplemental native evidence directory | Grid Explorer recipe; prototype is comparison evidence only |
+| Canonical four-column Explorer structure where native Level 3 is unavailable | deterministic capture-only data delta | ephemeral browser document derived from pinned bytes | visibly separated derived captures | exact native-versus-derived data manifest | supplemental derived evidence directory labeled `derived conformance fixture` | Grid Explorer recipe; never native prototype evidence |
+| Interaction-state evidence | prototype handlers/CSS and Task-163-accepted production handlers/CSS | matched prototype and mounted production Inbox routes | before/active/after captures and console/state records | real-browser pointer/keyboard/focus/motion observations | supplemental interaction evidence directory | nine canonical recipes and adopted DP receipts |
+| Nine-recipe production comparison and five-bucket classification | corrected prototype/native/derived evidence plus current production runtime | mounted production Inbox route | audit findings and proposed Task 164 CSS subset | matched-state browser observations and source-owner inspection | `phase-31-visual-fidelity-gap-audit.md` | nine recipe texts, Phase 29 `P29-01`/`D-CARD`, and Task 164 declared `src/app/globals.css` scope |
+
+The discovered write owners are exactly the approved ledger, audit Markdown,
+eight settled PNGs, and bounded supplemental assets. Production/browser source,
+tests, canonical recipe text, and the pinned prototype are read-only inputs; a
+finding requiring any such write is classified for separate authority and is
+not repaired here.
+
+#### Expected commit contract
+
+- Durable-start commit: parent
+  `fe43907a4efd8082ec8c7c17d132eed77ab0d7a7`; tree changes only this ledger;
+  work-order marker is `In Progress`; Task 164 remains `[ ]`; no compatibility
+  receipt/payload exists; message is not pinned or machine-consumed.
+- Evidence implementation commit: parent is the durable-start commit with no
+  intervening write; content intent is exactly the audit Markdown, eight
+  replacement PNGs, bounded supplemental audit assets, and this ledger's
+  evidence/disposition update; Task 164 remains `[ ]`; no receipt/payload;
+  message is not pinned or machine-consumed.
+- Any different parent, path set, marker, receipt state, or material content
+  intent is a material variance and a stop; history will not be rewritten.
 
 ### WF-2026-09-07-RUN-TASK-PREMATURE-CHECKPOINT-CLOSURE
 
