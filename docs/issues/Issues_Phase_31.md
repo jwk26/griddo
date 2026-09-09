@@ -3,13 +3,13 @@
 > Branch: `phase-31/integration-conformance-full-gate`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate`
 > Kickoff date: 2026-09-07
-> State: Task 163 is `[x]` and Accepted; Tasks 164–165 are `[ ]` and
-> unstarted. The earlier visual-audit Working session
-> `phase-31-visual-audit-reference-evidence-repair-01` is
-> `closed/archive-only`. During the approved closure-ledger repair, the sole
-> active Working session is
-> `phase-31-visual-audit-closure-ledger-repair-01`; Control Tower
-> `phase-31-control-tower` remains `active`; duplicate-session count is `0`.
+> Current state: Task 163 is `[x]` and Accepted; Tasks 164–165 are `[ ]` and
+> unstarted. There is no active Working session. The latest Working session,
+> `phase-31-visual-audit-closure-ledger-repair-01`, and the earlier
+> visual-audit Working session,
+> `phase-31-visual-audit-reference-evidence-repair-01`, are both
+> `closed/archive-only`. Control Tower `phase-31-control-tower` remains
+> `active`; duplicate-session count is `0`.
 
 ## Status Legend
 
@@ -165,11 +165,11 @@ while the broader audit and conformance matrix remain later-owned.
 | Field | Durable value |
 | --- | --- |
 | Work order | User-approved 2026-09-08 ad-hoc `Task 164 이전 visual-audit reference-evidence repair`; this is not Task 164 and creates no Task number or Task compatibility receipt |
-| State | `Implemented; awaiting user disposition`; Task 164 and Task 165 remain `[ ]` and unstarted; the Working session remains active |
+| Historical state recorded in this section | When the evidence checkpoint was recorded, the evidence repair was `Implemented; awaiting user disposition`; Task 164 and Task 165 were `[ ]` and unstarted; the Working session was active. This historical row is not a current-session claim. |
 | Approved scope | Modify this ledger; create `docs/verification/inbox-triage/phase-31-visual-fidelity-gap-audit.md`; replace the eight existing `docs/recipes/assets/inbox-triage-2-3/*-1600x1000.png` settled base references; create bounded supplemental evidence only under `docs/verification/inbox-triage/phase-31-visual-audit-assets/` |
-| Approval / resolver | Exact user work order in the active session; no Task-numbered receipt exists or may be manufactured. Installed `run-task` resolver was invoked without receipt arguments and exited `0` with expected `status=approval_required`, `contract_ready=true`; resolver compatibility does not itself authorize writes |
+| Approval / resolver | Exact user work order in the then-active session; no Task-numbered receipt exists or may be manufactured. Installed `run-task` resolver was invoked without receipt arguments and exited `0` with expected `status=approval_required`, `contract_ready=true`; resolver compatibility does not itself authorize writes |
 | Start base / entrypoint | Approved Phase 31 base `a1a632abf364e4818d046b742b590805ccd2acb6`; entry HEAD `fe43907a4efd8082ec8c7c17d132eed77ab0d7a7`; entry tree `2faf6b0555a6e38d71ec5c8a885c0c667ed1b714`; entry `src` tree `fe810793e64da8c1e8783315906d1815e4fc982e` |
-| Recovery anchor | Sole Working session `phase-31-visual-audit-reference-evidence-repair-01` is `active`; Control Tower `phase-31-control-tower` remains `active`; every predecessor Working session is `closed/archive-only`; duplicate-session count `0` |
+| Recovery anchor at durable-start snapshot | At this historical durable-start snapshot, the sole Working session `phase-31-visual-audit-reference-evidence-repair-01` was `active`; Control Tower `phase-31-control-tower` was `active`; every predecessor Working session was `closed/archive-only`; duplicate-session count was `0`. This row records the then-current recovery anchor, not current lifecycle state. |
 | Prototype evidence identity | Strictly read-only worktree `/Users/jwk/Documents/griddo2-claude-themes2-3`, branch `griddo2-claude-themes2-3`, HEAD `4f39709688ceb4cac5e15d4e3502186b1f1c801b`, tree `7b8eb8766a9b57fe2174a948de09cfb7646cf7de`, clean at durable start |
 | Production evidence identity | Phase 31 feature worktree and branch above, Task-163-accepted HEAD `fe43907a4efd8082ec8c7c17d132eed77ab0d7a7`, clean at durable start |
 | Canonical impact | `Reflected` only through corrected settled base-reference PNG evidence and the bounded audit record; no recipe text, product direction, source, test, plan, schema, spec, design-token, or workflow contract change is authorized |
@@ -210,7 +210,7 @@ not repaired here.
 
 | Field | Durable value |
 | --- | --- |
-| State | Evidence repair implemented; `phase-31-visual-audit-reference-evidence-repair-01` remains `active / awaiting user disposition`. It is not closed or archived. |
+| State at checkpoint snapshot | At checkpoint `2ab806bfdc497174e1431039cef81acb220068c0`, the evidence repair was implemented and `phase-31-visual-audit-reference-evidence-repair-01` was `active / awaiting user disposition`. The user's later closure disposition and closure commit `1818b75b1c47a8dd7c6468c4c049b75f6092fb87` ended that state. This row is historical checkpoint evidence, not a current-session claim. |
 | Commit chain | Durable start `a0f0dbe329fa89ddb1d4c17d8351f9596bc89a4e`; evidence/checkpoint content is the single child commit containing this ledger update, the audit record, eight replaced PNGs, and bounded supplemental assets. No history rewrite, branch/worktree operation, push, publication, integration, or cleanup occurred. |
 | Changed-path boundary | Only this ledger, `docs/verification/inbox-triage/phase-31-visual-fidelity-gap-audit.md`, eight approved settled PNG paths, and files below `docs/verification/inbox-triage/phase-31-visual-audit-assets/`. No `src/**`, test, plan, recipe text, canonical document, workflow file, or prototype path changed. |
 | Replacement inventory | Eight 1600×1000 settled base references were replaced. SHA-256: GridDO `aa48f12682a2e1fa476b3041e67a361ac5478e246de29e1fe7a6ad804158304f`; Tiny Desk `c0898d63c13ab1b63f73276cbd569b45117f37874c1c30c1b55a86f80d5add17`; Neumorphism `ad2d9562fbfc77154eb446406d0101980acacff176fbbe6adfb7e03d04e2640b`; Claymorphism `3195efc42e70c3c1b43bb51d1ea781410d5377f8bbf81434a0617482dd1eabcc`; Origami `b459aa80b023d95d4df717dd814d27ce31b7b56cda79731b459f348df9c8b459`; Terminal `4e5e143996a91e0a080e40e1894449aa85dfe08b9cd8682e543e56d35677a651`; Retro Mac `a2bd3c8c70ccd26384c68b80674974d1b8681aeb43804b9ea549a2985b07a34f`; Graphite `cec241bdee608b3efd39612a86b1a296bfde6640a938cdfd0beb0894284e7af4`. |
@@ -250,22 +250,25 @@ and unclosed.
 | Required later audit | After Phase 31 Final Close, audit both `WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF` and this finding; decide and document the canonical checkpoint-session status; add coverage proving a Working session remains `active / awaiting user disposition` through acceptance or targeted rejection repair and closes only at the actual handoff/rollover boundary |
 | Prohibition | No installed skill, resolver, shared-contract, or workflow-test change before Phase 31 Final Close |
 
-## Working-Session Checkpoint Handoff
+## Working-Session Checkpoint Handoff — Historical Checkpoint Snapshot
 
-- Control Tower `phase-31-control-tower`: `active`.
-- Every predecessor Working session, including
+- At checkpoint `2ab806bfdc497174e1431039cef81acb220068c0`, Control Tower
+  `phase-31-control-tower` was `active`.
+- At that checkpoint, every predecessor Working session, including
   `phase-31-task-163-run-task-01` and
-  `phase-31-task-163-checkpoint-repair-01`, remains `closed/archive-only` and
+  `phase-31-task-163-checkpoint-repair-01`, was `closed/archive-only` and
   was not reactivated.
-- Current sole Working session
-  `phase-31-visual-audit-reference-evidence-repair-01` remains
-  `active / awaiting user disposition` at this evidence-repair checkpoint. It
-  must not be closed or archived until the user accepts the checkpoint or gives
-  targeted repair feedback.
-- Duplicate-session count: `0`.
-- Next legal action: user review of this evidence-repair checkpoint. Task 164
-  and Task 165 remain `[ ]`; no later lifecycle starts from this checkpoint
-  without its own authority.
+- At that checkpoint, the sole Working session
+  `phase-31-visual-audit-reference-evidence-repair-01` was
+  `active / awaiting user disposition` in this historical evidence-repair
+  snapshot, and the rule at that time was that it must not be closed or
+  archived until the user accepted the checkpoint or gave targeted repair
+  feedback. The user's later closure disposition and commit
+  `1818b75b1c47a8dd7c6468c4c049b75f6092fb87` ended that state and rule.
+- Duplicate-session count at that checkpoint: `0`.
+- Next action at that historical checkpoint: user review of the evidence-repair
+  checkpoint. Task 164 and Task 165 were `[ ]`; no later lifecycle could start
+  from that checkpoint without its own authority.
 
 ## Visual-Audit Interruption Cleanup And Working-Session Closure
 
@@ -318,7 +321,7 @@ The existing deferred workflow issues
 `WF-2026-09-07-RUN-TASK-PREMATURE-CHECKPOINT-CLOSURE` retain their prior
 content and state unchanged.
 
-## Visual-Audit Working-Session Continuation Handoff
+## Visual-Audit Working-Session Continuation Handoff — Historical Closure Snapshot
 
 - Working session `phase-31-visual-audit-reference-evidence-repair-01`:
   `closed/archive-only`.
@@ -330,20 +333,21 @@ content and state unchanged.
   `2ab806bfdc497174e1431039cef81acb220068c0`, unchanged.
 - Task 164 and Task 165: `[ ]`, unstarted. No Task 164 receipt, durable-start
   marker, code, test, or evidence file was created.
-- Next legal action: the Control Tower determines legality and readiness for a
-  noncanonical Neumorphism/Retro Mac two-theme blind replay, followed by a
-  separate user gate. The replay does not start from this handoff.
+- Next action recorded by this historical closure handoff: the Control Tower
+  determines legality and readiness for a noncanonical Neumorphism/Retro Mac
+  two-theme blind replay, followed by a separate user gate. The replay does not
+  start from this handoff.
 
 ## Visual-Audit Closure-Ledger Repair — Durable Start
 
 | Field | Durable value |
 | --- | --- |
 | Work order | User-approved 2026-09-09 ad-hoc Phase 31 lifecycle-ledger targeted repair. This is workflow-state record repair only; it is not Task 164, creates no Task number or compatibility receipt, and grants no product, design, test, evidence, publication, or later-task authority. |
-| State | `In Progress`; the sole active Working session is `phase-31-visual-audit-closure-ledger-repair-01`. The predecessor `phase-31-visual-audit-reference-evidence-repair-01` remains `closed/archive-only`; Control Tower `phase-31-control-tower` remains `active`; duplicate-session count `0`. |
+| State at durable-start snapshot | At this historical durable-start snapshot, the repair was `In Progress`; the sole active Working session was `phase-31-visual-audit-closure-ledger-repair-01`. The predecessor `phase-31-visual-audit-reference-evidence-repair-01` was `closed/archive-only`; Control Tower `phase-31-control-tower` was `active`; duplicate-session count was `0`. |
 | Approved scope | Modify only `docs/issues/Issues_Phase_31.md` to separate current lifecycle truth from historical checkpoint snapshots, record `WF-2026-09-09-RUN-TASK-CLOSURE-STATE-RECONCILIATION`, and close this successor session in a commit separate from this durable start. |
 | Approval / resolver | Exact user-approved ad-hoc work order; no receipt exists or may be manufactured. The synchronized installed `run-task` resolver was invoked without receipt arguments at repair start and exited `0` with expected `status=approval_required`, `contract_ready=true`; compatibility evidence does not itself authorize writes. |
 | Start base / entrypoint | Repair start HEAD `1818b75b1c47a8dd7c6468c4c049b75f6092fb87`; tree `81dd7d354cf8ffdc520ec6010baec9663879eb97`; branch `phase-31/integration-conformance-full-gate`; exact linked feature worktree `/Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate`; clean at durable start. |
-| Recovery anchor | Task 163 is `[x]` and Accepted. Tasks 164–165 are `[ ]` and unstarted. The predecessor visual-audit Working session is `closed/archive-only`; this successor is the sole active Working session; duplicate-session count `0`. |
+| Recovery anchor at durable-start snapshot | Task 163 was `[x]` and Accepted. Tasks 164–165 were `[ ]` and unstarted. The predecessor visual-audit Working session was `closed/archive-only`; this successor was the sole active Working session; duplicate-session count was `0`. This row preserves the start snapshot rather than declaring current state. |
 | Canonical impact | `None`; the repair reconciles lifecycle-state prose in this ledger and changes no product, design, plan, recipe, audit, asset, source, test, shared contract, resolver, installed skill, or workflow test. |
 | Prohibitions | No Task 164 receipt/start marker/code/test/evidence; no Task 164 or Task 165 start; no branch/worktree topology, push, publication, integration, cleanup, history rewrite, or commit amend. |
 
@@ -361,3 +365,27 @@ content and state unchanged.
 - Any different parent, path set, task marker, receipt state, or material
   content intent is a material variance and a stop. Neither commit will be
   amended and history will not be rewritten.
+
+### WF-2026-09-09-RUN-TASK-CLOSURE-STATE-RECONCILIATION
+
+| Field | Durable value |
+| --- | --- |
+| State | `Deferred until Phase 31 Final Close` |
+| Classification | `run-task checkpoint/closure ledger current-state reconciliation defect` |
+| Finding | Closure was recorded in a new section, but the top summary and prior checkpoint handoff retained present-tense `active` declarations, leaving both active and closed states in the same ledger. |
+| Product impact | `None` |
+| Repair | Historical snapshots and current lifecycle truth are now explicitly separated. |
+| Required later audit | After Phase 31 Final Close, audit the need for skill/contract/test coverage proving that a closure writer reconciles the current summary and earlier present-tense handoff together. |
+| Prohibition | Before Phase 31 ends, do not change an installed skill, resolver, shared contract, or workflow test. |
+
+## Visual-Audit Closure-Ledger Repair — Closure
+
+| Field | Durable value |
+| --- | --- |
+| State | `Implemented and closed`; the repair successor `phase-31-visual-audit-closure-ledger-repair-01` is `closed/archive-only`. There is no active Working session. |
+| Session continuity | Latest Working session `phase-31-visual-audit-closure-ledger-repair-01`: `closed/archive-only`. Earlier visual-audit Working session `phase-31-visual-audit-reference-evidence-repair-01`: `closed/archive-only`. Control Tower `phase-31-control-tower`: `active`. Duplicate-session count: `0`. |
+| Task state | Task 163 is `[x]` and Accepted. Task 164 and Task 165 are `[ ]` and unstarted. Visual-audit checkpoint acceptance remains not granted. |
+| Scope result | Only this ledger changed. No Task 164 receipt, durable-start marker, code, test, or evidence was created; no Task 164 or Task 165 lifecycle started. |
+| Commit contract | Parent is durable-start commit `ec81863c3dd2f003fc393a7c2cafec72efec294b`; tree changes only this ledger; no receipt/payload or task-marker change; commit message is not pinned or machine-consumed. Actual parent, tree, path set, marker, receipt state, and material content intent must be verified after commit; variance disposition is `None` only on an exact match. |
+| Canonical impact | `None`; no product, design, plan, recipe, visual-audit, asset, source, test, installed skill, resolver, shared contract, or workflow test changed. |
+| Next legal action | Control Tower determines noncanonical Neumorphism/Retro Mac blind-replay legality/readiness. |
