@@ -3,9 +3,13 @@
 > Branch: `phase-31/integration-conformance-full-gate`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate`
 > Kickoff date: 2026-09-07
-> State: Task 163 is `[x]` after explicit user acceptance; the sole active
-> Working session is `phase-31-visual-audit-reference-evidence-repair-01`
-> for the user-approved pre-Task-164 reference-evidence repair
+> State: Task 163 is `[x]` and Accepted; Tasks 164–165 are `[ ]` and
+> unstarted. The earlier visual-audit Working session
+> `phase-31-visual-audit-reference-evidence-repair-01` is
+> `closed/archive-only`. During the approved closure-ledger repair, the sole
+> active Working session is
+> `phase-31-visual-audit-closure-ledger-repair-01`; Control Tower
+> `phase-31-control-tower` remains `active`; duplicate-session count is `0`.
 
 ## Status Legend
 
@@ -329,3 +333,31 @@ content and state unchanged.
 - Next legal action: the Control Tower determines legality and readiness for a
   noncanonical Neumorphism/Retro Mac two-theme blind replay, followed by a
   separate user gate. The replay does not start from this handoff.
+
+## Visual-Audit Closure-Ledger Repair — Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Work order | User-approved 2026-09-09 ad-hoc Phase 31 lifecycle-ledger targeted repair. This is workflow-state record repair only; it is not Task 164, creates no Task number or compatibility receipt, and grants no product, design, test, evidence, publication, or later-task authority. |
+| State | `In Progress`; the sole active Working session is `phase-31-visual-audit-closure-ledger-repair-01`. The predecessor `phase-31-visual-audit-reference-evidence-repair-01` remains `closed/archive-only`; Control Tower `phase-31-control-tower` remains `active`; duplicate-session count `0`. |
+| Approved scope | Modify only `docs/issues/Issues_Phase_31.md` to separate current lifecycle truth from historical checkpoint snapshots, record `WF-2026-09-09-RUN-TASK-CLOSURE-STATE-RECONCILIATION`, and close this successor session in a commit separate from this durable start. |
+| Approval / resolver | Exact user-approved ad-hoc work order; no receipt exists or may be manufactured. The synchronized installed `run-task` resolver was invoked without receipt arguments at repair start and exited `0` with expected `status=approval_required`, `contract_ready=true`; compatibility evidence does not itself authorize writes. |
+| Start base / entrypoint | Repair start HEAD `1818b75b1c47a8dd7c6468c4c049b75f6092fb87`; tree `81dd7d354cf8ffdc520ec6010baec9663879eb97`; branch `phase-31/integration-conformance-full-gate`; exact linked feature worktree `/Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate`; clean at durable start. |
+| Recovery anchor | Task 163 is `[x]` and Accepted. Tasks 164–165 are `[ ]` and unstarted. The predecessor visual-audit Working session is `closed/archive-only`; this successor is the sole active Working session; duplicate-session count `0`. |
+| Canonical impact | `None`; the repair reconciles lifecycle-state prose in this ledger and changes no product, design, plan, recipe, audit, asset, source, test, shared contract, resolver, installed skill, or workflow test. |
+| Prohibitions | No Task 164 receipt/start marker/code/test/evidence; no Task 164 or Task 165 start; no branch/worktree topology, push, publication, integration, cleanup, history rewrite, or commit amend. |
+
+### Expected commit contract
+
+- Durable-start commit: parent
+  `1818b75b1c47a8dd7c6468c4c049b75f6092fb87`; tree changes only this ledger;
+  successor marker is `In Progress`; Tasks 164–165 remain `[ ]`; no
+  receipt/payload exists; commit message is not pinned or machine-consumed.
+- Repair/closure commit: parent is the durable-start commit with no intervening
+  write; tree changes only this ledger; content intent is exactly the approved
+  historical/current-state reconciliation, deferred finding, and successor
+  closure; Tasks 164–165 remain `[ ]`; no receipt/payload exists; commit
+  message is not pinned or machine-consumed.
+- Any different parent, path set, task marker, receipt state, or material
+  content intent is a material variance and a stop. Neither commit will be
+  amended and history will not be rewritten.
