@@ -262,3 +262,70 @@ and unclosed.
 - Next legal action: user review of this evidence-repair checkpoint. Task 164
   and Task 165 remain `[ ]`; no later lifecycle starts from this checkpoint
   without its own authority.
+
+## Visual-Audit Interruption Cleanup And Working-Session Closure
+
+| Field | Durable value |
+| --- | --- |
+| User disposition | On 2026-09-09 the user approved only disposal of the one guard-matched untracked trial PNG, a durable interruption/Task-164-non-start record, and closure of the current visual-audit Working session with a continuation handoff. This is not acceptance of the visual-audit checkpoint, Task 164 approval, blind-replay approval, or product/design authority. |
+| Intended evaluation | The requested evaluation was a Neumorphism/Retro Mac-only counterfactual blind replay of the original Task 164 procedure, intended to observe what that procedure would discover without knowledge of the current visual-audit findings. |
+| Isolation failure | The interrupted execution started from HEAD `2ab806bfdc497174e1431039cef81acb220068c0`, which already contains the issue-aware prompt context and current visual-audit document. It therefore did not satisfy the blind condition. This is a workflow evaluation/input-isolation issue, not a confirmed GridDO product-code defect. |
+| Stop boundary | The execution stopped before any Task 164 durable start, Task 164 receipt, product-code change, test change, canonical visual decision, or Task 164 evidence. Task 164 and Task 165 remain `[ ]`, unstarted. |
+| Disposed trial output | The sole output was untracked `docs/verification/inbox-triage/phase-31-visual-audit-assets/prototype-griddo-direct-placement-before.png`, size `154454` bytes, SHA-256 `969f94b782d67827c1e1be57b6283d557f3c73fcfd691ff6e82d901ec0b50438`, observed timestamp `2026-09-09T14:14:03+0900`. Its path, untracked state, size, hash, and timestamp matched the approved guard, and it was discarded under the user's explicit approval. No other asset was deleted, moved, replaced, or recalculated. |
+| Evidence prohibition | The interrupted execution and discarded PNG cannot be used as Task 164 evidence, acceptance, implementation authority, a canonical visual decision, or a merge candidate. They may not grant or imply a Task 164 start. |
+| Preserved checkpoint | The visual-audit checkpoint itself was not accepted as a Task 164 entry condition. Existing audit evidence and checkpoint commit `2ab806bfdc497174e1431039cef81acb220068c0` remain unchanged and preserved. |
+| Closure commit contract | Parent `2ab806bfdc497174e1431039cef81acb220068c0`; tracked change exactly this ledger; no receipt, task marker, product/test/canonical/audit/asset content, branch/worktree topology, push, publication, integration, or repository cleanup change. Commit message is not pinned or machine-consumed. |
+| Canonical impact | `None`; this records workflow evaluation, cleanup, and lifecycle state only. |
+
+### WF-2026-09-09-CRAFT-DOCS-VISUAL-REALIZATION-CLOSURE
+
+| Field | Durable value |
+| --- | --- |
+| State | `Deferred until Phase 31 Final Close` |
+| Classification | `craft-docs Design Source promotion / rendered-realization handoff defect` |
+| Finding to audit | After Phase 31 closes, audit whether the historical craft-docs design route conveyed semantic recipes and prototype references into sufficient rendered, multi-state implementation closure. Do not prejudge this as a defect in the skill itself. |
+| Required separation | Evaluate the historical prompt/execution, promoted documents, task ownership/sequencing, and skill procedure separately. |
+| Prohibition | Before Phase 31 Final Close, do not change an installed skill, resolver, shared contract, or workflow test for this finding. |
+
+### WF-2026-09-09-TASK164-BLIND-REPLAY-ISOLATION
+
+| Field | Durable value |
+| --- | --- |
+| State | `Deferred until Phase 31 Final Close` |
+| Finding | Starting only a new session from the current HEAD cannot create a blind replay because the current ledger and visual-audit document expose the findings. |
+| Future authority boundary | Any later approved replay requires separate noncanonical experiment authority and isolation rooted at the pre-visual-audit entrypoint `fe43907a4efd8082ec8c7c17d132eed77ab0d7a7`. |
+| Import prohibition | Replay output cannot be imported, cherry-picked, merged, or reused as a canonical Task 164 marker, receipt, acceptance, evidence, or Phase 31 implementation. |
+| Required later audit | After Phase 31 Final Close, audit whether lifecycle procedure needs explicit input, session, and worktree isolation for counterfactual/blind evaluation. |
+
+### WF-2026-09-09-RUN-TASK-RESUME-SELF-PROCESS-GUARD
+
+| Field | Durable value |
+| --- | --- |
+| State | `Deferred until Phase 31 Final Close` |
+| Classification | `Control Tower recovery-prompt / session-continuity guard defect` |
+| Finding | The recovery guard prohibited the current resume process itself as a residual process, so normal continuation of the same session necessarily stopped. |
+| Product impact | `None` |
+| Durable consequence | Only a zero-write false stop occurred. Task 164 did not start. |
+| Required later audit | After Phase 31 Final Close, audit the need for a process/session guard and regression coverage that distinguishes the current-session host from a second claimant. |
+| Prohibition | Before Phase 31 closes, do not change an installed skill, resolver, shared contract, or workflow test. |
+
+The existing deferred workflow issues
+`WF-2026-09-07-RUN-PHASE-RUN-TASK-HANDOFF` and
+`WF-2026-09-07-RUN-TASK-PREMATURE-CHECKPOINT-CLOSURE` retain their prior
+content and state unchanged.
+
+## Visual-Audit Working-Session Continuation Handoff
+
+- Working session `phase-31-visual-audit-reference-evidence-repair-01`:
+  `closed/archive-only`.
+- Control Tower `phase-31-control-tower`: `active`.
+- Duplicate-session count: `0`.
+- Visual-audit checkpoint acceptance: not granted; the checkpoint is not an
+  accepted Task 164 entry condition.
+- Preserved evidence/checkpoint commit:
+  `2ab806bfdc497174e1431039cef81acb220068c0`, unchanged.
+- Task 164 and Task 165: `[ ]`, unstarted. No Task 164 receipt, durable-start
+  marker, code, test, or evidence file was created.
+- Next legal action: the Control Tower determines legality and readiness for a
+  noncanonical Neumorphism/Retro Mac two-theme blind replay, followed by a
+  separate user gate. The replay does not start from this handoff.
