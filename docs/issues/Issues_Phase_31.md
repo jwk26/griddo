@@ -3,11 +3,10 @@
 > Branch: `phase-31/integration-conformance-full-gate`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate`
 > Kickoff date: 2026-09-07
-> Current state: Task 163 is `[x]` and Accepted; Tasks 164–165 are `[ ]` and
-> unstarted. There is no active Working session. The latest Working session,
-> `phase-31-visual-audit-closure-ledger-repair-01`, and the earlier
-> visual-audit Working session,
-> `phase-31-visual-audit-reference-evidence-repair-01`, are both
+> Current state: Task 163 is `[x]` and Accepted; canonical Task 164 Stage A is
+> `In Progress`; Task 164 remains `[ ]` and Task 165 is `[ ]` and unstarted.
+> The sole active Working session is
+> `phase-31-task-164-stage-a-run-task-01`; all earlier Working sessions are
 > `closed/archive-only`. Control Tower `phase-31-control-tower` remains
 > `active`; duplicate-session count is `0`.
 
@@ -389,3 +388,38 @@ content and state unchanged.
 | Commit contract | Parent is durable-start commit `ec81863c3dd2f003fc393a7c2cafec72efec294b`; tree changes only this ledger; no receipt/payload or task-marker change; commit message is not pinned or machine-consumed. Actual parent, tree, path set, marker, receipt state, and material content intent must be verified after commit; variance disposition is `None` only on an exact match. |
 | Canonical impact | `None`; no product, design, plan, recipe, visual-audit, asset, source, test, installed skill, resolver, shared contract, or workflow test changed. |
 | Next legal action | Control Tower determines noncanonical Neumorphism/Retro Mac blind-replay legality/readiness. |
+
+## Task 164 Stage A — Durable Start
+
+| Field | Durable value |
+| --- | --- |
+| Task / iteration | Canonical Task 164 Stage A only; first canonical iteration `T164-CA-I01`; Neumorphism and Retro Mac across all nine Inbox/Triage recipes |
+| State | `In Progress`; Task 164 remains `[ ]`; Task 165 remains `[ ]` and unstarted |
+| Approval | Exact receipt `docs/issues/Issues_Phase_31.Task_164.task-164-stage-a-gate-c.json`, committed as `eace54e186024c0d3f22e9cb817c74538c72771b`; installed `run-task` resolver returned `ready`, `contract_ready=true`, exit `0` for gate `task-164-stage-a-gate-c` and next action `$run-task` |
+| Approved base / entrypoint | Approved entry HEAD `54d689275cefb5d24c70f562435bb82734c51631`, tree `463ea0019c2e8588c32160bc5b3981154d9fe18a`; receipt entrypoint `eace54e186024c0d3f22e9cb817c74538c72771b`; exact linked feature worktree and approved branch; clean before the receipt and after receipt validation |
+| Approved scope | Neumorphism and Retro Mac only, light/dark, 1024px and 1920x1080, all nine recipes and the exact interaction/accessibility/motion states in the receipt; writes are limited to its primary owners and its enumerated component/test owners for visual structure, semantic styling hooks, and Inbox-scoped conformance only |
+| Reference evidence | Corrected visual audit at `2ab806bfdc497174e1431039cef81acb220068c0`, fingerprint `4039f9df60f153bcf48674b89965f0e92fd4991a5d6d6192b2ab732ba747fe29`, inventory hash `a6367eaef5cae6b417db88c1da4c7f1199af8d4ac4baac993457f2ab0356eab6`; three artifact blobs were independently validated before receipt creation; reference evidence is not visual-completeness acceptance |
+| Recovery anchor | Sole active Control Tower `phase-31-control-tower`; sole active Working session `phase-31-task-164-stage-a-run-task-01`; active predecessor Working session `none`; duplicate-session count `0`; all earlier sessions remain `closed/archive-only` |
+| Product decisions | Preserve canonical Edit to Save/Cancel, attached Add status, Newly/Undo, and reliability notifications; blend controls into each theme; keep Placement inside the target column without covering cards; inspect Explorer through Level 3; rendered fidelity requires visible browser evidence rather than selector/source matching; automated success cannot override a materially different visible result |
+| Prohibitions | No hooks, stores, repository behavior, copy, data contracts, or command-semantics changes; no historical/noncanonical bytes; no other six themes, Task 165, Phase 32+, installed workflow changes, push, PR, integration, publication, cleanup, Working-session closure, or Task 164 `[x]` |
+| Issue / deviation | `None` at durable start; historical workflow-audit findings remain deferred until Phase 31 Final Close and unchanged |
+| Canonical impact | `None`; Stage A realizes existing canonical recipes/design/plan within the separately approved two-theme slice and changes no canonical product direction |
+
+### Expected Stage A implementation commit contract
+
+- Parent: this Task 164 Stage A durable-start commit, with no intervening
+  product, future-scope, topology, or publication commit.
+- Content intent and approved path set: independently authored Neumorphism and
+  Retro Mac visual realization, semantic/accessibility conformance tests,
+  append-only `T164-CA-I01` browser evidence and recomputable assets, and this
+  ledger checkpoint evidence, limited to the exact owners in the receipt.
+- Task and marker: Stage A reaches `Implemented; awaiting user disposition`;
+  canonical `Task 164: [ ]` remains unchanged and Task 165 remains unstarted.
+- Receipt/payload: exact committed Stage A receipt
+  `eace54e186024c0d3f22e9cb817c74538c72771b`; no owner or scope expansion.
+- Commit message: exact canonical value
+  `feat(triage): conform inbox themes and accessibility`; treated as pinned by
+  the Task 164 commit contract.
+- Any different parent, approved path set, marker, receipt/payload, pinned
+  message, or material content intent is a material variance and a stop. The
+  commit will not be amended and history will not be rewritten.
