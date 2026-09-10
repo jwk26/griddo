@@ -1,0 +1,13 @@
+{
+  "schema": "griddo.task-164.stage-a.browser-run-failure.v1",
+  "iterationId": "T164-CA-I01",
+  "runId": "T164-CA-I01-run-07",
+  "status": "failed",
+  "preservedScreenshotCount": 14,
+  "lastCompletedScreenshot": "neumorphism-light-1024-12-newly-undo-before.png",
+  "failedScenario": "direct Placement confirmation for Newly/Undo",
+  "error": "Missing action with text: Confirm",
+  "finding": "The harness selected the direct Placement type before the just-released DnD operation had settled; the DOM remained on the valid type-selection surface.",
+  "classification": "browser evidence",
+  "disposition": "Preserved without reuse as passing evidence; run-08 waits for release settlement before type selection and confirmation."
+}

@@ -405,6 +405,30 @@ content and state unchanged.
 | Issue / deviation | `None` at durable start; historical workflow-audit findings remain deferred until Phase 31 Final Close and unchanged |
 | Canonical impact | `None`; Stage A realizes existing canonical recipes/design/plan within the separately approved two-theme slice and changes no canonical product direction |
 
+### Stage A pre-RED seam inventory
+
+| Recipe behavior | Producer | Mounted owner | Direct consumers | Direct test | Visual owner | Canonical owner |
+| --- | --- | --- | --- | --- | --- | --- |
+| Shell and section chrome | Existing section copy, ratios, and theme root attributes | `TriageWorkspace` | Pool, Breakdown, Staging, Explorer sections | new conformance owner plus `triage-workspace.test.tsx` | `/grid/[nodeId]`, `triage-shell`, section surfaces/headers, `rendered-fidelity.md` | DESIGN_TOKENS Inbox/Triage contract; shell recipe; Task 164 |
+| Scratch Pool | `useInbox`, Pool preferences, Pool activity state | `ScratchPool` within `TriageWorkspace` | expanded/collapsed tools, rows, switchers, status band | new conformance owner plus `scratch-pool.test.tsx` | Pool surface/tools/rows/status at the approved route | Scratch Pool recipe; Task 164 |
+| Selected Scratch Context | `useScratchBreakdowns` editor projection and selected Scratch | `BreakdownPanel` | signature plate, title editor, action cluster, complete state | new conformance owner plus `breakdown-panel.test.tsx` | Context plate/editor/actions at the approved route | Selected Scratch Context recipe; DP-VQ04/11; Task 164 |
+| Breakdown rows and empty states | Breakdown projection, Add/Delete outcomes, completion projection | `BreakdownPanel` | active/staged rows, empty/completion, Add and reliability rails | new conformance owner plus `breakdown-panel.test.tsx` | Breakdown viewport/rows/Add/empty/completion | Breakdown row/empty recipe; DP-VQ02–05/11; Task 164 |
+| Staging | durable candidate projection and DnD target state | `StagingZone` pair within `TriageWorkspace` | Node/Bit candidates, wells, status and Unstage target | new conformance owner plus `staging-zone.test.tsx` and `triage-workspace.test.tsx` | Staging wells/cards/rows/alerts/target states | Staging recipe; DP-VQ06; Task 164 |
+| Grid Explorer | `useGridData`, path/search/remote projections | `HierarchyExplorer` | four columns through Level 3, Node/Bit rows, search/status | new conformance owner plus `hierarchy-explorer.test.tsx` and search tests | Explorer surface/path/columns/search at the approved route | Grid Explorer recipe; DP-VQ07/09; Task 164 |
+| Placement affordances | `useTriagePlacement` release/snapshot and target feedback | `HierarchyExplorer` / `PlacementAffordance` | direct/staged forms, eligibility, Confirm/Cancel, reliability | new conformance owner plus `hierarchy-explorer.test.tsx` | in-column non-occluding Placement geometry and states | Placement recipe; DP-VQ08/09; Task 164 |
+| Newly placed and Undo | `useTriageNewlyPlaced` provenance/Undo controller | `HierarchyExplorer`, `NodeCard`, `BitCard`, Search results | marker, unchanged common card, trailing Undo, status rail | new conformance owner plus Explorer/Card/Search tests | actual Node/Bit item wrapper before/active/after Undo | Newly placed/Undo recipe; DP-VQ10; Task 164 |
+| Archive completion | `useCanArchiveScratch` and `useArchiveScratch` coordinator | `BreakdownPanel` / `ArchiveOperationCard` | scrim/card, complete Context, reopen, action/status states | new conformance owner plus `breakdown-panel.test.tsx` and Workspace tests | Breakdown-scoped completion and Archive states | Archive completion recipe; DP-VQ11/12; Task 164 |
+
+Discovery found no required write owner outside the Stage A receipt. Hooks,
+stores, repository code, copy, data contracts, and command semantics are read
+producers only. Automated DOM tests may claim landmarks, accessible names,
+state tokens, focus wiring, and preserved semantic-tree identity. Only fresh
+Chrome evidence may claim computed styling, true focus-visible, pointer/drag
+geometry, viewport/touch size, media-query behavior, or prototype fidelity.
+The corrected `2ab806b…` audit is an input finding only and is invalidated for
+all Stage A output claims because source, test, theme/mode, viewport, and
+browser-state inputs will change.
+
 ### Expected Stage A implementation commit contract
 
 - Parent: this Task 164 Stage A durable-start commit, with no intervening
@@ -423,3 +447,23 @@ content and state unchanged.
 - Any different parent, approved path set, marker, receipt/payload, pinned
   message, or material content intent is a material variance and a stop. The
   commit will not be amended and history will not be rewritten.
+
+### Task 164 Stage A — Implementation checkpoint candidate
+
+| Field | Checkpoint value |
+| --- | --- |
+| Iteration / purpose | `T164-CA-I01`; first canonical Stage A realization of Neumorphism and Retro Mac across all nine Inbox/Triage recipes |
+| Starting identity | HEAD `68ea320ed1c12e2edf6d9dd671ac87c48fb13769`, tree `98a4a05edb0caa5f8da14c2bf71959442a213682`; exact implementation commit remains to be created from this parent |
+| Known inputs | Exact Gate C receipt and durable start above; corrected audit `2ab806bfdc497174e1431039cef81acb220068c0`, fingerprint `4039f9df60f153bcf48674b89965f0e92fd4991a5d6d6192b2ab732ba747fe29`, reference inventory `a6367eaef5cae6b417db88c1da4c7f1199af8d4ac4baac993457f2ab0356eab6`; pinned prototype HEAD/tree above; no historical experiment bytes reused |
+| Expected result | Theme-native Neumorphism depth and Retro Mac 1-bit chrome while canonical Save/Cancel, Add status, non-occluding Placement, Level 3 Explorer, Newly/Undo, reliability surfaces, and Archive remain intact |
+| Actual visible result | Direct run-10 inspection shows raised/inset rounded Neumorphism and square striped/dithered Retro Mac across shell, Pool, Context, rows/empty, Staging, Explorer, direct/staged Placement, Newly/Undo, and Archive; no material visual mismatch was hidden by automation |
+| Coverage | Both themes × light/dark × `1024x768`/`1920x1080`; recipes 1–9; hover and true focus-visible; DnD source/eligible/`idle-invalid`/active-drop/interruption; direct/staged Placement; dirty Edit Save/Cancel; Add active/result; Newly before/active/after; Archive; ordinary/reduced motion; dynamic touch audits |
+| Browser result | Final `T164-CA-I01-run-10`: 200 PNGs and 40 interaction records, 25 screenshots per each of eight combinations; ordinary drag-token distance 400.18–1020.80px; 128 interactive instances across five dynamic touch scenarios per combination with zero sub-`44x44` findings; direct comparison sheets preserved separately |
+| Automated result | Separate from browser/user result: `pnpm test` passed 101 files/1,273 tests; typecheck passed; lint exited 0 with 11 pre-existing warnings and no Stage A warning; production build passed with seven routes; diff check passed; exact resolver returned `ready` and `contract_ready=true` |
+| Findings | `New/Repeated → Resolved`: 1024 squeezing (`implementation`), actual `idle-invalid` styling (`implementation`), fixture/dev-overlay and harness races (`browser evidence`), reduced-motion interpretation (`automated verification`), dirty Cancel proof (`browser evidence`), and global shared-card visual-role leakage (`implementation`) |
+| Difference from preceding iteration | Unlike rejected noncanonical `T164-NC-I01`, this iteration was independently authored from the approved canonical start and uses no bytes from it. There is no preceding canonical Stage A iteration; runs 01–09 remain append-only intermediate/failure evidence, while run-10 completes the required matrix and two-point ordinary-motion proof. |
+| Changed owners | `src/app/globals.css`; Inbox conformance owner; `staging-zone*`, `triage-drag-token.tsx`, `hierarchy-explorer.tsx`; shared Node/Bit card owners only to keep their visual-role hooks Inbox-scoped; this ledger/report/assets |
+| Omitted / insufficient | No physical-device or non-Chrome run; no new repository-fault injection; runs 01–08 are not acceptance evidence; user disposition is pending |
+| Durable evidence | `docs/verification/inbox-triage/rendered-fidelity.md`; append-only `T164-CA-I01-iteration-record.json`; run-10 browser manifest SHA-256 `ae5e63813f9ba9c91212455e006c18c543e423c0d663f594bdbdb4d6b44b30ab`; comparison manifest SHA-256 `fa99d99a26ca0ddc6935b500181bb8fe01dbab85f6e9d79255739c00d99e86f2`; complete 704-entry inventory SHA-256 `5834345760d722f89ec1157acbe849c34c6f574b6d90603337c99c41fe8137b6` |
+| User disposition / state | `pending`; Working session remains `active / awaiting user disposition`; Task 164 remains `[ ]`; six-theme expansion is not authorized |
+| Audit hypothesis | A future post-Phase-31 skill audit may evaluate a standard production-browser fixture reset and append-only capture manifest; hypothesis only, with no installed skill/workflow change |

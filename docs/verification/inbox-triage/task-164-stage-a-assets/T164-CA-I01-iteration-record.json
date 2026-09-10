@@ -1,0 +1,169 @@
+{
+  "schema": "griddo.task-164.stage-a.iteration-record.v1",
+  "iterationId": "T164-CA-I01",
+  "purpose": "First canonical Stage A implementation for Neumorphism and Retro Mac across the nine Inbox/Triage recipes.",
+  "startingHead": "68ea320ed1c12e2edf6d9dd671ac87c48fb13769",
+  "startingTree": "98a4a05edb0caa5f8da14c2bf71959442a213682",
+  "resultingCommits": [],
+  "knownInputsBeforeImplementation": {
+    "approvedEntryHead": "54d689275cefb5d24c70f562435bb82734c51631",
+    "gateReceiptCommit": "eace54e186024c0d3f22e9cb817c74538c72771b",
+    "durableStartCommit": "68ea320ed1c12e2edf6d9dd671ac87c48fb13769",
+    "correctedAuditCheckpoint": "2ab806bfdc497174e1431039cef81acb220068c0",
+    "auditFingerprint": "4039f9df60f153bcf48674b89965f0e92fd4991a5d6d6192b2ab732ba747fe29",
+    "assetInventorySha256": "a6367eaef5cae6b417db88c1da4c7f1199af8d4ac4baac993457f2ab0356eab6",
+    "prototypeHead": "4f39709688ceb4cac5e15d4e3502186b1f1c801b",
+    "prototypeTree": "7b8eb8766a9b57fe2174a948de09cfb7646cf7de"
+  },
+  "knownFindingsBeforeImplementation": [
+    "Shell and section chrome had correct placement/background but materially weak framing, depth, dividers, header identity, and theme grammar.",
+    "Scratch Pool semantics existed while row, tool, inset/raised, and Finder-style treatments were flattened.",
+    "Selected Scratch Context preserved canonical Edit/Save/Cancel and Saved behavior but lacked theme-native depth, signature treatment, and action hierarchy.",
+    "Breakdown rows preserved Add/actions/status while row objects, grips, Add composition, empty/completion grammar, and depth needed conformance.",
+    "Staging preserved Node/Bit semantics but required themed chrome, wells, quiet-empty treatment, and invalid/drop-back roles without redesigning card internals.",
+    "Grid Explorer preserved four columns/path/search but had flat column, path, target, and status styling; Retro Mac native evidence did not prove populated Level 3.",
+    "Placement behavior remained canonical but required target/status, non-color, focus, and reduced-motion styling without occluding cards.",
+    "Newly/Undo semantics were canonical; Task 164 could style only the marker, rail, and action envelope while common card internals remained deferred.",
+    "Archive/completion semantics were authoritative from accepted evidence and needed theme role bindings plus static/reduced-motion styling without behavior changes."
+  ],
+  "expectedResult": "Theme-native Neumorphism depth and Retro Mac 1-bit chrome while retaining canonical Save/Cancel, Add status, non-occluding Placement, Level 3 Explorer, Newly/Undo, and Archive behavior.",
+  "exercised": {
+    "themes": ["neumorphism", "retro-mac"],
+    "modes": ["light", "dark"],
+    "viewports": ["1024x768", "1920x1080"],
+    "recipes": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "states": [
+      "populated", "empty", "Explorer Level 3", "pointer hover",
+      "true keyboard focus-visible", "DnD source", "eligible", "invalid",
+      "active-drop", "Escape interruption", "direct Placement", "staged Placement",
+      "Edit open", "Save result", "Cancel result", "Add active", "Add result",
+      "Newly before", "Newly active", "Undo after", "Archive ready",
+      "Archive completion", "ordinary motion", "reduced motion", "coarse pointer touch targets"
+    ]
+  },
+  "runs": [
+    {
+      "runId": "T164-CA-I01-run-01",
+      "status": "insufficient",
+      "findingStatus": "New",
+      "differenceFromPreceding": "First automated browser evidence run.",
+      "findings": ["Fixture retained state created by earlier manual browser interactions.", "The first reduced-motion metric treated Chrome's 10 microsecond clamp as effective motion."],
+      "probableCause": ["browser evidence", "automated verification"],
+      "manifest": "T164-CA-I01-run-01/browser-evidence-manifest.json",
+      "manifestSha256": "3824fea6dfb1f8f4c5f929b4e8cbff7dc586054179da03ff11c0a6b62a047a23"
+    },
+    {
+      "runId": "T164-CA-I01-run-02",
+      "status": "insufficient",
+      "findingStatus": "Repeated",
+      "differenceFromPreceding": "Added Escape-interruption captures, recognized the actual idle-invalid state, and corrected reduced-motion interpretation; fixture contamination and dev overlay remained.",
+      "findings": ["Actual incompatible DnD state is idle-invalid and required a matching theme selector.", "Fixture isolation remained incomplete.", "Development overlay was not acceptable final evidence."],
+      "probableCause": ["implementation", "browser evidence"],
+      "manifest": "T164-CA-I01-run-02/browser-evidence-manifest.json",
+      "manifestSha256": "281276fe65710794780695d0012d8a4f3220815b5e6d140c9dedee3df0fd8bd7"
+    },
+    {
+      "runId": "T164-CA-I01-run-03",
+      "status": "failed",
+      "findingStatus": "New",
+      "differenceFromPreceding": "Cleared all non-system fixture data and moved capture to the production server; stopped before Archive evidence when raw IndexedDB mutation did not notify a mounted Dexie liveQuery.",
+      "findings": ["29 images are preserved but are not a complete passing set.", "Archive transition harness required a reload and canonical Reopen action."],
+      "probableCause": ["browser evidence"],
+      "failureRecord": "T164-CA-I01-run-03/run-failure.json"
+    },
+    {
+      "runId": "T164-CA-I01-run-04",
+      "status": "insufficient",
+      "findingStatus": "Resolved",
+      "differenceFromPreceding": "Production-server run resolved fixture isolation and Archive live-query handling, but its extended interaction matrix was not yet complete across all eight theme/mode/viewport combinations.",
+      "actualVisibleResult": "Theme grammar and canonical controls were visible without a development overlay; this run is retained as an intermediate measurement rather than final Stage A evidence.",
+      "automatedBrowserResult": "68 screenshots and four comparison sheets passed at the then-current matrix breadth.",
+      "probableCause": ["design-source promotion", "canonical recipe/plan", "implementation", "browser evidence"],
+      "manifest": "T164-CA-I01-run-04/browser-evidence-manifest.json",
+      "manifestSha256": "5f68d9712ccfb22ff206ae7545b65ca51c9e4ae80b3868525e4746e3d7f1a158",
+      "comparisonManifest": "T164-CA-I01-run-04/comparisons/comparison-manifest.json",
+      "comparisonManifestSha256": "e96b9c174d0d1eea102ae3668174ed73ce633348f6db35a9797e2b234b8a5d3b"
+    },
+    {
+      "runId": "T164-CA-I01-run-05",
+      "status": "failed",
+      "findingStatus": "New",
+      "differenceFromPreceding": "Expanded the interaction matrix to 1024, then stopped after Edit was attempted while staged-Placement cancellation was still locked.",
+      "findings": ["Eight screenshots are preserved; the apparent editor frame did not contain Save/Cancel and is not passing evidence."],
+      "probableCause": ["browser evidence"],
+      "failureRecord": "T164-CA-I01-run-05/run-failure.json"
+    },
+    {
+      "runId": "T164-CA-I01-run-06",
+      "status": "failed",
+      "findingStatus": "Repeated",
+      "differenceFromPreceding": "Added operation-settlement and disabled-control checks, but a generic inline-editor selector still matched an unrelated field.",
+      "findings": ["Eight screenshots are preserved; editor identity required a Selected Scratch Context-scoped selector."],
+      "probableCause": ["browser evidence"],
+      "failureRecord": "T164-CA-I01-run-06/run-failure.json"
+    },
+    {
+      "runId": "T164-CA-I01-run-07",
+      "status": "failed",
+      "findingStatus": "New",
+      "differenceFromPreceding": "Scoped Edit to Selected Scratch Context and captured Newly-before, then stopped when direct Placement type selection raced DnD release settlement.",
+      "findings": ["Fourteen screenshots are preserved; the missing Confirm state is not passing evidence."],
+      "probableCause": ["browser evidence"],
+      "failureRecord": "T164-CA-I01-run-07/run-failure.json"
+    },
+    {
+      "runId": "T164-CA-I01-run-08",
+      "status": "failed",
+      "findingStatus": "New",
+      "differenceFromPreceding": "Waited for Placement release settlement and completed ordinary/reduced-motion captures, then stopped on a documentElement replacement race during the touch-audit reload.",
+      "findings": ["Twenty screenshots are preserved; the incomplete touch phase is not passing evidence."],
+      "probableCause": ["browser evidence"],
+      "failureRecord": "T164-CA-I01-run-08/run-failure.json"
+    },
+    {
+      "runId": "T164-CA-I01-run-09",
+      "status": "insufficient",
+      "findingStatus": "Resolved",
+      "differenceFromPreceding": "Stabilized each new production document and completed every extended interaction and dynamic touch scenario in all eight combinations; ordinary DnD reached active state but recorded only one token position.",
+      "actualVisibleResult": "Neumorphism uses raised section surfaces, inset wells, rounded depth, and soft relief. Retro Mac uses square 1-bit frames, striped headers, dithered invalid/empty regions, and hard shadows. Canonical Edit/Save/Cancel, Add status, Level 3, direct/staged non-occluding Placement, Newly/Undo, and Archive states remain visible. Direct inspection found no material mismatch hidden by automation.",
+      "automatedBrowserResult": "200 screenshots and 40 interaction records: 25 screenshots in each of eight combinations; recipes 1-9; physical hover and keyboard focus-visible; ordinary DnD, eligible/idle-invalid/active-drop and Escape interruption; dirty Edit-cancel restoration; Add, Newly before/active/after, Archive, effective reduced motion; and five dynamic coarse-pointer scenarios with 128 sampled interactive instances and zero sub-44px failures per combination.",
+      "probableCause": ["design-source promotion", "canonical recipe/plan", "implementation", "automated verification", "browser evidence"],
+      "manifest": "T164-CA-I01-run-09/browser-evidence-manifest.json",
+      "manifestSha256": "cdf361aa5e2fae381e1730ab3d4956d4889b5a095c4f9254f8d99e79b7b45048",
+      "comparisonManifest": "T164-CA-I01-run-09/comparisons/comparison-manifest.json",
+      "comparisonManifestSha256": "1af0101301f26a2c6c70fae6f2486e816df6d133d1a8e7e3f2ab35d21021bac0"
+    },
+    {
+      "runId": "T164-CA-I01-run-10",
+      "status": "resolved",
+      "findingStatus": "Resolved",
+      "differenceFromPreceding": "Retained the complete run-09 matrix and added two-point drag-token and pointer samples with a hard failure below 10px movement for every valid DnD scenario.",
+      "actualVisibleResult": "The run-10 images reproduce the inspected run-09 theme result and canonical control geometry. Ordinary pointer DnD visibly moves the drag token before reaching the active target in every combination.",
+      "automatedBrowserResult": "200 screenshots and 40 interaction records across all eight combinations. Eight ordinary-motion measurements record drag-token distances from 400.18px to 1020.80px; all eight idle-invalid states and all eight Escape interruption restorations pass. Five dynamic touch scenarios per combination retain zero sub-44px failures.",
+      "probableCause": ["browser evidence", "automated verification"],
+      "manifest": "T164-CA-I01-run-10/browser-evidence-manifest.json",
+      "manifestSha256": "ae5e63813f9ba9c91212455e006c18c543e423c0d663f594bdbdb4d6b44b30ab",
+      "comparisonManifest": "T164-CA-I01-run-10/comparisons/comparison-manifest.json",
+      "comparisonManifestSha256": "fa99d99a26ca0ddc6935b500181bb8fe01dbab85f6e9d79255739c00d99e86f2"
+    }
+  ],
+  "implementationPathsChanged": [
+    "src/app/globals.css",
+    "src/components/triage/inbox-triage-conformance.test.tsx",
+    "src/components/triage/staging-zone.tsx",
+    "src/components/triage/staging-zone.test.tsx",
+    "src/components/triage/triage-drag-token.tsx",
+    "src/components/triage/hierarchy-explorer.tsx",
+    "src/components/grid/node-card.tsx",
+    "src/components/grid/bit-card.tsx"
+  ],
+  "omittedOrInsufficientEvidence": [
+    "runs 01-09 are preserved intermediate measurements but not final acceptance evidence",
+    "runs 03 and 05-08 are preserved failed harness runs with explicit failure records and per-run asset inventories",
+    "no physical-device or non-Chrome browser run",
+    "no fresh repository fault injection; existing canonical reliability tests remain the automated source for injected failure behavior",
+    "user visual disposition remains pending; run-10 is review evidence, not acceptance"
+  ],
+  "userDisposition": "pending",
+  "futureSkillImprovementHypothesis": "A future post-Phase-31 audit could evaluate a standard production-browser fixture reset and append-only capture-run manifest; this is an audit hypothesis only and does not modify or prejudge any installed skill."
+}

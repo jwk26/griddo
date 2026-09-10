@@ -1,0 +1,1329 @@
+{
+  "schema": "griddo.task-164.stage-a.browser-evidence.v1",
+  "iterationId": "T164-CA-I01",
+  "generatedAt": "2026-09-10T11:55:16.220Z",
+  "appOrigin": "http://localhost:3102",
+  "browser": "Chrome/152.0.7977.83",
+  "protocolVersion": "1.3",
+  "fixtureIds": {
+    "root": "11111111-1111-4111-8111-111111111111",
+    "level1": "22222222-2222-4222-8222-222222222222",
+    "level2": "33333333-3333-4333-8333-333333333333",
+    "scratch": "44444444-4444-4444-8444-444444444444",
+    "breakdown1": "55555555-5555-4555-8555-555555555555",
+    "breakdown2": "66666666-6666-4666-8666-666666666666",
+    "breakdown3": "77777777-7777-4777-8777-777777777777",
+    "candidate": "88888888-8888-4888-8888-888888888888",
+    "rootBit": "99999999-9999-4999-8999-999999999999",
+    "level1Bit": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "level2Bit": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+  },
+  "screenshots": [
+    {
+      "id": "neumorphism-light-1024-01-populated-level3",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1024-01-populated-level3.png",
+      "sha256": "b556190a805a6344d31567644c72df622c1446dbf18bd43638341a52238af26c",
+      "bytes": 88461,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1024x768",
+      "recipes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "state": "populated; Explorer through Level 3"
+    },
+    {
+      "id": "neumorphism-light-1024-02-hover-focus-visible",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1024-02-hover-focus-visible.png",
+      "sha256": "04c1c739bd1f35f90dbf62445b332dbfb37a7342d69ac04d8074fb30f0b6cf2e",
+      "bytes": 94096,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1024x768",
+      "recipes": [
+        4
+      ],
+      "state": "physical pointer hover plus true keyboard focus-visible"
+    },
+    {
+      "id": "neumorphism-light-1024-03-dnd-source-eligible-active",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1024-03-dnd-source-eligible-active.png",
+      "sha256": "70add2865ea685d39d05e5f4106280b86a2be617376d9ac27c8addd53432f03b",
+      "bytes": 94451,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1024x768",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD source and active target (valid)"
+    },
+    {
+      "id": "neumorphism-light-1024-03b-dnd-interrupted",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1024-03b-dnd-interrupted.png",
+      "sha256": "24181a467ad417e8e221c761605343af16b466ca1ff15791b2bc436e831f8b67",
+      "bytes": 89104,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1024x768",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD interrupted with Escape; source and target restored"
+    },
+    {
+      "id": "neumorphism-light-1024-04-direct-placement",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1024-04-direct-placement.png",
+      "sha256": "5cfb15a38a04758d479c8318cc0071c81371df0360253fb5cf113f93c2b2720c",
+      "bytes": 93846,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1024x768",
+      "recipes": [
+        6,
+        7
+      ],
+      "state": "direct Placement geometry inside target column"
+    },
+    {
+      "id": "neumorphism-light-1920-01-populated-level3",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-01-populated-level3.png",
+      "sha256": "b5caf3db85b9d158f68059389da86d00ec5de6849554ee935490f184727975c8",
+      "bytes": 112979,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "state": "populated; Explorer through Level 3"
+    },
+    {
+      "id": "neumorphism-light-1920-02-hover-focus-visible",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-02-hover-focus-visible.png",
+      "sha256": "b60601a238b5399124a2fef4de7850207fb82df32f2a1b4b0bf97bb7040af8ec",
+      "bytes": 119013,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        4
+      ],
+      "state": "physical pointer hover plus true keyboard focus-visible"
+    },
+    {
+      "id": "neumorphism-light-1920-03-dnd-source-eligible-active",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-03-dnd-source-eligible-active.png",
+      "sha256": "0bffd4906ed55b4b2f912df2928461c5538dd42ffc2c3c70e7502a143b364a6a",
+      "bytes": 117770,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD source and active target (valid)"
+    },
+    {
+      "id": "neumorphism-light-1920-03b-dnd-interrupted",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-03b-dnd-interrupted.png",
+      "sha256": "10e80abfcf7d5d26e2723a4b3726efbc8616b9fd15c3f3b05e1c949454869443",
+      "bytes": 113627,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD interrupted with Escape; source and target restored"
+    },
+    {
+      "id": "neumorphism-light-1920-04-direct-placement",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-04-direct-placement.png",
+      "sha256": "1053b8bd499111a3ed17f9aa222a5c4588d9e882aea0aba35980730b368bbb67",
+      "bytes": 125772,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        6,
+        7
+      ],
+      "state": "direct Placement geometry inside target column"
+    },
+    {
+      "id": "neumorphism-dark-1024-01-populated-level3",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-dark-1024-01-populated-level3.png",
+      "sha256": "fd10ce980aedf7bf3212884ce12a7bdeec9bbf86aea2cecb9bb59903238800e3",
+      "bytes": 74168,
+      "theme": "neumorphism",
+      "mode": "dark",
+      "viewport": "1024x768",
+      "recipes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "state": "populated; Explorer through Level 3"
+    },
+    {
+      "id": "neumorphism-dark-1024-02-hover-focus-visible",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-dark-1024-02-hover-focus-visible.png",
+      "sha256": "0fc15b4bd016ebd5d49104dcf8694f2d8b70357edf22ccb007f37ca58378275f",
+      "bytes": 79452,
+      "theme": "neumorphism",
+      "mode": "dark",
+      "viewport": "1024x768",
+      "recipes": [
+        4
+      ],
+      "state": "physical pointer hover plus true keyboard focus-visible"
+    },
+    {
+      "id": "neumorphism-dark-1024-03-dnd-source-eligible-active",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-dark-1024-03-dnd-source-eligible-active.png",
+      "sha256": "98a6c87d31d6f1368a75702aedb9d216ce98f40fbedc106703862c514d10230e",
+      "bytes": 78015,
+      "theme": "neumorphism",
+      "mode": "dark",
+      "viewport": "1024x768",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD source and active target (valid)"
+    },
+    {
+      "id": "neumorphism-dark-1024-03b-dnd-interrupted",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-dark-1024-03b-dnd-interrupted.png",
+      "sha256": "c8fe7e12718caa0fbfc707297b9a697276afe2084cb50592a2266aa2e52f3d51",
+      "bytes": 74928,
+      "theme": "neumorphism",
+      "mode": "dark",
+      "viewport": "1024x768",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD interrupted with Escape; source and target restored"
+    },
+    {
+      "id": "neumorphism-dark-1024-04-direct-placement",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-dark-1024-04-direct-placement.png",
+      "sha256": "d597612004d5d1dbfdf7cefb368fcfb53bcaaaac6d697ef690ddbf3422e6c571",
+      "bytes": 78802,
+      "theme": "neumorphism",
+      "mode": "dark",
+      "viewport": "1024x768",
+      "recipes": [
+        6,
+        7
+      ],
+      "state": "direct Placement geometry inside target column"
+    },
+    {
+      "id": "neumorphism-dark-1920-01-populated-level3",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-dark-1920-01-populated-level3.png",
+      "sha256": "7909d5d5e18c623c5c433c949fe06d74d323f845e3925bca25f25df8a7945451",
+      "bytes": 96107,
+      "theme": "neumorphism",
+      "mode": "dark",
+      "viewport": "1920x1080",
+      "recipes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "state": "populated; Explorer through Level 3"
+    },
+    {
+      "id": "neumorphism-dark-1920-02-hover-focus-visible",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-dark-1920-02-hover-focus-visible.png",
+      "sha256": "51981724088406bc8a24991e4665e3e8c43f296bf33f3db2ad6b260ba7da3b52",
+      "bytes": 102020,
+      "theme": "neumorphism",
+      "mode": "dark",
+      "viewport": "1920x1080",
+      "recipes": [
+        4
+      ],
+      "state": "physical pointer hover plus true keyboard focus-visible"
+    },
+    {
+      "id": "neumorphism-dark-1920-03-dnd-source-eligible-active",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-dark-1920-03-dnd-source-eligible-active.png",
+      "sha256": "aa01de5db9720efb33aa49afd4a40968d40553cd82cbdb8f18b627c17d59322c",
+      "bytes": 99184,
+      "theme": "neumorphism",
+      "mode": "dark",
+      "viewport": "1920x1080",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD source and active target (valid)"
+    },
+    {
+      "id": "neumorphism-dark-1920-03b-dnd-interrupted",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-dark-1920-03b-dnd-interrupted.png",
+      "sha256": "4a7338506ce5998a7090acf480fe3f0431aa9e00ea444c84ebf3fe1d346a8a81",
+      "bytes": 96877,
+      "theme": "neumorphism",
+      "mode": "dark",
+      "viewport": "1920x1080",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD interrupted with Escape; source and target restored"
+    },
+    {
+      "id": "neumorphism-dark-1920-04-direct-placement",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-dark-1920-04-direct-placement.png",
+      "sha256": "a0d579dadf4f4a66e03d9f58de2499acb60049489115cd6695d656ea202c5bbd",
+      "bytes": 106893,
+      "theme": "neumorphism",
+      "mode": "dark",
+      "viewport": "1920x1080",
+      "recipes": [
+        6,
+        7
+      ],
+      "state": "direct Placement geometry inside target column"
+    },
+    {
+      "id": "neumorphism-light-1920-05-dnd-invalid",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-05-dnd-invalid.png",
+      "sha256": "c09898e01f5f67392fb21db3104da1f26abfd33c316198ca599ee53c55f7b8a1",
+      "bytes": 127078,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        5,
+        7
+      ],
+      "state": "staged Bit over Node target (idle-invalid)"
+    },
+    {
+      "id": "neumorphism-light-1920-06-staged-placement",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-06-staged-placement.png",
+      "sha256": "6d2109699fd8914222479285618bef9a1ce4637ca993a5583fa6f4c404f63cde",
+      "bytes": 127253,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        5,
+        6,
+        7
+      ],
+      "state": "staged Placement geometry inside target column"
+    },
+    {
+      "id": "neumorphism-light-1920-07-edit-save-cancel-open",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-07-edit-save-cancel-open.png",
+      "sha256": "dcc26a6822bb6268525fb0f874f54879d24d97703766a614502e5856c651f9d5",
+      "bytes": 117729,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        3
+      ],
+      "state": "Edit open with Save and Cancel"
+    },
+    {
+      "id": "neumorphism-light-1920-08-edit-save-result",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-08-edit-save-result.png",
+      "sha256": "256b146121be7166ae544f37eeec0be1012c0b925584adec38cab671c2b98b9f",
+      "bytes": 117013,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        3
+      ],
+      "state": "Edit to Save result"
+    },
+    {
+      "id": "neumorphism-light-1920-09-edit-cancel-result",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-09-edit-cancel-result.png",
+      "sha256": "256b146121be7166ae544f37eeec0be1012c0b925584adec38cab671c2b98b9f",
+      "bytes": 117013,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        3
+      ],
+      "state": "Edit to Cancel result"
+    },
+    {
+      "id": "neumorphism-light-1920-10-add-active",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-10-add-active.png",
+      "sha256": "843912d717614e667d418f979ba49a56676817e03e65b4053e4bd76922f7a085",
+      "bytes": 117701,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        4
+      ],
+      "state": "Add active editor"
+    },
+    {
+      "id": "neumorphism-light-1920-11-add-result",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-11-add-result.png",
+      "sha256": "98a183ffea70db8d7bf5c42cc9f7edce072e444a7f6cefdf79518c47b302c1d9",
+      "bytes": 123878,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        4
+      ],
+      "state": "Add result and status"
+    },
+    {
+      "id": "neumorphism-light-1920-12-newly-undo-active",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-12-newly-undo-active.png",
+      "sha256": "45bb43df60d30a9f43df7ac9f57d487dc21b9f6294108c07a5707aeaed97bdb5",
+      "bytes": 109887,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        8
+      ],
+      "state": "Newly marker and Undo available"
+    },
+    {
+      "id": "neumorphism-light-1920-13-newly-undo-after",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-13-newly-undo-after.png",
+      "sha256": "60641bfa53cad35c1b9c7a874901167afee1b25deadc477eaf3f44925b4fcda3",
+      "bytes": 107394,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        8
+      ],
+      "state": "Undo after activation"
+    },
+    {
+      "id": "neumorphism-light-1920-14-archive-ready",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-14-archive-ready.png",
+      "sha256": "900a37698fb4a1c97ee77ae9a754f00f59fbf0024ffd95507dc6d81aa2ef59f0",
+      "bytes": 96348,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        9
+      ],
+      "state": "archive-ready completion state"
+    },
+    {
+      "id": "neumorphism-light-1920-15-archive-completion",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-15-archive-completion.png",
+      "sha256": "4e1930e80cbd3300a5694bff49d716559fd6f4dc98f6986973c8a6dc55a11c16",
+      "bytes": 56596,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        9
+      ],
+      "state": "archive/completion after Archive Scratch"
+    },
+    {
+      "id": "neumorphism-light-1920-16-empty-states",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-16-empty-states.png",
+      "sha256": "b54d4790ffac0e3a4f3c8b3d4fce4013aadfc7542075db1108906cc70c15d515",
+      "bytes": 52794,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "state": "empty Scratch, context, Breakdown, Staging and Explorer"
+    },
+    {
+      "id": "neumorphism-light-1920-17-reduced-motion",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-17-reduced-motion.png",
+      "sha256": "f46fa4ad5694f3d38904560506ca1ec3ef3cb02888b0a37a3821895b21884888",
+      "bytes": 93341,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        1,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "state": "prefers-reduced-motion: reduce",
+      "effectiveTransitions": []
+    },
+    {
+      "id": "neumorphism-light-1024-18-touch-targets",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1024-18-touch-targets.png",
+      "sha256": "011aa8c63076447f51f00e98872047bcf19c9fb17d6f1465dc20b9942a625dae",
+      "bytes": 83423,
+      "theme": "neumorphism",
+      "mode": "light",
+      "viewport": "1024x768",
+      "recipes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "state": "coarse pointer touch-target audit",
+      "failures": 0
+    },
+    {
+      "id": "retro-mac-light-1024-01-populated-level3",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1024-01-populated-level3.png",
+      "sha256": "fd09539ad78714c30e1a9eff04a0daea5e217abfd91246ad6c9ca6e658fba9a9",
+      "bytes": 60008,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1024x768",
+      "recipes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "state": "populated; Explorer through Level 3"
+    },
+    {
+      "id": "retro-mac-light-1024-02-hover-focus-visible",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1024-02-hover-focus-visible.png",
+      "sha256": "7832a674d61f44fb1c2e0613f26aca80d4a56ec5bdfb8e4afb76ffb2574f2c79",
+      "bytes": 64008,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1024x768",
+      "recipes": [
+        4
+      ],
+      "state": "physical pointer hover plus true keyboard focus-visible"
+    },
+    {
+      "id": "retro-mac-light-1024-03-dnd-source-eligible-active",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1024-03-dnd-source-eligible-active.png",
+      "sha256": "9bd5b6fb6e11fdbbe1f477c1f7d14c1aaa604b0a3cb00e7d4960e5a8f9d3a747",
+      "bytes": 61859,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1024x768",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD source and active target (valid)"
+    },
+    {
+      "id": "retro-mac-light-1024-03b-dnd-interrupted",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1024-03b-dnd-interrupted.png",
+      "sha256": "1559536dd94d8f2f9ffa596f1a5abc0ac1177bf6e79f9879150bacc516f4f1e4",
+      "bytes": 60102,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1024x768",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD interrupted with Escape; source and target restored"
+    },
+    {
+      "id": "retro-mac-light-1024-04-direct-placement",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1024-04-direct-placement.png",
+      "sha256": "ba3ed2cd95e5785c819d067b8f53dadeebe306903aabc27db19a40ac4ceaf7d9",
+      "bytes": 64803,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1024x768",
+      "recipes": [
+        6,
+        7
+      ],
+      "state": "direct Placement geometry inside target column"
+    },
+    {
+      "id": "retro-mac-light-1920-01-populated-level3",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-01-populated-level3.png",
+      "sha256": "de3ab2bfedacb33090411adf37c1730b6c2b8749032675f92457fe8c26907644",
+      "bytes": 78313,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "state": "populated; Explorer through Level 3"
+    },
+    {
+      "id": "retro-mac-light-1920-02-hover-focus-visible",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-02-hover-focus-visible.png",
+      "sha256": "2fe38d2ca57a8792adffdffd3e5cd606bd536f73edcb0dd15204464ce72a76ab",
+      "bytes": 83052,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        4
+      ],
+      "state": "physical pointer hover plus true keyboard focus-visible"
+    },
+    {
+      "id": "retro-mac-light-1920-03-dnd-source-eligible-active",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-03-dnd-source-eligible-active.png",
+      "sha256": "4cf17c2076c35232b459d60026ca3c77b05d2ad18797f8dcac22cb2c0fb12392",
+      "bytes": 79772,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD source and active target (valid)"
+    },
+    {
+      "id": "retro-mac-light-1920-03b-dnd-interrupted",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-03b-dnd-interrupted.png",
+      "sha256": "396dda5f53baea06eb4835d3079119f65e9121a2fb8234ef22b52d91734a5946",
+      "bytes": 78458,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD interrupted with Escape; source and target restored"
+    },
+    {
+      "id": "retro-mac-light-1920-04-direct-placement",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-04-direct-placement.png",
+      "sha256": "810952efb88955361f08b16b676c6085d5a9792a9891f6d4ffee64f771f01cfd",
+      "bytes": 88527,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        6,
+        7
+      ],
+      "state": "direct Placement geometry inside target column"
+    },
+    {
+      "id": "retro-mac-dark-1024-01-populated-level3",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-dark-1024-01-populated-level3.png",
+      "sha256": "50df8e38f42b5ea40d00bc322af39c4ba6f181500992be47adb31cf66e43990a",
+      "bytes": 60652,
+      "theme": "retro-mac",
+      "mode": "dark",
+      "viewport": "1024x768",
+      "recipes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "state": "populated; Explorer through Level 3"
+    },
+    {
+      "id": "retro-mac-dark-1024-02-hover-focus-visible",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-dark-1024-02-hover-focus-visible.png",
+      "sha256": "8398d1c000689185d824707799faffc2e7d6285ef484db883a957c3c24aefb34",
+      "bytes": 64374,
+      "theme": "retro-mac",
+      "mode": "dark",
+      "viewport": "1024x768",
+      "recipes": [
+        4
+      ],
+      "state": "physical pointer hover plus true keyboard focus-visible"
+    },
+    {
+      "id": "retro-mac-dark-1024-03-dnd-source-eligible-active",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-dark-1024-03-dnd-source-eligible-active.png",
+      "sha256": "a83f1fe8c55c527e5308e6ac5021dc042c272cad3b1b6f36aaa44a13869107d6",
+      "bytes": 62645,
+      "theme": "retro-mac",
+      "mode": "dark",
+      "viewport": "1024x768",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD source and active target (valid)"
+    },
+    {
+      "id": "retro-mac-dark-1024-03b-dnd-interrupted",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-dark-1024-03b-dnd-interrupted.png",
+      "sha256": "8a6f64412a511269f012e89a2e2b2fb163d27cae3c922739312e7c17a640b126",
+      "bytes": 60702,
+      "theme": "retro-mac",
+      "mode": "dark",
+      "viewport": "1024x768",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD interrupted with Escape; source and target restored"
+    },
+    {
+      "id": "retro-mac-dark-1024-04-direct-placement",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-dark-1024-04-direct-placement.png",
+      "sha256": "36124aa519cb0177a70111b7c7815b1ef2004c01d44902e1dd12b4bd9b3fcb56",
+      "bytes": 65530,
+      "theme": "retro-mac",
+      "mode": "dark",
+      "viewport": "1024x768",
+      "recipes": [
+        6,
+        7
+      ],
+      "state": "direct Placement geometry inside target column"
+    },
+    {
+      "id": "retro-mac-dark-1920-01-populated-level3",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-dark-1920-01-populated-level3.png",
+      "sha256": "8d3747a145402a4d708f28bacdb13b4b01b2b16f018a83006213407fadcee6ce",
+      "bytes": 78855,
+      "theme": "retro-mac",
+      "mode": "dark",
+      "viewport": "1920x1080",
+      "recipes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "state": "populated; Explorer through Level 3"
+    },
+    {
+      "id": "retro-mac-dark-1920-02-hover-focus-visible",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-dark-1920-02-hover-focus-visible.png",
+      "sha256": "218740e513d1fbcde1fc4770967d18417e5811a44ab4e0ac5454bb9fbf71b9f5",
+      "bytes": 83456,
+      "theme": "retro-mac",
+      "mode": "dark",
+      "viewport": "1920x1080",
+      "recipes": [
+        4
+      ],
+      "state": "physical pointer hover plus true keyboard focus-visible"
+    },
+    {
+      "id": "retro-mac-dark-1920-03-dnd-source-eligible-active",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-dark-1920-03-dnd-source-eligible-active.png",
+      "sha256": "015f8c79c4449b325aea99946fb0f2aa24ba3e88631d8d42ce0d8d53a9219f0d",
+      "bytes": 80994,
+      "theme": "retro-mac",
+      "mode": "dark",
+      "viewport": "1920x1080",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD source and active target (valid)"
+    },
+    {
+      "id": "retro-mac-dark-1920-03b-dnd-interrupted",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-dark-1920-03b-dnd-interrupted.png",
+      "sha256": "0f973caa111e2836eaee994093fb8de08deda68bb27ea85e4721caf7e068f688",
+      "bytes": 78870,
+      "theme": "retro-mac",
+      "mode": "dark",
+      "viewport": "1920x1080",
+      "recipes": [
+        4,
+        5,
+        7
+      ],
+      "state": "physical DnD interrupted with Escape; source and target restored"
+    },
+    {
+      "id": "retro-mac-dark-1920-04-direct-placement",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-dark-1920-04-direct-placement.png",
+      "sha256": "ad6ffe35dcf42ad906568d899130f2421670842df0931cbeb086b876f1a538c9",
+      "bytes": 88995,
+      "theme": "retro-mac",
+      "mode": "dark",
+      "viewport": "1920x1080",
+      "recipes": [
+        6,
+        7
+      ],
+      "state": "direct Placement geometry inside target column"
+    },
+    {
+      "id": "retro-mac-light-1920-05-dnd-invalid",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-05-dnd-invalid.png",
+      "sha256": "06458ddf4ffce93aa027bbf849890e1a2c31ef20c77c48dc52afb80c0f0c3d30",
+      "bytes": 98798,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        5,
+        7
+      ],
+      "state": "staged Bit over Node target (idle-invalid)"
+    },
+    {
+      "id": "retro-mac-light-1920-06-staged-placement",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-06-staged-placement.png",
+      "sha256": "d565e9aa934d72622ea640ddcd5d9a6a3824a5991021204d31dbd88b808ec655",
+      "bytes": 87785,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        5,
+        6,
+        7
+      ],
+      "state": "staged Placement geometry inside target column"
+    },
+    {
+      "id": "retro-mac-light-1920-07-edit-save-cancel-open",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-07-edit-save-cancel-open.png",
+      "sha256": "06fb67fe82df761d4fae6b062362362143d41d117fe48a5c6eac7f37050de33b",
+      "bytes": 76756,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        3
+      ],
+      "state": "Edit open with Save and Cancel"
+    },
+    {
+      "id": "retro-mac-light-1920-08-edit-save-result",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-08-edit-save-result.png",
+      "sha256": "813214c2a52b13173deecb51dded4ff334da5a80db7f28b69b9425b5ae303a11",
+      "bytes": 77219,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        3
+      ],
+      "state": "Edit to Save result"
+    },
+    {
+      "id": "retro-mac-light-1920-09-edit-cancel-result",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-09-edit-cancel-result.png",
+      "sha256": "813214c2a52b13173deecb51dded4ff334da5a80db7f28b69b9425b5ae303a11",
+      "bytes": 77219,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        3
+      ],
+      "state": "Edit to Cancel result"
+    },
+    {
+      "id": "retro-mac-light-1920-10-add-active",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-10-add-active.png",
+      "sha256": "34a1b295e482de28eac1a5bcd973dfa79f7bb753112b88a47cf0f9840355cc15",
+      "bytes": 77089,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        4
+      ],
+      "state": "Add active editor"
+    },
+    {
+      "id": "retro-mac-light-1920-11-add-result",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-11-add-result.png",
+      "sha256": "9ea009cb18a9fd3afc3bf1f27a5977856cb02ac046a467a7d44e5387e2e5fdd5",
+      "bytes": 80811,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        4
+      ],
+      "state": "Add result and status"
+    },
+    {
+      "id": "retro-mac-light-1920-12-newly-undo-active",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-12-newly-undo-active.png",
+      "sha256": "4c574e1d3308fe82aec12de6fb4d6049d87a1b27bbf43c8c326f6f8696d703c2",
+      "bytes": 72241,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        8
+      ],
+      "state": "Newly marker and Undo available"
+    },
+    {
+      "id": "retro-mac-light-1920-13-newly-undo-after",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-13-newly-undo-after.png",
+      "sha256": "239dd83ec2fbab5ca89cab21683977393edfc6f952c749e79842fa907832bd80",
+      "bytes": 69620,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        8
+      ],
+      "state": "Undo after activation"
+    },
+    {
+      "id": "retro-mac-light-1920-14-archive-ready",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-14-archive-ready.png",
+      "sha256": "cf7943df2c8d64bc3c051a3a3e91b3f2d8e9792c6cfd0c2232b0bed676862bcf",
+      "bytes": 63809,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        9
+      ],
+      "state": "archive-ready completion state"
+    },
+    {
+      "id": "retro-mac-light-1920-15-archive-completion",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-15-archive-completion.png",
+      "sha256": "2c8f458462677d14a34353c29df9c94dfff62091845c6eee0316ed2cd66f00d5",
+      "bytes": 46072,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        9
+      ],
+      "state": "archive/completion after Archive Scratch"
+    },
+    {
+      "id": "retro-mac-light-1920-16-empty-states",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-16-empty-states.png",
+      "sha256": "6e87b6b96518fb3dda422e576ae3e0cc403c990b18bf2703c2c5a15a4c6283c1",
+      "bytes": 44730,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "state": "empty Scratch, context, Breakdown, Staging and Explorer"
+    },
+    {
+      "id": "retro-mac-light-1920-17-reduced-motion",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-17-reduced-motion.png",
+      "sha256": "cbd6a398039b93b7049c0549375c52beb929ae261f2db7f9840456cde816b673",
+      "bytes": 63446,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1920x1080",
+      "recipes": [
+        1,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "state": "prefers-reduced-motion: reduce",
+      "effectiveTransitions": []
+    },
+    {
+      "id": "retro-mac-light-1024-18-touch-targets",
+      "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1024-18-touch-targets.png",
+      "sha256": "32b50083af09d979fbd9cfa992c0650a51cb94267bfb9a891c84943930b6ef15",
+      "bytes": 49374,
+      "theme": "retro-mac",
+      "mode": "light",
+      "viewport": "1024x768",
+      "recipes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "state": "coarse pointer touch-target audit",
+      "failures": 0
+    }
+  ],
+  "interactions": [
+    {
+      "id": "neumorphism-light-1024-valid-dnd",
+      "method": "CDP physical mouse",
+      "targetState": "valid"
+    },
+    {
+      "id": "neumorphism-light-1920-valid-dnd",
+      "method": "CDP physical mouse",
+      "targetState": "valid"
+    },
+    {
+      "id": "neumorphism-dark-1024-valid-dnd",
+      "method": "CDP physical mouse",
+      "targetState": "valid"
+    },
+    {
+      "id": "neumorphism-dark-1920-valid-dnd",
+      "method": "CDP physical mouse",
+      "targetState": "valid"
+    },
+    {
+      "id": "neumorphism-light-1920-invalid-dnd",
+      "method": "CDP physical mouse",
+      "targetState": "idle-invalid"
+    },
+    {
+      "id": "neumorphism-light-1920-reduced-motion",
+      "method": "CDP emulated media feature",
+      "effectiveTransitionCount": 0
+    },
+    {
+      "id": "neumorphism-touch-targets",
+      "viewport": "1024x768",
+      "includesDivRoleButton": true,
+      "count": 18,
+      "failures": [],
+      "rows": [
+        {
+          "name": "Collapse Scratch Pool",
+          "role": "button",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Search scratches",
+          "role": "pool-search-field",
+          "width": 208,
+          "height": 44
+        },
+        {
+          "name": "Sort: newest first",
+          "role": "button",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Plan launch narrative and interface review",
+          "role": "pool-selected-row",
+          "width": 264,
+          "height": 64
+        },
+        {
+          "name": "Edit",
+          "role": "button",
+          "width": 69.36,
+          "height": 44
+        },
+        {
+          "name": "Sort: newest first",
+          "role": "context-sort-control",
+          "width": 81.64,
+          "height": 44
+        },
+        {
+          "name": "Drag breakdown",
+          "role": "button",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Edit",
+          "role": "breakdown-row-action",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Delete",
+          "role": "breakdown-row-action",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Drag breakdown",
+          "role": "button",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Edit",
+          "role": "breakdown-row-action",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Delete",
+          "role": "breakdown-row-action",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Add a note...",
+          "role": "breakdown-add-field",
+          "width": 292.14,
+          "height": 44
+        },
+        {
+          "name": "Drag Schedule interface review staged bit",
+          "role": "staging-bit-row",
+          "width": 113.25,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "role": "button",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Search Explorer",
+          "role": "explorer-search-entry",
+          "width": 111.13,
+          "height": 44
+        },
+        {
+          "name": "Select Node: Launch Program",
+          "role": "explorer-node-card",
+          "width": 98.39,
+          "height": 98.39
+        },
+        {
+          "name": "Launch Program options",
+          "role": "button",
+          "width": 44,
+          "height": 44
+        }
+      ]
+    },
+    {
+      "id": "retro-mac-light-1024-valid-dnd",
+      "method": "CDP physical mouse",
+      "targetState": "valid"
+    },
+    {
+      "id": "retro-mac-light-1920-valid-dnd",
+      "method": "CDP physical mouse",
+      "targetState": "valid"
+    },
+    {
+      "id": "retro-mac-dark-1024-valid-dnd",
+      "method": "CDP physical mouse",
+      "targetState": "valid"
+    },
+    {
+      "id": "retro-mac-dark-1920-valid-dnd",
+      "method": "CDP physical mouse",
+      "targetState": "valid"
+    },
+    {
+      "id": "retro-mac-light-1920-invalid-dnd",
+      "method": "CDP physical mouse",
+      "targetState": "idle-invalid"
+    },
+    {
+      "id": "retro-mac-light-1920-reduced-motion",
+      "method": "CDP emulated media feature",
+      "effectiveTransitionCount": 0
+    },
+    {
+      "id": "retro-mac-touch-targets",
+      "viewport": "1024x768",
+      "includesDivRoleButton": true,
+      "count": 18,
+      "failures": [],
+      "rows": [
+        {
+          "name": "Collapse Scratch Pool",
+          "role": "button",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Search scratches",
+          "role": "pool-search-field",
+          "width": 192,
+          "height": 44
+        },
+        {
+          "name": "Sort: newest first",
+          "role": "button",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Plan launch narrative and interface review",
+          "role": "pool-selected-row",
+          "width": 256,
+          "height": 52
+        },
+        {
+          "name": "Edit",
+          "role": "button",
+          "width": 69.36,
+          "height": 44
+        },
+        {
+          "name": "Sort: newest first",
+          "role": "context-sort-control",
+          "width": 81.64,
+          "height": 44
+        },
+        {
+          "name": "Drag breakdown",
+          "role": "button",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Edit",
+          "role": "breakdown-row-action",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Delete",
+          "role": "breakdown-row-action",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Drag breakdown",
+          "role": "button",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Edit",
+          "role": "breakdown-row-action",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Delete",
+          "role": "breakdown-row-action",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Add a note...",
+          "role": "breakdown-add-field",
+          "width": 304.94,
+          "height": 44
+        },
+        {
+          "name": "Drag Schedule interface review staged bit",
+          "role": "staging-bit-row",
+          "width": 123.92,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "role": "button",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "name": "Search Explorer",
+          "role": "explorer-search-entry",
+          "width": 130.17,
+          "height": 44
+        },
+        {
+          "name": "Select Node: Launch Program",
+          "role": "explorer-node-card",
+          "width": 98.39,
+          "height": 98.39
+        },
+        {
+          "name": "Launch Program options",
+          "role": "button",
+          "width": 44,
+          "height": 44
+        }
+      ]
+    }
+  ]
+}

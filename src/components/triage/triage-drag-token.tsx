@@ -31,6 +31,8 @@ export function TriageDragToken({ item }: TriageDragTokenProps) {
       }
       data-source-version={item.sourceVersion}
       data-triage-drag-token={item.kind}
+      data-triage-role="drag-token"
+      data-triage-state={`source ${item.kind}`}
     >
       <Icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
       {shouldRenderLabel ? (

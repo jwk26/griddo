@@ -1,0 +1,73 @@
+{
+  "schema": "griddo.task-164.stage-a.comparisons.v1",
+  "comparisons": [
+    {
+      "id": "neumorphism-prototype-production-light",
+      "output": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/comparisons/neumorphism-prototype-production-light.png",
+      "outputSha256": "b3d4a234c0bec5a80c7fe9a3f65452c90403e6b7477cfede7297420547a12d8a",
+      "inputs": [
+        {
+          "path": "docs/recipes/assets/inbox-triage-2-3/neumorphism-1600x1000.png",
+          "name": "neumorphism-1600x1000.png",
+          "sha256": "ad2d9562fbfc77154eb446406d0101980acacff176fbbe6adfb7e03d04e2640b"
+        },
+        {
+          "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1920-01-populated-level3.png",
+          "name": "neumorphism-light-1920-01-populated-level3.png",
+          "sha256": "b5caf3db85b9d158f68059389da86d00ec5de6849554ee935490f184727975c8"
+        }
+      ]
+    },
+    {
+      "id": "retro-mac-prototype-production-light",
+      "output": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/comparisons/retro-mac-prototype-production-light.png",
+      "outputSha256": "b9ad29e4cf00142bacb6f06b2278a64593db4c9a25f0681a9b84edd6bfffd088",
+      "inputs": [
+        {
+          "path": "docs/recipes/assets/inbox-triage-2-3/retro-mac-1600x1000.png",
+          "name": "retro-mac-1600x1000.png",
+          "sha256": "a2bd3c8c70ccd26384c68b80674974d1b8681aeb43804b9ea549a2985b07a34f"
+        },
+        {
+          "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1920-01-populated-level3.png",
+          "name": "retro-mac-light-1920-01-populated-level3.png",
+          "sha256": "de3ab2bfedacb33090411adf37c1730b6c2b8749032675f92457fe8c26907644"
+        }
+      ]
+    },
+    {
+      "id": "neumorphism-light-dark-1024",
+      "output": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/comparisons/neumorphism-light-dark-1024.png",
+      "outputSha256": "506a1135319cae853fc28bbc993d5de1c85badd4f633e1e9585f51991b5ee874",
+      "inputs": [
+        {
+          "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-light-1024-01-populated-level3.png",
+          "name": "neumorphism-light-1024-01-populated-level3.png",
+          "sha256": "b556190a805a6344d31567644c72df622c1446dbf18bd43638341a52238af26c"
+        },
+        {
+          "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/neumorphism-dark-1024-01-populated-level3.png",
+          "name": "neumorphism-dark-1024-01-populated-level3.png",
+          "sha256": "fd10ce980aedf7bf3212884ce12a7bdeec9bbf86aea2cecb9bb59903238800e3"
+        }
+      ]
+    },
+    {
+      "id": "retro-mac-light-dark-1024",
+      "output": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/comparisons/retro-mac-light-dark-1024.png",
+      "outputSha256": "74a2aa498322973593307bc12146524cfc53c20bb6fbc67ae5aed42799d9d6f6",
+      "inputs": [
+        {
+          "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-light-1024-01-populated-level3.png",
+          "name": "retro-mac-light-1024-01-populated-level3.png",
+          "sha256": "fd09539ad78714c30e1a9eff04a0daea5e217abfd91246ad6c9ca6e658fba9a9"
+        },
+        {
+          "path": "docs/verification/inbox-triage/task-164-stage-a-assets/T164-CA-I01-run-04/retro-mac-dark-1024-01-populated-level3.png",
+          "name": "retro-mac-dark-1024-01-populated-level3.png",
+          "sha256": "50df8e38f42b5ea40d00bc322af39c4ba6f181500992be47adb31cf66e43990a"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "griddo.task-164.stage-a.browser-run-failure.v1",
+  "iterationId": "T164-CA-I01",
+  "runId": "T164-CA-I01-run-05",
+  "status": "failed",
+  "preservedScreenshotCount": 8,
+  "lastCompletedScreenshot": "neumorphism-light-1024-07-edit-save-cancel-open.png",
+  "failedScenario": "Edit after cancelling staged Placement",
+  "error": "Missing action with text: Cancel",
+  "finding": "The harness clicked Edit while the staged-Placement cancellation operation lock was still active, then captured the unchanged context as an editor state.",
+  "classification": "browser evidence",
+  "disposition": "Preserved without reuse as passing evidence; run-06 waits for cancellation settlement, rejects disabled controls, and requires the inline editor field before capture."
+}

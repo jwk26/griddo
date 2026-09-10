@@ -1,0 +1,13 @@
+{
+  "schema": "griddo.task-164.stage-a.browser-run-failure.v1",
+  "iterationId": "T164-CA-I01",
+  "runId": "T164-CA-I01-run-03",
+  "status": "failed",
+  "preservedScreenshotCount": 29,
+  "lastCompletedScreenshot": "neumorphism-light-1920-13-newly-undo-after.png",
+  "failedScenario": "archive-ready transition",
+  "error": "Timed out waiting for [data-triage-role=\"archive-completion-overlay\"]",
+  "finding": "Raw IndexedDB writes persisted the eligible state but did not notify the mounted Dexie liveQuery in the production browser.",
+  "classification": "browser evidence",
+  "disposition": "Preserved without reuse as passing evidence; run-04 reloads the persisted eligible truth, invokes the canonical Reopen action, and then captures the actual Archive overlay and completion flow."
+}
