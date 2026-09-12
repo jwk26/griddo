@@ -448,12 +448,12 @@ browser-state inputs will change.
   message, or material content intent is a material variance and a stop. The
   commit will not be amended and history will not be rewritten.
 
-### Task 164 Stage A — Implementation checkpoint candidate
+### Task 164 Stage A — Awaiting-user-disposition checkpoint
 
 | Field | Checkpoint value |
 | --- | --- |
 | Iteration / purpose | `T164-CA-I01`; first canonical Stage A realization of Neumorphism and Retro Mac across all nine Inbox/Triage recipes |
-| Starting identity | HEAD `68ea320ed1c12e2edf6d9dd671ac87c48fb13769`, tree `98a4a05edb0caa5f8da14c2bf71959442a213682`; exact implementation commit remains to be created from this parent |
+| Starting / resulting identity | Start HEAD `68ea320ed1c12e2edf6d9dd671ac87c48fb13769`, tree `98a4a05edb0caa5f8da14c2bf71959442a213682`; implementation commit `904589737bf0d02a1dee58805f60c82d1eda688f`, tree `cd713a9380fd334029d42679e84d83c34c0193d7`, exact start parent, 715 approved-owner files, and pinned message verified |
 | Known inputs | Exact Gate C receipt and durable start above; corrected audit `2ab806bfdc497174e1431039cef81acb220068c0`, fingerprint `4039f9df60f153bcf48674b89965f0e92fd4991a5d6d6192b2ab732ba747fe29`, reference inventory `a6367eaef5cae6b417db88c1da4c7f1199af8d4ac4baac993457f2ab0356eab6`; pinned prototype HEAD/tree above; no historical experiment bytes reused |
 | Expected result | Theme-native Neumorphism depth and Retro Mac 1-bit chrome while canonical Save/Cancel, Add status, non-occluding Placement, Level 3 Explorer, Newly/Undo, reliability surfaces, and Archive remain intact |
 | Actual visible result | Direct run-10 inspection shows raised/inset rounded Neumorphism and square striped/dithered Retro Mac across shell, Pool, Context, rows/empty, Staging, Explorer, direct/staged Placement, Newly/Undo, and Archive; no material visual mismatch was hidden by automation |
@@ -464,6 +464,6 @@ browser-state inputs will change.
 | Difference from preceding iteration | Unlike rejected noncanonical `T164-NC-I01`, this iteration was independently authored from the approved canonical start and uses no bytes from it. There is no preceding canonical Stage A iteration; runs 01–09 remain append-only intermediate/failure evidence, while run-10 completes the required matrix and two-point ordinary-motion proof. |
 | Changed owners | `src/app/globals.css`; Inbox conformance owner; `staging-zone*`, `triage-drag-token.tsx`, `hierarchy-explorer.tsx`; shared Node/Bit card owners only to keep their visual-role hooks Inbox-scoped; this ledger/report/assets |
 | Omitted / insufficient | No physical-device or non-Chrome run; no new repository-fault injection; runs 01–08 are not acceptance evidence; user disposition is pending |
-| Durable evidence | `docs/verification/inbox-triage/rendered-fidelity.md`; append-only `T164-CA-I01-iteration-record.json`; run-10 browser manifest SHA-256 `ae5e63813f9ba9c91212455e006c18c543e423c0d663f594bdbdb4d6b44b30ab`; comparison manifest SHA-256 `fa99d99a26ca0ddc6935b500181bb8fe01dbab85f6e9d79255739c00d99e86f2`; complete 704-entry inventory SHA-256 `5834345760d722f89ec1157acbe849c34c6f574b6d90603337c99c41fe8137b6` |
+| Durable evidence | `docs/verification/inbox-triage/rendered-fidelity.md`; append-only `T164-CA-I01-iteration-record.json`; run-10 browser manifest SHA-256 `ae5e63813f9ba9c91212455e006c18c543e423c0d663f594bdbdb4d6b44b30ab`; comparison manifest SHA-256 `fa99d99a26ca0ddc6935b500181bb8fe01dbab85f6e9d79255739c00d99e86f2`; complete 704-entry inventory SHA-256 `f9bb384c308a006030359311b38937715388f4921759d90bbe0c4c30c0bb29da` |
 | User disposition / state | `pending`; Working session remains `active / awaiting user disposition`; Task 164 remains `[ ]`; six-theme expansion is not authorized |
 | Audit hypothesis | A future post-Phase-31 skill audit may evaluate a standard production-browser fixture reset and append-only capture manifest; hypothesis only, with no installed skill/workflow change |

@@ -7,7 +7,9 @@
 - Working session: `phase-31-task-164-stage-a-run-task-01`, `active / awaiting user disposition`.
 - Task markers: Task 164 remains `[ ]`; Task 165 remains `[ ]` and unstarted.
 - Start: HEAD `68ea320ed1c12e2edf6d9dd671ac87c48fb13769`, tree `98a4a05edb0caa5f8da14c2bf71959442a213682`.
-- Result: the post-implementation checkpoint records the exact implementation SHA; no user acceptance is inferred.
+- Implementation: commit `904589737bf0d02a1dee58805f60c82d1eda688f`,
+  tree `cd713a9380fd334029d42679e84d83c34c0193d7`, exact durable-start
+  parent and pinned message verified; no user acceptance is inferred.
 
 Stage A promotes the pinned theme grammar without replacing canonical behavior. Neumorphism uses raised surfaces, inset wells, rounded depth, and soft relief. Retro Mac uses square 1-bit frames, striped headers, dithered invalid/empty regions, double-line context and Placement surfaces, and hard shadows. Edit→Save/Cancel, Add, staged/direct Placement, Newly/Undo, and Archive remain present.
 
@@ -80,7 +82,7 @@ Direct inspection of run-10 and its four comparison sheets found no material dif
 
 No prior result was overwritten. The complete inventory excludes only itself
 and hashes all 704 retained artifacts. Its SHA-256 is
-`5834345760d722f89ec1157acbe849c34c6f574b6d90603337c99c41fe8137b6`.
+`f9bb384c308a006030359311b38937715388f4921759d90bbe0c4c30c0bb29da`.
 Run-10 browser manifest SHA-256 is
 `ae5e63813f9ba9c91212455e006c18c543e423c0d663f594bdbdb4d6b44b30ab`;
 comparison manifest SHA-256 is

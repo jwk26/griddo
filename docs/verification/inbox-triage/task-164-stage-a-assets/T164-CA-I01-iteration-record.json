@@ -4,7 +4,17 @@
   "purpose": "First canonical Stage A implementation for Neumorphism and Retro Mac across the nine Inbox/Triage recipes.",
   "startingHead": "68ea320ed1c12e2edf6d9dd671ac87c48fb13769",
   "startingTree": "98a4a05edb0caa5f8da14c2bf71959442a213682",
-  "resultingCommits": [],
+  "resultingCommits": [
+    {
+      "kind": "implementation",
+      "commit": "904589737bf0d02a1dee58805f60c82d1eda688f",
+      "tree": "cd713a9380fd334029d42679e84d83c34c0193d7",
+      "parent": "68ea320ed1c12e2edf6d9dd671ac87c48fb13769",
+      "message": "feat(triage): conform inbox themes and accessibility",
+      "changedFileCount": 715,
+      "ownerPathAudit": "approved-owner-paths-only"
+    }
+  ],
   "knownInputsBeforeImplementation": {
     "approvedEntryHead": "54d689275cefb5d24c70f562435bb82734c51631",
     "gateReceiptCommit": "eace54e186024c0d3f22e9cb817c74538c72771b",
@@ -157,6 +167,21 @@
     "src/components/grid/node-card.tsx",
     "src/components/grid/bit-card.tsx"
   ],
+  "automatedTestResult": {
+    "fullTests": "101 files / 1,273 tests passed",
+    "focusedReviewTests": "6 files / 153 tests passed",
+    "typecheck": "passed",
+    "lint": "exit 0; 11 pre-existing warnings; no Stage A warning",
+    "productionBuild": "passed; seven routes generated",
+    "diffCheck": "passed",
+    "lifecycleResolver": "status ready; contract_ready true",
+    "ownerPathAudit": "715 implementation files; approved owner paths only"
+  },
+  "browserAndUserVisibleResult": {
+    "browser": "Chrome/152.0.7977.83 against the production server",
+    "finalRun": "T164-CA-I01-run-10",
+    "visibleDisposition": "Direct inspection found the two theme grammars and canonical controls materially consistent with the approved recipes; user visual disposition remains pending."
+  },
   "omittedOrInsufficientEvidence": [
     "runs 01-09 are preserved intermediate measurements but not final acceptance evidence",
     "runs 03 and 05-08 are preserved failed harness runs with explicit failure records and per-run asset inventories",
