@@ -4,22 +4,90 @@
 
 - Iteration: `T164-CA-I01`, first canonical Stage A implementation.
 - Scope: Neumorphism and Retro Mac only; all nine canonical Inbox/Triage recipes.
-- Working session: `phase-31-task-164-stage-a-run-task-01`, `active / awaiting user disposition`.
+- User disposition: `Rejected`; functional, accessibility, and state-preservation results acknowledged, actual Neumorphism/Retro Mac fidelity rejected.
+- Working session: `phase-31-task-164-stage-a-run-task-01`, `closed/archive-only`.
 - Task markers: Task 164 remains `[ ]`; Task 165 remains `[ ]` and unstarted.
 - Start: HEAD `68ea320ed1c12e2edf6d9dd671ac87c48fb13769`, tree `98a4a05edb0caa5f8da14c2bf71959442a213682`.
 - Implementation: commit `904589737bf0d02a1dee58805f60c82d1eda688f`,
   tree `cd713a9380fd334029d42679e84d83c34c0193d7`, exact durable-start
   parent and pinned message verified; no user acceptance is inferred.
 
-Stage A promotes the pinned theme grammar without replacing canonical behavior. Neumorphism uses raised surfaces, inset wells, rounded depth, and soft relief. Retro Mac uses square 1-bit frames, striped headers, dithered invalid/empty regions, double-line context and Placement surfaces, and hard shadows. Edit→Save/Cancel, Add, staged/direct Placement, Newly/Undo, and Archive remain present.
+The checkpoint implementation attempted to promote the pinned theme grammar
+without replacing canonical behavior. Its functional and accessibility
+coverage is preserved as historical evidence, but the user's actual-screen
+review supersedes the implementer fidelity conclusion below.
 
-## Direct visual comparisons
+## Post-checkpoint user disposition
+
+`T164-CA-I01` is rejected and preserved as the second implementation
+experiment, distinct from `T164-NC-I01`. It is not accepted, repair-authorized,
+or eligible as a code/byte source for a third attempt.
+
+Improved in this experiment:
+
+- The first experiment findings became explicit starting inputs.
+- Save/Cancel, attached Add status, non-occluding Placement, Level 3, and Newly/Undo preservation decisions became explicit.
+- CSS and selected component-local visual-role bindings expanded.
+- Light/dark, 1024/1920, hover, focus, DnD, Placement, Edit, Add, Newly/Undo, and Archive evidence expanded.
+- Fixture isolation, production-build capture, touch-target checks, and reduced-motion checks improved.
+- 704 artifacts and append-only run history were durably preserved.
+
+Why visual fidelity still failed:
+
+1. Known surface gaps were not converted into element-to-element implementation obligations.
+2. The implementation remained weighted toward global theme CSS over the existing generic component tree.
+3. Core composition owners such as `triage-workspace.tsx`, `scratch-pool.tsx`, and `breakdown-panel.tsx` did not change.
+4. Prototype and production comparisons did not match data, state, and viewport.
+5. Direct comparison was effectively limited to four light/base-centered sheets.
+6. The 200 PNGs and interaction measurements prove coverage, function, and accessibility—not prototype fidelity.
+7. Direct-render tests prove semantic attributes/state presence, not computed visual similarity.
+8. The checkpoint claim that no material difference was hidden by automation contradicted the user's actual-screen review and the comparison images.
+9. Automated verification and implementer self-review cannot replace user-owned visual acceptance.
+
+### User-observed theme gaps
+
+| Surface | Neumorphism gap | Retro Mac gap |
+| --- | --- | --- |
+| Shell/section | Soft shadow exists, but raised-panel hierarchy and circular section identity are insufficient. | Stripes and hard borders exist, but nested Mac windows, title bands, and pane hierarchy are insufficient. |
+| Scratch Pool | Raised rows, inset search, count capsule, segmented ASC/DESC, and circular controls are not reproduced. | Selected-row text visibility is defective; FIND/list header, OLD FIRST, and window hierarchy are not reproduced. |
+| Context | Source/status marker, circular Edit/action hierarchy, and sufficient inset depth are missing. | File-properties window, title strip, folder/reference block, and metadata composition are missing. |
+| Breakdown | Raised row objects, circular grip/actions, and circular Add composition are insufficient. | A wide generic list remains instead of compact 1-bit row controls. |
+| Staging | Inset wells and raised Node/compact Bit composition are insufficient. | Large empty panes and generic cards remain instead of Finder folder/document grammar. |
+| Explorer | Large square Node cards and generic columns remain instead of the compact soft-row hierarchy. | Modern square/cube cards remain instead of compact Finder rows. |
+| DnD/Placement | Generic bordered regions/forms remain instead of theme-native inset/raised targets and action composition. | Dithered target, system-dialog, and marquee grammar are insufficient. |
+| Newly/Undo | A generic badge/status rail remains instead of the colored marker/capsule and integrated raised Undo. | The state remains a separate generic status block instead of integration into a Finder row. |
+| Archive | Closest result, but theme-specific archive/check identity and resolved context remain weak. | Double-border system alert and completed-file presentation are insufficient. |
+
+These intentional production differences are preserved and are not visual
+failures: Save/Cancel, attached Add status, reliability notifications,
+non-occluding Placement, Explorer Level 3, Newly/Undo behavior, omission of the
+Retro Mac prototype-only faux global menu, and common Node/Bit-card internal
+redesign owned by `P29-01 / D-CARD`.
+
+### Abstract lesson for a possible third attempt
+
+- Proposed identity only: `T164-CA-I02`; not started or prepared.
+- Use Neumorphism and Retro Mac only.
+- Before code, create a 2-theme × 9-surface element-level conformance map.
+- Classify each element as `reproduce`, `preserve-and-blend`, `deferred owner`, or `user decision`.
+- Separate prototype-fidelity and production-preservation fixtures.
+- Compare crops with identical data, state, and viewport.
+- Work as vertical slices: Shell/Pool/Context → Breakdown/Staging → Explorer → interactions.
+- Do not advance past a slice before its user visual disposition.
+- Use approved semantic visual-structure component owners when CSS is insufficient.
+- Automation must not declare visual acceptance or `Resolved`.
+- Run dark/responsive/full-interaction matrices only after base composition approval.
+
+This lesson is future post-Phase-31 skill-audit input only. No installed skill,
+resolver, shared contract, or workflow test changed.
+
+## Historical checkpoint comparisons
 
 - [Neumorphism prototype ↔ production light](task-164-stage-a-assets/T164-CA-I01-run-10/comparisons/neumorphism-prototype-production-light.png)
 - [Retro Mac prototype ↔ production light](task-164-stage-a-assets/T164-CA-I01-run-10/comparisons/retro-mac-prototype-production-light.png)
 - [Neumorphism light ↔ dark at 1024](task-164-stage-a-assets/T164-CA-I01-run-10/comparisons/neumorphism-light-dark-1024.png)
 - [Retro Mac light ↔ dark at 1024](task-164-stage-a-assets/T164-CA-I01-run-10/comparisons/retro-mac-light-dark-1024.png)
-- [Final browser manifest](task-164-stage-a-assets/T164-CA-I01-run-10/browser-evidence-manifest.json)
+- [Historical run-10 browser manifest](task-164-stage-a-assets/T164-CA-I01-run-10/browser-evidence-manifest.json)
 - [Comparison manifest](task-164-stage-a-assets/T164-CA-I01-run-10/comparisons/comparison-manifest.json)
 - [Append-only iteration record](task-164-stage-a-assets/T164-CA-I01-iteration-record.json)
 - [Complete asset inventory](task-164-stage-a-assets/asset-inventory.sha256)
@@ -63,7 +131,11 @@ Representative states:
 6. `New → Resolved`, cause `browser evidence`: Cancel begins from a genuinely dirty title. In all eight combinations the dirty image differs, while the post-Cancel selected-title hash equals the saved-title hash.
 7. `New → Resolved`, cause `implementation`: shared Node/Bit cards no longer receive Inbox visual-role attributes globally; `HierarchyExplorer` applies them only inside Inbox.
 
-Direct inspection of run-10 and its four comparison sheets found no material difference hidden by automation. Retro Mac omits prototype-only faux menu copy, and both themes retain canonical controls by design.
+The checkpoint implementer inspection stated that run-10 had no material
+difference hidden by automation. The user rejected that conclusion after
+actual-screen review; the comparison construction was insufficient to establish
+fidelity. Retro Mac's prototype-only faux menu remains intentionally omitted,
+and canonical controls remain intentionally preserved.
 
 ## Append-only run history
 
@@ -78,7 +150,7 @@ Direct inspection of run-10 and its four comparison sheets found no material dif
 | `run-07` | Failed | 14 PNGs; Placement/DnD settlement race |
 | `run-08` | Failed | 20 PNGs; document replacement/touch reload race |
 | `run-09` | Insufficient | Complete state matrix, but ordinary DnD recorded only one token position |
-| `run-10` | Resolved final set | 200 PNGs, 40 interaction records, four comparisons, and two-point token movement; all eight combinations |
+| `run-10` | Mechanically complete; fidelity rejected | 200 PNGs, 40 interaction records, four comparisons, and two-point token movement; all eight combinations |
 
 No prior result was overwritten. The complete inventory excludes only itself
 and hashes all 704 retained artifacts. Its SHA-256 is
@@ -108,6 +180,23 @@ focus, geometry, non-occlusion, motion, and touch-size claims.
 - Runs 01–09 are retained history, not final acceptance evidence.
 - There is no physical-device or non-Chrome run; touch uses Chrome coarse-pointer emulation at both approved viewports.
 - No fresh repository-fault injection was added. Existing canonical tests remain the source for reliability failure behavior.
-- User visual disposition is pending. Automation does not accept Stage A, mark Task 164 `[x]`, or authorize six-theme expansion.
+- User visual disposition is `Rejected`. Automation does not accept Stage A,
+  mark Task 164 `[x]`, or authorize repair or six-theme expansion.
+
+## Lifecycle closure
+
+- `T164-CA-I01`: `Rejected / historical experiment evidence`.
+- Working session `phase-31-task-164-stage-a-run-task-01`: `closed/archive-only`.
+- Control Tower `phase-31-control-tower`: `active`.
+- Duplicate-session count: `0`.
+- Task 164: `[ ]`; Task 165: `[ ]`.
+- Third attempt and remaining six themes: not started.
+- Push, PR, integration, publication, cleanup: none.
+- Full gates were not rerun or reused as acceptance evidence because this
+  closure changes only ledger/evidence metadata, not product, test, or config
+  inputs. Historical gate output remains attributed only to the rejected
+  checkpoint.
+- Exactly one next legal action: Control Tower prepares fresh isolated
+  legality/readiness and an exact user gate for `T164-CA-I02`.
 
 Future skill-improvement hypothesis only: a post-Phase-31 audit could evaluate a standard production-browser fixture reset and append-only capture manifest. No installed skill, resolver, shared workflow contract, or workflow test changed.

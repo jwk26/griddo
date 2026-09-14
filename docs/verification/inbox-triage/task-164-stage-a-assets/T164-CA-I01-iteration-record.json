@@ -180,15 +180,103 @@
   "browserAndUserVisibleResult": {
     "browser": "Chrome/152.0.7977.83 against the production server",
     "finalRun": "T164-CA-I01-run-10",
-    "visibleDisposition": "Direct inspection found the two theme grammars and canonical controls materially consistent with the approved recipes; user visual disposition remains pending."
+    "visibleDisposition": "The checkpoint implementer inspection judged the result consistent, but the post-checkpoint user review rejected actual Neumorphism and Retro Mac visual fidelity. The user disposition controls."
   },
   "omittedOrInsufficientEvidence": [
     "runs 01-09 are preserved intermediate measurements but not final acceptance evidence",
     "runs 03 and 05-08 are preserved failed harness runs with explicit failure records and per-run asset inventories",
     "no physical-device or non-Chrome browser run",
     "no fresh repository fault injection; existing canonical reliability tests remain the automated source for injected failure behavior",
-    "user visual disposition remains pending; run-10 is review evidence, not acceptance"
+    "run-10 remains historical coverage/function/accessibility evidence and does not establish visual fidelity or acceptance"
   ],
-  "userDisposition": "pending",
-  "futureSkillImprovementHypothesis": "A future post-Phase-31 audit could evaluate a standard production-browser fixture reset and append-only capture-run manifest; this is an audit hypothesis only and does not modify or prejudge any installed skill."
+  "userDisposition": "rejected",
+  "futureSkillImprovementHypothesis": "A future post-Phase-31 audit could evaluate a standard production-browser fixture reset and append-only capture-run manifest; this is an audit hypothesis only and does not modify or prejudge any installed skill.",
+  "postCheckpointUserReview": {
+    "recordedDate": "2026-09-14",
+    "disposition": "Rejected / historical experiment evidence",
+    "scope": "Functional, accessibility, and state-preservation results acknowledged; Neumorphism and Retro Mac visual fidelity rejected.",
+    "experimentIdentity": "T164-CA-I01 is preserved as the second implementation experiment and remains distinct from T164-NC-I01.",
+    "improvementsAcknowledged": [
+      "The first experiment findings were made explicit starting inputs.",
+      "Save/Cancel, attached Add status, non-occluding Placement, Level 3, and Newly/Undo preservation decisions became explicit.",
+      "CSS and selected component-local visual-role bindings expanded.",
+      "Light/dark, 1024/1920, hover, focus, DnD, Placement, Edit, Add, Newly/Undo, and Archive evidence expanded.",
+      "Fixture isolation, production-build capture, touch-target checks, and reduced-motion checks improved.",
+      "704 artifacts and append-only run history were durably preserved."
+    ],
+    "failedFindings": [
+      {"finding": "Known surface gaps were not converted into concrete element-to-element implementation obligations.", "probableCause": ["canonical recipe/plan", "task scope/prompt", "implementation"]},
+      {"finding": "Implementation remained weighted toward global theme CSS over the existing generic component tree.", "probableCause": ["implementation"]},
+      {"finding": "Core composition owners such as triage-workspace.tsx, scratch-pool.tsx, and breakdown-panel.tsx did not change.", "probableCause": ["implementation"]},
+      {"finding": "Prototype and production comparisons did not match data, state, and viewport.", "probableCause": ["browser evidence"]},
+      {"finding": "Direct prototype-to-production evidence was effectively limited to four light/base-centered comparison sheets.", "probableCause": ["browser evidence"]},
+      {"finding": "The 200 PNG and interaction measurements proved coverage, function, and accessibility, not prototype fidelity.", "probableCause": ["automated verification", "browser evidence"]},
+      {"finding": "Direct-render tests checked semantic attributes and state presence, not computed visual similarity.", "probableCause": ["automated verification"]},
+      {"finding": "The report conclusion that no material difference was hidden by automation contradicted the user's actual-screen review and comparison images.", "probableCause": ["browser evidence", "lifecycle/handoff"]},
+      {"finding": "Automated verification and implementer self-review were allowed to stand in for user-owned visual acceptance.", "probableCause": ["automated verification", "lifecycle/handoff"]}
+    ],
+    "visualGaps": {
+      "neumorphism": [
+        {"surface": "Shell/section", "gap": "Soft shadow exists, but raised-panel hierarchy and circular section identity are insufficient."},
+        {"surface": "Scratch Pool", "gap": "Raised rows, inset search, count capsule, segmented ASC/DESC, and circular controls are not reproduced."},
+        {"surface": "Context", "gap": "Source/status marker, circular Edit/action hierarchy, and sufficient inset depth are missing."},
+        {"surface": "Breakdown", "gap": "Raised row objects, circular grip/actions, and circular Add composition are insufficient."},
+        {"surface": "Staging", "gap": "Inset wells and raised Node/compact Bit composition are insufficient."},
+        {"surface": "Explorer", "gap": "Large square Node cards and generic columns remain instead of the prototype's compact soft-row hierarchy."},
+        {"surface": "DnD/Placement", "gap": "Targets and actions resemble generic bordered regions/forms more than theme-native inset/raised composition."},
+        {"surface": "Newly/Undo", "gap": "Presentation resembles a generic badge/status rail rather than the colored marker/capsule and integrated raised Undo."},
+        {"surface": "Archive", "gap": "This is the closest surface, but theme-specific archive/check identity and resolved context remain weak."}
+      ],
+      "retroMac": [
+        {"surface": "Shell/section", "gap": "Stripes and hard borders exist, but nested Mac windows, title bands, and pane hierarchy are insufficient."},
+        {"surface": "Scratch Pool", "gap": "Selected-row text visibility is defective; FIND/list header, OLD FIRST, and window hierarchy are not reproduced."},
+        {"surface": "Context", "gap": "File-properties window, title strip, folder/reference block, and metadata composition are missing."},
+        {"surface": "Breakdown", "gap": "A wide generic list remains instead of compact 1-bit row controls."},
+        {"surface": "Staging", "gap": "Large empty panes and generic cards remain instead of Finder folder/document grammar."},
+        {"surface": "Explorer", "gap": "Modern square/cube cards remain instead of compact Finder rows."},
+        {"surface": "DnD/Placement", "gap": "Dithered target, system-dialog, and marquee grammar are insufficient."},
+        {"surface": "Newly/Undo", "gap": "The state is a separate generic status block rather than being integrated into the Finder row."},
+        {"surface": "Archive", "gap": "Double-border system alert and completed-file presentation are insufficient."}
+      ]
+    },
+    "intentionalProductionDifferences": [
+      "Save/Cancel",
+      "attached Add status",
+      "reliability notifications",
+      "non-occluding Placement",
+      "Explorer Level 3",
+      "Newly/Undo behavior",
+      "Retro Mac prototype-only faux global menu omission",
+      "common Node/Bit-card internal redesign owned by P29-01 / D-CARD"
+    ],
+    "thirdAttemptAbstractLesson": {
+      "proposedIteration": "T164-CA-I02",
+      "status": "not started or prepared",
+      "themes": ["Neumorphism", "Retro Mac"],
+      "directions": [
+        "Before code, create a 2-theme by 9-surface element-level conformance map.",
+        "Classify each element as reproduce, preserve-and-blend, deferred owner, or user decision.",
+        "Separate the prototype-fidelity fixture from the production-preservation fixture.",
+        "Use prototype and production crops with identical data, state, and viewport.",
+        "Proceed as vertical slices: Shell/Pool/Context, then Breakdown/Staging, then Explorer, then interactions.",
+        "Do not advance to the next slice or full matrix before user visual disposition of the preceding slice.",
+        "Use approved semantic visual-structure component owners when CSS alone is insufficient.",
+        "Automation must not declare visual acceptance or Resolved.",
+        "Run the final dark/responsive/full-interaction matrix only after base composition approval."
+      ],
+      "reuseProhibition": "T164-CA-I01 code and bytes are historical evidence only and are not a third-attempt implementation base or reuse source.",
+      "auditUse": "Abstract input for a post-Phase-31 skill audit only; no installed skill, resolver, shared contract, or workflow test is modified."
+    },
+    "lifecycleClosure": {
+      "workingSession": {"identity": "phase-31-task-164-stage-a-run-task-01", "status": "closed/archive-only"},
+      "controlTower": {"identity": "phase-31-control-tower", "status": "active"},
+      "duplicateSessionCount": 0,
+      "task164": "[ ]",
+      "task165": "[ ]",
+      "remainingSixThemes": "not started",
+      "thirdAttempt": "not started",
+      "externalActions": "No push, PR, integration, publication, or cleanup.",
+      "nextLegalAction": "Control Tower prepares fresh isolated legality/readiness and an exact user gate for T164-CA-I02."
+    }
+  }
 }

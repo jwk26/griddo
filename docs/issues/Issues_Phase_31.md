@@ -3,12 +3,13 @@
 > Branch: `phase-31/integration-conformance-full-gate`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate`
 > Kickoff date: 2026-09-07
-> Current state: Task 163 is `[x]` and Accepted; canonical Task 164 Stage A is
-> `In Progress`; Task 164 remains `[ ]` and Task 165 is `[ ]` and unstarted.
-> The sole active Working session is
-> `phase-31-task-164-stage-a-run-task-01`; all earlier Working sessions are
-> `closed/archive-only`. Control Tower `phase-31-control-tower` remains
-> `active`; duplicate-session count is `0`.
+> Current state: Task 163 is `[x]` and Accepted. Task 164 Stage A iteration
+> `T164-CA-I01` is `Rejected / historical experiment evidence`; Task 164
+> remains `[ ]`, and Task 165 is `[ ]` and unstarted. Working session
+> `phase-31-task-164-stage-a-run-task-01` is `closed/archive-only`; no
+> Working session is active. Control Tower `phase-31-control-tower` remains
+> `active`; duplicate-session count is `0`. A third attempt and the
+> remaining six themes are not started.
 
 ## Status Legend
 
@@ -448,7 +449,12 @@ browser-state inputs will change.
   message, or material content intent is a material variance and a stop. The
   commit will not be amended and history will not be rewritten.
 
-### Task 164 Stage A — Awaiting-user-disposition checkpoint
+### Task 164 Stage A — Awaiting-user-disposition checkpoint (historical snapshot)
+
+> The values in this subsection are the state at checkpoint
+> `2871559c711d419fcdd7900db6964969d0800626`. The post-checkpoint user
+> disposition below owns the current lifecycle state and supersedes its pending
+> fidelity conclusion without changing the historical snapshot.
 
 | Field | Checkpoint value |
 | --- | --- |
@@ -467,3 +473,22 @@ browser-state inputs will change.
 | Durable evidence | `docs/verification/inbox-triage/rendered-fidelity.md`; append-only `T164-CA-I01-iteration-record.json`; run-10 browser manifest SHA-256 `ae5e63813f9ba9c91212455e006c18c543e423c0d663f594bdbdb4d6b44b30ab`; comparison manifest SHA-256 `fa99d99a26ca0ddc6935b500181bb8fe01dbab85f6e9d79255739c00d99e86f2`; complete 704-entry inventory SHA-256 `f9bb384c308a006030359311b38937715388f4921759d90bbe0c4c30c0bb29da` |
 | User disposition / state | `pending`; Working session remains `active / awaiting user disposition`; Task 164 remains `[ ]`; six-theme expansion is not authorized |
 | Audit hypothesis | A future post-Phase-31 skill audit may evaluate a standard production-browser fixture reset and append-only capture manifest; hypothesis only, with no installed skill/workflow change |
+
+### Task 164 Stage A — Post-checkpoint rejection and lifecycle closure
+
+| Field | Current durable value |
+| --- | --- |
+| User disposition | `Rejected`. Functional, accessibility, and state-preservation results are acknowledged; actual Neumorphism/Retro Mac visual fidelity is rejected. Task 164 is not accepted and remains `[ ]`. |
+| Experiment identity | `T164-CA-I01` is the second implementation experiment and is preserved as `Rejected / historical experiment evidence`, separately from `T164-NC-I01`. Its code and bytes are not a third-attempt starting point or reuse source. |
+| Improvements acknowledged | First-experiment findings became explicit inputs; Save/Cancel, Add status, non-occluding Placement, Level 3, and Newly/Undo preservation were explicit; CSS/component-local roles and the light/dark, responsive, focus, DnD, Placement, Edit, Add, Newly/Undo, Archive, fixture-isolation, production-build, touch, and reduced-motion evidence expanded; 704 artifacts and append-only runs were preserved. |
+| Fidelity failure | Known gaps were not converted to element-level obligations; implementation remained global-CSS-heavy over the generic tree; core composition owners `triage-workspace.tsx`, `scratch-pool.tsx`, and `breakdown-panel.tsx` did not change; prototype/production data, state, and viewport did not match; direct comparisons were four light/base-centered sheets; 200 PNGs/interactions proved coverage/function/accessibility, not fidelity; direct-render tests did not prove computed similarity; the implementer “no material difference” conclusion contradicted user review; automation/self-review did not own visual acceptance. |
+| Neumorphism gaps | Shell lacks raised/circular hierarchy; Pool lacks raised rows, inset search, capsules, segmented sort, circular controls; Context lacks marker/action hierarchy/depth; Breakdown lacks raised objects and circular controls/Add; Staging lacks adequate inset/raised Node/compact Bit composition; Explorer retains large square cards/generic columns; DnD/Placement remains generic bordered UI; Newly/Undo remains a generic badge/rail; Archive identity/context remains weak. |
+| Retro Mac gaps | Shell lacks nested window/title/pane hierarchy; Pool has selected-text visibility failure and lacks FIND/list/OLD FIRST hierarchy; Context lacks file-properties/title/folder/metadata composition; Breakdown remains a wide generic list; Staging lacks Finder folder/document grammar; Explorer retains modern square/cube cards; DnD/Placement lacks dithered dialog/marquee grammar; Newly/Undo is not Finder-row-integrated; Archive lacks double-border alert/completed-file presentation. |
+| Intentional production differences | Save/Cancel, attached Add status, reliability notifications, non-occluding Placement, Level 3, Newly/Undo behavior, omission of the Retro Mac prototype-only faux global menu, and `P29-01 / D-CARD` common-card internals are preserved and are not classified as visual failures. |
+| Third-attempt abstract lesson | Proposed identity `T164-CA-I02`, Neumorphism/Retro Mac only; first build a 2×9 element map classified as `reproduce`, `preserve-and-blend`, `deferred owner`, or `user decision`; separate fidelity/preservation fixtures; use matched crops; proceed Shell/Pool/Context → Breakdown/Staging → Explorer → interactions with user disposition between slices; use approved component owners when CSS is insufficient; automation cannot declare visual acceptance/Resolved; run the full dark/responsive/interaction matrix only after base-composition approval. This is audit input only and is not started or prepared. |
+| Evidence preservation | Existing run records, PNGs, manifests, and `asset-inventory.sha256` remain historical checkpoint bytes and are not deleted, replaced, or reinterpreted. The iteration JSON appends post-checkpoint metadata; it is not folded back into the immutable checkpoint inventory. |
+| Verification choice | Full gates are neither rerun nor reused as acceptance evidence because only these three ledger/evidence metadata owners change; product, CSS, tests, config, recipes, plan, receipt, and asset bytes do not. JSON parsing, inventory/blob invariance, diff hygiene, exact path scope, resolver identity, and final clean state are the closure guards. |
+| Lifecycle state | Working session `phase-31-task-164-stage-a-run-task-01`: `closed/archive-only`; Control Tower `phase-31-control-tower`: `active`; duplicate-session count `0`; Task 164 `[ ]`; Task 165 `[ ]`; third attempt and remaining six themes not started; no push, PR, integration, publication, or cleanup. |
+| Canonical impact | `None`; user disposition and historical evidence classification only. No canonical recipe/plan or product direction is changed. |
+| Closure commit contract | Parent must be checkpoint `2871559c711d419fcdd7900db6964969d0800626`; changed paths must be exactly this ledger, `rendered-fidelity.md`, and `T164-CA-I01-iteration-record.json`; receipt, inventory, asset bytes, product, test, config, recipe, and plan blobs must remain unchanged; Task 164/165 remain `[ ]`; message is not pinned or machine-consumed. Any other variance is material and stops without history rewrite. |
+| Exactly one next legal action | Control Tower prepares fresh isolated legality/readiness and an exact user gate for `T164-CA-I02`. |
