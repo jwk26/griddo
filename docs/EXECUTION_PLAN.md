@@ -1,19 +1,28 @@
 # GridDO Inbox/Triage Implementation Execution Plan
 
-> **Status:** **User-approved 2026-07-28 — planning authority only**
-> **Approval receipt:** the user approved the exact pre-receipt plan committed at
+> **2026-10-03 amendment status:** **Draft — awaiting user approval.**
+> The proposed graph below narrows Phase 31 and transfers unaccepted Tasks
+> 164–165 to new Tasks 166–208. It is derived from the approved
+> [current promotion map](brainstorming/2026-10-03-inbox_triage_theme_realization/PROMOTION_MAP.md)
+> and [DESIGN_TOKENS amendment receipt](receipts/Craft_Docs.inbox-triage-theme-realization-design.json).
+> Until this complete amendment is accepted, the previously approved graph
+> remains lifecycle authority; none of the proposed transfers or new tasks is
+> runnable. The later planning-standard/workflow amendments and separate
+> flow review remain required before implementation.
+> **Historical planning approval:** the user approved the exact pre-receipt plan committed at
 > `c9a2112f8554026510ac1135cfb7c3243d337151`, whose SHA-256 is
 > `052ca15b137fbbc3e9f89d926b4afd0a8eef60c08aa135985f005e6c944eb9db`.
-> This receipt accepts the clean Phase 23–31 / Task 101–165 planning graph and
+> That receipt accepted the clean Phase 23–31 / Task 101–165 planning graph and
 > its supersession rules. It accepts no phase, task, implementation, branch,
 > publication, or completion state.
 > **Task markers:** Tasks 101–163 were explicitly accepted. Phases 23–30 are
-> completed and archived. Tasks 164–165 remain open (`[ ]`) and may be
-> checked only after their own observable acceptance and verification evidence
-> is explicitly accepted by the user.
-> **Execution lifecycle:** Phases 23–30 are complete. The one open phase is
-> Phase 31 with two open Tasks 164–165. Phase 30 completed its own Gate C,
-> isolated feature branch/worktree, and accepted Task 159–162 chain.
+> completed and archived. Task 163 is accepted but not yet integrated into main.
+> Tasks 164–165 remain unaccepted (`[ ]`); this draft proposes
+> `Transferred / Superseded`, never `[x]`. New Tasks 166–208 are `[ ]`, unstarted.
+> **Execution lifecycle:** Phase 31 remains open for its accepted Task 163,
+> separately gated technical correction and truthful terminal verification.
+> Phases 34–40 are proposed, not started; 32–33 remain reserved. Nothing here
+> reopens Phase 30 or authorizes experiment promotion, repair or cleanup.
 > This planning receipt alone does not authorize later implementation, Git
 > lifecycle work, or publication.
 
@@ -21,7 +30,7 @@
 
 Implement the approved Inbox/Triage workspace as one production component tree with a validated Dexie v4 model, monotonic revisions, real all-or-nothing transactions, durable candidates, lifetime-correct UI state, dedicated Explorer search, pointer placement, source-aware Undo, guarded Archive recovery, and source-backed eight-theme presentation without inventing any unresolved visual or content decision.
 
-## Execution Plan Approval Receipt
+## Historical Execution Plan Approval Receipt — 2026-07-28
 
 - **Gate:** the complete clean-room execution graph in this document.
 - **User disposition:** approved on 2026-07-28 after Ultra clean-context
@@ -38,7 +47,7 @@ Implement the approved Inbox/Triage workspace as one production component tree w
 - **Preserved boundary:** all task markers remain open. This receipt does not
   onboard `run-phase`, `run-task`, or `end-phase`, authorize code or Git
   lifecycle work, resolve any `VQ-*`, or mark implementation complete.
-- **Next legal action:** derive a fresh flow review from this approved plan and
+- **Historical next legal action at that approval:** derive a fresh flow review from this approved plan and
   the approved canonical authority chain, then stop at its user gate.
 
 ## Architecture
@@ -47,12 +56,14 @@ The DataStore/Dexie repository owns durable truth, Zod write validation, complet
 
 Phase grouping is organizational, never a blanket dependency chain. Each task names its exact prerequisites. Decision-prerequisite tasks block only their listed receipt edge; unrelated data, headless behavior, and source-backed UI remain independently schedulable.
 
-## Clean-Room Provenance
+## Original Clean-Room Provenance — Historical Foundation
 
 This proposal was derived only from:
 
 - [`AGENTS.md`](../AGENTS.md);
-- [`docs/CODEX_WORKFLOW_ADAPTER.md`](CODEX_WORKFLOW_ADAPTER.md);
+- historical `docs/CODEX_WORKFLOW_ADAPTER.md` at the approved
+  `c9a2112f8554026510ac1135cfb7c3243d337151` planning commit (not a current
+  adapter pointer; current discovery uses [`docs/CODEX_WORKFLOW_ADAPTER.json`](CODEX_WORKFLOW_ADAPTER.json));
 - the approved [`PROMOTION_MAP.md`](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md);
 - [`docs/SCHEMA.md`](SCHEMA.md), including its completed 2026-07-28 grid-dimension correction receipt at `07bef1e`, [`docs/SPEC.md`](SPEC.md), [`docs/DESIGN_TOKENS.md`](DESIGN_TOKENS.md), and [`docs/PLANNING_STANDARD.md`](PLANNING_STANDARD.md);
 - the approved [`Inbox/Triage visual recipe index`](recipes/inbox-triage-visual-recipe-index.md) and exactly these nine approved recipes:
@@ -69,12 +80,37 @@ This proposal was derived only from:
 
 The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were excluded as derivation inputs.
 
-## Supersession And Number Reconciliation
+### Targeted amendment provenance — 2026-10-03
 
-- If the user approves this exact proposal, it **wholly replaces** the prior open Phase 23–33 / Task 101–154 planning range; no prior open task survives beside it.
-- The prior meanings assigned to Phase 32 and Phase 33 retire on approval. Their contents were not inputs to this proposal.
-- This independently derived graph uses active Phases 23–31. Phase numbers 32 and 33 remain intentionally reserved with no tasks so canonical handoff advances beyond the replaced range.
-- Task numbers are reassigned sequentially from Task 101 only after this corrected graph is complete. The authoritative continuation is recorded at [`## Next Numbers`](#next-numbers).
+This is an amendment, not a new clean-room replacement of accepted foundations.
+Its selected authority is DECISION D01–D36 and the complete approved current
+promotion map at `3b95de179fcc10568f8967a89a5f9eb9adaa5f11`, SHA-256
+`261d233c76d1641bccb7f4381035d3b10b79b3c61826237f9e71a04a32ad0d79`,
+under [its map receipt](receipts/Craft_Docs.inbox-triage-theme-realization-promotion-map.json).
+The approved design amendment is the exact `fef8617c2ecf3b8a9fe0335974cbc892d23a05b4`
+artifact, SHA-256 `888a61ff583016d984d8f3209e72af5688254e9cd7b68e07d9e181bdf80fa14b`;
+its preapproval Draft heading is a snapshot, not its current disposition.
+SCHEMA, SPEC, nine recipes, fourteen accepted DP outcomes and accepted Tasks
+101–163 are retained. Their accepted inline task contracts below are historical;
+forward references to 164/165 now resolve through the transfer register rather
+than making those retired tasks runnable.
+
+The functional landing baseline is accepted pre-Test-2 commit
+`54d689275cefb5d24c70f562435bb82734c51631`. Prototype
+`4f39709688ceb4cac5e15d4e3502186b1f1c801b`, tree
+`7b8eb8766a9b57fe2174a948de09cfb7646cf7de`, is read-only visual reference,
+not behavior or implementation-byte authority. The external methodology file
+supplies only abstract lessons. Test 1–8 code, CSS, tests, fixtures, runners,
+images, reports and evidence may not be copied, adapted, reused, imported or
+merged. Real future phases extend their accepted canonical predecessors; they
+do not rebuild eight isolated production trees. No new storage is required.
+
+## Historical Supersession And Current Number Reconciliation
+
+- The 2026-07-28 approval replaced the former Phase 23–33 / Task 101–154 graph. Its retired meanings do not resume.
+- Phases 32 and 33 remain reserved with no tasks. Accepted Tasks 101–163, Phase 30 close and archives remain unchanged.
+- On approval of this amendment, 164/165 become historical unaccepted transfer records, not completion prerequisites or reusable task numbers.
+- New tasks are 166–208, allocated once across proposed Phases 34–40. The authoritative continuation and graph count are at [Next Numbers](#next-numbers).
 
 ## Planning, Completion, And Evidence Rules
 
@@ -83,7 +119,7 @@ The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were exclu
 - **TDD:** first add the focused failing test and observe the intended failure; then implement the smallest slice, rerun focused tests, and run the task's broader checks.
 - **Authoritative results:** pending or unknown transport outcome is not success. Source truth remains visible until a complete repository postcondition is proven.
 - **One narrow commit:** a task commit contains only its declared implementation, tests, and task-local evidence. Shared-file writers obey the mutex register below.
-- **Running-app evidence near the change:** every task that changes user-visible behavior creates its exact `docs/verification/inbox-triage/task-NNN.md` record before completion. The record names route, seed/state, viewport, theme/mode, interaction, focus, capture identifier, result, and relevant UF/recipe. A small cluster may share one running session, but every task retains its own record; Task 164 aggregates rather than becoming first render evidence.
+- **Running-app evidence near the change:** every new user-visible task owns `docs/verification/inbox-triage/task-NNN.md` plus its declared task-local assets. Record route, seed/state, viewport, theme/mode, interaction, focus, captures and UF/recipe. Each region records its first-submission and followup results separately. Theme conformance Tasks 172/179/186/193/200/207 and final Task 208 aggregate rather than substitute for local evidence.
 - **Source/render separation:** recipe declarations are source authority. A task record is rendered/interaction evidence and never changes recipe authority.
 - **Preserve unrelated behavior:** ordinary Grid routing/DnD, Calendar, Trash, Quick Capture, global Search, Bit Detail, Direct Archive, Archive View restore, and system-node lifecycle change only where an explicit task names a compatibility assertion.
 
@@ -91,13 +127,33 @@ The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were exclu
 
 | Area | Current status | Smallest blocker / next condition |
 |---|---|---|
-| Document approval | `APPROVED` | The approval receipt above remains the planning authority. |
-| Execution lifecycle | Phases 23–30 complete and archived | One open phase (31) remains and requires its own approved lifecycle gate and exact branch/worktree authority. It inherits no Phase 30 write or publication authority. |
+| Document approval | Current amendment `DRAFT` | Design amendment accepted; this plan, later C05/C06 amendments and final flow review await their own gates. Historical approval is not approval of this draft. |
+| Execution lifecycle | Phase 31 technical close pending | Exact repair/cleanup scope and fresh Final Close remain user-owned. Proposed Phases 34–40 have no kickoff or implementation authority. |
 | Data foundations | `COMPLETED` | Tasks 101–105A and authoritative command Tasks 120–126 are accepted and recorded in their phase archives. |
 | Decision prerequisites | `COMPLETED` | Tasks 106–119 and all fourteen DP receipts are accepted, reflected, and recorded in the Phase 24 archive. |
-| Headless/base UI | Phase 30 completion/Archive owners completed | Tasks 127–162 are accepted and archived; Task 163 follows only its named dependencies and lifecycle gate. |
-| VQ realization | `BLOCKED_PENDING_USER_DECISIONS` | Each realization task resumes only from its exact DP receipt. |
-| Full close | Not ready | Tasks 163–164 complete, then Task 165 passes on top of the archived Phase 23–30 foundations. |
+| Headless/base UI | Tasks 127–163 accepted | Task 163 publication is pending; known route-export failure still requires its exact source/test repair and fresh validation. |
+| Theme realization | `PLANNED / UNSTARTED` | Named regional owners below; Q01/Q02/Q05 gate only their affected slices. No old experiment is evidence of canonical conformance. |
+| Phase 31 close | `BLOCKED_OTHER` | Plan transfer approval, Test 2 correction, exact technical repair, issue tier/dispositions and generated-output provenance at close candidate; no eight-theme-completion claim. |
+| Campaign full gate | `PLANNED / UNSTARTED` | Task 208 consumes every accepted foundation and new theme task plus the retained complete matrices. |
+
+## Unaccepted Task 164–165 Transfer Register
+
+**Draft disposition, effective only after this complete plan is approved.**
+The original definitions are preserved in Git at
+`d05140626a6e95d4f5ca4897f02f66594af4d753:docs/EXECUTION_PLAN.md`.
+Neither task was accepted; neither receives `[x]` or enters Phase 31's active
+task list. Transfer is responsibility relocation, not a test pass or deletion
+of a promised gate. Subsequent ledger/WORKFLOW records require their own scope.
+
+| Original ID / marker | Disposition | Retained responsibility / replacement owner |
+|---|---|---|
+| Task 164 `[ ]` | `Transferred / Superseded`, unaccepted | Nine-surface/eight-theme semantic fidelity, motion, accessibility and theme-state preservation: regional Tasks 166–171, 173–178, 180–185, 187–192, 194–199, 201–206; per-theme/mode completion Tasks 172/179/186/193/200/207; final full 16 theme/mode × 1024/1920 evidence in Task 208. The old CSS-only owner restriction is not inherited by the new explicitly named component owners. |
+| Task 165 `[ ]` | `Transferred / Superseded`, unaccepted | Complete implementation/preservation all-nodes sink: Task 208, retaining 29 UF, 10 AF, 21 NEG, nine recipes, 14 DP/12 VQ, schema grid correction, migration/rollback/real transactions/three ABA sequences/aggregate retention/Archive recovery and unrelated-surface evidence. |
+
+The former post-163/pre-164 visual-audit checkpoint is not retroactively
+accepted. New tasks use their own approved source/element intake and region
+dispositions; P29-01, existing deferrals and open findings retain their exact
+boundaries. No canonical Task 164 receipt or experiment fingerprint is reused.
 
 ## Dependency Graph
 
@@ -122,9 +178,20 @@ The old `docs/EXECUTION_PLAN.md` and every file under `docs/reviews/` were exclu
       └─149–154 Explorer/placement behavior and realizations
           └─155–158 Newly/Undo and search-result integration
               └─159–162 completion/Archive behavior and realizations
-                  └─163 integration ─164 conformance ─165 full gate
+                  └─163 accepted integration
+                      ├─Phase 31 gated correction + technical Final Close
+                      └─166→167→168→169→170→171→172  Retro Mac
+                          →173→174→175→176→177→178→179  Neumorphism
+                          →180→181→182→183→184→185→186  Terminal
+                          →187→188→189→190→191→192→193  Claymorphism + Origami
+                          →194→195→196→197→198→199→200  GridDO + Tiny Desk
+                          →201→202→203→204→205→206→207  Graphite
+                          →208 full implementation/preservation gate
 
-Every node above, including 105 and every accepted DP edge, feeds Task 165.
+Every accepted foundation, including 105/105A and every DP edge, plus all
+Tasks 166–207 feeds Task 208. Retired 164/165 are not dependency nodes.
+Cross-phase arrows also require the preceding phase's actual Final Close/main
+sync; 166 additionally requires the post-Phase-31 workflow audit disposition.
 ```
 
 ## Phase Index
@@ -137,62 +204,94 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | Phase 26 | Completed | [Lifetime, copy, and source-backed base-surface owners](execution-plan/archive/phase-26.md) | 127–135 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
 | Phase 27 | Completed | [Breakdown, Pool, and Staging headless adapters and exact realizations](execution-plan/archive/phase-27.md) | 136–148 | Accepted and archived; downstream tasks consume only their exact completed dependencies. |
 | Phase 28 | Completed | [Explorer status/search and pointer placement](execution-plan/archive/phase-28.md) | 149–154 | Accepted and archived; the terminal workflow measurement baseline transfers comparative audit to Phase 29. |
-| Phase 29 | Completed | [Mounted-page Newly/Undo and comparative workflow audit](execution-plan/archive/phase-29.md) | 155–158 | Accepted and archived; one Advisory visual-fidelity finding is Explicitly Deferred to a read-only Phase 31 audit after Task 163 and before Task 164. |
+| Phase 29 | Completed | [Mounted-page Newly/Undo and comparative workflow audit](execution-plan/archive/phase-29.md) | 155–158 | Accepted and archived; P29-01 remains Explicitly Deferred. Historical Phase 31 audit grants no repair; future narrow Inbox-card authority remains Q01. |
 | Phase 30 | Completed | [Completion and Archive coordinator/recovery](execution-plan/archive/phase-30.md) | 159–162 | Accepted and archived; bounded Task evidence remains reusable while its relevant inputs and claimed invariants remain unchanged. |
-| Phase 31 | Proposed | Route integration, nine-recipe conformance, full gate | 163–165 | Requires all named predecessors and task-local evidence. |
+| Phase 31 | Active / technical close pending | Accepted route integration; separately gated correction and terminal technical verification | 163; 164/165 historical transfer only | Transfer is proposed until plan acceptance; known technical failure and unresolved close prerequisites still block Final Close. |
 | Phase 32 | Reserved | Retired-number reservation | none | No tasks may be assigned. |
 | Phase 33 | Reserved | Retired-number reservation | none | No tasks may be assigned. |
+| Phase 34 | Proposed | Retro Mac, region-by-region then supported-mode conformance | 166–172 | 163 accepted + Phase 31 close/main sync + post-close audit disposition + document/flow gates; subsequent tasks use exact predecessor edges. |
+| Phase 35 | Proposed | Neumorphism, region-by-region then supported-mode conformance | 173–179 | 172 accepted + Phase 34 close/main sync. |
+| Phase 36 | Proposed | Terminal, region-by-region then supported-mode conformance | 180–186 | 179 accepted + Phase 35 close/main sync. |
+| Phase 37 | Proposed | Claymorphism + Origami, one shared writer | 187–193 | 186 accepted + Phase 36 close/main sync; both themes require regional dispositions. |
+| Phase 38 | Proposed | GridDO + Tiny Desk, one shared writer | 194–200 | 193 accepted + Phase 37 close/main sync; both themes require regional dispositions. |
+| Phase 39 | Proposed | Graphite, region-by-region then supported-mode conformance | 201–207 | 200 accepted + Phase 38 close/main sync. |
+| Phase 40 | Proposed | Complete campaign integration and preservation gate | 208 | All accepted Tasks 101–163/105A/166–207, all prior close/main sync and exact retained schema/DP authority. |
+
+## Theme Realization Task Sets
+
+These are finite aliases, not implied phase-wide dependencies. Each task below
+binds one landing contract, exact predecessor, theme set and evidence path.
+`REGIONS` is the union of POOL/BREAKDOWN/STAGING/EXPLORER/PLACE/ARCHIVE.
+`THEMES` is REGIONS plus CONFORM. Task 208 verifies every UF/AF/NEG in addition
+to the owners named in the inventories.
+
+| Alias | Exact task IDs | Landing contract |
+|---|---|---|
+| `POOL` | 166, 173, 180, 187, 194, 201 | L1 — common frame and Scratch Pool |
+| `BREAKDOWN` | 167, 174, 181, 188, 195, 202 | L2 — Selected Scratch Context and Breakdown |
+| `STAGING` | 168, 175, 182, 189, 196, 203 | L3 — Staging and its compact drag token |
+| `EXPLORER` | 169, 176, 183, 190, 197, 204 | L4 — Explorer/Finder base and replacement search |
+| `PLACE` | 170, 177, 184, 191, 198, 205 | L5 — Placement, then Newly/Undo |
+| `ARCHIVE` | 171, 178, 185, 192, 199, 206 | L6 — Breakdown-scoped completion and Archive |
+| `CONFORM` | 172, 179, 186, 193, 200, 207 | L7 — current theme(s), supported modes and regression |
 
 ## User Flow Inventory
 
 | ID | User-visible flow | Owning task(s) |
 |---|---|---|
-| `UF-01` | Enter Inbox through `/grid/[nodeId]` and see the four named areas. | 129, 163 |
-| `UF-02` | Initial/re-entry/reload Scratch selection, invalid prior selection, and true empty state. | 127, 130 |
-| `UF-03` | Expanded Pool search, sort, total/filtered counts, selection, and hidden-selected state. | 127, 130, 144 |
-| `UF-04` | Collapsed switching, first-printable-key collapse, manual reopen, and session restoration. | 127, 130 |
-| `UF-05` | External archive/delete transition, destination changes, draft copy, and restore. | 106, 141 |
-| `UF-06` | Context, Breakdown sort, rows/actions, and ordinary/completion empty distinctions. | 132 |
-| `UF-07` | Add by Enter/explicit Add with authoritative pending/reconcile/failure/success/focus. | 120, 136, 143, 148 |
-| `UF-08` | Leave with an Add draft through continue-writing or discard-and-move. | 108, 139, 140 |
-| `UF-09` | Edit Scratch title with conditional Save/Cancel/validation/offline/conflict/invalidation. | 109, 120, 137, 138 |
-| `UF-10` | Edit Breakdown content with lifecycle guards and deterministic focus. | 109, 120, 137, 138 |
-| `UF-11` | Delete non-optimistically with confirmation, recovery, and focus handoff. | 120, 136, 143 |
-| `UF-12` | Active, staged, consumed-removal, never-used, all-deleted, and completion row lifecycle. | 132, 136, 142, 145 |
-| `UF-13` | Durable Node/Bit candidates, counts, sort, quiet empty state, and full-card drag. | 121, 131, 133 |
-| `UF-14` | Stage with source validation, pending projection, result, and navigation guard. | 121, 145, 147 |
-| `UF-15` | Unstage through transient targets, restoring order/focus without success toast. | 121, 145, 148 |
-| `UF-16` | Remote candidate arrival, orphan proof/cleanup, invalidation, alert, and drag release. | 122, 146, 147 |
-| `UF-17` | Explorer navigation/re-entry, full labels, anchoring, and valid fallback. | 127, 134, 150 |
-| `UF-18` | Dedicated whole-hierarchy search with pre-search/results/loading/stale/error/duplicates. | 114, 135, 151 |
-| `UF-19` | Search result reveal/navigation/close semantics, DnD interruption, and result Undo. | 151, 158 |
-| `UF-20` | Staged placement through target-column confirmation and atomic mutation. | 123, 152, 153 |
-| `UF-21` | Direct type plus path selection and atomic placement. | 123, 152, 153 |
-| `UF-22` | Valid/invalid/full feedback, visible full reason, and valid-column edge scroll. | 149, 152 |
-| `UF-23` | Staged Result Title and direct type-limit surfaces without truncation/fallback. | 116, 154 |
-| `UF-24` | Actual-card Newly marker, type pinning, normal navigation, mounted-page lifetime. | 155, 157 |
-| `UF-25` | Ordinary/search Undo, dependency reasons, child-first recovery, reconcile, focus. | 124, 156–158 |
-| `UF-26` | Exact durable completion plus Add/title blocker reporting. | 125, 159, 160 |
-| `UF-27` | Section-scoped overlay, Cancel, complete Context, explicit reopen, switch/re-entry. | 159, 160 |
-| `UF-28` | Archive pending/recovery/retry and next→previous→filtered-null/true-empty handoff. | 125, 126, 161, 162 |
-| `UF-29` | Theme/mode change preserves all work state and causes no mutation/navigation. | 164 |
+| `UF-01` | Enter Inbox through `/grid/[nodeId]` and see the four named areas. | 129, 163; POOL, CONFORM |
+| `UF-02` | Initial/re-entry/reload Scratch selection, invalid prior selection, and true empty state. | 127, 130; POOL, ARCHIVE |
+| `UF-03` | Expanded Pool search, sort, total/filtered counts, selection, and hidden-selected state. | 127, 130, 144; POOL |
+| `UF-04` | Collapsed switching, first-printable-key collapse, manual reopen, and session restoration. | 127, 130; POOL |
+| `UF-05` | External archive/delete transition, destination changes, draft copy, and restore. | 106, 141; POOL |
+| `UF-06` | Context, Breakdown sort, rows/actions, and ordinary/completion empty distinctions. | 132; BREAKDOWN |
+| `UF-07` | Add by Enter/explicit Add with authoritative pending/reconcile/failure/success/focus. | 120, 136, 143, 148; BREAKDOWN |
+| `UF-08` | Leave with an Add draft through continue-writing or discard-and-move. | 108, 139, 140; BREAKDOWN |
+| `UF-09` | Edit Scratch title with conditional Save/Cancel/validation/offline/conflict/invalidation. | 109, 120, 137, 138; BREAKDOWN |
+| `UF-10` | Edit Breakdown content with lifecycle guards and deterministic focus. | 109, 120, 137, 138; BREAKDOWN |
+| `UF-11` | Delete non-optimistically with confirmation, recovery, and focus handoff. | 120, 136, 143; BREAKDOWN |
+| `UF-12` | Active, staged, consumed-removal, never-used, all-deleted, and completion row lifecycle. | 132, 136, 142, 145; BREAKDOWN, ARCHIVE |
+| `UF-13` | Durable Node/Bit candidates, counts, sort, quiet empty state, and full-card drag. | 121, 131, 133; STAGING |
+| `UF-14` | Stage with source validation, pending projection, result, and navigation guard. | 121, 145, 147; STAGING, BREAKDOWN |
+| `UF-15` | Unstage through transient targets, restoring order/focus without success toast. | 121, 145, 148; STAGING, BREAKDOWN |
+| `UF-16` | Remote candidate arrival, orphan proof/cleanup, invalidation, alert, and drag release. | 122, 146, 147; STAGING |
+| `UF-17` | Explorer navigation/re-entry, full labels, anchoring, and valid fallback. | 127, 134, 150; EXPLORER |
+| `UF-18` | Dedicated whole-hierarchy search with pre-search/results/loading/stale/error/duplicates. | 114, 135, 151; EXPLORER |
+| `UF-19` | Search result reveal/navigation/close semantics, DnD interruption, and result Undo. | 151, 158; EXPLORER, PLACE |
+| `UF-20` | Staged placement through target-column confirmation and atomic mutation. | 123, 152, 153; PLACE |
+| `UF-21` | Direct type plus path selection and atomic placement. | 123, 152, 153; PLACE |
+| `UF-22` | Valid/invalid/full feedback, visible full reason, and valid-column edge scroll. | 149, 152; EXPLORER, PLACE |
+| `UF-23` | Staged Result Title and direct type-limit surfaces without truncation/fallback. | 116, 154; PLACE |
+| `UF-24` | Actual-card Newly marker, type pinning, normal navigation, mounted-page lifetime. | 155, 157; EXPLORER, PLACE |
+| `UF-25` | Ordinary/search Undo, dependency reasons, child-first recovery, reconcile, focus. | 124, 156–158; EXPLORER, PLACE |
+| `UF-26` | Exact durable completion plus Add/title blocker reporting. | 125, 159, 160; BREAKDOWN, ARCHIVE |
+| `UF-27` | Section-scoped overlay, Cancel, complete Context, explicit reopen, switch/re-entry. | 159, 160; ARCHIVE |
+| `UF-28` | Archive pending/recovery/retry and next→previous→filtered-null/true-empty handoff. | 125, 126, 161, 162; ARCHIVE, POOL |
+| `UF-29` | Theme/mode change preserves all work state and causes no mutation/navigation. | THEMES; complete matrix 208 |
 
 ## Architecture Flow Inventory
+
+New theme owners below are presentation/preservation consumers, not new
+repository, hook or lifetime owners. Task 208 checks every AF, including the
+unchanged data foundations.
 
 | ID | Architecture flow | Owning task(s) |
 |---|---|---|
 | `AF-01` | DataStore and Zod write boundary remain the only command/storage boundary. | 101–105, 105A, 120–126, 163 |
 | `AF-02` | UI reads stay reactive; components do not import Dexie. | 131, 135, 163 |
-| `AF-03` | Canonical URL/system-node routing is retained; only Inbox body dispatch changes. | 129, 163, 164 |
-| `AF-04` | Lifecycle filters, retention, and unrelated Archive/Trash behavior remain intact. | 102, 105, 122, 125, 165 |
-| `AF-05` | Durable, app-session, mounted-page, recovery, and preference state use correct owners. | 101, 127, 131, 137, 139, 155, 159, 161, 163 |
+| `AF-03` | Canonical URL/system-node routing is retained; only Inbox body dispatch changes. | 129, 163; POOL, CONFORM, 208 |
+| `AF-04` | Lifecycle filters, retention, and unrelated Archive/Trash behavior remain intact. | 102, 105, 122, 125; ARCHIVE, CONFORM, 208 |
+| `AF-05` | Durable, app-session, mounted-page, recovery, and preference state use correct owners. | 101, 127, 131, 137, 139, 155, 159, 161, 163; THEMES, 208 preservation |
 | `AF-06` | Node/Bit/Breakdown/Candidate mutations use monotonic CAS/ABA protection. | 103, 120–125 |
 | `AF-07` | Commands use complete atomic postconditions and real transaction rollback, without a general log. | 104, 120–126 |
-| `AF-08` | Candidates join source truth; uniqueness, aggregate deletion, orphan audit, and Archive integrity stay repository-owned. | 101, 105, 121, 122, 131 |
-| `AF-09` | Dedicated Explorer query, existing triage DnD owner, placement, Newly, and Archive coordinators own distinct slices. | 135, 142, 149, 151, 152, 155, 161, 163 |
-| `AF-10` | One semantic production tree, centralized copy, task-local render evidence, and no theme-ID branching. | 128, 129, 164, 165 |
+| `AF-08` | Candidates join source truth; uniqueness, aggregate deletion, orphan audit, and Archive integrity stay repository-owned. | 101, 105, 121, 122, 131; STAGING, ARCHIVE, 208 preservation |
+| `AF-09` | Dedicated Explorer query, existing triage DnD owner, placement, Newly, and Archive coordinators own distinct slices. | 135, 142, 149, 151, 152, 155, 161, 163; STAGING, EXPLORER, PLACE, ARCHIVE, 208 preservation |
+| `AF-10` | One semantic production tree, centralized copy, task-local render evidence, and no theme-ID branching. | 128, 129; THEMES, 208 |
 
 ## Atomic Command Inventory
+
+Repository/UI behavior tasks remain the accepted command authority. The
+regional bindings consume and preserve them; none creates another command.
 
 | Command | Repository task | UI adapter/realization task(s) |
 |---|---|---|
@@ -212,15 +311,15 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 
 | Recipe surface | Production implementation owner(s) |
 |---|---|
-| Shell and section chrome | 129, 164 |
-| Scratch Pool | 130, 141, 144, 164 |
-| Selected Scratch Context | 132, 138, 160, 164 |
-| Breakdown rows and empty states | 132, 136–140, 143, 148, 159–160, 164 |
-| Staging | 133, 142, 145–148, 164 |
-| Grid Explorer | 134–135, 149–151, 158, 164 |
-| Placement affordances | 149, 152–154, 164 |
-| Newly placed and Undo | 155–158, 164 |
-| Archive completion | 159–162, 164 |
+| Shell and section chrome | 129; POOL; aggregate CONFORM/208 |
+| Scratch Pool | 130, 141, 144; POOL; aggregate CONFORM/208 |
+| Selected Scratch Context | 132, 138, 160; BREAKDOWN and complete variant ARCHIVE; aggregate CONFORM/208 |
+| Breakdown rows and empty states | 132, 136–140, 143, 148, 159–160; BREAKDOWN/ARCHIVE; aggregate CONFORM/208 |
+| Staging | 133, 142, 145–148; STAGING; aggregate CONFORM/208 |
+| Grid Explorer | 134–135, 149–151, 158; EXPLORER; aggregate CONFORM/208 |
+| Placement affordances | 149, 152–154; PLACE; aggregate CONFORM/208 |
+| Newly placed and Undo | 155–158; EXPLORER/PLACE; aggregate CONFORM/208 |
+| Archive completion | 159–162; ARCHIVE; aggregate CONFORM/208 |
 
 ## VQ Gate Register
 
@@ -240,6 +339,12 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 | `VQ-12` | 119 / `DP-VQ12` | 162 Archive reliability/recovery realization |
 
 ### Executable DP Receipt Edges
+
+This retained table records the original exact release edges into now-accepted
+functional tasks. New theme tasks consume those accepted meanings under their
+own approved plan/file scope; they do not broaden a DP's behavior or create a
+new release from an old receipt. A measured conflict returns only its affected
+element/state to Q02.
 
 | Receipt | VQ | Decision task | Exact implementation edge | Resume condition |
 |---|---|---|---|---|
@@ -262,27 +367,27 @@ Every node above, including 105 and every accepted DP edge, feeds Task 165.
 
 | ID | Prohibited shortcut | Enforced by |
 |---|---|---|
-| `NEG-01` | Copy prototype routes, mock state, handlers, or inline architecture. | 129, 163, 164 |
-| `NEG-02` | Flatten eight themes into one generic surface. | 129, 164 |
-| `NEG-03` | Retain abbreviated Explorer labels. | 134 |
-| `NEG-04` | Use a recipe outside the approved nine-file package as execution authority. | Provenance, 164 |
-| `NEG-05` | Promote the prototype Pool fold lock. | 127, 130 |
-| `NEG-06` | Copy staged internal handles or native drag snapshots. | 133, 142, 149 |
-| `NEG-07` | Add keyboard placement, placement button, picker, or hidden shortcut. | 149, 152, `D-KEYBOARD` |
-| `NEG-08` | Keep large Staging empty cards. | 133 |
-| `NEG-09` | Submit Add on blur. | 136 |
-| `NEG-10` | Extend active-column or global Search for Explorer. | 135, 151, 163 |
-| `NEG-11` | Use repeated blink/pulse/ping/bounce/spin/flicker for status. | 129, 148, 157, 160, 162, 164 |
-| `NEG-12` | Add a permanent candidate Unstage button. | 145 |
-| `NEG-13` | Toast successful Unstage or prematurely globalize its failure. | 145, 148 |
-| `NEG-14` | Use generic Dialog/AlertDialog for inline edit/conflict. | 138 |
-| `NEG-15` | Auto-unstage/cascade candidate on staged-source edit/delete. | 121, 137 |
-| `NEG-16` | Use page Set or label equality for candidate uniqueness. | 101, 121, 132 |
-| `NEG-17` | Persist selection/query/draft/path/overlay/Newly beyond its canonical lifetime; only two Inbox sorts persist. | 127, 155, 159, 161 |
-| `NEG-18` | Auto-pick another placement target or perform partial/best-effort writes. | 123, 152, 153 |
-| `NEG-19` | Use `mtime` as edit concurrency authority. | 103, 120 |
-| `NEG-20` | Treat mock success as persistence/lifecycle evidence. | 104, 120–126 |
-| `NEG-21` | Use adjacent chrome, cards, dialogs, or Search as visual fallback. | 106–119 and exact realization edges |
+| `NEG-01` | Copy prototype routes, mock state, handlers, or inline architecture. | 129, 163; THEMES, 208 |
+| `NEG-02` | Flatten eight themes into one generic surface. | 129; THEMES, 208 |
+| `NEG-03` | Retain abbreviated Explorer labels. | 134; EXPLORER, 208 |
+| `NEG-04` | Use a recipe outside the approved nine-file package as execution authority. | Provenance; THEMES, 208 |
+| `NEG-05` | Promote the prototype Pool fold lock. | 127, 130; POOL, 208 |
+| `NEG-06` | Copy staged internal handles or native drag snapshots. | 133, 142, 149; STAGING, EXPLORER, 208 |
+| `NEG-07` | Add keyboard placement, placement button, picker, or hidden shortcut. | 149, 152, `D-KEYBOARD`; EXPLORER, PLACE, 208 |
+| `NEG-08` | Keep large Staging empty cards. | 133; STAGING, 208 |
+| `NEG-09` | Submit Add on blur. | 136; BREAKDOWN, 208 |
+| `NEG-10` | Extend active-column or global Search for Explorer. | 135, 151, 163; EXPLORER, 208 |
+| `NEG-11` | Use repeated blink/pulse/ping/bounce/spin/flicker for status. | 129, 148, 157, 160, 162; THEMES, 208 |
+| `NEG-12` | Add a permanent candidate Unstage button. | 145; STAGING, 208 |
+| `NEG-13` | Toast successful Unstage or prematurely globalize its failure. | 145, 148; STAGING, BREAKDOWN, 208 |
+| `NEG-14` | Use generic Dialog/AlertDialog for inline edit/conflict. | 138; BREAKDOWN, 208 |
+| `NEG-15` | Auto-unstage/cascade candidate on staged-source edit/delete. | 121, 137; BREAKDOWN, STAGING, 208 preservation |
+| `NEG-16` | Use page Set or label equality for candidate uniqueness. | 101, 121, 132; BREAKDOWN, STAGING, 208 preservation |
+| `NEG-17` | Persist selection/query/draft/path/overlay/Newly beyond its canonical lifetime; only two Inbox sorts persist. | 127, 155, 159, 161; THEMES, 208 preservation |
+| `NEG-18` | Auto-pick another placement target or perform partial/best-effort writes. | 123, 152, 153; PLACE, 208 preservation |
+| `NEG-19` | Use `mtime` as edit concurrency authority. | 103, 120; BREAKDOWN, 208 preservation |
+| `NEG-20` | Treat mock success as persistence/lifecycle evidence. | 104, 120–126; THEMES, 208 |
+| `NEG-21` | Use adjacent chrome, cards, dialogs, or Search as visual fallback. | 106–119 and exact realization edges; THEMES, 208 |
 
 ## Selected Deferrals — Excluded From Active Tasks
 
@@ -1992,17 +2097,20 @@ accessibility, and prototype/recipe comparison remains Task 164 work.
 
 ---
 
-## Phase 31 — Integration, Conformance, And Full Gate
+## Phase 31 — Accepted Route Integration And Technical Close
 
-After Task 163 integration and before Task 164 repair work, perform a read-only
-visual-fidelity gap audit against the eight Inbox prototypes and the canonical
-recipe package. It must identify exact owners, paths, affected tasks, and
-follow-up scope, distinguishing the Phase 29 ordinary Explorer-card gap from
-broader campaign-wide fidelity debt. The audit grants no repair, task-reopen,
-owner-expansion, product/design-decision, or new-task authority; those remain
-separate user gates. Task 164 then owns only the conformance/fidelity work
-already granted by its canonical contract plus any separately approved
-follow-up plan.
+Task 163 remains accepted with its original implementation/acceptance identity.
+On approval of this plan amendment, 164/165 leave this phase's active task set
+under the transfer register. Phase 31 closes only its functional integration
+and explicitly approved technical corrections; it does not assert eight-theme
+visual completion. The historical read-only visual audit is neither accepted
+by transfer nor authority for repair. P29-01 and broader fidelity debt remain
+distinct, with future narrow card ownership at Q01 and theme realization below.
+
+Phase 30 remains closed/archive-only. No phase or task receives a completion
+marker merely because its remaining work is transferred. The original Gate C
+and task receipts remain approval-time snapshots; correction, cleanup and
+Final Close require their own exact user scope and recovery evidence.
 
 ### Task 163: [x] Integrate the canonical route and remove superseded owners
 
@@ -2020,48 +2128,1076 @@ follow-up plan.
 
 **Commit contract:** route/runtime/workspace integration, removal of only named superseded owners, tests, and Task 163 evidence; `refactor(triage): integrate authoritative inbox workspace`.
 
-### Task 164: [ ] Complete nine-recipe, eight-theme, motion, and accessibility conformance
+### Phase 31 technical-close prerequisites — not new task acceptance
 
-**Files and actions:** modify `src/app/globals.css`; create `src/components/triage/inbox-triage-conformance.test.tsx`; create `docs/verification/inbox-triage/rendered-fidelity.md`. Complete semantic role/state mappings across eight color themes in light/dark without theme-ID component branches; test landmarks/headings/names/focus-visible/non-color state/reduced motion/touch targets/theme-state preservation; aggregate—not replace—Tasks 129–163 evidence into a 16 theme/mode matrix with route, seed/state, 1024px and 1920×1080 viewports, capture identifiers, pointer/keyboard/focus results, and recipe-to-production comparisons. Reopen the owning task for any visual/behavior failure rather than hiding it here.
+| Item / map prerequisite | Owner, boundary and resume condition |
+|---|---|
+| P31-R01 / Q03 — route export correction | Task 163's route seam. Propose modifying `src/app/(grid)/grid/[nodeId]/page.tsx` and `src/components/layout/grid-runtime.test.tsx`, and creating `src/components/layout/node-grid-body.tsx`: move the ordinary `NodeGridBody`/standard-grid body to a normal client component and update imports without changing routing or behavior. These are proposed repair owners, not writes authorized by this draft; an exact run-task repair gate must approve them before mutation. Preserve the original Task 163 acceptance and record the additive correction and freshly invalidated evidence separately. Do not suppress generated type errors or treat cache deletion as repair. |
+| P31-C01 / Q04 — Test 2 correction and experiment disposal | Exact cleanup/correction gate owns the original `54d689…` → `d051406…` Test 2 net delta, not later Route documents. Remove only its rejected implementation/artifacts, retaining accepted 163 and the separate 9/8–9 audit. Preserve a minimal rejection/discard lineage, not a copy of obsolete reports. Separately guard eight identified experimental worktrees/branches and attributed runtimes; protect main, canonical Phase 31, prototype and session host. No standalone final Neumorphism report or closure commit is required. No history rewrite or branch reset. |
+| P31-I01 / Q05 — mounted Staging finding | Diagnose the inherited staged-root target-reason delivery against the accepted functional contract and classify Blocking versus Advisory. The issue owner records exact affected invariant/path and user disposition; a Blocking failure requires a separately approved repair, not deferral by a CSS author. This plan grants no hook/store write. |
+| P31-E01 / Q06 — close-output provenance | Close owner presents an exact project-owned proof for generated/browser outputs consumed at the close candidate, since the optional adapter gate is absent. User approves that method; fresh candidate checks must actually exercise it. Build success, timestamps and previous output alone are not the proof. No adapter/command-catalog change is authorized here. |
+| P31-V01 — truthful technical gate | After corrections, rerun adapter logical test/lint/typecheck/build, diff-check and route/unrelated-surface preservation on the actual close candidate. Record issue dispositions and evidence validity, not the experiment's visual scores or a Task 165 pass. Exact Final Close/publication/main-sync gate remains separate. |
 
-**Dependencies:** Task 163 and every task-local user-visible evidence record from Tasks 129–162.
+The current Control Tower owns document replanning and the post-close workflow
+audit directly. Separately approved correction/cleanup may use Luna xhigh as a
+single writer. The future workflow audit compares the deferred findings with
+installed rules before proposing any change; its user disposition is an entry
+condition for Phase 34, not authority to modify skills during Phase 31.
 
-**Authority / flows:** `UF-29`, `AF-03`, `AF-10`; `NEG-01`, `NEG-02`, `NEG-04`, `NEG-11`; all five deferrals remain excluded.
+---
 
-**Recipe:** [`Shell and section chrome`](recipes/inbox-triage-shell-section-chrome-visual-recipe.md), [`Scratch Pool`](recipes/inbox-triage-scratch-pool-visual-recipe.md), [`Selected Scratch Context`](recipes/inbox-triage-selected-scratch-context-visual-recipe.md), [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md), [`Staging`](recipes/inbox-triage-staging-visual-recipe.md), [`Grid Explorer`](recipes/inbox-triage-grid-explorer-visual-recipe.md), [`Placement affordances`](recipes/inbox-triage-placement-affordances-visual-recipe.md), [`Newly placed and Undo`](recipes/inbox-triage-newly-placed-undo-visual-recipe.md), and [`Archive completion`](recipes/inbox-triage-archive-completion-visual-recipe.md).
+## Future Theme Realization — Shared Binding Contracts
 
-**Observable acceptance:** one semantic tree is usable and materially recipe-correct in all 16 theme/mode combinations; theme/mode changes never save/cancel/navigate/refetch or lose any workflow state; focus/status/reduced-motion/contrast roles pass; no deferred feature appears; every underlying visible task already has its own running-app record.
+The following finite landing contracts are part of each numbered task that
+explicitly binds them. They are not wildcard component-owner expansion.
+Task parameters are the exact theme set, predecessor and task number named in
+its definition. One writer owns overlapping CSS/components/tests, including
+two-theme phases. Shared JSX is theme-independent; theme/mode values are
+centralized role aliases, not eight implementation branches.
 
-**Verification:** `pnpm test -- src/components/triage/inbox-triage-conformance.test.tsx src/app/theme-transition.test.ts`; `pnpm lint`; `pnpm typecheck`; execute and inspect the full evidence matrix at both viewports, including every recipe surface and representative reliability state.
+### Entry and applicable evidence
 
-**Commit contract:** semantic theme CSS, conformance test, aggregate rendered-fidelity record only; `feat(triage): conform inbox themes and accessibility`.
+Task 166 requires the accepted Task 163, actual Phase 31 Final Close/main sync,
+approved C04/C05/C06 and passing flow review, the post-close workflow-audit
+disposition, and a fresh phase/task gate. Later theme entry tasks require their
+named preceding conformance task accepted and that phase's actual close/main
+sync. No experiment branch or stacked historical test output is the real
+implementation base; run-phase refreshes the current integration base.
 
-### Task 165: [ ] Run the complete implementation and preservation gate
+Every region follows the approved design-method contract: independently
+match logical data/state and browser inputs; inventory visible source/DOM →
+computed style/geometry → production owner; implement and internally refine
+fresh original-size 1:1 comparisons before first submission. Check actual
+element typography, icon/decoration, spacing, depth, border and cascade, not
+only page colors. Preserve a separate behavior contract, approved English
+copy and DP-owned production-only states. Live hover/focus/DnD/motion checks
+exercise actual transitions and interruption/reduced-motion behavior.
+No arbitrary visual score or pixel threshold is imposed by this plan.
 
-**Files and actions:** create `docs/verification/inbox-triage/full-gate.md` with exact commands/exits/environment/commit, the approved SCHEMA grid-dimension correction receipt, all 29 UF outcomes, 10 AF checks, 21 negative checks, 9 recipe-surface evidence links, 14 accepted DP receipt links covering 12 VQs, migration/rollback/ABA/aggregate-retention/recovery evidence, every task-local rendered record, and unrelated-surface preservation. Make no production change; any failure reopens its owner.
+Regional first comparison targets light, 1920×1080, DPR 1, zoom 100%.
+Record the actual browser, fonts, locale/timezone, motion input, selected data,
+query/sort/edit/staged state and prototype correspondence limits. Each region
+needs explicit user visual disposition before the next region. A coherent
+approved Working may perform measurement, implementation and bounded internal
+refinement together; no routine contract-only session is inserted. Preserve
+the installed lifecycle's acceptance/continuity/repair boundaries. For a
+two-theme task, both themes receive distinct visual dispositions.
 
-**Dependencies:** Tasks 101–164 and the approved SCHEMA grid-dimension correction receipt; this is the explicit all-nodes sink.
+Once a common frame or region is accepted, later theme tasks extend its shared
+semantic owner rather than replace it. Keep earlier accepted themes usable;
+change assigned theme aliases, and verify every shared-structure effect. A new
+geometry/behavior conflict remains Q02, not permission to rebuild a previously
+accepted region. Per-theme variance is centralized styling, not alternate JSX.
 
-**Authority / flows:** `UF-01`–`UF-29`, `AF-01`–`AF-10`, `NEG-01`–`NEG-21`, `VQ-01`–`VQ-12`, all fourteen DP receipts, all nine recipes, and the full independent command/data graph.
+At task N, create `docs/verification/inbox-triage/task-N.md`. Its owned asset
+root is exactly `docs/verification/inbox-triage/task-N-assets/`: independently
+authored `fixture.mjs`, `runner.mjs`, `manifest.json`,
+`browser-results.json` and needed PNGs in `captures/`. Filenames/manifest
+identify theme, region, state and reference/production/comparison kind; no
+capture-count limit. No nested node_modules, Next output, runtime/cache or
+temporary generated file is a tracked asset. Report before-code differences,
+first-submit internal corrections, retained differences, the user's first
+judgment and any later repair separately. No past experiment bytes are reused.
 
-**Recipe:** [`Shell and section chrome`](recipes/inbox-triage-shell-section-chrome-visual-recipe.md), [`Scratch Pool`](recipes/inbox-triage-scratch-pool-visual-recipe.md), [`Selected Scratch Context`](recipes/inbox-triage-selected-scratch-context-visual-recipe.md), [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md), [`Staging`](recipes/inbox-triage-staging-visual-recipe.md), [`Grid Explorer`](recipes/inbox-triage-grid-explorer-visual-recipe.md), [`Placement affordances`](recipes/inbox-triage-placement-affordances-visual-recipe.md), [`Newly placed and Undo`](recipes/inbox-triage-newly-placed-undo-visual-recipe.md), and [`Archive completion`](recipes/inbox-triage-archive-completion-visual-recipe.md).
+Every binding below also creates or extends
+`src/components/triage/inbox-triage-theme-realization.test.tsx` with relevant
+semantic/state-preservation assertions (create in 166, extend thereafter).
+It is not a CSS-string-only proxy for browser fidelity. Existing hook/store/
+repository/copy/schema owners are read-only preservation inputs; execute their
+relevant tests but do not alter behavior, packages or data boundaries here.
+A necessary additional owner or new product/design choice stops only that
+affected write at its owning gate. Q02 blocks a conflicting element/state,
+not unrelated measurement or supported work; advancing the region still needs
+a disposition that truthfully covers any owned remainder.
 
-**Observable acceptance:** one clean migrated production build passes every flow; real fault injection exposes no partial state; all three ABA sequences conflict without resurrection; aggregate deletion retains audits; Archive storage/reload/handoff cases pass; all five deferrals remain absent; no unresolved receipt/skipped check/known failure is represented as completion.
+Use the adapter/catalog's logical focused diff-check/typecheck and full
+test/lint/typecheck/build gates with exact direct targets below. Keep direct
+DOM/state checks separate from fresh mounted-route pixel/geometry/pointer/
+keyboard/focus evidence. Per-region checks include regression of its previously
+accepted neighboring regions and any other themes/modes affected by shared JSX.
+L7 closes supported current-theme dark/desktop/accessibility/motion work;
+Task 208 owns the retained full 16-combination campaign matrix. Neither user
+visual acceptance nor a technical pass substitutes for the other.
 
-**Verification:** from a clean dependency state run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build`; run v3→v4 migration/rollback, real transaction checkpoints, ABA-1/2/3, aggregate retention, 29-flow, accessibility, 16-theme/mode, 1024px/1920×1080, route/reload/remote/concurrent/focus, and unrelated-surface matrices; finish with `git diff --check` and approved-commit scope inspection.
+### L1 — Common frame and Scratch Pool
 
-**Commit contract:** full-gate record only after every command/matrix passes; `docs(triage): record full inbox gate`.
+**Files and actions:** modify `src/app/globals.css` for shared role bindings
+and the assigned theme(s)' frame/Pool aliases; modify
+`src/components/triage/scratch-pool.tsx` and `scratch-pool.test.tsx` for
+sourced semantic structure and preserved Pool actions; modify
+`src/components/triage/triage-workspace.tsx` and `triage-workspace.test.tsx`
+only for the common mounting/frame and existing external-removal presentation.
+Include the shared conformance test and task-N evidence paths above.
 
+**Authority / flows:** D11–D22/D25; UF-01–05, UF-28 handoff, UF-29;
+AF-03/05/10; all applicable NEG. Preserve DP-VQ01 and DP-VQ06-POOL.
+
+**Recipe:** [Shell/chrome](recipes/inbox-triage-shell-section-chrome-visual-recipe.md)
+and [Scratch Pool](recipes/inbox-triage-scratch-pool-visual-recipe.md).
+
+**Observable acceptance:** fixed approved common geometry; sourced header,
+tools, counts, search/clear, sort, expanded selected/unselected rows, collapsed
+switchers, empty/no-match/status and focus/hover appearance. Selection, hidden
+selection, sorting, first-printable/manual reopen, scrolling, remote/removal
+status and selected Scratch→Breakdown/recovery linkage retain canonical truth.
+Do not visually revise Breakdown/Staging/Explorer internals in this slice.
+
+**Verification:** direct Pool/Workspace/shared-conformance tests; fresh mounted
+expanded/collapsed/query/sort/selection/empty/status/focus/hover checks,
+external-removal focus/recovery and handoff preservation; applicable gates.
+
+### L2 — Selected Scratch Context and Breakdown
+
+**Files and actions:** modify `src/app/globals.css` for assigned Context/
+Breakdown roles; modify `src/components/triage/breakdown-panel.tsx` and
+`breakdown-panel.test.tsx` for shared presentation; modify
+`src/components/triage/triage-workspace.tsx` and `triage-workspace.test.tsx`
+only for Breakdown mounting and source-attached overlays/status. Include
+shared conformance and task-N evidence.
+
+**Authority / flows:** D11–D22/D25/D26; UF-06–12, UF-14–15 source linkage,
+UF-26 blockers, UF-29; AF-05/09/10. Retain DP-VQ02/03/04/05/11 exactly.
+
+**Recipe:** [Context](recipes/inbox-triage-selected-scratch-context-visual-recipe.md)
+and [Breakdown](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md).
+
+**Observable acceptance:** sourced plate/title/time/action hierarchy,
+sort, active/staged rows/grips/Edit/Trash, Add and ordinary empty/completion
+distinction. Preserve Edit→Save/Cancel, draft/caret/focus, departure decision,
+Add/Delete/Unstage status, reliability, canonical state and downstream DnD.
+Context height/action reserve or copy conflicts require Q02; no clipped action,
+status or focus. Accepted Pool/common frame remains intact.
+
+**Verification:** direct Breakdown/Workspace/conformance tests; real
+view/edit/save/cancel/validation/dirty/pending/error/locked/recovery,
+Add/Delete/staged/empty and focus/hover/drag-source checks; applicable gates.
+
+### L3 — Staging
+
+**Files and actions:** modify `src/app/globals.css` for assigned Staging
+roles; modify `src/components/triage/staging-zone.tsx` and
+`staging-zone.test.tsx`, `src/components/triage/triage-drag-token.tsx`
+and `triage-drag-token.test.tsx` for semantic presentation; modify
+`src/components/triage/triage-workspace.tsx` and `triage-workspace.test.tsx`
+only for Staging mounting/status connections. Include shared conformance and
+task-N evidence.
+
+**Authority / flows:** D11–D22/D25; UF-13–16/29; AF-05/08/09/10.
+Retain DP-VQ02 and DP-VQ06-STAGING; Q05 diagnosis/disposition precedes a
+conformance claim about mounted target-reason delivery.
+
+**Recipe:** [Staging](recipes/inbox-triage-staging-visual-recipe.md).
+
+**Observable acceptance:** sourced Node/Bit headers, independent wells,
+cards/rows, tools/counts and quiet empties under approved 35/65 geometry.
+Preserve full source drag and compact pointer-centered preview, durable
+candidate truth, transient Unstage, order/focus and arrival/integrity/reliability
+states. Neutral/invalid/unavailable/pending and compatible active-hover Remove
+remain distinct. No permanent Unstage, label snapshot or invented success.
+
+**Verification:** direct Staging/drag-token/Workspace/conformance tests;
+fresh actual mounted stage/unstage, both types, eligible/invalid/unavailable/
+pending/remote/integrity states and actual pointer/focus delivery, not only
+mocked props; preserved Pool/Breakdown and applicable gates.
+
+### L4 — Explorer/Finder and replacement search
+
+**Files and actions:** modify `src/app/globals.css` for assigned Explorer
+roles; modify `src/components/triage/hierarchy-explorer.tsx` and
+`hierarchy-explorer.test.tsx`,
+`src/components/triage/grid-explorer-search-results.tsx` and
+`grid-explorer-search-results.test.tsx` for shared base/search presentation.
+Include shared conformance and task-N evidence. Conditional candidate owners
+are `src/components/grid/node-card.tsx`, `node-card.test.tsx`,
+`bit-card.tsx`, `bit-card.test.tsx`: before any internal-card write, Q01
+must approve the exact Inbox-only element/path/consumer boundary. Their listing
+is not blanket common-card redesign authority. Any new asset owner needs its
+own gate before writing.
+
+**Authority / flows:** D11–D28; UF-17–19/22/24–25/29; AF-05/09/10.
+Retain DP-VQ06-EXPLORER/07/10; no prototype active-column filter substitution.
+
+**Recipe:** [Explorer](recipes/inbox-triage-grid-explorer-visual-recipe.md);
+[Newly/Undo](recipes/inbox-triage-newly-placed-undo-visual-recipe.md) for
+search-result composition only.
+
+**Observable acceptance:** sourced base chrome, full Home/Level 1/2/3 labels,
+populated hierarchy/card grammar and target/status states. Separately realize
+the approved whole-hierarchy replacement search, including loading/empty/
+stale/error/duplicates/reveal/close and search-result Undo. Record native versus
+derived comparison fixture limits. P29-01/D-CARD is not silently resolved by
+CSS, a wrapper or a new owner; exact approved remainder stays deferred.
+
+**Verification:** direct Explorer/search-results/conformance tests and
+conditional card tests; actual mounted navigation/scroll anchoring/search/
+reveal/focus/drag interruption/status and eligible/full/invalid targets;
+ordinary Grid/card consumers and previously accepted regions; applicable gates.
+
+### L5 — Placement, then Newly/Undo
+
+**Files and actions:** modify `src/app/globals.css` for assigned Placement/
+Newly roles; modify `src/components/triage/triage-workspace.tsx` and
+`triage-workspace.test.tsx`,
+`src/components/triage/hierarchy-explorer.tsx` and
+`hierarchy-explorer.test.tsx`,
+`src/components/triage/grid-explorer-search-results.tsx` and
+`grid-explorer-search-results.test.tsx` only for their shared forms/attached
+marker/status/action presentation. Include shared conformance and task-N
+evidence. Actual Node/Bit internal changes use the same conditional Q01 owners
+and direct tests as L4; no implicit owner enlargement.
+
+**Authority / flows:** D11–D28; UF-19–25/29; AF-05/09/10.
+Retain DP-VQ08/09/10, atomic placement and source-aware Undo.
+
+**Recipe:** [Placement](recipes/inbox-triage-placement-affordances-visual-recipe.md)
+and [Newly/Undo](recipes/inbox-triage-newly-placed-undo-visual-recipe.md).
+
+**Observable acceptance:** source-backed target-column Direct/Staged forms,
+path/title/type-limit/Confirm/Cancel and attached reliability; then actual
+Node/Bit card provenance marker, independent Undo slot/always-visible reason
+rail in ordinary and search contexts. Get Placement visual disposition before
+Newly/Undo, and both before Archive. Occlusion/geometry differences from the
+prototype require Q02, not cosmetic discretion. Preserve real transactions,
+result/source truth, dependency reasons, recovery and logical focus.
+
+**Verification:** direct Workspace/Explorer/search/conformance/conditional
+card tests plus existing placement/Newly hook tests as read-only consumers;
+real valid/invalid/full placement, confirm/cancel/title/limits, Newly, eligible/
+ineligible/dependency-clear/pending/reconcile/failed Undo, focus and search
+composition; previously accepted regions and applicable gates.
+
+### L6 — Completion and Archive
+
+**Files and actions:** modify `src/app/globals.css` for assigned completion/
+Archive roles; modify `src/components/triage/breakdown-panel.tsx` and
+`breakdown-panel.test.tsx`,
+`src/components/triage/triage-workspace.tsx` and
+`triage-workspace.test.tsx` only for the existing completion/recovery
+presentation. Include shared conformance and task-N evidence.
+
+**Authority / flows:** D11–D28; UF-02/12/26–29; AF-04/05/09/10.
+Retain DP-VQ11/12 and the accepted completion/Archive coordinator.
+
+**Recipe:** [Archive/completion](recipes/inbox-triage-archive-completion-visual-recipe.md)
+with [Context](recipes/inbox-triage-selected-scratch-context-visual-recipe.md)
+and [Breakdown](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md)
+for their complete/blocker variants.
+
+**Observable acceptance:** Breakdown-scoped overlay/card, complete Context,
+Cancel/Reopen and source-attached blockers/withdrawal; one stable Archive
+reliability/current-action slot and forced-reload recovery. No whole-page
+modal, ornamental success, optimistic removal, retry under uncertainty or
+different handoff algorithm. Already accepted ordinary editors/regions remain
+usable; unsupported prototype states are disclosed.
+
+**Verification:** direct Breakdown/Workspace/conformance tests and existing
+Archive/completion/recovery tests; fresh blocked/eligible/withdrawn/Cancel/
+Reopen/pending/unknown/reconciling/not-applied/conflict/storage-failure/reload
+and next/previous/filtered-null/true-empty handoff with real focus; applicable
+gates and unrelated Archive View/Trash preservation.
+
+### L7 — Supported-theme completion and regression
+
+**Files and actions:** modify `src/app/globals.css` only for the assigned
+theme(s)' missing supported-dark aliases and in-scope CSS accessibility/motion
+conformance; extend the shared realization test and
+`src/app/theme-transition.test.ts`; create task-N evidence and assets.
+No component/hook/data repair is hidden here; a structural/behavior regression
+returns to its named regional owner under an exact approved repair scope.
+
+**Authority / flows:** D07/D19/D21–D27; UF-01–29 preservation, especially
+UF-29; AF-03/10; all NEG. All nine recipe targets and exact existing DP roles
+are checked, not automatically promoted.
+
+**Recipe:** all nine entries in the Recipe Surface Inventory.
+
+**Observable acceptance:** each assigned theme is usable and materially
+source/DP-correct in light/dark at supported 1024px and 1920×1080 desktop
+viewports; landmarks, visible/accessible labels, focus-visible, non-color
+state, contrast, hidden scrolling, touch targets, motion/reduced motion,
+status/overlay and retained state pass. No theme/mode action saves/cancels/
+navigates/refetches or loses workflow state. Distinguish direct prototype
+coverage from approved production-only realization. User visual disposition
+is separate from these gates; a light-only pass is not full theme completion.
+
+**Verification:** shared conformance/theme-transition tests and all affected
+regional direct tests; current assigned theme(s) × light/dark × both viewports,
+every recipe and representative reliability/editor/recovery state; previously
+completed themes and unrelated surfaces receive scope-appropriate regression
+checks. Preserve earlier theme assertions. Execute full logical gates. Task
+208 still owns all eight themes' complete combined matrix.
+
+## Phase 34 — Retro Mac Regional Realization
+
+Theme set: `retro-mac`. This phase is proposed and unstarted.
+
+### Task 166: [ ] Fix the common frame and realize Scratch Pool
+
+**Files and actions:** bind L1's exact per-file actions to `retro-mac` only; create `docs/verification/inbox-triage/task-166.md` and the declared `task-166-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 163 and every explicit Phase 34 entry condition above. The matching L1 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L1; UF-01–05/28–29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L1; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L1 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L1, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L1's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize retro-mac frame-pool`. No experimental bytes, broad staging or rewrite.
+
+### Task 167: [ ] Realize Selected Scratch Context and Breakdown
+
+**Files and actions:** bind L2's exact per-file actions to `retro-mac` only; create `docs/verification/inbox-triage/task-167.md` and the declared `task-167-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 166 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L2 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L2; UF-06–12/14–15/26/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L2; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L2 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L2, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L2's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize retro-mac context-breakdown`. No experimental bytes, broad staging or rewrite.
+
+### Task 168: [ ] Realize Staging and drag presentation
+
+**Files and actions:** bind L3's exact per-file actions to `retro-mac` only; create `docs/verification/inbox-triage/task-168.md` and the declared `task-168-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 167 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L3 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L3; UF-13–16/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L3; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L3 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L3, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L3's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize retro-mac staging`. No experimental bytes, broad staging or rewrite.
+
+### Task 169: [ ] Realize Explorer base and replacement search
+
+**Files and actions:** bind L4's exact per-file actions to `retro-mac` only; create `docs/verification/inbox-triage/task-169.md` and the declared `task-169-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 168 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L4 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L4; UF-17–19/22/24–25/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L4; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L4 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L4, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L4's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize retro-mac explorer-search`. No experimental bytes, broad staging or rewrite.
+
+### Task 170: [ ] Realize Placement followed by Newly/Undo
+
+**Files and actions:** bind L5's exact per-file actions to `retro-mac` only; create `docs/verification/inbox-triage/task-170.md` and the declared `task-170-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 169 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L5 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L5; UF-19–25/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L5; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L5 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L5, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L5's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize retro-mac placement-newly-undo`. No experimental bytes, broad staging or rewrite.
+
+### Task 171: [ ] Realize completion and Archive
+
+**Files and actions:** bind L6's exact per-file actions to `retro-mac` only; create `docs/verification/inbox-triage/task-171.md` and the declared `task-171-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 170 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L6 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L6; UF-02/12/26–29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L6; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L6 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L6, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L6's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize retro-mac archive`. No experimental bytes, broad staging or rewrite.
+
+### Task 172: [ ] Complete supported modes, accessibility and regression
+
+**Files and actions:** bind L7's exact per-file actions to `retro-mac` only; create `docs/verification/inbox-triage/task-172.md` and the declared `task-172-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 171 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L7 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L7; UF-01–29 preservation, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L7; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L7 current-theme supported-mode criterion and separate user visual disposition; no silent component repair or full-campaign pass claim. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L7, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L7's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize retro-mac theme-conformance`. No experimental bytes, broad staging or rewrite.
+
+---
+
+## Phase 35 — Neumorphism Regional Realization
+
+Theme set: `neumorphism`. This phase is proposed and unstarted.
+
+### Task 173: [ ] Fix the common frame and realize Scratch Pool
+
+**Files and actions:** bind L1's exact per-file actions to `neumorphism` only; create `docs/verification/inbox-triage/task-173.md` and the declared `task-173-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 172 accepted and actual Phase 34 Final Close/main sync; approved document/flow chain and this phase's fresh lifecycle gate. The matching L1 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L1; UF-01–05/28–29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L1; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L1 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L1, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L1's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize neumorphism frame-pool`. No experimental bytes, broad staging or rewrite.
+
+### Task 174: [ ] Realize Selected Scratch Context and Breakdown
+
+**Files and actions:** bind L2's exact per-file actions to `neumorphism` only; create `docs/verification/inbox-triage/task-174.md` and the declared `task-174-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 173 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L2 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L2; UF-06–12/14–15/26/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L2; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L2 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L2, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L2's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize neumorphism context-breakdown`. No experimental bytes, broad staging or rewrite.
+
+### Task 175: [ ] Realize Staging and drag presentation
+
+**Files and actions:** bind L3's exact per-file actions to `neumorphism` only; create `docs/verification/inbox-triage/task-175.md` and the declared `task-175-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 174 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L3 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L3; UF-13–16/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L3; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L3 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L3, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L3's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize neumorphism staging`. No experimental bytes, broad staging or rewrite.
+
+### Task 176: [ ] Realize Explorer base and replacement search
+
+**Files and actions:** bind L4's exact per-file actions to `neumorphism` only; create `docs/verification/inbox-triage/task-176.md` and the declared `task-176-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 175 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L4 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L4; UF-17–19/22/24–25/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L4; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L4 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L4, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L4's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize neumorphism explorer-search`. No experimental bytes, broad staging or rewrite.
+
+### Task 177: [ ] Realize Placement followed by Newly/Undo
+
+**Files and actions:** bind L5's exact per-file actions to `neumorphism` only; create `docs/verification/inbox-triage/task-177.md` and the declared `task-177-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 176 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L5 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L5; UF-19–25/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L5; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L5 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L5, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L5's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize neumorphism placement-newly-undo`. No experimental bytes, broad staging or rewrite.
+
+### Task 178: [ ] Realize completion and Archive
+
+**Files and actions:** bind L6's exact per-file actions to `neumorphism` only; create `docs/verification/inbox-triage/task-178.md` and the declared `task-178-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 177 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L6 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L6; UF-02/12/26–29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L6; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L6 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L6, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L6's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize neumorphism archive`. No experimental bytes, broad staging or rewrite.
+
+### Task 179: [ ] Complete supported modes, accessibility and regression
+
+**Files and actions:** bind L7's exact per-file actions to `neumorphism` only; create `docs/verification/inbox-triage/task-179.md` and the declared `task-179-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 178 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L7 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L7; UF-01–29 preservation, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L7; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L7 current-theme supported-mode criterion and separate user visual disposition; no silent component repair or full-campaign pass claim. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L7, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L7's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize neumorphism theme-conformance`. No experimental bytes, broad staging or rewrite.
+
+---
+
+## Phase 36 — Terminal Regional Realization
+
+Theme set: `terminal`. This phase is proposed and unstarted.
+
+### Task 180: [ ] Fix the common frame and realize Scratch Pool
+
+**Files and actions:** bind L1's exact per-file actions to `terminal` only; create `docs/verification/inbox-triage/task-180.md` and the declared `task-180-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 179 accepted and actual Phase 35 Final Close/main sync; approved document/flow chain and this phase's fresh lifecycle gate. The matching L1 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L1; UF-01–05/28–29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L1; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L1 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L1, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L1's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize terminal frame-pool`. No experimental bytes, broad staging or rewrite.
+
+### Task 181: [ ] Realize Selected Scratch Context and Breakdown
+
+**Files and actions:** bind L2's exact per-file actions to `terminal` only; create `docs/verification/inbox-triage/task-181.md` and the declared `task-181-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 180 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L2 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L2; UF-06–12/14–15/26/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L2; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L2 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L2, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L2's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize terminal context-breakdown`. No experimental bytes, broad staging or rewrite.
+
+### Task 182: [ ] Realize Staging and drag presentation
+
+**Files and actions:** bind L3's exact per-file actions to `terminal` only; create `docs/verification/inbox-triage/task-182.md` and the declared `task-182-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 181 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L3 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L3; UF-13–16/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L3; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L3 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L3, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L3's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize terminal staging`. No experimental bytes, broad staging or rewrite.
+
+### Task 183: [ ] Realize Explorer base and replacement search
+
+**Files and actions:** bind L4's exact per-file actions to `terminal` only; create `docs/verification/inbox-triage/task-183.md` and the declared `task-183-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 182 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L4 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L4; UF-17–19/22/24–25/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L4; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L4 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L4, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L4's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize terminal explorer-search`. No experimental bytes, broad staging or rewrite.
+
+### Task 184: [ ] Realize Placement followed by Newly/Undo
+
+**Files and actions:** bind L5's exact per-file actions to `terminal` only; create `docs/verification/inbox-triage/task-184.md` and the declared `task-184-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 183 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L5 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L5; UF-19–25/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L5; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L5 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L5, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L5's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize terminal placement-newly-undo`. No experimental bytes, broad staging or rewrite.
+
+### Task 185: [ ] Realize completion and Archive
+
+**Files and actions:** bind L6's exact per-file actions to `terminal` only; create `docs/verification/inbox-triage/task-185.md` and the declared `task-185-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 184 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L6 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L6; UF-02/12/26–29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L6; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L6 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L6, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L6's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize terminal archive`. No experimental bytes, broad staging or rewrite.
+
+### Task 186: [ ] Complete supported modes, accessibility and regression
+
+**Files and actions:** bind L7's exact per-file actions to `terminal` only; create `docs/verification/inbox-triage/task-186.md` and the declared `task-186-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 185 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L7 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L7; UF-01–29 preservation, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L7; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L7 current-theme supported-mode criterion and separate user visual disposition; no silent component repair or full-campaign pass claim. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L7, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L7's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize terminal theme-conformance`. No experimental bytes, broad staging or rewrite.
+
+---
+
+## Phase 37 — Claymorphism And Origami Regional Realization
+
+Theme set: `claymorphism`, `origami`. This phase is proposed and unstarted.
+
+### Task 187: [ ] Fix the common frame and realize Scratch Pool
+
+**Files and actions:** bind L1's exact per-file actions to `claymorphism`, `origami` only; create `docs/verification/inbox-triage/task-187.md` and the declared `task-187-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 186 accepted and actual Phase 36 Final Close/main sync; approved document/flow chain and this phase's fresh lifecycle gate. The matching L1 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L1; UF-01–05/28–29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L1; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L1 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L1, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L1's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize claymorphism-origami frame-pool`. No experimental bytes, broad staging or rewrite.
+
+### Task 188: [ ] Realize Selected Scratch Context and Breakdown
+
+**Files and actions:** bind L2's exact per-file actions to `claymorphism`, `origami` only; create `docs/verification/inbox-triage/task-188.md` and the declared `task-188-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 187 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L2 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L2; UF-06–12/14–15/26/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L2; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L2 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L2, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L2's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize claymorphism-origami context-breakdown`. No experimental bytes, broad staging or rewrite.
+
+### Task 189: [ ] Realize Staging and drag presentation
+
+**Files and actions:** bind L3's exact per-file actions to `claymorphism`, `origami` only; create `docs/verification/inbox-triage/task-189.md` and the declared `task-189-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 188 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L3 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L3; UF-13–16/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L3; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L3 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L3, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L3's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize claymorphism-origami staging`. No experimental bytes, broad staging or rewrite.
+
+### Task 190: [ ] Realize Explorer base and replacement search
+
+**Files and actions:** bind L4's exact per-file actions to `claymorphism`, `origami` only; create `docs/verification/inbox-triage/task-190.md` and the declared `task-190-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 189 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L4 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L4; UF-17–19/22/24–25/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L4; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L4 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L4, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L4's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize claymorphism-origami explorer-search`. No experimental bytes, broad staging or rewrite.
+
+### Task 191: [ ] Realize Placement followed by Newly/Undo
+
+**Files and actions:** bind L5's exact per-file actions to `claymorphism`, `origami` only; create `docs/verification/inbox-triage/task-191.md` and the declared `task-191-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 190 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L5 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L5; UF-19–25/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L5; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L5 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L5, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L5's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize claymorphism-origami placement-newly-undo`. No experimental bytes, broad staging or rewrite.
+
+### Task 192: [ ] Realize completion and Archive
+
+**Files and actions:** bind L6's exact per-file actions to `claymorphism`, `origami` only; create `docs/verification/inbox-triage/task-192.md` and the declared `task-192-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 191 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L6 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L6; UF-02/12/26–29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L6; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L6 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L6, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L6's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize claymorphism-origami archive`. No experimental bytes, broad staging or rewrite.
+
+### Task 193: [ ] Complete supported modes, accessibility and regression
+
+**Files and actions:** bind L7's exact per-file actions to `claymorphism`, `origami` only; create `docs/verification/inbox-triage/task-193.md` and the declared `task-193-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 192 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L7 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L7; UF-01–29 preservation, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L7; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L7 current-theme supported-mode criterion and separate user visual disposition; no silent component repair or full-campaign pass claim. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L7, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L7's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize claymorphism-origami theme-conformance`. No experimental bytes, broad staging or rewrite.
+
+---
+
+## Phase 38 — GridDO And Tiny Desk Regional Realization
+
+Theme set: `griddo`, `tiny-desk`. This phase is proposed and unstarted.
+
+### Task 194: [ ] Fix the common frame and realize Scratch Pool
+
+**Files and actions:** bind L1's exact per-file actions to `griddo`, `tiny-desk` only; create `docs/verification/inbox-triage/task-194.md` and the declared `task-194-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 193 accepted and actual Phase 37 Final Close/main sync; approved document/flow chain and this phase's fresh lifecycle gate. The matching L1 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L1; UF-01–05/28–29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L1; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L1 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L1, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L1's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize griddo-tiny-desk frame-pool`. No experimental bytes, broad staging or rewrite.
+
+### Task 195: [ ] Realize Selected Scratch Context and Breakdown
+
+**Files and actions:** bind L2's exact per-file actions to `griddo`, `tiny-desk` only; create `docs/verification/inbox-triage/task-195.md` and the declared `task-195-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 194 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L2 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L2; UF-06–12/14–15/26/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L2; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L2 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L2, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L2's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize griddo-tiny-desk context-breakdown`. No experimental bytes, broad staging or rewrite.
+
+### Task 196: [ ] Realize Staging and drag presentation
+
+**Files and actions:** bind L3's exact per-file actions to `griddo`, `tiny-desk` only; create `docs/verification/inbox-triage/task-196.md` and the declared `task-196-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 195 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L3 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L3; UF-13–16/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L3; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L3 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L3, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L3's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize griddo-tiny-desk staging`. No experimental bytes, broad staging or rewrite.
+
+### Task 197: [ ] Realize Explorer base and replacement search
+
+**Files and actions:** bind L4's exact per-file actions to `griddo`, `tiny-desk` only; create `docs/verification/inbox-triage/task-197.md` and the declared `task-197-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 196 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L4 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L4; UF-17–19/22/24–25/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L4; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L4 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L4, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L4's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize griddo-tiny-desk explorer-search`. No experimental bytes, broad staging or rewrite.
+
+### Task 198: [ ] Realize Placement followed by Newly/Undo
+
+**Files and actions:** bind L5's exact per-file actions to `griddo`, `tiny-desk` only; create `docs/verification/inbox-triage/task-198.md` and the declared `task-198-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 197 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L5 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L5; UF-19–25/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L5; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L5 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L5, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L5's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize griddo-tiny-desk placement-newly-undo`. No experimental bytes, broad staging or rewrite.
+
+### Task 199: [ ] Realize completion and Archive
+
+**Files and actions:** bind L6's exact per-file actions to `griddo`, `tiny-desk` only; create `docs/verification/inbox-triage/task-199.md` and the declared `task-199-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 198 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L6 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L6; UF-02/12/26–29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L6; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L6 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L6, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L6's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize griddo-tiny-desk archive`. No experimental bytes, broad staging or rewrite.
+
+### Task 200: [ ] Complete supported modes, accessibility and regression
+
+**Files and actions:** bind L7's exact per-file actions to `griddo`, `tiny-desk` only; create `docs/verification/inbox-triage/task-200.md` and the declared `task-200-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 199 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L7 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L7; UF-01–29 preservation, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L7; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L7 current-theme supported-mode criterion and separate user visual disposition; no silent component repair or full-campaign pass claim. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L7, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L7's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize griddo-tiny-desk theme-conformance`. No experimental bytes, broad staging or rewrite.
+
+---
+
+## Phase 39 — Graphite Regional Realization
+
+Theme set: `graphite`. This phase is proposed and unstarted.
+
+### Task 201: [ ] Fix the common frame and realize Scratch Pool
+
+**Files and actions:** bind L1's exact per-file actions to `graphite` only; create `docs/verification/inbox-triage/task-201.md` and the declared `task-201-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 200 accepted and actual Phase 38 Final Close/main sync; approved document/flow chain and this phase's fresh lifecycle gate. The matching L1 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L1; UF-01–05/28–29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L1; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L1 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L1, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L1's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize graphite frame-pool`. No experimental bytes, broad staging or rewrite.
+
+### Task 202: [ ] Realize Selected Scratch Context and Breakdown
+
+**Files and actions:** bind L2's exact per-file actions to `graphite` only; create `docs/verification/inbox-triage/task-202.md` and the declared `task-202-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 201 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L2 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L2; UF-06–12/14–15/26/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L2; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L2 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L2, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L2's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize graphite context-breakdown`. No experimental bytes, broad staging or rewrite.
+
+### Task 203: [ ] Realize Staging and drag presentation
+
+**Files and actions:** bind L3's exact per-file actions to `graphite` only; create `docs/verification/inbox-triage/task-203.md` and the declared `task-203-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 202 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L3 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L3; UF-13–16/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L3; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L3 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L3, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L3's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize graphite staging`. No experimental bytes, broad staging or rewrite.
+
+### Task 204: [ ] Realize Explorer base and replacement search
+
+**Files and actions:** bind L4's exact per-file actions to `graphite` only; create `docs/verification/inbox-triage/task-204.md` and the declared `task-204-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 203 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L4 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L4; UF-17–19/22/24–25/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L4; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L4 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L4, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L4's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize graphite explorer-search`. No experimental bytes, broad staging or rewrite.
+
+### Task 205: [ ] Realize Placement followed by Newly/Undo
+
+**Files and actions:** bind L5's exact per-file actions to `graphite` only; create `docs/verification/inbox-triage/task-205.md` and the declared `task-205-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 204 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L5 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L5; UF-19–25/29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L5; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L5 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L5, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L5's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize graphite placement-newly-undo`. No experimental bytes, broad staging or rewrite.
+
+### Task 206: [ ] Realize completion and Archive
+
+**Files and actions:** bind L6's exact per-file actions to `graphite` only; create `docs/verification/inbox-triage/task-206.md` and the declared `task-206-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 205 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L6 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L6; UF-02/12/26–29, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L6; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L6 element/state and behavior-preservation criterion, fresh matched first-submission/internal-refinement evidence and separate user visual disposition for each assigned theme. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L6, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L6's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize graphite archive`. No experimental bytes, broad staging or rewrite.
+
+### Task 207: [ ] Complete supported modes, accessibility and regression
+
+**Files and actions:** bind L7's exact per-file actions to `graphite` only; create `docs/verification/inbox-triage/task-207.md` and the declared `task-207-assets/` files. Conditional owner/decision gates remain in force.
+
+**Dependencies:** Task 206 accepted, including its required user visual dispositions; this phase's approved lifecycle scope. The matching L7 DP contracts and Q01/Q02/Q05 conditions apply only where that binding names them.
+
+**Authority / flows:** selected DECISION and approved DESIGN_TOKENS as cited by L7; UF-01–29 preservation, its AF/NEG constraints and no-storage boundary.
+
+**Recipe:** exactly the source/DP surfaces named by L7; no adjacent or experimental fallback.
+
+**Observable acceptance:** Every L7 current-theme supported-mode criterion and separate user visual disposition; no silent component repair or full-campaign pass claim. No later region is advanced from self-review or test success alone.
+
+**Verification:** all exact direct targets and fresh mounted-browser checks in L7, plus its focused/full logical gates and regression boundaries.
+
+**Commit contract:** only L7's owned implementation/tests and this task's fresh evidence, approved receipt/ledger state; no acceptance marker before user acceptance. Message: `feat(triage): realize graphite theme-conformance`. No experimental bytes, broad staging or rewrite.
+
+---
+
+## Phase 40 — Complete Implementation And Preservation Gate
+
+### Task 208: [ ] Run the retained all-nodes campaign gate
+
+**Files and actions:** create `docs/verification/inbox-triage/task-208.md`
+and `docs/verification/inbox-triage/full-gate.md`; create only the declared
+`task-208-assets/` independently authored fixtures/runners/manifests/browser
+results/captures needed for the full matrix. Record commands/exits/environment/
+commit, the retained task-local records from Tasks 129–163 and independently
+authored records/user dispositions from Tasks 166–207, the approved SCHEMA grid
+correction, all 29 UF/10 AF/21 NEG outcomes, nine recipes, fourteen accepted DP
+receipts covering twelve VQs and migration/rollback/ABA/aggregate-retention/
+recovery/unrelated-surface proof. Make no production/test/config change;
+failures return to their exact owner and invalidate the affected evidence.
+
+**Dependencies:** all accepted Tasks 101–163 including 105A; all accepted Tasks
+166–207; actual Phase 39 Final Close/main sync and all prior phase publication/
+integration proofs; the approved SCHEMA grid correction and fourteen retained
+DP receipts; complete approved C04/C05/C06/flow-review chain and this phase's
+exact lifecycle gate. Transferred 164/165 are explicitly excluded from the
+dependency set, never treated as accepted.
+
+**Authority / flows:** every UF-01–29, AF-01–10, NEG-01–21 and VQ-01–12,
+all independent command/data foundations and DECISION D07/D19/D24.
+No new data or product decision is derived.
+
+**Recipe:** all nine exact source packages in the Recipe Surface Inventory.
+
+**Observable acceptance:** one clean migrated production build passes every
+flow and preserved unrelated surface; real fault injection leaves no partial
+writes; all three ABA sequences conflict without resurrection; aggregate
+deletion retains audits; Archive storage/reload/handoff and state lifetimes
+pass. Eight themes × light/dark at both supported desktop viewports cover all
+nine recipes, representative reliability/editor/recovery states, accessibility,
+pointer/keyboard/focus and adopted motion. All five deferrals remain absent;
+every newly scoped card change has its exact Q01 authority and preserved
+consumer evidence. No unknown result, skipped check, unresolved decision,
+known failure or source-only claim is represented as completion.
+
+**Verification:** resolve logical test/lint/typecheck/build/diff-check through
+the adapter catalog; run the complete v3→v4 migration/rollback, real transaction,
+ABA-1/2/3, aggregate retention, 29-flow/10-AF/21-NEG, fourteen-DP/nine-recipe,
+16-theme/mode × 1024px/1920×1080, route/reload/remote/concurrent/focus,
+accessibility/motion and unrelated-surface matrices. Any reused non-volatile
+foundation evidence must remain valid under the installed evidence rules;
+generated/browser outputs require fresh qualifying proof. Finish with exact
+commit scope/clean-state inspection and independent technical and user visual
+dispositions. This task does not itself authorize Phase 40 Final Close.
+
+**Commit contract:** owned complete campaign gate records and independently
+authored assets only after every claimed check passes; `docs(triage): record
+full inbox implementation and preservation gate`. No repair, experiment
+import, task/phase acceptance, push or publication is bundled into this commit.
 ---
 
 ## Shared-File Writer Register And Mutex Policy
 
-This register is complete for every exact path declared by two or more tasks. Every other declared implementation/test/evidence path is single-writer. A component/hook row that names its co-located test means both files have the same writers unless the row explicitly adds Task 101 for typed-fixture compatibility.
+This register covers every implementation/test path declared by two or more tasks. Every task-local evidence root is single-writer. A component/hook row that names its co-located test means both files have the same writers unless the row explicitly adds Task 101 for typed-fixture compatibility. POOL/BREAKDOWN/STAGING/EXPLORER/PLACE/ARCHIVE/CONFORM/THEMES expand only to the finite task IDs above. Conditional Q01 card writers are prospective: a register row is serialization, not card-redesign approval. The separately gated Phase 31 route correction also serializes with the historical runtime-test owner; it is not a new numbered theme task.
 
 **Mutex policy**
 
-1. A task must acquire every listed path mutex before editing, rebase/read the latest committed form of those files, run the prior writer's focused tests plus its own, make one narrow commit, and release the mutex. Two tasks that share any registered file may not edit or commit concurrently.
-2. Numeric order below is the default serialization order, but it is not a product dependency. A later ready VQ slice may take the free mutex while an earlier unrelated receipt is blocked; the eventually resumed task rebases after the committed writer. No VQ completion is inferred from mutex order.
+1. Two tasks that share any registered file may not edit or commit concurrently. The next writer reads the latest committed owned files and verifies affected prior-writer assertions as well as its own. This register does not authorize run-task to switch or rebase a branch/worktree; Git-base changes belong to the owning lifecycle gate.
+2. Numeric order below is the default serialization order, but it is not a product dependency. Historical independent VQ tasks were serialized without a VQ completion inference. The new regional tasks have explicit predecessor/user-disposition edges that a free mutex does not waive.
 3. Tasks 106–119 may collect user decisions logically in parallel, but the single `decision-docs` mutex serializes `DESIGN_TOKENS.md`, `EXECUTION_PLAN.md`, and overlapping recipe writes one receipt commit at a time. No Decision task depends on another.
 4. The `copy` and `global-theme` mutexes likewise serialize receipt-dependent UI tasks. In particular, sibling Tasks 153/154 and every other same-file sibling cannot be concurrently committed even though their DP receipts are independent.
 5. Task 101 is the first writer for each enumerated typed-fixture test. Where a test row below says “plus 101,” Task 101 changes only factory compatibility; later tasks own behavior.
@@ -2083,24 +3219,26 @@ This register is complete for every exact path declared by two or more tasks. Ev
 | `db-breakdown-regression` | `src/lib/db/scratch-breakdowns.test.ts` | 101, 103, 105, 120 |
 | `db-command-harness` | `src/lib/db/inbox-operations.test.ts` | 120 creates; 121, 123, 124 extend |
 | `copy` | `src/lib/copy/inbox-triage.ts`; `src/lib/copy/inbox-triage.test.ts` | 128, 138, 140, 141, 143, 144, 147, 148, 150, 151, 153, 154, 157, 160, 162 |
-| `global-theme` | `src/app/globals.css` | 129, 138, 140, 141, 143, 144, 147, 148, 150, 151, 153, 154, 157, 160, 162, 164 |
+| `global-theme` | `src/app/globals.css` | 129, 138, 140, 141, 143, 144, 147, 148, 150, 151, 153, 154, 157, 160, 162; THEMES |
 | `triage-state` | `src/stores/triage-store.ts`; `src/stores/triage-store.test.ts` | 127, 130, 134, 141, 150, 161, 163 |
 | `triage-preferences` | `src/stores/triage-preferences-store.ts`; `src/stores/triage-preferences-store.test.ts` | 127, 130, 132 |
-| `breakdown-component` | `src/components/triage/breakdown-panel.tsx` | 132, 136, 137, 138, 139, 140, 142, 143, 145, 147, 148, 159, 160, 161, 162 |
+| `breakdown-component` | `src/components/triage/breakdown-panel.tsx` | 132, 136, 137, 138, 139, 140, 142, 143, 145, 147, 148, 159, 160, 161, 162; BREAKDOWN, ARCHIVE |
 | `breakdown-component-test` | `src/components/triage/breakdown-panel.test.tsx` | 101 plus every `breakdown-component` writer |
-| `workspace-component` | `src/components/triage/triage-workspace.tsx` | 129, 136, 137, 139, 140, 141, 145, 149, 152, 155, 159, 160, 161, 163 |
+| `workspace-component` | `src/components/triage/triage-workspace.tsx` | 129, 136, 137, 139, 140, 141, 145, 149, 152, 155, 159, 160, 161, 163; POOL, BREAKDOWN, STAGING, PLACE, ARCHIVE |
 | `workspace-component-test` | `src/components/triage/triage-workspace.test.tsx` | 101 plus every `workspace-component` writer |
-| `pool-component` | `src/components/triage/scratch-pool.tsx` | 130, 136, 141, 144, 161 |
+| `pool-component` | `src/components/triage/scratch-pool.tsx` | 130, 136, 141, 144, 161; POOL |
 | `pool-component-test` | `src/components/triage/scratch-pool.test.tsx` | 101 plus every `pool-component` writer |
-| `staging-component` | `src/components/triage/staging-zone.tsx`; `src/components/triage/staging-zone.test.tsx` | 133, 142, 145, 146, 147, 148 |
-| `drag-token` | `src/components/triage/triage-drag-token.tsx`; `src/components/triage/triage-drag-token.test.tsx` | 133, 142 |
-| `explorer-component` | `src/components/triage/hierarchy-explorer.tsx` | 134, 149–158 |
-| `explorer-component-test` | `src/components/triage/hierarchy-explorer.test.tsx` | 101, 134, 149–158 |
-| `explorer-results` | `src/components/triage/grid-explorer-search-results.tsx`; `src/components/triage/grid-explorer-search-results.test.tsx` | 151, 158 |
-| `actual-node-card` | `src/components/grid/node-card.tsx` | 155, 156, 157 |
-| `actual-node-card-test` | `src/components/grid/node-card.test.tsx` | 101, 155, 156, 157 |
-| `actual-bit-card` | `src/components/grid/bit-card.tsx` | 155, 156, 157 |
-| `actual-bit-card-test` | `src/components/grid/bit-card.test.tsx` | 101, 155, 156, 157 |
+| `staging-component` | `src/components/triage/staging-zone.tsx`; `src/components/triage/staging-zone.test.tsx` | 133, 142, 145, 146, 147, 148; STAGING |
+| `drag-token` | `src/components/triage/triage-drag-token.tsx`; `src/components/triage/triage-drag-token.test.tsx` | 133, 142; STAGING |
+| `explorer-component` | `src/components/triage/hierarchy-explorer.tsx` | 134, 149–158; EXPLORER, PLACE |
+| `explorer-component-test` | `src/components/triage/hierarchy-explorer.test.tsx` | 101, 134, 149–158; EXPLORER, PLACE |
+| `explorer-results` | `src/components/triage/grid-explorer-search-results.tsx`; `src/components/triage/grid-explorer-search-results.test.tsx` | 151, 158; EXPLORER, PLACE |
+| `actual-node-card` | `src/components/grid/node-card.tsx` | 155, 156, 157; EXPLORER, PLACE only after their exact Q01 approval |
+| `actual-node-card-test` | `src/components/grid/node-card.test.tsx` | 101, 155, 156, 157; EXPLORER, PLACE only after their exact Q01 approval |
+| `actual-bit-card` | `src/components/grid/bit-card.tsx` | 155, 156, 157; EXPLORER, PLACE only after their exact Q01 approval |
+| `actual-bit-card-test` | `src/components/grid/bit-card.test.tsx` | 101, 155, 156, 157; EXPLORER, PLACE only after their exact Q01 approval |
+| `theme-realization-test` | `src/components/triage/inbox-triage-theme-realization.test.tsx` | THEMES; 166 creates, later writers extend while preserving earlier assertions |
+| `theme-transition-test` | `src/app/theme-transition.test.ts` | CONFORM |
 | `breakdown-hook` | `src/hooks/use-scratch-breakdowns.ts` | 132, 136, 137 |
 | `breakdown-hook-test` | `src/hooks/use-scratch-breakdowns.test.tsx` | 101, 132, 136, 137 |
 | `operation-lock-test` | `src/hooks/use-triage-operation-lock.test.tsx` | 136, 137, 139, 145, 152, 156, 161 |
@@ -2113,15 +3251,21 @@ This register is complete for every exact path declared by two or more tasks. Ev
 | `completion-hook` | `src/hooks/use-can-archive-scratch.ts` | 159, 160 |
 | `completion-hook-test` | `src/hooks/use-can-archive-scratch.test.ts` | 101, 159, 160 |
 | `archive-coordinator` | `src/hooks/use-archive-scratch.ts`; `src/hooks/use-archive-scratch.test.ts` | 161, 162 |
-| `runtime-fixture-test` | `src/components/layout/grid-runtime.test.tsx` | 101, 163 |
+| `runtime-fixture-test` | `src/components/layout/grid-runtime.test.tsx` | 101, 163; proposed P31-R01 only after Q03 repair approval |
 
 ## Next Numbers
 
-- **Next planned phase:** Phase 34. Phases 32 and 33 are reserved and receive no tasks.
-- **Next planned task:** Task 166.
-- Active graph count: 1 open implementation phase (31), 3 open tasks
-  (163–165), 8 completed archives (Phases 23–30 with accepted Tasks 101–162),
-  and 2 reserved phase numbers (32–33).
-- The document is **user-approved for planning authority** under the receipt at
-  the top of this file; Tasks 101–162 are accepted, Phases 23–30 are archived,
-  and Tasks 163–165 remain open.
+- **Next proposed implementation phase/task:** Phase 34 / Task 166, only after
+  all entry conditions and fresh lifecycle gates. Phases 32 and 33 remain
+  reserved with no tasks.
+- **Next unallocated numbers after this amendment:** Phase 41 / Task 209.
+  Proposed Phases 34–40 and Tasks 166–208 are already allocated; none may be
+  reused for another meaning.
+- Graph reconciliation: 64 accepted tasks (101–163 plus 105A), eight completed
+  archives (Phases 23–30), one active technical-close phase (31), two historical
+  unaccepted transfer records (164/165), 43 new unstarted tasks (166–208) in
+  seven proposed phases (34–40), and two reserved phases (32–33).
+- This complete amendment is **Draft / awaiting user approval**. C04 acceptance
+  will approve planning authority, not task acceptance, correction/cleanup,
+  Phase 31 Final Close, new implementation or publication. C05/C06 and flow-review
+  dispositions remain required before the proposed implementation graph runs.

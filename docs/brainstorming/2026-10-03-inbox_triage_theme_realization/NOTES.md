@@ -89,9 +89,63 @@ freshness gate는 absent이며 project-owned 대체 방법은 아직 확인되�
   수락 전 C04 실행 계획을 이 draft에서 파생하지 않는다. Map approval은
   Phase 31 scope 변경, Tasks 164–165 이관, cleanup 또는 Final Close가 아니다.
 
+## Design acceptance and execution draft — 2026-10-03
+
+- 사용자의 `승인`은 C03 `docs/DESIGN_TOKENS.md`의 위 exact artifact를
+  수락한 disposition이다. 승인 receipt는
+  `docs/receipts/Craft_Docs.inbox-triage-theme-realization-design.json`,
+  commit `29421eeb182223714f230afc832a668f8576b939`다. Approved design bytes와
+  승인 당시 Draft heading은 변경하지 않았으며, receipt가 이후 수락을 소유한다.
+  Full-OID map/design pin 검증과 committed resolver `ready`를 확인했다.
+- 그 승인에서 C04 `docs/EXECUTION_PLAN.md`만 파생했다. 현재는
+  **Draft / awaiting user approval**이며 SHA-256은
+  `d344fb149cd6be555aaeb03a45384a30d99561b53bd43f2497406802230e3b12`다.
+  C05/C06와 최종 flow review는 이 draft를 승인 상태로 소비하지 않는다.
+- Phase 31은 accepted 163과 별도 승인할 기술-close prerequisites로 좁혔다.
+  미수락 164/165는 active task heading에서 빼고 historical transfer register에
+  `[ ] / Transferred / Superseded`로 제안했다. 원래 정의는 지정 Git commit에
+  남고, 이관은 성공/수락이나 원래 검증 의무 삭제가 아니다.
+- 새 Phases 34–39는 Retro Mac / Neumorphism / Terminal / Claymorphism+Origami /
+  GridDO+Tiny Desk / Graphite다. 각각 L1 frame+Pool → L2 Context+Breakdown →
+  L3 Staging → L4 Explorer/search → L5 Placement then Newly/Undo → L6 Archive →
+  L7 supported-mode conformance로 분해했다. 정확한 새 tasks는 166–207이며,
+  Phase 40의 208이 모든 기존 foundations/신규 task의 전체 gate를 유지한다.
+  다음 미할당 번호는 41/209다. Two-theme shared paths도 한 writer다.
+- 공통 binding은 exact source/component/test actions와 derivable task-local
+  evidence paths를 지정한다. 기존 semantic owner에 theme alias를 확장하고,
+  소스→실제 rendering→production 요소 대응과 내부 1:1 보완을 첫 제출 전에
+  수행한다. 사용자 영역별 시각 disposition과 기술 gate를 분리하고,
+  첫 제출·이후 보완을 구분한다. 기존 copy/behavior/DP/data owners는 유지한다.
+- Q01 actual-card authority, Q02 실제 geometry/DP 충돌, Q03 source repair,
+  Q04 exact disposal, Q05 mounted finding tier, Q06 output proof는 해결됐다고
+  만들지 않았다. 각각 affected owner/gate와 resume condition을 유지했다.
+  새 plan은 실험 code/이미지 재사용이나 NodeGridBody 수리를 승인하지 않는다.
+- 검증: inline Node document/graph/owner audit **284 checks, 284 passed**, exit 0.
+  64개 accepted task contract/marker, 14개 DP edge, 12 VQ row, 다섯 deferral은
+  byte 동일이다. 29 UF/10 AF/21 NEG promise text와 nine recipe coverage를
+  유지했다. 새 43 task의 7필드/상태/선행관계, 107-node acyclic sink,
+  21 shared implementation/test writer path, baseline owner 존재/신규 test 부재,
+  정확한 8-theme partition, local links/anchor와 pin을 검증했다.
+- 별도 Control Tower semantic pre-gate pass: original 164의 전체 conformance는
+  6개 L7과 최종208, original165의 migration/rollback/real transaction/3 ABA/
+  retention/recovery/unrelated/16-mode 책임은208로 이어진다. Region layout
+  수리는 named component owners에 있고 repository/hook/copy mutation은 없다.
+  Legacy adapter Markdown link는 당시 commit의 역사적 파일로 명시하고 현재
+  JSON pointer를 링크했다. 이 검토는 **최종 flow review pass가 아니다**.
+  그것은 C04/C05/C06 각각의 수락 후 전체 trace artifact/gate에서 수행한다.
+- 문서 검사의 표/두-theme parsing 오류는 검사 측을 수정하고 전체를 재실행했다.
+  Adapter/catalog-resolved diff-check exit 0. 제품·tests·나머지 canonical·recipe·
+  ledger·archive는 조사 시작 `d051406…` 대비 불변이고 main/prototype은 clean이다.
+  외부 방법론 hash, approved map/design hash도 동일하다. Runtime/full product
+  gate나 browser pass는 실행·주장하지 않았다.
+- **정확히 하나의 next legal action:** 사용자의 C04 전체 실행 계획 개정안
+  disposition. 수락 후에만 승인 receipt를 만들고 C05로 이어간다. 기술 수리,
+  Test 2 정정, 8개 실험 cleanup, 설치 skill 변경, Final Close/main sync와 실제
+  Phase 34 kickoff는 이번 문서 checkpoint에서 하지 않았다.
+
 ## References
 
-- [Current decision](DECISION.md), [proposed promotion map](PROMOTION_MAP.md).
+- [Current decision](DECISION.md), [approved promotion map](PROMOTION_MAP.md).
 - 기존 제품 기반: `docs/SCHEMA.md`, `docs/SPEC.md`, `docs/DESIGN_TOKENS.md`,
   `docs/EXECUTION_PLAN.md`, `docs/PLANNING_STANDARD.md`, `docs/WORKFLOW.md`.
 - 기존 visual authority: `docs/recipes/inbox-triage-visual-recipe-index.md`가
