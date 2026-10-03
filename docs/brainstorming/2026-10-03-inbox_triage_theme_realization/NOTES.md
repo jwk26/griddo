@@ -143,6 +143,51 @@ freshness gate는 absent이며 project-owned 대체 방법은 아직 확인되�
   Test 2 정정, 8개 실험 cleanup, 설치 skill 변경, Final Close/main sync와 실제
   Phase 34 kickoff는 이번 문서 checkpoint에서 하지 않았다.
 
+## Execution acceptance and planning-standard draft — 2026-10-03
+
+- 사용자의 `승인`은 C04 `docs/EXECUTION_PLAN.md` 개정안 전체의 수락이다.
+  Exact artifact는 `ce020ab2654fab7b9c200bb4d4a28f69de7c31d4`, SHA-256
+  `d344fb149cd6be555aaeb03a45384a30d99561b53bd43f2497406802230e3b12`다.
+  승인 receipt는 `docs/receipts/Craft_Docs.inbox-triage-theme-realization-execution.json`,
+  receipt-only commit은 `a8a7733f3d8ef9d85ad213ef2b3d9c5a1254d011`이다.
+  Approved plan/map/design의 Draft heading과 원본 bytes는 그대로 유지한다.
+  Receipt가 이후 disposition을 소유하며, 계획 수락은 구현·기술-close 성공·
+  ledger 이관 처리·cleanup·새 phase kickoff 또는 Final Close 승인이 아니다.
+- 그 승인에 따라 C05 `docs/PLANNING_STANDARD.md`만 개정했다. 현재는
+  **Draft / awaiting user approval**, SHA-256
+  `c1364c9c3829145876e55774e902e1b8cf8aafcebf5e338f011b421e50c754d0`다.
+  첫 제출 전 source/DOM → 실제 computed style/geometry → production owner의
+  요소별 대응, 동일 상태 1:1 내부 보완, 실제 interaction 확인을 명시한다.
+  Production-only 기능·copy·DP 보존과 사용자 영역별 시각 disposition은 유지한다.
+- 검증 범위는 Phase 31 기술 close → Phases 34–39 영역별 지정 테마 → 각
+  L7 supported light/dark·두 desktop viewport → Phase 40 전체 gate로 구분한다.
+  기존 모든 conformance와 complete implementation/preservation 책임은 남는다.
+  알려진 실패를 이관이나 시각 수락으로 통과 처리하지 않고, Q03–Q06의 실제
+  repair/disposal/tier/output-proof 경계도 별도 승인·실행까지 유지한다.
+- 첫 제출의 품질·내부 보완·사용자 첫 판단·이후 추가 보완·비용을 task-local
+  evidence에서 분리한다. 기술 결과와 사용자 시각 수락도 독립 필드다.
+  현재 campaign은 사용자 지시 D33에 따라 Control Tower가 직접 작성하고
+  별도 inline pass로 검토한다. 이 좁은 review-owner 예외는 최종 flow trace,
+  gap repair 또는 사용자 gate를 생략하거나 다른 campaign의 독립 검토를
+  일반적으로 면제하지 않는다. C05 수락 전에는 제안 상태다.
+- 검증: inline Node 문서 audit **73 checks, 73 passed**, exit 0. 기존
+  Three Failure Modes, Code-Readiness Invariant, Gap Resolution, core architecture/
+  persistence/authoritative command/search-session, Phase 8 note, Origin 및
+  centralized-copy/deferral 구간은 원본 동일성을 확인했다. 새 단계별 matrix,
+  첫 제출 기준, local links/anchors, 승인된 map/design/plan과 외부 방법론 hash,
+  draft 상태 및 제외 범위도 확인했다. 별도 semantic pre-gate pass에서 원래
+  164/165 책임의 보존, 조건부 시각 범위와 DP/owner 경계를 검토했다.
+  이것은 **최종 flow review pass가 아니다**.
+- Adapter/catalog-resolved diff-check exit 0; committed execution receipt resolver는
+  `ready`, `contract_ready=true`, `writes_allowed=false`다. Main과 pinned
+  prototype은 지정 HEAD/tree 및 clean을 유지한다. 제품·tests·나머지 canonical·
+  recipe·issue ledger·archive는 이번 draft에서 쓰지 않았다. Product full gate나
+  browser 검증을 실행·주장하지 않았고 실험 기록 추가·삭제·기술 repair·skill
+  변경도 하지 않았다.
+- **정확히 하나의 next legal action:** 사용자의 C05 전체 계획 기준 개정안
+  disposition. 수락 후에만 C05 approval receipt를 작성하고 C06 WORKFLOW로
+  이어간다. C06 수락과 최종 flow-review gate까지 구현/정리 authority는 별도다.
+
 ## References
 
 - [Current decision](DECISION.md), [approved promotion map](PROMOTION_MAP.md).

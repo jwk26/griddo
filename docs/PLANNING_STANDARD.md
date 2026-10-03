@@ -5,16 +5,27 @@
 >
 > **Consumed by:** `$craft-docs`, `$run-phase`, `$run-task`, and `$end-phase`
 > **Owned by:** The project — skills execute the process, this document defines it.
-> **Inbox/Triage amendment status:** **User-approved 2026-07-28.**
+> **2026-10-03 amendment status:** **Draft — awaiting user approval.**
+> The proposed regional-realization and staged-verification rules below derive
+> from the [approved current promotion map](brainstorming/2026-10-03-inbox_triage_theme_realization/PROMOTION_MAP.md),
+> [design receipt](receipts/Craft_Docs.inbox-triage-theme-realization-design.json)
+> and [execution-plan receipt](receipts/Craft_Docs.inbox-triage-theme-realization-execution.json).
+> This draft does not authorize implementation, cleanup, technical repair,
+> task acceptance, Final Close or installed skill changes. Its own acceptance,
+> the later WORKFLOW amendment and final flow-review gate remain separate.
+> **Prior Inbox/Triage amendment status:** **User-approved 2026-07-28.**
 > **Canonical-to-production parity amendment:** **User-approved 2026-07-28.**
 > The exact pre-receipt artifact is identified in the maintenance receipt
 > below.
-> **Production derivation evidence:** reviewed Fresh planning-standard SHA-256
+> **Historical production derivation evidence:** reviewed Fresh planning-standard SHA-256
 > `24c2e879bfd006c04da23d80830108a0f85d4693e3367e3825e9841b5bc05119`
-> is read-only evidence, not canonical authority. Production authority is the
+> is read-only evidence, not canonical authority. The foundation authority was the
 > approved map `90022e7`, recipe package `7a15451`, SCHEMA `8101658`, SPEC
 > `53c3fe9`, DESIGN_TOKENS `39ad25b`, clean EXECUTION_PLAN `dbe5b6b`, and
 > clean flow review `c4e8d29` receipts.
+> Their completion-time statements remain historical. Current amendment
+> acceptance is owned by matching exact-artifact receipts, not by the preserved
+> Draft headings in an approved map/design/plan snapshot.
 
 ## Table of Contents
 
@@ -23,11 +34,14 @@
 3. [Flow-Trace Review](#3-flow-trace-review)
 4. [Gap Resolution Protocol](#4-gap-resolution-protocol)
 5. [User-Visible Verification](#5-user-visible-verification)
+   - [Regional first-submission quality](#51-regional-first-submission-quality)
+   - [Applicable-theme verification and retained full gate](#52-applicable-theme-verification-and-retained-full-gate)
+   - [Evidence and independent dispositions](#53-evidence-and-independent-dispositions)
 6. [Architecture Conformance Checklist](#6-architecture-conformance-checklist)
 
 ---
 
-## Inbox/Triage PLANNING_STANDARD Approval Receipt
+## Historical Inbox/Triage PLANNING_STANDARD Approval Receipt — 2026-07-28
 
 - **Gate:** the reusable planning, typed-prerequisite, flow-review,
   user-visible verification, and architecture-conformance rules required by
@@ -51,7 +65,7 @@
 - **Acceptance boundary:** this receipt accepts no implementation, task,
   phase, issue, branch, publication, VQ decision, or `[x]` marker. All twelve
   prerequisites remain open and all five selected deferrals remain deferred.
-- **Next legal action:** perform the independent production flow review against
+- **Historical next legal action:** perform the independent production flow review against
   the receipt-bearing canonical chain and complete Phase 23–33 plan; record
   ownership and readiness as separate outcomes.
 
@@ -84,9 +98,30 @@
   should add a low-cost mechanical extractor/checker for production symbols
   and the canonical code/table claims that cite them. That tool is not part of
   this project-document gate and is not claimed implemented here.
-- **Next legal action:** the canonical-document campaign is complete. Do not
+- **Historical next legal action:** the canonical-document campaign is complete. Do not
   invoke implementation until `run-phase`, `run-task`, and `end-phase` adapter
   fields are refreshed and separately approved.
+
+### Targeted planning-standard amendment provenance — 2026-10-03
+
+Selected DECISION D07–D08, D10–D28 and the approved promotion map's C05
+own this amendment; D33 supplies only this campaign's direct-review owner.
+The map's exact artifact is
+`3b95de179fcc10568f8967a89a5f9eb9adaa5f11`, SHA-256
+`261d233c76d1641bccb7f4381035d3b10b79b3c61826237f9e71a04a32ad0d79`.
+The approved design artifact is `fef8617c2ecf3b8a9fe0335974cbc892d23a05b4`,
+SHA-256 `888a61ff583016d984d8f3209e72af5688254e9cd7b68e07d9e181bdf80fa14b`;
+the approved execution artifact is `ce020ab2654fab7b9c200bb4d4a28f69de7c31d4`,
+SHA-256 `d344fb149cd6be555aaeb03a45384a30d99561b53bd43f2497406802230e3b12`.
+Their linked receipts own later acceptance without changing those artifact bytes.
+
+This is a project-specific realization/verification amendment, not a new
+behavior, storage model, numeric design value or global lifecycle procedure.
+Existing persistence, transaction, state-lifetime, copy, DP and deferral
+contracts remain unchanged. No prototype, browser or product gate was executed
+for this document; requirements below are future checks, not current passes.
+The preserved Phase 8 note and July receipts are historical scopes, not an
+extra correction limit or current matrix requirement for the new theme tasks.
 
 ---
 
@@ -127,6 +162,14 @@ Three tiers:
 - **Developer-visible implementation details** — MAY be left to implementer judgment. React patterns, hook internals, CSS details within a token system, error handling for impossible states.
 
 **Rule of thumb:** if a user would notice the decision, it must be explicit. If only a developer would notice, it can be inferred — unless it's an architectural invariant.
+
+For source-backed visual work, CSS mechanics within approved owners are an
+implementation detail; choosing an unsourced font, geometry, icon, status or
+behavior is not. Trace appearance to its exact recipe/source/DP and confirm
+the rendered result rather than substituting a theme-wide default. A measured
+conflict with a retained decision returns only the affected element/state to
+its user-owned prerequisite; neither a prototype nor adjacent chrome chooses
+the outcome. The current map's Q01/Q02 boundaries remain in force.
 
 ### Code-Readiness Invariant
 
@@ -185,11 +228,22 @@ missing.
 
 ### Purpose
 
-Trace every user-visible flow from PRD/SPEC through the execution plan and verify task ownership.
+Trace every user-visible/system-critical flow from the selected approved
+authority through canonical contracts and the execution plan. For a
+Brainstorming amendment, use the selected DECISION and complete approved map;
+do not treat the historical `docs/prd.md` or nearby notes as current authority.
+Verify each segment's task/file/action, data effects and observable acceptance.
 
 ### When it runs
 
-After EXECUTION_PLAN.md is generated by `$craft-docs`. Performed by a dedicated reviewer independent from the plan author.
+After EXECUTION_PLAN.md is generated or materially amended by `$craft-docs`,
+with the required canonical approval chain. Ordinarily, a dedicated reviewer
+independent from the plan author performs it. For this explicitly user-directed
+2026-10-03 Control-Tower-owned amendment, the Control Tower reviews directly in
+a separate inline pass, setting aside the drafting perspective. That narrow
+review-owner exception follows selected D33 and does not waive full trace,
+gap repair, evidence or the user's review gate, or create a standing exception
+for other campaigns. A drafting audit is not the final flow-review pass.
 
 ### Flow-trace table template
 
@@ -197,19 +251,23 @@ After EXECUTION_PLAN.md is generated by `$craft-docs`. Performed by a dedicated 
 # Flow-Trace Review — [Phase/Scope]
 
 **Reviewed:** YYYY-MM-DD
-**Inputs:** PRD.md, SPEC.md, EXECUTION_PLAN.md
+**Inputs:** selected approved source/map, adapter-declared canonical contracts, approved execution plan and actual affected diffs
 **Decision prerequisites:** [IDs, owners, receipt or scope-out status]
 
 ## Flow-Trace Table
 
-| # | User Flow | Trigger | Intended Outcome | Owning Task | Decision Prerequisite / Receipt | Boundary Cases | Ownership Status |
-|---|-----------|---------|------------------|-------------|---------------------------------|----------------|------------------|
+| # | Flow / exact source citation | Entry / actor / authority | States and data effects | Task / file / action | Observable acceptance | Decision Prerequisite / Receipt | Boundary Cases | Ownership Status |
+|---|------------------------------|--------------------------|------------------------|----------------------|-----------------------|---------------------------------|----------------|------------------|
 
 Ownership Status: ✅ Owned | ⚠️ Weak | ❌ Gap | ⏸️ Deferred
 
 An open Decision prerequisite does not by itself make ownership weak: the flow
 may be fully owned while its implementation remains blocked. Never collapse
 flow ownership and implementation readiness into one status.
+Expand only the states that apply, including empty/loading/error/interruption/
+cancel/retry and transaction/recovery boundaries. Read-only presentation
+consumers do not become command owners. Check the complete flow index and
+actual changed sections, not only a packet, item count or new-task subset.
 
 ## Gaps Found (if any)
 
@@ -268,13 +326,109 @@ Reduce false completion by making "done" concretely verifiable for user-facing t
 **Good (observable):**
 - "Click + at Level 1-2 → Node/Bit chooser popover appears with two options"
 - "In edit mode, click a Node → EditNodeDialog opens with pre-populated title, icon, color"
-- "When grid has 96 items (full), click + → toast appears: 'Grid is full'"
+- "When the schema-owned grid capacity is exhausted, click + → the approved full-grid feedback appears"
 - "Calendar button displays a colored dot when any active item has a deadline within 3 days"
 
 **Bad (not observable):**
 - "Urgency dot appears on Calendar button" (when? what triggers it? what does it look like?)
 - "BitCard shows completion state" (what does completion look like? strikethrough? gray? both?)
 - "Creation flow works at all levels" (what specifically happens at each level?)
+
+These examples illustrate observability, not new capacity, wording or product
+threshold authority. Actual limits, actions and copy come from their owning
+approved contracts.
+
+### 5.1 Regional first-submission quality
+
+These rules apply to approved Inbox/Triage prototype-to-production realization,
+not every unrelated task. DESIGN_TOKENS
+[realization and token ownership](DESIGN_TOKENS.md#prototype-to-production-realization-and-token-ownership)
+owns the visual boundary; EXECUTION_PLAN
+[shared binding contracts](EXECUTION_PLAN.md#future-theme-realization--shared-binding-contracts)
+own the exact region order, component/test owners and task-local outputs.
+The external `/Users/jwk/Documents/docs/prototype-to-production.md` is reusable
+methodology context only, not a canonical approval or executable source.
+
+**Before implementation and first submission:** independently match logical
+data, selection, query/sort/edit/staged state and browser conditions. For each
+visible frame, title, meta line, button, icon, row, input, empty state and
+decoration, connect prototype source/DOM → computed style/geometry → the actual
+production owner. Resolve element-specific typography, coordinates/dimensions,
+spacing, colors/background, border/radius and shadow after fonts/theme/layout
+settle. A CSS declaration or common theme-font assumption is not that evidence.
+
+Keep two contracts: the exact adopted appearance, and preserved production
+commands/state/lifetime/copy/accessibility/focus. Include production-only
+Save/Cancel, attached status, pending/error/locked/recovery and replacement
+search states; their absence from the prototype is not removal authority.
+Retained DP realization supplies its exact approved surface. An unsupported
+new surface or measured contract conflict remains an affected-slice user
+decision, never a nearby card/dialog/chrome fallback.
+
+After the first implementation, inspect fresh original-size 1:1 comparisons,
+repair observable differences within the approved owners and lifecycle budget,
+and compare again **before the first user submission**. Disclose any retained
+difference and reason; resizing, cropping away a difference or presenting only
+the most similar state does not prove fidelity. No numeric score or new pixel
+threshold substitutes for the user's visual judgment.
+
+Hover, focus, DnD and adopted animation require actual triggers, transitions,
+interruption/retrigger and reduced-motion checks as applicable; one settled
+image cannot prove them. Commands and authoritative success remain controlled
+by canonical behavior, not animation timing. Use actual mounted pointer/
+keyboard/focus/state changes, separately from direct component tests.
+
+Each region needs explicit user visual disposition before the next region.
+For paired themes, record separate results for both. Keep earlier accepted
+regions/themes usable when extending shared semantic components or aliases.
+Routine correspondence, measurement, implementation and bounded internal
+refinement may stay in the same coherent approved Working scope; no separate
+contract-only session or extra generic approval sentence is required. New
+design decisions, owner expansion and installed lifecycle stop conditions
+remain their own gates. A pending remainder cannot be hidden to advance.
+
+### 5.2 Applicable-theme verification and retained full gate
+
+This amendment supersedes the former blanket **Phase 23–33 eight-theme visual
+verification** predicate for the current continuation. It does not revise
+completed phase evidence, reopen Phase 30 or relax unchanged architectural
+invariants. The approved execution plan's transfer register moves unaccepted
+164/165 responsibilities; it does not accept them or claim their checks passed.
+
+| Current scope | Applicable verification | Completion boundary |
+|---|---|---|
+| Phase 31 technical close | Accepted Task 163 integration, separately approved corrections, affected route/state/focus and unrelated-surface preservation; adapter logical technical gates and issue dispositions at the actual close candidate. | No eight-theme visual-completion or Task 165 pass is claimed. Transfer does not excuse a known failure. Q03 repair, Q04 correction/disposal guards, Q05 tier/disposition and Q06 dependent-output proof retain their exact approved-plan boundaries. |
+| Phases 34–39 regional tasks | Assigned theme(s), light-first matched 1920×1080 / DPR 1 / zoom 100% region states. Direct semantic/behavior tests plus fresh rendered/interaction evidence. Verify prior accepted neighboring regions and other themes/modes affected by shared changes. | Per-region user visual disposition and technical results are separate. Do not substitute a prior experiment, light-only result or self-review for broader conformance. |
+| Supported-theme completion, plan L7 | Assigned theme(s) × supported light/dark × 1024px and 1920×1080 desktop viewports; all nine recipes, applicable DP/editor/reliability/recovery states, contrast/focus/non-color cues, reachability, touch targets, motion and theme-state preservation. Earlier themes/unrelated surfaces receive scope-appropriate regression checks. | Each assigned theme needs its own disposition. Light-only work is not a finished theme; a structural/behavior repair returns to its named owner rather than hiding in CSS conformance. |
+| Phase 40 / Task 208 | Retained 8 themes × light/dark × both desktop viewports, nine recipes, 29 UF, 10 AF, 21 NEG, 14 DP/12 VQ and migration/rollback/real transactions/three ABA sequences/aggregate retention/Archive recovery/unrelated-surface matrices. | Original complete implementation/preservation promise remains intact. No unknown result, skipped check, unresolved required decision or known failure is represented as completion. |
+
+Use the adapter/catalog's logical gates, with the approved task's actual direct
+targets and evidence modality. This section changes the applicable visual
+matrix, not test commands, repair budgets, fingerprint procedure or lifecycle
+authority. Reuse of non-volatile foundational evidence follows installed rules;
+generated/browser-dependent claims require fresh qualifying evidence. For the
+current Phase 31 close, the project-owned proof method remains Q06 until its
+exact approval and execution; optional adapter-gate absence is not an onboarding
+failure or permission to infer freshness from a build pass or timestamps.
+
+### 5.3 Evidence and independent dispositions
+
+Use each task's declared record/assets, not a second generic report bundle.
+Record matched conditions and source correspondence limits, before-code
+differences, first-submit internal corrections, retained differences/reasons,
+the user's first judgment, any later followup, time and repair cycles. Keep
+first-submission quality separate from the eventual result after user feedback.
+Prototype native versus derived fixtures and production-only states remain
+explicit. New captures identify theme, region, state, comparison partner and
+browser inputs; no fixed capture count is imposed. Do not track runtime/cache/
+generated dependency output or reuse past experiment code/artifact bytes.
+
+Keep product/source disposition, implementation state, technical evidence and
+user visual acceptance as separate fields. Automated checks and implementer
+self-review never declare visual acceptance or `[x]`; visual acceptance does
+not turn a failed technical gate into a pass. A meaningful remaining difference
+requires explicit user disposition, and task/phase acceptance remains governed
+by the installed lifecycle. This document records no new acceptance itself.
 
 ---
 
@@ -385,7 +539,10 @@ Violations of core architectural invariants. **Must be fixed before close-out / 
   branch on `data-color-theme` or split into eight theme implementations.
   Independent states never collapse into one flag, remain distinguishable by
   non-color cues, and do not use repeated blink, pulse, ping, bounce, spin, or
-  flicker as ambient status.
+  flicker as ambient status. Extend existing semantic token → region/element/
+  state alias → centralized theme/mode values consumed by shared elements;
+  not every pixel needs a token, and theme-ID JSX forks, test-ID styling or
+  accumulating override patches are not the realization method.
 - [ ] **Decision-prerequisite no-fallback:** A user-owned visual/content gate
   does not authorize an exact effect, duration, copy, placement, layout, icon,
   or per-theme value until its matching receipt. Adjacent dialogs, cards,
@@ -397,12 +554,22 @@ Violations of core architectural invariants. **Must be fixed before close-out / 
   and actual capture or interaction evidence. Source-only recipes are never
   rendered proof, and their observed literals are not copied as exact production
   values unless an approved adoption trace grants that authority.
-- [ ] **Eight-theme verification:** Phase 23–33 visual work is checked across
-  all eight themes at the plan-declared stable desktop viewport(s), light/dark
-  where supported, and every applicable semantic-state combination. Evidence
-  covers contrast, `focus-visible`, reduced motion, hidden-scrollbar reachability,
-  section-scoped overlays, and recipe-specific facts without inventing mobile
-  or absent-state coverage.
+- [ ] **First-submission fidelity:** For an approved source-backed region,
+  perform the element-level actual-rendered comparison and internal refinement
+  in §5.1 before presenting the first result. Page colors, CSS-string checks or
+  a wide screenshot alone are not proof of every child element/state.
+- [ ] **Applicable-theme staged verification:** Apply §5.2's regional,
+  supported-theme and retained full-campaign matrices to the exact task scope.
+  Evidence covers contrast, `focus-visible`, non-color cues, reduced motion,
+  touch targets, hidden-scrollbar reachability, section-scoped overlays and
+  recipe/state facts without inventing mobile or absent-prototype coverage.
+  Phase 40 retains the complete 16-theme/mode matrix; Phase 31 technical close
+  is not that campaign completion.
+- [ ] **No clipping or shared-style leakage:** Fixed height/overflow must not
+  hide editors, actions, status, recovery, caret or focus. Check actual loaded
+  fonts/cascade/geometry and regress previously accepted regions/themes when
+  shared structure changes. A measured DP/geometry conflict requires the
+  affected-slice Q02 disposition, not silent styling discretion.
 - [ ] **Centralized copy and deferral boundary:** Shared English labels, status
   text, accessible names, and theme display aliases are centrally owned. The
   deferred shared BitCard redesign, EN/KR resources and toggle, Neumorphism
@@ -414,7 +581,7 @@ Violations of core architectural invariants. **Must be fixed before close-out / 
 Important issues that should be surfaced and recorded, but do not automatically block closing. Closing continues with explicit acknowledgement.
 
 - [ ] **File organization:** New files follow `AGENTS.md`,
-  `docs/CODEX_WORKFLOW_ADAPTER.md`, SPEC Key File Paths, and the approved
+  `docs/CODEX_WORKFLOW_ADAPTER.json`, SPEC Key File Paths, and the approved
   EXECUTION_PLAN. Utilities, hooks, stores, components, tests, and review
   artifacts stay with their declared owner rather than following a legacy
   provider-specific entrypoint.
