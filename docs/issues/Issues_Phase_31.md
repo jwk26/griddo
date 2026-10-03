@@ -6,10 +6,12 @@
 > Current state: Task 163 is `[x]` and Accepted, not yet integrated.
 > Tasks 164–165 are `Transferred / Superseded`, unaccepted `[ ]`, under the
 > separately accepted 2026-10-03 plan. New Tasks 166–208 are unstarted.
-> Working `phase-31-technical-correction-run-task-01` is the sole active
-> Working for the approved technical correction; Control Tower
-> `phase-31-control-tower` is active; duplicate-session count is `0`.
+> Working `phase-31-technical-correction-run-task-01` is `closed/archive-only`
+> after the bounded Q05 semantic implementation checkpoint below. Control
+> Tower `phase-31-control-tower` is active; duplicate-session count is `0`.
 > Historical kickoff/task/session snapshots below are not current claimants.
+> Next legal action: Control Tower creates an isolated Phase 31 close candidate
+> and gathers fresh generated-output provenance plus mounted-browser evidence.
 
 ## Status Legend
 
@@ -519,3 +521,44 @@ content and state unchanged.
   existing correction report, and stop at evidence. Mounted-browser proof,
   archive/publication, and Step 5 remain Control Tower-owned; no new `[x]` or
   visual acceptance is authorized.
+
+## P31-I01 / Q05 — implemented semantic checkpoint
+
+- State: `Implemented` pending close-candidate evidence; the Q05 finding is not
+  marked `Closed`, Task 163 is not reaccepted, and no new `[x]` is written.
+  P31-I01 remains a technical-close blocker until Control Tower's fresh
+  mounted-browser check confirms the candidate surface. Task 164/165 remain
+  unaccepted `[ ]`; Step 6 remains held.
+- Implementation/evidence commit: `0014808e667a1045c039fcc7f7207e10b81a7e2f`,
+  tree `4a4e49c0f5f6c1952eb65438c889c52571891a06`; exact paths are
+  `src/hooks/use-dnd.ts`, `src/hooks/use-triage-dnd.test.ts`, and
+  `docs/verification/inbox-triage/phase-31-technical-correction.md`. Its
+  post-commit ownership audit was clean; no branch/worktree topology, push, or
+  history rewrite occurred. The R01/C01 commit and Task 163 receipt/evidence
+  fingerprints are unchanged.
+- Result: exact staged Node/Bit root-hover IDs and existing neutral/invalid
+  reason rendering are retained. Exact live Breakdown Unstage ID
+  `triage-remove-drop:breakdown` remains supported. Release classification is
+  unchanged; same/opposite-type root release remains null and mutation-free.
+  Scratch mismatch is rejected by both `handleDragOver` and pointer-only
+  `updateRenderedTarget` before hierarchy probing. Forged-ID evidence is
+  hover-only; no independent release-ID validation claim is made.
+- Focused simulated-DOM batch passed 3 files / 165 tests. Fresh serial gates:
+  `pnpm lint` exit 0 (11 warnings, no errors); `pnpm test` exit 0 (100 files /
+  1,279 tests); `pnpm typecheck` exit 0; `pnpm build` exit 0 (Next 16.2.1,
+  seven app routes); post-build `pnpm typecheck` and `git diff --check` exit 0.
+  No physical-pointer, visual, browser, or user-acceptance claim is made.
+- Repair budget: 2 of 3 initial cycles used, no extra cycle requested, no
+  no-progress stop. RED assertions, superseded same-type expectation, transient
+  lint finding, and unassigned `getDataStoreMock` call signature are detailed
+  in [`phase-31-technical-correction.md`](../verification/inbox-triage/phase-31-technical-correction.md).
+  Q05 fingerprint SHA-256 over the exact inline JCS input manifest is
+  `66cad91dae914db165205080d2f2a42f0cbd32692af65bbb2d005f40329df246`.
+- Working `phase-31-technical-correction-run-task-01` is now
+  `closed/archive-only`; Control Tower remains the active owner with duplicate
+  count `0`.
+- Exactly one next legal action: Control Tower creates an isolated Phase 31
+  close candidate rooted in the current feature head and records fresh Q06
+  generated-output provenance and mounted-browser route evidence. This does
+  not authorize ordinary Final Close/publication, Step 5 skill edits, Task
+  acceptance, or Step 6.
