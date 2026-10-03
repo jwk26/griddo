@@ -277,6 +277,29 @@ freshness gate는 absent이며 project-owned 대체 방법은 아직 확인되�
   gate를 준비한다. Control Tower active, Active Working none/not created,
   duplicate count 0이며 새 Working/reviewer는 만들지 않았다.
 
+## Final flow-review acceptance and promotion completion — 2026-10-03
+
+- 사용자의 `수락`은 전체 최종 flow-review artifact의 수락이다. Artifact는
+  `4c6508ce40f3c3ad19fc7aa63465bee3ef310dfa`, 경로는
+  `docs/reviews/2026-10-03-inbox-triage-theme-realization-flow-review.md`,
+  SHA-256은 `36408957c9a305fe65a40d4fe202341f5e3f5c2b70ba171b06d812064ccced47`다.
+  수락은 `docs/receipts/Craft_Docs.inbox-triage-theme-realization-flow-review.json`
+  whole-file receipt가 소유한다. Review/map/canonical의 승인 전 snapshot
+  문구와 원본 bytes는 바꾸지 않는다.
+- Brainstorming Route의 현재 canonical promotion은 완료했다. C03/C04/C05/C06와
+  최종 review는 각 exact-artifact receipt로 accepted, C01/C02/C07은 명시적으로
+  retain/no-write다. C08은 미래 별도 승인 ledger/correction/close/audit 범위이며
+  이번 promotion에서 수행하지 않았다. Task 164/165 수락이나 새 Task 착수는 아니다.
+- Ownership PASS는 Q01–Q06 해결 또는 implementation-ready가 아니다.
+  Phase 31 technical correction/cleanup의 정확한 gate를 별도로 준비하며,
+  실제 수리·삭제·ledger 이관·Final Close/publication/main sync는 아직 하지 않는다.
+  설치 skill 변경은 실제 Phase 31 Final Close 이후의 직접 Control Tower
+  audit와 그 별도 user gate까지 제외한다.
+- 이 수락 batch는 새 approval receipt와 이 additive NOTES만 변경한다.
+  Control Tower active, Active Working none/not created, duplicate count 0.
+  정확히 하나의 next legal action은 별도 Phase 31 technical correction 및
+  guarded experiment cleanup 승인 범위 준비다.
+
 ## References
 
 - [Current decision](DECISION.md), [approved promotion map](PROMOTION_MAP.md).
