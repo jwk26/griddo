@@ -238,6 +238,45 @@ freshness gate는 absent이며 project-owned 대체 방법은 아직 확인되�
   disposition. 수락 후에만 C06 approval receipt와 최종 full flow review로
   이어간다. 그 review의 실제 trace artifact와 사용자 gate도 별도로 남는다.
 
+## Workflow acceptance and complete flow-review checkpoint — 2026-10-03
+
+- 사용자의 `수락`은 C06 WORKFLOW 개정안 전체의 수락이다. Exact artifact는
+  `25eb6cd8c633431a0f093345f17874191fe20365`, SHA-256
+  `16bdc67c60531ab978e6617e67356c7d2b9ac29898ac4111ad5f86839bc88a1c`다.
+  Approval receipt는
+  `docs/receipts/Craft_Docs.inbox-triage-theme-realization-workflow.json`,
+  receipt-only commit은 `ed7e660d4fc19dca40e50731b35de431fbdfeff7`이다.
+  기존 approved artifact의 Draft/Proposed snapshot bytes는 변경하지 않았다.
+- 현재 Control Tower가 이전 drafting audit와 별개의 최종 inline pass로
+  full-map flow review를 수행했다. Project WORKFLOW가 선언한 review 경로는
+  `docs/reviews/2026-10-03-inbox-triage-theme-realization-flow-review.md`다.
+  Selected D01–36, 전체 map, 승인된 C03–06 chain 및 실제 affected diffs,
+  retained SPEC/SCHEMA/recipe/DP/accepted-task 계약을 연결했다.
+- 결과는 **ownership PASS / review user acceptance pending**이다. 29 UF,
+  10 AF, 36 current decisions, 9 visual units, 21 retained NEG와 20 map N,
+  14 DP/12 VQ, 다섯 deferral 및 여섯 질문의 task/file/action·state/data·
+  observable acceptance·사용자 boundary를 기록했다. Gap/Weak는 None이다.
+  64 accepted + 43 new planned tasks와 최종 208 sink의 책임 보존을 검토했다.
+- Inline plan audit 284/284, full review/approval-chain audit 285/285,
+  synchronized exact-artifact pin validator 다섯 개, adapter/catalog diff-check가
+  모두 exit 0이다. Committed C06 resolver는 ready/contract_ready=true이며
+  writes_allowed=false다. 검사 wrapper의 인용 오류는 command 실행 전에
+  교정하고 전체 검사를 재실행했다. Main/prototype은 지정 HEAD/tree와 clean을
+  유지하며 fresh remote fetch는 이 review에서 실행하지 않았다.
+- **Owned와 Ready는 다르다.** Q01/Q02는 관련 시각 slice의 조건부 사용자
+  경계다. Q03–Q06의 repair/discard/tier/output-proof는 별도 gate에서 해결·
+  판정·실행해야 하며 현재 Phase 31 close 및 후속 구현은 준비 완료가 아니다.
+  이 검토는 질문을 Resolved 또는 issue를 closed로 만들지 않는다.
+- 이번 batch는 review 문서와 이 NOTES의 additive checkpoint만 쓴다.
+  Canonical/map/DECISION/receipt snapshots, 제품·tests·ledger·archive·prototype·
+  외부 방법론은 불변이다. Product full gate/browser pass, 새 fetch나 deletion,
+  기술 repair, task `[x]`, Final Close/publication/main sync 또는 설치 skill
+  변경은 실행·주장하지 않는다. C06 수락은 review 수락이 아니다.
+- **정확히 하나의 next legal action:** 사용자의 whole flow-review disposition.
+  수락 시 exact artifact receipt를 기록한 뒤 별도 Phase 31 correction/cleanup
+  gate를 준비한다. Control Tower active, Active Working none/not created,
+  duplicate count 0이며 새 Working/reviewer는 만들지 않았다.
+
 ## References
 
 - [Current decision](DECISION.md), [approved promotion map](PROMOTION_MAP.md).
