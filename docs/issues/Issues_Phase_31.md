@@ -1,15 +1,15 @@
-# Issues — Phase 31: Integration, Conformance, And Full Gate
+# Issues — Phase 31: Accepted Route Integration And Technical Close
 
 > Branch: `phase-31/integration-conformance-full-gate`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate`
 > Kickoff date: 2026-09-07
-> Current state: Task 163 is `[x]` and Accepted. Task 164 Stage A iteration
-> `T164-CA-I01` is `Rejected / historical experiment evidence`; Task 164
-> remains `[ ]`, and Task 165 is `[ ]` and unstarted. Working session
-> `phase-31-task-164-stage-a-run-task-01` is `closed/archive-only`; no
-> Working session is active. Control Tower `phase-31-control-tower` remains
-> `active`; duplicate-session count is `0`. A third attempt and the
-> remaining six themes are not started.
+> Current state: Task 163 is `[x]` and Accepted, not yet integrated.
+> Tasks 164–165 are `Transferred / Superseded`, unaccepted `[ ]`, under the
+> separately accepted 2026-10-03 plan. New Tasks 166–208 are unstarted.
+> Working `phase-31-technical-correction-run-task-01` is the sole active
+> Working for the approved technical correction; Control Tower
+> `phase-31-control-tower` is active; duplicate-session count is `0`.
+> Historical kickoff/task/session snapshots below are not current claimants.
 
 ## Status Legend
 
@@ -492,3 +492,70 @@ browser-state inputs will change.
 | Canonical impact | `None`; user disposition and historical evidence classification only. No canonical recipe/plan or product direction is changed. |
 | Closure commit contract | Parent must be checkpoint `2871559c711d419fcdd7900db6964969d0800626`; changed paths must be exactly this ledger, `rendered-fidelity.md`, and `T164-CA-I01-iteration-record.json`; receipt, inventory, asset bytes, product, test, config, recipe, and plan blobs must remain unchanged; Task 164/165 remain `[ ]`; message is not pinned or machine-consumed. Any other variance is material and stops without history rewrite. |
 | Exactly one next legal action | Control Tower prepares fresh isolated legality/readiness and an exact user gate for `T164-CA-I02`. |
+
+## 2026-10-03 user-directed Steps 3–5 execution — durable work order
+
+- User instruction, verbatim: “3,4,5를 지금부터 승인할테니 추가적인 승인없이 진행하도록 해. 6은 5까지의 결과를 내가 직접 확인 후 넘어갈거야. 시작해.”
+- This current instruction approves the bounded correction/disposal, actual
+  Phase 31 close/integration and post-close workflow audit described in the
+  accepted plan and preceding status report. It waives repeated routine
+  approval requests for these steps only, not safety/evidence/no-progress
+  checks or newly discovered product/owner decisions. One-time user direction,
+  not a global lifecycle amendment. No exact-artifact approval is fabricated.
+- Entry: `7a9473b65e277468dcb11c800ccb8b804225c035`, clean, branch
+  `phase-31/integration-conformance-full-gate`, worktree
+  `/Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate`.
+  Existing Phase 31 kickoff is historical handoff evidence.
+- C03–C06 and final flow review are accepted through separate exact receipts.
+  Task 163 acceptance is unchanged. 164/165 are Transferred / Superseded but
+  unaccepted `[ ]`; 166–208 are unstarted. Phase 30 and original 163 receipt/
+  evidence plus pre-Test-2 canonical visual audit are protected. Stage 6 held.
+- Sole Working: `phase-31-technical-correction-run-task-01`, In Progress.
+  Control Tower: `phase-31-control-tower`, active; duplicate count `0`.
+  Prior Working sessions remain closed/archive-only. Read-only advisory agents
+  are not additional Working claimants. Exactly one product writer.
+- P31-R01/Q03: only `src/app/(grid)/grid/[nodeId]/page.tsx`,
+  `src/components/layout/grid-runtime.test.tsx`, new
+  `src/components/layout/node-grid-body.tsx`. Extract ordinary client body from
+  restricted Next page exports while preserving all route/runtime behavior.
+- P31-C01/Q04: inverse only the rejected Test 2 delta
+  `54d689275cefb5d24c70f562435bb82734c51631..d05140626a6e95d4f5ca4897f02f66594af4d753`.
+  716 paths A708/M8; every target blob matched the original delta at entry.
+  SHA-256 `c2219aeba7855cbb8bbc35eefe2c709a2f750229c8f98115604611aed9a89f73`
+  is compact UTF-8 JSON (no newline), Git-ordered status/path/before/after.
+  Seven modified source/test owners and the new conformance test are exactly
+  the delta set. Remove only Test 2 receipt/report/705-file asset root; replace
+  its detailed ledger block with minimal rejection/discard lineage. Preserve
+  accepted 163, 9/8–9 audits, deferred WF entries and later approved documents.
+  No whole-ledger restore, reset, amend or Git-history purge. Tracked removals
+  remain recoverable through the original Git commits.
+- External disposal owner, outside run-task: fresh-guard the eight previously
+  identified Phase 31 noncanonical worktree/branch targets and attributable
+  runtimes. Main, canonical Phase 31, pinned prototype, unrelated worktrees and
+  current session host are protected. Current user disposal supersedes earlier
+  experiment-retention only for that exact set. No standalone final Neumorphism
+  report/closure or success claim. Do not invoke force worktree removal.
+- P31-I01/Q05: diagnose actual staged-root reason delivery against accepted
+  contract; record evidence-based tier. No hook/store repair is authorized here.
+  New required owner/product decision stops that affected repair.
+- P31-E01/Q06 proposed project proof within Step 4: fresh detached candidate with
+  initially absent build directory; pin candidate/source/config/lockfile hashes,
+  serial gate/build outputs and build-manifest hashes. Assert served BUILD_ID,
+  route membership and loaded chunks against exact generated outputs in a fresh
+  browser profile; record PID/cwd/URL/request provenance. No timestamp/build-only
+  inference, adapter/catalog changes or old experiment browser evidence reuse.
+- Correction evidence owners: this ledger and
+  `docs/verification/inbox-triage/phase-31-technical-correction.md`.
+  Fresh browser support stays under
+  `docs/verification/inbox-triage/phase-31-technical-close/` if needed.
+  Later archive/index/learnings/deferred pointers and exact
+  `docs/issues/Final_Close_Phase_31.json` belong to Step 4.
+- Expected commits: durable start first; additive Test 2 inverse and narrow
+  source/test correction; separate truthful verification. No pinned message.
+  No blanket staging or experimental implementation-byte reuse.
+- Only green corrected-candidate evidence permits close/publication/main sync;
+  only proven actual close permits direct Control Tower Step 5 skill audit.
+  Installed workflow bytes remain unchanged during Phase 31. No new `[x]` or
+  automated user-visual acceptance. Step 6 stays held for direct user review.
+- Exactly one next legal action: narrow approved correction in sole Working;
+  preserve and report any new material finding.
