@@ -188,6 +188,56 @@ freshness gate는 absent이며 project-owned 대체 방법은 아직 확인되�
   disposition. 수락 후에만 C05 approval receipt를 작성하고 C06 WORKFLOW로
   이어간다. C06 수락과 최종 flow-review gate까지 구현/정리 authority는 별도다.
 
+## Planning-standard acceptance and workflow draft — 2026-10-03
+
+- 사용자의 `수락`은 C05 `docs/PLANNING_STANDARD.md` 개정안 전체의 수락이다.
+  Exact artifact는 `5f73a2a8c5de5125e6c9bd7643d061c0a09875f5`, SHA-256
+  `c1364c9c3829145876e55774e902e1b8cf8aafcebf5e338f011b421e50c754d0`다.
+  승인 receipt는
+  `docs/receipts/Craft_Docs.inbox-triage-theme-realization-planning-standard.json`,
+  receipt-only commit은 `4c9abf2d638b43646eccf02675438fec9cd2304a`다.
+  Approved plan/design/standard/map의 snapshot heading과 원본 bytes는 유지한다.
+  C05 수락은 C06, 최종 flow review, 구현·수리·정리·Final Close의 수락이 아니다.
+- 다음 C06 `docs/WORKFLOW.md`만 개정했다. **Draft / awaiting user approval**,
+  SHA-256은 `16bdc67c60531ab978e6617e67356c7d2b9ac29898ac4111ad5f86839bc88a1c`다.
+  Selected DECISION D01–D10/D28–D36와 map C06의 direction-change lineage를
+  추가했다. 과거 provider stage/skill map을 현재 Codex 실행 절차와 구분하고,
+  오래된 reviewer/closing 예외나 reference-redesign 절차가 현재 gate를
+  우회하거나 일상적 측정에 추가 session/승인을 강제하지 않도록 적용 범위를
+  명시했다. 기존 provider entrypoint는 수정하지 않았다.
+- Phase 30 불변, Task 163의 Phase 31 수락과 미통합 상태, 164/165의
+  transferred-not-accepted 책임, 32/33 reservation과 새 graph의 unstarted
+  상태를 연결한다. Ledger 이관 처리는 이번 문서 쓰기에 포함하지 않는다.
+  실험의 시각 점수나 이관은 기술 gate·issue closure를 대신하지 않는다.
+- Test 2의 정확한 additive delta 정정, 8개 disposable 대상과 protected
+  worktree/runtime 경계, 최소 experimental lineage, 다른 수락 기록·canonical
+  audit·deferred workflow finding 보존을 명시했다. 별도 마지막 Neumorphism
+  결과/종료 보고서나 ledger closure commit은 만들지 않는다. Exact 통합
+  cleanup scope와 guard는 후속 사용자 gate이며 실제 삭제는 하지 않았다.
+- Q03 route source repair, Q05 mounted finding tier/disposition, Q06 dependent
+  output proof도 해결·승인됐다고 만들지 않았다. 현재 Control Tower의 직접
+  Step 2/5 소유, Phase 31 실제 close/main sync 후 workflow audit disposition과
+  정상 main-based 후속 lifecycle의 순서를 기록한다. 설치 skill 개선은 그
+  후속 exact scope까지 하지 않는다. 성공 방법은 승인된 canonical 역할과
+  외부 추상 문맥을 연결하며, 중복 global skill checklist를 만들지 않는다.
+- 검증: inline Node 문서 audit **85 checks, 85 passed**, exit 0. 선언한
+  삽입을 제외한 WORKFLOW 전체 기존 bytes와 fenced block 12개는 동일하다.
+  책임 이관/질문 경계, local Markdown links/anchors, source approval chain,
+  map/DECISION/design/plan/standard 및 외부 방법론 hash, whitespace와 write
+  scope를 확인했다. 검사 wrapper의 인용 오류는 검사 실행·파일 변경 없이
+  수정한 뒤 전체 검사를 재실행했다. 별도 Control Tower semantic pre-gate
+  pass에서 다른 수락/deferred 기록 보존과 Q01/Q02의 좁은 적용을 확인했다.
+  이것은 **최종 flow-review pass가 아니다**.
+- Adapter/catalog-resolved diff-check exit 0, C05 committed receipt resolver
+  `ready` / `contract_ready=true` / `writes_allowed=false`. Main과 prototype은
+  지정 HEAD/tree 및 clean이다. 제품·tests·다른 canonical·recipe·issue ledger·
+  archive와 adapter/catalog는 이번 draft에서 불변이다. Product full gate나
+  browser pass를 실행·주장하지 않았다. Branch/worktree/runtime cleanup,
+  기술 repair, publication 또는 설치 skill 쓰기도 없었다.
+- **정확히 하나의 next legal action:** 사용자의 C06 전체 WORKFLOW 개정안
+  disposition. 수락 후에만 C06 approval receipt와 최종 full flow review로
+  이어간다. 그 review의 실제 trace artifact와 사용자 gate도 별도로 남는다.
+
 ## References
 
 - [Current decision](DECISION.md), [approved promotion map](PROMOTION_MAP.md).
