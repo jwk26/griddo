@@ -484,3 +484,38 @@ content and state unchanged.
 - No standalone Neumorphism report/closure artifact was created. This records
   only the approved experiment disposal; Phase 31 close, Task 164/165
   acceptance, visual acceptance, and Step 6 remain outstanding/held.
+
+## P31-I01 / Q05 — staged-root feedback correction work order
+
+- Parent is clean R01/C01 commit `667f885ed95524ef7e84f72587b6e3f505dafdb0`.
+  The user's 2026-10-03 Steps 3–5 approval recorded above authorizes this
+  bounded correction without another routine gate; Step 6 remains held. This
+  addendum supersedes only the earlier Q05 no-hook-repair sentence. No
+  lifecycle receipt is fabricated.
+- Tier: `Blocking` to Phase 31 technical close for missing accepted hover
+  feedback; the release classifier still rejects the invalid drop and no
+  mutation defect is claimed. Accepted Task 147/SPEC/DESIGN_TOKENS require the
+  existing active-well reason; `use-dnd.ts` currently clears feedback when
+  release classification returns `null`.
+- Sole paths: `src/hooks/use-dnd.ts`,
+  `src/hooks/use-triage-dnd.test.ts`, and optional mounted regression
+  `src/components/triage/triage-workspace.test.tsx`. No other hook, store,
+  data/repository, CSS, copy, command, product-direction, or workflow file may
+  change.
+- Feedback-only mapping: staged Node over Nodes keeps
+  `triage-node-zone-drop` / `Already in Nodes.`; staged Node over Bits keeps
+  `triage-bit-zone-drop` / `Return to Breakdown before changing type.`;
+  staged Bit over Bits keeps `triage-bit-zone-drop` / `Already in Bits.`;
+  staged Bit over Nodes keeps `triage-node-zone-drop` /
+  `Return to Breakdown before changing type.`. Same/opposite-type release
+  remains `null` and mutation-free; classifier semantics do not change.
+- RED tests use actual Mouse pointer movement for both staged types × both
+  roots; assert the exact hover ID/reason and zero Stage, Unstage, or datastore
+  calls on release. Unknown/forged targets, invalidated source, changed Scratch,
+  cancel/Escape, lock, and hierarchy-target priority remain denied/preserved.
+  Update the same-type hook assertion so feedback identity is not confused
+  with mutation intent.
+- Next: implement only these owners, run focused hook/Staging tests, update the
+  existing correction report, and stop at evidence. Mounted-browser proof,
+  archive/publication, and Step 5 remain Control Tower-owned; no new `[x]` or
+  visual acceptance is authorized.
