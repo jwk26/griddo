@@ -465,8 +465,10 @@ export function useTriageDnd(
     if (
       source === null ||
       dragCancelledRef.current ||
+      source.scratchId !== selectedScratchId ||
       pointerRef.current === null
     ) {
+      clearDragTarget();
       return false;
     }
     const target = readRenderedHierarchyTarget(point);
@@ -522,7 +524,7 @@ export function useTriageDnd(
         if (feedbackRequestRef.current === request) clearDragTarget();
       });
     return true;
-  }, [clearDragTarget]);
+  }, [clearDragTarget, selectedScratchId]);
 
   const finishStage = async (command: StageCandidateCommand): Promise<void> => {
     let outcome = await stageCandidate(command);
@@ -626,27 +628,58 @@ export function useTriageDnd(
   }, [clearDragTarget, updateRenderedTarget]);
 
   const handleDragOver = (event: DragOverEvent) => {
-    if (pointerRef.current !== null) {
-      if (updateRenderedTarget(pointerRef.current)) return;
-
-      const source = activationSnapshotRef.current;
-      const eventTarget = event.over?.data.current;
-      if (
-        source === null ||
-        !isTriageDropData(eventTarget) ||
-        eventTarget.kind === "triage-hierarchy-drop" ||
-        classifyTriageDropIntent(source, eventTarget) === null
-      ) {
-        clearDragTarget();
-        return;
-      }
-      const dropId = event.over?.id ? String(event.over.id) : null;
-      nonHierarchyFeedbackRef.current = dropId;
-      setOverTargetId(dropId);
-      setTargetFeedback(null);
+    const source = activationSnapshotRef.current;
+    if (
+      source === null ||
+      dragCancelledRef.current ||
+      source.scratchId !== selectedScratchId
+    ) {
+      clearDragTarget();
       return;
     }
-    setOverTargetId(event.over?.id ? String(event.over.id) : null);
+
+    if (
+      pointerRef.current !== null &&
+      updateRenderedTarget(pointerRef.current)
+    ) {
+      return;
+    }
+
+    const eventTarget = event.over?.data.current;
+    if (
+      !isTriageDropData(eventTarget) ||
+      eventTarget.kind === "triage-hierarchy-drop"
+    ) {
+      clearDragTarget();
+      return;
+    }
+
+    const dropId = event.over?.id == null ? null : String(event.over.id);
+    const matchesExpectedDropId =
+      eventTarget.kind === "triage-node-zone-drop"
+        ? dropId === getTriageNodeZoneDropId()
+        : eventTarget.kind === "triage-bit-zone-drop"
+          ? dropId === getTriageBitZoneDropId()
+          : dropId === getTriageRemoveDropId() ||
+            dropId === TRIAGE_BREAKDOWN_UNSTAGE_DROP_ID;
+    const intent = classifyTriageDropIntent(source, eventTarget);
+    const isStagedRootFeedback =
+      source.kind !== "triage-breakdown" &&
+      (eventTarget.kind === "triage-node-zone-drop" ||
+        eventTarget.kind === "triage-bit-zone-drop");
+
+    if (
+      dropId === null ||
+      !matchesExpectedDropId ||
+      (intent === null && !isStagedRootFeedback)
+    ) {
+      clearDragTarget();
+      return;
+    }
+
+    nonHierarchyFeedbackRef.current = dropId;
+    setOverTargetId(dropId);
+    setTargetFeedback(null);
   };
 
   const handleDragCancel = () => {

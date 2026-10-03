@@ -1,13 +1,14 @@
 import { createElement } from "react";
 import {
   act,
+  cleanup,
   fireEvent,
   render,
   renderHook,
   screen,
   waitFor,
 } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { HierarchyExplorer } from "@/components/triage/hierarchy-explorer";
 import { useTriageStore } from "@/stores/triage-store";
 import type { TriagePlacementRelease } from "./use-triage-placement";
@@ -47,6 +48,8 @@ const emptyGridData = vi.hoisted(() => ({
 }));
 const registerExplorerLocalPlacementAction =
   useTriageStore.getState().registerExplorerLocalPlacement;
+
+afterEach(cleanup);
 
 vi.mock("@dnd-kit/core", () => ({
   useSensors: (...sensors: unknown[]) => sensors,
@@ -1938,6 +1941,12 @@ describe("useTriageDnd — post-close non-hierarchy hover feedback", () => {
       { kind: "triage-remove-drop" },
     ],
     [
+      "Breakdown Unstage",
+      makeStagedDragData(),
+      "triage-remove-drop:breakdown",
+      { kind: "triage-remove-drop" },
+    ],
+    [
       "Node staging well",
       makeBreakdownDragData(),
       "triage-node-zone-drop",
@@ -1971,11 +1980,73 @@ describe("useTriageDnd — post-close non-hierarchy hover feedback", () => {
 
   it.each([
     [
-      "incompatible same-type staging well",
+      "Node",
+      "Nodes",
       makeStagedDragData(),
       "triage-node-zone-drop",
       { kind: "triage-node-zone-drop" },
     ],
+    [
+      "Node",
+      "Bits",
+      makeStagedDragData(),
+      "triage-bit-zone-drop",
+      { kind: "triage-bit-zone-drop" },
+    ],
+    [
+      "Bit",
+      "Nodes",
+      makeStagedDragData({
+        kind: "triage-staged-bit",
+        resultType: "bit",
+      }),
+      "triage-node-zone-drop",
+      { kind: "triage-node-zone-drop" },
+    ],
+    [
+      "Bit",
+      "Bits",
+      makeStagedDragData({
+        kind: "triage-staged-bit",
+        resultType: "bit",
+      }),
+      "triage-bit-zone-drop",
+      { kind: "triage-bit-zone-drop" },
+    ],
+  ] as const)(
+    "retains staged %s hover feedback over %s without authorizing release",
+    async (_sourceType, _targetType, dragData, dropId, dropData) => {
+      const { result } = renderHook(() =>
+        useTriageDnd("scratch-1", durableCandidateOptions()),
+      );
+
+      act(() => {
+        result.current.handleDragStart(makeDragEndEvent(dragData, null));
+        fireEvent.mouseDown(document, { clientX: 20, clientY: 30 });
+        fireEvent.mouseMove(document, { clientX: 20, clientY: 30 });
+        result.current.handleDragOver(
+          makeDragOverEvent(dragData, dropId, dropData),
+        );
+      });
+
+      expect(result.current.overTargetId).toBe(dropId);
+      expect(result.current.targetFeedback).toBeNull();
+
+      await act(async () => {
+        await result.current.handleDragEnd(
+          makeDragEndEvent(dragData, dropData),
+        );
+      });
+
+      expect(result.current.overTargetId).toBeNull();
+      expect(stageCandidateMock).not.toHaveBeenCalled();
+      expect(unstageCandidateMock).not.toHaveBeenCalled();
+      expect(getDataStoreMock).not.toHaveBeenCalled();
+      expect(operationLockState.acquire).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
     ["invalid target", makeBreakdownDragData(), "invalid-drop", { kind: "invalid-drop" }],
   ] as const)("denies an %s fallback", (_label, dragData, dropId, dropData) => {
     const { result } = renderHook(() =>
@@ -1993,6 +2064,118 @@ describe("useTriageDnd — post-close non-hierarchy hover feedback", () => {
     expect(result.current.overTargetId).toBeNull();
     expect(result.current.targetFeedback).toBeNull();
   });
+
+  it("rejects a known well carrying a forged nonmatching drop ID", () => {
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", durableCandidateOptions()),
+    );
+    const dragData = makeBreakdownDragData();
+
+    act(() => {
+      result.current.handleDragStart(makeDragEndEvent(dragData, null));
+      fireEvent.mouseMove(document, { clientX: 20, clientY: 30 });
+      result.current.handleDragOver(
+        makeDragOverEvent(dragData, "forged-node-well", {
+          kind: "triage-node-zone-drop",
+        }),
+      );
+    });
+
+    expect(result.current.overTargetId).toBeNull();
+    expect(result.current.targetFeedback).toBeNull();
+    expect(stageCandidateMock).not.toHaveBeenCalled();
+    expect(unstageCandidateMock).not.toHaveBeenCalled();
+    expect(getDataStoreMock).not.toHaveBeenCalled();
+  });
+
+  it("does not restore a staging target after source invalidation", async () => {
+    const { result } = renderHook(() =>
+      useTriageDnd("scratch-1", durableCandidateOptions()),
+    );
+    const dragData = makeBreakdownDragData();
+    const dropData = { kind: "triage-node-zone-drop" };
+
+    act(() => {
+      result.current.handleDragStart(makeDragEndEvent(dragData, null));
+      fireEvent.mouseMove(document, { clientX: 20, clientY: 30 });
+      invalidateTriageDragSource(dragData);
+      fireEvent.mouseMove(document, { clientX: 20, clientY: 30 });
+      result.current.handleDragOver(
+        makeDragOverEvent(dragData, "triage-node-zone-drop", dropData),
+      );
+    });
+
+    expect(result.current.overTargetId).toBeNull();
+    expect(result.current.targetFeedback).toBeNull();
+
+    await act(async () => {
+      await result.current.handleDragEnd(makeDragEndEvent(dragData, dropData));
+    });
+
+    expect(stageCandidateMock).not.toHaveBeenCalled();
+    expect(unstageCandidateMock).not.toHaveBeenCalled();
+    expect(getDataStoreMock).not.toHaveBeenCalled();
+    expect(operationLockState.acquire).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["Mouse movement", "hierarchy hit", true],
+    ["Mouse movement", "hierarchy miss", false],
+    ["explicit pointer refresh", "hierarchy hit", true],
+    ["explicit pointer refresh", "hierarchy miss", false],
+  ] as const)(
+    "clears stale Scratch feedback before %s can probe a %s",
+    (refreshMode, _targetMode, hasHierarchyTarget) => {
+      const { result, rerender } = renderHook(
+        ({ scratchId }) => useTriageDnd(scratchId, durableCandidateOptions()),
+        { initialProps: { scratchId: "scratch-1" as string | null } },
+      );
+      const dragData = makeBreakdownDragData();
+      const dropData = { kind: "triage-node-zone-drop" };
+      const hierarchyTarget = document.createElement("div");
+      hierarchyTarget.dataset.triageHierarchyDrop = JSON.stringify({
+        kind: "triage-hierarchy-drop",
+        dropId: "triage-hierarchy:parent-1",
+        parentNodeId: "parent-1",
+        targetNodeLevel: 0,
+        targetTitle: "Parent",
+        targetParentPath: ["Home"],
+      });
+      const elementsFromPointMock = vi.fn(() =>
+        hasHierarchyTarget ? [hierarchyTarget] : [],
+      );
+
+      act(() => {
+        result.current.handleDragStart(makeDragEndEvent(dragData, null));
+        fireEvent.mouseMove(document, { clientX: 20, clientY: 30 });
+        result.current.handleDragOver(
+          makeDragOverEvent(dragData, "triage-node-zone-drop", dropData),
+        );
+      });
+      expect(result.current.overTargetId).toBe("triage-node-zone-drop");
+
+      Object.defineProperty(document, "elementsFromPoint", {
+        configurable: true,
+        value: elementsFromPointMock,
+      });
+      rerender({ scratchId: "scratch-2" });
+      getDataStoreMock.mockClear();
+      getGridOccupancyMock.mockClear();
+
+      if (refreshMode === "Mouse movement") {
+        act(() => fireEvent.mouseMove(document, { clientX: 40, clientY: 50 }));
+      } else {
+        act(() => result.current.refreshRenderedTarget({ x: 40, y: 50 }));
+      }
+
+      expect(result.current.overTargetId).toBeNull();
+      expect(result.current.targetFeedback).toBeNull();
+      expect(elementsFromPointMock).not.toHaveBeenCalled();
+      expect(stageCandidateMock).not.toHaveBeenCalled();
+      expect(unstageCandidateMock).not.toHaveBeenCalled();
+      expect(getGridOccupancyMock).not.toHaveBeenCalled();
+    },
+  );
 
   it("clears fallback feedback on cancellation", () => {
     const { result } = renderHook(() =>
