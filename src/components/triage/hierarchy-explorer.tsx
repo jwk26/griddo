@@ -2403,8 +2403,6 @@ function NodeDropCell({
           data-explorer-item-type="node"
           data-triage-drop-id={dropId}
           data-triage-hierarchy-drop={JSON.stringify(dropData)}
-          data-triage-role="explorer-node-card"
-          data-triage-state={isNewlyPlaced ? "newly-placed" : "default"}
           data-triage-target-state={state}
           isNewlyPlaced={isNewlyPlaced}
           node={node}
@@ -2478,8 +2476,6 @@ function BitContextRow({
         )}
         data-explorer-item-id={bit.id}
         data-explorer-item-type="bit"
-        data-triage-role="explorer-bit-card"
-        data-triage-state={isNewlyPlaced ? "newly-placed" : "default"}
         isNewlyPlaced={isNewlyPlaced}
         onClick={() => undo.acknowledgeReenabled("bit", bit.id)}
         parentColor={parentColor}

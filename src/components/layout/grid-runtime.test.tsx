@@ -5,9 +5,29 @@ import { GRID_COLS } from "@/lib/constants";
 import { useBreadcrumbZoneStore } from "@/stores/breadcrumb-zone-store";
 import { useQuickCaptureStore } from "@/stores/quick-capture-store";
 import type { Bit, Node } from "@/types";
-import { NodeGridBody } from "@/app/(grid)/grid/[nodeId]/page";
+import * as nodeGridPage from "@/app/(grid)/grid/[nodeId]/page";
+import { NodeGridBody } from "./node-grid-body";
 import { useAddFlow } from "./add-flow-context";
 import { GridRuntime, useDeleteFlow } from "./grid-runtime";
+
+const NEXT_APP_PAGE_EXPORT_NAMES = new Set([
+  "default",
+  "config",
+  "generateStaticParams",
+  "unstable_instant",
+  "unstable_dynamicStaleTime",
+  "revalidate",
+  "dynamic",
+  "dynamicParams",
+  "fetchCache",
+  "preferredRegion",
+  "runtime",
+  "maxDuration",
+  "metadata",
+  "generateMetadata",
+  "viewport",
+  "generateViewport",
+]);
 
 const useParamsMock = vi.hoisted(() => vi.fn());
 const useNodeMock = vi.hoisted(() => vi.fn());
@@ -250,6 +270,12 @@ vi.mock("@/components/grid/edit-mode-overlay", () => ({
   EditModeOverlay: () => <div data-testid="edit-mode-overlay" />,
 }));
 
+vi.mock("@/components/grid/grid-view", () => ({
+  GridView: ({ level, parentId }: { level: number; parentId: string }) => (
+    <div data-level={level} data-parent-id={parentId} data-testid="grid-view" />
+  ),
+}));
+
 vi.mock("@/components/triage/scratch-pool", () => ({
   ScratchPool: () => <div data-testid="scratch-pool" />,
 }));
@@ -330,6 +356,37 @@ function createRect(left: number, top: number, width: number, height: number): D
 }
 
 describe("GridRuntime", () => {
+  it("does not expose exports unsupported by Next.js app pages", () => {
+    const unsupportedExports = Object.keys(nodeGridPage).filter(
+      (name) => !NEXT_APP_PAGE_EXPORT_NAMES.has(name),
+    );
+
+    expect(unsupportedExports).toEqual([]);
+  });
+
+  it("renders the standard node body from route data", () => {
+    const standardNode = createNode({ id: "route-node", title: "Route node", level: 2 });
+    const NodeGridPage = nodeGridPage.default;
+
+    useParamsMock.mockReturnValue({ nodeId: standardNode.id });
+    useNodeMock.mockReturnValue(standardNode);
+
+    render(
+      <GridRuntime>
+        <NodeGridPage />
+      </GridRuntime>,
+    );
+
+    expect(screen.getByRole("heading", { name: standardNode.title })).toHaveClass(
+      "sr-only",
+    );
+    expect(screen.getByTestId("grid-view")).toHaveAttribute("data-level", "3");
+    expect(screen.getByTestId("grid-view")).toHaveAttribute(
+      "data-parent-id",
+      standardNode.id,
+    );
+  });
+
   beforeEach(() => {
     useBreadcrumbZoneStore.setState({ blockedCells: new Set() });
     useQuickCaptureStore.setState({ activeOverlay: null });

@@ -255,7 +255,6 @@ function NodeStagingZone({
       data-empty={candidates.length === 0}
       data-testid="node-staging-zone"
       data-triage-role="staging-node-well"
-      data-triage-target-state={state}
       onScroll={(event) => {
         if (event.currentTarget.scrollTop === 0) onObservedTop?.();
       }}
@@ -332,7 +331,6 @@ function BitStagingZone({
       data-empty={candidates.length === 0}
       data-testid="bit-staging-zone"
       data-triage-role="staging-bit-well"
-      data-triage-target-state={state}
       onScroll={(event) => {
         if (event.currentTarget.scrollTop === 0) onObservedTop?.();
       }}

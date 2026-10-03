@@ -359,7 +359,6 @@ describe("StagingZone — drop zone state classes", () => {
       />,
     );
     const zone = screen.getByTestId("node-staging-zone");
-    expect(zone).toHaveAttribute("data-triage-target-state", "valid");
     expect(zone).toHaveClass("border-primary");
     expect(zone).toHaveClass("bg-accent");
   });
@@ -386,7 +385,6 @@ describe("StagingZone — drop zone state classes", () => {
       />,
     );
     const zone = screen.getByTestId("bit-staging-zone");
-    expect(zone).toHaveAttribute("data-triage-target-state", "invalid");
     expect(zone).toHaveClass("border-muted");
     expect(zone).toHaveClass("cursor-not-allowed");
   });
@@ -413,7 +411,6 @@ describe("StagingZone — drop zone state classes", () => {
       />,
     );
     const zone = screen.getByTestId("node-staging-zone");
-    expect(zone).toHaveAttribute("data-triage-target-state", "idle-valid");
     expect(zone).toHaveClass("border-dashed");
     expect(zone).toHaveClass("border-muted");
   });
