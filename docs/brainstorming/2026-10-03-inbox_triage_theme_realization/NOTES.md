@@ -58,6 +58,37 @@ freshness gate는 absent이며 project-owned 대체 방법은 아직 확인되�
 - Cleanup은 commit purge나 광범위 directory 삭제가 아니다. 정확한
   worktree/branch/runtime과 current-tree 실험 artifact 제거를 분리한다.
 
+## Promotion continuation — 2026-10-03
+
+- 사용자가 수정된 whole-map을 `승인. 진행.`으로 승인했다. 승인 시점의
+  map SHA-256은 `261d233c76d1641bccb7f4381035d3b10b79b3c61826237f9e71a04a32ad0d79`다.
+  DECISION/NOTES/map 원본은 `3b95de179fcc10568f8967a89a5f9eb9adaa5f11`에
+  보존했고, map 승인 receipt는 `5355d4ec0f06884f4c547ca74232cbfc2c89bf4d`의
+  `docs/receipts/Craft_Docs.inbox-triage-theme-realization-promotion-map.json`이다.
+  Map의 preapproval heading은 snapshot으로 유지하며 receipt가 이후 disposition을 소유한다.
+- C01/C02/C07은 쓰지 않고 C03 `docs/DESIGN_TOKENS.md`만 부분 개정했다.
+  **Draft / awaiting user approval**이며 whole-file SHA-256은
+  `888a61ff583016d984d8f3209e72af5688254e9cd7b68e07d9e181bdf80fa14b`다.
+  중앙 token/role alias, 요소별 실제 rendering, production-only 상태와 DP 보존
+  경계를 명시했다. 기존 approval/provenance를 현재 구현 상태로 오해하지 않도록
+  historical snapshot으로 구분했다. 신규 literal이나 rendered pass는 없다.
+- 검증: inline `node --input-type=module` 문서 audit exit 0. 원래 73개
+  heading 구간 중 68개는 그대로이며 5개는 승인 상태/역사 provenance/목차만
+  개정했다. 새 heading 4개, 모든 fenced code block 27개와 DP section 14개는
+  각각 원본 동일성을 확인했다. 문서 local link/anchor, coverage, whitespace 통과.
+  Map registry D/C/V/N/Q의 36/8/9/20/6, source citation과 local links도 통과했다.
+- Artifact-pin validator는 최초 `--commit HEAD`를 full OID가 아니라서 거부했다.
+  Receipt 작성 전에 exact full commit OID로 map/DECISION/design baseline
+  세 pin을 다시 검증해 모두 exit 0을 확인했다. Committed receipt의
+  `craft-docs` resolver는 `ready`, `contract_ready=true`, `writes_allowed=false`다.
+- Adapter-resolved `git diff --check` exit 0. 원래 시작 SHA `d051406…`와
+  비교한 src/package/lockfile, 나머지 canonical 문서, recipe와 issue ledger는
+  모두 변경 없음이다. Main과 prototype status도 empty다. 제품 gate나 browser
+  pass를 실행·주장하지 않았다. 실험 종료 기록/삭제/repair/skill 변경도 하지 않았다.
+- **정확히 하나의 next legal action:** 사용자의 C03 토큰 문서 개정안 disposition.
+  수락 전 C04 실행 계획을 이 draft에서 파생하지 않는다. Map approval은
+  Phase 31 scope 변경, Tasks 164–165 이관, cleanup 또는 Final Close가 아니다.
+
 ## References
 
 - [Current decision](DECISION.md), [proposed promotion map](PROMOTION_MAP.md).
