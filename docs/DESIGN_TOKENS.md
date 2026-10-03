@@ -7,7 +7,7 @@
 > and approved authority supports it. Semantic role requirements and `VQ-*`
 > placeholders do not imply an absent color, opacity, shadow, size, duration,
 > easing, delay, keyframe, copy string, icon, or layout value.
-> **Inbox/Triage amendment status:** **User-approved 2026-07-28.** It
+> **Prior Inbox/Triage amendment status:** **User-approved 2026-07-28.** It
 > derives only the approved `docs/DESIGN_TOKENS.md` row in the selected topic's
 > [promotion map](brainstorming/2026-06-25-inbox-triage-theme-surface-redesign/PROMOTION_MAP.md),
 > after the approved [SCHEMA](SCHEMA.md) and [SPEC](SPEC.md) receipts, and does
@@ -23,9 +23,19 @@
 > with receipt `53c3fe9`.
 > **Baseline locator note:** promotion-map citations into the prior token file
 > refer to production base `a3c679c` (SHA-256 `b99df518...`). The production
-> source tree remains `11e9c0f7ca226fdeee59a23ef164d3baa6823294`.
+> source tree at that original promotion was
+> `11e9c0f7ca226fdeee59a23ef164d3baa6823294`; this is historical provenance,
+> not the current implementation identity.
 > **Reference:** `docs/design-system-preview.html` is a historical/global
 > baseline only; it is not Inbox/Triage rendered authority.
+> **2026-10-03 targeted amendment:** **Draft — awaiting user approval.**
+> Only [Prototype-to-production realization and token ownership](#prototype-to-production-realization-and-token-ownership)
+> and the related provenance clarifications are new. The approved
+> [promotion map](brainstorming/2026-10-03-inbox_triage_theme_realization/PROMOTION_MAP.md)
+> is pinned by its separate
+> [map receipt](receipts/Craft_Docs.inbox-triage-theme-realization-promotion-map.json).
+> That receipt approves drafting, not this document or a product change. Existing
+> values, role/state meanings, accepted DP outcomes and deferrals are retained.
 
 ---
 
@@ -47,7 +57,7 @@
   literal, no rendered-fidelity claim, and no automatic visual fallback for a
   `VQ-*` gap. The five selected deferrals remain outside this promotion. This
   receipt accepts no implementation, task, or phase.
-- **Next legal action:** derive the complete replacement
+- **Historical next legal action at that approval:** derive the complete replacement
   `docs/EXECUTION_PLAN.md` across Phase 23–33, then stop at its own durable gate
   before changing `docs/PLANNING_STANDARD.md`.
 
@@ -71,6 +81,7 @@ Values that differ from `docs/design-system-preview.html` **on purpose**:
 - [Color Theme System](#color-theme-system)
 - [Calendar Visual Theme Contract](#calendar-visual-theme-contract)
 - [Inbox / Triage Surface Contract](#inbox--triage-surface-contract)
+- [Prototype-to-production realization and token ownership](#prototype-to-production-realization-and-token-ownership)
 - [Responsive Grid Node Tokens](#responsive-grid-node-tokens)
 - [Tailwind v4 Theme Bridge](#tailwind-v4-theme-bridge)
 - [Motion Language](#motion-language)
@@ -363,10 +374,11 @@ Each color theme may override these variable groups. Components consume these va
 
 #### Proposed Inbox/Triage role and state targets
 
-The generic `.theme-*` classes and eight-theme variables above exist in current
-production. The Inbox/Triage bindings below are proposed canonical targets;
-they are not claims that matching selectors, variables, or realization
-components already exist. Product JSX supplies semantic role and state only.
+The generic `.theme-*` classes and eight-theme variables above existed at the
+original promotion baseline. The Inbox/Triage bindings below are canonical
+targets, not a current implementation inventory or a claim of rendered
+completeness. Accepted tasks and their applicable evidence identify what has
+actually landed. Product JSX supplies semantic role and state only.
 It must not branch on theme ID or copy recipe literals into components.
 
 The canonical role binding is `data-triage-role="<role>"`. A theme layer may
@@ -540,11 +552,12 @@ Calendar popup item controls must have visible `focus-visible` styling. Recheck 
 > evidence. This document owns only the shared role/state vocabulary, selected
 > source-backed geometry, and approved theme-family mappings.
 
-Current production at base `a3c679c` has the generic `.theme-*`
+At the original promotion snapshot, production at base `a3c679c` had the generic `.theme-*`
 classes, eight-theme variable runtime, compact pointer-centered
-`TriageDragToken`, and older Inbox/Triage components. It does not yet implement
+`TriageDragToken`, and older Inbox/Triage components. It did not yet implement
 the proposed `data-triage-role` / `data-triage-state` contract or the complete
-surface target below.
+surface target below. This historical description does not classify the current
+accepted implementation as absent or complete.
 
 ### Shared shell and surface meaning
 
@@ -1106,6 +1119,97 @@ layering, clipping, overflow, responsive behavior, motion behavior,
 light/dark parity, or combined eight-theme verification. Recipe declarations
 support the role/mapping candidates above; they do not create behavior or turn
 an observed literal into a canonical value without an approved adoption trace.
+
+---
+
+## Prototype-to-production realization and token ownership
+
+> **Status:** **Draft — awaiting user approval, 2026-10-03.**
+> **Trace:** approved promotion map C03; selected DECISION D14, D15, D17,
+> D21, D22 and D25. Existing DP meanings and the map's Q01/Q02 boundaries
+> remain controlling. This section adopts no new numeric value, font, icon,
+> palette, shadow or motion parameter and claims no fresh rendered evidence.
+
+### Centralized tokens, element-specific realization
+
+Keep one shared semantic production component tree. Preserve the existing
+semantic-token foundation and extend the established `--triage-<role>-*`
+namespace only for a sourced, reusable region, element or state distinction.
+The ownership chain is:
+
+`existing semantic token → Inbox/Triage role or state alias → theme/mode value → shared element consumer`
+
+Theme values remain centralized in the existing theme CSS owner
+`src/app/globals.css`; components consume semantic roles, state and classes,
+not copied theme literals or theme-ID JSX branches. The theme picker exception
+above is unchanged. Centralization does not mean making eight themes use the
+same visual value or creating a token for every pixel. Reuse a suitable existing
+token; introduce a role alias when a meaningful difference needs independent
+control. Shared layout and semantic structure remain shared.
+
+| Concern | Realization contract |
+|---|---|
+| Source and value | Trace an alias and its value to the exact approved recipe/source region or existing DP. The namespace wildcard does not authorize an invented property or value. Missing or conflicting authority remains an affected-slice user decision. |
+| Typography | `--theme-font` is a theme default, not proof that every title, timestamp, button or input uses that font. Resolve each sourced element's family, size, weight and line height independently and confirm the loaded font and actual cascade. |
+| Surface grammar | Preserve the sourced distinction between panel, well, row, selected row, card and control. Background, shape, border and depth are role-specific; a page background plus a generic card shadow is not full theme realization. |
+| Theme and mode scope | Theme-dependent values are scoped to the intended theme/mode and consumed through shared roles. New selectors must not leak into other regions, supported modes or themes. Do not accumulate overriding patches or depend on test IDs as styling selectors. |
+| Semantic state | Composable `data-triage-state`, native semantics and logical focus remain authoritative. Selected, staged, invalid, unavailable, pending, success and recovery do not collapse into one opacity or destructive-color treatment. |
+| Structural fit | Styling cannot stand in for missing semantic structure. Any necessary shared component or layout change needs its own plan-declared owner and tests; this document grants no write or owner-expansion authority. |
+
+### Appearance and production behavior are separate contracts
+
+For each adopted region, map the prototype's visible elements to actual
+production owners. Appearance follows the exact selected visual source;
+commands, data, state lifetime, copy meaning and focus follow SPEC and the
+accepted DPs. A prototype's missing Save/Cancel, attached status, pending/error,
+locked or recovery presentation does not remove the production feature.
+
+Where an existing DP supplies that production-only surface, retain its exact
+realization and express its approved theme mapping through the shared roles.
+Do not borrow a nearby card, overlay or prototype behavior as an automatic
+fallback. An unsourced new surface or a real conflict with an accepted DP
+requires its exact user-owned decision before the conflicting change.
+
+Existing fixed Context/editor geometry, action reserves, surface ratios and
+Placement/Archive boundaries remain unchanged here. If a matched prototype
+target conflicts with them, report the affected element, measured difference,
+behavior/copy impact and decision owner under Q02; do not silently override the
+contract or hide actions, status, caret or focus with fixed height/overflow.
+`P29-01 / D-CARD` and all five selected deferrals remain excluded. No common-card
+redesign or new adjacent-surface fallback is granted.
+
+### Actual rendering is the fidelity evidence
+
+Before the first user submission for an approved region, connect each visible
+frame, title, meta line, button, icon, row, input, empty state and decoration
+from prototype source/DOM to its computed style/geometry and production owner.
+Check actual position, dimensions, font family/size/weight/line height, spacing,
+color/background, border/radius and shadow after theme and fonts have settled.
+Authored CSS, a common theme-font assumption or a matching token name alone
+does not prove those outcomes.
+
+Use matched logical data, selection and UI state under matching theme/mode,
+viewport, DPR, zoom, fonts and motion inputs. Compare fresh original-size 1:1
+views, correct observable differences within the approved scope, and compare
+again before presenting the first result. Do not resize images to conceal a
+difference. Disclose retained differences and production-only states explicitly.
+The implementation plan owns the region order, fixtures, evidence paths and
+user disposition checkpoints; ordinary measurements need no extra document
+batch. No pixel threshold or new visual acceptance is invented here.
+
+Hover, focus, DnD and animation require their actual trigger, transition,
+interruption/retrigger and reduced-motion observations as applicable, not just
+one settled image. Use only adopted motion parameters and preserve the existing
+Inbox/Triage Motion Boundary, including its non-repeating and DP-specific rules.
+Animation never implies mutation success or changes the allowed lifecycle.
+
+User visual acceptance and technical/behavior preservation checks are
+independent. Neither a token/CSS assertion nor a passing test suite is visual
+acceptance; an accepted image is not a technical pass. A source-only recipe or
+a light-state comparison does not establish dark, responsive, contrast,
+clipping, interaction or whole-theme conformance. Those claims require their
+own applicable rendered evidence under the approved plan. Experiment code,
+fixtures, images and reports are not implementation or acceptance inputs.
 
 ---
 

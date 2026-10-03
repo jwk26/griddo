@@ -5,10 +5,10 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testi
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTriageStore } from "@/stores/triage-store";
 import type {
-  PendingPlacement,
   TriageDragItem,
   TriageTargetFeedback,
 } from "@/hooks/use-dnd";
+import type { TriagePlacementRelease } from "@/hooks/use-triage-placement";
 import type { ScratchTitleBlockerHandle } from "@/hooks/use-scratch-breakdowns";
 import {
   requestActiveTriageDeparture,
@@ -27,6 +27,7 @@ const workspaceSource = readFileSync(
 );
 
 const useTriageDndMock = vi.hoisted(() => vi.fn());
+const emittedPlacementReleases = vi.hoisted(() => new WeakSet<object>());
 const useStagedCandidatesMock = vi.hoisted(() => vi.fn());
 const useScratchBreakdownsMock = vi.hoisted(() => vi.fn());
 const useCanArchiveScratchMock = vi.hoisted(() => vi.fn());
@@ -82,7 +83,20 @@ const completionState = vi.hoisted(() => ({
 }));
 
 vi.mock("@/hooks/use-dnd", () => ({
-  useTriageDnd: useTriageDndMock,
+  useTriageDnd: (
+    selectedScratchId: string | null,
+    options: { beginPlacement: (release: TriagePlacementRelease) => boolean },
+  ) => {
+    const state = useTriageDndMock(selectedScratchId, options) as DndState;
+    if (
+      state.placementRelease !== null &&
+      !emittedPlacementReleases.has(state.placementRelease)
+    ) {
+      emittedPlacementReleases.add(state.placementRelease);
+      options.beginPlacement(state.placementRelease);
+    }
+    return state;
+  },
 }));
 
 vi.mock("@/hooks/use-staged-candidates", () => ({
@@ -329,7 +343,7 @@ type DndState = {
   sensors: unknown[];
   activeDragItem: TriageDragItem;
   overTargetId: string | null;
-  pendingPlacement: PendingPlacement;
+  placementRelease: TriagePlacementRelease | null;
   localPlacementResult: null | { id: string; type: "node" | "bit" };
   handleDragStart: ReturnType<typeof vi.fn>;
   handleDragEnd: ReturnType<typeof vi.fn>;
@@ -337,7 +351,6 @@ type DndState = {
   handleDragOver: ReturnType<typeof vi.fn>;
   handlePlacementConfirm: ReturnType<typeof vi.fn>;
   handlePlacementCancel: ReturnType<typeof vi.fn>;
-  clearPendingPlacement: ReturnType<typeof vi.fn>;
   refreshRenderedTarget: ReturnType<typeof vi.fn>;
   targetFeedback: TriageTargetFeedback;
 };
@@ -347,7 +360,7 @@ function createDndState(overrides: Partial<DndState> = {}): DndState {
     sensors: [],
     activeDragItem: null,
     overTargetId: null,
-    pendingPlacement: null,
+    placementRelease: null,
     localPlacementResult: null,
     handleDragStart: vi.fn(),
     handleDragEnd: vi.fn(),
@@ -355,48 +368,40 @@ function createDndState(overrides: Partial<DndState> = {}): DndState {
     handleDragOver: vi.fn(),
     handlePlacementConfirm: handlePlacementConfirmMock,
     handlePlacementCancel: handlePlacementCancelMock,
-    clearPendingPlacement: vi.fn(),
     refreshRenderedTarget: vi.fn(),
     targetFeedback: null,
     ...overrides,
   };
 }
 
-function createDirectPendingPlacement(
-  overrides: Partial<NonNullable<PendingPlacement>> = {},
-): NonNullable<PendingPlacement> {
+function createDirectPlacementRelease(
+  overrides: Partial<TriagePlacementRelease> = {},
+): TriagePlacementRelease {
   return {
+    kind: "direct",
     scratchBitId: "scratch-1",
-    candidateId: "breakdown-1",
-    candidateType: null,
-    candidateVersion: null,
-    candidateLabel: "Project",
-    sourceBreakdownId: "breakdown-1",
-    sourceVersion: 1,
-    dropId: "triage-hierarchy:parent-1",
-    parentNodeId: "parent-1",
-    targetNodeLevel: 0,
-    targetTitle: "Parent",
-    targetParentPath: ["Home"],
-    expectedAncestorIds: ["parent-1"],
-    cell: { x: 0, y: 0 },
-    isFull: false,
-    isDirectBreakdown: true,
+    source: { id: "breakdown-1", title: "Project", version: 1 },
+    target: {
+      dropId: "triage-hierarchy:parent-1",
+      parentId: "parent-1",
+      level: 0,
+      title: "Parent",
+      path: ["Home", "Parent"],
+      expectedAncestorIds: ["parent-1"],
+      cell: { x: 0, y: 0 },
+      isFull: false,
+    },
     ...overrides,
   };
 }
 
-function createStagedPendingPlacement(
-  overrides: Partial<NonNullable<PendingPlacement>> = {},
-): NonNullable<PendingPlacement> {
-  return createDirectPendingPlacement({
-    candidateId: "candidate-1",
-    candidateType: "bit",
-    candidateVersion: 3,
-    candidateLabel: "s".repeat(201),
-    sourceBreakdownId: "breakdown-1",
-    sourceVersion: 1,
-    isDirectBreakdown: false,
+function createStagedPlacementRelease(
+  overrides: Partial<TriagePlacementRelease> = {},
+): TriagePlacementRelease {
+  return createDirectPlacementRelease({
+    kind: "staged",
+    source: { id: "breakdown-1", title: "s".repeat(201), version: 1 },
+    candidate: { id: "candidate-1", resultType: "bit", version: 3 },
     ...overrides,
   });
 }
@@ -512,7 +517,6 @@ beforeEach(() => {
     scratchPoolQuery: "",
     scratchPoolActiveIds: ["scratch-1", "scratch-2", "scratch-3"],
     scratchPoolResultIds: ["scratch-1", "scratch-2", "scratch-3"],
-    stagedCandidates: {},
   });
   useTriageDndMock.mockReset();
   useTriageDndMock.mockReturnValue(createDndState());
@@ -1966,12 +1970,12 @@ describe("TriageWorkspace", () => {
     }
     useTriageDndMock.mockReturnValue(
       createDndState({
-        pendingPlacement:
+        placementRelease:
           kind === "direct"
-            ? createDirectPendingPlacement()
-            : createStagedPendingPlacement({
-                candidateLabel: "Project",
-                candidateType: resultType,
+            ? createDirectPlacementRelease()
+            : createStagedPlacementRelease({
+                source: { id: "breakdown-1", title: "Project", version: 1 },
+                candidate: { id: "candidate-1", resultType, version: 3 },
               }),
       }),
     );
@@ -2017,7 +2021,7 @@ describe("TriageWorkspace", () => {
     }));
     useTriageDndMock.mockReturnValue(
       createDndState({
-        pendingPlacement: createDirectPendingPlacement(),
+        placementRelease: createDirectPlacementRelease(),
       }),
     );
 
@@ -2069,12 +2073,20 @@ describe("TriageWorkspace", () => {
       systemRole: null,
     };
     let childNodes = [target, sibling];
-    let pendingPlacement: PendingPlacement = createDirectPendingPlacement({
-      dropId: "triage-hierarchy:parent-1",
-      targetParentPath: [ancestor.title],
+    let placementRelease: TriagePlacementRelease | null = createDirectPlacementRelease({
+      target: {
+        dropId: "triage-hierarchy:parent-1",
+        parentId: "parent-1",
+        level: 0,
+        title: "Parent",
+        path: [ancestor.title, "Parent"],
+        expectedAncestorIds: ["parent-1"],
+        cell: { x: 0, y: 0 },
+        isFull: false,
+      },
     });
     const cancelPlacement = vi.fn(() => {
-      pendingPlacement = null;
+      placementRelease = null;
       handlePlacementCancelMock();
     });
     useGridDataMock.mockImplementation((parentId) => ({
@@ -2090,7 +2102,7 @@ describe("TriageWorkspace", () => {
     useTriageDndMock.mockImplementation(() =>
       createDndState({
         handlePlacementCancel: cancelPlacement,
-        pendingPlacement,
+        placementRelease,
       }),
     );
     useTriageStore.setState({
@@ -2128,11 +2140,20 @@ describe("TriageWorkspace", () => {
       systemRole: null,
     };
     let rootNodes = [target, sibling];
-    let pendingPlacement: PendingPlacement = createDirectPendingPlacement({
-      targetParentPath: [],
+    let placementRelease: TriagePlacementRelease | null = createDirectPlacementRelease({
+      target: {
+        dropId: "triage-hierarchy:parent-1",
+        parentId: "parent-1",
+        level: 0,
+        title: "Parent",
+        path: ["Parent"],
+        expectedAncestorIds: ["parent-1"],
+        cell: { x: 0, y: 0 },
+        isFull: false,
+      },
     });
     const cancelPlacement = vi.fn(() => {
-      pendingPlacement = null;
+      placementRelease = null;
       handlePlacementCancelMock();
     });
     useGridDataMock.mockImplementation((parentId) => ({
@@ -2143,7 +2164,7 @@ describe("TriageWorkspace", () => {
     useTriageDndMock.mockImplementation(() =>
       createDndState({
         handlePlacementCancel: cancelPlacement,
-        pendingPlacement,
+        placementRelease,
       }),
     );
     useTriageStore.setState({
@@ -2183,7 +2204,7 @@ describe("TriageWorkspace", () => {
     }));
     useTriageDndMock.mockReturnValue(
       createDndState({
-        pendingPlacement: createDirectPendingPlacement(),
+        placementRelease: createDirectPlacementRelease(),
       }),
     );
 
@@ -2234,7 +2255,7 @@ describe("TriageWorkspace", () => {
     });
     useScratchBreakdownsMock.mockReturnValue({ breakdowns: [candidate.source] });
     useTriageDndMock.mockReturnValue(
-      createDndState({ pendingPlacement: createStagedPendingPlacement() }),
+      createDndState({ placementRelease: createStagedPlacementRelease() }),
     );
 
     render(<TriageWorkspace node={createNode()} />);
@@ -2288,7 +2309,7 @@ describe("TriageWorkspace", () => {
       isReady: true,
     });
     useTriageDndMock.mockReturnValue(
-      createDndState({ pendingPlacement: createStagedPendingPlacement() }),
+      createDndState({ placementRelease: createStagedPlacementRelease() }),
     );
     render(<TriageWorkspace node={createNode()} />);
 
@@ -2337,7 +2358,7 @@ describe("TriageWorkspace", () => {
       isReady: true,
     });
     useTriageDndMock.mockReturnValue(
-      createDndState({ pendingPlacement: createStagedPendingPlacement() }),
+      createDndState({ placementRelease: createStagedPlacementRelease() }),
     );
     const view = render(<TriageWorkspace node={createNode()} />);
     expect(await screen.findByRole("textbox", { name: "Result title" })).toBeInTheDocument();
@@ -2370,7 +2391,7 @@ describe("TriageWorkspace", () => {
       isLoading: false,
     }));
     useTriageDndMock.mockReturnValue(
-      createDndState({ pendingPlacement: createDirectPendingPlacement() }),
+      createDndState({ placementRelease: createDirectPlacementRelease() }),
     );
     const view = render(<TriageWorkspace node={createNode()} />);
     expect(await screen.findByRole("region", { name: "Placement" })).toBeInTheDocument();
@@ -2404,7 +2425,7 @@ describe("TriageWorkspace", () => {
       isLoading: false,
     }));
     useTriageDndMock.mockReturnValue(
-      createDndState({ pendingPlacement: createDirectPendingPlacement() }),
+      createDndState({ placementRelease: createDirectPlacementRelease() }),
     );
     const view = render(<TriageWorkspace node={createNode()} />);
 
@@ -2435,7 +2456,7 @@ describe("TriageWorkspace", () => {
       isLoading: false,
     }));
     useTriageDndMock.mockReturnValue(
-      createDndState({ pendingPlacement: createDirectPendingPlacement() }),
+      createDndState({ placementRelease: createDirectPlacementRelease() }),
     );
     const view = render(<TriageWorkspace node={createNode()} />);
     expect(await screen.findByRole("region", { name: "Placement" })).toBeInTheDocument();
@@ -2488,7 +2509,7 @@ describe("TriageWorkspace", () => {
         isLoading: false,
       }));
       useTriageDndMock.mockReturnValue(
-        createDndState({ pendingPlacement: createStagedPendingPlacement() }),
+        createDndState({ placementRelease: createStagedPlacementRelease() }),
       );
       const view = render(<TriageWorkspace node={createNode()} />);
       expect(await screen.findByRole("textbox", { name: "Result title" })).toBeInTheDocument();
@@ -2546,7 +2567,7 @@ describe("TriageWorkspace", () => {
       isLoading: false,
     }));
     useTriageDndMock.mockReturnValue(
-      createDndState({ pendingPlacement: createDirectPendingPlacement() }),
+      createDndState({ placementRelease: createDirectPlacementRelease() }),
     );
 
     render(<TriageWorkspace node={createNode()} />);
@@ -2565,12 +2586,17 @@ describe("TriageWorkspace", () => {
   it("shows disabled direct type choices for invalid target types", async () => {
     useTriageDndMock.mockReturnValue(
       createDndState({
-        pendingPlacement: createDirectPendingPlacement({
-          dropId: "triage-hierarchy:body-home",
-          parentNodeId: null,
-          targetNodeLevel: null,
-          targetTitle: "Home",
-          targetParentPath: [],
+        placementRelease: createDirectPlacementRelease({
+          target: {
+            dropId: "triage-hierarchy:body-home",
+            parentId: null,
+            level: null,
+            title: "Home",
+            path: ["Home"],
+            expectedAncestorIds: [],
+            cell: { x: 0, y: 0 },
+            isFull: false,
+          },
         }),
       }),
     );
@@ -2599,11 +2625,14 @@ describe("TriageWorkspace", () => {
       bits: [],
       isLoading: false,
     }));
-    let pendingPlacement = createDirectPendingPlacement({
-      dropId: "triage-hierarchy:parent-1",
+    let placementRelease = createDirectPlacementRelease({
+      target: {
+        ...createDirectPlacementRelease().target,
+        dropId: "triage-hierarchy:parent-1",
+      },
     });
     useTriageDndMock.mockImplementation(() =>
-      createDndState({ pendingPlacement }),
+      createDndState({ placementRelease }),
     );
 
     const { rerender } = render(<TriageWorkspace node={createNode()} />);
@@ -2611,11 +2640,16 @@ describe("TriageWorkspace", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Node" }));
     expect(screen.getByText("Project")).toBeInTheDocument();
 
-    pendingPlacement = createDirectPendingPlacement({
-      candidateId: "breakdown-2",
-      candidateLabel: "Next Project",
-      sourceBreakdownId: "breakdown-2",
-      dropId: "triage-hierarchy:parent-2",
+    placementRelease = createDirectPlacementRelease({
+      source: { id: "breakdown-2", title: "Next Project", version: 1 },
+      target: {
+        ...createDirectPlacementRelease().target,
+        dropId: "triage-hierarchy:parent-2",
+        parentId: "parent-2",
+        title: "Next Parent",
+        path: ["Home", "Next Parent"],
+        expectedAncestorIds: ["parent-2"],
+      },
     });
     rerender(<TriageWorkspace node={createNode()} />);
 
@@ -2627,7 +2661,13 @@ describe("TriageWorkspace", () => {
   it("shows isFull warning with muted styling, not destructive, when target is full", async () => {
     useTriageDndMock.mockReturnValue(
       createDndState({
-        pendingPlacement: createDirectPendingPlacement({ isFull: true, cell: null }),
+        placementRelease: createDirectPlacementRelease({
+          target: {
+            ...createDirectPlacementRelease().target,
+            isFull: true,
+            cell: null,
+          },
+        }),
       }),
     );
     const target = {
@@ -2662,7 +2702,7 @@ describe("TriageWorkspace", () => {
       isLoading: false,
     }));
     useTriageDndMock.mockReturnValue(
-      createDndState({ pendingPlacement: createDirectPendingPlacement() }),
+      createDndState({ placementRelease: createDirectPlacementRelease() }),
     );
     placeDirectBreakdownMock.mockImplementation(async (command) => {
       const placed = createNode({

@@ -1,0 +1,368 @@
+{
+  "schema": "phase-31-visual-audit-interaction/v1",
+  "capturedAt": "2026-09-08T07:40:39.008Z",
+  "browser": "Google Chrome 152.0.7977.82",
+  "route": "http://localhost:3101/prototype/inbox-triage-griddo",
+  "theme": "griddo",
+  "colorScheme": "light",
+  "viewport": {
+    "width": 1600,
+    "height": 1000
+  },
+  "dpr": 1,
+  "initialReadiness": {
+    "ok": true,
+    "final": {
+      "ready": "complete",
+      "theme": "griddo",
+      "bodyBg": "rgb(238, 234, 226)",
+      "htmlBg": "rgba(0, 0, 0, 0)",
+      "fontsStatus": "loaded",
+      "fontFamilies": [
+        "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+        "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+      ],
+      "rects": [
+        [
+          48,
+          0,
+          1552,
+          1000
+        ],
+        [
+          0,
+          1000,
+          1600,
+          0
+        ]
+      ],
+      "activeAnimations": 0,
+      "scrollWidth": 1600,
+      "scrollHeight": 1000
+    },
+    "samples": [
+      {
+        "atMs": 0,
+        "ready": "complete",
+        "theme": "griddo",
+        "bodyBg": "rgb(238, 234, 226)",
+        "htmlBg": "rgba(0, 0, 0, 0)",
+        "fontsStatus": "loaded",
+        "fontFamilies": [
+          "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+          "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+        ],
+        "rects": [
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            0,
+            1000,
+            1600,
+            0
+          ]
+        ],
+        "activeAnimations": 0,
+        "scrollWidth": 1600,
+        "scrollHeight": 1000,
+        "stableCount": 0
+      },
+      {
+        "atMs": 100,
+        "ready": "complete",
+        "theme": "griddo",
+        "bodyBg": "rgb(238, 234, 226)",
+        "htmlBg": "rgba(0, 0, 0, 0)",
+        "fontsStatus": "loaded",
+        "fontFamilies": [
+          "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+          "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+        ],
+        "rects": [
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            0,
+            1000,
+            1600,
+            0
+          ]
+        ],
+        "activeAnimations": 0,
+        "scrollWidth": 1600,
+        "scrollHeight": 1000,
+        "stableCount": 1
+      },
+      {
+        "atMs": 200,
+        "ready": "complete",
+        "theme": "griddo",
+        "bodyBg": "rgb(238, 234, 226)",
+        "htmlBg": "rgba(0, 0, 0, 0)",
+        "fontsStatus": "loaded",
+        "fontFamilies": [
+          "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+          "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+        ],
+        "rects": [
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            0,
+            1000,
+            1600,
+            0
+          ]
+        ],
+        "activeAnimations": 0,
+        "scrollWidth": 1600,
+        "scrollHeight": 1000,
+        "stableCount": 2
+      },
+      {
+        "atMs": 300,
+        "ready": "complete",
+        "theme": "griddo",
+        "bodyBg": "rgb(238, 234, 226)",
+        "htmlBg": "rgba(0, 0, 0, 0)",
+        "fontsStatus": "loaded",
+        "fontFamilies": [
+          "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+          "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+        ],
+        "rects": [
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            0,
+            1000,
+            1600,
+            0
+          ]
+        ],
+        "activeAnimations": 0,
+        "scrollWidth": 1600,
+        "scrollHeight": 1000,
+        "stableCount": 3
+      },
+      {
+        "atMs": 400,
+        "ready": "complete",
+        "theme": "griddo",
+        "bodyBg": "rgb(238, 234, 226)",
+        "htmlBg": "rgba(0, 0, 0, 0)",
+        "fontsStatus": "loaded",
+        "fontFamilies": [
+          "GeistSans, \"GeistSans Fallback\", -apple-system, system-ui, sans-serif",
+          "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", \"DejaVu Sans Mono\", \"Courier New\", monospace, monospace"
+        ],
+        "rects": [
+          [
+            48,
+            0,
+            1552,
+            1000
+          ],
+          [
+            0,
+            1000,
+            1600,
+            0
+          ]
+        ],
+        "activeAnimations": 0,
+        "scrollWidth": 1600,
+        "scrollHeight": 1000,
+        "stableCount": 4
+      }
+    ],
+    "animationNormalization": null,
+    "observation": "stable geometry/background/theme for 5 samples; fonts loaded; no running animations"
+  },
+  "focusHover": {
+    "before": {
+      "text": "Desk Setup",
+      "outline": "rgb(9, 9, 11) none 3px",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px",
+      "transform": "none",
+      "borderColor": "rgba(59, 130, 246, 0.125)",
+      "activeElement": "1\n2\n3\n4\n5\n6\n7\n8\nSCRATCH POOL\n5\nDESC\nQuarterly review preparation\n2H AGO\nNew theme brainstorming notes\nYESTERDAY\nHome office layout ideas\n2 DAYS AGO\nSummer vacation itinerary draft\n6 DAYS AGO\nWeekly grocery list (automated?)\n05/04/26\nBREAKDOWN\nACTIVE SCRATCH\n2h ago\nQuarterly review preparation\nCheck budget for standing desk\nMeasure window dimensions for blinds\nResearch ergonomic chair reviews\nADD\nSTAGING\n\nNODES\n\nDesk Setup\nOffice Plan\n\nBITS\n\nMeasure desk width\nOrder cable ties\nGRID EXPLORER\nHOME\nWork\nPersonal\nProjects\nLEVEL 1\nLEVEL 2\nLEVEL 3"
+    },
+    "active": {
+      "text": "Desk Setup",
+      "outline": "rgb(0, 95, 204) none 1px",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(255, 255, 255) 0px 0px 0px 2px, rgb(59, 130, 246) 0px 0px 0px 4px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px",
+      "transform": "matrix(1.00655, 0, 0, 1.00655, 0, -0.644966)",
+      "borderColor": "rgba(59, 130, 246, 0.325)",
+      "focusVisible": true,
+      "hover": true
+    }
+  },
+  "dnd": {
+    "dragStart": {
+      "source": "Desk Setup",
+      "data": {
+        "id": "nc1",
+        "type": "node-candidate"
+      },
+      "columnCount": 4
+    },
+    "invalid": {
+      "target": "Level 3",
+      "text": "LEVEL 3\nPrepare slide deck for sync\nShare meeting minutes"
+    },
+    "eligible": {
+      "target": "Level 2",
+      "text": "LEVEL 2\nWeekly Sync\nReview product roadmap"
+    },
+    "drop": {
+      "target": "Level 2"
+    },
+    "confirm": {
+      "ok": true,
+      "text": "CONFIRM",
+      "x": 1091.7421875,
+      "y": 869,
+      "focused": true
+    },
+    "result": {
+      "hasNew": true,
+      "hasUndo": true,
+      "bodyTail": "1\n2\n3\n4\n5\n6\n7\n8\nSCRATCH POOL\n5\nDESC\nQuarterly review preparation\n2H AGO\nNew theme brainstorming notes\nYESTERDAY\nHome office layout ideas\n2 DAYS AGO\nSummer vacation itinerary draft\n6 DAYS AGO\nWeekly grocery list (automated?)\n05/04/26\nBREAKDOWN\nACTIVE SCRATCH\n2h ago\nQuarterly review preparation\nCheck budget for standing desk\nMeasure window dimensions for blinds\nResearch ergonomic chair reviews\nADD\nSTAGING\n\nNODES\n\nOffice Plan\n\nBITS\n\nMeasure desk width\nOrder cable ties\nDrop here to return to Breakdown panel\nGRID EXPLORER\nHOME\nWork\nPersonal\nProjects\nLEVEL 1\nMeetings\nAdmin\nReply to project lead's email\nLEVEL 2\nWeekly Sync\nDesk Setup\nNEW\nReview product roadmap\nLEVEL 3\nPrepare slide deck for sync\nShare meeting minutes"
+    },
+    "undo": {
+      "ok": true,
+      "text": "Undo placement",
+      "x": 1241.75,
+      "y": 777,
+      "focused": true
+    },
+    "afterUndo": {
+      "hasNew": false,
+      "hasUndo": false
+    }
+  },
+  "editSaveCancel": {
+    "prototypeControlActivation": {
+      "ok": true,
+      "text": "Edit Scratch",
+      "x": 1006.40625,
+      "y": 131.5,
+      "focused": true
+    },
+    "beforeInputCount": 3,
+    "afterInputs": [
+      {
+        "value": "",
+        "placeholder": "Search scratches..."
+      },
+      {
+        "value": "",
+        "placeholder": "Scribble another idea..."
+      },
+      {
+        "value": "",
+        "placeholder": "Search hierarchy..."
+      }
+    ],
+    "saveButtons": [],
+    "cancelButtons": [],
+    "disposition": "prototype Edit control is inert; Save/Cancel are absent and cannot serve as canonical behavior evidence"
+  },
+  "localStatus": {
+    "live": [
+      {
+        "role": null,
+        "live": "polite",
+        "text": ""
+      }
+    ],
+    "newlyText": false,
+    "undoControl": false
+  },
+  "reducedMotion": {
+    "matches": true,
+    "maxTransitionMs": 0.01,
+    "maxAnimationMs": 0.01,
+    "runningAnimations": 0
+  },
+  "sequence": [
+    {
+      "state": "before",
+      "fileName": "prototype-griddo-interaction-before.png",
+      "bytes": 130933,
+      "sha256": "aa48f12682a2e1fa476b3041e67a361ac5478e246de29e1fe7a6ad804158304f"
+    },
+    {
+      "state": "focus-hover-active",
+      "fileName": "prototype-griddo-focus-hover-active.png",
+      "bytes": 133197,
+      "sha256": "22fa74367ce54feeedb019f46280ebdcd3860dc41d9e25a439707051d2eb19d5"
+    },
+    {
+      "state": "dnd-source-active",
+      "fileName": "prototype-griddo-dnd-source-active.png",
+      "bytes": 151974,
+      "sha256": "b402d8180dc75c51815ad852ee761510ce8f3d4a64bbea017d29b40d48a25846"
+    },
+    {
+      "state": "dnd-invalid-target",
+      "fileName": "prototype-griddo-dnd-invalid-target.png",
+      "bytes": 157758,
+      "sha256": "ff6a3415532fb9b1787a1897d8a123bec4da78bec898b5a240717948a7800fc9"
+    },
+    {
+      "state": "dnd-eligible-target",
+      "fileName": "prototype-griddo-dnd-eligible-target.png",
+      "bytes": 151989,
+      "sha256": "98105343608b871bae9b22369be71613c48d0fd8f3f49eb5d77bb80b874fb030"
+    },
+    {
+      "state": "dnd-active-drop",
+      "fileName": "prototype-griddo-dnd-active-drop.png",
+      "bytes": 157817,
+      "sha256": "67318931b372e0431c72d757e3c03e1f944ddb106545466c5c42bdee5c9e0d0f"
+    },
+    {
+      "state": "dnd-result-newly",
+      "fileName": "prototype-griddo-dnd-result-newly.png",
+      "bytes": 153383,
+      "sha256": "ff9e00895ba13813b8779d8e32d10292929f4600bfe9f527ffb76acdb789467a"
+    },
+    {
+      "state": "dnd-after-undo",
+      "fileName": "prototype-griddo-dnd-after-undo.png",
+      "bytes": 153475,
+      "sha256": "3eee43c4b602b2b0601d23acff510fa87b5ef8a183ec16ed526edb83dfe697b9"
+    },
+    {
+      "state": "edit-control-after-activation",
+      "fileName": "prototype-griddo-edit-control-inert.png",
+      "bytes": 152354,
+      "sha256": "7e23fa08e09341851334ff9263410f507552cc3aae0c269d64824a6aa8397886"
+    },
+    {
+      "state": "reduced-motion",
+      "fileName": "prototype-griddo-reduced-motion.png",
+      "bytes": 152339,
+      "sha256": "0a68535394904cc368d70fd164981cdfe07ff84b7abe023c2f0bdf5d55dd113e"
+    }
+  ],
+  "console": []
+}

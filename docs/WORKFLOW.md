@@ -2,8 +2,16 @@
 
 > Recorded: 2026-03-27
 > Evolution: ANALYSIS_design_archaeology.md (2026-03-18) → Planning Standard (2026-03-26) → this document
+> **2026-10-03 amendment status:** **Draft — awaiting user approval.**
+> The current Codex continuation below derives from the approved selected
+> topic/map and design/execution/planning-standard receipts. It records direction
+> and authority boundaries, not implementation, cleanup, repair, acceptance,
+> Final Close or installed skill execution. Its own gate and final flow review
+> remain pending.
 
 ## Table of Contents
+
+- [Current Codex Continuation — 2026-10-03](#current-codex-continuation--2026-10-03)
 
 1. [Overall Workflow](#overall-workflow)
 2. [Post-PRD Ideation Topics](#post-prd-ideation-topics)
@@ -13,6 +21,128 @@
 6. [Document Hierarchy](#document-hierarchy)
 7. [Skill Map](#skill-map)
 8. [Document Role Boundaries](#document-role-boundaries)
+
+---
+
+## Current Codex Continuation — 2026-10-03
+
+### Authority and historical-provider boundary
+
+The selected current input is
+[Inbox/Triage theme realization DECISION](brainstorming/2026-10-03-inbox_triage_theme_realization/DECISION.md)
+D01–D36 and its complete
+[approved promotion map](brainstorming/2026-10-03-inbox_triage_theme_realization/PROMOTION_MAP.md),
+especially C06 and D01–D10/D28–D36. This is the `craft-docs` Brainstorming Route,
+a targeted amendment during an open phase, not a new PRD or a phase restart.
+The approval chain is recorded in the
+[map receipt](receipts/Craft_Docs.inbox-triage-theme-realization-promotion-map.json),
+[design receipt](receipts/Craft_Docs.inbox-triage-theme-realization-design.json),
+[execution receipt](receipts/Craft_Docs.inbox-triage-theme-realization-execution.json)
+and [planning-standard receipt](receipts/Craft_Docs.inbox-triage-theme-realization-planning-standard.json).
+Their artifact hashes and receipts own acceptance; preserved Draft/Proposed
+headings remain approval-time snapshots, not conflicting current dispositions.
+This WORKFLOW draft and the final flow-review artifact still need their own
+user gates. No new storage or product behavior is introduced here.
+
+For Codex, [AGENTS.md](../AGENTS.md) and the explicit
+[Project Adapter v2](CODEX_WORKFLOW_ADAPTER.json) select canonical authority and
+logical verification. `docs/prd.md` is historical context, not this campaign's
+selected product input. Installed `craft-docs`, `run-phase`, `run-task` and
+`end-phase` own procedure; this document supplies project direction and issue
+rules, not a second resolver, readiness, TDD, repair-budget, fingerprint or
+rollover procedure. Compatibility never supplies user approval.
+
+The older stage descriptions, provider orchestration, skill map and role tables
+below are retained legacy-provider reference. They do not authorize Codex to
+invoke Claude/OMC/provider workers, use CLAUDE gates, infer a model identity,
+create a reviewer session or publish from a closing-stage exception.
+`CLAUDE.md` and other provider entrypoints remain protected and unchanged.
+Current Codex execution follows the installed lifecycles and approved adapter,
+not an automatically active `/execute-*` or `/closing-phase` procedure.
+
+### Phase 31 direction-change lineage
+
+This is responsibility transfer, not completion by renaming. The accepted
+[execution-plan transfer register](EXECUTION_PLAN.md#unaccepted-task-164165-transfer-register)
+and phase/task definitions own the exact new graph and file actions.
+
+| Existing scope | Current planning disposition and retained responsibility |
+|---|---|
+| Phase 30 / Tasks 159–162 | Closed/archive-only; no reopen or change to its markers, receipts, archives, evidence or Git history. Task 163 does not belong to Phase 30. |
+| Phase 31 / Task 163 | Accepted route integration, not yet merged into main. Phase 31 remains open for separately approved narrow corrections, issue dispositions and truthful technical close; it does not claim eight-theme visual completion. |
+| Task 164 `[ ]` | `Transferred / Superseded`, unaccepted. Its realization/conformance responsibility continues in Phases 34–39 and the Phase 40 full gate; no successful Task 164 evidence or acceptance is inferred. |
+| Task 165 `[ ]` | `Transferred / Superseded`, unaccepted. Its complete implementation/preservation all-nodes responsibility continues in Phase 40 / Task 208; transfer deletes no required check. |
+| Phases 32–33 | Reserved retired numbers; neither their meanings nor task IDs 164/165 are reused. |
+| Phases 34–40 / Tasks 166–208 | Approved planning, unstarted execution. Exact theme sets, regional predecessors, supported-mode completion and the retained full matrix live in EXECUTION_PLAN, not a second task list here. |
+
+The execution receipt makes the plan amendment effective; this draft does not
+write its disposition into the phase ledger or mark any task `[x]`. Earlier
+kickoff/checkpoint/closure records remain historical snapshots. The inherited
+pre-Task-164 visual audit is not retroactively accepted, and `P29-01 / D-CARD`
+and the five existing deferrals are not resolved by transfer. Neither a plan
+approval nor a visual score closes a technical failure or a phase issue.
+
+### Correction and experiment-discard boundaries
+
+The [Phase 31 technical-close prerequisites](EXECUTION_PLAN.md#phase-31-technical-close-prerequisites--not-new-task-acceptance)
+and map Q03–Q06 name the separate actions still requiring exact user scope.
+They are not repair or destructive-operation authority in this document.
+
+| Boundary | Required direction / authority |
+|---|---|
+| Q03 / NodeGridBody | Correct Task 163's forbidden route export under the narrow source/test repair gate in Phase 31, not Phase 30. Preserve original acceptance and record additive correction with fresh invalidated evidence. Cache deletion or ignored generated type errors is not the source repair. |
+| Q04 / canonical Test 2 delta | Derive the exact rejected net delta from `54d689275cefb5d24c70f562435bb82734c51631` to `d05140626a6e95d4f5ca4897f02f66594af4d753`; remove only those owned changes additively. Preserve Task 163, the separate 9/8–9 canonical audit, later approved Route documents and unrelated work. No branch reset, history rewrite or whole-ledger replacement. |
+| Q04 / disposable experiments | The new exact user discard disposition supersedes earlier experimental-asset retention only for its approved target set. Guard the eight identified worktrees/branches and attributed runtimes; protect main, canonical Phase 31, prototype, unrelated worktrees and the current session host. Current-tree cleanup is not Git commit purging or promotion of old experiment bytes. |
+| Q05 / mounted Staging reason | Diagnose against the accepted functional contract and obtain Blocking/Advisory tier and user disposition. A Blocking defect needs its own approved owner/repair; it cannot be silently folded into theme CSS or assumed deferred. |
+| Q06 / dependent close-output proof | The optional adapter freshness gate is absent, not an onboarding failure. Propose and obtain approval of the exact project-owned proof, then exercise it at the actual close candidate. A build pass, timestamps or prior generated/browser outputs alone do not establish freshness. |
+
+Under D30, later authorized ledger updates preserve Task 163 acceptance,
+other accepted functional records, canonical audits and named deferred workflow
+findings. Keep minimal experimental rejection/discard lineage, not obsolete
+experimental reports/assets.
+Under D31, do not create a standalone final Neumorphism result/closure report,
+ledger closure commit or detailed experiment archive merely to dispose of the
+user-terminated test. Reconcile termination and exact target guards in the
+integrated cleanup disposition; an obsolete active snapshot does not resume
+or succeed that experiment. These directions do not change ledger bytes here.
+Active issues still require permitted explicit user disposition, and known
+Blocking failures still prevent technical Final Close.
+
+### Delivery and post-close audit boundary
+
+Step 2 canonical replanning and Step 5 workflow/skill audit are directly owned
+by the current Control Tower under D33. Advisory facts or separately approved
+corrections may use Luna xhigh within a non-conflicting scope and single-writer
+boundary; they do not delegate those two judgments or create another active
+Control Tower/Working claimant. Actual continuity is recorded in the applicable
+receipt/ledger, not inferred from this document's historical records.
+
+Complete the approved document/flow chain, separately authorized Phase 31
+repair/correction and guarded disposal, then actual Final Close/publication and
+main sync. Perform the post-Final-Close workflow audit and obtain its
+disposition before fresh main-based Phase 34 execution. Each later phase uses
+its exact accepted predecessor and actual close/main-sync conditions.
+Experiment branches never become the real implementation base or merge input.
+
+The audit first compares retained deferred workflow findings with installed
+rules, distinguishing an existing-rule execution failure from a missing rule
+or evidence gap. Installed skill/resolver/shared-contract/workflow-test bytes
+remain unchanged during Phase 31; any later improvement has its own exact gate.
+Prototype-method integration follows D35's conditional reference and essential
+execution linkage, not a giant duplicated universal skill checklist. The
+external `/Users/jwk/Documents/docs/prototype-to-production.md` keeps abstract
+method/timeline/user-evaluation context only; Test 1–8 and prototype source or
+asset bytes are not copied, adapted, imported, reused or merged into production.
+
+[DESIGN_TOKENS](DESIGN_TOKENS.md), the execution plan and
+[PLANNING_STANDARD §5](PLANNING_STANDARD.md#51-regional-first-submission-quality)
+already own the adopted appearance/behavior boundary, first-submission method,
+region dispositions and incremental/full verification. Routine measurement
+and in-scope internal refinement stay in the coherent approved Working; new
+design/owner decisions and user task/phase acceptance retain their gates.
+This document adds no routine contract-only session, generic repeated approval,
+new numeric visual threshold or automatic acceptance. No product, browser,
+cleanup or Final Close pass is claimed by this amendment.
 
 ---
 
@@ -167,6 +297,12 @@ Role:
 Break down all upstream documents into phased implementation tasks. Each task has file paths derived from SPEC, per-file actions with exact values, and verifiable acceptance criteria. User-facing tasks are tagged `Visibility: User-facing` with observable acceptance criteria.
 
 After the plan draft, a dedicated reviewer subagent runs a **Flow Ownership Review**: tracing every user-visible flow from PRD/SPEC through the plan to verify end-to-end task ownership. Gaps are resolved before implementation begins (amend plan, revise upstream docs, or add explicit defer notes). Max 3 review iterations.
+
+**Current Codex boundary:** the selected approved source and review owner follow
+PLANNING_STANDARD's current Flow-Trace Review rules. This user-directed campaign
+uses the Control Tower's separate direct inline review; the legacy subagent and
+review-iteration description above does not add a second Codex procedure or
+waive the final trace artifact and user gate.
 
 `PLANNING_STANDARD.md` is generated or updated to define the project's architecture conformance checklist and verification guidance. Both `writing-documents` and `closing-phase` consume it.
 
@@ -696,6 +832,12 @@ This aligns with the Issue Close Rule: just as issues are not closed because cod
 
 **Exception:** The `closing-phase` skill does not need this gate, because by the time it is invoked, the user has already explicitly indicated that the phase is ready to close.
 
+**Codex boundary:** that legacy-provider exception supplies no Codex task
+acceptance or Final Close authority. Readiness to review close is not `[x]` or
+permission to publish. Codex uses the adapter's logical verification, not the
+CLAUDE/provider gate named in the legacy checkpoint description above; exact
+user acceptance and the installed `end-phase` Final Close gate remain required.
+
 ### Issue-Level Sync
 
 The agent does not need approval for every small fix. But at the **issue level**, the agent syncs with the user on:
@@ -753,6 +895,14 @@ A reference image shows what the target looks like but doesn't show what was int
 Both require user input, but they are different conversations. Skipping question 2 means placement decisions are made without design rationale — the gap identified during the Phase 8 workflow pilot.
 
 ### Process
+
+For the already-approved Inbox/Triage realization, use the current receipt
+chain, retained nine recipes/DPs and the plan/standard's element-level intake.
+Do not repeat the legacy seven-step product/recipe promotion below merely to
+measure an approved element, or rewrite recipes from a prototype. A genuinely
+new unsourced surface or owner expansion returns only the affected slice to
+its own user decision/owner gate before that change. Q01 applies to the narrow
+actual Inbox-card boundary; Q02 applies to a measured retained-contract conflict.
 
 | Step | Action | Who | Output |
 |------|--------|-----|--------|

@@ -1,0 +1,74 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "inbox-triage-theme-realization-workflow",
+  "user_disposition": "approved",
+  "user_disposition_text": "수락",
+  "recorded_on": "2026-10-03",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-31/integration-conformance-full-gate",
+  "approved_base": "25eb6cd8c633431a0f093345f17874191fe20365",
+  "approved_scope": {
+    "lifecycle": "craft-docs",
+    "route": "Brainstorming",
+    "canonical_role": "workflow",
+    "canonical_path": "docs/WORKFLOW.md",
+    "amendment": "C06 complete workflow amendment: Phase 31 direction-change lineage, transferred-not-accepted responsibilities, separately gated technical correction and experimental discard, protected retained records, current Codex versus legacy-provider boundaries, direct Control Tower ownership and post-close audit/main-based continuation",
+    "preserved": "Accepted Task 163 and immutable Phase 30; existing product/data/DP contracts, canonical audits, named deferred findings and original complete conformance/preservation responsibilities",
+    "approval_boundary": "Project-document authority only; not a technical repair, destructive cleanup, task/phase acceptance, publication or installed skill gate"
+  },
+  "approved_artifact": {
+    "path": "docs/WORKFLOW.md",
+    "commit": "25eb6cd8c633431a0f093345f17874191fe20365",
+    "sha256": "16bdc67c60531ab978e6617e67356c7d2b9ac29898ac4111ad5f86839bc88a1c",
+    "hash_domain": "exact committed artifact blob",
+    "snapshot_status": "Preapproval Draft headings are preserved in the approved artifact; this receipt owns the later user disposition"
+  },
+  "approved_planning_standard": {
+    "path": "docs/PLANNING_STANDARD.md",
+    "commit": "5f73a2a8c5de5125e6c9bd7643d061c0a09875f5",
+    "sha256": "c1364c9c3829145876e55774e902e1b8cf8aafcebf5e338f011b421e50c754d0",
+    "hash_domain": "exact committed artifact blob",
+    "receipt": "docs/receipts/Craft_Docs.inbox-triage-theme-realization-planning-standard.json"
+  },
+  "approved_execution": {
+    "path": "docs/EXECUTION_PLAN.md",
+    "commit": "ce020ab2654fab7b9c200bb4d4a28f69de7c31d4",
+    "sha256": "d344fb149cd6be555aaeb03a45384a30d99561b53bd43f2497406802230e3b12",
+    "hash_domain": "exact committed artifact blob",
+    "receipt": "docs/receipts/Craft_Docs.inbox-triage-theme-realization-execution.json"
+  },
+  "approved_design": {
+    "path": "docs/DESIGN_TOKENS.md",
+    "commit": "fef8617c2ecf3b8a9fe0335974cbc892d23a05b4",
+    "sha256": "888a61ff583016d984d8f3209e72af5688254e9cd7b68e07d9e181bdf80fa14b",
+    "hash_domain": "exact committed artifact blob",
+    "receipt": "docs/receipts/Craft_Docs.inbox-triage-theme-realization-design.json"
+  },
+  "approved_map": {
+    "path": "docs/brainstorming/2026-10-03-inbox_triage_theme_realization/PROMOTION_MAP.md",
+    "commit": "3b95de179fcc10568f8967a89a5f9eb9adaa5f11",
+    "sha256": "261d233c76d1641bccb7f4381035d3b10b79b3c61826237f9e71a04a32ad0d79",
+    "hash_domain": "exact committed artifact blob",
+    "receipt": "docs/receipts/Craft_Docs.inbox-triage-theme-realization-promotion-map.json"
+  },
+  "session_continuity": {
+    "control_tower": {
+      "identity": "phase-31-control-tower",
+      "status": "active"
+    },
+    "review_owner": "Current Control Tower directly in a separate full inline pass, as explicitly requested by the user",
+    "working_session": {
+      "identity": "none",
+      "status": "not created"
+    },
+    "duplicate_session_count": 0
+  },
+  "excluded_authority": [
+    "Final flow-review acceptance or task acceptance markers",
+    "Product repair, ledger transfer implementation, branch/worktree/runtime deletion or experimental byte reuse",
+    "Phase kickoff, Final Close, publication, push, PR, merge or main sync",
+    "Installed skill/resolver/shared-contract/workflow-test modification"
+  ],
+  "next_legal_action": "perform_complete_flow_review_then_stop_at_user_gate"
+}

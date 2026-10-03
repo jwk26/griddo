@@ -2,13 +2,6 @@
 
 import { create } from "zustand";
 
-export interface StagedCandidate {
-  id: string;
-  type: "node" | "bit";
-  sourceBreakdownId: string;
-  label: string;
-}
-
 export interface TriageSessionScrollPosition {
   anchorId: string | null;
   offset: number;
@@ -97,8 +90,6 @@ interface TriageState {
   explorerRemoteArrivalIds: Record<string, ExplorerItemIdentity[]>;
   explorerLocalPlacementIdentities: ExplorerItemIdentity[];
   explorerPathStatus: ExplorerPathStatusState | null;
-  /** @deprecated Non-authoritative compatibility state. Task 163 removes it. */
-  stagedCandidates: Record<string, StagedCandidate[]>;
   externalScratchRemoval: ExternalScratchRemovalState | null;
   selectScratch: (id: string) => void;
   clearSelection: () => void;
@@ -139,15 +130,6 @@ interface TriageState {
     validPathIds: string[];
     visibleItemIdsByColumn: Record<string, string[]>;
   }) => void;
-  /** @deprecated Non-authoritative compatibility action. Task 163 removes it. */
-  addStagedCandidate: (
-    scratchId: string,
-    candidate: StagedCandidate,
-  ) => void;
-  /** @deprecated Non-authoritative compatibility action. Task 163 removes it. */
-  removeStagedCandidate: (scratchId: string, candidateId: string) => void;
-  /** @deprecated Non-authoritative compatibility action. Task 163 removes it. */
-  clearScratchCandidates: (scratchId: string) => void;
 }
 
 export const useTriageStore = create<TriageState>((set) => ({
@@ -164,7 +146,6 @@ export const useTriageStore = create<TriageState>((set) => ({
   explorerRemoteArrivalIds: {},
   explorerLocalPlacementIdentities: [],
   explorerPathStatus: null,
-  stagedCandidates: {},
   externalScratchRemoval: null,
   selectScratch: (id) =>
     set((state) => ({
@@ -532,34 +513,5 @@ export const useTriageStore = create<TriageState>((set) => ({
         explorerRemoteArrivalIds,
         explorerPathStatus,
       };
-    }),
-  addStagedCandidate: (scratchId, candidate) =>
-    set((state) => ({
-      stagedCandidates: {
-        ...state.stagedCandidates,
-        [scratchId]: [...(state.stagedCandidates[scratchId] ?? []), candidate],
-      },
-    })),
-  removeStagedCandidate: (scratchId, candidateId) =>
-    set((state) => {
-      const candidates = state.stagedCandidates[scratchId];
-      if (candidates === undefined) {
-        return { stagedCandidates: state.stagedCandidates };
-      }
-
-      return {
-        stagedCandidates: {
-          ...state.stagedCandidates,
-          [scratchId]: candidates.filter(
-            (candidate) => candidate.id !== candidateId,
-          ),
-        },
-      };
-    }),
-  clearScratchCandidates: (scratchId) =>
-    set((state) => {
-      const remainingCandidates = { ...state.stagedCandidates };
-      delete remainingCandidates[scratchId];
-      return { stagedCandidates: remainingCandidates };
     }),
 }));

@@ -1,0 +1,56 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "inbox-triage-theme-realization-promotion-map",
+  "user_disposition": "approved",
+  "user_disposition_text": "승인. 진행.",
+  "recorded_on": "2026-10-03",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-31/integration-conformance-full-gate",
+  "approved_base": "d05140626a6e95d4f5ca4897f02f66594af4d753",
+  "approved_scope": {
+    "lifecycle": "craft-docs",
+    "route": "Brainstorming",
+    "scope": "Complete revised promotion map for targeted amendment of existing canonical documents",
+    "selected_decisions": "D01-D36",
+    "first_affected_role": "design",
+    "first_draft_path": "docs/DESIGN_TOKENS.md",
+    "retained_without_write": ["schema", "spec", "existing nine recipes and accepted DP receipts"],
+    "approval_boundary": "Map approval permits its mapped canonical drafting sequence, not acceptance of any canonical draft or downstream implementation"
+  },
+  "approved_map": {
+    "path": "docs/brainstorming/2026-10-03-inbox_triage_theme_realization/PROMOTION_MAP.md",
+    "commit": "3b95de179fcc10568f8967a89a5f9eb9adaa5f11",
+    "sha256": "261d233c76d1641bccb7f4381035d3b10b79b3c61826237f9e71a04a32ad0d79",
+    "hash_domain": "exact committed artifact blob",
+    "snapshot_status": "The preapproval Proposed heading is preserved; this receipt owns the later user disposition"
+  },
+  "selected_authority": {
+    "path": "docs/brainstorming/2026-10-03-inbox_triage_theme_realization/DECISION.md",
+    "commit": "3b95de179fcc10568f8967a89a5f9eb9adaa5f11",
+    "sha256": "678bf0264da43d5d1192ab865cd1d64e92ba9714fcf741b33f1ea72976f6f4d4",
+    "hash_domain": "exact committed artifact blob"
+  },
+  "design_baseline": {
+    "path": "docs/DESIGN_TOKENS.md",
+    "commit": "3b95de179fcc10568f8967a89a5f9eb9adaa5f11",
+    "sha256": "bdd61e53ea3d0bd2bbc135e54a05be271ef28333f2a0127848f8c179e4103ed1",
+    "hash_domain": "exact committed artifact blob"
+  },
+  "session_continuity": {
+    "control_tower": {"identity": "phase-31-control-tower", "status": "active"},
+    "drafting_owner": "Current Control Tower directly, as explicitly requested by the user",
+    "working_session": {"identity": "none", "status": "not created"},
+    "duplicate_session_count": 0,
+    "experimental_working": "User-terminated; no experiment is resumed or succeeded and no standalone final-experiment report or closure commit is required"
+  },
+  "excluded_authority": [
+    "Canonical document acceptance, execution-plan approval, flow-review acceptance",
+    "Product or test repair, Task 164/165 start or acceptance, task-marker changes",
+    "Issue-ledger or cleanup disposition, branch/worktree/runtime deletion",
+    "Final Close, publication, push, PR, merge or main sync",
+    "Installed skill, resolver, adapter, shared contract or workflow-test changes",
+    "Historical experiment or prototype implementation/asset/evidence byte reuse"
+  ],
+  "next_legal_action": "draft_design_tokens_amendment_then_stop_at_document_gate"
+}
