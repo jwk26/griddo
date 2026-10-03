@@ -1,31 +1,24 @@
 # GridDO Inbox/Triage Implementation Execution Plan
 
-> **2026-10-03 amendment status:** **Draft — awaiting user approval.**
-> The proposed graph below narrows Phase 31 and transfers unaccepted Tasks
-> 164–165 to new Tasks 166–208. It is derived from the approved
-> [current promotion map](brainstorming/2026-10-03-inbox_triage_theme_realization/PROMOTION_MAP.md)
-> and [DESIGN_TOKENS amendment receipt](receipts/Craft_Docs.inbox-triage-theme-realization-design.json).
-> Until this complete amendment is accepted, the previously approved graph
-> remains lifecycle authority; none of the proposed transfers or new tasks is
-> runnable. The later planning-standard/workflow amendments and separate
-> flow review remain required before implementation.
-> **Historical planning approval:** the user approved the exact pre-receipt plan committed at
-> `c9a2112f8554026510ac1135cfb7c3243d337151`, whose SHA-256 is
-> `052ca15b137fbbc3e9f89d926b4afd0a8eef60c08aa135985f005e6c944eb9db`.
-> That receipt accepted the clean Phase 23–31 / Task 101–165 planning graph and
-> its supersession rules. It accepts no phase, task, implementation, branch,
-> publication, or completion state.
-> **Task markers:** Tasks 101–163 were explicitly accepted. Phases 23–30 are
-> completed and archived. Task 163 is accepted but not yet integrated into main.
-> Tasks 164–165 remain unaccepted (`[ ]`); this draft proposes
-> `Transferred / Superseded`, never `[x]`. New Tasks 166–208 are `[ ]`, unstarted.
-> **Execution lifecycle:** Phase 31 remains open for its accepted Task 163,
-> separately gated technical correction and truthful terminal verification.
-> Phases 34–40 are proposed, not started; 32–33 remain reserved. Nothing here
-> reopens Phase 30 or authorizes experiment promotion, repair or cleanup.
-> This planning receipt alone does not authorize later implementation, Git
-> lifecycle work, or publication.
-
+> **Current authority — 2026-10-03:** the targeted amendment and complete
+> document/flow chain are accepted under the six
+> `Craft_Docs.inbox-triage-theme-realization-*.json` receipts in
+> [docs/receipts](receipts/).
+> Their exact committed artifact hashes own approval; original Draft headings
+> in other approval-time snapshots do not override those receipts.
+> **Phase state:** Phases 23–31 are completed/archive-only under their respective
+> Final Close transactions. Phase 31 closes accepted Task 163 and bounded
+> technical corrections, not eight-theme visual completion. Its actual
+> publication/main-sync proof is owned by
+> [Final Close Phase 31](issues/Final_Close_Phase_31.json).
+> **Task state:** Tasks 101–163 and 105A retain explicit user acceptance.
+> Tasks 164–165 are historical, unaccepted `[ ]` transfer records.
+> Tasks 166–208 are `[ ]`, planned and unstarted. Phases 32–33 remain reserved.
+> **Next boundary:** the user has held actual theme implementation (Step 6)
+> until directly reviewing Steps 3–5. Post-close workflow-audit disposition and
+> fresh lifecycle gates remain prerequisites; planning approval and technical
+> close never grant theme implementation or visual acceptance.
+> Phase 30 and original Task 163 acceptance records are unchanged.
 ## Goal
 
 Implement the approved Inbox/Triage workspace as one production component tree with a validated Dexie v4 model, monotonic revisions, real all-or-nothing transactions, durable candidates, lifetime-correct UI state, dedicated Explorer search, pointer placement, source-aware Undo, guarded Archive recovery, and source-backed eight-theme presentation without inventing any unresolved visual or content decision.
@@ -127,18 +120,18 @@ do not rebuild eight isolated production trees. No new storage is required.
 
 | Area | Current status | Smallest blocker / next condition |
 |---|---|---|
-| Document approval | Current amendment `DRAFT` | Design amendment accepted; this plan, later C05/C06 amendments and final flow review await their own gates. Historical approval is not approval of this draft. |
-| Execution lifecycle | Phase 31 technical close pending | Exact repair/cleanup scope and fresh Final Close remain user-owned. Proposed Phases 34–40 have no kickoff or implementation authority. |
+| Document approval | `ACCEPTED` | Six exact-artifact receipts accept the promotion map, design, plan, planning standard, workflow and flow review. |
+| Execution lifecycle | Phase 31 terminal transaction | The actual publication/sync result is in Final_Close_Phase_31.json; Phases 34–40 have no kickoff or implementation authority. |
 | Data foundations | `COMPLETED` | Tasks 101–105A and authoritative command Tasks 120–126 are accepted and recorded in their phase archives. |
 | Decision prerequisites | `COMPLETED` | Tasks 106–119 and all fourteen DP receipts are accepted, reflected, and recorded in the Phase 24 archive. |
-| Headless/base UI | Tasks 127–163 accepted | Task 163 publication is pending; known route-export failure still requires its exact source/test repair and fresh validation. |
+| Headless/base UI | Tasks 127–163 accepted | Task 163 integration and bounded R01/I01 corrections are included in the Phase 31 Final Close transaction. Original task evidence is retained; correction/candidate evidence is separate. |
 | Theme realization | `PLANNED / UNSTARTED` | Named regional owners below; Q01/Q02/Q05 gate only their affected slices. No old experiment is evidence of canonical conformance. |
-| Phase 31 close | `BLOCKED_OTHER` | Plan transfer approval, Test 2 correction, exact technical repair, issue tier/dispositions and generated-output provenance at close candidate; no eight-theme-completion claim. |
+| Phase 31 close | `COMPLETED / ARCHIVED` | R01/C01/I01 corrections are recorded in the archive; fresh candidate/output/browser checks and publication guards must pass before the Final Close receipt is created. No eight-theme-completion claim. |
 | Campaign full gate | `PLANNED / UNSTARTED` | Task 208 consumes every accepted foundation and new theme task plus the retained complete matrices. |
 
 ## Unaccepted Task 164–165 Transfer Register
 
-**Draft disposition, effective only after this complete plan is approved.**
+**Accepted disposition under the exact execution-amendment receipt.**
 The original definitions are preserved in Git at
 `d05140626a6e95d4f5ca4897f02f66594af4d753:docs/EXECUTION_PLAN.md`.
 Neither task was accepted; neither receives `[x]` or enters Phase 31's active
@@ -206,16 +199,16 @@ sync; 166 additionally requires the post-Phase-31 workflow audit disposition.
 | Phase 28 | Completed | [Explorer status/search and pointer placement](execution-plan/archive/phase-28.md) | 149–154 | Accepted and archived; the terminal workflow measurement baseline transfers comparative audit to Phase 29. |
 | Phase 29 | Completed | [Mounted-page Newly/Undo and comparative workflow audit](execution-plan/archive/phase-29.md) | 155–158 | Accepted and archived; P29-01 remains Explicitly Deferred. Historical Phase 31 audit grants no repair; future narrow Inbox-card authority remains Q01. |
 | Phase 30 | Completed | [Completion and Archive coordinator/recovery](execution-plan/archive/phase-30.md) | 159–162 | Accepted and archived; bounded Task evidence remains reusable while its relevant inputs and claimed invariants remain unchanged. |
-| Phase 31 | Active / technical close pending | Accepted route integration; separately gated correction and terminal technical verification | 163; 164/165 historical transfer only | Transfer is proposed until plan acceptance; known technical failure and unresolved close prerequisites still block Final Close. |
+| Phase 31 | Completed | [Accepted route integration and technical close](execution-plan/archive/phase-31.md) | 163; 164/165 historical unaccepted transfer only | Technical corrections and fresh candidate verification are owned by Final Close; no theme completion or new task acceptance. |
 | Phase 32 | Reserved | Retired-number reservation | none | No tasks may be assigned. |
 | Phase 33 | Reserved | Retired-number reservation | none | No tasks may be assigned. |
-| Phase 34 | Proposed | Retro Mac, region-by-region then supported-mode conformance | 166–172 | 163 accepted + Phase 31 close/main sync + post-close audit disposition + document/flow gates; subsequent tasks use exact predecessor edges. |
-| Phase 35 | Proposed | Neumorphism, region-by-region then supported-mode conformance | 173–179 | 172 accepted + Phase 34 close/main sync. |
-| Phase 36 | Proposed | Terminal, region-by-region then supported-mode conformance | 180–186 | 179 accepted + Phase 35 close/main sync. |
-| Phase 37 | Proposed | Claymorphism + Origami, one shared writer | 187–193 | 186 accepted + Phase 36 close/main sync; both themes require regional dispositions. |
-| Phase 38 | Proposed | GridDO + Tiny Desk, one shared writer | 194–200 | 193 accepted + Phase 37 close/main sync; both themes require regional dispositions. |
-| Phase 39 | Proposed | Graphite, region-by-region then supported-mode conformance | 201–207 | 200 accepted + Phase 38 close/main sync. |
-| Phase 40 | Proposed | Complete campaign integration and preservation gate | 208 | All accepted Tasks 101–163/105A/166–207, all prior close/main sync and exact retained schema/DP authority. |
+| Phase 34 | Planned / unstarted | Retro Mac, region-by-region then supported-mode conformance | 166–172 | 163 accepted + Phase 31 close/main sync + post-close audit disposition + document/flow gates; subsequent tasks use exact predecessor edges. |
+| Phase 35 | Planned / unstarted | Neumorphism, region-by-region then supported-mode conformance | 173–179 | 172 accepted + Phase 34 close/main sync. |
+| Phase 36 | Planned / unstarted | Terminal, region-by-region then supported-mode conformance | 180–186 | 179 accepted + Phase 35 close/main sync. |
+| Phase 37 | Planned / unstarted | Claymorphism + Origami, one shared writer | 187–193 | 186 accepted + Phase 36 close/main sync; both themes require regional dispositions. |
+| Phase 38 | Planned / unstarted | GridDO + Tiny Desk, one shared writer | 194–200 | 193 accepted + Phase 37 close/main sync; both themes require regional dispositions. |
+| Phase 39 | Planned / unstarted | Graphite, region-by-region then supported-mode conformance | 201–207 | 200 accepted + Phase 38 close/main sync. |
+| Phase 40 | Planned / unstarted | Complete campaign integration and preservation gate | 208 | All accepted Tasks 101–163/105A/166–207, all prior close/main sync and exact retained schema/DP authority. |
 
 ## Theme Realization Task Sets
 
@@ -2097,52 +2090,17 @@ accessibility, and prototype/recipe comparison remains Task 164 work.
 
 ---
 
-## Phase 31 — Accepted Route Integration And Technical Close
+## Phase 31 — Completed / Archived
 
-Task 163 remains accepted with its original implementation/acceptance identity.
-On approval of this plan amendment, 164/165 leave this phase's active task set
-under the transfer register. Phase 31 closes only its functional integration
-and explicitly approved technical corrections; it does not assert eight-theme
-visual completion. The historical read-only visual audit is neither accepted
-by transfer nor authority for repair. P29-01 and broader fidelity debt remain
-distinct, with future narrow card ownership at Q01 and theme realization below.
+Accepted Task 163, technical corrections, and truthful transfer/disposal
+dispositions are recorded in [the Phase 31 archive](execution-plan/archive/phase-31.md).
+The original task contract remains there as historical accepted authority.
+Actual Final Close/publication/main-sync proof is in
+[Final_Close_Phase_31.json](issues/Final_Close_Phase_31.json).
 
-Phase 30 remains closed/archive-only. No phase or task receives a completion
-marker merely because its remaining work is transferred. The original Gate C
-and task receipts remain approval-time snapshots; correction, cleanup and
-Final Close require their own exact user scope and recovery evidence.
-
-### Task 163: [x] Integrate the canonical route and remove superseded owners
-
-**Files and actions:** modify `src/app/(grid)/grid/[nodeId]/page.tsx`, `src/components/layout/grid-runtime.tsx` and `.test.tsx`, `src/components/triage/triage-workspace.tsx` and `.test.tsx`, existing `src/hooks/use-dnd.ts` and `src/hooks/use-triage-dnd.test.ts`, and `src/stores/triage-store.ts` and `.test.ts`. Dispatch the canonical Inbox system Node to the single production workspace; compose completed lifetime/hooks/adapters; read Archive recovery before initial Inbox projection. After verifying every consumer uses Task 131 durable candidate truth, remove the deprecated candidate fields/actions retained by Task 127; Task 163 is the sole removal owner. Also remove superseded component mock writes, UI candidate arrays/Sets/labels, sequential create→consume→remove placement, active-column Explorer filtering, duplicate selection/path/overlay owners, and prototype-only handlers from these integration owners. Preserve general Grid DnD keyboard behavior, non-Inbox Grid/runtime, Calendar, Trash, Quick Capture, global Search, Bit Detail, Direct Archive, Archive View restore, and system Nodes.
-
-**Dependencies:** Tasks 127–162.
-
-**Authority / flows:** `UF-01`–`UF-28`; `AF-01`–`AF-09`; `NEG-01`, `NEG-10`, `NEG-16`, `NEG-17`.
-
-**Recipe:** [`Shell and section chrome`](recipes/inbox-triage-shell-section-chrome-visual-recipe.md), [`Scratch Pool`](recipes/inbox-triage-scratch-pool-visual-recipe.md), [`Selected Scratch Context`](recipes/inbox-triage-selected-scratch-context-visual-recipe.md), [`Breakdown rows and empty states`](recipes/inbox-triage-breakdown-row-empty-visual-recipe.md), [`Staging`](recipes/inbox-triage-staging-visual-recipe.md), [`Grid Explorer`](recipes/inbox-triage-grid-explorer-visual-recipe.md), [`Placement affordances`](recipes/inbox-triage-placement-affordances-visual-recipe.md), [`Newly placed and Undo`](recipes/inbox-triage-newly-placed-undo-visual-recipe.md), and [`Archive completion`](recipes/inbox-triage-archive-completion-visual-recipe.md).
-
-**Observable acceptance:** `/grid/[nodeId]` resolves one Inbox body; every command flows component→canonical hook→DataStore→reactive return; no parallel truth/mock path survives; every listed unrelated surface behaves as before.
-
-**Verification:** focused route/runtime/Workspace/store/DnD tests and `rg` audit proving no deprecated candidate compatibility API or other named superseded owner remains; run canonical route navigation plus the unrelated-surface preservation smoke and record route/state/focus results in `docs/verification/inbox-triage/task-163.md`; `pnpm lint`; `pnpm typecheck`.
-
-**Commit contract:** route/runtime/workspace integration, removal of only named superseded owners, tests, and Task 163 evidence; `refactor(triage): integrate authoritative inbox workspace`.
-
-### Phase 31 technical-close prerequisites — not new task acceptance
-
-| Item / map prerequisite | Owner, boundary and resume condition |
-|---|---|
-| P31-R01 / Q03 — route export correction | Task 163's route seam. Propose modifying `src/app/(grid)/grid/[nodeId]/page.tsx` and `src/components/layout/grid-runtime.test.tsx`, and creating `src/components/layout/node-grid-body.tsx`: move the ordinary `NodeGridBody`/standard-grid body to a normal client component and update imports without changing routing or behavior. These are proposed repair owners, not writes authorized by this draft; an exact run-task repair gate must approve them before mutation. Preserve the original Task 163 acceptance and record the additive correction and freshly invalidated evidence separately. Do not suppress generated type errors or treat cache deletion as repair. |
-| P31-C01 / Q04 — Test 2 correction and experiment disposal | Exact cleanup/correction gate owns the original `54d689…` → `d051406…` Test 2 net delta, not later Route documents. Remove only its rejected implementation/artifacts, retaining accepted 163 and the separate 9/8–9 audit. Preserve a minimal rejection/discard lineage, not a copy of obsolete reports. Separately guard eight identified experimental worktrees/branches and attributed runtimes; protect main, canonical Phase 31, prototype and session host. No standalone final Neumorphism report or closure commit is required. No history rewrite or branch reset. |
-| P31-I01 / Q05 — mounted Staging finding | Diagnose the inherited staged-root target-reason delivery against the accepted functional contract and classify Blocking versus Advisory. The issue owner records exact affected invariant/path and user disposition; a Blocking failure requires a separately approved repair, not deferral by a CSS author. This plan grants no hook/store write. |
-| P31-E01 / Q06 — close-output provenance | Close owner presents an exact project-owned proof for generated/browser outputs consumed at the close candidate, since the optional adapter gate is absent. User approves that method; fresh candidate checks must actually exercise it. Build success, timestamps and previous output alone are not the proof. No adapter/command-catalog change is authorized here. |
-| P31-V01 — truthful technical gate | After corrections, rerun adapter logical test/lint/typecheck/build, diff-check and route/unrelated-surface preservation on the actual close candidate. Record issue dispositions and evidence validity, not the experiment's visual scores or a Task 165 pass. Exact Final Close/publication/main-sync gate remains separate. |
-
-The current Control Tower owns document replanning and the post-close workflow
-audit directly. Separately approved correction/cleanup may use Luna xhigh as a
-single writer. The future workflow audit compares the deferred findings with
-installed rules before proposing any change; its user disposition is an entry
-condition for Phase 34, not authority to modify skills during Phase 31.
+Tasks 164–165 remain unaccepted transfer records above. Phase 30 is unchanged.
+Phase 31 does not assert eight-theme fidelity or Task 165's aggregate gate.
+Post-close workflow audit and the user's held Step 6 boundary remain in force.
 
 ---
 
@@ -3255,17 +3213,17 @@ This register covers every implementation/test path declared by two or more task
 
 ## Next Numbers
 
-- **Next proposed implementation phase/task:** Phase 34 / Task 166, only after
+- **Next planned implementation phase/task:** Phase 34 / Task 166, only after
   all entry conditions and fresh lifecycle gates. Phases 32 and 33 remain
   reserved with no tasks.
 - **Next unallocated numbers after this amendment:** Phase 41 / Task 209.
-  Proposed Phases 34–40 and Tasks 166–208 are already allocated; none may be
+  Planned Phases 34–40 and Tasks 166–208 are already allocated; none may be
   reused for another meaning.
-- Graph reconciliation: 64 accepted tasks (101–163 plus 105A), eight completed
-  archives (Phases 23–30), one active technical-close phase (31), two historical
-  unaccepted transfer records (164/165), 43 new unstarted tasks (166–208) in
-  seven proposed phases (34–40), and two reserved phases (32–33).
-- This complete amendment is **Draft / awaiting user approval**. C04 acceptance
-  will approve planning authority, not task acceptance, correction/cleanup,
-  Phase 31 Final Close, new implementation or publication. C05/C06 and flow-review
-  dispositions remain required before the proposed implementation graph runs.
+- Graph reconciliation: 64 accepted tasks (101–163 plus 105A), nine completed
+  archives (Phases 23–31), two historical unaccepted transfer records (164/165),
+  43 new unstarted tasks (166–208) in seven planned phases (34–40), and two
+  reserved phases (32–33).
+- This amendment and C05/C06/flow review are accepted under their exact-artifact
+  receipts. They approve planning, not task acceptance or theme implementation.
+  The post-close workflow-audit disposition, user's Step 6 review and fresh
+  lifecycle gates remain required.

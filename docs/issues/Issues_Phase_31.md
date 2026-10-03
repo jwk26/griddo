@@ -3,16 +3,15 @@
 > Branch: `phase-31/integration-conformance-full-gate`
 > Worktree: `/Users/jwk/Documents/griddo2-codex-phase-31-integration-conformance-full-gate`
 > Kickoff date: 2026-09-07
-> Current state: Task 163 is `[x]` and Accepted, not yet integrated.
-> Tasks 164–165 are `Transferred / Superseded`, unaccepted `[ ]`, under the
-> separately accepted 2026-10-03 plan. New Tasks 166–208 are unstarted.
-> Working `phase-31-technical-correction-run-task-01` is `closed/archive-only`
-> after the bounded Q05 semantic implementation checkpoint below. Control
-> Tower `phase-31-control-tower` is active; duplicate-session count is `0`.
+> Current state: Phase 31 terminal technical-close transaction; Task 163
+> retains explicit user acceptance. Actual publication/main-sync status is
+> owned by `Final_Close_Phase_31.json` and provider/Git evidence.
+> Tasks 164–165 remain historical unaccepted transfers `[ ]`; Tasks 166–208
+> are planned/unstarted. The correction Working is `closed/archive-only`.
+> Active Working: none. Control Tower `phase-31-control-tower` owns close
+> and subsequent Step 5 audit; duplicate-session count is `0`.
 > Historical kickoff/task/session snapshots below are not current claimants.
-> Next legal action: Control Tower creates an isolated Phase 31 close candidate
-> and gathers fresh generated-output provenance plus mounted-browser evidence.
-
+> Step 6 remains held for the user's direct review of Steps 3–5.
 ## Status Legend
 
 | Status | Meaning |
@@ -562,3 +561,37 @@ content and state unchanged.
   generated-output provenance and mounted-browser route evidence. This does
   not authorize ordinary Final Close/publication, Step 5 skill edits, Task
   acceptance, or Step 6.
+
+## Phase 31 terminal audit — candidate A
+
+- Execution authority: the explicit 2026-10-03 Steps 3–5 mandate recorded at
+  `04f39862f1008cdade67b8e381ff38032b2f6292`. Further routine gate requests
+  are waived for this transaction only. This is not future-payload inspection,
+  automatic task acceptance or standing publication authority.
+- Pre-close head: `c8721e302262240e4ccbdd4d66521eaeaac8ec7a`, clean.
+  R01/C01 inverse: `667f885ed95524ef7e84f72587b6e3f505dafdb0`.
+  Q05 correction: `0014808e667a1045c039fcc7f7207e10b81a7e2f`;
+  checkpoint/Working closure: pre-close head above.
+- R01/C01 source/correction checks are resolved. Q05's source-level Blocking
+  mismatch is corrected; candidate browser verification remains a required
+  terminal gate, not a deferral. Earlier pre-close gates are historical only.
+- Q06 exact approved method: initially absent generated output in this new
+  detached preview, frozen install, source/candidate/input identity, serial
+  full gates plus post-build typecheck, exact output hashes, owned production
+  server and fresh isolated browser with loaded HTTP asset hash comparison.
+  Actual Q06/browser results belong only to the receipt created after success.
+- Candidate A owns archive/plan index/current summary/deferred pointers/learnings
+  only. A final receipt-only B and exact-head-pinned provider merge/main sync
+  may proceed only after all fresh guards pass.
+- Canonical impact: accepted document/flow changes are Reflected through their
+  six exact-artifact receipts. R01/Q05 are bounded implementation corrections;
+  no new schema/spec/copy meaning or task marker change. No unresolved Tagged
+  impact or Unowned scope is added.
+- P29-01 and other historical deferrals retain explicit future ownership.
+  Six WF findings remain deferred audit inputs, synchronized centrally.
+  No visual-audit or theme-completeness acceptance is inferred.
+- The earlier checkpoint's “does not authorize publication” describes its own
+  lack of authority; it does not cancel the separately recorded user Steps 3–5
+  mandate. Original receipts remain immutable.
+- Publication/main-sync/cleanup proof belongs to Final_Close_Phase_31.json and
+  GitHub/Git. Step 5 starts only after actual close; Step 6 stays held.

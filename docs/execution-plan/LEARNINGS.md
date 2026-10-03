@@ -31,6 +31,8 @@
 
 ## dnd-kit
 
+**Hover feedback is not release authority.** A neutral or invalid target may still need a visible reason even when its release classifier returns no command. Keep feedback eligibility distinct from mutation eligibility, validate the current source/Scratch and actual target identity, and test the mounted seam as well as the consumer. *(Phase 31, P31-I01/Q05; see Issues_Phase_31.md and technical-correction evidence.)*
+
 **Component-level hooks only — no loops.** `useDraggable` / `useDroppable` cannot be called inside a loop. Create per-item sub-components (`DraggableNodeTile`, `DraggableDot`) to call each hook once. *(Phase 14)*
 
 **Namespace IDs when an item appears on two surfaces.** If the same item registers `useDraggable` in both a pool and a placed-item surface, their IDs collide. Namespace the registration key (e.g., `` `placed:${item.id}` ``) while keeping `data: { id: item.id }` unchanged so `handleDragEnd` reads the real ID from event data. *(Phase 13)*
