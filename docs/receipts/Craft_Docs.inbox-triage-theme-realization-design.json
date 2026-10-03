@@ -1,0 +1,47 @@
+{
+  "schema_version": 2,
+  "receipt_kind": "lifecycle-approval",
+  "gate": "inbox-triage-theme-realization-design",
+  "user_disposition": "approved",
+  "user_disposition_text": "승인",
+  "recorded_on": "2026-10-03",
+  "approved_repository": "jwk26/griddo",
+  "approved_branch": "phase-31/integration-conformance-full-gate",
+  "approved_base": "fef8617c2ecf3b8a9fe0335974cbc892d23a05b4",
+  "approved_scope": {
+    "lifecycle": "craft-docs",
+    "route": "Brainstorming",
+    "canonical_role": "design",
+    "canonical_path": "docs/DESIGN_TOKENS.md",
+    "amendment": "C03 centralized role/token realization, element-level rendered fidelity, production-only state preservation and historical provenance clarification",
+    "preserved": "All existing exact values, 14 accepted DP sections, behavior, geometry and five deferrals",
+    "approval_boundary": "Canonical design-document acceptance only; no execution-plan, implementation or lifecycle acceptance"
+  },
+  "approved_artifact": {
+    "path": "docs/DESIGN_TOKENS.md",
+    "commit": "fef8617c2ecf3b8a9fe0335974cbc892d23a05b4",
+    "sha256": "888a61ff583016d984d8f3209e72af5688254e9cd7b68e07d9e181bdf80fa14b",
+    "hash_domain": "exact committed artifact blob",
+    "snapshot_status": "Preapproval Draft headings are preserved in the approved artifact; this receipt owns the later user disposition"
+  },
+  "approved_map": {
+    "path": "docs/brainstorming/2026-10-03-inbox_triage_theme_realization/PROMOTION_MAP.md",
+    "commit": "3b95de179fcc10568f8967a89a5f9eb9adaa5f11",
+    "sha256": "261d233c76d1641bccb7f4381035d3b10b79b3c61826237f9e71a04a32ad0d79",
+    "hash_domain": "exact committed artifact blob",
+    "receipt": "docs/receipts/Craft_Docs.inbox-triage-theme-realization-promotion-map.json"
+  },
+  "session_continuity": {
+    "control_tower": {"identity": "phase-31-control-tower", "status": "active"},
+    "drafting_owner": "Current Control Tower directly, as explicitly requested by the user",
+    "working_session": {"identity": "none", "status": "not created"},
+    "duplicate_session_count": 0
+  },
+  "excluded_authority": [
+    "Execution-plan, planning-standard, workflow-document or flow-review acceptance",
+    "Task 164/165 acceptance or transfer implementation, new phase kickoff or product repair",
+    "Experimental byte reuse, issue-ledger writes or branch/worktree/runtime cleanup",
+    "Final Close, publication, push, PR, merge, main sync or installed skill changes"
+  ],
+  "next_legal_action": "draft_execution_plan_amendment_then_stop_at_document_gate"
+}
